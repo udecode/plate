@@ -108,17 +108,17 @@ Top drivers:
 
 Viable options:
 
-| Option | Pros | Cons | Verdict |
-| --- | --- | --- | --- |
-| Copy Lexical command bus as public API | Battle-tested priority/handled semantics | Turns raw Slate into command-catalog DX and competes with `tx` | reject |
-| Keep Slate `tx` public, add internal prioritized runtime commands | Preserves tx DX while giving first-party event policy ordering | Needs strict boundary docs/tests | keep |
-| Keep one broad `editor.subscribe` | Simple and already implemented | Encourages broad React wakeups and store recompute | revise |
-| Add named listener/source subscriptions | Matches Lexical listener partitioning and React selector goals | More API surface if public too early | keep internal first |
-| Copy Lexical NodeState | Less node subclass boilerplate | Opaque class-node pressure and `$` serialization fights Slate JSON clarity | reject as main model |
-| Add spec-backed JSON attrs/metadata helpers | Gets NodeState's boilerplate win without class model | Needs schema/spec design | defer |
-| Copy Lexical Extension lifecycle | Strong dependency/config/cleanup story | Lexical phases/names are not Slate vocabulary | keep adapted |
-| Copy Lexical signals | Good extension-local reactivity | Extra reactive primitive in core app API is too much | keep internal/optional only |
-| Copy DecoratorNode | Strong isolated node lane | Class model and decorator map do not fit Slate DOM contract | keep semantics, reject shape |
+| Option                                                            | Pros                                                           | Cons                                                                       | Verdict                      |
+| ----------------------------------------------------------------- | -------------------------------------------------------------- | -------------------------------------------------------------------------- | ---------------------------- |
+| Copy Lexical command bus as public API                            | Battle-tested priority/handled semantics                       | Turns raw Slate into command-catalog DX and competes with `tx`             | reject                       |
+| Keep Slate `tx` public, add internal prioritized runtime commands | Preserves tx DX while giving first-party event policy ordering | Needs strict boundary docs/tests                                           | keep                         |
+| Keep one broad `editor.subscribe`                                 | Simple and already implemented                                 | Encourages broad React wakeups and store recompute                         | revise                       |
+| Add named listener/source subscriptions                           | Matches Lexical listener partitioning and React selector goals | More API surface if public too early                                       | keep internal first          |
+| Copy Lexical NodeState                                            | Less node subclass boilerplate                                 | Opaque class-node pressure and `$` serialization fights Slate JSON clarity | reject as main model         |
+| Add spec-backed JSON attrs/metadata helpers                       | Gets NodeState's boilerplate win without class model           | Needs schema/spec design                                                   | defer                        |
+| Copy Lexical Extension lifecycle                                  | Strong dependency/config/cleanup story                         | Lexical phases/names are not Slate vocabulary                              | keep adapted                 |
+| Copy Lexical signals                                              | Good extension-local reactivity                                | Extra reactive primitive in core app API is too much                       | keep internal/optional only  |
+| Copy DecoratorNode                                                | Strong isolated node lane                                      | Class model and decorator map do not fit Slate DOM contract                | keep semantics, reject shape |
 
 Chosen first-pass target:
 
@@ -149,14 +149,14 @@ Consequences:
 
 ## 4. Confidence Scorecard
 
-| Dimension | Score | Evidence |
-| --- | ---: | --- |
-| React 19.2 runtime performance | 0.92 | Section 27 turns broad upstream refresh into a friend/internal source bus target; live Slate v2 already has root selector gates at `/Users/zbeyens/git/slate-v2/packages/slate-react/src/editable/root-selector-sources.ts:24`, projection source/runtime subscribers at `/Users/zbeyens/git/slate-v2/packages/slate-react/src/projection-store.ts:84`, and the remaining broad fan-in is isolated at `/Users/zbeyens/git/slate-v2/packages/slate-react/src/projection-store.ts:398` and `/Users/zbeyens/git/slate-v2/packages/slate-react/src/annotation-store.ts:668`. |
-| Slate-close unopinionated DX | 0.93 | `BaseEditor` stays small; section 27 rejects root `editor.onSelection` and public `editor.sources`; extension `state` / `tx` / `editor` groups remain the authoring backbone; `setup(ctx)` stays deferred until source subscriptions prove they deserve lifecycle glue. |
-| Plate/slate-yjs migration backbone | 0.92 | Section 27 defines tag/source interaction for history, collab, paste, and IME without requiring current-version adapters; live commit metadata already carries classes, touched runtime ids, selection impact ids, decoration impact ids, node impact ids, and tags in `/Users/zbeyens/git/slate-v2/packages/slate/src/core/public-state.ts:485` and `:1508`. |
-| Regression-proof strategy | 0.92 | Section 27 lists red tests for commit/source routing, projection fan-in removal, root hook render stability, targeted refresh, typed tags, and DOM/bookmark pressure; existing proofs already cover selection-only dirtiness, placeholder non-rerender, annotation bookmark rebasing, scoped projection recompute, and targeted source refresh. |
-| Research evidence completeness | 0.93 | Section 26 uses local Lexical, ProseMirror, Tiptap, Milkdown, and Obsidian/CodeMirror evidence; section 27 converts it into Slate-owned decisions instead of copying public command chains, class nodes, integer positions, or NodeViews. |
-| shadcn-style composability/minimal hooks | 0.91 | Section 27 keeps UI/product commands above raw Slate, narrows React hot paths through selectors/source subscriptions, and avoids turning editor chrome or Tiptap chain UX into Slate core API. |
+| Dimension                                | Score | Evidence                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| ---------------------------------------- | ----: | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| React 19.2 runtime performance           |  0.92 | Section 27 turns broad upstream refresh into a friend/internal source bus target; live Slate v2 already has root selector gates at `/Users/zbeyens/git/slate-v2/packages/slate-react/src/editable/root-selector-sources.ts:24`, projection source/runtime subscribers at `/Users/zbeyens/git/slate-v2/packages/slate-react/src/projection-store.ts:84`, and the remaining broad fan-in is isolated at `/Users/zbeyens/git/slate-v2/packages/slate-react/src/projection-store.ts:398` and `/Users/zbeyens/git/slate-v2/packages/slate-react/src/annotation-store.ts:668`. |
+| Slate-close unopinionated DX             |  0.93 | `BaseEditor` stays small; section 27 rejects root `editor.onSelection` and public `editor.sources`; extension `state` / `tx` / `editor` groups remain the authoring backbone; `setup(ctx)` stays deferred until source subscriptions prove they deserve lifecycle glue.                                                                                                                                                                                                                                                                                                  |
+| Plate/slate-yjs migration backbone       |  0.92 | Section 27 defines tag/source interaction for history, collab, paste, and IME without requiring current-version adapters; live commit metadata already carries classes, touched runtime ids, selection impact ids, decoration impact ids, node impact ids, and tags in `/Users/zbeyens/git/slate-v2/packages/slate/src/core/public-state.ts:485` and `:1508`.                                                                                                                                                                                                            |
+| Regression-proof strategy                |  0.92 | Section 27 lists red tests for commit/source routing, projection fan-in removal, root hook render stability, targeted refresh, typed tags, and DOM/bookmark pressure; existing proofs already cover selection-only dirtiness, placeholder non-rerender, annotation bookmark rebasing, scoped projection recompute, and targeted source refresh.                                                                                                                                                                                                                          |
+| Research evidence completeness           |  0.93 | Section 26 uses local Lexical, ProseMirror, Tiptap, Milkdown, and Obsidian/CodeMirror evidence; section 27 converts it into Slate-owned decisions instead of copying public command chains, class nodes, integer positions, or NodeViews.                                                                                                                                                                                                                                                                                                                                |
+| shadcn-style composability/minimal hooks |  0.91 | Section 27 keeps UI/product commands above raw Slate, narrows React hot paths through selectors/source subscriptions, and avoids turning editor chrome or Tiptap chain UX into Slate core API.                                                                                                                                                                                                                                                                                                                                                                           |
 
 Weighted score: `0.92`.
 
@@ -172,21 +172,21 @@ Status: complete.
 
 Final keep/drop/defer calls for this pass:
 
-| Candidate | Decision | Slate-shaped boundary |
-| --- | --- | --- |
-| Read/update lifecycle | keep | already public as `editor.read((state) => ...)` and `editor.update((tx) => ...)` |
-| Public command dispatch | drop | no `editor.dispatchCommand`, no `editor.commands`, no public command catalog |
-| Internal prioritized command middleware | keep | friend/internal core policy only; not exposed through `EditorExtension` or root exports |
-| Public `EditorExtension.commands` | drop | remove the field; keep explicit `tx` / `state` / `editor` groups and defer lifecycle helpers |
-| Listener partitions | keep | extension-context/internal sources, plus React hooks/stores; no root `editor.onSelection` method sprawl |
-| Canonical update tags | keep | type the core tag vocabulary; keep arbitrary string escape hatch only if scoped as advanced |
-| Dirty transform scheduling | revise | call it a normalization scheduler, not Lexical transforms; preserve Slate normalization semantics |
-| Extension lifecycle phases | revise/defer | keep current declarative slots; consider narrow lifecycle helpers only after source partitions exist |
-| Extension-local reactive state | defer | optional internal store/signal-like primitive later; not a required public core dependency |
-| NodeState as user model | drop | plain JSON node attrs/specs remain the Slate data model |
-| Spec-backed attr helpers | defer | possibly useful, but only after collab/operation proof |
-| Decorator/atom isolation | keep | runtime-owned void/atom shell policy, not class `DecoratorNode` |
-| Error hook discipline | keep | runtime/extension error reporter; exact public `onError` shape deferred to maintainer pass |
+| Candidate                               | Decision     | Slate-shaped boundary                                                                                   |
+| --------------------------------------- | ------------ | ------------------------------------------------------------------------------------------------------- |
+| Read/update lifecycle                   | keep         | already public as `editor.read((state) => ...)` and `editor.update((tx) => ...)`                        |
+| Public command dispatch                 | drop         | no `editor.dispatchCommand`, no `editor.commands`, no public command catalog                            |
+| Internal prioritized command middleware | keep         | friend/internal core policy only; not exposed through `EditorExtension` or root exports                 |
+| Public `EditorExtension.commands`       | drop         | remove the field; keep explicit `tx` / `state` / `editor` groups and defer lifecycle helpers            |
+| Listener partitions                     | keep         | extension-context/internal sources, plus React hooks/stores; no root `editor.onSelection` method sprawl |
+| Canonical update tags                   | keep         | type the core tag vocabulary; keep arbitrary string escape hatch only if scoped as advanced             |
+| Dirty transform scheduling              | revise       | call it a normalization scheduler, not Lexical transforms; preserve Slate normalization semantics       |
+| Extension lifecycle phases              | revise/defer | keep current declarative slots; consider narrow lifecycle helpers only after source partitions exist    |
+| Extension-local reactive state          | defer        | optional internal store/signal-like primitive later; not a required public core dependency              |
+| NodeState as user model                 | drop         | plain JSON node attrs/specs remain the Slate data model                                                 |
+| Spec-backed attr helpers                | defer        | possibly useful, but only after collab/operation proof                                                  |
+| Decorator/atom isolation                | keep         | runtime-owned void/atom shell policy, not class `DecoratorNode`                                         |
+| Error hook discipline                   | keep         | runtime/extension error reporter; exact public `onError` shape deferred to maintainer pass              |
 
 Pressure conclusions:
 
@@ -248,14 +248,14 @@ Keep:
 
 ```ts
 editor.read((state) => {
-  state.selection.get()
-  state.value.get()
-})
+  state.selection.get();
+  state.value.get();
+});
 
 editor.update((tx) => {
-  tx.text.insert('x')
-  tx.nodes.set({ type: 'heading' })
-})
+  tx.text.insert("x");
+  tx.nodes.set({ type: "heading" });
+});
 ```
 
 Live extension-state correction:
@@ -284,30 +284,30 @@ Current shape to keep:
 
 ```ts
 editor.extend({
-  name: 'image',
-  elements: [{ type: 'image', void: 'block' }],
+  name: "image",
+  elements: [{ type: "image", void: "block" }],
   tx: {
     image(tx) {
       return {
         insert(src: string) {
-          tx.nodes.insert({ type: 'image', src, children: [{ text: '' }] })
+          tx.nodes.insert({ type: "image", src, children: [{ text: "" }] });
         },
-      }
+      };
     },
   },
-})
+});
 ```
 
 Possible future lifecycle shape, only after source partitions exist:
 
 ```ts
 editor.extend({
-  name: 'history',
-  dependencies: ['selection'],
+  name: "history",
+  dependencies: ["selection"],
   setup(ctx) {
-    return ctx.source('selection').subscribe((selection) => {})
+    return ctx.source("selection").subscribe((selection) => {});
   },
-})
+});
 ```
 
 That future shape is a target, not current source. It must not duplicate the
@@ -381,9 +381,9 @@ Do not steal:
 Slate target:
 
 ```ts
-const selected = useElementSelected()
-const text = useTextSelector(({ text }) => text?.text ?? '')
-const canUndo = useEditorState((state) => state.history.canUndo())
+const selected = useElementSelected();
+const text = useTextSelector(({ text }) => text?.text ?? "");
+const canUndo = useEditorState((state) => state.history.canUndo());
 ```
 
 Live hook correction:
@@ -444,13 +444,13 @@ Do not require a current slate-yjs adapter in raw Slate.
 
 Any accepted Lexical steal must map to generated proof:
 
-| Steal | Regression class |
-| --- | --- |
-| listener partitions | broad React rerenders, focus loss after search/decorations |
-| normalization scheduler | normalization loops, stale decorations, tables/inline void navigation |
-| update tags | paste/history/collab/IME policy drift |
-| decorator/atom isolation | image/void spacer layout, editable void child bugs |
-| extension lifecycle follow-up | duplicated listener cleanup, dependency order bugs |
+| Steal                         | Regression class                                                      |
+| ----------------------------- | --------------------------------------------------------------------- |
+| listener partitions           | broad React rerenders, focus loss after search/decorations            |
+| normalization scheduler       | normalization loops, stale decorations, tables/inline void navigation |
+| update tags                   | paste/history/collab/IME policy drift                                 |
+| decorator/atom isolation      | image/void spacer layout, editable void child bugs                    |
+| extension lifecycle follow-up | duplicated listener cleanup, dependency order bugs                    |
 
 ## 12. Browser Stress / Parity Strategy
 
@@ -468,13 +468,13 @@ Put broad replay in sparse gates:
 
 ## 13. Implementation-Skill Review Matrix
 
-| Lens | Applicability | Result |
-| --- | --- | --- |
-| Vercel React | applied | Lexical listener partitions reinforce narrow source subscriptions and avoiding broad render wakeups |
-| performance-oracle | applied | dirty leaves/elements and transform fixed-point guard are the highest-value perf/runtime steal |
-| tdd | applied | any accepted steal needs behavior contracts through public state/tx or slate-browser replay |
-| shadcn | skipped | no UI component surface in this pass |
-| react-useeffect | skipped for now | next hook/subscription API pass may trigger it |
+| Lens               | Applicability   | Result                                                                                              |
+| ------------------ | --------------- | --------------------------------------------------------------------------------------------------- |
+| Vercel React       | applied         | Lexical listener partitions reinforce narrow source subscriptions and avoiding broad render wakeups |
+| performance-oracle | applied         | dirty leaves/elements and transform fixed-point guard are the highest-value perf/runtime steal      |
+| tdd                | applied         | any accepted steal needs behavior contracts through public state/tx or slate-browser replay         |
+| shadcn             | skipped         | no UI component surface in this pass                                                                |
+| react-useeffect    | skipped for now | next hook/subscription API pass may trigger it                                                      |
 
 ## 14. High-Risk Deliberate Pre-Mortem
 
@@ -740,16 +740,16 @@ These rows are the execution contract. They are not optional nice-to-haves. If a
 future implementation cannot satisfy one row, the architecture decision behind
 that row needs to be reopened instead of patched around.
 
-| Contract | Must fail when | Fast lane | Browser/stress lane | Evidence owner |
-| --- | --- | --- | --- | --- |
-| Public surface hard cut | `EditorExtension.commands`, `editor.dispatchCommand`, public `editor.commands`, or docs/examples teaching those APIs reappear | Type/export law tests under `packages/slate`; docs grep in repo tooling | none; this is API surface, not browser behavior | rows 16.1-16.2 |
-| Package-private command middleware | command registry helpers are exported from public barrels or accepted by external extension types | Package export tests plus TypeScript negative fixtures | none | row 16.2 |
-| Extension lifecycle follow-up | future lifecycle helpers duplicate declarative slots, leak command APIs, or clean up listeners nondeterministically | Extension registry tests for dependency order, unregister cleanup, and command hard-cut; lifecycle helper tests only after source API is designed | stress row with repeated mount/extend/unextend cycles if lifecycle helpers land | row 16.4 plus section 24 |
-| Listener/source partitions | selection, focus, placeholder, decoration, or node updates wake unrelated node renderers or broad React roots | Store/source tests with source ids and render-count assertions | slate-browser replay for selection, search highlight focus retention, hovering toolbar, table arrows, image navigation | row 16.3 |
-| Canonical update tags | history, paste, collab, composition, replay, or skip-DOM-selection metadata disappears before commit/runtime policy | Commit metadata unit tests and transaction tag typing tests | browser copy/paste/composition replay where tag policy affects DOM selection and history | decision brief plus rows 16.2-16.5 |
-| Normalization scheduler | normalization order differs across replay, loop guards fail, fallback elements drift, or dirty scope misses a required ancestor | Unit replay tests for leaf/element/root order, loop guards, fallback element behavior, deterministic operations | stress replay with nested inline/void/table normalization families | row 16.5 |
-| Runtime-owned atom/decorator shells | spacer is visible/layout-affecting, hidden anchor leaks into app UI, or keyboard/IME movement breaks before/on/after atoms | DOM contract unit tests for shell shape and non-layout hidden anchor | slate-browser rows for image, editable-void, mention IME, keyboard before/on/after, copy/paste around atoms | row 16.6 |
-| Collab/replay substrate | `tx.operations.replay` plus commit tags produce nondeterministic model state, hidden attrs, or non-serializable metadata | Operation replay tests, undo/redo tests, copy/paste serialization tests | optional stress replay over generated operation families; no current-version slate-yjs adapter required | rows 16.1, 16.5, 16.7 |
+| Contract                            | Must fail when                                                                                                                  | Fast lane                                                                                                                                         | Browser/stress lane                                                                                                    | Evidence owner                     |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
+| Public surface hard cut             | `EditorExtension.commands`, `editor.dispatchCommand`, public `editor.commands`, or docs/examples teaching those APIs reappear   | Type/export law tests under `packages/slate`; docs grep in repo tooling                                                                           | none; this is API surface, not browser behavior                                                                        | rows 16.1-16.2                     |
+| Package-private command middleware  | command registry helpers are exported from public barrels or accepted by external extension types                               | Package export tests plus TypeScript negative fixtures                                                                                            | none                                                                                                                   | row 16.2                           |
+| Extension lifecycle follow-up       | future lifecycle helpers duplicate declarative slots, leak command APIs, or clean up listeners nondeterministically             | Extension registry tests for dependency order, unregister cleanup, and command hard-cut; lifecycle helper tests only after source API is designed | stress row with repeated mount/extend/unextend cycles if lifecycle helpers land                                        | row 16.4 plus section 24           |
+| Listener/source partitions          | selection, focus, placeholder, decoration, or node updates wake unrelated node renderers or broad React roots                   | Store/source tests with source ids and render-count assertions                                                                                    | slate-browser replay for selection, search highlight focus retention, hovering toolbar, table arrows, image navigation | row 16.3                           |
+| Canonical update tags               | history, paste, collab, composition, replay, or skip-DOM-selection metadata disappears before commit/runtime policy             | Commit metadata unit tests and transaction tag typing tests                                                                                       | browser copy/paste/composition replay where tag policy affects DOM selection and history                               | decision brief plus rows 16.2-16.5 |
+| Normalization scheduler             | normalization order differs across replay, loop guards fail, fallback elements drift, or dirty scope misses a required ancestor | Unit replay tests for leaf/element/root order, loop guards, fallback element behavior, deterministic operations                                   | stress replay with nested inline/void/table normalization families                                                     | row 16.5                           |
+| Runtime-owned atom/decorator shells | spacer is visible/layout-affecting, hidden anchor leaks into app UI, or keyboard/IME movement breaks before/on/after atoms      | DOM contract unit tests for shell shape and non-layout hidden anchor                                                                              | slate-browser rows for image, editable-void, mention IME, keyboard before/on/after, copy/paste around atoms            | row 16.6                           |
+| Collab/replay substrate             | `tx.operations.replay` plus commit tags produce nondeterministic model state, hidden attrs, or non-serializable metadata        | Operation replay tests, undo/redo tests, copy/paste serialization tests                                                                           | optional stress replay over generated operation families; no current-version slate-yjs adapter required                | rows 16.1, 16.5, 16.7              |
 
 Fast CI split:
 
@@ -845,16 +845,16 @@ by section 26 because the review scope reopened to the whole rewrite API.
 
 ## 17. Pass Schedule And Pass-State Ledger
 
-| Pass | Status | Evidence added | Plan delta | Open issues | Next owner |
-| --- | --- | --- | --- | --- | --- |
-| current-state Lexical API read | complete | local Lexical source, compiled research refresh, live Slate v2 source | new plan lane and research update | naming/proof unresolved | decision-brief pressure pass |
-| decision-brief pressure pass | complete | live Slate command registry, extension registry, Lexical command/lifecycle evidence | hard-cut public extension commands; classify listener partitions; lifecycle helpers later revised by section 24 | maintainer ledger unresolved | maintainer objection pass |
-| maintainer objection pass | complete | accepted objection rows for public commands, private middleware, listener partitions, setup lifecycle, scheduler, atom isolation, and NodeState deferment | hard-cut and keep/defer choices now have maintainer-facing adoption/proof answers | proof rows still not executable | proof-matrix pass |
-| proof-matrix pass | complete | executable API/unit/browser/stress rows for every accepted behavior/API decision | regression-proof score no longer capped at `0.80`; closure can review against concrete gates | helper names resolved by closure appendix | closure score pass |
-| closure score pass | complete | closure naming appendix and final score gate | previously set plan status to done; superseded by section 26 | none for that pass | live-source correction pass |
-| live-source correction pass | complete | live `/Users/zbeyens/git/slate-v2` source and tests for public editor, extension slots, renderVoid, hooks, callbacks, command exports, tags, DOM host capability | stale before/after shapes corrected; `setup(ctx)` revised to deferred lifecycle target; hook names fixed; already-done renderVoid/onChange/onKeyCommand decisions moved to guard-only | none for that pass | whole-API external-editor research pass |
-| whole-API external-editor research pass | complete | live Slate v2 source plus local Lexical, ProseMirror, Tiptap, Milkdown, Obsidian/CodeMirror compiled evidence | previous ready verdict reopened; command hard cut, `tx.value.replace`, and schema specs marked already done; next P0 is source/listener partitions before lifecycle sugar | source/listener partition design and DOM/bookmark pressure remain | source-listener-partition-design |
-| source/listener partition closure pass | complete | live Slate v2 source for commit metadata, root selector gates, projection/annotation stores, existing narrow tests, plus section 26 external editor pressure | source categories, visibility, red tests, tag/history/collab/paste/IME interaction, ProseMirror DOM/bookmark pressure, and `setup(ctx)` residue are recorded in section 27 | no planning P0/P1 remains | implementation-source-listener-partitions |
+| Pass                                    | Status   | Evidence added                                                                                                                                                   | Plan delta                                                                                                                                                                            | Open issues                                                       | Next owner                                |
+| --------------------------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- | ----------------------------------------- |
+| current-state Lexical API read          | complete | local Lexical source, compiled research refresh, live Slate v2 source                                                                                            | new plan lane and research update                                                                                                                                                     | naming/proof unresolved                                           | decision-brief pressure pass              |
+| decision-brief pressure pass            | complete | live Slate command registry, extension registry, Lexical command/lifecycle evidence                                                                              | hard-cut public extension commands; classify listener partitions; lifecycle helpers later revised by section 24                                                                       | maintainer ledger unresolved                                      | maintainer objection pass                 |
+| maintainer objection pass               | complete | accepted objection rows for public commands, private middleware, listener partitions, setup lifecycle, scheduler, atom isolation, and NodeState deferment        | hard-cut and keep/defer choices now have maintainer-facing adoption/proof answers                                                                                                     | proof rows still not executable                                   | proof-matrix pass                         |
+| proof-matrix pass                       | complete | executable API/unit/browser/stress rows for every accepted behavior/API decision                                                                                 | regression-proof score no longer capped at `0.80`; closure can review against concrete gates                                                                                          | helper names resolved by closure appendix                         | closure score pass                        |
+| closure score pass                      | complete | closure naming appendix and final score gate                                                                                                                     | previously set plan status to done; superseded by section 26                                                                                                                          | none for that pass                                                | live-source correction pass               |
+| live-source correction pass             | complete | live `/Users/zbeyens/git/slate-v2` source and tests for public editor, extension slots, renderVoid, hooks, callbacks, command exports, tags, DOM host capability | stale before/after shapes corrected; `setup(ctx)` revised to deferred lifecycle target; hook names fixed; already-done renderVoid/onChange/onKeyCommand decisions moved to guard-only | none for that pass                                                | whole-API external-editor research pass   |
+| whole-API external-editor research pass | complete | live Slate v2 source plus local Lexical, ProseMirror, Tiptap, Milkdown, Obsidian/CodeMirror compiled evidence                                                    | previous ready verdict reopened; command hard cut, `tx.value.replace`, and schema specs marked already done; next P0 is source/listener partitions before lifecycle sugar             | source/listener partition design and DOM/bookmark pressure remain | source-listener-partition-design          |
+| source/listener partition closure pass  | complete | live Slate v2 source for commit metadata, root selector gates, projection/annotation stores, existing narrow tests, plus section 26 external editor pressure     | source categories, visibility, red tests, tag/history/collab/paste/IME interaction, ProseMirror DOM/bookmark pressure, and `setup(ctx)` residue are recorded in section 27            | no planning P0/P1 remains                                         | implementation-source-listener-partitions |
 
 ## 18. Plan Deltas From Review
 
@@ -913,7 +913,7 @@ Open implementation issues:
 - Replace projection/annotation store broad upstream `editor.subscribe` fan-in
   with the friend/internal source bus defined in section 27.
 - Add typed canonical tags while preserving the current `tag?: string |
-  string[]` option.
+string[]` option.
 - Keep ProseMirror-grade DOM-selection and bookmark pressure in the first
   implementation slice, especially around history, collab replay, paste, IME,
   overlays, and DOM repair.
@@ -1032,22 +1032,22 @@ more confident than the live checkout supports. The current source wins.
 
 ### 24.1 Source Evidence Read
 
-| Surface | Current owner | Live shape |
-| --- | --- | --- |
-| Public editor instance | `/Users/zbeyens/git/slate-v2/packages/slate/src/interfaces/editor.ts:390` and `/Users/zbeyens/git/slate-v2/packages/slate/test/public-surface-contract.ts:132` | instance methods are `extend`, `read`, `subscribe`, `update` |
-| Internal static editor API | `/Users/zbeyens/git/slate-v2/packages/slate/src/interfaces/editor.ts:953` and `/Users/zbeyens/git/slate-v2/packages/slate/src/internal/index.ts:18` | `Editor` is internal/friend API via `slate/internal`, not root public API |
-| Root command leak | `bun -e` against `/Users/zbeyens/git/slate-v2/packages/slate/src/index.ts` and `/Users/zbeyens/git/slate-v2/packages/slate/src/core/index.ts:2` | root source currently exposes `registerCommand` and `executeCommand`; hard-cut target remains valid |
-| Extension shape | `/Users/zbeyens/git/slate-v2/packages/slate/src/interfaces/editor.ts:745` | declarative `state`, `tx`, `editor`, `elements`, `capabilities`, `normalizers`, `commitListeners`, `operationMiddlewares`, plus public `commands` |
-| Extension namespace proof | `/Users/zbeyens/git/slate-v2/packages/slate/test/generic-extension-namespace-contract.ts:56` and `:132` | extension groups already compose through `editor.read((state) => ...)` and `editor.update((tx) => ...)` without mutating editor instances |
-| State/tx public proof | `/Users/zbeyens/git/slate-v2/packages/slate/test/state-tx-public-api-contract.ts:30` and `:161` | grouped state reads and tx writes are already live |
-| Void render contract | `/Users/zbeyens/git/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:194` and `:229` | `renderVoid({ element, target })`; runtime owns block/inline shell and spacer |
-| Void contract proof | `/Users/zbeyens/git/slate-v2/packages/slate-react/test/surface-contract.tsx:401` and `:451` | tests assert no `attributes`, `children`, `selected`, `focused`, or `actions` in void render props |
-| Example void shape | `/Users/zbeyens/git/slate-v2/site/examples/ts/images.tsx:50` and `:122` | image example uses `renderVoid` and opt-in `useEditorFocused()` / `useElementSelected(target)` inside visible content |
-| React callbacks | `/Users/zbeyens/git/slate-v2/packages/slate-react/src/components/slate.tsx:38` and `:129` | `onChange(value, change)` fires every commit; `onValueChange` and `onSelectionChange` are filtered callbacks |
-| Editable events | `/Users/zbeyens/git/slate-v2/packages/slate-react/src/components/editable.tsx:81` | `onKeyDown` exists; `onKeyCommand` does not |
-| Hooks | `/Users/zbeyens/git/slate-v2/packages/slate-react/src/hooks/use-node-selector.tsx:108`, `/Users/zbeyens/git/slate-v2/packages/slate-react/src/hooks/use-decoration-selector.tsx:42`, `/Users/zbeyens/git/slate-v2/packages/slate-react/src/hooks/use-element-selected.ts:10` | current names are selector-first, options-last; no `useElementFocused`, no `useDecorationSource` |
-| Tags | `/Users/zbeyens/git/slate-v2/packages/slate/src/interfaces/editor.ts:593`, `/Users/zbeyens/git/slate-v2/packages/slate/test/commit-metadata-contract.ts:24`, `/Users/zbeyens/git/slate-v2/packages/slate/test/migration-backbone-contract.ts:147` | update option is singular `tag?: string | string[]`; commits store `tags` |
-| DOM host capability | `/Users/zbeyens/git/slate-v2/packages/slate-dom/src/plugin/with-dom.ts:37`, `/Users/zbeyens/git/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts:51`, `/Users/zbeyens/git/slate-v2/packages/slate-react/src/plugin/react-editor.ts:8` | `withDOM` adds `editor.dom`; `DOMEditor.*` / `ReactEditor.*` remain host/friend namespaces |
+| Surface                    | Current owner                                                                                                                                                                                                                                                                | Live shape                                                                                                                                        |
+| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------- |
+| Public editor instance     | `/Users/zbeyens/git/slate-v2/packages/slate/src/interfaces/editor.ts:390` and `/Users/zbeyens/git/slate-v2/packages/slate/test/public-surface-contract.ts:132`                                                                                                               | instance methods are `extend`, `read`, `subscribe`, `update`                                                                                      |
+| Internal static editor API | `/Users/zbeyens/git/slate-v2/packages/slate/src/interfaces/editor.ts:953` and `/Users/zbeyens/git/slate-v2/packages/slate/src/internal/index.ts:18`                                                                                                                          | `Editor` is internal/friend API via `slate/internal`, not root public API                                                                         |
+| Root command leak          | `bun -e` against `/Users/zbeyens/git/slate-v2/packages/slate/src/index.ts` and `/Users/zbeyens/git/slate-v2/packages/slate/src/core/index.ts:2`                                                                                                                              | root source currently exposes `registerCommand` and `executeCommand`; hard-cut target remains valid                                               |
+| Extension shape            | `/Users/zbeyens/git/slate-v2/packages/slate/src/interfaces/editor.ts:745`                                                                                                                                                                                                    | declarative `state`, `tx`, `editor`, `elements`, `capabilities`, `normalizers`, `commitListeners`, `operationMiddlewares`, plus public `commands` |
+| Extension namespace proof  | `/Users/zbeyens/git/slate-v2/packages/slate/test/generic-extension-namespace-contract.ts:56` and `:132`                                                                                                                                                                      | extension groups already compose through `editor.read((state) => ...)` and `editor.update((tx) => ...)` without mutating editor instances         |
+| State/tx public proof      | `/Users/zbeyens/git/slate-v2/packages/slate/test/state-tx-public-api-contract.ts:30` and `:161`                                                                                                                                                                              | grouped state reads and tx writes are already live                                                                                                |
+| Void render contract       | `/Users/zbeyens/git/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:194` and `:229`                                                                                                                                                                    | `renderVoid({ element, target })`; runtime owns block/inline shell and spacer                                                                     |
+| Void contract proof        | `/Users/zbeyens/git/slate-v2/packages/slate-react/test/surface-contract.tsx:401` and `:451`                                                                                                                                                                                  | tests assert no `attributes`, `children`, `selected`, `focused`, or `actions` in void render props                                                |
+| Example void shape         | `/Users/zbeyens/git/slate-v2/site/examples/ts/images.tsx:50` and `:122`                                                                                                                                                                                                      | image example uses `renderVoid` and opt-in `useEditorFocused()` / `useElementSelected(target)` inside visible content                             |
+| React callbacks            | `/Users/zbeyens/git/slate-v2/packages/slate-react/src/components/slate.tsx:38` and `:129`                                                                                                                                                                                    | `onChange(value, change)` fires every commit; `onValueChange` and `onSelectionChange` are filtered callbacks                                      |
+| Editable events            | `/Users/zbeyens/git/slate-v2/packages/slate-react/src/components/editable.tsx:81`                                                                                                                                                                                            | `onKeyDown` exists; `onKeyCommand` does not                                                                                                       |
+| Hooks                      | `/Users/zbeyens/git/slate-v2/packages/slate-react/src/hooks/use-node-selector.tsx:108`, `/Users/zbeyens/git/slate-v2/packages/slate-react/src/hooks/use-decoration-selector.tsx:42`, `/Users/zbeyens/git/slate-v2/packages/slate-react/src/hooks/use-element-selected.ts:10` | current names are selector-first, options-last; no `useElementFocused`, no `useDecorationSource`                                                  |
+| Tags                       | `/Users/zbeyens/git/slate-v2/packages/slate/src/interfaces/editor.ts:593`, `/Users/zbeyens/git/slate-v2/packages/slate/test/commit-metadata-contract.ts:24`, `/Users/zbeyens/git/slate-v2/packages/slate/test/migration-backbone-contract.ts:147`                            | update option is singular `tag?: string                                                                                                           | string[]`; commits store `tags` |
+| DOM host capability        | `/Users/zbeyens/git/slate-v2/packages/slate-dom/src/plugin/with-dom.ts:37`, `/Users/zbeyens/git/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts:51`, `/Users/zbeyens/git/slate-v2/packages/slate-react/src/plugin/react-editor.ts:8`                                    | `withDOM` adds `editor.dom`; `DOMEditor.*` / `ReactEditor.*` remain host/friend namespaces                                                        |
 
 Verification during this pass:
 
@@ -1059,24 +1059,24 @@ Verification during this pass:
 
 ### 24.2 Corrected Decision List And Shapes
 
-| # | Decision | Current shape | Target shape |
-| ---: | --- | --- | --- |
-| 1 | Keep `editor.read` / `editor.update` as public law. | `BaseEditor` exposes `read`, `update`, `subscribe`, `extend`; state/tx groups are proven by tests. | No new write/read namespace. App code reads via `editor.read((state) => state.selection.get())`; writes via `editor.update((tx) => tx.nodes.set(...))`. |
-| 2 | Keep `editor.subscribe` public but advanced. | `subscribe` is part of current `BaseEditor` and provider wiring. | Do not remove it in this plan. Do not use it as hot React authoring API when a source or node selector exists. |
-| 3 | Keep extension `state` / `tx` / `editor` groups. | Declarative groups already exist and are type-tested. | This remains the plugin backbone. Plate can compile richer plugin APIs to these groups. |
-| 4 | Hard-cut public extension commands. | `EditorExtension.commands?: readonly EditorExtensionCommand[]` still exists. | Remove the field from public extension input. Commands belong either in product layers above Slate or internal runtime policy below Slate public API. |
-| 5 | Hard-cut root command exports. | Root source currently exposes `registerCommand` and `executeCommand`. | Move command registry helpers out of root public exports. Keep them only in `slate/internal` friend API or deeper internal modules for first-party runtime policy. |
-| 6 | Revise `setup(ctx)` from accepted API to deferred lifecycle target. | No `setup`, no `config`, no `conflictsWith`, no `ctx.onSelectionChange` helpers exist. | First design source partitions. Add `setup(ctx)` only if it is narrow lifecycle glue for source subscriptions/cleanup and does not duplicate `state`/`tx`/`editor` slots. |
-| 7 | Keep runtime-owned void/atom shell as already done. | `renderVoid({ element, target })`; runtime owns shell/spacer/hidden anchor. | Guard with docs/tests/browser contracts. Do not write a migration plan from `{attributes, children}` void renderers because that is no longer the live shape. |
-| 8 | Keep selected/focused as opt-in hooks, not eager void props. | `renderVoid` receives no `selected` or `focused`; image example opts into `useEditorFocused()` and `useElementSelected(target)`. | Keep this shape. Add no eager selected/focused props to void renderers. |
-| 9 | Keep React callback names as live Slate DX. | `<Slate onChange(value, change)>`, `onValueChange`, `onSelectionChange`; no `onSnapshotChange`. | Keep `onChange` as every-commit callback with `change.valueChanged` / `change.selectionChanged`; keep filtered callbacks for ergonomics. |
-| 10 | Keep `onKeyDown`; drop stale `onKeyCommand` discussion. | `<Editable onKeyDown>` exists; `onKeyCommand` does not. | No public key-command API in raw Slate unless a later model-command plan proves it. |
-| 11 | Fix hook targets to live names and order. | `useNodeSelector(selector, equalityFn?, options?)`, `useTextSelector(...)`, `useDecorationSelector(...)`, `useElementSelected(target?)`, `useEditorFocused()`. | Keep current names. Do not invent `useElementFocused` or `useDecorationSource`; do not flip runtime id to first positional argument. |
-| 12 | Keep update option name `tag`, commit field `tags`. | `editor.update(fn, { tag: 'remote-import' })`; commits expose `tags`. | Type or document a core tag vocabulary, but do not rename the option to `tags` unless a separate API pass proves the tradeoff. |
-| 13 | Keep `Editor` static API out of root public API, but acknowledge friend API. | Root `slate` does not export `Editor`; `slate/internal` exports it for first-party packages. | Do not document `Editor.*` for app authors. Keep friend API only as long as `slate-dom` / `slate-react` need cross-package runtime access. |
-| 14 | Keep DOM/React host helpers off root editor core, but keep host capability. | `withDOM` adds `editor.dom`; `DOMEditor.*` and `ReactEditor.*` exist as host namespaces. | Do not move DOM helpers onto raw core. A future Slate DOM pass may refine `editor.dom` vs namespace duplication, but this Lexical pass should not churn it. |
-| 15 | Keep NodeState-like attr helpers deferred. | Slate model is plain JSON attrs plus operations/commits. | Defer typed attr helpers until operation replay, undo/redo, copy/paste serialization, and collab substrate proof exist. |
-| 16 | Keep normalization scheduler as internal target. | Dirty runtime ids and operation dirtiness already exist; no public Lexical transform API. | Improve scheduling below normalization/rendering. Do not expose Lexical-style node transforms as public authoring API. |
+|   # | Decision                                                                     | Current shape                                                                                                                                                  | Target shape                                                                                                                                                              |
+| --: | ---------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|   1 | Keep `editor.read` / `editor.update` as public law.                          | `BaseEditor` exposes `read`, `update`, `subscribe`, `extend`; state/tx groups are proven by tests.                                                             | No new write/read namespace. App code reads via `editor.read((state) => state.selection.get())`; writes via `editor.update((tx) => tx.nodes.set(...))`.                   |
+|   2 | Keep `editor.subscribe` public but advanced.                                 | `subscribe` is part of current `BaseEditor` and provider wiring.                                                                                               | Do not remove it in this plan. Do not use it as hot React authoring API when a source or node selector exists.                                                            |
+|   3 | Keep extension `state` / `tx` / `editor` groups.                             | Declarative groups already exist and are type-tested.                                                                                                          | This remains the plugin backbone. Plate can compile richer plugin APIs to these groups.                                                                                   |
+|   4 | Hard-cut public extension commands.                                          | `EditorExtension.commands?: readonly EditorExtensionCommand[]` still exists.                                                                                   | Remove the field from public extension input. Commands belong either in product layers above Slate or internal runtime policy below Slate public API.                     |
+|   5 | Hard-cut root command exports.                                               | Root source currently exposes `registerCommand` and `executeCommand`.                                                                                          | Move command registry helpers out of root public exports. Keep them only in `slate/internal` friend API or deeper internal modules for first-party runtime policy.        |
+|   6 | Revise `setup(ctx)` from accepted API to deferred lifecycle target.          | No `setup`, no `config`, no `conflictsWith`, no `ctx.onSelectionChange` helpers exist.                                                                         | First design source partitions. Add `setup(ctx)` only if it is narrow lifecycle glue for source subscriptions/cleanup and does not duplicate `state`/`tx`/`editor` slots. |
+|   7 | Keep runtime-owned void/atom shell as already done.                          | `renderVoid({ element, target })`; runtime owns shell/spacer/hidden anchor.                                                                                    | Guard with docs/tests/browser contracts. Do not write a migration plan from `{attributes, children}` void renderers because that is no longer the live shape.             |
+|   8 | Keep selected/focused as opt-in hooks, not eager void props.                 | `renderVoid` receives no `selected` or `focused`; image example opts into `useEditorFocused()` and `useElementSelected(target)`.                               | Keep this shape. Add no eager selected/focused props to void renderers.                                                                                                   |
+|   9 | Keep React callback names as live Slate DX.                                  | `<Slate onChange(value, change)>`, `onValueChange`, `onSelectionChange`; no `onSnapshotChange`.                                                                | Keep `onChange` as every-commit callback with `change.valueChanged` / `change.selectionChanged`; keep filtered callbacks for ergonomics.                                  |
+|  10 | Keep `onKeyDown`; drop stale `onKeyCommand` discussion.                      | `<Editable onKeyDown>` exists; `onKeyCommand` does not.                                                                                                        | No public key-command API in raw Slate unless a later model-command plan proves it.                                                                                       |
+|  11 | Fix hook targets to live names and order.                                    | `useNodeSelector(selector, equalityFn?, options?)`, `useTextSelector(...)`, `useDecorationSelector(...)`, `useElementSelected(target?)`, `useEditorFocused()`. | Keep current names. Do not invent `useElementFocused` or `useDecorationSource`; do not flip runtime id to first positional argument.                                      |
+|  12 | Keep update option name `tag`, commit field `tags`.                          | `editor.update(fn, { tag: 'remote-import' })`; commits expose `tags`.                                                                                          | Type or document a core tag vocabulary, but do not rename the option to `tags` unless a separate API pass proves the tradeoff.                                            |
+|  13 | Keep `Editor` static API out of root public API, but acknowledge friend API. | Root `slate` does not export `Editor`; `slate/internal` exports it for first-party packages.                                                                   | Do not document `Editor.*` for app authors. Keep friend API only as long as `slate-dom` / `slate-react` need cross-package runtime access.                                |
+|  14 | Keep DOM/React host helpers off root editor core, but keep host capability.  | `withDOM` adds `editor.dom`; `DOMEditor.*` and `ReactEditor.*` exist as host namespaces.                                                                       | Do not move DOM helpers onto raw core. A future Slate DOM pass may refine `editor.dom` vs namespace duplication, but this Lexical pass should not churn it.               |
+|  15 | Keep NodeState-like attr helpers deferred.                                   | Slate model is plain JSON attrs plus operations/commits.                                                                                                       | Defer typed attr helpers until operation replay, undo/redo, copy/paste serialization, and collab substrate proof exist.                                                   |
+|  16 | Keep normalization scheduler as internal target.                             | Dirty runtime ids and operation dirtiness already exist; no public Lexical transform API.                                                                      | Improve scheduling below normalization/rendering. Do not expose Lexical-style node transforms as public authoring API.                                                    |
 
 ### 24.3 Dropped Or Revised Prior Decisions
 
@@ -1205,27 +1205,27 @@ where editor engines live or die.
 
 ### 26.2 Live Slate v2 Current State
 
-| Surface | Current owner | Current read | Plan call |
-| --- | --- | --- | --- |
-| Editor instance API | `/Users/zbeyens/git/slate-v2/packages/slate/src/interfaces/editor.ts:390` and `/Users/zbeyens/git/slate-v2/packages/slate/test/public-surface-contract.ts:132` | public instance methods are `read`, `update`, `subscribe`, `extend` | keep |
-| Extension shape | `/Users/zbeyens/git/slate-v2/packages/slate/src/interfaces/editor.ts:736` and `/Users/zbeyens/git/slate-v2/packages/slate/src/core/editor-extension.ts:132` | extension slots are `capabilities`, `commitListeners`, `dependencies`, `editor`, `elements`, `normalizers`, `operationMiddlewares`, `state`, `tx`; no public `commands` slot | already done |
-| Command public hard cut | `/Users/zbeyens/git/slate-v2/packages/slate/test/public-surface-contract.ts:205` and `/Users/zbeyens/git/slate-v2/packages/slate/test/generic-extension-namespace-contract.ts:130` | root `slate` does not expose `registerCommand` / `executeCommand`; extension `commands` is a type error | already done |
-| Transaction document replace | `/Users/zbeyens/git/slate-v2/packages/slate/src/core/public-state.ts:933` and `/Users/zbeyens/git/slate-v2/packages/slate/test/state-tx-public-api-contract.ts:242` | `tx.value.replace(...)` exists and is tested | already done; cleanup docs/tests only |
-| Schema/spec predicates | `/Users/zbeyens/git/slate-v2/packages/slate/src/core/public-state.ts:795` and `/Users/zbeyens/git/slate-v2/packages/slate/test/schema-contract.ts:7` | `state.schema` and `tx.schema` expose spec-backed predicates | already done; keep |
-| Tags | `/Users/zbeyens/git/slate-v2/packages/slate/src/interfaces/editor.ts:593` and `:780` | update option is `tag?: string | string[]`; commits expose `tags: readonly string[]` | keep name; add typed vocabulary |
-| Editor selectors | `/Users/zbeyens/git/slate-v2/packages/slate-react/src/hooks/use-editor-selector.tsx:110` and `:146` | `useEditorState` wraps `editor.read`, but selector fanout still starts from one broad context listener set | revise below |
-| Projection store | `/Users/zbeyens/git/slate-v2/packages/slate-react/src/projection-store.ts:297` and `:454` | projection stores have runtime/source subscribers and dirtiness checks, but root refresh still subscribes through broad `editor.subscribe` at `:398` | next P0 |
-| Stress proof | `/Users/zbeyens/git/slate-v2/playwright/stress/generated-editing.test.ts:78`, `:680`, `:915`, `:964`, `:1001` | stress families cover paste, voids, overlays, mouse toolbar, and IME repair | keep and expand per new source partitions |
+| Surface                      | Current owner                                                                                                                                                                      | Current read                                                                                                                                                                 | Plan call                                           |
+| ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------- | ------------------------------- |
+| Editor instance API          | `/Users/zbeyens/git/slate-v2/packages/slate/src/interfaces/editor.ts:390` and `/Users/zbeyens/git/slate-v2/packages/slate/test/public-surface-contract.ts:132`                     | public instance methods are `read`, `update`, `subscribe`, `extend`                                                                                                          | keep                                                |
+| Extension shape              | `/Users/zbeyens/git/slate-v2/packages/slate/src/interfaces/editor.ts:736` and `/Users/zbeyens/git/slate-v2/packages/slate/src/core/editor-extension.ts:132`                        | extension slots are `capabilities`, `commitListeners`, `dependencies`, `editor`, `elements`, `normalizers`, `operationMiddlewares`, `state`, `tx`; no public `commands` slot | already done                                        |
+| Command public hard cut      | `/Users/zbeyens/git/slate-v2/packages/slate/test/public-surface-contract.ts:205` and `/Users/zbeyens/git/slate-v2/packages/slate/test/generic-extension-namespace-contract.ts:130` | root `slate` does not expose `registerCommand` / `executeCommand`; extension `commands` is a type error                                                                      | already done                                        |
+| Transaction document replace | `/Users/zbeyens/git/slate-v2/packages/slate/src/core/public-state.ts:933` and `/Users/zbeyens/git/slate-v2/packages/slate/test/state-tx-public-api-contract.ts:242`                | `tx.value.replace(...)` exists and is tested                                                                                                                                 | already done; cleanup docs/tests only               |
+| Schema/spec predicates       | `/Users/zbeyens/git/slate-v2/packages/slate/src/core/public-state.ts:795` and `/Users/zbeyens/git/slate-v2/packages/slate/test/schema-contract.ts:7`                               | `state.schema` and `tx.schema` expose spec-backed predicates                                                                                                                 | already done; keep                                  |
+| Tags                         | `/Users/zbeyens/git/slate-v2/packages/slate/src/interfaces/editor.ts:593` and `:780`                                                                                               | update option is `tag?: string                                                                                                                                               | string[]`; commits expose `tags: readonly string[]` | keep name; add typed vocabulary |
+| Editor selectors             | `/Users/zbeyens/git/slate-v2/packages/slate-react/src/hooks/use-editor-selector.tsx:110` and `:146`                                                                                | `useEditorState` wraps `editor.read`, but selector fanout still starts from one broad context listener set                                                                   | revise below                                        |
+| Projection store             | `/Users/zbeyens/git/slate-v2/packages/slate-react/src/projection-store.ts:297` and `:454`                                                                                          | projection stores have runtime/source subscribers and dirtiness checks, but root refresh still subscribes through broad `editor.subscribe` at `:398`                         | next P0                                             |
+| Stress proof                 | `/Users/zbeyens/git/slate-v2/playwright/stress/generated-editing.test.ts:78`, `:680`, `:915`, `:964`, `:1001`                                                                      | stress families cover paste, voids, overlays, mouse toolbar, and IME repair                                                                                                  | keep and expand per new source partitions           |
 
 ### 26.3 External Evidence Ledger
 
-| Corpus | Evidence read | Strongest thing to steal | Thing to reject |
-| --- | --- | --- | --- |
-| Lexical | `LexicalEditor.ts:862-917`, `:950-994`, `LexicalUpdateTags.ts:17-90`, `LexicalUpdates.ts:595-708` | partitioned update/decorator/text/root listeners, typed update tag vocabulary, dirty leaves/elements, listener trigger order after reconcile | public command dispatch as app mutation, class-node model, `$` helper culture |
-| ProseMirror | `state/src/transaction.ts:22-42`, `:67-77`, `:185-195`; `state/src/selection.ts:173-203`; `view/src/selection.ts:55-101`; `view/src/index.ts:153-223`; `view/src/decoration.ts:105-140` | transaction metadata, selection mapping through steps, bookmarks, centralized DOM selection import/export, mapped decorations | integer positions as app API, schema-first identity, plugin ceremony as normal Slate authoring |
-| Tiptap | `CommandManager.ts:28-110`; `Extendable.ts:66-130`, `:142-214`, `:382-424`; `useEditorState.ts:13-27`, `:157-168`; `ReactNodeViewRenderer.tsx:20-52`, `:78-99`, `:197-240` | extension packaging, option/storage/shortcut/input/paste/plugin registration, selector hook ergonomics, product UI evidence | required `chain().focus().run()` ceremony, React NodeView wrapper/contentDOM handoff as normal raw Slate renderer |
-| Milkdown | `docs/research/sources/milkdown/docs-and-package-surface-map.md`, `behavior-test-lanes.md` | docs map package ownership, tests prove behavior; useful executable cross-check for markdown and shortcut surfaces | using docs alone as behavior proof |
-| Obsidian / CodeMirror | `docs/research/sources/obsidian/developer-editor-extension-surface.md` | split edit-mode editor extensions from reading-view post processors | mixing reading-view customization into the raw editing runtime |
+| Corpus                | Evidence read                                                                                                                                                                           | Strongest thing to steal                                                                                                                     | Thing to reject                                                                                                   |
+| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| Lexical               | `LexicalEditor.ts:862-917`, `:950-994`, `LexicalUpdateTags.ts:17-90`, `LexicalUpdates.ts:595-708`                                                                                       | partitioned update/decorator/text/root listeners, typed update tag vocabulary, dirty leaves/elements, listener trigger order after reconcile | public command dispatch as app mutation, class-node model, `$` helper culture                                     |
+| ProseMirror           | `state/src/transaction.ts:22-42`, `:67-77`, `:185-195`; `state/src/selection.ts:173-203`; `view/src/selection.ts:55-101`; `view/src/index.ts:153-223`; `view/src/decoration.ts:105-140` | transaction metadata, selection mapping through steps, bookmarks, centralized DOM selection import/export, mapped decorations                | integer positions as app API, schema-first identity, plugin ceremony as normal Slate authoring                    |
+| Tiptap                | `CommandManager.ts:28-110`; `Extendable.ts:66-130`, `:142-214`, `:382-424`; `useEditorState.ts:13-27`, `:157-168`; `ReactNodeViewRenderer.tsx:20-52`, `:78-99`, `:197-240`              | extension packaging, option/storage/shortcut/input/paste/plugin registration, selector hook ergonomics, product UI evidence                  | required `chain().focus().run()` ceremony, React NodeView wrapper/contentDOM handoff as normal raw Slate renderer |
+| Milkdown              | `docs/research/sources/milkdown/docs-and-package-surface-map.md`, `behavior-test-lanes.md`                                                                                              | docs map package ownership, tests prove behavior; useful executable cross-check for markdown and shortcut surfaces                           | using docs alone as behavior proof                                                                                |
+| Obsidian / CodeMirror | `docs/research/sources/obsidian/developer-editor-extension-surface.md`                                                                                                                  | split edit-mode editor extensions from reading-view post processors                                                                          | mixing reading-view customization into the raw editing runtime                                                    |
 
 ### 26.4 Updated Steal / Reject / Defer Map
 
@@ -1302,14 +1302,14 @@ New hard rule:
 
 ### 26.6 Revised Scorecard
 
-| Dimension | Score | Evidence |
-| --- | ---: | --- |
-| React 19.2 runtime performance | 0.89 | Slate has `useEditorState` and projection-store runtime/source subscribers, but `projection-store.ts:398` and `use-editor-selector.tsx:146` still show broad upstream subscription/fanout. Lexical dirty lanes and ProseMirror child-view discipline keep pressure on this. |
-| Slate-close unopinionated DX | 0.91 | `BaseEditor` is still tiny; command public leakage is cut; extension groups are typed and scoped. Tiptap command/chain UX is explicitly rejected for raw Slate. |
-| Plate/slate-yjs migration backbone | 0.88 | State/tx/editor groups, tags, operations, schema specs, and commit metadata are strong. Source partitions and canonical tags remain unfinished substrate for collab/product packages. |
-| Regression-proof testing strategy | 0.88 | API contracts and stress families exist for public surface, schema, tx replace, paste, voids, overlays, toolbar selection, and IME repair. New source partitions need fresh render/recompute proof rows. |
-| Research evidence completeness | 0.90 | Live Slate source plus local Lexical/ProseMirror/Tiptap source were read; Milkdown and Obsidian/CodeMirror compiled evidence were used for package/proof boundaries. Premirror/EditContext remain tracked rather than decisive for this API pass. |
-| shadcn-style composability/minimal hooks | 0.87 | Tiptap product UI and shadcn posture reinforce that Plate owns UI kits; raw Slate keeps hooks minimal. The plan still needs a sharper doc story for product commands living above Slate. |
+| Dimension                                | Score | Evidence                                                                                                                                                                                                                                                                    |
+| ---------------------------------------- | ----: | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| React 19.2 runtime performance           |  0.89 | Slate has `useEditorState` and projection-store runtime/source subscribers, but `projection-store.ts:398` and `use-editor-selector.tsx:146` still show broad upstream subscription/fanout. Lexical dirty lanes and ProseMirror child-view discipline keep pressure on this. |
+| Slate-close unopinionated DX             |  0.91 | `BaseEditor` is still tiny; command public leakage is cut; extension groups are typed and scoped. Tiptap command/chain UX is explicitly rejected for raw Slate.                                                                                                             |
+| Plate/slate-yjs migration backbone       |  0.88 | State/tx/editor groups, tags, operations, schema specs, and commit metadata are strong. Source partitions and canonical tags remain unfinished substrate for collab/product packages.                                                                                       |
+| Regression-proof testing strategy        |  0.88 | API contracts and stress families exist for public surface, schema, tx replace, paste, voids, overlays, toolbar selection, and IME repair. New source partitions need fresh render/recompute proof rows.                                                                    |
+| Research evidence completeness           |  0.90 | Live Slate source plus local Lexical/ProseMirror/Tiptap source were read; Milkdown and Obsidian/CodeMirror compiled evidence were used for package/proof boundaries. Premirror/EditContext remain tracked rather than decisive for this API pass.                           |
+| shadcn-style composability/minimal hooks |  0.87 | Tiptap product UI and shadcn posture reinforce that Plate owns UI kits; raw Slate keeps hooks minimal. The plan still needs a sharper doc story for product commands living above Slate.                                                                                    |
 
 Weighted score: `0.89`.
 
@@ -1411,29 +1411,29 @@ menus, and higher-level UI vocabulary.
 
 ### 27.2 Live Current State
 
-| Surface | Current owner | Current shape | Closure call |
-| --- | --- | --- | --- |
-| Commit metadata | `/Users/zbeyens/git/slate-v2/packages/slate/src/core/public-state.ts:485`, `:1434`, `:1474`, `:1508`, `:1642` | commits classify replace/selection/text/structural/mark, compute dirty paths, touched runtime ids, selection impact ids, decoration impact ids, node impact ids, and tags, then notify one root listener set | enough substrate exists; route it better |
-| Public subscribe | `/Users/zbeyens/git/slate-v2/packages/slate/src/core/public-state.ts:1842` | one broad `SnapshotListener` set behind public `editor.subscribe` | keep as advanced public low-level |
-| Root selector sources | `/Users/zbeyens/git/slate-v2/packages/slate-react/src/editable/root-selector-sources.ts:24`, `:31`, `:38`, `:42` | root/runtime/placeholder/editable wakeups already gate by operation class | keep and move upstream trigger to source bus |
-| Projection store | `/Users/zbeyens/git/slate-v2/packages/slate-react/src/projection-store.ts:25`, `:84`, `:160`, `:212`, `:398`, `:454`, `:466` | dirtiness classes, runtime subscribers, source subscribers, and metrics exist; the store still receives editor changes through broad `editor.subscribe` | first implementation target |
-| Annotation store | `/Users/zbeyens/git/slate-v2/packages/slate-react/src/annotation-store.ts:516`, `:556`, `:668`, `:711` | annotation candidates and runtime listeners exist; selection-only changes are ignored; upstream still uses broad `editor.subscribe` | route through annotation/source subscriptions |
-| Existing proof | `/Users/zbeyens/git/slate-v2/packages/slate/test/snapshot-contract.ts:1416`, `/Users/zbeyens/git/slate-v2/packages/slate-react/test/provider-hooks-contract.tsx:465`, `/Users/zbeyens/git/slate-v2/packages/slate-react/test/annotation-store-contract.tsx:185`, `/Users/zbeyens/git/slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx:542`, `:618` | selection-only dirtiness, placeholder non-rerender, annotation bookmark rebasing, scoped source recompute, and targeted source refresh are already covered | keep; add source-bus red tests |
+| Surface               | Current owner                                                                                                                                                                                                                                                                                                                                                               | Current shape                                                                                                                                                                                                | Closure call                                  |
+| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------- |
+| Commit metadata       | `/Users/zbeyens/git/slate-v2/packages/slate/src/core/public-state.ts:485`, `:1434`, `:1474`, `:1508`, `:1642`                                                                                                                                                                                                                                                               | commits classify replace/selection/text/structural/mark, compute dirty paths, touched runtime ids, selection impact ids, decoration impact ids, node impact ids, and tags, then notify one root listener set | enough substrate exists; route it better      |
+| Public subscribe      | `/Users/zbeyens/git/slate-v2/packages/slate/src/core/public-state.ts:1842`                                                                                                                                                                                                                                                                                                  | one broad `SnapshotListener` set behind public `editor.subscribe`                                                                                                                                            | keep as advanced public low-level             |
+| Root selector sources | `/Users/zbeyens/git/slate-v2/packages/slate-react/src/editable/root-selector-sources.ts:24`, `:31`, `:38`, `:42`                                                                                                                                                                                                                                                            | root/runtime/placeholder/editable wakeups already gate by operation class                                                                                                                                    | keep and move upstream trigger to source bus  |
+| Projection store      | `/Users/zbeyens/git/slate-v2/packages/slate-react/src/projection-store.ts:25`, `:84`, `:160`, `:212`, `:398`, `:454`, `:466`                                                                                                                                                                                                                                                | dirtiness classes, runtime subscribers, source subscribers, and metrics exist; the store still receives editor changes through broad `editor.subscribe`                                                      | first implementation target                   |
+| Annotation store      | `/Users/zbeyens/git/slate-v2/packages/slate-react/src/annotation-store.ts:516`, `:556`, `:668`, `:711`                                                                                                                                                                                                                                                                      | annotation candidates and runtime listeners exist; selection-only changes are ignored; upstream still uses broad `editor.subscribe`                                                                          | route through annotation/source subscriptions |
+| Existing proof        | `/Users/zbeyens/git/slate-v2/packages/slate/test/snapshot-contract.ts:1416`, `/Users/zbeyens/git/slate-v2/packages/slate-react/test/provider-hooks-contract.tsx:465`, `/Users/zbeyens/git/slate-v2/packages/slate-react/test/annotation-store-contract.tsx:185`, `/Users/zbeyens/git/slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx:542`, `:618` | selection-only dirtiness, placeholder non-rerender, annotation bookmark rebasing, scoped source recompute, and targeted source refresh are already covered                                                   | keep; add source-bus red tests                |
 
 ### 27.3 Source Categories And Visibility
 
-| Source | Fires from | Visibility | Consumers | Notes |
-| --- | --- | --- | --- | --- |
-| `commit` | every committed snapshot change | advanced public through existing `editor.subscribe`; friend/internal source bus for first-party packages | diagnostics, devtools, rare app-level sync, extension commit listeners | Do not remove `editor.subscribe`. Do not make it the React hot path. |
-| `selection` | `change.selectionChanged` or non-empty `selectionImpactRuntimeIds` | friend/internal and React hooks | selected/focused hooks, selection overlays, root selected-island state | Selection-only must not wake text/node/root subscribers by default. |
-| `text` | `change.classes.includes('text')` | friend/internal and React/projection | leaves, text selectors, text-scoped decorations, spellcheck/search | Scope by `decorationImpactRuntimeIds` / touched runtime ids. |
-| `node` | `change.nodeImpactRuntimeIds` or structural/replace fallback | friend/internal and React selectors | element renderers, node selectors, void/atom shells | Structural/replace may full-fallback; text edits should target impacted runtime ids. |
-| `decoration` | `change.decorationImpactRuntimeIds`, source refresh, or external source id | friend/internal; public only through decoration-source APIs | projection stores, decoration selectors, search, comments, highlights | Keep source id and runtime id routing; this is the main React perf win. |
-| `annotation` | annotation source refresh or editor change that can rebase tracked bookmarks | React/product store API | comments, review ranges, sidebars, inline annotation projections | Backed by bookmarks; ignore pure selection changes. |
-| `root` | top-level runtime id, placeholder, editable-root, structural, or replace changes | React-internal | `<Editable>` root, large-document islands, placeholder | Current root selector gates already define the behavior. |
-| `focus` | DOM/React focus state | React/DOM host only | focus hooks, toolbar visibility, selection UX | Not raw core document state. |
-| `composition` | IME composition start/update/end | React/DOM host only, commit tags where needed | IME guards, DOM repair, input handling | Do not pretend IME is just a document commit. |
-| `external` | explicit refresh or product source invalidation | friend/internal plus product store APIs | async decorations, annotations, search, spellcheck | Should carry `sourceId`; no global wakeup unless requested. |
+| Source        | Fires from                                                                       | Visibility                                                                                               | Consumers                                                              | Notes                                                                                |
+| ------------- | -------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| `commit`      | every committed snapshot change                                                  | advanced public through existing `editor.subscribe`; friend/internal source bus for first-party packages | diagnostics, devtools, rare app-level sync, extension commit listeners | Do not remove `editor.subscribe`. Do not make it the React hot path.                 |
+| `selection`   | `change.selectionChanged` or non-empty `selectionImpactRuntimeIds`               | friend/internal and React hooks                                                                          | selected/focused hooks, selection overlays, root selected-island state | Selection-only must not wake text/node/root subscribers by default.                  |
+| `text`        | `change.classes.includes('text')`                                                | friend/internal and React/projection                                                                     | leaves, text selectors, text-scoped decorations, spellcheck/search     | Scope by `decorationImpactRuntimeIds` / touched runtime ids.                         |
+| `node`        | `change.nodeImpactRuntimeIds` or structural/replace fallback                     | friend/internal and React selectors                                                                      | element renderers, node selectors, void/atom shells                    | Structural/replace may full-fallback; text edits should target impacted runtime ids. |
+| `decoration`  | `change.decorationImpactRuntimeIds`, source refresh, or external source id       | friend/internal; public only through decoration-source APIs                                              | projection stores, decoration selectors, search, comments, highlights  | Keep source id and runtime id routing; this is the main React perf win.              |
+| `annotation`  | annotation source refresh or editor change that can rebase tracked bookmarks     | React/product store API                                                                                  | comments, review ranges, sidebars, inline annotation projections       | Backed by bookmarks; ignore pure selection changes.                                  |
+| `root`        | top-level runtime id, placeholder, editable-root, structural, or replace changes | React-internal                                                                                           | `<Editable>` root, large-document islands, placeholder                 | Current root selector gates already define the behavior.                             |
+| `focus`       | DOM/React focus state                                                            | React/DOM host only                                                                                      | focus hooks, toolbar visibility, selection UX                          | Not raw core document state.                                                         |
+| `composition` | IME composition start/update/end                                                 | React/DOM host only, commit tags where needed                                                            | IME guards, DOM repair, input handling                                 | Do not pretend IME is just a document commit.                                        |
+| `external`    | explicit refresh or product source invalidation                                  | friend/internal plus product store APIs                                                                  | async decorations, annotations, search, spellcheck                     | Should carry `sourceId`; no global wakeup unless requested.                          |
 
 API visibility decision:
 
@@ -1454,16 +1454,16 @@ Implementation target:
 
 ```ts
 type EditorCommitSource =
-  | 'commit'
-  | 'selection'
-  | 'text'
-  | 'node'
-  | 'decoration'
-  | 'annotation'
-  | 'root'
-  | 'focus'
-  | 'composition'
-  | 'external'
+  | "commit"
+  | "selection"
+  | "text"
+  | "node"
+  | "decoration"
+  | "annotation"
+  | "root"
+  | "focus"
+  | "composition"
+  | "external";
 ```
 
 The exact TypeScript entrypoint can change during implementation, but the
@@ -1506,26 +1506,26 @@ Canonical tag vocabulary:
 
 ```ts
 export type EditorUpdateTag =
-  | 'history-push'
-  | 'history-merge'
-  | 'historic'
-  | 'paste'
-  | 'collaboration'
-  | 'skip-collab'
-  | 'skip-dom-selection'
-  | 'skip-scroll-into-view'
-  | 'skip-selection-focus'
-  | 'focus'
-  | 'composition-start'
-  | 'composition-end'
-  | (string & {})
+  | "history-push"
+  | "history-merge"
+  | "historic"
+  | "paste"
+  | "collaboration"
+  | "skip-collab"
+  | "skip-dom-selection"
+  | "skip-scroll-into-view"
+  | "skip-selection-focus"
+  | "focus"
+  | "composition-start"
+  | "composition-end"
+  | (string & {});
 ```
 
 Keep the current option name:
 
 ```ts
-editor.update(fn, { tag: 'paste' })
-editor.update(fn, { tag: ['paste', 'history-push'] })
+editor.update(fn, { tag: "paste" });
+editor.update(fn, { tag: ["paste", "history-push"] });
 ```
 
 Interaction rules:
@@ -1549,7 +1549,7 @@ public story.
 Rule:
 
 - Public API tests, examples, and docs should seed through `editor.update((tx)
-  => tx.value.replace(...))` or a public-facing helper built on that shape.
+=> tx.value.replace(...))` or a public-facing helper built on that shape.
 - Friend/internal tests may keep `Editor.replace` when proving friend API,
   runtime snapshot, history, or low-level commit behavior.
 - This cleanup is an implementation/docs task, not a planning blocker.
@@ -1601,14 +1601,14 @@ Rules:
 
 ### 27.10 Closure Scorecard
 
-| Dimension | Score | Evidence |
-| --- | ---: | --- |
-| React 19.2 runtime performance | 0.92 | Source categories, routing rules, existing root selector gates, projection metrics, and red tests directly target broad fanout removal. |
-| Slate-close unopinionated DX | 0.93 | Public authoring stays `read` / `update` plus typed extension groups; public source method sprawl and command chains are rejected. |
-| Plate/slate-yjs migration backbone | 0.92 | Tags, source categories, operation dirtiness, bookmark pressure, and collab/history interaction are explicit without current-adapter coupling. |
-| Regression-proof testing strategy | 0.92 | Existing narrow tests are cited and the implementation red tests cover source routing, tags, public-proof cleanup, and DOM-selection pressure. |
-| Research evidence completeness | 0.93 | Section 26 external-editor evidence is converted into Slate decisions; section 27 names what is stolen and what is rejected. |
-| shadcn-style composability/minimal hooks | 0.91 | UI/product commands stay above raw Slate; React hooks and source APIs stay minimal and selector-first. |
+| Dimension                                | Score | Evidence                                                                                                                                       |
+| ---------------------------------------- | ----: | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| React 19.2 runtime performance           |  0.92 | Source categories, routing rules, existing root selector gates, projection metrics, and red tests directly target broad fanout removal.        |
+| Slate-close unopinionated DX             |  0.93 | Public authoring stays `read` / `update` plus typed extension groups; public source method sprawl and command chains are rejected.             |
+| Plate/slate-yjs migration backbone       |  0.92 | Tags, source categories, operation dirtiness, bookmark pressure, and collab/history interaction are explicit without current-adapter coupling. |
+| Regression-proof testing strategy        |  0.92 | Existing narrow tests are cited and the implementation red tests cover source routing, tags, public-proof cleanup, and DOM-selection pressure. |
+| Research evidence completeness           |  0.93 | Section 26 external-editor evidence is converted into Slate decisions; section 27 names what is stolen and what is rejected.                   |
+| shadcn-style composability/minimal hooks |  0.91 | UI/product commands stay above raw Slate; React hooks and source APIs stay minimal and selector-first.                                         |
 
 Weighted score: `0.92`.
 
@@ -1647,8 +1647,8 @@ Task statement:
 
 Desired outcome:
 
-- Add a friend/internal source bus in `../slate-v2/packages/slate`.
-- Route projection and annotation stores in `../slate-v2/packages/slate-react`
+- Add a friend/internal source bus in `.tmp/slate-v2/packages/slate`.
+- Route projection and annotation stores in `.tmp/slate-v2/packages/slate-react`
   through source-specific editor subscriptions where this slice owns them.
 - Prove selection-only commits wake `commit` and `selection`, not unrelated
   `text`, `node`, `decoration`, or `root` subscribers.
@@ -1666,13 +1666,13 @@ Completed passes:
 Actions taken:
 
 - Added friend/internal `Editor.subscribeSource(...)` in
-  `../slate-v2/packages/slate`.
+  `.tmp/slate-v2/packages/slate`.
 - Added core source routing so selection-only commits notify `commit` and
   `selection`, not unrelated `text`, `node`, `decoration`, or `root`
   subscribers.
-- Routed `../slate-v2/packages/slate-react/src/projection-store.ts` through
+- Routed `.tmp/slate-v2/packages/slate-react/src/projection-store.ts` through
   source-bus subscriptions selected by projection dirtiness.
-- Routed `../slate-v2/packages/slate-react/src/annotation-store.ts` through a
+- Routed `.tmp/slate-v2/packages/slate-react/src/annotation-store.ts` through a
   source-bus `commit` subscription while preserving candidate filtering.
 - Added tests that make projection and annotation stores throw if they fall back
   to broad instance `editor.subscribe` fan-in.
@@ -1685,15 +1685,15 @@ Actions taken:
 
 Changed files:
 
-- `../slate-v2/packages/slate/src/core/public-state.ts`
-- `../slate-v2/packages/slate/src/interfaces/editor.ts`
-- `../slate-v2/packages/slate/test/snapshot-contract.ts`
-- `../slate-v2/packages/slate/test/collab-history-runtime-contract.ts`
-- `../slate-v2/packages/slate/test/commit-metadata-contract.ts`
-- `../slate-v2/packages/slate-react/src/projection-store.ts`
-- `../slate-v2/packages/slate-react/src/annotation-store.ts`
-- `../slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx`
-- `../slate-v2/packages/slate-react/test/annotation-store-contract.tsx`
+- `.tmp/slate-v2/packages/slate/src/core/public-state.ts`
+- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`
+- `.tmp/slate-v2/packages/slate/test/snapshot-contract.ts`
+- `.tmp/slate-v2/packages/slate/test/collab-history-runtime-contract.ts`
+- `.tmp/slate-v2/packages/slate/test/commit-metadata-contract.ts`
+- `.tmp/slate-v2/packages/slate-react/src/projection-store.ts`
+- `.tmp/slate-v2/packages/slate-react/src/annotation-store.ts`
+- `.tmp/slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx`
+- `.tmp/slate-v2/packages/slate-react/test/annotation-store-contract.tsx`
 - `docs/solutions/performance-issues/2026-04-30-slate-v2-source-bus-routing-must-prove-upstream-fan-in-and-runtime-bucket-locality-separately.md`
 - `.tmp/<session-id>/completion-check.md`
 - `.tmp/continue.md`
@@ -1701,23 +1701,23 @@ Changed files:
 Verification:
 
 - `bun test ./packages/slate/test/snapshot-contract.ts ./packages/slate-react/test/projections-and-selection-contract.tsx ./packages/slate-react/test/annotation-store-contract.tsx`
-  passed in `../slate-v2`.
+  passed in `.tmp/slate-v2`.
 - `bun test ./packages/slate/test/collab-history-runtime-contract.ts ./packages/slate-react/test/projections-and-selection-contract.tsx ./packages/slate/test/bookmark-contract.ts ./packages/slate-react/test/editing-kernel-contract.ts ./packages/slate-react/test/target-runtime-contract.tsx`
-  passed in `../slate-v2`.
+  passed in `.tmp/slate-v2`.
 - `bun test ./packages/slate/test/commit-metadata-contract.ts -t "types canonical update tags while preserving custom tags"`
-  passed in `../slate-v2`.
+  passed in `.tmp/slate-v2`.
 - `bun test ./packages/slate/test/snapshot-contract.ts ./packages/slate/test/collab-history-runtime-contract.ts ./packages/slate/test/commit-metadata-contract.ts ./packages/slate/test/bookmark-contract.ts ./packages/slate-react/test/projections-and-selection-contract.tsx ./packages/slate-react/test/annotation-store-contract.tsx ./packages/slate-react/test/editing-kernel-contract.ts ./packages/slate-react/test/target-runtime-contract.tsx`
-  passed in `../slate-v2`.
-- `bun --filter slate typecheck` passed in `../slate-v2`.
-- `bun --filter slate-react typecheck` passed in `../slate-v2`.
-- `bun lint:fix` passed in `../slate-v2`; after it fixed one file, the final
+  passed in `.tmp/slate-v2`.
+- `bun --filter slate typecheck` passed in `.tmp/slate-v2`.
+- `bun --filter slate-react typecheck` passed in `.tmp/slate-v2`.
+- `bun lint:fix` passed in `.tmp/slate-v2`; after it fixed one file, the final
   touched-contract test set and both package typechecks passed again.
 - Fresh closeout after compact recovery:
   `bun test ./packages/slate/test/snapshot-contract.ts ./packages/slate/test/collab-history-runtime-contract.ts ./packages/slate/test/commit-metadata-contract.ts ./packages/slate/test/bookmark-contract.ts ./packages/slate-react/test/projections-and-selection-contract.tsx ./packages/slate-react/test/annotation-store-contract.tsx ./packages/slate-react/test/editing-kernel-contract.ts ./packages/slate-react/test/target-runtime-contract.tsx`
-  passed in `../slate-v2` with 240 tests.
+  passed in `.tmp/slate-v2` with 240 tests.
 - Fresh closeout after compact recovery: `bun --filter slate typecheck`,
   `bun --filter slate-react typecheck`, and `bun lint:fix` passed in
-  `../slate-v2`; lint reported no fixes.
+  `.tmp/slate-v2`; lint reported no fixes.
 
 Rejected tactics:
 

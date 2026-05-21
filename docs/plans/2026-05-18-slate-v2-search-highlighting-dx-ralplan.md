@@ -2,7 +2,7 @@
 
 Status: `implemented`
 Runtime id: `019e3627-238b-7993-a8cf-26be45504c47`
-Requested surface: `../slate-v2/site/examples/ts/search-highlighting.tsx`
+Requested surface: `.tmp/slate-v2/site/examples/ts/search-highlighting.tsx`
 Current pass: `ralph-implementation-and-proof`
 Prior final score: `0.93`
 Final score: `0.94`
@@ -73,7 +73,7 @@ Decision boundaries:
   convention, issue classifications, and implementation acceptance tests.
 - This ralplan may reject product-shaped search APIs even if the example request
   mentions search.
-- This ralplan must not edit `../slate-v2` implementation or examples.
+- This ralplan must not edit `.tmp/slate-v2` implementation or examples.
 - A later `ralph` implementation may adjust helper internals only if it keeps
   the same public intent and updates this plan when the public shape changes.
 
@@ -109,14 +109,14 @@ Top drivers:
 
 Viable options:
 
-| Option | Pros | Cons | Decision |
-| --- | --- | --- | --- |
-| Keep only `useSlateDecorationSource` and rewrite examples locally | No new API. | Repeats projection/key/scope boilerplate across examples and leaves the public DX bad. | Reject. |
-| Add `editor.api.search` or `useSlateSearchSource` | Very easy for search demos. | Product-shaped, hard to generalize, wrong for raw Slate. | Reject. |
-| Overload `useSlateDecorationSource` with a range mode | Fewer exported names. | Worse TypeScript discoverability; `read` returning projections or ranges becomes ambiguous; power API gets magic branches. | Reject for the first tranche. |
-| Add `createRangeDecorationSource` plus `useSlateRangeDecorationSource` | Clear typed layer over existing projection source; works for React hooks and non-hook creation/tests. | One more exported helper pair. | Choose. |
-| Add `NodeApi.findTextRanges` only | Solves path math. | Still leaves users to build projection objects, keys, refresh defaults, and source lifecycle. | Reject as incomplete. |
-| Teach `Editable.decorate` as the primary path | Familiar to Slate users. | Re-centers legacy callback-array behavior and weakens the v2 source-owned projection story. | Reject as canonical path. |
+| Option                                                                 | Pros                                                                                                  | Cons                                                                                                                       | Decision                      |
+| ---------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- | ----------------------------- |
+| Keep only `useSlateDecorationSource` and rewrite examples locally      | No new API.                                                                                           | Repeats projection/key/scope boilerplate across examples and leaves the public DX bad.                                     | Reject.                       |
+| Add `editor.api.search` or `useSlateSearchSource`                      | Very easy for search demos.                                                                           | Product-shaped, hard to generalize, wrong for raw Slate.                                                                   | Reject.                       |
+| Overload `useSlateDecorationSource` with a range mode                  | Fewer exported names.                                                                                 | Worse TypeScript discoverability; `read` returning projections or ranges becomes ambiguous; power API gets magic branches. | Reject for the first tranche. |
+| Add `createRangeDecorationSource` plus `useSlateRangeDecorationSource` | Clear typed layer over existing projection source; works for React hooks and non-hook creation/tests. | One more exported helper pair.                                                                                             | Choose.                       |
+| Add `NodeApi.findTextRanges` only                                      | Solves path math.                                                                                     | Still leaves users to build projection objects, keys, refresh defaults, and source lifecycle.                              | Reject as incomplete.         |
+| Teach `Editable.decorate` as the primary path                          | Familiar to Slate users.                                                                              | Re-centers legacy callback-array behavior and weakens the v2 source-owned projection story.                                | Reject as canonical path.     |
 
 Chosen shape:
 
@@ -186,7 +186,7 @@ Accepted revisions:
   normalization out of core.
 - Default behavior should search adjacent text siblings inside one text-flow
   parent and never cross block boundaries. Do not expose `across:
-  'text-siblings'` unless implementation proof shows a real author need.
+'text-siblings'` unless implementation proof shows a real author need.
 
 Adoption answer: existing users can ignore it. New examples use it when they
 need text ranges, while advanced apps still use `NodeApi.texts` directly.
@@ -349,13 +349,13 @@ Accepted refinement:
 
 Naming pressure:
 
-| Candidate | Verdict | Reason |
-| --- | --- | --- |
-| `NodeApi.findTextRanges` | keep | Best call-site clarity. The plural `Ranges` makes all-match materialization visible, and `NodeApi` is the right owner because cross-leaf matches need a tree root. |
-| `NodeApi.textRanges` | reject | Reads like "all ranges for every text node" unless the query argument is visible. Worse autocomplete. |
-| `NodeApi.matchTextRanges` | reject | Avoids `find`/first-match tension, but it is clunkier and less Slate-close than a direct "find text ranges" phrase. |
-| `NodeApi.findTextMatches` | reject | Better for metadata, worse for the canonical decoration example because callers must map matches back to ranges. |
-| `TextApi.findRanges` | reject | Too narrow; it cannot own cross-leaf path math. |
+| Candidate                 | Verdict | Reason                                                                                                                                                             |
+| ------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `NodeApi.findTextRanges`  | keep    | Best call-site clarity. The plural `Ranges` makes all-match materialization visible, and `NodeApi` is the right owner because cross-leaf matches need a tree root. |
+| `NodeApi.textRanges`      | reject  | Reads like "all ranges for every text node" unless the query argument is visible. Worse autocomplete.                                                              |
+| `NodeApi.matchTextRanges` | reject  | Avoids `find`/first-match tension, but it is clunkier and less Slate-close than a direct "find text ranges" phrase.                                                |
+| `NodeApi.findTextMatches` | reject  | Better for metadata, worse for the canonical decoration example because callers must map matches back to ranges.                                                   |
+| `TextApi.findRanges`      | reject  | Too narrow; it cannot own cross-leaf path math.                                                                                                                    |
 
 Return-shape pressure:
 
@@ -394,26 +394,26 @@ Plan delta:
 - Type-surface polish pass refined that hook option from React's
   `DependencyList` alias to Slate v2's existing `readonly unknown[]` selector
   convention, matching
-  `../slate-v2/packages/slate-react/src/hooks/use-editor-selector.tsx`.
+  `.tmp/slate-v2/packages/slate-react/src/hooks/use-editor-selector.tsx`.
 - PR reference section `6.3 React Decoration Source Hook` must mention that the
   low-level hook and range hook share the explicit dependency-refresh contract.
 - Closure score needs a recheck because a public hook option changed.
 
 ## Current Source Evidence
 
-- `../slate-v2/site/examples/ts/search-highlighting.tsx:46` creates a
+- `.tmp/slate-v2/site/examples/ts/search-highlighting.tsx:46` creates a
   `useSlateDecorationSource` directly.
-- `../slate-v2/site/examples/ts/search-highlighting.tsx:49` asks the app to
+- `.tmp/slate-v2/site/examples/ts/search-highlighting.tsx:49` asks the app to
   return projections from a snapshot.
-- `../slate-v2/site/examples/ts/search-highlighting.tsx:51` asks the app to
+- `.tmp/slate-v2/site/examples/ts/search-highlighting.tsx:51` asks the app to
   compute `runtimeScope`.
-- `../slate-v2/site/examples/ts/search-highlighting.tsx:54` wires a DOM
+- `.tmp/slate-v2/site/examples/ts/search-highlighting.tsx:54` wires a DOM
   `input` listener in `useEffect` instead of using normal React input code.
-- `../slate-v2/site/examples/ts/search-highlighting.tsx:63` repeats
+- `.tmp/slate-v2/site/examples/ts/search-highlighting.tsx:63` repeats
   `sourceId: 'search-highlighting'` even though the source already has that id.
-- `../slate-v2/site/examples/ts/search-highlighting.tsx:133` to `201` hand
+- `.tmp/slate-v2/site/examples/ts/search-highlighting.tsx:133` to `201` hand
   rolls cross-leaf text-search projection splitting.
-- `../slate-v2/site/examples/ts/search-highlighting.tsx:204` to `230` hand
+- `.tmp/slate-v2/site/examples/ts/search-highlighting.tsx:204` to `230` hand
   rolls runtime-id collection for every text node.
 
 This is not just verbose. It teaches the wrong default. A user trying to build
@@ -436,20 +436,20 @@ That is framework internals cosplay.
 
 `createDecorationSource` is intentionally low-level:
 
-- `../slate-v2/packages/slate-react/src/decoration-source.ts:19` requires
+- `.tmp/slate-v2/packages/slate-react/src/decoration-source.ts:19` requires
   `read(context) => SlateDecoration[]`.
-- `../slate-v2/packages/slate-react/src/decoration-source.ts:111` wraps the
+- `.tmp/slate-v2/packages/slate-react/src/decoration-source.ts:111` wraps the
   read callback into `createSlateProjectionStore`.
-- `../slate-v2/packages/slate-react/src/projection-store.ts:52` exposes
+- `.tmp/slate-v2/packages/slate-react/src/projection-store.ts:52` exposes
   `runtimeScope` as raw runtime ids or a function.
-- `../slate-v2/packages/slate-react/src/projection-store.ts:343` to `390`
+- `.tmp/slate-v2/packages/slate-react/src/projection-store.ts:343` to `390`
   proves recompute is source-driven and scoped by dirtiness/runtime scope.
 
 That is a good substrate. It is a bad beginner API.
 
 `useSlateDecorationSource` also has a footgun:
 
-- `../slate-v2/packages/slate-react/src/hooks/use-slate-decoration-source.ts:43`
+- `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-decoration-source.ts:43`
   refreshes on `options` identity.
 
 Inline options in examples are common. If this stays, the hook should either
@@ -507,12 +507,12 @@ wins the adoption story by default.
 
 ## Ecosystem Strategy Synthesis
 
-| System | Source | Mechanism | Avoids | Steal | Reject | Slate target | Verdict |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| ProseMirror | `docs/research/sources/editor-architecture/prosemirror-mapped-overlays-and-bookmarks.md` | Persistent mapped overlay data plus child-scoped `forChild(...)` propagation. | Whole-tree callback-array decoration churn. | Keep source-owned overlay data and child/runtime-scoped projection delivery. | ProseMirror plugin/view ceremony and integer-position model as raw Slate DX. | Range helper over projection sources, with benchmark proof for bounded source reads and runtime bucket changes. | `agree` |
-| Lexical | `docs/research/sources/editor-architecture/lexical-mark-store-and-decorator-split.md` | Dirty leaf/element reconcile plus explicit subscription helpers and separate decorator lane. | Generic context churn and mixed metadata/render ownership. | Keep selector/subscription posture and separate text overlay, node UI, annotation, and widget lanes. | Lexical class node model and full custom DOM reconciler as Slate's public model. | Range helper must feed the existing projection store and preserve runtime-id subscriptions. | `partial` |
-| Tiptap | `docs/research/sources/editor-architecture/tiptap-extension-command-react-dx.md` | Productized extension packaging and React selector guidance over ProseMirror. | Raw engine primitives leaking into every app example. | Better example ergonomics and product-grade composition expectations. | Product search API, command-chain ceremony, or ProseMirror leakage in raw Slate. | Raw Slate gets generic range/source helpers; Plate can package search UI later. | `partial` |
-| React 19.2 | `docs/research/sources/editor-architecture/react-19-2-external-store-and-background-ui.md`; `react-useeffect` | External-store subscriptions, deferred/transitioned derived UI, event-handler-first effects law. | Input lag from expensive derived renders and effect-driven interaction logic. | Use event handlers for query changes, optional `useDeferredValue` for large search UI, and React Performance Tracks for render breadth. | Treating React scheduling as a replacement for editor invalidation. | Canonical example uses React state and no DOM listener effect; large/stress guidance may defer query-driven highlight updates. | `agree` |
+| System      | Source                                                                                                        | Mechanism                                                                                        | Avoids                                                                        | Steal                                                                                                                                   | Reject                                                                           | Slate target                                                                                                                   | Verdict   |
+| ----------- | ------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ | --------- |
+| ProseMirror | `docs/research/sources/editor-architecture/prosemirror-mapped-overlays-and-bookmarks.md`                      | Persistent mapped overlay data plus child-scoped `forChild(...)` propagation.                    | Whole-tree callback-array decoration churn.                                   | Keep source-owned overlay data and child/runtime-scoped projection delivery.                                                            | ProseMirror plugin/view ceremony and integer-position model as raw Slate DX.     | Range helper over projection sources, with benchmark proof for bounded source reads and runtime bucket changes.                | `agree`   |
+| Lexical     | `docs/research/sources/editor-architecture/lexical-mark-store-and-decorator-split.md`                         | Dirty leaf/element reconcile plus explicit subscription helpers and separate decorator lane.     | Generic context churn and mixed metadata/render ownership.                    | Keep selector/subscription posture and separate text overlay, node UI, annotation, and widget lanes.                                    | Lexical class node model and full custom DOM reconciler as Slate's public model. | Range helper must feed the existing projection store and preserve runtime-id subscriptions.                                    | `partial` |
+| Tiptap      | `docs/research/sources/editor-architecture/tiptap-extension-command-react-dx.md`                              | Productized extension packaging and React selector guidance over ProseMirror.                    | Raw engine primitives leaking into every app example.                         | Better example ergonomics and product-grade composition expectations.                                                                   | Product search API, command-chain ceremony, or ProseMirror leakage in raw Slate. | Raw Slate gets generic range/source helpers; Plate can package search UI later.                                                | `partial` |
+| React 19.2  | `docs/research/sources/editor-architecture/react-19-2-external-store-and-background-ui.md`; `react-useeffect` | External-store subscriptions, deferred/transitioned derived UI, event-handler-first effects law. | Input lag from expensive derived renders and effect-driven interaction logic. | Use event handlers for query changes, optional `useDeferredValue` for large search UI, and React Performance Tracks for render breadth. | Treating React scheduling as a replacement for editor invalidation.              | Canonical example uses React state and no DOM listener effect; large/stress guidance may defer query-driven highlight updates. | `agree`   |
 
 ## Chosen API Target
 
@@ -528,13 +528,9 @@ math in examples.
 Target shape:
 
 ```ts
-const ranges = NodeApi.findTextRanges(
-  { children: snapshot.children },
-  query,
-  {
-    caseSensitive: false,
-  }
-)
+const ranges = NodeApi.findTextRanges({ children: snapshot.children }, query, {
+  caseSensitive: false,
+});
 ```
 
 Required behavior:
@@ -568,15 +564,15 @@ Target shape:
 
 ```ts
 const searchSource = useSlateRangeDecorationSource(editor, {
-  id: 'search',
+  id: "search",
   data: { highlight: true },
   deps: [query],
-  dirtiness: ['text', 'external'],
+  dirtiness: ["text", "external"],
   read: ({ snapshot }) =>
     NodeApi.findTextRanges({ children: snapshot.children }, query, {
       caseSensitive: false,
     }),
-})
+});
 ```
 
 Required behavior:
@@ -611,11 +607,11 @@ Target shape:
 
 ```ts
 const source = useSlateDecorationSource(editor, {
-  id: 'external',
+  id: "external",
   deps: [query],
-  dirtiness: ['text', 'external'],
+  dirtiness: ["text", "external"],
   read: ({ snapshot }) => readExternalDecorations(snapshot, query),
-})
+});
 ```
 
 Required behavior:
@@ -638,48 +634,48 @@ Required behavior:
 Current canonical shape:
 
 ```tsx
-const searchInputRef = useRef<HTMLInputElement | null>(null)
-const searchRef = useRef('')
+const searchInputRef = useRef<HTMLInputElement | null>(null);
+const searchRef = useRef("");
 const searchSource = useSlateDecorationSource<{ highlight: true }>(editor, {
-  id: 'search-highlighting',
-  dirtiness: ['text', 'external'],
+  id: "search-highlighting",
+  dirtiness: ["text", "external"],
   read: ({ snapshot }) =>
     collectSearchProjections(snapshot.children, searchRef.current),
   runtimeScope: ({ snapshot }) => collectTextRuntimeScope(snapshot),
-})
+});
 
 useEffect(() => {
-  const input = searchInputRef.current
-  if (!input) return
+  const input = searchInputRef.current;
+  if (!input) return;
 
   const handleSearchInput = () => {
-    searchRef.current = input.value
+    searchRef.current = input.value;
     searchSource.refresh({
       forceInvalidate: true,
-      reason: 'external',
-      sourceId: 'search-highlighting',
-    })
-  }
+      reason: "external",
+      sourceId: "search-highlighting",
+    });
+  };
 
-  input.addEventListener('input', handleSearchInput)
-  return () => input.removeEventListener('input', handleSearchInput)
-}, [searchSource])
+  input.addEventListener("input", handleSearchInput);
+  return () => input.removeEventListener("input", handleSearchInput);
+}, [searchSource]);
 ```
 
 Target canonical shape:
 
 ```tsx
-const [query, setQuery] = useState('')
+const [query, setQuery] = useState("");
 const searchSource = useSlateRangeDecorationSource(editor, {
-  id: 'search',
+  id: "search",
   data: { highlight: true },
   deps: [query],
-  dirtiness: ['text', 'external'],
+  dirtiness: ["text", "external"],
   read: ({ snapshot }) =>
     NodeApi.findTextRanges({ children: snapshot.children }, query, {
       caseSensitive: false,
     }),
-})
+});
 
 return (
   <>
@@ -700,7 +696,7 @@ return (
       />
     </Slate>
   </>
-)
+);
 ```
 
 Advanced external-state shape stays possible without `useEffect` DOM listener
@@ -828,22 +824,22 @@ Performance model:
 
 Required performance proof:
 
-| Proof | Required evidence |
-| --- | --- |
-| Manual source parity | Compare current manual `useSlateDecorationSource` search source with the helper source on the same document and query. `sourceReadCount`, `recomputeCount`, `fullFallbackCount`, `changedRuntimeBucketCount`, `runtimeSubscriberWakeCount`, and `globalSubscriberWakeCount` must not regress. |
-| Render breadth | Existing `../slate-v2/scripts/benchmarks/browser/react/rerender-breadth.tsx` records projection metrics and decoration-source toggle breadth; add a search/range-source lane beside `decorationSourceToggleBreadth`. |
-| Large overlay lane | `../slate-v2/scripts/benchmarks/browser/react/huge-document-overlays.tsx` records decoration-source metrics; add range-source mode or reuse it if implementation can parameterize source creation. |
-| Runtime-scope no-regression | Existing projection tests prove scoped recompute can skip missed runtime ids. Helper tests must prove manual `runtimeScope` pass-through keeps that behavior. |
-| Browser interaction | `/examples/search-highlighting`: query typing, editor typing inside a highlight, select highlighted text, select-all, copy, paste, and follow-up typing. |
+| Proof                       | Required evidence                                                                                                                                                                                                                                                                             |
+| --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Manual source parity        | Compare current manual `useSlateDecorationSource` search source with the helper source on the same document and query. `sourceReadCount`, `recomputeCount`, `fullFallbackCount`, `changedRuntimeBucketCount`, `runtimeSubscriberWakeCount`, and `globalSubscriberWakeCount` must not regress. |
+| Render breadth              | Existing `.tmp/slate-v2/scripts/benchmarks/browser/react/rerender-breadth.tsx` records projection metrics and decoration-source toggle breadth; add a search/range-source lane beside `decorationSourceToggleBreadth`.                                                                        |
+| Large overlay lane          | `.tmp/slate-v2/scripts/benchmarks/browser/react/huge-document-overlays.tsx` records decoration-source metrics; add range-source mode or reuse it if implementation can parameterize source creation.                                                                                          |
+| Runtime-scope no-regression | Existing projection tests prove scoped recompute can skip missed runtime ids. Helper tests must prove manual `runtimeScope` pass-through keeps that behavior.                                                                                                                                 |
+| Browser interaction         | `/examples/search-highlighting`: query typing, editor typing inside a highlight, select highlighted text, select-all, copy, paste, and follow-up typing.                                                                                                                                      |
 
 Performance cohorts:
 
-| Cohort | Document | Decoration pressure | Required claim |
-| --- | --- | --- | --- |
-| normal | 0-500 blocks | search/hashtag/simple diagnostics | Helper must be simpler with no measurable interaction regression. |
-| medium | 500-2000 blocks | moderate matches | Event-to-paint and rerender breadth must stay within current manual-source path. |
-| large | 2000-10000 blocks | many matches, mixed marks | Must record projection metrics and DOM/render breadth. Optional `useDeferredValue` for query-driven highlighting is allowed. |
-| stress | 10000-50000 blocks | dense matches | No release-quality speed claim without benchmark output and memory/DOM tags. |
+| Cohort       | Document                                         | Decoration pressure                                                     | Required claim                                                                                                               |
+| ------------ | ------------------------------------------------ | ----------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| normal       | 0-500 blocks                                     | search/hashtag/simple diagnostics                                       | Helper must be simpler with no measurable interaction regression.                                                            |
+| medium       | 500-2000 blocks                                  | moderate matches                                                        | Event-to-paint and rerender breadth must stay within current manual-source path.                                             |
+| large        | 2000-10000 blocks                                | many matches, mixed marks                                               | Must record projection metrics and DOM/render breadth. Optional `useDeferredValue` for query-driven highlighting is allowed. |
+| stress       | 10000-50000 blocks                               | dense matches                                                           | No release-quality speed claim without benchmark output and memory/DOM tags.                                                 |
 | pathological | tables, voids, IME, mobile, overlapping metadata | Related only; exact browser/device proof required before issue closure. |
 
 Repeated-unit budget:
@@ -875,14 +871,14 @@ React/DX decisions:
 
 Applicable implementation-review matrix:
 
-| Lens | Applicability | Findings | Plan delta |
-| --- | --- | --- | --- |
-| `vercel-react-best-practices` | applied | `rerender-move-effect-to-event`, `rerender-dependencies`, `rerender-use-deferred-value`, `rerender-use-ref-transient-values`, `client-event-listeners`, `js-early-exit`, `js-hoist-regexp`, `js-combine-iterations`, and `js-index-maps` are the relevant micro-rules. | Remove DOM listener effect from canonical example; keep event-handler/ref variant only for perf-sensitive docs; add benchmark rows. |
-| `performance-oracle` | applied | Complexity must stay `O(textLength + matchCount)`; no nested per-match tree scans or repeated full string joins per match. | Require unit tests and benchmark metrics for large match sets. |
-| `performance` | applied | Cohorts, repeated-unit budget, interaction matrix, memory tags, and native-behavior rows are required before any perf claim. | Added cohort and budget tables. |
-| `tdd` | applied | Tests must prove public behavior through `NodeApi`, source factory/hook, examples, and browser routes. | Keep vertical slices: core range finder first, factory second, hook third, example/browser last. |
-| `react-useeffect` | applied | Current DOM listener effect is the wrong default because it handles a user input event. | Canonical example uses `onChange`; no effect for input. |
-| `build-web-apps:shadcn` | skipped | These are raw Slate examples, not a shadcn component surface. | No UI kit import or component rewrite. |
+| Lens                          | Applicability | Findings                                                                                                                                                                                                                                                               | Plan delta                                                                                                                          |
+| ----------------------------- | ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `vercel-react-best-practices` | applied       | `rerender-move-effect-to-event`, `rerender-dependencies`, `rerender-use-deferred-value`, `rerender-use-ref-transient-values`, `client-event-listeners`, `js-early-exit`, `js-hoist-regexp`, `js-combine-iterations`, and `js-index-maps` are the relevant micro-rules. | Remove DOM listener effect from canonical example; keep event-handler/ref variant only for perf-sensitive docs; add benchmark rows. |
+| `performance-oracle`          | applied       | Complexity must stay `O(textLength + matchCount)`; no nested per-match tree scans or repeated full string joins per match.                                                                                                                                             | Require unit tests and benchmark metrics for large match sets.                                                                      |
+| `performance`                 | applied       | Cohorts, repeated-unit budget, interaction matrix, memory tags, and native-behavior rows are required before any perf claim.                                                                                                                                           | Added cohort and budget tables.                                                                                                     |
+| `tdd`                         | applied       | Tests must prove public behavior through `NodeApi`, source factory/hook, examples, and browser routes.                                                                                                                                                                 | Keep vertical slices: core range finder first, factory second, hook third, example/browser last.                                    |
+| `react-useeffect`             | applied       | Current DOM listener effect is the wrong default because it handles a user input event.                                                                                                                                                                                | Canonical example uses `onChange`; no effect for input.                                                                             |
+| `build-web-apps:shadcn`       | skipped       | These are raw Slate examples, not a shadcn component surface.                                                                                                                                                                                                          | No UI kit import or component rewrite.                                                                                              |
 
 PR and issue sync status: `complete`.
 
@@ -955,41 +951,41 @@ Manual v2 sync rows read from
 Coverage matrix rows read from
 `docs/slate-v2/ledgers/issue-coverage-matrix.md`:
 
-| Issue | Cluster | Claim | Discovery decision |
-| --- | --- | --- | --- |
-| `#4483` | `react-decoration-subscription-performance` | `Improves` | Keep. The range-source helper makes the API easier but does not benchmark-fix the original perf report. |
-| `#5987` | `react-decoration-and-selection-stability` | `Improves` | Keep. No exact async app/browser closure from a planning/API helper. |
-| `#4392` | `decoration-cross-node-and-void-access` | `Improves` | Keep. `NodeApi.findTextRanges` strengthens the public authoring story for cross-leaf search, but no legacy decorate parity claim. |
-| `#3382` | `react-decoration-and-selection-stability` | `Improves` | Keep. Helper should preserve runtime projection behavior, not resurrect legacy `Text.decorations`. |
-| `#3352` | `react-decoration-and-selection-stability` | `Improves` | Keep. Helper can expose sibling-spanning ranges cleanly; exact callback parity stays rejected. |
-| `#3383` | `singleton-react-runtime` | `Related` | Keep as related API pressure. Per-range `data` helps authoring, but overlap merge semantics are a separate contract. |
-| `#3309` | `singleton-react-runtime` | `Related` | Keep. Needs decorated-selection browser proof. |
-| `#3162` | matrix-only future proof | `Related/future` | Keep. Needs IME/browser/device proof. |
-| `#4712` | matrix-only future proof | `Related/future` | Keep. Replacement-like decoration text remains out of scope. |
-| `#4581` | `singleton-dom-selection` | `Related` | Keep. Needs Firefox DOM selection proof. |
-| `#4076` | `docs-example-and-support-noise` | `Not claimed` | Keep as docs/example review. This plan can make the example readable, but raw Slate should not grow `editor.search`. |
-| `#5101` | `decoration-example-expectation-mismatch` | `Not claimed` | Frozen historical keyword match only; current contract says docs-only and not a direct red-test target. |
-| `#5411` | `void-selection-fix-regressions` | `Related` | Same highlight keyword, different problem: void/entity DOM selection proof. |
-| `#4221` | `placeholder-and-empty-editor-selection` | `Related` | Same highlight keyword, different problem: Firefox placeholder select-all behavior. |
+| Issue   | Cluster                                     | Claim            | Discovery decision                                                                                                                |
+| ------- | ------------------------------------------- | ---------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `#4483` | `react-decoration-subscription-performance` | `Improves`       | Keep. The range-source helper makes the API easier but does not benchmark-fix the original perf report.                           |
+| `#5987` | `react-decoration-and-selection-stability`  | `Improves`       | Keep. No exact async app/browser closure from a planning/API helper.                                                              |
+| `#4392` | `decoration-cross-node-and-void-access`     | `Improves`       | Keep. `NodeApi.findTextRanges` strengthens the public authoring story for cross-leaf search, but no legacy decorate parity claim. |
+| `#3382` | `react-decoration-and-selection-stability`  | `Improves`       | Keep. Helper should preserve runtime projection behavior, not resurrect legacy `Text.decorations`.                                |
+| `#3352` | `react-decoration-and-selection-stability`  | `Improves`       | Keep. Helper can expose sibling-spanning ranges cleanly; exact callback parity stays rejected.                                    |
+| `#3383` | `singleton-react-runtime`                   | `Related`        | Keep as related API pressure. Per-range `data` helps authoring, but overlap merge semantics are a separate contract.              |
+| `#3309` | `singleton-react-runtime`                   | `Related`        | Keep. Needs decorated-selection browser proof.                                                                                    |
+| `#3162` | matrix-only future proof                    | `Related/future` | Keep. Needs IME/browser/device proof.                                                                                             |
+| `#4712` | matrix-only future proof                    | `Related/future` | Keep. Replacement-like decoration text remains out of scope.                                                                      |
+| `#4581` | `singleton-dom-selection`                   | `Related`        | Keep. Needs Firefox DOM selection proof.                                                                                          |
+| `#4076` | `docs-example-and-support-noise`            | `Not claimed`    | Keep as docs/example review. This plan can make the example readable, but raw Slate should not grow `editor.search`.              |
+| `#5101` | `decoration-example-expectation-mismatch`   | `Not claimed`    | Frozen historical keyword match only; current contract says docs-only and not a direct red-test target.                           |
+| `#5411` | `void-selection-fix-regressions`            | `Related`        | Same highlight keyword, different problem: void/entity DOM selection proof.                                                       |
+| `#4221` | `placeholder-and-empty-editor-selection`    | `Related`        | Same highlight keyword, different problem: Firefox placeholder select-all behavior.                                               |
 
 Full issue matrix for this plan:
 
-| Issue | Cluster | Claim | Why | Proof route | V2 sync ledger | PR line |
-| ----- | ------- | ----- | --- | ----------- | -------------- | ------- |
-| `#4483` | `react-decoration-subscription-performance` | `Improves`, after implementation | Range sources make the scalable decoration path canonical, but the original performance report still needs benchmark proof. | React projection tests plus `rerender-breadth` benchmark. | No change; keep `improves-claimed`. | Related matrix only: keep `Improves #4483`; do not auto-close. |
-| `#5987` | `react-decoration-and-selection-stability` | `Improves`, after implementation | Source-owned decorations reduce async decorate/caret pressure; this helper does not prove the exact async app repro. | React projection/caret tests plus browser selection proof. | No change; keep `improves-claimed`. | Related matrix only: keep `Improves #5987`; do not auto-close. |
-| `#4392` | `decoration-cross-node-and-void-access` | `Improves`, after implementation | `NodeApi.findTextRanges` covers cross-leaf text ranges without reviving legacy decorate callback parity. | `slate` range unit tests plus `slate-react` projection tests. | No change; keep `improves-claimed`. | Related matrix only: keep `Improves #4392`; do not auto-close. |
-| `#3382` | `react-decoration-and-selection-stability` | `Improves`, after implementation | Range-source projection avoids exposing per-leaf `Text.decorations` assumptions in public examples. | Projection-slice tests and structural move tests. | No change; keep `improves-claimed`. | Related matrix only: keep `Improves #3382`; do not auto-close. |
-| `#3352` | `react-decoration-and-selection-stability` | `Improves`, after implementation | Sibling-spanning ranges become a normal helper path instead of callback plumbing. | Cross-sibling range tests and projection tests. | No change; keep `improves-claimed`. | Related matrix only: keep `Improves #3352`; do not auto-close. |
-| `#3383` | `singleton-react-runtime` | `Related` | Per-range `data` helps metadata authoring, but overlapping decoration merge precedence is not solved here. | No-claim row; future overlap/merge contract tests. | No change; keep `cluster-synced`. | Related matrix only. |
-| `#3309` | `singleton-react-runtime` | `Related` | Decorated text selection remains a browser behavior claim, not an API-DX claim. | Firefox/browser decorated-selection proof. | No change; keep `cluster-synced`. | Related matrix only. |
-| `#3162` | matrix-only future proof | `Related/future` | IME decoration behavior needs composition/browser proof. | IME/browser proof. | No change; keep `cluster-synced`. | Related matrix only. |
-| `#4712` | matrix-only future proof | `Related/future` | Replacement-like decoration text is explicitly out of this helper. | No-claim row; separate input/selection proof if pursued. | No change; keep `cluster-synced`. | Related matrix only. |
-| `#4581` | `singleton-dom-selection` | `Related` | Firefox void/decorated deletion belongs to DOM selection repair. | Firefox browser proof. | No change; keep `cluster-synced`. | Related matrix only. |
-| `#4076` | `docs-example-and-support-noise` | `Not claimed` | Search-highlighting example options are reviewed, but raw Slate should expose generic range helpers, not product search options. | Docs/example proof only. | No change; keep `issue-reviewed`. | Added `Not claimed #4076` row in `docs/slate-v2/ledgers/issue-coverage-matrix.md`. |
-| `#5101` | `decoration-example-expectation-mismatch` | `Not claimed` | Historical docs-only keyword match; current contract says not a direct red-test target. | No-claim row. | No current live-row change. | Related matrix only if mentioned. |
-| `#5411` | `void-selection-fix-regressions` | `Related` | Same highlight keyword, but it is a void/entity selection bug. | DOM bridge/browser proof, separate from this helper. | No change; keep `cluster-synced`. | Related matrix only. |
-| `#4221` | `placeholder-and-empty-editor-selection` | `Related` | Same highlight keyword, but it is Firefox placeholder selection behavior. | Firefox browser proof, separate from this helper. | No change; keep `cluster-synced`. | Related matrix only. |
+| Issue   | Cluster                                     | Claim                            | Why                                                                                                                              | Proof route                                                   | V2 sync ledger                      | PR line                                                                            |
+| ------- | ------------------------------------------- | -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- | ----------------------------------- | ---------------------------------------------------------------------------------- |
+| `#4483` | `react-decoration-subscription-performance` | `Improves`, after implementation | Range sources make the scalable decoration path canonical, but the original performance report still needs benchmark proof.      | React projection tests plus `rerender-breadth` benchmark.     | No change; keep `improves-claimed`. | Related matrix only: keep `Improves #4483`; do not auto-close.                     |
+| `#5987` | `react-decoration-and-selection-stability`  | `Improves`, after implementation | Source-owned decorations reduce async decorate/caret pressure; this helper does not prove the exact async app repro.             | React projection/caret tests plus browser selection proof.    | No change; keep `improves-claimed`. | Related matrix only: keep `Improves #5987`; do not auto-close.                     |
+| `#4392` | `decoration-cross-node-and-void-access`     | `Improves`, after implementation | `NodeApi.findTextRanges` covers cross-leaf text ranges without reviving legacy decorate callback parity.                         | `slate` range unit tests plus `slate-react` projection tests. | No change; keep `improves-claimed`. | Related matrix only: keep `Improves #4392`; do not auto-close.                     |
+| `#3382` | `react-decoration-and-selection-stability`  | `Improves`, after implementation | Range-source projection avoids exposing per-leaf `Text.decorations` assumptions in public examples.                              | Projection-slice tests and structural move tests.             | No change; keep `improves-claimed`. | Related matrix only: keep `Improves #3382`; do not auto-close.                     |
+| `#3352` | `react-decoration-and-selection-stability`  | `Improves`, after implementation | Sibling-spanning ranges become a normal helper path instead of callback plumbing.                                                | Cross-sibling range tests and projection tests.               | No change; keep `improves-claimed`. | Related matrix only: keep `Improves #3352`; do not auto-close.                     |
+| `#3383` | `singleton-react-runtime`                   | `Related`                        | Per-range `data` helps metadata authoring, but overlapping decoration merge precedence is not solved here.                       | No-claim row; future overlap/merge contract tests.            | No change; keep `cluster-synced`.   | Related matrix only.                                                               |
+| `#3309` | `singleton-react-runtime`                   | `Related`                        | Decorated text selection remains a browser behavior claim, not an API-DX claim.                                                  | Firefox/browser decorated-selection proof.                    | No change; keep `cluster-synced`.   | Related matrix only.                                                               |
+| `#3162` | matrix-only future proof                    | `Related/future`                 | IME decoration behavior needs composition/browser proof.                                                                         | IME/browser proof.                                            | No change; keep `cluster-synced`.   | Related matrix only.                                                               |
+| `#4712` | matrix-only future proof                    | `Related/future`                 | Replacement-like decoration text is explicitly out of this helper.                                                               | No-claim row; separate input/selection proof if pursued.      | No change; keep `cluster-synced`.   | Related matrix only.                                                               |
+| `#4581` | `singleton-dom-selection`                   | `Related`                        | Firefox void/decorated deletion belongs to DOM selection repair.                                                                 | Firefox browser proof.                                        | No change; keep `cluster-synced`.   | Related matrix only.                                                               |
+| `#4076` | `docs-example-and-support-noise`            | `Not claimed`                    | Search-highlighting example options are reviewed, but raw Slate should expose generic range helpers, not product search options. | Docs/example proof only.                                      | No change; keep `issue-reviewed`.   | Added `Not claimed #4076` row in `docs/slate-v2/ledgers/issue-coverage-matrix.md`. |
+| `#5101` | `decoration-example-expectation-mismatch`   | `Not claimed`                    | Historical docs-only keyword match; current contract says not a direct red-test target.                                          | No-claim row.                                                 | No current live-row change.         | Related matrix only if mentioned.                                                  |
+| `#5411` | `void-selection-fix-regressions`            | `Related`                        | Same highlight keyword, but it is a void/entity selection bug.                                                                   | DOM bridge/browser proof, separate from this helper.          | No change; keep `cluster-synced`.   | Related matrix only.                                                               |
+| `#4221` | `placeholder-and-empty-editor-selection`    | `Related`                        | Same highlight keyword, but it is Firefox placeholder selection behavior.                                                        | Firefox browser proof, separate from this helper.             | No change; keep `cluster-synced`.   | Related matrix only.                                                               |
 
 Issue-ledger conclusion:
 
@@ -1089,20 +1085,20 @@ Performance proof:
 
 ## Review Pass Status
 
-| Pass | Status | Notes |
-| --- | --- | --- |
-| Source-read pass | complete | Live example and API substrate inspected. |
-| Related issue discovery pass | complete | Existing live/manual ledgers already cover the decoration/projection surface; no new fixed claims or dossier writes. |
-| Issue-ledger pass | complete | Full fixed/improved/related/not-claimed matrix recorded; no sync-ledger or PR-reference writes yet because the API shape still needs steelman. |
-| Intent/boundary and decision-brief pass | complete | Intent, outcome, scope, non-goals, decision boundaries, viable options, and the first-tranche `wholeWord` rejection are recorded. |
-| Steelman pass | complete | Helper direction survives with limits: no raw search API, no `wholeWord`, no overload-only design, no automatic runtime-scope inference, factory takes `editor`. |
-| Ecosystem pass | complete | Strategy table recorded for ProseMirror, Lexical, Tiptap, and React 19.2 after steelman revisions. |
-| Performance/DX/research synthesis pass | complete | Array return, no `across` option, perf cohorts, metric gates, review-lens matrix, and PR-reference readiness recorded. |
-| TDD pass | complete | Implementation handoff test families are recorded; actual red-green execution belongs to `ralph`. |
-| Issue-sync accounting pass | complete | PR reference updated and `#4076` added as a `Not claimed` matrix row; fixed claims unchanged. |
-| Closure pass | complete | Final scorecard, gates, implementation phases, fast driver gates, and user-review handoff are recorded. |
-| Absolute-best DX skepticism pass | complete | Kept the range helper and `NodeApi.findTextRanges` names, but added `deps` to low-level `useSlateDecorationSource`; closure recheck is required. |
-| Deps type-surface polish pass | complete | Refined public hook option spelling from `DependencyList` to `readonly unknown[]` to match live `useEditorSelector`; closure recheck is required. |
+| Pass                                    | Status   | Notes                                                                                                                                                            |
+| --------------------------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Source-read pass                        | complete | Live example and API substrate inspected.                                                                                                                        |
+| Related issue discovery pass            | complete | Existing live/manual ledgers already cover the decoration/projection surface; no new fixed claims or dossier writes.                                             |
+| Issue-ledger pass                       | complete | Full fixed/improved/related/not-claimed matrix recorded; no sync-ledger or PR-reference writes yet because the API shape still needs steelman.                   |
+| Intent/boundary and decision-brief pass | complete | Intent, outcome, scope, non-goals, decision boundaries, viable options, and the first-tranche `wholeWord` rejection are recorded.                                |
+| Steelman pass                           | complete | Helper direction survives with limits: no raw search API, no `wholeWord`, no overload-only design, no automatic runtime-scope inference, factory takes `editor`. |
+| Ecosystem pass                          | complete | Strategy table recorded for ProseMirror, Lexical, Tiptap, and React 19.2 after steelman revisions.                                                               |
+| Performance/DX/research synthesis pass  | complete | Array return, no `across` option, perf cohorts, metric gates, review-lens matrix, and PR-reference readiness recorded.                                           |
+| TDD pass                                | complete | Implementation handoff test families are recorded; actual red-green execution belongs to `ralph`.                                                                |
+| Issue-sync accounting pass              | complete | PR reference updated and `#4076` added as a `Not claimed` matrix row; fixed claims unchanged.                                                                    |
+| Closure pass                            | complete | Final scorecard, gates, implementation phases, fast driver gates, and user-review handoff are recorded.                                                          |
+| Absolute-best DX skepticism pass        | complete | Kept the range helper and `NodeApi.findTextRanges` names, but added `deps` to low-level `useSlateDecorationSource`; closure recheck is required.                 |
+| Deps type-surface polish pass           | complete | Refined public hook option spelling from `DependencyList` to `readonly unknown[]` to match live `useEditorSelector`; closure recheck is required.                |
 
 ## Plan Deltas From Review
 
@@ -1154,15 +1150,15 @@ for overlays that toolbars, sidebars, and external UI may share.
 ## Implementation Phases With Owners
 
 1. Core owner: add `NodeApi.findTextRanges` in
-   `../slate-v2/packages/slate/src/interfaces/node.ts`, export it through the
+   `.tmp/slate-v2/packages/slate/src/interfaces/node.ts`, export it through the
    public surface, and add focused unit tests under
-   `../slate-v2/packages/slate/test/interfaces/Node/`.
+   `.tmp/slate-v2/packages/slate/test/interfaces/Node/`.
 2. React owner: add `createRangeDecorationSource(editor, options)` beside
-   `../slate-v2/packages/slate-react/src/decoration-source.ts`, plus
+   `.tmp/slate-v2/packages/slate-react/src/decoration-source.ts`, plus
    `useSlateRangeDecorationSource(editor, options)` beside the existing hook.
    Add React-only `deps` to `useSlateDecorationSource` and have the range hook
    share that lifecycle contract.
-3. Example owner: update `../slate-v2/site/examples/ts/search-highlighting.tsx`
+3. Example owner: update `.tmp/slate-v2/site/examples/ts/search-highlighting.tsx`
    to the canonical state-plus-range-source shape; update highlighted text,
    markdown preview, and code highlighting only where they currently repeat
    generic range/source plumbing.
@@ -1173,25 +1169,25 @@ for overlays that toolbars, sidebars, and external UI may share.
 
 ## Fast Driver Gates
 
-| Gate | Cwd | Command | Purpose |
-| --- | --- | --- | --- |
-| Core range helper | `../slate-v2` | `bun test ./packages/slate/test/find-text-ranges-contract.ts ./packages/slate/test/query-contract.ts` | Prove `NodeApi.findTextRanges` behavior and public query contracts. |
-| React source hooks | `../slate-v2` | `bun test packages/slate-react/test/projections-and-selection-contract.test.tsx packages/slate-react/test/app-owned-customization.test.tsx` | Prove projected slices, source refresh defaults, low-level hook `deps`, range hook `deps`, and no regression to app-owned customization. |
-| Example browser proof | `../slate-v2` | `playwright test playwright/integration/examples/search-highlighting.test.ts playwright/integration/examples/highlighted-text.test.ts playwright/integration/examples/markdown-preview.test.ts playwright/integration/examples/code-highlighting.test.ts --project=chromium` | Prove examples remain interactive after helper adoption. |
-| React rerender breadth | `../slate-v2` | `bun run bench:react:rerender-breadth:local` | Prove no broader rerender pattern than the manual source path. |
-| Huge overlay pressure | `../slate-v2` | `bun run bench:react:huge-document-overlays:local` | Prove large overlay metrics before any performance claim. |
-| Planning state | `plate-2` | `node tooling/scripts/completion-check.mjs` | Prove this ralplan closure file is complete. |
+| Gate                   | Cwd             | Command                                                                                                                                                                                                                                                                      | Purpose                                                                                                                                  |
+| ---------------------- | --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| Core range helper      | `.tmp/slate-v2` | `bun test ./packages/slate/test/find-text-ranges-contract.ts ./packages/slate/test/query-contract.ts`                                                                                                                                                                        | Prove `NodeApi.findTextRanges` behavior and public query contracts.                                                                      |
+| React source hooks     | `.tmp/slate-v2` | `bun test packages/slate-react/test/projections-and-selection-contract.test.tsx packages/slate-react/test/app-owned-customization.test.tsx`                                                                                                                                  | Prove projected slices, source refresh defaults, low-level hook `deps`, range hook `deps`, and no regression to app-owned customization. |
+| Example browser proof  | `.tmp/slate-v2` | `playwright test playwright/integration/examples/search-highlighting.test.ts playwright/integration/examples/highlighted-text.test.ts playwright/integration/examples/markdown-preview.test.ts playwright/integration/examples/code-highlighting.test.ts --project=chromium` | Prove examples remain interactive after helper adoption.                                                                                 |
+| React rerender breadth | `.tmp/slate-v2` | `bun run bench:react:rerender-breadth:local`                                                                                                                                                                                                                                 | Prove no broader rerender pattern than the manual source path.                                                                           |
+| Huge overlay pressure  | `.tmp/slate-v2` | `bun run bench:react:huge-document-overlays:local`                                                                                                                                                                                                                           | Prove large overlay metrics before any performance claim.                                                                                |
+| Planning state         | `plate-2`       | `node tooling/scripts/completion-check.mjs`                                                                                                                                                                                                                                  | Prove this ralplan closure file is complete.                                                                                             |
 
 ## Confidence Scorecard
 
-| Dimension | Weight | Score | Evidence |
-| --- | ---: | ---: | --- |
-| React 19.2 runtime performance | 0.20 | 0.94 | `Performance, DX, And Research Synthesis`; `Absolute-Best DX Skepticism Pass`; `../slate-v2/packages/slate-react/src/hooks/use-slate-decoration-source.ts`; `../slate-v2/packages/slate-react/src/projection-store.ts`; `../slate-v2/scripts/benchmarks/browser/react/rerender-breadth.tsx`; `../slate-v2/scripts/benchmarks/browser/react/huge-document-overlays.tsx`; `docs/research/sources/editor-architecture/react-19-2-external-store-and-background-ui.md`. |
-| Slate-close unopinionated DX | 0.20 | 0.96 | `Intent And Boundaries`; `Decision Brief`; `Chosen API Target`; `Steelman Pass`; `Absolute-Best DX Skepticism Pass`; `Deps type-surface polish pass`; live source pointers for `search-highlighting.tsx`, `use-slate-decoration-source.ts`, `use-editor-selector.tsx`, and `decoration-source.ts`. |
-| Plate and slate-yjs migration-backbone shape | 0.15 | 0.90 | `Architecture North Star And Migration Backbone`; `Related Issue Accounting`; rejected raw `SearchApi` / `editor.api.search` product layer. |
-| Regression-proof testing strategy | 0.20 | 0.93 | `Test Plan For Ralph Execution`; `Fast Driver Gates`; issue matrix rows for `#4483`, `#5987`, `#4392`, `#3382`, `#3352`, `#4076`. |
-| Research evidence completeness | 0.15 | 0.94 | `Ecosystem Strategy Synthesis`; ProseMirror, Lexical, Tiptap, and React 19.2 research pages cited in the plan. |
-| shadcn-style composability and hook/component minimalism | 0.10 | 0.93 | `Applicable implementation-review matrix`; `Before / After`; canonical hook stays small and no UI-kit/product component is added. |
+| Dimension                                                | Weight | Score | Evidence                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| -------------------------------------------------------- | -----: | ----: | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| React 19.2 runtime performance                           |   0.20 |  0.94 | `Performance, DX, And Research Synthesis`; `Absolute-Best DX Skepticism Pass`; `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-decoration-source.ts`; `.tmp/slate-v2/packages/slate-react/src/projection-store.ts`; `.tmp/slate-v2/scripts/benchmarks/browser/react/rerender-breadth.tsx`; `.tmp/slate-v2/scripts/benchmarks/browser/react/huge-document-overlays.tsx`; `docs/research/sources/editor-architecture/react-19-2-external-store-and-background-ui.md`. |
+| Slate-close unopinionated DX                             |   0.20 |  0.96 | `Intent And Boundaries`; `Decision Brief`; `Chosen API Target`; `Steelman Pass`; `Absolute-Best DX Skepticism Pass`; `Deps type-surface polish pass`; live source pointers for `search-highlighting.tsx`, `use-slate-decoration-source.ts`, `use-editor-selector.tsx`, and `decoration-source.ts`.                                                                                                                                                                          |
+| Plate and slate-yjs migration-backbone shape             |   0.15 |  0.90 | `Architecture North Star And Migration Backbone`; `Related Issue Accounting`; rejected raw `SearchApi` / `editor.api.search` product layer.                                                                                                                                                                                                                                                                                                                                 |
+| Regression-proof testing strategy                        |   0.20 |  0.93 | `Test Plan For Ralph Execution`; `Fast Driver Gates`; issue matrix rows for `#4483`, `#5987`, `#4392`, `#3382`, `#3352`, `#4076`.                                                                                                                                                                                                                                                                                                                                           |
+| Research evidence completeness                           |   0.15 |  0.94 | `Ecosystem Strategy Synthesis`; ProseMirror, Lexical, Tiptap, and React 19.2 research pages cited in the plan.                                                                                                                                                                                                                                                                                                                                                              |
+| shadcn-style composability and hook/component minimalism |   0.10 |  0.93 | `Applicable implementation-review matrix`; `Before / After`; canonical hook stays small and no UI-kit/product component is added.                                                                                                                                                                                                                                                                                                                                           |
 
 Weighted total: `0.94`.
 
@@ -1199,22 +1195,22 @@ No dimension is below `0.85`.
 
 ## Final Completion Gates
 
-| Gate | Status | Evidence |
-| --- | --- | --- |
-| Scheduled passes complete | pass | Review pass table has every row complete. |
-| Score threshold | pass | Weighted score is `0.94`; no dimension below `0.85`. |
-| Intent and decision boundaries | pass | `Intent And Boundaries` and `Decision Brief` are explicit. |
-| Major options and rejections | pass | Decision brief and steelman pass name viable options and dropped alternatives. |
-| Ecosystem strategy | pass | ProseMirror, Lexical, Tiptap, and React strategy table recorded. |
-| Issue-ledger accounting | pass | Full issue matrix recorded; `#4076` added as `Not claimed`; fixed issue claims unchanged. |
-| PR reference sync | pass | `docs/slate-v2/references/pr-description.md` section `6.3 React Decoration Source Hook` updated with shared `deps` hook lifecycle. |
-| Acceptance criteria | pass | Unit, React, browser, and benchmark gates listed. |
-| Public API language | pass | Accepted names and rejected alternatives are explicit; no undecided public API remains. |
-| Implementation review lenses | pass | Vercel React, performance-oracle, performance, tdd, react-useeffect, and shadcn rows recorded. |
-| Migration backbone | pass | Plate and slate-yjs targets recorded without requiring current adapter compatibility. |
-| Verification workspace | pass | This skill changed planning/ledger/reference files only; no `../slate-v2` behavior is claimed complete. Slate v2 commands are recorded as implementation gates. |
-| Post-skepticism closure recheck | pass | Deps type-surface polish changed only the public hook type spelling to match live Slate React selector options; score remains `0.94`, PR reference is synced, and no `../slate-v2` behavior is claimed complete. |
-| Final handoff | pass | Final user-review outline below is updated; completion file records `final_handoff_status: complete`. |
+| Gate                            | Status | Evidence                                                                                                                                                                                                           |
+| ------------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Scheduled passes complete       | pass   | Review pass table has every row complete.                                                                                                                                                                          |
+| Score threshold                 | pass   | Weighted score is `0.94`; no dimension below `0.85`.                                                                                                                                                               |
+| Intent and decision boundaries  | pass   | `Intent And Boundaries` and `Decision Brief` are explicit.                                                                                                                                                         |
+| Major options and rejections    | pass   | Decision brief and steelman pass name viable options and dropped alternatives.                                                                                                                                     |
+| Ecosystem strategy              | pass   | ProseMirror, Lexical, Tiptap, and React strategy table recorded.                                                                                                                                                   |
+| Issue-ledger accounting         | pass   | Full issue matrix recorded; `#4076` added as `Not claimed`; fixed issue claims unchanged.                                                                                                                          |
+| PR reference sync               | pass   | `docs/slate-v2/references/pr-description.md` section `6.3 React Decoration Source Hook` updated with shared `deps` hook lifecycle.                                                                                 |
+| Acceptance criteria             | pass   | Unit, React, browser, and benchmark gates listed.                                                                                                                                                                  |
+| Public API language             | pass   | Accepted names and rejected alternatives are explicit; no undecided public API remains.                                                                                                                            |
+| Implementation review lenses    | pass   | Vercel React, performance-oracle, performance, tdd, react-useeffect, and shadcn rows recorded.                                                                                                                     |
+| Migration backbone              | pass   | Plate and slate-yjs targets recorded without requiring current adapter compatibility.                                                                                                                              |
+| Verification workspace          | pass   | This skill changed planning/ledger/reference files only; no `.tmp/slate-v2` behavior is claimed complete. Slate v2 commands are recorded as implementation gates.                                                  |
+| Post-skepticism closure recheck | pass   | Deps type-surface polish changed only the public hook type spelling to match live Slate React selector options; score remains `0.94`, PR reference is synced, and no `.tmp/slate-v2` behavior is claimed complete. |
+| Final handoff                   | pass   | Final user-review outline below is updated; completion file records `final_handoff_status: complete`.                                                                                                              |
 
 ## Final User-Review Handoff Outline
 
@@ -1265,27 +1261,27 @@ Continue file: `.tmp/019e3627-238b-7993-a8cf-26be45504c47/continue.md`
 
 Completed slice:
 
-- `../slate-v2/packages/slate/src/interfaces/node.ts`: added
+- `.tmp/slate-v2/packages/slate/src/interfaces/node.ts`: added
   `NodeApi.findTextRanges(root, query, options)`.
-- `../slate-v2/packages/slate/test/find-text-ranges-contract.ts`: added
+- `.tmp/slate-v2/packages/slate/test/find-text-ranges-contract.ts`: added
   focused contract coverage.
 
 Completed implementation:
 
-- `../slate-v2/packages/slate-react/src/decoration-source.ts`: added
+- `.tmp/slate-v2/packages/slate-react/src/decoration-source.ts`: added
   `createRangeDecorationSource(editor, options)` and range-entry normalization.
-- `../slate-v2/packages/slate-react/src/hooks/use-slate-decoration-source.ts`:
+- `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-decoration-source.ts`:
   added hook-level `deps` and `useSlateRangeDecorationSource`.
-- `../slate-v2/site/examples/ts/search-highlighting.tsx`: switched to
+- `.tmp/slate-v2/site/examples/ts/search-highlighting.tsx`: switched to
   `useState`, `onChange`, `NodeApi.findTextRanges`, and the range source hook;
   hoisted source dirtiness and memoized the editor shell to preserve input
   focus/render proof.
-- `../slate-v2/site/examples/ts/highlighted-text.tsx`,
-  `../slate-v2/site/examples/ts/markdown-preview.tsx`, and
-  `../slate-v2/site/examples/ts/code-highlighting.tsx`: moved to range
+- `.tmp/slate-v2/site/examples/ts/highlighted-text.tsx`,
+  `.tmp/slate-v2/site/examples/ts/markdown-preview.tsx`, and
+  `.tmp/slate-v2/site/examples/ts/code-highlighting.tsx`: moved to range
   decoration sources.
-- `../slate-v2/scripts/benchmarks/browser/react/rerender-breadth.tsx` and
-  `../slate-v2/scripts/benchmarks/browser/react/huge-document-overlays.tsx`:
+- `.tmp/slate-v2/scripts/benchmarks/browser/react/rerender-breadth.tsx` and
+  `.tmp/slate-v2/scripts/benchmarks/browser/react/huge-document-overlays.tsx`:
   refreshed stale benchmark API usage so the planned benchmark gates run.
 
 Verification:
@@ -1303,7 +1299,7 @@ Verification:
 Verification note:
 
 - `bun lint` exits `0` and reports one existing warning in
-  `../slate-v2/packages/slate-react/src/components/slate.tsx` for
+  `.tmp/slate-v2/packages/slate-react/src/components/slate.tsx` for
   `reactEditor` in a hook dependency array. This lane did not touch that file.
 
 ## Dirtiness API Review Pass
@@ -1318,18 +1314,18 @@ search highlighting is `dirtiness: 'text'`, not a hoisted
 
 Evidence:
 
-- `../slate-v2/site/examples/ts/search-highlighting.tsx:17` currently hoists
+- `.tmp/slate-v2/site/examples/ts/search-highlighting.tsx:17` currently hoists
   `['text', 'external']`; `:49` passes that tuple into the range hook.
-- `../slate-v2/packages/slate-react/src/hooks/use-slate-decoration-source.ts:35`
+- `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-decoration-source.ts:35`
   and `:77` read raw `options.dirtiness`; `:58` and `:104` put that raw value
   in the source identity deps. That makes inline array dirtiness recreate the
   source and forces examples toward a hoisted tuple workaround.
-- `../slate-v2/packages/slate-react/src/hooks/use-slate-decoration-source.ts:61`
+- `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-decoration-source.ts:61`
   and `:107` refresh the source from `deps` with `reason: 'external'` and no
   `change`.
-- `../slate-v2/packages/slate-react/src/projection-store.ts:147-164` maps
+- `.tmp/slate-v2/packages/slate-react/src/projection-store.ts:147-164` maps
   dirtiness to editor subscription sources; `external` adds no editor source.
-- `../slate-v2/packages/slate-react/src/projection-store.ts:206-229` treats a
+- `.tmp/slate-v2/packages/slate-react/src/projection-store.ts:206-229` treats a
   no-change refresh as dirty before checking the dirtiness class, so the hook
   `deps` refresh already recomputes for `dirtiness: 'text'`.
 
@@ -1415,11 +1411,11 @@ Planned focused gates:
 
 Completed implementation:
 
-- `../slate-v2/site/examples/ts/search-highlighting.tsx`: removed
+- `.tmp/slate-v2/site/examples/ts/search-highlighting.tsx`: removed
   `searchHighlightingDirtiness` and uses `dirtiness: 'text'` directly.
-- `../slate-v2/packages/slate-react/src/hooks/use-slate-decoration-source.ts`:
+- `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-decoration-source.ts`:
   added structural dirtiness-list identity for both decoration-source hooks.
-- `../slate-v2/packages/slate-react/test/app-owned-customization.tsx`: added
+- `.tmp/slate-v2/packages/slate-react/test/app-owned-customization.tsx`: added
   inline multi-class dirtiness coverage to both low-level and range hook source
   stability tests.
 - `docs/slate-v2/references/pr-description.md`: recorded that structurally
@@ -1431,7 +1427,7 @@ Verification:
 - `bun test ./packages/slate-react/test/projections-and-selection-contract.tsx`
 - `bun test ./packages/slate-react/test/app-owned-customization.tsx ./packages/slate-react/test/projections-and-selection-contract.tsx`
 - `bun --filter slate-react typecheck`
-- `bun tsc --project tsconfig.json` from `../slate-v2/site`
+- `bun tsc --project tsconfig.json` from `.tmp/slate-v2/site`
 - `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun run playwright playwright/integration/examples/search-highlighting.test.ts --project=chromium`
 - `bun lint`
 - `bun check`
@@ -1439,7 +1435,7 @@ Verification:
 Verification note:
 
 - `bun lint` and `bun check` exit `0` with the existing
-  `../slate-v2/packages/slate-react/src/components/slate.tsx` exhaustive-deps
+  `.tmp/slate-v2/packages/slate-react/src/components/slate.tsx` exhaustive-deps
   warning only. This lane did not touch that file.
 
 Completion:
@@ -1453,28 +1449,28 @@ Completion:
 
 Status: `complete`
 Trigger: user observed that `const path = useElementPath()` in
-`../slate-v2/site/examples/ts/code-highlighting.tsx` subscribes during render
+`.tmp/slate-v2/site/examples/ts/code-highlighting.tsx` subscribes during render
 even though the path is only needed by the language-select callback.
 
 Implementation:
 
-- `../slate-v2/site/examples/ts/code-highlighting.tsx`: removed
+- `.tmp/slate-v2/site/examples/ts/code-highlighting.tsx`: removed
   `useElementPath`; `setLanguage` now finds the current rendered code-block
   entry inside `editor.update` with `tx.nodes.find(...)`, then sets the
   language at that path.
-- `../slate-v2/playwright/integration/examples/code-highlighting.test.ts`:
+- `.tmp/slate-v2/playwright/integration/examples/code-highlighting.test.ts`:
   added browser coverage that changes the language select from `jsx` to
   `typescript`.
 
 Verification:
 
-- `bun tsc --project tsconfig.json` from `../slate-v2/site`
+- `bun tsc --project tsconfig.json` from `.tmp/slate-v2/site`
 - `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun run playwright playwright/integration/examples/code-highlighting.test.ts --project=chromium`
 - `bunx biome check site/examples/ts/code-highlighting.tsx playwright/integration/examples/code-highlighting.test.ts && bunx eslint site/examples/ts/code-highlighting.tsx playwright/integration/examples/code-highlighting.test.ts`
 
 Verification note:
 
 - Full `bun lint` / `bun check` is currently blocked by unrelated formatting
-  drift in `../slate-v2/packages/slate/src/core/editor-extension.ts` and
-  `../slate-v2/packages/slate/src/index.ts`. The touched files pass targeted
+  drift in `.tmp/slate-v2/packages/slate/src/core/editor-extension.ts` and
+  `.tmp/slate-v2/packages/slate/src/index.ts`. The touched files pass targeted
   Biome/ESLint, site typecheck, and focused browser proof.

@@ -42,7 +42,7 @@ that inline should remove the inline element, not leave an empty shell.
 ## Solution
 
 Add package proof for both accepted rows in
-`../slate-v2/packages/slate/test/delete-contract.ts`:
+`.tmp/slate-v2/packages/slate/test/delete-contract.ts`:
 
 - delete a full selection where the visible content starts with an inline link
 - delete a partial expanded range that starts at an inline link and ends after it

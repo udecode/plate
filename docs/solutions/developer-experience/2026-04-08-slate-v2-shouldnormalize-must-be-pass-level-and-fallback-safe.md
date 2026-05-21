@@ -11,7 +11,14 @@ symptoms:
 root_cause: wrong_api
 resolution_type: code_fix
 severity: medium
-tags: [slate-v2, normalization, should-normalize, extension-model, snapshot-contract]
+tags:
+  [
+    slate-v2,
+    normalization,
+    should-normalize,
+    extension-model,
+    snapshot-contract,
+  ]
 ---
 
 # Slate v2 shouldNormalize must be pass-level and fallback-safe
@@ -45,24 +52,24 @@ evaluate it once per pass with a safe fallback:
 ```ts
 const normalizeOptions: NormalizeNodeOptions = {
   operation: transaction.operations[transaction.operations.length - 1],
-}
+};
 const shouldNormalize =
   (editor as Partial<Editor>).shouldNormalize?.({
     iteration,
     operation: normalizeOptions.operation,
-  }) ?? true
+  }) ?? true;
 
 if (!shouldNormalize) {
-  return
+  return;
 }
 
 for (const entry of entries) {
-  const beforeMutationCount = transaction.mutationCount
-  editor.normalizeNode(entry, normalizeOptions)
+  const beforeMutationCount = transaction.mutationCount;
+  editor.normalizeNode(entry, normalizeOptions);
 
   if (transaction.mutationCount !== beforeMutationCount) {
-    changed = true
-    break
+    changed = true;
+    break;
   }
 }
 ```
@@ -92,5 +99,5 @@ method yet.
 
 ## Related Issues
 
-- [true-slate-rc-proof-ledger.md](../../slate-v2/true-slate-rc-proof-ledger.md)
+- [true-slate-rc-proof-ledger.md](../.tmp/slate-v2/true-slate-rc-proof-ledger.md)
 - [2026-04-08-slate-v2-normalization-policy-recovery.md](../../plans/2026-04-08-slate-v2-normalization-policy-recovery.md)

@@ -22,7 +22,7 @@
 - Existing `docs/` already contains active content under `analysis/`, `plans/`, `solutions/`, `performance/`, and `table/`.
 - The former internal docs tree contained additional `plans/`, `slate-browser/`, `slate-v2`, `slate-issues`, and extra `solutions/` subtrees.
 - This is a merge, not a rename.
-- The current `slate-browser` public tranche is already landed in `../slate-v2`.
+- The current `slate-browser` public tranche is already landed in `.tmp/slate-v2`.
 - The highest-leverage next move is not cross-browser or perf first.
 - The best next move is a stronger `openExample(...)` readiness contract, then a renderer/input-policy gauntlet for zero-width and IME-sensitive behavior.
 - The broader system objective is now explicit:
@@ -106,11 +106,11 @@
 - 2026-04-04: re-ran the candidate-repo API pass focused on next `slate-browser` helper shapes and added `docs/slate-browser/next-api-candidates.md`.
 - 2026-04-04: dug deeper into candidate helper shape and current Slate suite pain, then added `docs/slate-browser/next-api-candidates-matrix.md`.
 - 2026-04-04: completed the focused 4-way pass across Lexical, ProseMirror, Tiptap, and edix, then added `docs/slate-browser/four-way-api-deep-dive.md`.
-- 2026-04-04: implemented the Phase 1 `slate-browser` Playwright tranche in `../slate-v2/packages/slate-browser/src/playwright/index.ts`.
-- 2026-04-04: added red/green Playwright coverage for readiness, semantic selection setup, block-text assertions, and snapshots in `../slate-v2/playwright/integration/examples/slate-browser-helpers.test.ts`.
-- 2026-04-04: synced the public package README in `../slate-v2/packages/slate-browser/README.md`.
-- 2026-04-04: implemented the Phase 2 `slate-browser` Playwright tranche in `../slate-v2/packages/slate-browser/src/playwright/index.ts`.
-- 2026-04-04: added red/green Playwright coverage for tolerant selection assertions, selected-text getter, and normalized html equality in `../slate-v2/playwright/integration/examples/slate-browser-helpers.test.ts`.
+- 2026-04-04: implemented the Phase 1 `slate-browser` Playwright tranche in `.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts`.
+- 2026-04-04: added red/green Playwright coverage for readiness, semantic selection setup, block-text assertions, and snapshots in `.tmp/slate-v2/playwright/integration/examples/slate-browser-helpers.test.ts`.
+- 2026-04-04: synced the public package README in `.tmp/slate-v2/packages/slate-browser/README.md`.
+- 2026-04-04: implemented the Phase 2 `slate-browser` Playwright tranche in `.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts`.
+- 2026-04-04: added red/green Playwright coverage for tolerant selection assertions, selected-text getter, and normalized html equality in `.tmp/slate-v2/playwright/integration/examples/slate-browser-helpers.test.ts`.
 - 2026-04-04: re-verified:
   - `yarn workspace slate-browser test`
   - `yarn lint:typescript`
@@ -118,16 +118,16 @@
   - `PLAYWRIGHT_BASE_URL=http://localhost:3200 yarn test:slate-browser:ime`
   - `PLAYWRIGHT_BASE_URL=http://localhost:3200 yarn test:slate-browser:clipboard`
   - `PLAYWRIGHT_BASE_URL=http://localhost:3200 yarn test:slate-browser:anchors`
-- 2026-04-04: implemented the Phase 3 `slate-browser` Playwright tranche in `../slate-v2/packages/slate-browser/src/playwright/index.ts`.
-- 2026-04-04: added red/green Playwright coverage for clipboard reads, iframe/shadow surfaces, and block path locators in `../slate-v2/playwright/integration/examples/slate-browser-helpers.test.ts`.
+- 2026-04-04: implemented the Phase 3 `slate-browser` Playwright tranche in `.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts`.
+- 2026-04-04: added red/green Playwright coverage for clipboard reads, iframe/shadow surfaces, and block path locators in `.tmp/slate-v2/playwright/integration/examples/slate-browser-helpers.test.ts`.
 - 2026-04-04: re-verified the same package/lint/browser set after restoring the local Playwright Chromium installation.
 - 2026-04-04: exposed a deliberate Slate browser-test handle on legacy `Editable` roots and `slate-dom-v2` mounted roots so `slate-browser` can create real `RangeRef`-backed selection bookmarks.
-- 2026-04-04: added red/green Playwright coverage for captured selection bookmarks in `../slate-v2/playwright/integration/examples/slate-browser-helpers.test.ts`.
+- 2026-04-04: added red/green Playwright coverage for captured selection bookmarks in `.tmp/slate-v2/playwright/integration/examples/slate-browser-helpers.test.ts`.
 - 2026-04-04: verified the bookmark seam with a fresh local site server on `http://localhost:3210` because the shared `:3200` server was not a trustworthy target for app-runtime changes.
 - 2026-04-04: re-verified:
   - `yarn workspace slate-browser test`
   - `yarn lint:typescript`
   - `ROLLUP_PACKAGES=slate-browser,slate-react,slate-dom-v2 yarn build:rollup`
   - `PLAYWRIGHT_BASE_URL=http://localhost:3210 yarn exec playwright test /Users/zbeyens/git/slate-v2/playwright/integration/examples/slate-browser-helpers.test.ts --project=chromium --grep "captured selection bookmarks" --workers=1`
-- 2026-04-04: fixed the broken local Playwright runner path by adding `scripts/run-slate-browser-local.sh` and wiring fresh-server local commands in `../slate-v2/package.json`.
+- 2026-04-04: fixed the broken local Playwright runner path by adding `scripts/run-slate-browser-local.sh` and wiring fresh-server local commands in `.tmp/slate-v2/package.json`.
 - 2026-04-04: verified the fresh-server full helper suite with `yarn test:slate-browser:e2e:local`.

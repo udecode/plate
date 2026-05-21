@@ -10,13 +10,13 @@ status: active
 
 Front door to the live `slate-v2` migration program.
 
-This stack now describes the final-state program for the fresh `../slate-v2`
+This stack now describes the final-state program for the fresh `.tmp/slate-v2`
 clone. It is not the old rewrite archive.
 
 ## Current Read
 
-- `../slate-v2` is the live target
-- `../slate-v2-draft` is the evidence/value bank
+- `.tmp/slate-v2` is the live target
+- `.tmp/slate-v2-draft` is the evidence/value bank
 - `docs/slate-v2/**` is the final-state spec lane
 - `docs/slate-v2-draft/**` is the archived prior doc lane
 - tranche 1 is complete:
@@ -69,7 +69,7 @@ clone. It is not the old rewrite archive.
 10. [fresh-branch-migration-plan.md](/Users/zbeyens/git/plate-2/docs/slate-v2/fresh-branch-migration-plan.md)
 11. [release-file-review-ledger.md](/Users/zbeyens/git/plate-2/docs/slate-v2/release-file-review-ledger.md)
 12. historical context only:
-   [2026-04-18-001-refactor-slate-v2-parity-first-migration-plan.md](/Users/zbeyens/git/plate-2/docs/plans/2026-04-18-001-refactor-slate-v2-parity-first-migration-plan.md)
+    [2026-04-18-001-refactor-slate-v2-parity-first-migration-plan.md](/Users/zbeyens/git/plate-2/docs/plans/2026-04-18-001-refactor-slate-v2-parity-first-migration-plan.md)
 13. [decoration-roadmap.md](/Users/zbeyens/git/plate-2/docs/slate-v2/decoration-roadmap.md)
 14. [decorations-annotations-cluster.md](/Users/zbeyens/git/plate-2/docs/slate-v2/decorations-annotations-cluster.md)
 15. [references/chunking-review.md](/Users/zbeyens/git/plate-2/docs/slate-v2/references/chunking-review.md)
@@ -79,16 +79,16 @@ clone. It is not the old rewrite archive.
 
 ## Ownership
 
-| Class | Owner |
-| --- | --- |
-| architecture claim | [absolute-architecture-release-claim.md](/Users/zbeyens/git/plate-2/docs/slate-v2/absolute-architecture-release-claim.md) |
-| execution plan | [2026-04-25-slate-v2-editing-epoch-kernel-regression-closure-plan.md](/Users/zbeyens/git/plate-2/docs/plans/2026-04-25-slate-v2-editing-epoch-kernel-regression-closure-plan.md), [2026-04-24-slate-v2-post-closure-proof-hardening-plan.md](/Users/zbeyens/git/plate-2/docs/plans/2026-04-24-slate-v2-post-closure-proof-hardening-plan.md), [2026-04-24-slate-v2-absolute-architecture-closure-plan.md](/Users/zbeyens/git/plate-2/docs/plans/2026-04-24-slate-v2-absolute-architecture-closure-plan.md), and [fresh-branch-migration-plan.md](/Users/zbeyens/git/plate-2/docs/slate-v2/fresh-branch-migration-plan.md) |
-| tranche order | [master-roadmap.md](/Users/zbeyens/git/plate-2/docs/slate-v2/master-roadmap.md) |
-| review state | [release-file-review-ledger.md](/Users/zbeyens/git/plate-2/docs/slate-v2/release-file-review-ledger.md) |
-| readiness claim | [release-readiness-decision.md](/Users/zbeyens/git/plate-2/docs/slate-v2/release-readiness-decision.md) |
-| gate status | [replacement-gates-scoreboard.md](/Users/zbeyens/git/plate-2/docs/slate-v2/replacement-gates-scoreboard.md) |
-| proof status | [true-slate-rc-proof-ledger.md](/Users/zbeyens/git/plate-2/docs/slate-v2/true-slate-rc-proof-ledger.md) |
-| maintainer drift story | [pr-description.md](/Users/zbeyens/git/plate-2/docs/slate-v2/references/pr-description.md) |
+| Class                  | Owner                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| architecture claim     | [absolute-architecture-release-claim.md](/Users/zbeyens/git/plate-2/docs/slate-v2/absolute-architecture-release-claim.md)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| execution plan         | [2026-04-25-slate-v2-editing-epoch-kernel-regression-closure-plan.md](/Users/zbeyens/git/plate-2/docs/plans/2026-04-25-slate-v2-editing-epoch-kernel-regression-closure-plan.md), [2026-04-24-slate-v2-post-closure-proof-hardening-plan.md](/Users/zbeyens/git/plate-2/docs/plans/2026-04-24-slate-v2-post-closure-proof-hardening-plan.md), [2026-04-24-slate-v2-absolute-architecture-closure-plan.md](/Users/zbeyens/git/plate-2/docs/plans/2026-04-24-slate-v2-absolute-architecture-closure-plan.md), and [fresh-branch-migration-plan.md](/Users/zbeyens/git/plate-2/docs/slate-v2/fresh-branch-migration-plan.md) |
+| tranche order          | [master-roadmap.md](/Users/zbeyens/git/plate-2/docs/slate-v2/master-roadmap.md)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| review state           | [release-file-review-ledger.md](/Users/zbeyens/git/plate-2/docs/slate-v2/release-file-review-ledger.md)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| readiness claim        | [release-readiness-decision.md](/Users/zbeyens/git/plate-2/docs/slate-v2/release-readiness-decision.md)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| gate status            | [replacement-gates-scoreboard.md](/Users/zbeyens/git/plate-2/docs/slate-v2/replacement-gates-scoreboard.md)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| proof status           | [true-slate-rc-proof-ledger.md](/Users/zbeyens/git/plate-2/docs/slate-v2/true-slate-rc-proof-ledger.md)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| maintainer drift story | [pr-description.md](/Users/zbeyens/git/plate-2/docs/slate-v2/references/pr-description.md)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
 
 ## Archive Rule
 

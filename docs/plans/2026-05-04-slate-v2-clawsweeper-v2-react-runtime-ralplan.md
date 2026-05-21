@@ -60,7 +60,7 @@ Desired outcome:
 
 In scope:
 
-- `../slate-v2/packages/slate-react` provider, hooks, selector runtime,
+- `.tmp/slate-v2/packages/slate-react` provider, hooks, selector runtime,
   projection stores, annotation/widget stores, focus/scroll lifecycle, and
   React-visible render contracts;
 - browser/example proof only where focus, selection, scroll, or render behavior
@@ -103,25 +103,25 @@ Unresolved user-decision points:
   lifecycle, focus timing, placeholder/render timing, editor replacement
   semantics, React-facing lifecycle integration, and render-time decoration or
   annotation projection.
-- `../slate-v2/packages/slate-react/src/components/slate.tsx:96` creates the
+- `.tmp/slate-v2/packages/slate-react/src/components/slate.tsx:96` creates the
   selector context, `:108` subscribes to editor commits, `:123` batches commit
   fanout, `:162` dispatches selector updates, `:175` composes decoration and
   annotation projection sources, and `:216` publishes the provider stack.
-- `../slate-v2/packages/slate-react/src/hooks/use-editor-selector.tsx:66`
+- `.tmp/slate-v2/packages/slate-react/src/hooks/use-editor-selector.tsx:66`
   exposes `useEditorSelector`, `:135` exposes `useEditorState`, and `:171`
   owns global/runtime/deferred selector fanout.
-- `../slate-v2/packages/slate-react/test/provider-hooks-contract.tsx:53`
+- `.tmp/slate-v2/packages/slate-react/test/provider-hooks-contract.tsx:53`
   proves `useEditor` updates when `<Slate editor>` changes, `:127` proves
   selector `shouldUpdate` receives commit facts, and `:182` proves
   `useEditorState` reads through `editor.read`.
-- `../slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx:105`
+- `.tmp/slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx:105`
   proves product-noun decoration sources, overlapping projections, and
   cross-node projection behavior.
-- `../slate-v2/packages/slate-react/test/annotation-store-contract.tsx:126`
+- `.tmp/slate-v2/packages/slate-react/test/annotation-store-contract.tsx:126`
   proves one annotation entity drives inline projection and sidebar state.
-- `../slate-v2/packages/slate-react/test/widget-layer-contract.tsx:88` proves
+- `.tmp/slate-v2/packages/slate-react/test/widget-layer-contract.tsx:88` proves
   selection widgets toggle without rerendering text slices.
-- `../slate-v2/packages/slate-react/test/surface-contract.tsx:152` fences
+- `.tmp/slate-v2/packages/slate-react/test/surface-contract.tsx:152` fences
   generic selector ownership to named surfaces.
 
 Current-state read result:
@@ -163,13 +163,13 @@ Drivers:
 
 Options:
 
-| Option | Verdict | Why |
-| --- | --- | --- |
-| Make core Slate React-shaped | reject | Solves adapter pressure by polluting the data model. |
-| Keep broad provider invalidation as normal | reject | Recreates render-breadth and focus churn issues. |
-| Add product-specific annotation/comment APIs | reject | Plate/product lane, not raw Slate. |
-| Selector-first React runtime with sidecar stores | choose | Matches live source, issue pressure, and performance constraints. |
-| Focus only on projection rows | reject for cluster | Projection is important, but the bucket also covers provider replacement, focus, scroll, readonly/static rendering, hook typing, and placeholder rendering. |
+| Option                                           | Verdict            | Why                                                                                                                                                         |
+| ------------------------------------------------ | ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Make core Slate React-shaped                     | reject             | Solves adapter pressure by polluting the data model.                                                                                                        |
+| Keep broad provider invalidation as normal       | reject             | Recreates render-breadth and focus churn issues.                                                                                                            |
+| Add product-specific annotation/comment APIs     | reject             | Plate/product lane, not raw Slate.                                                                                                                          |
+| Selector-first React runtime with sidecar stores | choose             | Matches live source, issue pressure, and performance constraints.                                                                                           |
+| Focus only on projection rows                    | reject for cluster | Projection is important, but the bucket also covers provider replacement, focus, scroll, readonly/static rendering, hook typing, and placeholder rendering. |
 
 Chosen shape:
 
@@ -208,13 +208,13 @@ Keep the public direction:
 Recommended hot-path hooks:
 
 ```ts
-useEditorState(selector, options)
-useEditorSelector(selector, equalityFn, options)
-useNodeSelector(selector, equalityFn, options)
-useTextSelector(selector, equalityFn, options)
-useSlateProjections(runtimeId)
-useSlateAnnotation(id)
-useSlateWidget(store, id)
+useEditorState(selector, options);
+useEditorSelector(selector, equalityFn, options);
+useNodeSelector(selector, equalityFn, options);
+useTextSelector(selector, equalityFn, options);
+useSlateProjections(runtimeId);
+useSlateAnnotation(id);
+useSlateWidget(store, id);
 ```
 
 Hard cut:
@@ -259,18 +259,18 @@ ClawSweeper related issue pass:
 
 Classification result:
 
-| Family | Issues | Classification | Reason |
-| --- | --- | --- | --- |
-| provider identity / external React stores | #3478, #3497, #5509 | Related | architecture owner is React runtime/focus/subscription; exact Redux/MobX/parent-state repros are not replayed |
-| projection / decoration / annotation sidecars | #5987, #4483, #4477, #4392, #3382, #3352 | Improves | existing projection, annotation, widget, and render-breadth proof materially addresses pressure without claiming legacy API closure |
-| decoration/mark semantics candidate | #3383, #3309 | Related | v2 projection model is the owner, but exact overlapping-mark and Firefox decorated-selection repros are not proven |
-| inline and gesture selection | #5806, #5690, #5689 | Related | require browser gesture proof around inline/custom boundaries |
-| scroll and focus lifecycle | #5826, #5473, #4995, #4590 | Related | require exact refocus/delete/arrow/custom-boundary browser proof |
-| native input event pass-through | #5603, #5669 | Related | already covered by input-runtime dossier; no React-runtime claim change |
-| hook and component typing | #5404, #4366 | Related | v2 hook/component typing surface is cleaner, but legacy exact API closure is not claimed |
-| placeholder rendering | #4315, #4221, #2608 | Related | placeholder owner is React runtime; exact symbol/select-all/alignment proof missing |
-| readonly/static/custom surface | #4311, #4025, #3924, #3892 | Related / Not claimed | static/readOnly pressure is valid; custom layout engine is ecosystem/product territory |
-| mark query/rendered editor state | #4298, #4225 | Related | needs focused mark-query/hook proof |
+| Family                                        | Issues                                   | Classification        | Reason                                                                                                                              |
+| --------------------------------------------- | ---------------------------------------- | --------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| provider identity / external React stores     | #3478, #3497, #5509                      | Related               | architecture owner is React runtime/focus/subscription; exact Redux/MobX/parent-state repros are not replayed                       |
+| projection / decoration / annotation sidecars | #5987, #4483, #4477, #4392, #3382, #3352 | Improves              | existing projection, annotation, widget, and render-breadth proof materially addresses pressure without claiming legacy API closure |
+| decoration/mark semantics candidate           | #3383, #3309                             | Related               | v2 projection model is the owner, but exact overlapping-mark and Firefox decorated-selection repros are not proven                  |
+| inline and gesture selection                  | #5806, #5690, #5689                      | Related               | require browser gesture proof around inline/custom boundaries                                                                       |
+| scroll and focus lifecycle                    | #5826, #5473, #4995, #4590               | Related               | require exact refocus/delete/arrow/custom-boundary browser proof                                                                    |
+| native input event pass-through               | #5603, #5669                             | Related               | already covered by input-runtime dossier; no React-runtime claim change                                                             |
+| hook and component typing                     | #5404, #4366                             | Related               | v2 hook/component typing surface is cleaner, but legacy exact API closure is not claimed                                            |
+| placeholder rendering                         | #4315, #4221, #2608                      | Related               | placeholder owner is React runtime; exact symbol/select-all/alignment proof missing                                                 |
+| readonly/static/custom surface                | #4311, #4025, #3924, #3892               | Related / Not claimed | static/readOnly pressure is valid; custom layout engine is ecosystem/product territory                                              |
+| mark query/rendered editor state              | #4298, #4225                             | Related               | needs focused mark-query/hook proof                                                                                                 |
 
 Fixed issues:
 
@@ -375,15 +375,15 @@ Research/live-source refresh:
   fans broad selector listeners on every editor change. This is the residual
   shape v2 is cutting away.
 - Current Slate v2:
-  `../slate-v2/packages/slate-react/src/components/slate.tsx:96`-`:172`
-  publishes commit-aware selector dispatch; `../slate-v2/packages/slate-react/src/hooks/use-editor-selector.tsx:171`-`:236`
-  has global, runtime-id, and deferred selector fanout; `../slate-v2/packages/slate-react/src/hooks/use-slate-projections.tsx:27`-`:57`
+  `.tmp/slate-v2/packages/slate-react/src/components/slate.tsx:96`-`:172`
+  publishes commit-aware selector dispatch; `.tmp/slate-v2/packages/slate-react/src/hooks/use-editor-selector.tsx:171`-`:236`
+  has global, runtime-id, and deferred selector fanout; `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-projections.tsx:27`-`:57`
   uses runtime-id projection subscriptions; and
-  `../slate-v2/packages/slate-react/src/hooks/use-decoration-selector.tsx:42`-`:79`
+  `.tmp/slate-v2/packages/slate-react/src/hooks/use-decoration-selector.tsx:42`-`:79`
   scopes decoration reads to the runtime-id store. Existing tests at
-  `../slate-v2/packages/slate-react/test/provider-hooks-contract.tsx:53`-`:125`,
-  `../slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx:404`-`:443`,
-  and `../slate-v2/packages/slate-react/test/annotation-store-contract.tsx:486`-`:545`
+  `.tmp/slate-v2/packages/slate-react/test/provider-hooks-contract.tsx:53`-`:125`,
+  `.tmp/slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx:404`-`:443`,
+  and `.tmp/slate-v2/packages/slate-react/test/annotation-store-contract.tsx:486`-`:545`
   already prove the first layer of provider replacement, selector equality,
   runtime projection wakeup, and annotation/projection split.
 
@@ -398,14 +398,14 @@ Research verdict:
 
 ## Confidence Score
 
-| Dimension | Weight | Score | Evidence |
-| --- | ---: | ---: | --- |
-| React 19.2 runtime performance | 0.20 | 0.93 | selector/runtime fanout has cohort budgets, repeated-unit budgets, benchmark commands, maintainer objection rows, and no ledger drift |
-| Slate-close unopinionated DX | 0.20 | 0.92 | provider/hooks stay Slate-close; broad hooks remain allowed while selector-first is the hot-path contract |
-| Plate and slate-yjs migration backbone | 0.15 | 0.88 | migration is substrate-level with explicit runtime-id, bookmark, extension namespace, transaction fact, and commit metadata expectations |
-| Regression-proof testing strategy | 0.20 | 0.93 | unit, browser, benchmark, native-behavior, TDD, and high-risk pre-mortem gates are selected and scoped |
-| Research evidence completeness | 0.15 | 0.92 | compiled research, live source, issue matrix, fork dossier, coverage matrix, PR reference, and benchmark surfaces were checked |
-| shadcn-style composability and minimal hooks | 0.10 | 0.91 | hook/store families stay small; product-shaped APIs, hook sprawl, and command-first authoring remain rejected |
+| Dimension                                    | Weight | Score | Evidence                                                                                                                                 |
+| -------------------------------------------- | -----: | ----: | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| React 19.2 runtime performance               |   0.20 |  0.93 | selector/runtime fanout has cohort budgets, repeated-unit budgets, benchmark commands, maintainer objection rows, and no ledger drift    |
+| Slate-close unopinionated DX                 |   0.20 |  0.92 | provider/hooks stay Slate-close; broad hooks remain allowed while selector-first is the hot-path contract                                |
+| Plate and slate-yjs migration backbone       |   0.15 |  0.88 | migration is substrate-level with explicit runtime-id, bookmark, extension namespace, transaction fact, and commit metadata expectations |
+| Regression-proof testing strategy            |   0.20 |  0.93 | unit, browser, benchmark, native-behavior, TDD, and high-risk pre-mortem gates are selected and scoped                                   |
+| Research evidence completeness               |   0.15 |  0.92 | compiled research, live source, issue matrix, fork dossier, coverage matrix, PR reference, and benchmark surfaces were checked           |
+| shadcn-style composability and minimal hooks |   0.10 |  0.91 | hook/store families stay small; product-shaped APIs, hook sprawl, and command-first authoring remain rejected                            |
 
 Total: `0.92`.
 
@@ -414,16 +414,16 @@ issue claims were added.
 
 ## Pass Schedule And State Ledger
 
-| Pass | Status | Evidence added | Plan delta | Open issues | Next owner |
-| --- | --- | --- | --- | --- | --- |
-| current-state-read-and-initial-score | complete | full issue matrix, requirements, issue coverage, live `slate-react` source/tests | selected `v2-react-runtime` and scored `0.78` | ClawSweeper not run for this bucket | related-issue-discovery-pass |
-| related-issue-discovery-pass | complete | gitcrawl doctor, clusters `3`, `10`, `19`, singleton thread batch, live ledger rows, current dossier | classified React runtime/projection families; added missing dossier sections; score moved to `0.81` | issue matrix reroute candidates #5509/#3309; no exact claim changes | issue-ledger-pass |
-| issue-ledger-pass | complete | issue matrix, open issue ledger, live gitcrawl ledger, fork dossier, issue coverage matrix | rerouted #5509/#3309 from `v2-input-runtime` to `v2-react-runtime`; score moved to `0.84` | no exact claim changes; PR reference unchanged | research-and-live-source-refresh |
-| research-and-live-source-refresh | complete | live React, Lexical, ProseMirror, Tiptap, Slate legacy, Slate v2 source; compiled research pages | kept direction; added dirty-set, DOM bridge, NodeView/contentDOM, mapped-decoration, and Tiptap selector/DX evidence; score moved to `0.86` | proof gates still need prioritization | performance-dx-migration-proof-pass |
-| performance-dx-migration-proof-pass | complete | performance rules, live benchmark command surface, render-profiler contracts, stress browser budget tests, native-behavior policy rows | added cohort, repeated-unit, unit/browser/bench, React 19, TDD, and migration-substrate gates; score moved to `0.88` | objection/high-risk pass still needs to challenge the gate set before closure | objection-and-high-risk-pass |
-| objection-and-high-risk-pass | complete | steelman rows, high-risk trigger, blast radius, pre-mortem, expanded proof plan | kept the architecture; revised proof policy around broad hooks, benchmark scope, React `Activity`, shell/stress degradation, issue claims, and migration non-claims; score moved to `0.89` | issue-sync pass must decide whether any ledger/PR reference needs a no-op note | issue-sync-accounting-pass |
-| issue-sync-accounting-pass | complete | issue coverage matrix, fork dossier, PR reference, live gitcrawl ledger, issue matrix claim rows | confirmed no new fixed/improves/related claim changes after performance and objection passes; no PR reference edit needed; score moved to `0.90` | closure score and handoff still pending | closure-score-and-handoff |
-| closure-score-and-handoff | complete | final score, accepted decisions, hard cuts, execution handoff | marked plan ready for `ralph`; score moved to `0.92`; no new issue claims | none for this ralplan | ralph |
+| Pass                                 | Status   | Evidence added                                                                                                                         | Plan delta                                                                                                                                                                                 | Open issues                                                                    | Next owner                          |
+| ------------------------------------ | -------- | -------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------ | ----------------------------------- |
+| current-state-read-and-initial-score | complete | full issue matrix, requirements, issue coverage, live `slate-react` source/tests                                                       | selected `v2-react-runtime` and scored `0.78`                                                                                                                                              | ClawSweeper not run for this bucket                                            | related-issue-discovery-pass        |
+| related-issue-discovery-pass         | complete | gitcrawl doctor, clusters `3`, `10`, `19`, singleton thread batch, live ledger rows, current dossier                                   | classified React runtime/projection families; added missing dossier sections; score moved to `0.81`                                                                                        | issue matrix reroute candidates #5509/#3309; no exact claim changes            | issue-ledger-pass                   |
+| issue-ledger-pass                    | complete | issue matrix, open issue ledger, live gitcrawl ledger, fork dossier, issue coverage matrix                                             | rerouted #5509/#3309 from `v2-input-runtime` to `v2-react-runtime`; score moved to `0.84`                                                                                                  | no exact claim changes; PR reference unchanged                                 | research-and-live-source-refresh    |
+| research-and-live-source-refresh     | complete | live React, Lexical, ProseMirror, Tiptap, Slate legacy, Slate v2 source; compiled research pages                                       | kept direction; added dirty-set, DOM bridge, NodeView/contentDOM, mapped-decoration, and Tiptap selector/DX evidence; score moved to `0.86`                                                | proof gates still need prioritization                                          | performance-dx-migration-proof-pass |
+| performance-dx-migration-proof-pass  | complete | performance rules, live benchmark command surface, render-profiler contracts, stress browser budget tests, native-behavior policy rows | added cohort, repeated-unit, unit/browser/bench, React 19, TDD, and migration-substrate gates; score moved to `0.88`                                                                       | objection/high-risk pass still needs to challenge the gate set before closure  | objection-and-high-risk-pass        |
+| objection-and-high-risk-pass         | complete | steelman rows, high-risk trigger, blast radius, pre-mortem, expanded proof plan                                                        | kept the architecture; revised proof policy around broad hooks, benchmark scope, React `Activity`, shell/stress degradation, issue claims, and migration non-claims; score moved to `0.89` | issue-sync pass must decide whether any ledger/PR reference needs a no-op note | issue-sync-accounting-pass          |
+| issue-sync-accounting-pass           | complete | issue coverage matrix, fork dossier, PR reference, live gitcrawl ledger, issue matrix claim rows                                       | confirmed no new fixed/improves/related claim changes after performance and objection passes; no PR reference edit needed; score moved to `0.90`                                           | closure score and handoff still pending                                        | closure-score-and-handoff           |
+| closure-score-and-handoff            | complete | final score, accepted decisions, hard cuts, execution handoff                                                                          | marked plan ready for `ralph`; score moved to `0.92`; no new issue claims                                                                                                                  | none for this ralplan                                                          | ralph                               |
 
 ## Implementation Phases Draft
 
@@ -476,13 +476,13 @@ Performance/DX/migration proof pass result:
 
 Workload cohorts:
 
-| Cohort | Size / shape | Default contract |
-| --- | --- | --- |
-| normal | `0`-`500` blocks | DOM-present, no degraded native behavior |
-| medium | `500`-`2000` blocks | DOM-present, strict repeated-unit budget |
-| large | `2000`-`10000` blocks | DOM-present grouping or staged readiness only when native behavior remains classified and measured |
-| stress | `10000`-`50000` blocks | explicit opt-in degradation candidate; no native-equivalence claim |
-| pathological | custom renderers, many decoration sources, annotations, widgets, voids, hidden boundaries, tables, IME/mobile | must carry separate browser/native proof rows |
+| Cohort       | Size / shape                                                                                                  | Default contract                                                                                   |
+| ------------ | ------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| normal       | `0`-`500` blocks                                                                                              | DOM-present, no degraded native behavior                                                           |
+| medium       | `500`-`2000` blocks                                                                                           | DOM-present, strict repeated-unit budget                                                           |
+| large        | `2000`-`10000` blocks                                                                                         | DOM-present grouping or staged readiness only when native behavior remains classified and measured |
+| stress       | `10000`-`50000` blocks                                                                                        | explicit opt-in degradation candidate; no native-equivalence claim                                 |
+| pathological | custom renderers, many decoration sources, annotations, widgets, voids, hidden boundaries, tables, IME/mobile | must carry separate browser/native proof rows                                                      |
 
 Repeated-unit budgets:
 
@@ -510,7 +510,7 @@ Repeated-unit budgets:
 Required unit gates:
 
 ```bash
-cd ../slate-v2
+cd .tmp/slate-v2
 bun --filter slate-react test:vitest -- provider-hooks-contract projections-and-selection-contract annotation-store-contract widget-layer-contract surface-contract render-profiler-contract rendering-strategy-and-scroll
 bun --filter slate-react typecheck
 ```
@@ -518,7 +518,7 @@ bun --filter slate-react typecheck
 Required benchmark gates:
 
 ```bash
-cd ../slate-v2
+cd .tmp/slate-v2
 bun run bench:react:rerender-breadth:local
 bun run bench:react:huge-document-overlays:local
 bun run bench:react:huge-document:legacy-compare:local
@@ -526,7 +526,7 @@ bun run bench:core:refs-projection:local
 ```
 
 Benchmark artifacts must use the existing command surface in
-`../slate-v2/scripts/benchmarks/README.md`, including the current JSON outputs
+`.tmp/slate-v2/scripts/benchmarks/README.md`, including the current JSON outputs
 under `packages/slate-react/tmp/` and `.tmp/`. Do not add parallel benchmark
 files unless a new metric changes a release decision.
 
@@ -547,14 +547,14 @@ Required browser/stress gates:
 
 Native behavior classification:
 
-| Surface | Normal/medium/large DOM-present | Shell/virtualized/stress |
-| --- | --- | --- |
-| browser find | native or explicitly `nativeSurfaceComplete`-gated | `not-native-until-mounted` |
-| native selection | DOM bridge owns import/export | `model-backed` or materialize-first |
-| copy/select-all | native/model payload must match current policy | model-backed payload with explicit policy |
-| paste | never into stale/missing DOM | materialize or reject by policy |
-| IME/mobile touch | urgent target must already be mounted | materialize before target interaction |
-| undo/history/collab | commit facts and runtime ids drive selectors | no mount-state pollution in history |
+| Surface             | Normal/medium/large DOM-present                    | Shell/virtualized/stress                  |
+| ------------------- | -------------------------------------------------- | ----------------------------------------- |
+| browser find        | native or explicitly `nativeSurfaceComplete`-gated | `not-native-until-mounted`                |
+| native selection    | DOM bridge owns import/export                      | `model-backed` or materialize-first       |
+| copy/select-all     | native/model payload must match current policy     | model-backed payload with explicit policy |
+| paste               | never into stale/missing DOM                       | materialize or reject by policy           |
+| IME/mobile touch    | urgent target must already be mounted              | materialize before target interaction     |
+| undo/history/collab | commit facts and runtime ids drive selectors       | no mount-state pollution in history       |
 
 React 19 rule:
 
@@ -608,8 +608,8 @@ High-risk trigger:
 
 Blast radius:
 
-- packages: primarily `../slate-v2/packages/slate-react`, with DOM bridge
-  pressure in `../slate-v2/packages/slate-dom` when browser behavior is touched;
+- packages: primarily `.tmp/slate-v2/packages/slate-react`, with DOM bridge
+  pressure in `.tmp/slate-v2/packages/slate-dom` when browser behavior is touched;
 - consumers: raw Slate React users, Plate, slate-yjs-style collaboration
   consumers, examples, and docs;
 - behavior: editor identity, render breadth, selection/focus repair,
@@ -620,18 +620,18 @@ Blast radius:
 
 Maintainer objection rows:
 
-| Decision | Strongest fair objection | Verdict | Accepted revision |
-| --- | --- | --- | --- |
-| Selector-first React runtime | "This can become a custom mini React store that is harder to reason about than context." | keep | selectors must stay commit-fact based, runtime/source scoped, and measured with render-profiler and benchmark rows |
-| Broad hooks remain available | "`useEditor` and broad selectors will let users recreate render-breadth bugs." | revise | broad hooks are allowed by contract, but hot-path docs/proof must point to narrow selectors and sidecars |
-| Projection/annotation/widget sidecars | "This splits behavior across stores and can hide stale projection or copy/selection bugs." | keep | sidecar updates need runtime-id/source-id wakeup proof plus browser/native behavior proof when they affect visible text |
-| Focus/scroll/readOnly/static proof | "This bucket can balloon into every old browser bug." | revise | exact issue claims require exact browser repro proof; otherwise rows stay `Related` |
-| Performance benchmark gates | "Running all benchmarks for every slice is too slow and will rot." | revise | unit gates are per-slice; benchmark gates are bucket/release proof before performance claims |
-| React 19 `Activity` | "People will use Activity as virtualized editable-body support and call it done." | hard cut | `Activity` is only for hidden/background UI; editable missing-DOM uses DOM coverage policy, not React hiding |
-| Shell/stress degradation | "Classifying degraded native behavior normalizes a worse editor." | hard cut | shell/virtualized/stress remain explicit opt-in/non-default and cannot claim native equivalence |
-| Plate/slate-yjs migration substrate | "Substrate proof is too vague to help real migrations." | revise | require runtime ids/bookmarks, extension namespaces, transaction facts, and commit metadata when implementation touches migration surfaces |
-| Issue claims | "The plan can sound like it fixes #3478/#3497/#5509 without replaying them." | keep hard boundary | exact fixed claims remain only #6013, #5605, #5709 until current repro proof lands |
-| Hook/store surface area | "Too many hooks can become API sprawl." | revise | keep one canonical selector path and treat convenience hooks as proven wrappers, not independent concepts |
+| Decision                              | Strongest fair objection                                                                   | Verdict            | Accepted revision                                                                                                                          |
+| ------------------------------------- | ------------------------------------------------------------------------------------------ | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| Selector-first React runtime          | "This can become a custom mini React store that is harder to reason about than context."   | keep               | selectors must stay commit-fact based, runtime/source scoped, and measured with render-profiler and benchmark rows                         |
+| Broad hooks remain available          | "`useEditor` and broad selectors will let users recreate render-breadth bugs."             | revise             | broad hooks are allowed by contract, but hot-path docs/proof must point to narrow selectors and sidecars                                   |
+| Projection/annotation/widget sidecars | "This splits behavior across stores and can hide stale projection or copy/selection bugs." | keep               | sidecar updates need runtime-id/source-id wakeup proof plus browser/native behavior proof when they affect visible text                    |
+| Focus/scroll/readOnly/static proof    | "This bucket can balloon into every old browser bug."                                      | revise             | exact issue claims require exact browser repro proof; otherwise rows stay `Related`                                                        |
+| Performance benchmark gates           | "Running all benchmarks for every slice is too slow and will rot."                         | revise             | unit gates are per-slice; benchmark gates are bucket/release proof before performance claims                                               |
+| React 19 `Activity`                   | "People will use Activity as virtualized editable-body support and call it done."          | hard cut           | `Activity` is only for hidden/background UI; editable missing-DOM uses DOM coverage policy, not React hiding                               |
+| Shell/stress degradation              | "Classifying degraded native behavior normalizes a worse editor."                          | hard cut           | shell/virtualized/stress remain explicit opt-in/non-default and cannot claim native equivalence                                            |
+| Plate/slate-yjs migration substrate   | "Substrate proof is too vague to help real migrations."                                    | revise             | require runtime ids/bookmarks, extension namespaces, transaction facts, and commit metadata when implementation touches migration surfaces |
+| Issue claims                          | "The plan can sound like it fixes #3478/#3497/#5509 without replaying them."               | keep hard boundary | exact fixed claims remain only #6013, #5605, #5709 until current repro proof lands                                                         |
+| Hook/store surface area               | "Too many hooks can become API sprawl."                                                    | revise             | keep one canonical selector path and treat convenience hooks as proven wrappers, not independent concepts                                  |
 
 Three-scenario pre-mortem:
 
@@ -746,7 +746,7 @@ Accepted decisions:
 - keep raw Slate's React runtime selector-first and sidecar-driven;
 - keep broad hooks available but not recommended for hot repeated units;
 - keep product-shaped comment/widget APIs out of raw Slate;
-- use existing `../slate-v2` unit, stress, and benchmark surfaces as the proof
+- use existing `.tmp/slate-v2` unit, stress, and benchmark surfaces as the proof
   backbone;
 - treat React `Activity` as hidden/background UI only, never as editable
   missing-DOM support;
@@ -806,10 +806,10 @@ Current closure result:
 
 ## Ralph Execution Ledger
 
-| Pass | Status | Evidence added | Plan delta | Open issues | Next owner |
-| --- | --- | --- | --- | --- | --- |
-| provider-hook-identity-selector-fanout | complete | `EditorSelectorOptions<TEditor>` red/green type contract; focused provider/surface tests; package typecheck now includes the generic selector contract | exported typed selector options and kept internal selector fanout raw; PR reference synced for public hook typing | no issue claim changes | projection-annotation-widget-sidecars |
-| projection-annotation-widget-sidecars | complete | projection, annotation, widget, render-profiler, and rendering-strategy unit gate green | no code delta; existing sidecar proof remains current | no issue claim changes | browser-visible-lifecycle |
-| browser-visible-lifecycle | skipped | current code slice changed selector type surface only; no focus, scroll, selection, static rendering, placeholder, void, or browser route behavior changed | browser gate remains required for future browser-visible deltas | no issue claim changes | performance-artifacts |
-| performance-artifacts | skipped | no performance claim changed | benchmark gates remain release/performance-claim gates | no issue claim changes | migration-and-ledger-sync |
-| migration-and-ledger-sync | complete | issue coverage unchanged; PR reference synced for public API shape | execution checkpoint updated; `.tmp/continue.md` remains the next-pass handoff | no issue claim changes | complete-or-next-cluster |
+| Pass                                   | Status   | Evidence added                                                                                                                                             | Plan delta                                                                                                        | Open issues            | Next owner                            |
+| -------------------------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ---------------------- | ------------------------------------- |
+| provider-hook-identity-selector-fanout | complete | `EditorSelectorOptions<TEditor>` red/green type contract; focused provider/surface tests; package typecheck now includes the generic selector contract     | exported typed selector options and kept internal selector fanout raw; PR reference synced for public hook typing | no issue claim changes | projection-annotation-widget-sidecars |
+| projection-annotation-widget-sidecars  | complete | projection, annotation, widget, render-profiler, and rendering-strategy unit gate green                                                                    | no code delta; existing sidecar proof remains current                                                             | no issue claim changes | browser-visible-lifecycle             |
+| browser-visible-lifecycle              | skipped  | current code slice changed selector type surface only; no focus, scroll, selection, static rendering, placeholder, void, or browser route behavior changed | browser gate remains required for future browser-visible deltas                                                   | no issue claim changes | performance-artifacts                 |
+| performance-artifacts                  | skipped  | no performance claim changed                                                                                                                               | benchmark gates remain release/performance-claim gates                                                            | no issue claim changes | migration-and-ledger-sync             |
+| migration-and-ledger-sync              | complete | issue coverage unchanged; PR reference synced for public API shape                                                                                         | execution checkpoint updated; `.tmp/continue.md` remains the next-pass handoff                                    | no issue claim changes | complete-or-next-cluster              |

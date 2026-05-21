@@ -57,11 +57,11 @@ Desired outcome:
 
 In scope:
 
-- `../slate-v2/packages/slate/src` fragment extraction/insertion contracts;
-- `../slate-v2/packages/slate-dom/src/plugin/dom-clipboard-runtime.ts`;
-- `../slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts`;
-- `../slate-v2/packages/slate-dom/test/clipboard-boundary.ts`;
-- `../slate-v2/packages/slate/test/clipboard-contract.ts`;
+- `.tmp/slate-v2/packages/slate/src` fragment extraction/insertion contracts;
+- `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-clipboard-runtime.ts`;
+- `.tmp/slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts`;
+- `.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts`;
+- `.tmp/slate-v2/packages/slate/test/clipboard-contract.ts`;
 - focused browser rows only when copy, paste, cut, drag/drop, or external
   clipboard output is visible.
 
@@ -100,34 +100,34 @@ Unresolved user-decision points:
   HTML/plain-text import/export boundaries, foreign-editor isolation, and
   configurable payload keys.
 - `gitcrawl --json threads ianstormtaylor/slate --numbers
-  5328,4857,5233,3486,4542,5151,4802,4806 --include-closed` confirms the
+5328,4857,5233,3486,4542,5151,4802,4806 --include-closed` confirms the
   representative rows are still open and current in the local gitcrawl corpus.
 - `gitcrawl --json cluster-detail ianstormtaylor/slate --id 21` confirms #4802
   and #4806 are one active inline-void clipboard family.
-- `../slate-v2/packages/slate-dom/src/plugin/dom-clipboard-runtime.ts:51`
+- `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-clipboard-runtime.ts:51`
   writes model-backed Slate fragments, `:69` exports DOM selection data, `:88`
   checks DOM coverage boundaries before copy, `:107` falls back to model-backed
   copy when DOM range export fails, `:183` runs extension-owned
   `dom.clipboard.insertData` handlers, and `:202` imports Slate fragment data.
-- Gap: `../slate-v2/packages/slate-dom/src/plugin/dom-clipboard-runtime.ts:211`
+- Gap: `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-clipboard-runtime.ts:211`
   decodes and parses the embedded fragment payload directly. A malformed or
   foreign `data-slate-fragment` can still throw before the fallback path has a
   chance to handle plain text or app-owned HTML.
-- `../slate-v2/packages/slate-dom/test/clipboard-boundary.ts:186` proves DOM
+- `.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:186` proves DOM
   clipboard APIs stay under `editor.dom.clipboard`, `:196` proves selected
   fragment round-trip and target replacement, `:241` proves custom MIME keys,
   `:282` proves embedded HTML fragment fallback, `:316` proves plain-text
   fallback, `:338` proves decorated DOM export strips render-only wrappers,
   `:367` proves multiline plain text preserves target block type, and `:401`
   proves expanded selection replacement with every pasted line.
-- `../slate-v2/packages/slate/test/clipboard-contract.ts:18` proves core
+- `.tmp/slate-v2/packages/slate/test/clipboard-contract.ts:18` proves core
   fragment extraction and insertion, including mixed inline extraction and
   expanded replacement.
-- `../slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts:157`
+- `.tmp/slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts:157`
   delegates copy to `editor.dom.clipboard.writeSelection`, `:181` writes and
   deletes expanded cut selections, `:141` materializes DOM coverage paste
   targets, and `:288` delegates paste to `editor.dom.clipboard.insertData`.
-- `../slate-v2/packages/slate-react/src/plugin/with-react.ts:17` exposes
+- `.tmp/slate-v2/packages/slate-react/src/plugin/with-react.ts:17` exposes
   `withReact(editor, clipboardFormatKey?)`, preserving value generics and
   passing the format key to `withDOM`.
 
@@ -171,13 +171,13 @@ Drivers:
 
 Options:
 
-| Option | Verdict | Why |
-| --- | --- | --- |
-| Put a generic HTML serializer/deserializer in raw Slate | reject | That turns raw Slate into product policy and will still fail real Word/Docs cases. |
-| Keep trusting `data-slate-fragment` | reject | Clipboard data is foreign input. A regex hit is not proof of a valid Slate fragment. |
-| Remove embedded HTML fragments and rely only on custom MIME | reject | Safari/cross-browser flows need the HTML carrier. |
-| Keep `editor.dom.clipboard` plus fail-closed payload validation | choose | Matches live source and fixes the real trust-boundary gap. |
-| Public `editor.clipboard` namespace | reject | The existing test explicitly proves clipboard is a DOM host capability, not a core editor namespace. |
+| Option                                                          | Verdict | Why                                                                                                  |
+| --------------------------------------------------------------- | ------- | ---------------------------------------------------------------------------------------------------- |
+| Put a generic HTML serializer/deserializer in raw Slate         | reject  | That turns raw Slate into product policy and will still fail real Word/Docs cases.                   |
+| Keep trusting `data-slate-fragment`                             | reject  | Clipboard data is foreign input. A regex hit is not proof of a valid Slate fragment.                 |
+| Remove embedded HTML fragments and rely only on custom MIME     | reject  | Safari/cross-browser flows need the HTML carrier.                                                    |
+| Keep `editor.dom.clipboard` plus fail-closed payload validation | choose  | Matches live source and fixes the real trust-boundary gap.                                           |
+| Public `editor.clipboard` namespace                             | reject  | The existing test explicitly proves clipboard is a DOM host capability, not a core editor namespace. |
 
 Chosen shape:
 
@@ -208,16 +208,16 @@ Consequences:
 
 Reviewed with ClawSweeper:
 
-| Issue | Current classification | Decision |
-| --- | --- | --- |
-| #5328 | cluster-synced | First execution slice. Malformed or text-node `data-slate-fragment` must fail closed. |
-| #4857 | cluster-synced | Same trust-boundary family, but exact NYTimes/select-all repro needs browser proof before `Fixes`. |
-| #5233 | fixes-claimed | Slice 5 proves custom fragment format keys isolate MIME payloads and embedded HTML fallback fragments. |
-| #3486 | fixes-claimed | Older duplicate-family wording for custom `setData` id; covered with #5233. |
-| #4542 | cluster-synced | Fragment insertion shape and empty-block behavior need separate model/browser proof. |
-| #5151 | improves-claimed | Rich fragment target-block preservation is covered for the selected single text-block replacement case; exact browser repro closure is not claimed. |
-| #4802 | improves-claimed | Selected inline void export keeps the Slate fragment payload without assuming block-void spacer DOM; no external-editor closure without browser payload proof. |
-| #4806 | improves-claimed | Selected inline void copy/paste/cut ordering is covered through the DOM clipboard contract; exact browser repro closure is not claimed. |
+| Issue | Current classification | Decision                                                                                                                                                       |
+| ----- | ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| #5328 | cluster-synced         | First execution slice. Malformed or text-node `data-slate-fragment` must fail closed.                                                                          |
+| #4857 | cluster-synced         | Same trust-boundary family, but exact NYTimes/select-all repro needs browser proof before `Fixes`.                                                             |
+| #5233 | fixes-claimed          | Slice 5 proves custom fragment format keys isolate MIME payloads and embedded HTML fallback fragments.                                                         |
+| #3486 | fixes-claimed          | Older duplicate-family wording for custom `setData` id; covered with #5233.                                                                                    |
+| #4542 | cluster-synced         | Fragment insertion shape and empty-block behavior need separate model/browser proof.                                                                           |
+| #5151 | improves-claimed       | Rich fragment target-block preservation is covered for the selected single text-block replacement case; exact browser repro closure is not claimed.            |
+| #4802 | improves-claimed       | Selected inline void export keeps the Slate fragment payload without assuming block-void spacer DOM; no external-editor closure without browser payload proof. |
+| #4806 | improves-claimed       | Selected inline void copy/paste/cut ordering is covered through the DOM clipboard contract; exact browser repro closure is not claimed.                        |
 
 New fixed issue claims from Slice 5:
 
@@ -240,8 +240,8 @@ The PR auto-close count is now `6`:
 
 Owner:
 
-- `../slate-v2/packages/slate-dom/src/plugin/dom-clipboard-runtime.ts`
-- `../slate-v2/packages/slate-dom/test/clipboard-boundary.ts`
+- `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-clipboard-runtime.ts`
+- `.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts`
 
 Goal:
 
@@ -272,8 +272,8 @@ Acceptance:
 
 Owner:
 
-- `../slate-v2/packages/slate/test/clipboard-contract.ts`
-- `../slate-v2/packages/slate-dom/test/clipboard-boundary.ts`
+- `.tmp/slate-v2/packages/slate/test/clipboard-contract.ts`
+- `.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts`
 - focused browser rows for rich-text paste when needed
 
 Goal:
@@ -295,7 +295,7 @@ Representative issues:
 
 Owner:
 
-- `../slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts`
 - mentions/inlines browser examples
 
 Goal:
@@ -316,8 +316,8 @@ Representative issues:
 
 Owner:
 
-- `../slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts`
-- `../slate-v2/packages/slate/src` delete/fragment contracts
+- `.tmp/slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts`
+- `.tmp/slate-v2/packages/slate/src` delete/fragment contracts
 
 Goal:
 
@@ -392,27 +392,27 @@ No compatibility overload for `withReact(editor, 'x-proof-fragment')`. Common
 usage stays unchanged:
 
 ```ts
-withReact(createEditor())
+withReact(createEditor());
 ```
 
 Custom usage becomes explicit:
 
 ```ts
-withReact(createEditor(), { clipboardFormatKey: 'x-proof-fragment' })
+withReact(createEditor(), { clipboardFormatKey: "x-proof-fragment" });
 ```
 
 Pre-Slice-5 live source evidence:
 
-- `../slate-v2/packages/slate-react/src/plugin/with-react.ts:17` still exposes
+- `.tmp/slate-v2/packages/slate-react/src/plugin/with-react.ts:17` still exposes
   `clipboardFormatKey?: string`.
-- `../slate-v2/packages/slate-dom/src/plugin/with-dom.ts:37` still takes the
+- `.tmp/slate-v2/packages/slate-dom/src/plugin/with-dom.ts:37` still takes the
   same positional string and forwards it to the DOM clipboard runtime.
-- `../slate-v2/packages/slate-dom/src/plugin/dom-clipboard-runtime.ts:35`
+- `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-clipboard-runtime.ts:35`
   stores the key in a WeakMap; `:82` writes
   `application/${clipboardFormatKey}`; `:247` reads that MIME key.
-- `../slate-v2/packages/slate-dom/src/plugin/dom-clipboard-runtime.ts:249`
+- `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-clipboard-runtime.ts:249`
   still falls back to unkeyed embedded HTML `data-slate-fragment`.
-- `../slate-v2/packages/slate-dom/test/clipboard-boundary.ts:386` proves the
+- `.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:386` proves the
   custom MIME payload path, but did not prove cross-schema safety before Slice
   5 because the embedded HTML fallback was still unkeyed.
 
@@ -443,8 +443,8 @@ Extension surface target:
 ```ts
 type DOMClipboardInsertDataHandler = (
   editor: DOMEditor,
-  data: DataTransfer
-) => boolean | void
+  data: DataTransfer,
+) => boolean | void;
 ```
 
 - keep app-owned rich HTML/image parsing behind the existing
@@ -455,15 +455,15 @@ type DOMClipboardInsertDataHandler = (
 
 Issue accounting from this pass:
 
-| Issue | Status for Slice 5 | Reason |
-| --- | --- | --- |
-| #5233 | `Fixes` | Exact ask is custom fragment format isolation; Slice 5 covers options API plus keyed HTML fallback proof. |
-| #3486 | `Fixes` with #5233 | Older custom `setData` id request; same root requirement. |
-| #1024 | `Improves` | MIME identity discussion maps to keyed payloads and keyed embedded fragments, but not a full document MIME system. |
-| #4613 | `Improves` | Existing `dom.clipboard.insertData` capability is now publicly typed and documented, but broad override closure is not claimed. |
-| #4569 | `Fixes` | Docs now state `insertData` capability order, handler return semantics, and fallback behavior. |
-| #4440 | `Related`, not fixed | Output customization for plain text/HTML needs a later `writeSelection`/serializer capability. Do not cram it into Slice 5. |
-| #3557 | `Related`, not fixed | General method overriding is handled by v2 extension/transform APIs, not clipboard-specific enough for this slice. |
+| Issue | Status for Slice 5   | Reason                                                                                                                          |
+| ----- | -------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| #5233 | `Fixes`              | Exact ask is custom fragment format isolation; Slice 5 covers options API plus keyed HTML fallback proof.                       |
+| #3486 | `Fixes` with #5233   | Older custom `setData` id request; same root requirement.                                                                       |
+| #1024 | `Improves`           | MIME identity discussion maps to keyed payloads and keyed embedded fragments, but not a full document MIME system.              |
+| #4613 | `Improves`           | Existing `dom.clipboard.insertData` capability is now publicly typed and documented, but broad override closure is not claimed. |
+| #4569 | `Fixes`              | Docs now state `insertData` capability order, handler return semantics, and fallback behavior.                                  |
+| #4440 | `Related`, not fixed | Output customization for plain text/HTML needs a later `writeSelection`/serializer capability. Do not cram it into Slice 5.     |
+| #3557 | `Related`, not fixed | General method overriding is handled by v2 extension/transform APIs, not clipboard-specific enough for this slice.              |
 
 Decision brief:
 
@@ -534,10 +534,10 @@ Slice 5 implementation evidence:
 
 Owner:
 
-- `../slate-v2/scripts/benchmarks/core/current/clipboard-large-payload.mjs`
-- `../slate-v2/scripts/benchmarks/slate/5945-large-plaintext-paste.mjs`
-- `../slate-v2/scripts/benchmarks/README.md`
-- `../slate-v2/package.json`
+- `.tmp/slate-v2/scripts/benchmarks/core/current/clipboard-large-payload.mjs`
+- `.tmp/slate-v2/scripts/benchmarks/slate/5945-large-plaintext-paste.mjs`
+- `.tmp/slate-v2/scripts/benchmarks/README.md`
+- `.tmp/slate-v2/package.json`
 - optional browser stress row only after the headless lane identifies the hot
   path
 
@@ -563,17 +563,17 @@ Hard cut:
 
 Current source evidence:
 
-- `../slate-v2/package.json` has benchmark commands for core, React, history,
+- `.tmp/slate-v2/package.json` has benchmark commands for core, React, history,
   and #6038, but no clipboard large-payload command.
-- `../slate-v2/scripts/benchmarks/README.md` says new lanes belong under
+- `.tmp/slate-v2/scripts/benchmarks/README.md` says new lanes belong under
   `scripts/benchmarks/**`, artifacts belong in `.tmp/`, and public `bench:*`
   command names are the contract.
-- `../slate-v2/packages/slate-dom/src/plugin/dom-clipboard-runtime.ts` currently
+- `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-clipboard-runtime.ts` currently
   pays clipboard costs in these places: model-backed fragment `JSON.stringify`
   and `btoa`, DOM range `cloneContents`, temporary `div.innerHTML`, plain text
   extraction, `decodeURIComponent`/`atob`/`JSON.parse`, `text.split`, per-line
   `insertText`, and fragment insertion.
-- `../slate-v2/packages/slate/src/transforms-text/insert-fragment.ts` currently
+- `.tmp/slate-v2/packages/slate/src/transforms-text/insert-fragment.ts` currently
   walks fragment nodes, builds `starts`/`middles`/`ends`, splits, inserts, and
   normalizes. That is likely correct architecture; Slice 6 must measure it
   before changing it.
@@ -581,30 +581,30 @@ Current source evidence:
   `ready-now`, #5992 as `ready-with-minor-setup`, and #4056 as
   `ready-with-minor-setup`.
 - `gitcrawl threads ianstormtaylor/slate --numbers 4056,5945,5992
-  --include-closed --json` confirms all three rows are open in the local live
+--include-closed --json` confirms all three rows are open in the local live
   corpus.
 
 Benchmark cohorts:
 
-| Cohort | Payload/document shape | Purpose |
-| --- | --- | --- |
-| small | 10 lines/blocks | catch fixed overhead and correctness drift |
-| normal | 100 lines/blocks | default editor sanity |
-| large | 1,000 lines/blocks | first real #5945-like pressure |
-| stress | 10,000 lines/blocks | exact generated #5945 workload |
-| pathological | 50,000 existing blocks plus two-node cut | #5992-shaped huge-document cut |
+| Cohort       | Payload/document shape                   | Purpose                                    |
+| ------------ | ---------------------------------------- | ------------------------------------------ |
+| small        | 10 lines/blocks                          | catch fixed overhead and correctness drift |
+| normal       | 100 lines/blocks                         | default editor sanity                      |
+| large        | 1,000 lines/blocks                       | first real #5945-like pressure             |
+| stress       | 10,000 lines/blocks                      | exact generated #5945 workload             |
+| pathological | 50,000 existing blocks plus two-node cut | #5992-shaped huge-document cut             |
 
 Required lanes:
 
-| Lane | Measures | Issue pressure |
-| --- | --- | --- |
-| `plainTextSplitMs` | `text/plain` newline split and line-count scaling | #5945, #4056 |
-| `plainTextInsertMs` | public insert-data path for many newline blocks | #5945, #4056 |
-| `fragmentEncodeMs` | model-backed fragment JSON/base64/text/html payload creation | #4056, #5992 |
-| `fragmentDecodeMs` | custom MIME and embedded HTML fragment decode/parse | #4056 |
-| `fragmentInsertMs` | core fragment insertion into selected range | #5945, #4056 |
-| `cutTwoBlocksMs` | copy payload creation plus selected range delete in huge document | #5992 |
-| `fullSelectionCopyMs` | model-backed copy for large selected text | #4056 |
+| Lane                  | Measures                                                          | Issue pressure |
+| --------------------- | ----------------------------------------------------------------- | -------------- |
+| `plainTextSplitMs`    | `text/plain` newline split and line-count scaling                 | #5945, #4056   |
+| `plainTextInsertMs`   | public insert-data path for many newline blocks                   | #5945, #4056   |
+| `fragmentEncodeMs`    | model-backed fragment JSON/base64/text/html payload creation      | #4056, #5992   |
+| `fragmentDecodeMs`    | custom MIME and embedded HTML fragment decode/parse               | #4056          |
+| `fragmentInsertMs`    | core fragment insertion into selected range                       | #5945, #4056   |
+| `cutTwoBlocksMs`      | copy payload creation plus selected range delete in huge document | #5992          |
+| `fullSelectionCopyMs` | model-backed copy for large selected text                         | #4056          |
 
 Metrics:
 
@@ -614,7 +614,7 @@ Metrics:
 - fragment node count and inserted block count;
 - operation count and commit count where available;
 - heap delta when the runtime can expose it cheaply;
-- artifact path: `../slate-v2/tmp/slate-clipboard-large-payload-benchmark.json`.
+- artifact path: `.tmp/slate-v2/tmp/slate-clipboard-large-payload-benchmark.json`.
 
 Decision rule:
 
@@ -655,7 +655,7 @@ Performance review:
 Fast gates:
 
 ```bash
-cd ../slate-v2
+cd .tmp/slate-v2
 bun run bench:slate:5945:local
 bun test ./packages/slate-dom/test/clipboard-boundary.ts
 bun test ./packages/slate/test/clipboard-contract.ts
@@ -667,17 +667,17 @@ bun lint:fix
 Broader gate only if browser-visible behavior changes:
 
 ```bash
-cd ../slate-v2
+cd .tmp/slate-v2
 PLAYWRIGHT_RETRIES=0 bunx playwright test playwright/stress/generated-editing.test.ts -g "paste-normalize-undo" --project=chromium
 ```
 
 Baseline execution result:
 
 - Benchmark source:
-  `../slate-v2/scripts/benchmarks/core/current/clipboard-large-payload.mjs`.
+  `.tmp/slate-v2/scripts/benchmarks/core/current/clipboard-large-payload.mjs`.
 - Stable command: `bun run bench:slate:5945:local`.
 - Artifact:
-  `../slate-v2/tmp/slate-clipboard-large-payload-benchmark.json`.
+  `.tmp/slate-v2/tmp/slate-clipboard-large-payload-benchmark.json`.
 - Default local baseline is intentionally bounded: 2,000 pasted lines and
   10,000 existing blocks for cut. The exact issue-size gate remains available
   through
@@ -717,7 +717,7 @@ Baseline verdict:
 First slice gates:
 
 ```bash
-cd ../slate-v2
+cd .tmp/slate-v2
 bun test packages/slate-dom/test/clipboard-boundary.ts
 bun --filter slate-dom typecheck
 bun lint:fix
@@ -726,7 +726,7 @@ bun lint:fix
 Broader gates when the touched behavior expands:
 
 ```bash
-cd ../slate-v2
+cd .tmp/slate-v2
 bun test packages/slate/test/clipboard-contract.ts
 bun --filter slate-react test:vitest -- dom-coverage-native-bridge-contract
 bun --filter slate-react test:vitest -- editing-kernel-contract
@@ -807,16 +807,16 @@ Unchanged:
 
 ## Ralph Execution Ledger
 
-| Pass | Status | Owner | Evidence | Next |
-| --- | --- | --- | --- | --- |
-| `fail-closed-internal-fragment-import` | complete | `../slate-v2/packages/slate-dom` clipboard runtime | Added focused malformed-fragment tests in `../slate-v2/packages/slate-dom/test/clipboard-boundary.ts`; added safe fragment decode/parse in `../slate-v2/packages/slate-dom/src/plugin/dom-clipboard-runtime.ts`; verified with focused clipboard test, `slate-dom` typecheck, and lint fix. | Continue with Slice 2: fragment insertion shape and selection placement. |
-| `fragment-insertion-shape-and-selection-placement` | complete for #5151-shaped slice | `../slate-v2/packages/slate` fragment insertion | Added focused core and DOM clipboard tests proving a rich single text-block fragment preserves the receiving text-block type and post-insert selection; implemented the selected target-block ownership path in `../slate-v2/packages/slate/src/transforms-text/insert-fragment.ts`; #5151 moved to `Improves`; fixed issue claims unchanged. | Continue with Slice 3: inline void copy/cut/paste. |
-| `inline-void-copy-cut-paste` | complete for package-level DOM proof | `../slate-v2/packages/slate-dom` clipboard runtime | Added a selected inline void clipboard regression proving no block-void spacer DOM assumption, preserved Slate fragment payload, FEFF-free external text output, paste round-trip, and cut-shaped delete ordering; implemented a safe attachment fallback in `../slate-v2/packages/slate-dom/src/plugin/dom-clipboard-runtime.ts`; #4802/#4806 moved to `Improves`; fixed issue claims unchanged. | Continue with Slice 4: structural cut/delete. |
-| `structural-cut-delete` | complete for package-level model/React proof | `../slate-v2/packages/slate-react` clipboard cut dispatch and `../slate-v2/packages/slate` fragment/delete contracts | Added a selected block void cut regression proving model-backed clipboard data, single void removal, and model-owned DOM repair; added core list-fragment/delete proofs for whole-list wrapper extraction and deletion across a list without orphan `list-item`; #3857/#3801/#3469 moved to `Improves`; #4716 remains `Related`; #2694 remains `Not claimed`. | Continue with Slice 5: API and extension surface. |
-| `api-and-extension-surface-ralplan` | complete for current-state and decision brief | `../slate-v2/packages/slate-react/src/plugin/with-react.ts`, `../slate-v2/packages/slate-dom/src/plugin/with-dom.ts`, `../slate-v2/packages/slate-dom/src/plugin/dom-clipboard-runtime.ts` | Pre-Slice-5 source showed custom MIME support existed, but the positional string API was weak and embedded HTML fallback was unkeyed. Plan target changed to `withReact(editor, options?)` / `withDOM(editor, options?)`, keyed embedded fragments, public insertData handler type, and docs/example proof. | Slice 5 executed; keep as planning evidence. |
-| `api-and-extension-surface` | complete | `../slate-v2/packages/slate-dom`, `../slate-v2/packages/slate-react`, `../slate-v2/site/examples`, `../slate-v2/docs/libraries/slate-react` | Added focused custom-key embedded HTML acceptance/rejection tests; hard-cut `withReact`/`withDOM` to options objects; keyed embedded HTML fallback fragments; exported `DOMClipboardInsertDataHandler`; typed rich HTML/image example handlers; synced docs and issue claims. #5233/#3486/#4569 moved to `Fixes`; #1024/#4613 moved to `Improves`; #4440/#3557 remain `Related`. | Continue with Slice 6: large payload performance. |
-| `large-payload-performance-ralplan` | complete for benchmark-first plan | `../slate-v2/scripts/benchmarks`, `../slate-v2/packages/slate-dom`, `../slate-v2/packages/slate` | Current source has no large clipboard payload benchmark command. Plan now defines cohorts, lanes, metrics, artifact path, no-claim policy, and fast gates for #4056/#5945/#5992. | RALPH should execute Slice 6 baseline benchmark. |
-| `large-payload-performance-baseline` | complete for bounded local baseline plus one cleanup | `../slate-v2/scripts/benchmarks/core/current/clipboard-large-payload.mjs`, `../slate-v2/scripts/benchmarks/slate/5945-large-plaintext-paste.mjs`, `../slate-v2/package.json`, `../slate-v2/packages/slate-dom/src/plugin/dom-clipboard-runtime.ts` | Added benchmark command and artifact. Latest bounded run shows insertion still dominates: 2,000-line plain text insert mean `3545.36ms`, 2,000-node fragment insert mean `4615.83ms`, full selection copy mean `5.25ms`, split mean `0.05ms`, and 10,000-block two-node cut mean `368.96ms`. Exact issue-size gate stays env-controlled because the first 10,000-line/50,000-block attempt exceeded roughly 150s. Rejected fragment-materialization candidate because it worsened the lane; kept transform-registry caching only. | Continue with deeper split/insert normalization optimization; fixed issue claims unchanged. |
+| Pass                                               | Status                                               | Owner                                                                                                                                                                                                                                                      | Evidence                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | Next                                                                                        |
+| -------------------------------------------------- | ---------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| `fail-closed-internal-fragment-import`             | complete                                             | `.tmp/slate-v2/packages/slate-dom` clipboard runtime                                                                                                                                                                                                       | Added focused malformed-fragment tests in `.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts`; added safe fragment decode/parse in `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-clipboard-runtime.ts`; verified with focused clipboard test, `slate-dom` typecheck, and lint fix.                                                                                                                                                                                                                                   | Continue with Slice 2: fragment insertion shape and selection placement.                    |
+| `fragment-insertion-shape-and-selection-placement` | complete for #5151-shaped slice                      | `.tmp/slate-v2/packages/slate` fragment insertion                                                                                                                                                                                                          | Added focused core and DOM clipboard tests proving a rich single text-block fragment preserves the receiving text-block type and post-insert selection; implemented the selected target-block ownership path in `.tmp/slate-v2/packages/slate/src/transforms-text/insert-fragment.ts`; #5151 moved to `Improves`; fixed issue claims unchanged.                                                                                                                                                                                   | Continue with Slice 3: inline void copy/cut/paste.                                          |
+| `inline-void-copy-cut-paste`                       | complete for package-level DOM proof                 | `.tmp/slate-v2/packages/slate-dom` clipboard runtime                                                                                                                                                                                                       | Added a selected inline void clipboard regression proving no block-void spacer DOM assumption, preserved Slate fragment payload, FEFF-free external text output, paste round-trip, and cut-shaped delete ordering; implemented a safe attachment fallback in `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-clipboard-runtime.ts`; #4802/#4806 moved to `Improves`; fixed issue claims unchanged.                                                                                                                               | Continue with Slice 4: structural cut/delete.                                               |
+| `structural-cut-delete`                            | complete for package-level model/React proof         | `.tmp/slate-v2/packages/slate-react` clipboard cut dispatch and `.tmp/slate-v2/packages/slate` fragment/delete contracts                                                                                                                                   | Added a selected block void cut regression proving model-backed clipboard data, single void removal, and model-owned DOM repair; added core list-fragment/delete proofs for whole-list wrapper extraction and deletion across a list without orphan `list-item`; #3857/#3801/#3469 moved to `Improves`; #4716 remains `Related`; #2694 remains `Not claimed`.                                                                                                                                                                     | Continue with Slice 5: API and extension surface.                                           |
+| `api-and-extension-surface-ralplan`                | complete for current-state and decision brief        | `.tmp/slate-v2/packages/slate-react/src/plugin/with-react.ts`, `.tmp/slate-v2/packages/slate-dom/src/plugin/with-dom.ts`, `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-clipboard-runtime.ts`                                                           | Pre-Slice-5 source showed custom MIME support existed, but the positional string API was weak and embedded HTML fallback was unkeyed. Plan target changed to `withReact(editor, options?)` / `withDOM(editor, options?)`, keyed embedded fragments, public insertData handler type, and docs/example proof.                                                                                                                                                                                                                       | Slice 5 executed; keep as planning evidence.                                                |
+| `api-and-extension-surface`                        | complete                                             | `.tmp/slate-v2/packages/slate-dom`, `.tmp/slate-v2/packages/slate-react`, `.tmp/slate-v2/site/examples`, `.tmp/slate-v2/docs/libraries/slate-react`                                                                                                        | Added focused custom-key embedded HTML acceptance/rejection tests; hard-cut `withReact`/`withDOM` to options objects; keyed embedded HTML fallback fragments; exported `DOMClipboardInsertDataHandler`; typed rich HTML/image example handlers; synced docs and issue claims. #5233/#3486/#4569 moved to `Fixes`; #1024/#4613 moved to `Improves`; #4440/#3557 remain `Related`.                                                                                                                                                  | Continue with Slice 6: large payload performance.                                           |
+| `large-payload-performance-ralplan`                | complete for benchmark-first plan                    | `.tmp/slate-v2/scripts/benchmarks`, `.tmp/slate-v2/packages/slate-dom`, `.tmp/slate-v2/packages/slate`                                                                                                                                                     | Current source has no large clipboard payload benchmark command. Plan now defines cohorts, lanes, metrics, artifact path, no-claim policy, and fast gates for #4056/#5945/#5992.                                                                                                                                                                                                                                                                                                                                                  | RALPH should execute Slice 6 baseline benchmark.                                            |
+| `large-payload-performance-baseline`               | complete for bounded local baseline plus one cleanup | `.tmp/slate-v2/scripts/benchmarks/core/current/clipboard-large-payload.mjs`, `.tmp/slate-v2/scripts/benchmarks/slate/5945-large-plaintext-paste.mjs`, `.tmp/slate-v2/package.json`, `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-clipboard-runtime.ts` | Added benchmark command and artifact. Latest bounded run shows insertion still dominates: 2,000-line plain text insert mean `3545.36ms`, 2,000-node fragment insert mean `4615.83ms`, full selection copy mean `5.25ms`, split mean `0.05ms`, and 10,000-block two-node cut mean `368.96ms`. Exact issue-size gate stays env-controlled because the first 10,000-line/50,000-block attempt exceeded roughly 150s. Rejected fragment-materialization candidate because it worsened the lane; kept transform-registry caching only. | Continue with deeper split/insert normalization optimization; fixed issue claims unchanged. |
 
 ## Readiness Score
 

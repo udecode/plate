@@ -175,9 +175,9 @@ Why it belongs in the PR:
 
 Proof references:
 
-- `../slate-v2/package.json`
-- `../slate-v2/bunfig.toml`
-- `../slate-v2/playwright.config.ts`
+- `.tmp/slate-v2/package.json`
+- `.tmp/slate-v2/bunfig.toml`
+- `.tmp/slate-v2/playwright.config.ts`
 - `docs/slate-v2/master-roadmap.md`
 - `docs/slate-v2/release-readiness-decision.md`
 
@@ -185,9 +185,9 @@ Proof references:
 
 Affected:
 
-- `../slate-v2/packages/*/package.json`
-- `../slate-v2/packages/*/tsconfig*.json`
-- `../slate-v2/packages/*/src/index.ts`
+- `.tmp/slate-v2/packages/*/package.json`
+- `.tmp/slate-v2/packages/*/tsconfig*.json`
+- `.tmp/slate-v2/packages/*/src/index.ts`
 
 Accepted current shape:
 
@@ -212,8 +212,8 @@ Proof references:
 
 Affected:
 
-- `../slate-v2/packages/slate/src/**`
-- `../slate-v2/packages/slate/test/**`
+- `.tmp/slate-v2/packages/slate/src/**`
+- `.tmp/slate-v2/packages/slate/test/**`
 - `docs/slate-v2/ledgers/slate-editor-api.md`
 - `docs/plans/2026-05-03-slate-v2-core-editor-method-hard-cut-ralplan.md`
 
@@ -290,6 +290,43 @@ Open debt:
 - Some legacy-oracle tests still use node data markers such as `void: true`.
   Treat those as fixture data matched into explicit string specs, not supported
   `EditorElementSpec.void` config.
+- Non-node document state fields are an architecture-ready follow-up, not a
+  current PR claim. The accepted target is `defineStateField`, canonical
+  `Value = { roots, state? }`, `InitialValue` normalization,
+  `state.getField`, `tx.setField`, root-explicit operations, root-aware
+  `Point`/`Range`, `createEditorRuntime`, `createEditorView`,
+  `statePatches`, `dirtyStateKeys`, the `'state'` source,
+  `useStateFieldValue`, and `useSetStateField`, with comments external by
+  default. Do not add fixed or improved issue counts for this target until the
+  core/root/history/collab/react contracts in
+  `docs/plans/2026-05-20-slate-v2-non-node-editor-state-architecture-ralplan.md`
+  pass in `.tmp/slate-v2`. Current execution proof covers the first nine
+  vertical slices: `createEditor` accepts legacy children, `{ children, state }`,
+  and `{ roots, state }` `initialValue` shapes and exposes canonical rooted
+  `state.value.get()` output; committed content operations include
+  `root: 'main'`, `Path` stays numeric/root-local, and `Point`/`Range` transforms
+  ignore operations from other roots; `createEditorRuntime` owns the shared
+  editor value while `createEditorView` creates root-bound read/update facades
+  with view-local root, focus, and read-only policy; `defineStateField`
+  installs persisted descriptors with initial values and `state.getField`;
+  `tx.setField` emits operation-free `statePatches`, `dirtyStateKeys`, and the
+  `'state'` commit source, with a guard for large shared/history fields that
+  omit patch hooks; `slate-history` stores state patches in history batches and
+  undoes/redoes title changes as operation-free historic commits; collaboration
+  adapters can import shared state patches through `tx.statePatches.replay` and
+  export only `collab: 'shared'` patches through
+  `Editor.getCollabStatePatches`; React exposes `useStateFieldValue` and
+  `useSetStateField`, with field subscriptions filtered by `dirtyStateKeys`;
+  the examples app has a browser-proven `Document State` route that edits
+  document title/settings through state fields, keeps body content separate,
+  undoes/redoes state patches, and imports a remote title patch. Current
+  focused performance/release proof covers editor-store, history-retained
+  memory, collab-readiness, React rerender-breadth, and root `bun check`; two
+  field/root-specific benchmark script names remain missing harness coverage,
+  not passed proof. A later React runtime-provider slice is planned for
+  optional `SlateRuntime`, `<Slate root="...">`, `useSlateRuntimeState`, and
+  `useSlateViewState`; this is a non-claim API target for multi-root/header-
+  footer examples, not an added issue count.
 - Structural delete and normalization now have focused core package proof for
   #4121/#2500/#3965/#3950. #5811 is improved by deterministic normalization
   loop detection. #1654 is improved by wiring existing `isIsolating` schema
@@ -324,28 +361,29 @@ Proof references:
 - `docs/plans/2026-05-07-slate-v2-operation-extensibility-validation-ralplan.md`
 - `docs/plans/2026-05-07-slate-v2-insert-fragment-at-location-ralplan.md`
 - `docs/plans/2026-05-13-slate-v2-void-kind-api-ralplan.md`
+- `docs/plans/2026-05-20-slate-v2-non-node-editor-state-architecture-ralplan.md`
 - `.tmp/completion-checks/slate-v2-insert-fragment-at-location-execution.md`
-- `../slate-v2/packages/slate/test/public-element-void-kind-contract.ts`
-- `../slate-v2/packages/slate/test/schema-contract.ts`
-- `../slate-v2/packages/slate/test/clipboard-contract.ts`
-- `../slate-v2/packages/slate/test/query-contract.ts`
-- `../slate-v2/packages/slate/test/collab-history-runtime-contract.ts`
-- `../slate-v2/packages/slate/test/commit-metadata-contract.ts`
-- `../slate-v2/packages/slate/test/migration-backbone-contract.ts`
-- `../slate-v2/packages/slate/src/editor/nodes.ts`
+- `.tmp/slate-v2/packages/slate/test/public-element-void-kind-contract.ts`
+- `.tmp/slate-v2/packages/slate/test/schema-contract.ts`
+- `.tmp/slate-v2/packages/slate/test/clipboard-contract.ts`
+- `.tmp/slate-v2/packages/slate/test/query-contract.ts`
+- `.tmp/slate-v2/packages/slate/test/collab-history-runtime-contract.ts`
+- `.tmp/slate-v2/packages/slate/test/commit-metadata-contract.ts`
+- `.tmp/slate-v2/packages/slate/test/migration-backbone-contract.ts`
+- `.tmp/slate-v2/packages/slate/src/editor/nodes.ts`
 - `.tmp/completion-checks/slate-v2-editor-nodes-reverse-order-ralplan.md`
 - `.tmp/completion-checks/slate-v2-core-structural-delete-normalization-execution.md`
 - `.tmp/completion-checks/slate-v2-operation-extensibility-validation-execution.md`
 - `.tmp/completion-checks/slate-v2-core-caret-movement-word-insert-break-execution.md`
-- `../slate-v2/packages/slate/test/snapshot-contract.ts`
-- `../slate-v2/packages/slate/test/transaction-contract.ts`
+- `.tmp/slate-v2/packages/slate/test/snapshot-contract.ts`
+- `.tmp/slate-v2/packages/slate/test/transaction-contract.ts`
 
 ## 4. Support Package Closure
 
 Affected:
 
-- `../slate-v2/packages/slate-history/**`
-- `../slate-v2/packages/slate-hyperscript/**`
+- `.tmp/slate-v2/packages/slate-history/**`
+- `.tmp/slate-v2/packages/slate-hyperscript/**`
 
 Accepted current shape:
 
@@ -370,8 +408,8 @@ Proof references:
 
 Affected:
 
-- `../slate-v2/packages/slate-dom/src/**`
-- `../slate-v2/packages/slate-dom/test/**`
+- `.tmp/slate-v2/packages/slate-dom/src/**`
+- `.tmp/slate-v2/packages/slate-dom/test/**`
 
 Accepted current shape:
 
@@ -405,11 +443,11 @@ Proof references:
 
 Affected:
 
-- `../slate-v2/packages/slate/src/**`
-- `../slate-v2/packages/slate-dom/src/plugin/dom-clipboard-runtime.ts`
-- `../slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts`
-- `../slate-v2/packages/slate-dom/test/clipboard-boundary.ts`
-- `../slate-v2/packages/slate/test/clipboard-contract.ts`
+- `.tmp/slate-v2/packages/slate/src/**`
+- `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-clipboard-runtime.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts`
+- `.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts`
+- `.tmp/slate-v2/packages/slate/test/clipboard-contract.ts`
 
 Accepted current shape:
 
@@ -492,13 +530,13 @@ Why it belongs in the PR:
 Proof references:
 
 - `docs/plans/2026-05-04-slate-v2-clawsweeper-v2-clipboard-serialization-ralplan.md`
-- `../slate-v2/tmp/slate-clipboard-large-payload-benchmark.json`
-- `../slate-v2/packages/slate-dom/src/plugin/dom-clipboard-runtime.ts`
-- `../slate-v2/packages/slate/src/transforms-text/insert-fragment.ts`
-- `../slate-v2/packages/slate-dom/test/clipboard-boundary.ts`
-- `../slate-v2/packages/slate/test/clipboard-contract.ts`
+- `.tmp/slate-v2/tmp/slate-clipboard-large-payload-benchmark.json`
+- `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-clipboard-runtime.ts`
+- `.tmp/slate-v2/packages/slate/src/transforms-text/insert-fragment.ts`
+- `.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts`
+- `.tmp/slate-v2/packages/slate/test/clipboard-contract.ts`
 - `.tmp/completion-checks/slate-v2-multiblock-fragment-middle-insert-execution.md`
-- `../slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts`
 - `.tmp/completion-checks/slate-v2-clawsweeper-v2-clipboard-serialization-execution.md`
 - `.tmp/completion-checks/slate-v2-clawsweeper-v2-clipboard-fragment-insertion-shape-execution.md`
 - `.tmp/completion-checks/slate-v2-clawsweeper-v2-clipboard-inline-void-execution.md`
@@ -509,9 +547,9 @@ Proof references:
 
 Affected:
 
-- `../slate-v2/packages/slate-react/src/**`
-- `../slate-v2/site/examples/**`
-- `../slate-v2/tests/integration/**`
+- `.tmp/slate-v2/packages/slate-react/src/**`
+- `.tmp/slate-v2/site/examples/**`
+- `.tmp/slate-v2/tests/integration/**`
 
 Accepted current shape:
 
@@ -546,40 +584,40 @@ Proof references:
 - `docs/slate-v2/final-api-hard-cuts-status.md`
 - `docs/slate-v2/absolute-architecture-release-claim.md`
 - `docs/plans/2026-05-08-slate-v2-react-decorations-slate-issues-ralplan.md`
-- `../slate-v2/packages/slate-react/test/generic-react-editor-contract.tsx`
-- `../slate-v2/packages/slate-react/test/provider-hooks-contract.tsx`
-- `../slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx`
-- `../slate-v2/packages/slate-react/test/app-owned-customization.tsx`
-- `../slate-v2/packages/slate-react/test/surface-contract.tsx`
-- `../slate-v2/packages/slate-react/test/keyboard-input-strategy-contract.test.ts`
-- `../slate-v2/packages/slate-react/test/annotation-store-contract.test.tsx`
-- `../slate-v2/packages/slate-react/test/widget-layer-contract.test.tsx`
-- `../slate-v2/docs/libraries/slate-react/editable.md`
-- `../slate-v2/docs/libraries/slate-react/hooks.md`
-- `../slate-v2/docs/libraries/slate-react/slate.md`
-- `../slate-v2/packages/slate-react/test/editing-kernel-contract.ts`
-- `../slate-v2/packages/slate-react/test/editing-epoch-kernel-contract.ts`
-- `../slate-v2/packages/slate-react/test/selection-runtime-contract.test.ts`
-- `../slate-v2/packages/slate-react/test/model-input-strategy-contract.test.ts`
-- `../slate-v2/packages/slate-react/test/rendering-strategy-and-scroll.test.tsx`
-- `../slate-v2/playwright/integration/examples/richtext.test.ts`
-- `../slate-v2/playwright/integration/examples/placeholder.test.ts`
-- `../slate-v2/playwright/integration/examples/inlines.test.ts`
-- `../slate-v2/playwright/integration/examples/mentions.test.ts`
-- `../slate-v2/playwright/integration/examples/highlighted-text.test.ts`
-- `../slate-v2/playwright/integration/examples/markdown-shortcuts.test.ts`
-- `../slate-v2/scripts/benchmarks/browser/react/rerender-breadth.tsx`
-- `../slate-v2/scripts/benchmarks/browser/react/huge-document-overlays.tsx`
+- `.tmp/slate-v2/packages/slate-react/test/generic-react-editor-contract.tsx`
+- `.tmp/slate-v2/packages/slate-react/test/provider-hooks-contract.tsx`
+- `.tmp/slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx`
+- `.tmp/slate-v2/packages/slate-react/test/app-owned-customization.tsx`
+- `.tmp/slate-v2/packages/slate-react/test/surface-contract.tsx`
+- `.tmp/slate-v2/packages/slate-react/test/keyboard-input-strategy-contract.test.ts`
+- `.tmp/slate-v2/packages/slate-react/test/annotation-store-contract.test.tsx`
+- `.tmp/slate-v2/packages/slate-react/test/widget-layer-contract.test.tsx`
+- `.tmp/slate-v2/docs/libraries/slate-react/editable.md`
+- `.tmp/slate-v2/docs/libraries/slate-react/hooks.md`
+- `.tmp/slate-v2/docs/libraries/slate-react/slate.md`
+- `.tmp/slate-v2/packages/slate-react/test/editing-kernel-contract.ts`
+- `.tmp/slate-v2/packages/slate-react/test/editing-epoch-kernel-contract.ts`
+- `.tmp/slate-v2/packages/slate-react/test/selection-runtime-contract.test.ts`
+- `.tmp/slate-v2/packages/slate-react/test/model-input-strategy-contract.test.ts`
+- `.tmp/slate-v2/packages/slate-react/test/rendering-strategy-and-scroll.test.tsx`
+- `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
+- `.tmp/slate-v2/playwright/integration/examples/placeholder.test.ts`
+- `.tmp/slate-v2/playwright/integration/examples/inlines.test.ts`
+- `.tmp/slate-v2/playwright/integration/examples/mentions.test.ts`
+- `.tmp/slate-v2/playwright/integration/examples/highlighted-text.test.ts`
+- `.tmp/slate-v2/playwright/integration/examples/markdown-shortcuts.test.ts`
+- `.tmp/slate-v2/scripts/benchmarks/browser/react/rerender-breadth.tsx`
+- `.tmp/slate-v2/scripts/benchmarks/browser/react/huge-document-overlays.tsx`
 
 ## 6.1 React Editor Initialization And Value API
 
 Affected:
 
-- `../slate-v2/packages/slate/src/create-editor.ts`
-- `../slate-v2/packages/slate/src/core/public-state.ts`
-- `../slate-v2/packages/slate-react/src/hooks/use-slate-editor.ts`
-- `../slate-v2/packages/slate-react/src/components/slate.tsx`
-- `../slate-v2/site/examples/ts/**`
+- `.tmp/slate-v2/packages/slate/src/create-editor.ts`
+- `.tmp/slate-v2/packages/slate/src/core/public-state.ts`
+- `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-editor.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/slate.tsx`
+- `.tmp/slate-v2/site/examples/ts/**`
 - `docs/plans/2026-05-04-slate-v2-react-editor-initialization-value-ralplan.md`
 
 Accepted current shape:
@@ -617,29 +655,29 @@ Proof references:
 
 - `docs/plans/2026-05-04-slate-v2-react-editor-initialization-value-ralplan.md`
 - `docs/slate-v2/ledgers/issue-coverage-matrix.md`
-- `../slate-v2/packages/slate/test/state-tx-public-api-contract.ts`
-- `../slate-v2/packages/slate-react/test/provider-hooks-contract.tsx`
-- `../slate-v2/packages/slate-react/test/surface-contract.tsx`
-- `../slate-v2/packages/slate-react/test/generic-react-editor-contract.tsx`
+- `.tmp/slate-v2/packages/slate/test/state-tx-public-api-contract.ts`
+- `.tmp/slate-v2/packages/slate-react/test/provider-hooks-contract.tsx`
+- `.tmp/slate-v2/packages/slate-react/test/surface-contract.tsx`
+- `.tmp/slate-v2/packages/slate-react/test/generic-react-editor-contract.tsx`
 
 ## 6.2 React Editable Input Rule Ownership
 
 Affected:
 
-- `../slate-v2/packages/slate/src/core/editor-extension.ts`
-- `../slate-v2/packages/slate/src/core/transform-middleware.ts`
-- `../slate-v2/packages/slate/src/create-editor.ts`
-- `../slate-v2/packages/slate/src/interfaces/editor.ts`
-- `../slate-v2/packages/slate/test/extension-methods-contract.ts`
-- `../slate-v2/packages/slate/test/generic-extension-namespace-contract.ts`
-- `../slate-v2/packages/slate-react/src/editable/editable-input-rules.ts`
-- `../slate-v2/packages/slate-react/src/editable/runtime-root-engine.ts`
-- `../slate-v2/packages/slate-react/src/index.ts`
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
-- `../slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
-- `../slate-v2/site/examples/ts/check-lists.tsx`
-- `../slate-v2/site/examples/ts/markdown-shortcuts.tsx`
-- `../slate-v2/site/examples/ts/inlines.tsx`
+- `.tmp/slate-v2/packages/slate/src/core/editor-extension.ts`
+- `.tmp/slate-v2/packages/slate/src/core/transform-middleware.ts`
+- `.tmp/slate-v2/packages/slate/src/create-editor.ts`
+- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`
+- `.tmp/slate-v2/packages/slate/test/extension-methods-contract.ts`
+- `.tmp/slate-v2/packages/slate/test/generic-extension-namespace-contract.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/editable-input-rules.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-root-engine.ts`
+- `.tmp/slate-v2/packages/slate-react/src/index.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
+- `.tmp/slate-v2/site/examples/ts/check-lists.tsx`
+- `.tmp/slate-v2/site/examples/ts/markdown-shortcuts.tsx`
+- `.tmp/slate-v2/site/examples/ts/inlines.tsx`
 - `docs/plans/2026-05-04-slate-v2-legacy-example-dx-ralplan.md`
 - `docs/plans/2026-05-13-slate-v2-editable-input-rule-ownership-ralplan.md`
 
@@ -732,30 +770,30 @@ Not claimed:
 
 Proof references:
 
-- `../slate-v2/packages/slate/src/core/editor-extension.ts`
-- `../slate-v2/packages/slate/src/core/transform-middleware.ts`
-- `../slate-v2/packages/slate/src/core/query-middleware.ts`
-- `../slate-v2/packages/slate/src/core/normalize-node.ts`
-- `../slate-v2/packages/slate/src/create-editor.ts`
-- `../slate-v2/packages/slate/src/interfaces/editor.ts`
-- `../slate-v2/packages/slate/src/core/command-registry.ts`
-- `../slate-v2/packages/slate/src/editor/delete-backward.ts`
-- `../slate-v2/packages/slate/test/query-extension-contract.ts`
-- `../slate-v2/packages/slate/test/normalization-contract.ts`
-- `../slate-v2/packages/slate/test/apply-onchange-hard-cut-contract.ts`
-- `../slate-v2/packages/slate/test/extension-methods-contract.ts`
-- `../slate-v2/packages/slate/test/generic-extension-namespace-contract.ts`
-- `../slate-v2/packages/slate/test/transaction-contract.ts`
-- `../slate-v2/packages/slate/test/transforms-contract.ts`
-- `../slate-v2/packages/slate/test/public-surface-contract.ts`
-- `../slate-v2/site/examples/ts/forced-layout.tsx`
-- `../slate-v2/scripts/benchmarks/core/compare/normalization.mjs`
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
-- `../slate-v2/packages/slate-react/src/editable/runtime-root-engine.ts`
-- `../slate-v2/site/examples/ts/check-lists.tsx`
-- `../slate-v2/site/examples/ts/markdown-shortcuts.tsx`
-- `../slate-v2/site/examples/ts/inlines.tsx`
-- `bun check` in `../slate-v2`
+- `.tmp/slate-v2/packages/slate/src/core/editor-extension.ts`
+- `.tmp/slate-v2/packages/slate/src/core/transform-middleware.ts`
+- `.tmp/slate-v2/packages/slate/src/core/query-middleware.ts`
+- `.tmp/slate-v2/packages/slate/src/core/normalize-node.ts`
+- `.tmp/slate-v2/packages/slate/src/create-editor.ts`
+- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`
+- `.tmp/slate-v2/packages/slate/src/core/command-registry.ts`
+- `.tmp/slate-v2/packages/slate/src/editor/delete-backward.ts`
+- `.tmp/slate-v2/packages/slate/test/query-extension-contract.ts`
+- `.tmp/slate-v2/packages/slate/test/normalization-contract.ts`
+- `.tmp/slate-v2/packages/slate/test/apply-onchange-hard-cut-contract.ts`
+- `.tmp/slate-v2/packages/slate/test/extension-methods-contract.ts`
+- `.tmp/slate-v2/packages/slate/test/generic-extension-namespace-contract.ts`
+- `.tmp/slate-v2/packages/slate/test/transaction-contract.ts`
+- `.tmp/slate-v2/packages/slate/test/transforms-contract.ts`
+- `.tmp/slate-v2/packages/slate/test/public-surface-contract.ts`
+- `.tmp/slate-v2/site/examples/ts/forced-layout.tsx`
+- `.tmp/slate-v2/scripts/benchmarks/core/compare/normalization.mjs`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-root-engine.ts`
+- `.tmp/slate-v2/site/examples/ts/check-lists.tsx`
+- `.tmp/slate-v2/site/examples/ts/markdown-shortcuts.tsx`
+- `.tmp/slate-v2/site/examples/ts/inlines.tsx`
+- `bun check` in `.tmp/slate-v2`
 - `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun x playwright test playwright/integration/examples/forced-layout.test.ts --project=chromium`
 - `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun x playwright test playwright/integration/examples/check-lists.test.ts playwright/integration/examples/markdown-shortcuts.test.ts playwright/integration/examples/inlines.test.ts --project=chromium`
 - `docs/plans/2026-05-13-slate-v2-editable-input-rule-ownership-ralplan.md`
@@ -764,19 +802,19 @@ Proof references:
 
 Affected:
 
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
-- `../slate-v2/packages/slate-react/src/editable/editable-key-commands.ts`
-- `../slate-v2/packages/slate-react/src/editable/keyboard-input-strategy.ts`
-- `../slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts`
-- `../slate-v2/packages/slate-react/src/editable/input-router.ts`
-- `../slate-v2/site/examples/ts/code-highlighting.tsx`
-- `../slate-v2/site/examples/ts/iframe.tsx`
-- `../slate-v2/site/examples/ts/images.tsx`
-- `../slate-v2/site/examples/ts/markdown-shortcuts.tsx`
-- `../slate-v2/site/examples/ts/richtext.tsx`
-- `../slate-v2/site/examples/ts/tables.tsx`
-- `../slate-v2/site/examples/ts/hovering-toolbar.tsx`
-- `../slate-v2/docs/libraries/slate-react/editable.md`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/editable/editable-key-commands.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/keyboard-input-strategy.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/input-router.ts`
+- `.tmp/slate-v2/site/examples/ts/code-highlighting.tsx`
+- `.tmp/slate-v2/site/examples/ts/iframe.tsx`
+- `.tmp/slate-v2/site/examples/ts/images.tsx`
+- `.tmp/slate-v2/site/examples/ts/markdown-shortcuts.tsx`
+- `.tmp/slate-v2/site/examples/ts/richtext.tsx`
+- `.tmp/slate-v2/site/examples/ts/tables.tsx`
+- `.tmp/slate-v2/site/examples/ts/hovering-toolbar.tsx`
+- `.tmp/slate-v2/docs/libraries/slate-react/editable.md`
 - `docs/plans/2026-05-14-slate-v2-callback-memoization-dx-ralplan.md`
 
 Accepted current shape:
@@ -815,12 +853,12 @@ Not claimed:
 
 Proof references:
 
-- `../slate-v2/packages/slate-react/test/editing-kernel-contract.ts`
-- `../slate-v2/packages/slate-react/test/editable-behavior.tsx`
-- `../slate-v2/packages/slate-react/test/input-router-contract.test.tsx`
-- `../slate-v2/packages/slate-react/test/keyboard-input-strategy-contract.test.ts`
-- `../slate-v2/packages/slate-react/test/surface-contract.tsx`
-- `../slate-v2/playwright/integration/examples/hovering-toolbar.test.ts`
+- `.tmp/slate-v2/packages/slate-react/test/editing-kernel-contract.ts`
+- `.tmp/slate-v2/packages/slate-react/test/editable-behavior.tsx`
+- `.tmp/slate-v2/packages/slate-react/test/input-router-contract.test.tsx`
+- `.tmp/slate-v2/packages/slate-react/test/keyboard-input-strategy-contract.test.ts`
+- `.tmp/slate-v2/packages/slate-react/test/surface-contract.tsx`
+- `.tmp/slate-v2/playwright/integration/examples/hovering-toolbar.test.ts`
 - `docs/slate-v2/ledgers/issue-coverage-matrix.md`
 - `docs/plans/2026-05-18-slate-v2-table-transform-boundary-ralplan.md`
 
@@ -828,14 +866,14 @@ Proof references:
 
 Affected:
 
-- `../slate-v2/packages/slate/src/interfaces/text.ts`
-- `../slate-v2/packages/slate/src/index.ts`
-- `../slate-v2/packages/slate/test/generic-value-contract.ts`
-- `../slate-v2/site/examples/ts/custom-types.d.ts`
-- `../slate-v2/site/examples/ts/mark-utils.ts`
-- `../slate-v2/site/examples/ts/richtext.tsx`
-- `../slate-v2/site/examples/ts/hovering-toolbar.tsx`
-- `../slate-v2/site/examples/ts/iframe.tsx`
+- `.tmp/slate-v2/packages/slate/src/interfaces/text.ts`
+- `.tmp/slate-v2/packages/slate/src/index.ts`
+- `.tmp/slate-v2/packages/slate/test/generic-value-contract.ts`
+- `.tmp/slate-v2/site/examples/ts/custom-types.d.ts`
+- `.tmp/slate-v2/site/examples/ts/mark-utils.ts`
+- `.tmp/slate-v2/site/examples/ts/richtext.tsx`
+- `.tmp/slate-v2/site/examples/ts/hovering-toolbar.tsx`
+- `.tmp/slate-v2/site/examples/ts/iframe.tsx`
 - `docs/plans/2026-05-16-slate-v2-boolean-mark-key-type-helper-ralplan.md`
 
 Accepted shape:
@@ -865,25 +903,25 @@ Not claimed:
 
 Proof references:
 
-- `../slate-v2/packages/slate/src/interfaces/text.ts`
-- `../slate-v2/packages/slate/test/generic-value-contract.ts`
-- `../slate-v2/site/examples/ts/custom-types.d.ts`
-- `../slate-v2/site/examples/ts/mark-utils.ts`
+- `.tmp/slate-v2/packages/slate/src/interfaces/text.ts`
+- `.tmp/slate-v2/packages/slate/test/generic-value-contract.ts`
+- `.tmp/slate-v2/site/examples/ts/custom-types.d.ts`
+- `.tmp/slate-v2/site/examples/ts/mark-utils.ts`
 - `docs/plans/2026-05-16-slate-v2-boolean-mark-key-type-helper-ralplan.md`
 
 ## 6.3 React Decoration Source Hook
 
 Affected:
 
-- `../slate-v2/packages/slate/src/interfaces/node.ts`
-- `../slate-v2/packages/slate-react/src/hooks/use-slate-decoration-source.ts`
-- `../slate-v2/packages/slate-react/src/decoration-source.ts`
-- `../slate-v2/site/examples/ts/code-highlighting.tsx`
-- `../slate-v2/site/examples/ts/search-highlighting.tsx`
-- `../slate-v2/site/examples/ts/markdown-preview.tsx`
-- `../slate-v2/site/examples/ts/highlighted-text.tsx`
-- `../slate-v2/site/examples/ts/external-decoration-sources.tsx`
-- `../slate-v2/site/examples/ts/rendering-strategy-runtime.tsx`
+- `.tmp/slate-v2/packages/slate/src/interfaces/node.ts`
+- `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-decoration-source.ts`
+- `.tmp/slate-v2/packages/slate-react/src/decoration-source.ts`
+- `.tmp/slate-v2/site/examples/ts/code-highlighting.tsx`
+- `.tmp/slate-v2/site/examples/ts/search-highlighting.tsx`
+- `.tmp/slate-v2/site/examples/ts/markdown-preview.tsx`
+- `.tmp/slate-v2/site/examples/ts/highlighted-text.tsx`
+- `.tmp/slate-v2/site/examples/ts/external-decoration-sources.tsx`
+- `.tmp/slate-v2/site/examples/ts/rendering-strategy-runtime.tsx`
 - `docs/plans/2026-05-04-slate-v2-legacy-example-dx-ralplan.md`
 - `docs/plans/2026-05-18-slate-v2-search-highlighting-dx-ralplan.md`
 
@@ -935,7 +973,7 @@ Why it belongs in the PR:
 
 Current proof:
 
-- `bun run bench:react:huge-document-overlays:local` passes in `../slate-v2`.
+- `bun run bench:react:huge-document-overlays:local` passes in `.tmp/slate-v2`.
 - Benchmark green does not claim browser/native closure; selection, IME, copy,
   paste, find, and mobile rows remain separate gates.
 - Range-source helper proof still requires parity against the manual source
@@ -948,16 +986,16 @@ Current proof:
 
 Proof references:
 
-- `../slate-v2/packages/slate-react/test/app-owned-customization.tsx`
-- `../slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx`
-- `../slate-v2/scripts/benchmarks/browser/react/huge-document-overlays.tsx`
-- `../slate-v2/scripts/benchmarks/browser/react/rerender-breadth.tsx`
-- `../slate-v2/site/examples/ts/code-highlighting.tsx`
-- `../slate-v2/site/examples/ts/search-highlighting.tsx`
-- `../slate-v2/site/examples/ts/markdown-preview.tsx`
-- `../slate-v2/site/examples/ts/highlighted-text.tsx`
-- `../slate-v2/site/examples/ts/external-decoration-sources.tsx`
-- `../slate-v2/site/examples/ts/rendering-strategy-runtime.tsx`
+- `.tmp/slate-v2/packages/slate-react/test/app-owned-customization.tsx`
+- `.tmp/slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx`
+- `.tmp/slate-v2/scripts/benchmarks/browser/react/huge-document-overlays.tsx`
+- `.tmp/slate-v2/scripts/benchmarks/browser/react/rerender-breadth.tsx`
+- `.tmp/slate-v2/site/examples/ts/code-highlighting.tsx`
+- `.tmp/slate-v2/site/examples/ts/search-highlighting.tsx`
+- `.tmp/slate-v2/site/examples/ts/markdown-preview.tsx`
+- `.tmp/slate-v2/site/examples/ts/highlighted-text.tsx`
+- `.tmp/slate-v2/site/examples/ts/external-decoration-sources.tsx`
+- `.tmp/slate-v2/site/examples/ts/rendering-strategy-runtime.tsx`
 - `docs/plans/2026-05-04-slate-v2-legacy-example-dx-ralplan.md`
 - `docs/plans/2026-05-18-slate-v2-search-highlighting-dx-ralplan.md`
 
@@ -965,18 +1003,18 @@ Proof references:
 
 Affected:
 
-- `../slate-v2/packages/slate-react/src/components/slate.tsx`
-- `../slate-v2/packages/slate-react/src/hooks/use-slate-annotations.tsx`
-- `../slate-v2/packages/slate-react/src/hooks/use-slate-annotation-store.tsx`
-- `../slate-v2/packages/slate-react/src/hooks/use-slate-widget-store.tsx`
-- `../slate-v2/packages/slate-react/test/annotation-store-contract.tsx`
-- `../slate-v2/packages/slate-react/test/widget-layer-contract.tsx`
-- `../slate-v2/packages/slate-react/test/surface-contract.tsx`
-- `../slate-v2/docs/libraries/slate-react/annotations.md`
-- `../slate-v2/docs/libraries/slate-react/hooks.md`
-- `../slate-v2/site/examples/ts/collaborative-comments.tsx`
-- `../slate-v2/site/examples/ts/review-comments.tsx`
-- `../slate-v2/site/examples/ts/persistent-annotation-anchors.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/components/slate.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-annotations.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-annotation-store.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-widget-store.tsx`
+- `.tmp/slate-v2/packages/slate-react/test/annotation-store-contract.tsx`
+- `.tmp/slate-v2/packages/slate-react/test/widget-layer-contract.tsx`
+- `.tmp/slate-v2/packages/slate-react/test/surface-contract.tsx`
+- `.tmp/slate-v2/docs/libraries/slate-react/annotations.md`
+- `.tmp/slate-v2/docs/libraries/slate-react/hooks.md`
+- `.tmp/slate-v2/site/examples/ts/collaborative-comments.tsx`
+- `.tmp/slate-v2/site/examples/ts/review-comments.tsx`
+- `.tmp/slate-v2/site/examples/ts/persistent-annotation-anchors.tsx`
 - `docs/plans/2026-05-04-slate-v2-legacy-example-dx-ralplan.md`
 
 Accepted current shape:
@@ -1004,26 +1042,26 @@ Why it belongs in the PR:
 
 Proof references:
 
-- `../slate-v2/packages/slate-react/test/annotation-store-contract.tsx`
-- `../slate-v2/packages/slate-react/test/widget-layer-contract.tsx`
-- `../slate-v2/site/examples/ts/collaborative-comments.tsx`
-- `../slate-v2/site/examples/ts/review-comments.tsx`
-- `../slate-v2/site/examples/ts/persistent-annotation-anchors.tsx`
+- `.tmp/slate-v2/packages/slate-react/test/annotation-store-contract.tsx`
+- `.tmp/slate-v2/packages/slate-react/test/widget-layer-contract.tsx`
+- `.tmp/slate-v2/site/examples/ts/collaborative-comments.tsx`
+- `.tmp/slate-v2/site/examples/ts/review-comments.tsx`
+- `.tmp/slate-v2/site/examples/ts/persistent-annotation-anchors.tsx`
 - `docs/plans/2026-05-04-slate-v2-legacy-example-dx-ralplan.md`
 
 ## 6.4.1 React Editable Renderer Registration
 
 Affected:
 
-- `../slate-v2/packages/slate-react/src/editable/editable-renderers.ts`
-- `../slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
-- `../slate-v2/packages/slate-react/src/index.ts`
-- `../slate-v2/docs/concepts/09-rendering.md`
-- `../slate-v2/docs/libraries/slate-react/editable.md`
-- `../slate-v2/docs/walkthroughs/03-defining-custom-elements.md`
-- `../slate-v2/docs/walkthroughs/04-applying-custom-formatting.md`
-- `../slate-v2/docs/walkthroughs/05-executing-commands.md`
-- `../slate-v2/docs/walkthroughs/09-performance.md`
+- `.tmp/slate-v2/packages/slate-react/src/editable/editable-renderers.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/index.ts`
+- `.tmp/slate-v2/docs/concepts/09-rendering.md`
+- `.tmp/slate-v2/docs/libraries/slate-react/editable.md`
+- `.tmp/slate-v2/docs/walkthroughs/03-defining-custom-elements.md`
+- `.tmp/slate-v2/docs/walkthroughs/04-applying-custom-formatting.md`
+- `.tmp/slate-v2/docs/walkthroughs/05-executing-commands.md`
+- `.tmp/slate-v2/docs/walkthroughs/09-performance.md`
 
 Accepted current shape:
 
@@ -1043,31 +1081,31 @@ Not claimed:
 
 Proof references:
 
-- `../slate-v2/packages/slate-react/test/surface-contract.test.tsx`
-- `../slate-v2/packages/slate-react/src/editable/editable-renderers.ts`
-- `../slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
+- `.tmp/slate-v2/packages/slate-react/test/surface-contract.test.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/editable/editable-renderers.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
 - `docs/plans/2026-05-14-slate-v2-example-memoization-hard-cut-ralplan.md`
 
 ## 6.5 Render Path Props
 
 Affected:
 
-- `../slate-v2/packages/slate-dom/src/plugin/dom-editor.ts`
-- `../slate-v2/packages/slate-dom/src/utils/weak-maps.ts`
-- `../slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
-- `../slate-v2/packages/slate-react/src/hooks/use-element-path.ts`
-- `../slate-v2/packages/slate-react/src/hooks/use-element-selected.ts`
-- `../slate-v2/packages/slate-react/src/hooks/use-slate-node-ref.tsx`
-- `../slate-v2/packages/slate-react/test/surface-contract.tsx`
-- `../slate-v2/packages/slate-react/test/provider-hooks-contract.tsx`
-- `../slate-v2/packages/slate-dom/test/bridge.ts`
-- `../slate-v2/site/examples/ts/images.tsx`
-- `../slate-v2/site/examples/ts/embeds.tsx`
-- `../slate-v2/site/examples/ts/check-lists.tsx`
-- `../slate-v2/site/examples/ts/paste-html.tsx`
-- `../slate-v2/site/examples/ts/mentions.tsx`
-- `../slate-v2/docs/libraries/slate-react/editable.md`
-- `../slate-v2/docs/libraries/slate-react/hooks.md`
+- `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts`
+- `.tmp/slate-v2/packages/slate-dom/src/utils/weak-maps.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/hooks/use-element-path.ts`
+- `.tmp/slate-v2/packages/slate-react/src/hooks/use-element-selected.ts`
+- `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-node-ref.tsx`
+- `.tmp/slate-v2/packages/slate-react/test/surface-contract.tsx`
+- `.tmp/slate-v2/packages/slate-react/test/provider-hooks-contract.tsx`
+- `.tmp/slate-v2/packages/slate-dom/test/bridge.ts`
+- `.tmp/slate-v2/site/examples/ts/images.tsx`
+- `.tmp/slate-v2/site/examples/ts/embeds.tsx`
+- `.tmp/slate-v2/site/examples/ts/check-lists.tsx`
+- `.tmp/slate-v2/site/examples/ts/paste-html.tsx`
+- `.tmp/slate-v2/site/examples/ts/mentions.tsx`
+- `.tmp/slate-v2/docs/libraries/slate-react/editable.md`
+- `.tmp/slate-v2/docs/libraries/slate-react/hooks.md`
 - `docs/plans/2026-05-12-slate-v2-render-path-prop-performance-ralplan.md`
 
 Accepted current shape:
@@ -1098,24 +1136,24 @@ Why it belongs in the PR:
 
 Proof references:
 
-- `../slate-v2/packages/slate-react/test/surface-contract.tsx`
-- `../slate-v2/packages/slate-react/test/use-element-selected.test.tsx`
-- `../slate-v2/packages/slate-react/test/provider-hooks-contract.tsx`
-- `../slate-v2/packages/slate-dom/test/bridge.ts`
-- `../slate-v2/site/examples/ts/images.tsx`
-- `../slate-v2/site/examples/ts/embeds.tsx`
-- `../slate-v2/site/examples/ts/check-lists.tsx`
-- `../slate-v2/site/examples/ts/paste-html.tsx`
+- `.tmp/slate-v2/packages/slate-react/test/surface-contract.tsx`
+- `.tmp/slate-v2/packages/slate-react/test/use-element-selected.test.tsx`
+- `.tmp/slate-v2/packages/slate-react/test/provider-hooks-contract.tsx`
+- `.tmp/slate-v2/packages/slate-dom/test/bridge.ts`
+- `.tmp/slate-v2/site/examples/ts/images.tsx`
+- `.tmp/slate-v2/site/examples/ts/embeds.tsx`
+- `.tmp/slate-v2/site/examples/ts/check-lists.tsx`
+- `.tmp/slate-v2/site/examples/ts/paste-html.tsx`
 - `docs/plans/2026-05-12-slate-v2-render-path-prop-performance-ralplan.md`
 
 ## 7. DOM Coverage Boundaries
 
 Affected:
 
-- `../slate-v2/packages/slate-dom/src/plugin/dom-coverage.ts`
-- `../slate-v2/packages/slate-dom/src/plugin/dom-clipboard-runtime.ts`
-- `../slate-v2/packages/slate-react/src/dom-coverage-boundary.tsx`
-- `../slate-v2/site/examples/ts/dom-coverage-boundaries.tsx`
+- `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-coverage.ts`
+- `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-clipboard-runtime.ts`
+- `.tmp/slate-v2/packages/slate-react/src/dom-coverage-boundary.tsx`
+- `.tmp/slate-v2/site/examples/ts/dom-coverage-boundaries.tsx`
 - `docs/plans/2026-05-02-slate-v2-hidden-subtree-first-class-ralplan.md`
 
 Accepted current shape:
@@ -1153,10 +1191,10 @@ Proof references:
 
 Affected:
 
-- `../slate-v2/packages/slate-react/src/rendering-strategy/**`
-- `../slate-v2/site/examples/ts/huge-document.tsx`
-- `../slate-v2/site/examples/ts/rendering-strategy-runtime.tsx`
-- `../slate-v2/site/examples/ts/rendering-strategy-virtualized.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/rendering-strategy/**`
+- `.tmp/slate-v2/site/examples/ts/huge-document.tsx`
+- `.tmp/slate-v2/site/examples/ts/rendering-strategy-runtime.tsx`
+- `.tmp/slate-v2/site/examples/ts/rendering-strategy-virtualized.tsx`
 - `docs/plans/2026-05-03-slate-v2-dom-present-large-doc-phase-6-plan.md`
 - `docs/plans/2026-05-03-slate-v2-experimental-virtualized-rendering-boundary.md`
 
@@ -1194,17 +1232,17 @@ Proof references:
 - `docs/plans/2026-05-03-slate-v2-dom-present-large-doc-phase-6-plan.md`
 - `docs/plans/2026-05-03-slate-v2-experimental-virtualized-rendering-boundary.md`
 - `docs/slate-v2/replacement-gates-scoreboard.md`
-- `../slate-v2/packages/slate-react/test/surface-contract.test.tsx`
-- `../slate-v2/site/examples/ts/rendering-strategy-runtime.tsx`
+- `.tmp/slate-v2/packages/slate-react/test/surface-contract.test.tsx`
+- `.tmp/slate-v2/site/examples/ts/rendering-strategy-runtime.tsx`
 
 ## 9. Browser Regression And Example Proof
 
 Affected:
 
-- `../slate-v2/site/constants/examples.ts`
-- `../slate-v2/site/pages/examples/[example].tsx`
-- `../slate-v2/site/examples/**`
-- `../slate-v2/tests/integration/**`
+- `.tmp/slate-v2/site/constants/examples.ts`
+- `.tmp/slate-v2/site/pages/examples/[example].tsx`
+- `.tmp/slate-v2/site/examples/**`
+- `.tmp/slate-v2/tests/integration/**`
 
 Accepted current shape:
 

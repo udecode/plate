@@ -1,6 +1,7 @@
 ---
 title: Slate public root hard cuts need internal imports and explicit type exports
 date: 2026-05-03
+last_updated: 2026-05-20
 category: docs/solutions/developer-experience
 module: slate-v2 public api
 problem_type: developer_experience
@@ -51,6 +52,9 @@ Key moves:
   `defineEditorExtension`, `elementProperty`, and `isEditor`;
 - replace root `export * from './interfaces'` with explicit public type exports;
 - keep `EditorStaticApi` and policy-only types out of the root;
+- when a deleted public API still served a real internal need, replace that need
+  with a small helper exported only from `slate/internal`, not a renamed public
+  API;
 - move scripts that need runtime `Editor` to `packages/slate/src/internal`;
 - add a public-surface contract that rejects root helper leaks and wildcard
   interface exports.
@@ -87,6 +91,12 @@ runtime value is gone.
 - Benchmark and test helpers that need `Editor.*` must import from
   `slate/internal` or source `internal/index.ts`.
 - Do not let type-only exports keep a deleted value API alive.
+- For public API removals, reference sweeps may still find historical changelog
+  text and explicit absence guards. Current docs, examples, source call sites,
+  and public fixture tests should not teach or depend on the removed name.
+- If the old API was a false boundary, avoid replacing it immediately with a
+  cleaner-looking public API. Keep the honest internal helper private until a
+  real downstream use case justifies a full public design.
 
 ## Related Issues
 - `docs/solutions/developer-experience/2026-04-09-slate-runtime-backed-refs-should-not-pretend-to-be-legacy-transformable-structs.md`

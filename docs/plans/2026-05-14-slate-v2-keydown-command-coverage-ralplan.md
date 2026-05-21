@@ -4,7 +4,7 @@ Date: 2026-05-14
 Status: superseded by `docs/plans/2026-05-14-slate-v2-example-memoization-hard-cut-ralplan.md`
 Score: 0.94
 Owner: Slate Ralplan planning only
-Execution owner: ralph in `../slate-v2`
+Execution owner: ralph in `.tmp/slate-v2`
 
 ## Verdict
 
@@ -45,38 +45,38 @@ own overlay state.
 
 Runtime:
 
-- `../slate-v2/packages/slate-react/src/editable/editable-command-types.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/editable-command-types.ts`
   already defines semantic commands for delete, history, insert break, insert
   data, insert text, move selection, select-all, set-block, and toggle-mark.
-- `../slate-v2/packages/slate-react/src/editable/keyboard-input-strategy.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/keyboard-input-strategy.ts`
   currently calls `applyUserEditableCommandHandler` only when the classified
   keydown command is `format`.
-- `../slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts`
   routes native beforeinput commands through `onCommand` more broadly.
-- `../slate-v2/packages/slate-react/src/editable/editable-input-rules.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/editable-input-rules.ts`
   already supports editor extension capability input rules, so behavior can
   move out of example props without inventing a new plugin system first.
 
 Docs:
 
-- `../slate-v2/docs/libraries/slate-react/editable.md` still teaches
+- `.tmp/slate-v2/docs/libraries/slate-react/editable.md` still teaches
   `onKeyDown` for keyboard shortcuts and claims broader `onCommand` coverage
   than keydown currently provides.
 
 Examples:
 
-| File | Current shape | Covered? | Target |
-| --- | --- | --- | --- |
-| `site/examples/ts/hovering-toolbar.tsx` | `onCommand` for format | yes | Keep. This is the good example. |
-| `site/examples/ts/tables.tsx` | `useCallback<EditableKeyDownHandler>` around `applyTableBoundaryCommand(editor, event.key)` | no | Route classified `delete` and `insert-break` keydown commands to `onCommand` before default behavior. |
-| `site/examples/ts/inlines.tsx` | raw `onKeyDown` for left/right inline navigation | no | Route `move-selection` commands to `onCommand`; keep raw handler only if UI-only behavior remains. |
-| `site/examples/ts/images.tsx` | inline `onKeyDown` for `mod+a` root/image selection | no | Route `select-all` through `onCommand` before default select-all behavior. |
-| `site/examples/ts/markdown-shortcuts.tsx` | `inputRules` plus raw Enter/Backspace `onKeyDown` and Android `onDOMBeforeInput` flush glue | partial | Move Enter/Backspace to command/input-rule ownership; move Android diff flushing into runtime so the example does not touch Android internals. |
-| `site/examples/ts/richtext.tsx` | inline `onKeyDown` for exit block, clear formatting, block hotkeys, mark hotkeys | partial | Use keymap-to-command registration for block/mark/clear commands; keep `onCommand` as the behavior execution boundary. |
-| `site/examples/ts/iframe.tsx` | inline `onKeyDown` for mark hotkeys | partial | Use the same mark command/keymap path as richtext. |
-| `site/examples/ts/code-highlighting.tsx` | `useCallback` keydown hook for code block conversion and indentation | no | Add keymap-to-command coverage for code block conversion and code indentation commands. |
-| `site/examples/ts/inlines.tsx` | raw `onPaste` URL wrapper | no | Route paste as `insert-data` or add paste/input-rule capability; do not require raw clipboard parsing in the basic example. |
-| `site/examples/ts/mentions.tsx` | `useCallback` for ArrowDown/ArrowUp/Tab/Enter/Escape popup control | intentionally no | Keep as UI overlay state unless a separate combobox/plugin layer is introduced. |
+| File                                      | Current shape                                                                               | Covered?         | Target                                                                                                                                         |
+| ----------------------------------------- | ------------------------------------------------------------------------------------------- | ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `site/examples/ts/hovering-toolbar.tsx`   | `onCommand` for format                                                                      | yes              | Keep. This is the good example.                                                                                                                |
+| `site/examples/ts/tables.tsx`             | `useCallback<EditableKeyDownHandler>` around `applyTableBoundaryCommand(editor, event.key)` | no               | Route classified `delete` and `insert-break` keydown commands to `onCommand` before default behavior.                                          |
+| `site/examples/ts/inlines.tsx`            | raw `onKeyDown` for left/right inline navigation                                            | no               | Route `move-selection` commands to `onCommand`; keep raw handler only if UI-only behavior remains.                                             |
+| `site/examples/ts/images.tsx`             | inline `onKeyDown` for `mod+a` root/image selection                                         | no               | Route `select-all` through `onCommand` before default select-all behavior.                                                                     |
+| `site/examples/ts/markdown-shortcuts.tsx` | `inputRules` plus raw Enter/Backspace `onKeyDown` and Android `onDOMBeforeInput` flush glue | partial          | Move Enter/Backspace to command/input-rule ownership; move Android diff flushing into runtime so the example does not touch Android internals. |
+| `site/examples/ts/richtext.tsx`           | inline `onKeyDown` for exit block, clear formatting, block hotkeys, mark hotkeys            | partial          | Use keymap-to-command registration for block/mark/clear commands; keep `onCommand` as the behavior execution boundary.                         |
+| `site/examples/ts/iframe.tsx`             | inline `onKeyDown` for mark hotkeys                                                         | partial          | Use the same mark command/keymap path as richtext.                                                                                             |
+| `site/examples/ts/code-highlighting.tsx`  | `useCallback` keydown hook for code block conversion and indentation                        | no               | Add keymap-to-command coverage for code block conversion and code indentation commands.                                                        |
+| `site/examples/ts/inlines.tsx`            | raw `onPaste` URL wrapper                                                                   | no               | Route paste as `insert-data` or add paste/input-rule capability; do not require raw clipboard parsing in the basic example.                    |
+| `site/examples/ts/mentions.tsx`           | `useCallback` for ArrowDown/ArrowUp/Tab/Enter/Escape popup control                          | intentionally no | Keep as UI overlay state unless a separate combobox/plugin layer is introduced.                                                                |
 
 ## Architecture Target
 
@@ -117,9 +117,12 @@ This should be extension-capability owned, matching the existing
 
 ```ts
 editableKeyCommands(
-  { hotkey: 'mod+b', command: { kind: 'toggle-mark', mark: 'bold' } },
-  { hotkey: 'mod+shift+7', command: { kind: 'set-block', blockType: 'numbered-list' } }
-)
+  { hotkey: "mod+b", command: { kind: "toggle-mark", mark: "bold" } },
+  {
+    hotkey: "mod+shift+7",
+    command: { kind: "set-block", blockType: "numbered-list" },
+  },
+);
 ```
 
 Keep the prop surface minimal. Do not add `onKeyCommand`; `onCommand` is already
@@ -218,10 +221,10 @@ side on top.
     code highlighting
   - Chromium Playwright rows for each rewritten example
 - Final gate:
-  - `cd ../slate-v2 && bun --filter slate-react typecheck`
-  - `cd ../slate-v2 && bun lint:fix`
-  - `cd ../slate-v2 && bun --filter slate-react test`
-  - `cd ../slate-v2 && bun check`
+  - `cd .tmp/slate-v2 && bun --filter slate-react typecheck`
+  - `cd .tmp/slate-v2 && bun lint:fix`
+  - `cd .tmp/slate-v2 && bun --filter slate-react test`
+  - `cd .tmp/slate-v2 && bun check`
 
 ## Risk
 

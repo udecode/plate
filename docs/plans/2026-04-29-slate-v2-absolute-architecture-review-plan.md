@@ -21,17 +21,17 @@ is not absolute architecture. It is legacy Slate gravity with better naming.
 Target:
 
 ```ts
-import { createEditor, isEditor } from 'slate'
-import type { Editor } from 'slate'
+import { createEditor, isEditor } from "slate";
+import type { Editor } from "slate";
 
 editor.read((state) => {
-  state.selection.get()
-  state.text.string([])
-})
+  state.selection.get();
+  state.text.string([]);
+});
 
 editor.update((tx) => {
-  tx.nodes.set(props, { at: target })
-})
+  tx.nodes.set(props, { at: target });
+});
 ```
 
 Normal public API:
@@ -63,7 +63,7 @@ an internal module boundary. A public static object named `Editor` should not
 survive an unpublished hard-cut rewrite.
 
 This plan is complete. The review lane closed, the implementation lane shipped
-the hard cut in `../slate-v2`, and the completion gate is green.
+the hard cut in `.tmp/slate-v2`, and the completion gate is green.
 
 ## 2. Intent and Boundaries
 
@@ -146,12 +146,12 @@ Top drivers:
 
 Viable options:
 
-| Option | Pros | Cons | Verdict |
-| --- | --- | --- | --- |
-| Keep public `Editor` value | closest to legacy Slate; smallest migration delta | preserves a second public read/write path; keeps huge namespace; conflicts with `state` / `tx` doctrine | reject |
-| Split into `EditorQuery` / `EditorTransform` static namespaces | clearer than one giant `Editor`; partial migration story | still creates parallel static read/write APIs and more names to teach | reject |
-| Cut public `Editor` value; keep internal implementation table | one public lifecycle; type-only `Editor`; clean docs; internal code can migrate in phases | larger source/test migration; fixture helpers need replacement | choose |
-| Cut every instance query too in the same pass | most radical cleanup | too much blast radius for the namespace pass; risks conflating lifecycle cleanup with query-surface design | defer |
+| Option                                                         | Pros                                                                                      | Cons                                                                                                       | Verdict |
+| -------------------------------------------------------------- | ----------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- | ------- |
+| Keep public `Editor` value                                     | closest to legacy Slate; smallest migration delta                                         | preserves a second public read/write path; keeps huge namespace; conflicts with `state` / `tx` doctrine    | reject  |
+| Split into `EditorQuery` / `EditorTransform` static namespaces | clearer than one giant `Editor`; partial migration story                                  | still creates parallel static read/write APIs and more names to teach                                      | reject  |
+| Cut public `Editor` value; keep internal implementation table  | one public lifecycle; type-only `Editor`; clean docs; internal code can migrate in phases | larger source/test migration; fixture helpers need replacement                                             | choose  |
+| Cut every instance query too in the same pass                  | most radical cleanup                                                                      | too much blast radius for the namespace pass; risks conflating lifecycle cleanup with query-surface design | defer   |
 
 Chosen option:
 
@@ -190,14 +190,14 @@ Follow-ups:
 
 ## 4. Confidence Scorecard
 
-| Dimension | Weight | Score | Evidence |
-| --- | ---: | ---: | --- |
-| React 19.2 runtime performance | 0.20 | 0.90 | The React evidence says React 19.2 helps projection and external-store scheduling but does not replace editor-owned dirty-node/runtime invalidation in `docs/research/sources/editor-architecture/react-19-2-external-store-and-background-ui.md:57`. Cutting the public `Editor` value avoids broad static editor access in hot React code, but this pass does not change render runtime. |
-| Slate-close unopinionated DX | 0.20 | 0.87 | The accepted naming decision says public lifecycle is `editor.read((state) => ...)` and `editor.update((tx) => ...)` in `docs/research/decisions/slate-v2-state-tx-public-api-and-extension-namespaces.md:27`; live source still exports `EditorInterface` and `Editor` value in `/Users/zbeyens/git/slate-v2/packages/slate/src/interfaces/editor.ts:798` and `:1345`. |
-| Plate and slate-yjs migration-backbone shape | 0.15 | 0.86 | Extension namespaces on `state` and `tx` are the accepted migration backbone in `docs/research/decisions/slate-v2-state-tx-public-api-and-extension-namespaces.md:60`; the current public static value still mixes extension registration and editor-state helpers in `/Users/zbeyens/git/slate-v2/packages/slate/src/interfaces/editor.ts:1215`. Needs next-pass proof rows for plugin and collab substrate impact. |
-| Regression-proof testing strategy | 0.20 | 0.86 | Existing hard-cut tests prove instance primitive writers and stale state mirrors are gone in `/Users/zbeyens/git/slate-v2/packages/slate/test/public-field-hard-cut-contract.ts:33` and runtime absence checks at `:120`; state/tx contracts prove grouped reads/writes in `/Users/zbeyens/git/slate-v2/packages/slate/test/state-tx-public-api-contract.ts:29` and `:51`. New guards are still needed for no public `Editor` value export and no public transform-registry export. |
-| Research evidence completeness | 0.15 | 0.88 | Full corpus evidence exists for Lexical, ProseMirror, and Tiptap in `docs/research/sources/editor-architecture/read-update-runtime-corpus-ledger.md:25`, `:59`, and `:95`; this pass corrected stale primitive-method wording in `docs/research/decisions/slate-v2-architecture-verdict-after-human-stress-sweep.md` and `docs/research/decisions/slate-v2-read-update-runtime-architecture.md`. |
-| shadcn-style composability and hook/component minimalism | 0.10 | 0.87 | The plan keeps app-visible API surfaces small and composable: type-only `Editor`, pure data namespaces, `state` / `tx`, and extension groups. Runtime-owned render-shell DX remains governed by `docs/research/decisions/editor-node-dx-should-use-runtime-owned-shells-and-spec-first-renderers.md:19`, but this pass does not execute that render API. |
+| Dimension                                                | Weight | Score | Evidence                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| -------------------------------------------------------- | -----: | ----: | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| React 19.2 runtime performance                           |   0.20 |  0.90 | The React evidence says React 19.2 helps projection and external-store scheduling but does not replace editor-owned dirty-node/runtime invalidation in `docs/research/sources/editor-architecture/react-19-2-external-store-and-background-ui.md:57`. Cutting the public `Editor` value avoids broad static editor access in hot React code, but this pass does not change render runtime.                                                                                          |
+| Slate-close unopinionated DX                             |   0.20 |  0.87 | The accepted naming decision says public lifecycle is `editor.read((state) => ...)` and `editor.update((tx) => ...)` in `docs/research/decisions/slate-v2-state-tx-public-api-and-extension-namespaces.md:27`; live source still exports `EditorInterface` and `Editor` value in `/Users/zbeyens/git/slate-v2/packages/slate/src/interfaces/editor.ts:798` and `:1345`.                                                                                                             |
+| Plate and slate-yjs migration-backbone shape             |   0.15 |  0.86 | Extension namespaces on `state` and `tx` are the accepted migration backbone in `docs/research/decisions/slate-v2-state-tx-public-api-and-extension-namespaces.md:60`; the current public static value still mixes extension registration and editor-state helpers in `/Users/zbeyens/git/slate-v2/packages/slate/src/interfaces/editor.ts:1215`. Needs next-pass proof rows for plugin and collab substrate impact.                                                                |
+| Regression-proof testing strategy                        |   0.20 |  0.86 | Existing hard-cut tests prove instance primitive writers and stale state mirrors are gone in `/Users/zbeyens/git/slate-v2/packages/slate/test/public-field-hard-cut-contract.ts:33` and runtime absence checks at `:120`; state/tx contracts prove grouped reads/writes in `/Users/zbeyens/git/slate-v2/packages/slate/test/state-tx-public-api-contract.ts:29` and `:51`. New guards are still needed for no public `Editor` value export and no public transform-registry export. |
+| Research evidence completeness                           |   0.15 |  0.88 | Full corpus evidence exists for Lexical, ProseMirror, and Tiptap in `docs/research/sources/editor-architecture/read-update-runtime-corpus-ledger.md:25`, `:59`, and `:95`; this pass corrected stale primitive-method wording in `docs/research/decisions/slate-v2-architecture-verdict-after-human-stress-sweep.md` and `docs/research/decisions/slate-v2-read-update-runtime-architecture.md`.                                                                                    |
+| shadcn-style composability and hook/component minimalism |   0.10 |  0.87 | The plan keeps app-visible API surfaces small and composable: type-only `Editor`, pure data namespaces, `state` / `tx`, and extension groups. Runtime-owned render-shell DX remains governed by `docs/research/decisions/editor-node-dx-should-use-runtime-owned-shells-and-spec-first-renderers.md:19`, but this pass does not execute that render API.                                                                                                                            |
 
 Weighted total after Pass 1: `0.874`.
 
@@ -245,14 +245,14 @@ Why this is the right boundary:
 
 Updated score: `0.886`.
 
-| Dimension | Weight | Score | Evidence |
-| --- | ---: | ---: | --- |
-| React 19.2 runtime performance | 0.20 | 0.90 | No React runtime code changes are planned in Pass 2. The boundary still supports narrow reads because app docs route through state/tx rather than static editor namespace. |
-| Slate-close unopinionated DX | 0.20 | 0.89 | `BaseEditor` currently exposes `replace`, `reset`, and many query methods at `/Users/zbeyens/git/slate-v2/packages/slate/src/interfaces/editor.ts:271` and `:313`; Pass 2 decides these are not the normal app-doc path. |
-| Plate and slate-yjs migration-backbone shape | 0.15 | 0.88 | Full-document replacement maps to transaction metadata already represented by `replaceSnapshot` and `reason: 'replace'` in `/Users/zbeyens/git/slate-v2/packages/slate/src/core/public-state.ts:1717`; public collab replay remains `tx.operations.replay(...)`. |
-| Regression-proof testing strategy | 0.20 | 0.88 | Existing tests heavily use `Editor.replace` for seeding, including `/Users/zbeyens/git/slate-v2/packages/slate/test/state-tx-public-api-contract.ts:17`; Pass 2 adds explicit test-helper and tx-value replacement proof requirements instead of leaving fixture convenience implicit. |
-| Research evidence completeness | 0.15 | 0.88 | No new external research was needed for this boundary pass; the current state/tx decision remains the naming authority. Pass 3 still must re-read the research/live-source layer before closure scoring can rise. |
-| shadcn-style composability and hook/component minimalism | 0.10 | 0.88 | Pass 2 reduces normal app-facing choices: no static `Editor`, no normal `editor.replace`, no docs-first instance query path when a state/tx group exists. |
+| Dimension                                                | Weight | Score | Evidence                                                                                                                                                                                                                                                                               |
+| -------------------------------------------------------- | -----: | ----: | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| React 19.2 runtime performance                           |   0.20 |  0.90 | No React runtime code changes are planned in Pass 2. The boundary still supports narrow reads because app docs route through state/tx rather than static editor namespace.                                                                                                             |
+| Slate-close unopinionated DX                             |   0.20 |  0.89 | `BaseEditor` currently exposes `replace`, `reset`, and many query methods at `/Users/zbeyens/git/slate-v2/packages/slate/src/interfaces/editor.ts:271` and `:313`; Pass 2 decides these are not the normal app-doc path.                                                               |
+| Plate and slate-yjs migration-backbone shape             |   0.15 |  0.88 | Full-document replacement maps to transaction metadata already represented by `replaceSnapshot` and `reason: 'replace'` in `/Users/zbeyens/git/slate-v2/packages/slate/src/core/public-state.ts:1717`; public collab replay remains `tx.operations.replay(...)`.                       |
+| Regression-proof testing strategy                        |   0.20 |  0.88 | Existing tests heavily use `Editor.replace` for seeding, including `/Users/zbeyens/git/slate-v2/packages/slate/test/state-tx-public-api-contract.ts:17`; Pass 2 adds explicit test-helper and tx-value replacement proof requirements instead of leaving fixture convenience implicit. |
+| Research evidence completeness                           |   0.15 |  0.88 | No new external research was needed for this boundary pass; the current state/tx decision remains the naming authority. Pass 3 still must re-read the research/live-source layer before closure scoring can rise.                                                                      |
+| shadcn-style composability and hook/component minimalism |   0.10 |  0.88 | Pass 2 reduces normal app-facing choices: no static `Editor`, no normal `editor.replace`, no docs-first instance query path when a state/tx group exists.                                                                                                                              |
 
 Weighted total: `0.886`.
 
@@ -268,7 +268,7 @@ Plan delta from Pass 2:
 
 Next owner:
 
-- Phase 2 implementation prep in `../slate-v2/packages/slate`: introduce the
+- Phase 2 implementation prep in `.tmp/slate-v2/packages/slate`: introduce the
   non-public replacement/test-helper substrate and internal transform-registry
   boundary before cutting the public `Editor` value.
 
@@ -279,7 +279,7 @@ Next owner:
 - Set `.tmp/<session-id>/completion-check.md` back to `pending`.
 - Regenerated `.tmp/continue.md` for execution instead of review.
 - Started Phase 1 contract-first tests in
-  `../slate-v2/packages/slate/test/public-surface-contract.ts`.
+  `.tmp/slate-v2/packages/slate/test/public-surface-contract.ts`.
 - Added red public contracts for:
   - no public value export named `Editor`
   - no public transform-registry exports
@@ -287,7 +287,7 @@ Next owner:
   - no `export interface EditorInterface` or `export const Editor` in public
     source
 - Ran `bun test ./packages/slate/test/public-surface-contract.ts` from
-  `../slate-v2`.
+  `.tmp/slate-v2`.
 - Result: red, as intended. New public-surface assertions fail on current
   source. The same focused file also has existing docs-surface failures for
   stale React/void wording, so the next owner is implementation plus later docs
@@ -384,14 +384,14 @@ Research findings:
 
 Updated score: `0.899`.
 
-| Dimension | Weight | Score | Evidence |
-| --- | ---: | ---: | --- |
-| React 19.2 runtime performance | 0.20 | 0.90 | No React runtime changes enter this pass. The source refresh still supports narrow lifecycle access instead of static editor reads in render paths. |
-| Slate-close unopinionated DX | 0.20 | 0.90 | Research now says type-only `Editor`, `state` / `tx`, pure data namespaces, and `tx.value.replace`; live docs/examples still need migration away from `Editor.*`. |
-| Plate and slate-yjs migration-backbone shape | 0.15 | 0.90 | Existing migration-backbone tests prove extension namespaces and operation replay, but still use `Editor` for fixture reads/seeding. The plan now calls that out as migration debt rather than acceptable public API. |
-| Regression-proof testing strategy | 0.20 | 0.89 | The live grep shows broad `Editor.*` use in tests/docs/examples, so guard coverage must include export tests, docs/example grep guards, and seed helper migration. |
-| Research evidence completeness | 0.15 | 0.91 | The compiled state/tx and read/update decisions were refreshed, and the existing full corpus ledger remains sufficient for this specific namespace cut. |
-| shadcn-style composability and hook/component minimalism | 0.10 | 0.89 | Pass 3 narrows author-facing choices further but does not touch render components or hooks. |
+| Dimension                                                | Weight | Score | Evidence                                                                                                                                                                                                              |
+| -------------------------------------------------------- | -----: | ----: | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| React 19.2 runtime performance                           |   0.20 |  0.90 | No React runtime changes enter this pass. The source refresh still supports narrow lifecycle access instead of static editor reads in render paths.                                                                   |
+| Slate-close unopinionated DX                             |   0.20 |  0.90 | Research now says type-only `Editor`, `state` / `tx`, pure data namespaces, and `tx.value.replace`; live docs/examples still need migration away from `Editor.*`.                                                     |
+| Plate and slate-yjs migration-backbone shape             |   0.15 |  0.90 | Existing migration-backbone tests prove extension namespaces and operation replay, but still use `Editor` for fixture reads/seeding. The plan now calls that out as migration debt rather than acceptable public API. |
+| Regression-proof testing strategy                        |   0.20 |  0.89 | The live grep shows broad `Editor.*` use in tests/docs/examples, so guard coverage must include export tests, docs/example grep guards, and seed helper migration.                                                    |
+| Research evidence completeness                           |   0.15 |  0.91 | The compiled state/tx and read/update decisions were refreshed, and the existing full corpus ledger remains sufficient for this specific namespace cut.                                                               |
+| shadcn-style composability and hook/component minimalism |   0.10 |  0.89 | Pass 3 narrows author-facing choices further but does not touch render components or hooks.                                                                                                                           |
 
 Weighted total: `0.899`.
 
@@ -506,14 +506,14 @@ Simplicity pressure:
 
 Updated score: `0.910`.
 
-| Dimension | Weight | Score | Evidence |
-| --- | ---: | ---: | --- |
-| React 19.2 runtime performance | 0.20 | 0.91 | React 19.2 research says external-store subscriptions and background UI help projection, but core invalidation remains Slate-owned. Pass 4 keeps the namespace cut out of React hot paths. |
-| Slate-close unopinionated DX | 0.20 | 0.91 | The plan keeps Slate data helpers and read/update lifecycle while rejecting static editor-state helpers, product command sugar, and compatibility namespaces. |
-| Plate and slate-yjs migration-backbone shape | 0.15 | 0.91 | The plan keeps extension namespaces, commit metadata, deterministic operations, and `tx.operations.replay(...)`, and explicitly rejects current-version adapter promises. |
-| Regression-proof testing strategy | 0.20 | 0.91 | Pass 4 names export, tx replacement, write boundary, transform-registry, docs/example grep, and focused browser proof gates. |
-| Research evidence completeness | 0.15 | 0.91 | Pass 4 relies on refreshed state/tx and React 19.2 research plus live source/test/docs grep evidence; no new corpus gap was found. |
-| shadcn-style composability and hook/component minimalism | 0.10 | 0.90 | Public author choices are reduced to lifecycle, pure data helpers, extension registration, and advanced runtime subscription. Render/component DX remains out of scope. |
+| Dimension                                                | Weight | Score | Evidence                                                                                                                                                                                   |
+| -------------------------------------------------------- | -----: | ----: | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| React 19.2 runtime performance                           |   0.20 |  0.91 | React 19.2 research says external-store subscriptions and background UI help projection, but core invalidation remains Slate-owned. Pass 4 keeps the namespace cut out of React hot paths. |
+| Slate-close unopinionated DX                             |   0.20 |  0.91 | The plan keeps Slate data helpers and read/update lifecycle while rejecting static editor-state helpers, product command sugar, and compatibility namespaces.                              |
+| Plate and slate-yjs migration-backbone shape             |   0.15 |  0.91 | The plan keeps extension namespaces, commit metadata, deterministic operations, and `tx.operations.replay(...)`, and explicitly rejects current-version adapter promises.                  |
+| Regression-proof testing strategy                        |   0.20 |  0.91 | Pass 4 names export, tx replacement, write boundary, transform-registry, docs/example grep, and focused browser proof gates.                                                               |
+| Research evidence completeness                           |   0.15 |  0.91 | Pass 4 relies on refreshed state/tx and React 19.2 research plus live source/test/docs grep evidence; no new corpus gap was found.                                                         |
+| shadcn-style composability and hook/component minimalism |   0.10 |  0.90 | Public author choices are reduced to lifecycle, pure data helpers, extension registration, and advanced runtime subscription. Render/component DX remains out of scope.                    |
 
 Plan delta from Pass 4:
 
@@ -548,6 +548,7 @@ Ledger verdict:
 Accepted steelman rows:
 
 1. Cut public `Editor` value.
+
    - Strongest objection: `Editor.*` is the most Slate-looking API in the repo.
      Cutting it makes migration feel less like Slate and more like a new editor.
    - Antithesis: Familiarity is valuable; legacy examples, tests, and mental
@@ -566,6 +567,7 @@ Accepted steelman rows:
    - Verdict: keep.
 
 2. Cut public `EditorInterface`.
+
    - Strongest objection: plugin authors need a stable augmentable interface.
    - Antithesis: Type augmentation is a real Slate strength.
    - Tradeoff: extensions must learn `EditorStateView` and
@@ -582,6 +584,7 @@ Accepted steelman rows:
    - Verdict: keep.
 
 3. Hide transform registry.
+
    - Strongest objection: core helpers and tests need transform access, and a
      registry is the obvious way to share it.
    - Antithesis: the registry is a practical internal service locator.
@@ -597,6 +600,7 @@ Accepted steelman rows:
    - Verdict: keep.
 
 4. Keep pure data namespaces.
+
    - Strongest objection: killing `Editor` but keeping `Node` / `Range` /
      `Path` is inconsistent.
    - Antithesis: one style of helper namespace is easier to explain.
@@ -613,6 +617,7 @@ Accepted steelman rows:
    - Verdict: keep.
 
 5. Cut public replacement helpers.
+
    - Strongest objection: replacing a document should be one obvious method;
      `editor.update((tx) => tx.value.replace(input))` is longer.
    - Antithesis: `editor.replace(input)` is great fixture and load-state DX.
@@ -628,6 +633,7 @@ Accepted steelman rows:
    - Verdict: keep.
 
 6. Instance query methods.
+
    - Strongest objection: `editor.string([])` is shorter and more Slate-like
      than `editor.read((state) => state.text.string([]))`.
    - Antithesis: compact reads matter; forcing callbacks for every read can
@@ -645,6 +651,7 @@ Accepted steelman rows:
    - Verdict: revise, with closure blocker recorded.
 
 7. Keep `editor.subscribe(...)` as an advanced bridge.
+
    - Strongest objection: if static `Editor.subscribe` dies, why keep instance
      subscription at all?
    - Antithesis: a pure `onChange` React prop is nicer for app authors.
@@ -675,14 +682,14 @@ Accepted steelman rows:
 
 Updated score: `0.920`.
 
-| Dimension | Weight | Score | Evidence |
-| --- | ---: | ---: | --- |
-| React 19.2 runtime performance | 0.20 | 0.91 | Ledger keeps React out of the editor engine and treats namespace cleanup as architecture/DX, not a render-speed claim. |
-| Slate-close unopinionated DX | 0.20 | 0.93 | Ledger keeps Slate model/data helpers while cutting only editor-state static value and wrong write paths. |
-| Plate and slate-yjs migration-backbone shape | 0.15 | 0.93 | Ledger preserves extension namespaces, `editor.subscribe` for adapters, deterministic operations, and no current-version adapter promise. |
-| Regression-proof testing strategy | 0.20 | 0.92 | Ledger ties each hard cut to export/type/behavior/grep contracts and fixture-helper migration. |
-| Research evidence completeness | 0.15 | 0.91 | No new research gap; ledger is grounded in refreshed state/tx decisions and live source/test/docs evidence. |
-| shadcn-style composability and hook/component minimalism | 0.10 | 0.92 | Ledger rejects compatibility namespaces and command/chain sugar, keeping the public surface small. |
+| Dimension                                                | Weight | Score | Evidence                                                                                                                                  |
+| -------------------------------------------------------- | -----: | ----: | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| React 19.2 runtime performance                           |   0.20 |  0.91 | Ledger keeps React out of the editor engine and treats namespace cleanup as architecture/DX, not a render-speed claim.                    |
+| Slate-close unopinionated DX                             |   0.20 |  0.93 | Ledger keeps Slate model/data helpers while cutting only editor-state static value and wrong write paths.                                 |
+| Plate and slate-yjs migration-backbone shape             |   0.15 |  0.93 | Ledger preserves extension namespaces, `editor.subscribe` for adapters, deterministic operations, and no current-version adapter promise. |
+| Regression-proof testing strategy                        |   0.20 |  0.92 | Ledger ties each hard cut to export/type/behavior/grep contracts and fixture-helper migration.                                            |
+| Research evidence completeness                           |   0.15 |  0.91 | No new research gap; ledger is grounded in refreshed state/tx decisions and live source/test/docs evidence.                               |
+| shadcn-style composability and hook/component minimalism |   0.10 |  0.92 | Ledger rejects compatibility namespaces and command/chain sugar, keeping the public surface small.                                        |
 
 Plan delta from Pass 5:
 
@@ -737,12 +744,14 @@ Blast radius:
 Pre-mortem:
 
 1. Export/type churn becomes chaotic.
+
    - Failure: removing `Editor` value breaks hundreds of tests, and the fix is
      a rushed `EditorCompat` namespace.
    - Prevention: add non-public test helpers first, then cut public exports,
      then guard against compatibility namespace exports.
 
 2. `tx.value.replace` corrupts runtime identity or commit metadata.
+
    - Failure: replacement changes children but loses runtime-id reseeding,
      selection/marks reset, listener notification, or replacement commit
      classification.
@@ -822,14 +831,14 @@ High-risk verdict:
 
 Updated score: `0.928`.
 
-| Dimension | Weight | Score | Evidence |
-| --- | ---: | ---: | --- |
-| React 19.2 runtime performance | 0.20 | 0.92 | Proof plan explicitly forbids broad React subscriptions and new hot-path wrapper allocation. |
-| Slate-close unopinionated DX | 0.20 | 0.93 | High-risk pass preserves type-only `Editor`, pure data helpers, `state` / `tx`, `editor.subscribe`, and no product command sugar. |
-| Plate and slate-yjs migration-backbone shape | 0.15 | 0.94 | Proof plan requires extension namespace, deterministic operation replay, commit metadata, and headless subscription proof. |
-| Regression-proof testing strategy | 0.20 | 0.94 | Proof plan now names unit/type, behavior, migration, docs/example, browser, and performance gates. |
-| Research evidence completeness | 0.15 | 0.91 | No new research gap; deliberate pass uses refreshed research and live-source evidence. |
-| shadcn-style composability and hook/component minimalism | 0.10 | 0.92 | Plan stays minimal and refuses compatibility/product-command surfaces. |
+| Dimension                                                | Weight | Score | Evidence                                                                                                                          |
+| -------------------------------------------------------- | -----: | ----: | --------------------------------------------------------------------------------------------------------------------------------- |
+| React 19.2 runtime performance                           |   0.20 |  0.92 | Proof plan explicitly forbids broad React subscriptions and new hot-path wrapper allocation.                                      |
+| Slate-close unopinionated DX                             |   0.20 |  0.93 | High-risk pass preserves type-only `Editor`, pure data helpers, `state` / `tx`, `editor.subscribe`, and no product command sugar. |
+| Plate and slate-yjs migration-backbone shape             |   0.15 |  0.94 | Proof plan requires extension namespace, deterministic operation replay, commit metadata, and headless subscription proof.        |
+| Regression-proof testing strategy                        |   0.20 |  0.94 | Proof plan now names unit/type, behavior, migration, docs/example, browser, and performance gates.                                |
+| Research evidence completeness                           |   0.15 |  0.91 | No new research gap; deliberate pass uses refreshed research and live-source evidence.                                            |
+| shadcn-style composability and hook/component minimalism |   0.10 |  0.92 | Plan stays minimal and refuses compatibility/product-command surfaces.                                                            |
 
 Plan delta from Pass 6:
 
@@ -848,6 +857,7 @@ closure pass runs.
 Revision decisions:
 
 1. Instance query methods are no longer a vague bridge.
+
    - Final app-author docs target: state/tx only.
    - Final public type target for this hard-cut execution: remove public
      state-equivalent query methods from `BaseEditor` where state/tx groups
@@ -859,6 +869,7 @@ Revision decisions:
      docs/examples from teaching it as normal app code.
 
 2. Ref lifecycle helpers are deferred out of this plan.
+
    - `pathRef`, `pointRef`, `rangeRef`, and ref-set ownership need their own
      focused design because they are live handles, not simple committed reads.
    - This plan must not invent `editor.refs` or another namespace while solving
@@ -867,12 +878,14 @@ Revision decisions:
      do not present ref helpers as a replacement for state/tx reads.
 
 3. Initial value ergonomics are deferred out of this plan.
+
    - `createEditor({ initialValue })` is not required to cut the public
      `Editor` value.
    - Public full-value replacement remains `tx.value.replace(input)`.
    - Test setup uses non-public seed helpers.
 
 4. `editor.subscribe` policy is final for this plan.
+
    - It is an advanced headless adapter bridge.
    - It is not a normal render subscription API.
    - React users should use React adapter callbacks/hooks; collab/persistence
@@ -885,14 +898,14 @@ Revision decisions:
 
 Updated score: `0.936`.
 
-| Dimension | Weight | Score | Evidence |
-| --- | ---: | ---: | --- |
-| React 19.2 runtime performance | 0.20 | 0.93 | Revision keeps React subscriptions out of scope and forbids render-path `Editor.*` reads. |
-| Slate-close unopinionated DX | 0.20 | 0.95 | Instance-query policy is now explicit: state/tx is normal DX, pure data helpers stay, refs/initialValue are deferred. |
-| Plate and slate-yjs migration-backbone shape | 0.15 | 0.94 | Revision preserves substrate-only migration proof and rejects adapter promises. |
-| Regression-proof testing strategy | 0.20 | 0.95 | Closure gates now require export/type, replacement, write-boundary, registry, grep, extension, replay, and subscription proof. |
-| Research evidence completeness | 0.15 | 0.92 | No contradiction remains in the research layer for this namespace decision. |
-| shadcn-style composability and hook/component minimalism | 0.10 | 0.93 | Revision avoids extra namespaces and keeps raw Slate minimal. |
+| Dimension                                                | Weight | Score | Evidence                                                                                                                       |
+| -------------------------------------------------------- | -----: | ----: | ------------------------------------------------------------------------------------------------------------------------------ |
+| React 19.2 runtime performance                           |   0.20 |  0.93 | Revision keeps React subscriptions out of scope and forbids render-path `Editor.*` reads.                                      |
+| Slate-close unopinionated DX                             |   0.20 |  0.95 | Instance-query policy is now explicit: state/tx is normal DX, pure data helpers stay, refs/initialValue are deferred.          |
+| Plate and slate-yjs migration-backbone shape             |   0.15 |  0.94 | Revision preserves substrate-only migration proof and rejects adapter promises.                                                |
+| Regression-proof testing strategy                        |   0.20 |  0.95 | Closure gates now require export/type, replacement, write-boundary, registry, grep, extension, replay, and subscription proof. |
+| Research evidence completeness                           |   0.15 |  0.92 | No contradiction remains in the research layer for this namespace decision.                                                    |
+| shadcn-style composability and hook/component minimalism |   0.10 |  0.93 | Revision avoids extra namespaces and keeps raw Slate minimal.                                                                  |
 
 Plan delta from Pass 7:
 
@@ -925,29 +938,29 @@ Closure verdict:
 
 Closure gate check:
 
-| Gate | Result |
-| --- | --- |
-| score at least `0.92` | pass: `0.936` |
-| no dimension below `0.85` | pass |
-| pass-state ledger complete | pass |
-| high-risk deliberate pass complete | pass |
-| objection ledger rows accepted or revised into plan | pass |
-| no public API maybe language | pass |
-| Plate/slate-yjs migration-backbone answers | pass |
-| public export/test/doc acceptance criteria named | pass |
-| deferred scope explicit | pass |
-| completion files synchronized | pass |
+| Gate                                                | Result        |
+| --------------------------------------------------- | ------------- |
+| score at least `0.92`                               | pass: `0.936` |
+| no dimension below `0.85`                           | pass          |
+| pass-state ledger complete                          | pass          |
+| high-risk deliberate pass complete                  | pass          |
+| objection ledger rows accepted or revised into plan | pass          |
+| no public API maybe language                        | pass          |
+| Plate/slate-yjs migration-backbone answers          | pass          |
+| public export/test/doc acceptance criteria named    | pass          |
+| deferred scope explicit                             | pass          |
+| completion files synchronized                       | pass          |
 
 Final score: `0.936`.
 
-| Dimension | Weight | Final Score | Reason |
-| --- | ---: | ---: | --- |
-| React 19.2 runtime performance | 0.20 | 0.93 | Plan avoids React hot-path churn and treats this cut as lifecycle/API cleanup, not runtime magic. |
-| Slate-close unopinionated DX | 0.20 | 0.95 | One lifecycle, type-only `Editor`, pure data helpers, no product commands, no compatibility namespace. |
-| Plate and slate-yjs migration-backbone shape | 0.15 | 0.94 | Extension namespaces, deterministic operations, commit metadata, replay, and subscription bridge are preserved. |
-| Regression-proof testing strategy | 0.20 | 0.95 | Export/type, replacement, write-boundary, registry, grep, extension, replay, subscription, and focused browser gates are named. |
-| Research evidence completeness | 0.15 | 0.92 | Research layer is refreshed and no contradiction remains for this namespace decision. |
-| shadcn-style composability and hook/component minimalism | 0.10 | 0.93 | Public surface stays minimal and composable without UI/product leakage. |
+| Dimension                                                | Weight | Final Score | Reason                                                                                                                          |
+| -------------------------------------------------------- | -----: | ----------: | ------------------------------------------------------------------------------------------------------------------------------- |
+| React 19.2 runtime performance                           |   0.20 |        0.93 | Plan avoids React hot-path churn and treats this cut as lifecycle/API cleanup, not runtime magic.                               |
+| Slate-close unopinionated DX                             |   0.20 |        0.95 | One lifecycle, type-only `Editor`, pure data helpers, no product commands, no compatibility namespace.                          |
+| Plate and slate-yjs migration-backbone shape             |   0.15 |        0.94 | Extension namespaces, deterministic operations, commit metadata, replay, and subscription bridge are preserved.                 |
+| Regression-proof testing strategy                        |   0.20 |        0.95 | Export/type, replacement, write-boundary, registry, grep, extension, replay, subscription, and focused browser gates are named. |
+| Research evidence completeness                           |   0.15 |        0.92 | Research layer is refreshed and no contradiction remains for this namespace decision.                                           |
+| shadcn-style composability and hook/component minimalism |   0.10 |        0.93 | Public surface stays minimal and composable without UI/product leakage.                                                         |
 
 Plan delta from Pass 8:
 
@@ -986,24 +999,24 @@ External evidence:
 ## 6. Public API Target
 
 ```ts
-const editor = createEditor()
+const editor = createEditor();
 
 editor.read((state) => {
-  const text = state.text.string([])
-  const selection = state.selection.get()
-  const isVoid = state.schema.isVoid(element)
-})
+  const text = state.text.string([]);
+  const selection = state.selection.get();
+  const isVoid = state.schema.isVoid(element);
+});
 
 editor.update((tx) => {
   tx.value.replace({
     children,
     selection: null,
     marks: null,
-  })
-  tx.text.insert('x')
-  tx.nodes.set({ type: 'heading' }, { at: target })
-  tx.operations.replay(operations, { tag: 'remote' })
-})
+  });
+  tx.text.insert("x");
+  tx.nodes.set({ type: "heading" }, { at: target });
+  tx.operations.replay(operations, { tag: "remote" });
+});
 ```
 
 Top-level exports:
@@ -1066,7 +1079,7 @@ Carry-forward law:
 Any docs or examples touched by this lane must use:
 
 ```ts
-const selected = useEditorState((state) => state.selection.get())
+const selected = useEditorState((state) => state.selection.get());
 ```
 
 or a target-scoped hook, not a static `Editor.*` read.
@@ -1105,16 +1118,16 @@ static editor-state namespace.
 
 ## 11. Legacy Regression Proof Matrix
 
-| Surface | Contract |
-| --- | --- |
-| Public export surface | Type test proves `import { Editor } from 'slate'` is not a value export while `import type { Editor }` works. |
-| Public static namespace | Runtime/module test proves no public `Editor.*` static object exists from root package exports. |
-| Transform registry | Export audit proves `getEditorTransformRegistry` and `setEditorTransformRegistry` are not public root exports. |
-| Normal reads | Public behavior tests use `editor.read((state) => state.*)` for selection, text, nodes, schema. |
-| Normal writes | Public behavior tests use `editor.update((tx) => tx.*)` for text, nodes, marks, selection, operations. |
-| Document replacement | Public behavior test uses `editor.update((tx) => tx.value.replace(input))`; export/type tests prove `Editor.replace`, `Editor.reset`, `editor.replace`, and `editor.reset` are not normal public app APIs. |
-| Tests/fixtures | Test helpers seed and inspect editors without public `Editor.replace` / `Editor.getSnapshot` dependence where possible. |
-| Docs/examples | Grep guard blocks first-party user-facing docs/examples from teaching `Editor.*` editor-state reads or writes. |
+| Surface                 | Contract                                                                                                                                                                                                   |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Public export surface   | Type test proves `import { Editor } from 'slate'` is not a value export while `import type { Editor }` works.                                                                                              |
+| Public static namespace | Runtime/module test proves no public `Editor.*` static object exists from root package exports.                                                                                                            |
+| Transform registry      | Export audit proves `getEditorTransformRegistry` and `setEditorTransformRegistry` are not public root exports.                                                                                             |
+| Normal reads            | Public behavior tests use `editor.read((state) => state.*)` for selection, text, nodes, schema.                                                                                                            |
+| Normal writes           | Public behavior tests use `editor.update((tx) => tx.*)` for text, nodes, marks, selection, operations.                                                                                                     |
+| Document replacement    | Public behavior test uses `editor.update((tx) => tx.value.replace(input))`; export/type tests prove `Editor.replace`, `Editor.reset`, `editor.replace`, and `editor.reset` are not normal public app APIs. |
+| Tests/fixtures          | Test helpers seed and inspect editors without public `Editor.replace` / `Editor.getSnapshot` dependence where possible.                                                                                    |
+| Docs/examples           | Grep guard blocks first-party user-facing docs/examples from teaching `Editor.*` editor-state reads or writes.                                                                                             |
 
 ## 12. Browser Stress and Parity Strategy
 
@@ -1134,13 +1147,13 @@ remains a closure/release gate, not the first iteration gate.
 
 ## 13. Applicable Implementation-Skill Review Matrix
 
-| Lens | Applicability | Result |
-| --- | --- | --- |
-| Vercel React best practices | applied | React 19.2 supports external stores and scheduling, but this API cut is mainly about keeping public access paths narrow. No new React work until implementation touches React files. |
-| performance-oracle | applied | Static namespace removal reduces broad API surface but does not prove runtime speed. Implementation must avoid wrapper allocations on hot tx paths. |
-| tdd | applied | First implementation slice should start with public export and public API contract tests before code changes. |
-| build-web-apps:shadcn | skipped | No UI/editor chrome is being designed in this lane. |
-| react-useeffect | skipped | No effects or browser subscriptions are changed by the plan itself. |
+| Lens                        | Applicability | Result                                                                                                                                                                               |
+| --------------------------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Vercel React best practices | applied       | React 19.2 supports external stores and scheduling, but this API cut is mainly about keeping public access paths narrow. No new React work until implementation touches React files. |
+| performance-oracle          | applied       | Static namespace removal reduces broad API surface but does not prove runtime speed. Implementation must avoid wrapper allocations on hot tx paths.                                  |
+| tdd                         | applied       | First implementation slice should start with public export and public API contract tests before code changes.                                                                        |
+| build-web-apps:shadcn       | skipped       | No UI/editor chrome is being designed in this lane.                                                                                                                                  |
+| react-useeffect             | skipped       | No effects or browser subscriptions are changed by the plan itself.                                                                                                                  |
 
 ## 14. High-Risk Deliberate Mode
 
@@ -1214,27 +1227,27 @@ Rejected alternatives:
 
 ## 16. Slate Maintainer Objection Ledger
 
-| Change | Pain | Strong objection | Steelman antithesis | Tradeoff tension | Why keep | Evidence | Rejected alternative | Migration answer | Docs/example answer | Regression proof | Ecosystem answer | Verdict |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Cut public `Editor` value | legacy Slate user, test author | "`Editor.*` is familiar Slate. Why delete the name people know?" | Familiarity lowers migration friction and preserves old docs examples. | More code churn and test helper work. | The rewrite already chose `state` / `tx`; keeping `Editor.*` makes that choice optional theater. | `Editor` value mixes reads/writes at `/Users/zbeyens/git/slate-v2/packages/slate/src/interfaces/editor.ts:798` and `:1345`. | Keep static reads only. | Use `editor.read` / `editor.update`; pure data namespaces stay. | Transform and editor docs teach the lifecycle once. | export contract plus docs/examples grep. | Plate/Yjs use substrate APIs, not static editor helpers. | keep |
-| Cut public `EditorInterface` | plugin author | "I need a stable interface to augment." | Interface augmentation can be convenient. | Extensions need new typed registration patterns. | Public `EditorInterface` currently exists to type the static value and leaks its mixed shape. | `EditorInterface` includes writes, reads, extension registration, replace/reset at `/Users/zbeyens/git/slate-v2/packages/slate/src/interfaces/editor.ts:798`. | Keep interface but hide value. | Use `Editor`, `EditorStateView`, `EditorUpdateTransaction`, and extension group augmentation. | Extension docs show `state` / `tx` groups. | type tests for extension namespaces. | Plate gets namespace augmentation without monkeypatching editor methods. | keep |
-| Hide transform registry | core/runtime maintainer | "Core needs easy access to transform methods." | A public registry is a simple escape hatch. | Internal imports need cleanup. | Public write-kernel access bypasses the whole transaction/public API story. | Root `core` barrel exports `transform-registry` at `/Users/zbeyens/git/slate-v2/packages/slate/src/core/index.ts:10`. | Document as internal advanced. | Core imports from internal path; apps use `tx`. | No public docs. | export audit prevents root access. | Collab replays through `tx.operations.replay`. | keep |
-| Keep pure data namespaces | raw Slate user | "If `Editor` dies, should `Node` and `Range` die too?" | Consistency might suggest cutting every namespace. | Too much churn if pure helpers move. | Pure data namespaces are not editor-state access paths and do not split read/write lifecycle. | Root exports `editor` implementation and `interfaces`, but pure data helpers are separate concepts. | Move all helpers under editor state. | Keep pure helpers; move editor-state helpers into `state`/`tx`. | Docs explain data helpers vs editor lifecycle. | type/import tests. | Plate/Yjs keep path/range/node utilities. | keep |
-| Cut public replacement helpers | app author, test author | "Replacing the whole document should be easy." | `editor.replace(input)` is short and test-friendly. | Public replacement through tx is more verbose; fixtures need helpers. | Replacement is a write and must share transaction tags, commit metadata, runtime ids, and listener behavior. | `replaceSnapshot` already runs with replace authority in `/Users/zbeyens/git/slate-v2/packages/slate/src/core/public-state.ts:1717`; tests use `Editor.replace` mostly as seed setup. | Keep `editor.replace` as advanced. | Use `tx.value.replace(input)` in app code and non-public seed helpers in tests. | Saving/loading docs show `tx.value.replace`. | state/tx replacement contract plus export guard. | Plate/Yjs can map remote/full reloads to transaction replacement without static helpers. | keep |
-| Reclassify instance queries | app author | "`editor.string([])` is shorter than `editor.read((state) => state.text.string([]))`." | Legacy Slate query helpers are familiar and compact. | More callback ceremony for simple reads. | One read lifecycle is the only way to stop stale reads and teach tx-local freshness. | `BaseEditor` currently exposes query helpers at `/Users/zbeyens/git/slate-v2/packages/slate/src/interfaces/editor.ts:271`; state groups already expose text/nodes/points/ranges/schema. | Keep instance queries as normal public API. | Docs use state/tx; internal code can keep bridge helpers until migration. | Concepts explain state/tx reads once. | docs/examples grep plus state group tests. | Plate can build command sugar above state/tx without relying on instance query methods. | keep |
+| Change                         | Pain                           | Strong objection                                                                       | Steelman antithesis                                                    | Tradeoff tension                                                      | Why keep                                                                                                     | Evidence                                                                                                                                                                                | Rejected alternative                        | Migration answer                                                                              | Docs/example answer                                 | Regression proof                                 | Ecosystem answer                                                                         | Verdict |
+| ------------------------------ | ------------------------------ | -------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- | --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------- | --------------------------------------------------------------------------------------------- | --------------------------------------------------- | ------------------------------------------------ | ---------------------------------------------------------------------------------------- | ------- |
+| Cut public `Editor` value      | legacy Slate user, test author | "`Editor.*` is familiar Slate. Why delete the name people know?"                       | Familiarity lowers migration friction and preserves old docs examples. | More code churn and test helper work.                                 | The rewrite already chose `state` / `tx`; keeping `Editor.*` makes that choice optional theater.             | `Editor` value mixes reads/writes at `/Users/zbeyens/git/slate-v2/packages/slate/src/interfaces/editor.ts:798` and `:1345`.                                                             | Keep static reads only.                     | Use `editor.read` / `editor.update`; pure data namespaces stay.                               | Transform and editor docs teach the lifecycle once. | export contract plus docs/examples grep.         | Plate/Yjs use substrate APIs, not static editor helpers.                                 | keep    |
+| Cut public `EditorInterface`   | plugin author                  | "I need a stable interface to augment."                                                | Interface augmentation can be convenient.                              | Extensions need new typed registration patterns.                      | Public `EditorInterface` currently exists to type the static value and leaks its mixed shape.                | `EditorInterface` includes writes, reads, extension registration, replace/reset at `/Users/zbeyens/git/slate-v2/packages/slate/src/interfaces/editor.ts:798`.                           | Keep interface but hide value.              | Use `Editor`, `EditorStateView`, `EditorUpdateTransaction`, and extension group augmentation. | Extension docs show `state` / `tx` groups.          | type tests for extension namespaces.             | Plate gets namespace augmentation without monkeypatching editor methods.                 | keep    |
+| Hide transform registry        | core/runtime maintainer        | "Core needs easy access to transform methods."                                         | A public registry is a simple escape hatch.                            | Internal imports need cleanup.                                        | Public write-kernel access bypasses the whole transaction/public API story.                                  | Root `core` barrel exports `transform-registry` at `/Users/zbeyens/git/slate-v2/packages/slate/src/core/index.ts:10`.                                                                   | Document as internal advanced.              | Core imports from internal path; apps use `tx`.                                               | No public docs.                                     | export audit prevents root access.               | Collab replays through `tx.operations.replay`.                                           | keep    |
+| Keep pure data namespaces      | raw Slate user                 | "If `Editor` dies, should `Node` and `Range` die too?"                                 | Consistency might suggest cutting every namespace.                     | Too much churn if pure helpers move.                                  | Pure data namespaces are not editor-state access paths and do not split read/write lifecycle.                | Root exports `editor` implementation and `interfaces`, but pure data helpers are separate concepts.                                                                                     | Move all helpers under editor state.        | Keep pure helpers; move editor-state helpers into `state`/`tx`.                               | Docs explain data helpers vs editor lifecycle.      | type/import tests.                               | Plate/Yjs keep path/range/node utilities.                                                | keep    |
+| Cut public replacement helpers | app author, test author        | "Replacing the whole document should be easy."                                         | `editor.replace(input)` is short and test-friendly.                    | Public replacement through tx is more verbose; fixtures need helpers. | Replacement is a write and must share transaction tags, commit metadata, runtime ids, and listener behavior. | `replaceSnapshot` already runs with replace authority in `/Users/zbeyens/git/slate-v2/packages/slate/src/core/public-state.ts:1717`; tests use `Editor.replace` mostly as seed setup.   | Keep `editor.replace` as advanced.          | Use `tx.value.replace(input)` in app code and non-public seed helpers in tests.               | Saving/loading docs show `tx.value.replace`.        | state/tx replacement contract plus export guard. | Plate/Yjs can map remote/full reloads to transaction replacement without static helpers. | keep    |
+| Reclassify instance queries    | app author                     | "`editor.string([])` is shorter than `editor.read((state) => state.text.string([]))`." | Legacy Slate query helpers are familiar and compact.                   | More callback ceremony for simple reads.                              | One read lifecycle is the only way to stop stale reads and teach tx-local freshness.                         | `BaseEditor` currently exposes query helpers at `/Users/zbeyens/git/slate-v2/packages/slate/src/interfaces/editor.ts:271`; state groups already expose text/nodes/points/ranges/schema. | Keep instance queries as normal public API. | Docs use state/tx; internal code can keep bridge helpers until migration.                     | Concepts explain state/tx reads once.               | docs/examples grep plus state group tests.       | Plate can build command sugar above state/tx without relying on instance query methods.  | keep    |
 
 ## 17. Pass Schedule and State Ledger
 
-| Pass | Status | Evidence added | Plan delta | Open issues | Next owner |
-| --- | --- | --- | --- | --- | --- |
-| 1. Current-state read and initial score | complete | live `Editor` export, transform registry export, state/tx tests, research corrections | created this plan and corrected stale research wording | closure score below threshold | Pass 2 |
-| 2. Intent/boundary and decision brief pressure | complete | live `BaseEditor` replace/reset/query surface; `replaceSnapshot` transaction authority; docs/examples `Editor.replace` usage | decided `tx.value.replace`, test seed helper boundary, and non-normal instance query status | closure score below threshold | Pass 3 |
-| 3. Research and live-source refresh | complete | refreshed state/tx and read/update research; live source still lacks `tx.value.replace`; docs/examples still teach `Editor.*` | recorded target-vs-current gap and docs/example migration blocker | closure score below threshold | Pass 4 |
-| 4. Performance/DX/migration/regression/simplicity pressure | complete | React 19.2 perf research; live docs/examples/test hit counts; `getStateView` / `getUpdateView` allocation shape; `slate-browser` gate scripts | tightened performance constraints, migration order, proof rows, and simplicity cuts | closure score below threshold | Pass 5 |
-| 5. Slate maintainer and steelman ledger | complete | expanded steelman rows for public `Editor`, `EditorInterface`, transform registry, data namespaces, replacement, instance queries, subscribe bridge, and no-compat aliases | accepted seven decisions and revised instance queries into a closure blocker | none | Pass 6 |
-| 6. High-risk deliberate pass | complete | public API/export/type blast radius; fixture/docs/example/collab failure scenarios; expanded proof plan | added proof matrix and split-execution remediation answer | none | Pass 7 |
-| 7. Revision pass | complete | instance-query blocker resolution; ref and initial-value deferrals; subscribe bridge policy; substrate-only migration proof | removed maybe language and aligned closure gates | none | Pass 8 |
-| 8. Closure score and final gates | complete | final scorecard, gate check, synchronized completion files | marked Ralplan ready for user review | none | none |
+| Pass                                                       | Status   | Evidence added                                                                                                                                                             | Plan delta                                                                                  | Open issues                   | Next owner |
+| ---------------------------------------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- | ----------------------------- | ---------- |
+| 1. Current-state read and initial score                    | complete | live `Editor` export, transform registry export, state/tx tests, research corrections                                                                                      | created this plan and corrected stale research wording                                      | closure score below threshold | Pass 2     |
+| 2. Intent/boundary and decision brief pressure             | complete | live `BaseEditor` replace/reset/query surface; `replaceSnapshot` transaction authority; docs/examples `Editor.replace` usage                                               | decided `tx.value.replace`, test seed helper boundary, and non-normal instance query status | closure score below threshold | Pass 3     |
+| 3. Research and live-source refresh                        | complete | refreshed state/tx and read/update research; live source still lacks `tx.value.replace`; docs/examples still teach `Editor.*`                                              | recorded target-vs-current gap and docs/example migration blocker                           | closure score below threshold | Pass 4     |
+| 4. Performance/DX/migration/regression/simplicity pressure | complete | React 19.2 perf research; live docs/examples/test hit counts; `getStateView` / `getUpdateView` allocation shape; `slate-browser` gate scripts                              | tightened performance constraints, migration order, proof rows, and simplicity cuts         | closure score below threshold | Pass 5     |
+| 5. Slate maintainer and steelman ledger                    | complete | expanded steelman rows for public `Editor`, `EditorInterface`, transform registry, data namespaces, replacement, instance queries, subscribe bridge, and no-compat aliases | accepted seven decisions and revised instance queries into a closure blocker                | none                          | Pass 6     |
+| 6. High-risk deliberate pass                               | complete | public API/export/type blast radius; fixture/docs/example/collab failure scenarios; expanded proof plan                                                                    | added proof matrix and split-execution remediation answer                                   | none                          | Pass 7     |
+| 7. Revision pass                                           | complete | instance-query blocker resolution; ref and initial-value deferrals; subscribe bridge policy; substrate-only migration proof                                                | removed maybe language and aligned closure gates                                            | none                          | Pass 8     |
+| 8. Closure score and final gates                           | complete | final scorecard, gate check, synchronized completion files                                                                                                                 | marked Ralplan ready for user review                                                        | none                          | none       |
 
 ## 18. Plan Deltas From Review
 
@@ -1348,7 +1361,8 @@ Current expectation: none of those will hold.
    - Add grep/export guards so public `Editor` value and transform registry do
      not return.
 10. Verification.
-   - Run focused tests, `bun check`, and completion-check.
+
+- Run focused tests, `bun check`, and completion-check.
 
 ## 21. Fast Driver Gates
 

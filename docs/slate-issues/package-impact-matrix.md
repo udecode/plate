@@ -26,32 +26,32 @@ The point is not to assign every bug to exactly one box and pretend boundaries d
 
 - source of truth: [open-issues-ledger.md](/Users/zbeyens/git/plate-2/docs/slate-issues/open-issues-ledger.md)
 - theme map: [issue-clusters.md](/Users/zbeyens/git/plate-2/docs/slate-issues/issue-clusters.md)
-- package boundaries from the local `../slate-v2/packages/*` repo layout
+- package boundaries from the local `.tmp/slate-v2/packages/*` repo layout
 
 ## Top-Line Package Pressure
 
 Direct issue ownership across all `682` ledger rows:
 
-| Package impact | Issues |
-|---|---:|
-| `cross-package` | 267 |
-| `slate-react` | 136 |
-| `slate` | 100 |
-| `docs-only` | 69 |
-| `ecosystem` | 49 |
-| `site/examples` | 32 |
-| `repo-only` | 12 |
-| `slate-history` | 11 |
-| `slate-dom` | 4 |
-| `slate-hyperscript` | 2 |
+| Package impact      | Issues |
+| ------------------- | -----: |
+| `cross-package`     |    267 |
+| `slate-react`       |    136 |
+| `slate`             |    100 |
+| `docs-only`         |     69 |
+| `ecosystem`         |     49 |
+| `site/examples`     |     32 |
+| `repo-only`         |     12 |
+| `slate-history`     |     11 |
+| `slate-dom`         |      4 |
+| `slate-hyperscript` |      2 |
 
 Collapsed by ownership lane:
 
-| Ownership lane | Issues |
-|---|---:|
-| runtime boundary (`cross-package` + `slate-react` + `slate-dom`) | 407 |
-| core engine (`slate` + `slate-history` + `slate-hyperscript`) | 113 |
-| maintainer noise (`docs-only` + `site/examples` + `repo-only` + `ecosystem`) | 162 |
+| Ownership lane                                                               | Issues |
+| ---------------------------------------------------------------------------- | -----: |
+| runtime boundary (`cross-package` + `slate-react` + `slate-dom`)             |    407 |
+| core engine (`slate` + `slate-history` + `slate-hyperscript`)                |    113 |
+| maintainer noise (`docs-only` + `site/examples` + `repo-only` + `ecosystem`) |    162 |
 
 Strong take:
 
@@ -61,27 +61,27 @@ Strong take:
 
 ## Current Package Roles
 
-| Package | Current responsibility | What it should not absorb by default |
-|---|---|---|
-| `slate` | document model, operations, normalization, refs, core editor semantics | browser quirks, React lifecycle timing, example/docs drift |
-| `slate-react` | React runtime, hooks, rendering, event/lifecycle integration | low-level DOM point translation that should be shared beyond React |
-| `slate-dom` | DOM bridge, point/path translation, clipboard DOM formats, browser-facing editor glue | React subscription policy, hook ergonomics, general engine semantics |
-| `slate-history` | undo/redo semantics over core operations | general selection repair, DOM ownership, render timing |
-| `slate-hyperscript` | document construction helpers and test/document authoring ergonomics | runtime selection/input bugs, general API clutter |
-| docs/examples | onboarding, examples, reference, support load reduction | architecture decisions that belong in packages |
+| Package             | Current responsibility                                                                | What it should not absorb by default                                 |
+| ------------------- | ------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| `slate`             | document model, operations, normalization, refs, core editor semantics                | browser quirks, React lifecycle timing, example/docs drift           |
+| `slate-react`       | React runtime, hooks, rendering, event/lifecycle integration                          | low-level DOM point translation that should be shared beyond React   |
+| `slate-dom`         | DOM bridge, point/path translation, clipboard DOM formats, browser-facing editor glue | React subscription policy, hook ergonomics, general engine semantics |
+| `slate-history`     | undo/redo semantics over core operations                                              | general selection repair, DOM ownership, render timing               |
+| `slate-hyperscript` | document construction helpers and test/document authoring ergonomics                  | runtime selection/input bugs, general API clutter                    |
+| docs/examples       | onboarding, examples, reference, support load reduction                               | architecture decisions that belong in packages                       |
 
 ## Theme Ownership Matrix
 
-| Theme | Package pressure | Primary owner | Secondary owners | Default v2 target | Why |
-|---|---|---|---|---|---|
-| Mobile, IME, And Input Semantics | `124` runtime, `4` maintainer, `1` core | `slate-react-v2` + `slate-dom-v2` | `slate-v2` | shared input pipeline | composition, placeholder, Android/iOS quirks, and selection reconciliation live at the runtime boundary, not in the pure document model |
-| Performance And Scalability | `7` runtime, `5` core, `1` maintainer | shared | `slate-v2`, `slate-react-v2`, `slate-dom-v2` | benchmark-driven cross-cut | perf issues map back to engine cost, subscription breadth, or browser-selection behavior, not to a standalone perf package |
-| React Runtime, Identity, And Subscription Model | `105` runtime, `5` maintainer, `1` core | `slate-react-v2` | `slate-v2` | React runtime rewrite | subscriptions, focus lifecycle, editor instance replacement, and render breadth belong to the React package, backed by better core snapshots |
-| Selection, Focus, And DOM Bridge | `118` runtime, `35` core, `19` maintainer | `slate-dom-v2` + `slate-react-v2` | `slate-v2` | shared runtime boundary | DOM translation and selection repair are browser/runtime work first, with core only providing stable identity and commit semantics |
-| Clipboard, Serialization, And External Formats | `27` runtime, `4` core, `6` maintainer | `slate-dom-v2` + `slate-v2` | `slate-hyperscript-v2` | import/export seam cleanup | DOM clipboard handling and internal fragment semantics need a cleaner boundary than the current implicit coupling |
-| Core Model, Operations, Normalization, And History | `54` core, `9` runtime, `6` maintainer | `slate-v2` | `slate-history-v2` | engine rewrite | this is where transactions, operation ownership, normalization debt, and stable identity earn their keep |
-| API, Typing, And Extensibility | `12` core, `10` runtime, `11` maintainer | `slate-v2` | `slate-react-v2`, `slate-hyperscript-v2` | core contract cleanup | this is mostly about the public model, operation contracts, type guards, and extension seams |
-| Docs, Examples, Support Noise, And Repo Churn | `110` maintainer, `7` runtime, `1` core | docs/examples/repo | none | non-v2 lane | this is maintainer-load and onboarding debt, not a reason to distort the architecture |
+| Theme                                              | Package pressure                          | Primary owner                     | Secondary owners                             | Default v2 target          | Why                                                                                                                                          |
+| -------------------------------------------------- | ----------------------------------------- | --------------------------------- | -------------------------------------------- | -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| Mobile, IME, And Input Semantics                   | `124` runtime, `4` maintainer, `1` core   | `slate-react-v2` + `slate-dom-v2` | `slate-v2`                                   | shared input pipeline      | composition, placeholder, Android/iOS quirks, and selection reconciliation live at the runtime boundary, not in the pure document model      |
+| Performance And Scalability                        | `7` runtime, `5` core, `1` maintainer     | shared                            | `slate-v2`, `slate-react-v2`, `slate-dom-v2` | benchmark-driven cross-cut | perf issues map back to engine cost, subscription breadth, or browser-selection behavior, not to a standalone perf package                   |
+| React Runtime, Identity, And Subscription Model    | `105` runtime, `5` maintainer, `1` core   | `slate-react-v2`                  | `slate-v2`                                   | React runtime rewrite      | subscriptions, focus lifecycle, editor instance replacement, and render breadth belong to the React package, backed by better core snapshots |
+| Selection, Focus, And DOM Bridge                   | `118` runtime, `35` core, `19` maintainer | `slate-dom-v2` + `slate-react-v2` | `slate-v2`                                   | shared runtime boundary    | DOM translation and selection repair are browser/runtime work first, with core only providing stable identity and commit semantics           |
+| Clipboard, Serialization, And External Formats     | `27` runtime, `4` core, `6` maintainer    | `slate-dom-v2` + `slate-v2`       | `slate-hyperscript-v2`                       | import/export seam cleanup | DOM clipboard handling and internal fragment semantics need a cleaner boundary than the current implicit coupling                            |
+| Core Model, Operations, Normalization, And History | `54` core, `9` runtime, `6` maintainer    | `slate-v2`                        | `slate-history-v2`                           | engine rewrite             | this is where transactions, operation ownership, normalization debt, and stable identity earn their keep                                     |
+| API, Typing, And Extensibility                     | `12` core, `10` runtime, `11` maintainer  | `slate-v2`                        | `slate-react-v2`, `slate-hyperscript-v2`     | core contract cleanup      | this is mostly about the public model, operation contracts, type guards, and extension seams                                                 |
+| Docs, Examples, Support Noise, And Repo Churn      | `110` maintainer, `7` runtime, `1` core   | docs/examples/repo                | none                                         | non-v2 lane                | this is maintainer-load and onboarding debt, not a reason to distort the architecture                                                        |
 
 ## Cross-Cutting Runtime Seam: Decorations, Marks, And Annotations
 

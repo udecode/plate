@@ -24,7 +24,7 @@ Do not take the mobile/IME cluster next. It is larger, but exact closure needs r
 - desired outcome: Backspace after clearing the editable inline in `/examples/inlines` removes the empty inline without deleting the preceding character in the simple case.
 - in scope:
   - #5972 current gitcrawl thread.
-  - current `../slate-v2` inlines example and browser tests.
+  - current `.tmp/slate-v2` inlines example and browser tests.
   - model-owned delete command path in `slate` and `slate-react`.
   - DOM selection import/repair only if the browser trace proves the model target is imported wrong.
 - non-goals:
@@ -48,24 +48,24 @@ Issue evidence:
 
 Live Slate v2 evidence:
 
-- `../slate-v2/site/examples/ts/inlines.tsx:29` defines the inlines example with `link`, editable `button`, and read-only `badge` inline children.
-- `../slate-v2/site/examples/ts/inlines.tsx:149` registers `link`, `button`, and `badge` as inline elements.
-- `../slate-v2/site/examples/ts/inlines.tsx:105` customizes only left/right movement to `unit: 'offset'`; Backspace is left to the runtime.
-- `../slate-v2/playwright/integration/examples/inlines.test.ts:34` already proves editable inline end typing.
-- `../slate-v2/playwright/integration/examples/inlines.test.ts:65` proves following text start is distinct from inline end.
-- `../slate-v2/playwright/integration/examples/inlines.test.ts:178` proves cut of inline link text keeps the caret editable.
+- `.tmp/slate-v2/site/examples/ts/inlines.tsx:29` defines the inlines example with `link`, editable `button`, and read-only `badge` inline children.
+- `.tmp/slate-v2/site/examples/ts/inlines.tsx:149` registers `link`, `button`, and `badge` as inline elements.
+- `.tmp/slate-v2/site/examples/ts/inlines.tsx:105` customizes only left/right movement to `unit: 'offset'`; Backspace is left to the runtime.
+- `.tmp/slate-v2/playwright/integration/examples/inlines.test.ts:34` already proves editable inline end typing.
+- `.tmp/slate-v2/playwright/integration/examples/inlines.test.ts:65` proves following text start is distinct from inline end.
+- `.tmp/slate-v2/playwright/integration/examples/inlines.test.ts:178` proves cut of inline link text keeps the caret editable.
 - Exact #5972 browser row now exists in
-  `../slate-v2/playwright/integration/examples/inlines.test.ts`.
+  `.tmp/slate-v2/playwright/integration/examples/inlines.test.ts`.
 
 Likely owner files:
 
-- `../slate-v2/packages/slate-react/src/editable/input-controller.ts:148` classifies Backspace/Delete as delete intent.
-- `../slate-v2/packages/slate-react/src/editable/keyboard-input-strategy.ts:241` turns destructive keydown into a model-owned command.
-- `../slate-v2/packages/slate-react/src/editable/mutation-controller.ts:95` maps default Backspace to `tx.text.deleteBackward({ unit: 'character' })`.
-- `../slate-v2/packages/slate/src/transforms-text/delete-text.ts:421` already contains inline point relocation helpers.
-- `../slate-v2/packages/slate/src/core/leaf-lifecycle.ts:72` owns cleanup of empty text leaves while preserving required inline spacers.
-- `../slate-v2/packages/slate/src/core/normalize-node.ts:263` owns explicit inline children normalization and spacer insertion.
-- `../slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts:207` already has cut-specific empty inline removal and caret reset logic; that is a useful pattern, not proof that Backspace is fixed.
+- `.tmp/slate-v2/packages/slate-react/src/editable/input-controller.ts:148` classifies Backspace/Delete as delete intent.
+- `.tmp/slate-v2/packages/slate-react/src/editable/keyboard-input-strategy.ts:241` turns destructive keydown into a model-owned command.
+- `.tmp/slate-v2/packages/slate-react/src/editable/mutation-controller.ts:95` maps default Backspace to `tx.text.deleteBackward({ unit: 'character' })`.
+- `.tmp/slate-v2/packages/slate/src/transforms-text/delete-text.ts:421` already contains inline point relocation helpers.
+- `.tmp/slate-v2/packages/slate/src/core/leaf-lifecycle.ts:72` owns cleanup of empty text leaves while preserving required inline spacers.
+- `.tmp/slate-v2/packages/slate/src/core/normalize-node.ts:263` owns explicit inline children normalization and spacer insertion.
+- `.tmp/slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts:207` already has cut-specific empty inline removal and caret reset logic; that is a useful pattern, not proof that Backspace is fixed.
 
 ## Decision Brief
 
@@ -85,13 +85,13 @@ Top drivers:
 
 Viable options:
 
-| Option | Pros | Cons | Verdict |
-| --- | --- | --- | --- |
-| Browser-first #5972 row, route owner by trace | Matches issue, keeps closure honest, avoids architecture guesswork | Requires a red browser test before code | Chosen |
-| Core-only delete target patch first | Fast if the bug is purely `delete-text.ts` | Can paper over a DOM selection import bug | Rejected until proof |
-| React keydown special-case for editable inline | Easy local hook | Duplicates delete semantics outside the model primitive | Rejected |
-| Example-specific Backspace handler | Small diff | Would prove the example can hack around Slate, not that Slate v2 fixed the bug | Rejected except as evidence-only fallback |
-| Public inline delete policy API | Flexible | Product-shaped and premature | Rejected |
+| Option                                         | Pros                                                               | Cons                                                                           | Verdict                                   |
+| ---------------------------------------------- | ------------------------------------------------------------------ | ------------------------------------------------------------------------------ | ----------------------------------------- |
+| Browser-first #5972 row, route owner by trace  | Matches issue, keeps closure honest, avoids architecture guesswork | Requires a red browser test before code                                        | Chosen                                    |
+| Core-only delete target patch first            | Fast if the bug is purely `delete-text.ts`                         | Can paper over a DOM selection import bug                                      | Rejected until proof                      |
+| React keydown special-case for editable inline | Easy local hook                                                    | Duplicates delete semantics outside the model primitive                        | Rejected                                  |
+| Example-specific Backspace handler             | Small diff                                                         | Would prove the example can hack around Slate, not that Slate v2 fixed the bug | Rejected except as evidence-only fallback |
+| Public inline delete policy API                | Flexible                                                           | Product-shaped and premature                                                   | Rejected                                  |
 
 Consequences:
 
@@ -102,14 +102,14 @@ Consequences:
 
 ## Ecosystem Strategy Synthesis
 
-| System | Source Used | Mechanism Observed | Slate Target | Steal | Reject | Verdict |
-| --- | --- | --- | --- | --- | --- | --- |
-| Lexical | `../lexical/packages/lexical-rich-text/src/index.ts:581`; `../lexical/packages/lexical/src/LexicalSelection.ts:1743` | Backspace dispatches `DELETE_CHARACTER_COMMAND`, then `RangeSelection.deleteCharacter` owns text vs decorator/node behavior. | Keep destructive input model-owned and route delete through one planner. | Command-owned delete with node-type-aware edge handling. | Lexical class nodes and `$` public style. | partial |
-| Lexical | `../lexical/packages/lexical/src/LexicalSelection.ts:1627` | For movement, Lexical may ask DOM `selection.modify`, then imports the result. | If #5972 is a selection-import bug, import DOM selection before model delete. | DOM-as-measurement, model-as-truth. | Waiting for browser DOM delete as truth. | agree |
-| ProseMirror | `../prosemirror-commands/src/commands.ts:8`, `:30`, `:138`, `:736` | Backspace chains `deleteSelection`, `joinBackward`, then `selectNodeBackward`. | Split deletion into selection delete, structure boundary delete, and node-boundary selection. | Explicit command chain and fallback selection behavior. | Integer-position model and schema-first API. | partial |
-| ProseMirror | `../prosemirror/model/src/schema.ts:390`, `:441` | `inline`, `atom`, `selectable`, and `isolating` schema flags influence editing boundaries. | Use existing Slate schema flags (`inline`, `void`, `readOnly`, `isIsolating`) as internal delete policy inputs. | Boundary flags as internal policy. | Making ProseMirror node specs the raw Slate public model. | partial |
-| Tiptap | `../tiptap/packages/core/src/extensions/keymap.ts:13`; `../tiptap/packages/core/src/commands/join.ts:59`; `../tiptap/packages/core/src/commands/selectNodeBackward.ts:17` | Product DX wraps ProseMirror commands behind extension keyboard shortcuts. | Keep raw Slate minimal; examples may customize keydown, but core deletion must not rely on product extension shortcuts. | Discoverable commands as DX inspiration. | `focus().chain().run()` ceremony for raw Slate. | diverge |
-| Tiptap | `../tiptap/packages/core/src/helpers/getSchemaByResolvedExtensions.ts:80`; `../tiptap/packages/core/src/NodeView.ts:261` | Extension schema carries `inline`, `atom`, `selectable`, `isolating`; atom node views are black boxes. | Slate should treat true void/read-only inline controls as boundary objects, but editable inline content remains content. | Clear atom vs editable-content distinction. | NodeView black-box model as default Slate renderer API. | partial |
+| System      | Source Used                                                                                                                                                               | Mechanism Observed                                                                                                           | Slate Target                                                                                                             | Steal                                                    | Reject                                                    | Verdict |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------- | --------------------------------------------------------- | ------- |
+| Lexical     | `../lexical/packages/lexical-rich-text/src/index.ts:581`; `../lexical/packages/lexical/src/LexicalSelection.ts:1743`                                                      | Backspace dispatches `DELETE_CHARACTER_COMMAND`, then `RangeSelection.deleteCharacter` owns text vs decorator/node behavior. | Keep destructive input model-owned and route delete through one planner.                                                 | Command-owned delete with node-type-aware edge handling. | Lexical class nodes and `$` public style.                 | partial |
+| Lexical     | `../lexical/packages/lexical/src/LexicalSelection.ts:1627`                                                                                                                | For movement, Lexical may ask DOM `selection.modify`, then imports the result.                                               | If #5972 is a selection-import bug, import DOM selection before model delete.                                            | DOM-as-measurement, model-as-truth.                      | Waiting for browser DOM delete as truth.                  | agree   |
+| ProseMirror | `../prosemirror-commands/src/commands.ts:8`, `:30`, `:138`, `:736`                                                                                                        | Backspace chains `deleteSelection`, `joinBackward`, then `selectNodeBackward`.                                               | Split deletion into selection delete, structure boundary delete, and node-boundary selection.                            | Explicit command chain and fallback selection behavior.  | Integer-position model and schema-first API.              | partial |
+| ProseMirror | `../prosemirror/model/src/schema.ts:390`, `:441`                                                                                                                          | `inline`, `atom`, `selectable`, and `isolating` schema flags influence editing boundaries.                                   | Use existing Slate schema flags (`inline`, `void`, `readOnly`, `isIsolating`) as internal delete policy inputs.          | Boundary flags as internal policy.                       | Making ProseMirror node specs the raw Slate public model. | partial |
+| Tiptap      | `../tiptap/packages/core/src/extensions/keymap.ts:13`; `../tiptap/packages/core/src/commands/join.ts:59`; `../tiptap/packages/core/src/commands/selectNodeBackward.ts:17` | Product DX wraps ProseMirror commands behind extension keyboard shortcuts.                                                   | Keep raw Slate minimal; examples may customize keydown, but core deletion must not rely on product extension shortcuts.  | Discoverable commands as DX inspiration.                 | `focus().chain().run()` ceremony for raw Slate.           | diverge |
+| Tiptap      | `../tiptap/packages/core/src/helpers/getSchemaByResolvedExtensions.ts:80`; `../tiptap/packages/core/src/NodeView.ts:261`                                                  | Extension schema carries `inline`, `atom`, `selectable`, `isolating`; atom node views are black boxes.                       | Slate should treat true void/read-only inline controls as boundary objects, but editable inline content remains content. | Clear atom vs editable-content distinction.              | NodeView black-box model as default Slate renderer API.   | partial |
 
 ## Public API Target
 
@@ -142,13 +142,13 @@ browser Backspace
 
 Owner decision by trace:
 
-| Evidence | Owner |
-| --- | --- |
-| Model selection is already inside/after the cleared inline, but `delete-text.ts` chooses the previous character range | `packages/slate/src/transforms-text/delete-text.ts` |
-| DOM selection after clearing the inline is not imported to the expected model point | `packages/slate-react/src/editable/*selection*` or `slate-dom` bridge |
-| Backspace fires on an interactive internal native control instead of the editable runtime | `packages/slate-react/src/editable/input-controller.ts` and example DOM shape |
-| Empty inline cleanup after delete removes the right node but rebases selection wrong | `packages/slate/src/core/leaf-lifecycle.ts` or `normalize-node.ts` |
-| Existing v2 does not reproduce | update dossier as current non-repro; do not claim `Fixes #5972` |
+| Evidence                                                                                                              | Owner                                                                         |
+| --------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| Model selection is already inside/after the cleared inline, but `delete-text.ts` chooses the previous character range | `packages/slate/src/transforms-text/delete-text.ts`                           |
+| DOM selection after clearing the inline is not imported to the expected model point                                   | `packages/slate-react/src/editable/*selection*` or `slate-dom` bridge         |
+| Backspace fires on an interactive internal native control instead of the editable runtime                             | `packages/slate-react/src/editable/input-controller.ts` and example DOM shape |
+| Empty inline cleanup after delete removes the right node but rebases selection wrong                                  | `packages/slate/src/core/leaf-lifecycle.ts` or `normalize-node.ts`            |
+| Existing v2 does not reproduce                                                                                        | update dossier as current non-repro; do not claim `Fixes #5972`               |
 
 ## Hook, Component, And Render DX Target
 
@@ -197,13 +197,13 @@ Planned exact claim after implementation:
 
 Related but not fixed:
 
-| Issue | Category | Reason |
-| --- | --- | --- |
-| #4618 | related/not fixed | Inline-boundary ergonomics, but no public `normalizePoint` API. |
-| #5806 | related/not fixed | Custom inline drag/slide selection, not empty inline Backspace. |
-| #5690 | related/not fixed | Double-click before inline then delete crash, requires Windows/Chrome-style repro. |
-| #5183/#5391/#4348/#5984 | related/not fixed | Mobile inline/Backspace/input rows need raw-device or dedicated mobile proof. |
-| #1654 | improved elsewhere/not fixed here | Split-specific isolating behavior remains separate from empty editable inline deletion. |
+| Issue                   | Category                          | Reason                                                                                  |
+| ----------------------- | --------------------------------- | --------------------------------------------------------------------------------------- |
+| #4618                   | related/not fixed                 | Inline-boundary ergonomics, but no public `normalizePoint` API.                         |
+| #5806                   | related/not fixed                 | Custom inline drag/slide selection, not empty inline Backspace.                         |
+| #5690                   | related/not fixed                 | Double-click before inline then delete crash, requires Windows/Chrome-style repro.      |
+| #5183/#5391/#4348/#5984 | related/not fixed                 | Mobile inline/Backspace/input rows need raw-device or dedicated mobile proof.           |
+| #1654                   | improved elsewhere/not fixed here | Split-specific isolating behavior remains separate from empty editable inline deletion. |
 
 Live ledger sync:
 
@@ -220,14 +220,14 @@ Cluster coverage:
 
 ## Regression Proof Matrix
 
-| Proof | First Red Test | Green Requirement | Claim Impact |
-| --- | --- | --- | --- |
-| Exact #5972 Chromium browser row | Add `empty editable inline Backspace does not delete preceding text` in `playwright/integration/examples/inlines.test.ts` | Preceding text unchanged; empty inline removed or converted to valid adjacent selection; caret remains editable | Enables `Fixes #5972` if original steps match |
-| Model selection trace | Browser row records model selection before/after Backspace | Selection lands on surviving adjacent point, not removed inline text | Determines core vs React owner |
-| DOM selection trace | Browser row checks DOM selection target before Backspace | DOM target maps to expected Slate point before delete | Determines DOM import owner |
-| Core unit, if root cause is `delete-text.ts` | Add narrow package test for empty inline before text | `deleteBackward({ unit: 'character' })` removes empty inline only | Supports model fix |
-| React/input unit, if root cause is import/repair | Add focused `slate-react` contract | destructive command runs after correct selection import and repairs caret | Supports runtime fix |
-| Existing inline rows | Run existing inlines grep | Existing typing/cut/navigation rows stay green | Blocks regression |
+| Proof                                            | First Red Test                                                                                                            | Green Requirement                                                                                               | Claim Impact                                  |
+| ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- | --------------------------------------------- |
+| Exact #5972 Chromium browser row                 | Add `empty editable inline Backspace does not delete preceding text` in `playwright/integration/examples/inlines.test.ts` | Preceding text unchanged; empty inline removed or converted to valid adjacent selection; caret remains editable | Enables `Fixes #5972` if original steps match |
+| Model selection trace                            | Browser row records model selection before/after Backspace                                                                | Selection lands on surviving adjacent point, not removed inline text                                            | Determines core vs React owner                |
+| DOM selection trace                              | Browser row checks DOM selection target before Backspace                                                                  | DOM target maps to expected Slate point before delete                                                           | Determines DOM import owner                   |
+| Core unit, if root cause is `delete-text.ts`     | Add narrow package test for empty inline before text                                                                      | `deleteBackward({ unit: 'character' })` removes empty inline only                                               | Supports model fix                            |
+| React/input unit, if root cause is import/repair | Add focused `slate-react` contract                                                                                        | destructive command runs after correct selection import and repairs caret                                       | Supports runtime fix                          |
+| Existing inline rows                             | Run existing inlines grep                                                                                                 | Existing typing/cut/navigation rows stay green                                                                  | Blocks regression                             |
 
 ## Browser Stress And Parity Strategy
 
@@ -249,7 +249,7 @@ Do not use mobile viewport as raw mobile proof. It can be a smoke row only.
 
 ### Phase 1: Red Browser Row
 
-Owner: `../slate-v2/playwright/integration/examples/inlines.test.ts`
+Owner: `.tmp/slate-v2/playwright/integration/examples/inlines.test.ts`
 
 Work:
 
@@ -286,10 +286,10 @@ Use only if the model delete target crosses into preceding text.
 
 Likely files:
 
-- `../slate-v2/packages/slate/src/transforms-text/delete-text.ts`
-- `../slate-v2/packages/slate/src/core/leaf-lifecycle.ts`
-- `../slate-v2/packages/slate/src/core/normalize-node.ts`
-- `../slate-v2/packages/slate/test/delete-contract.ts`
+- `.tmp/slate-v2/packages/slate/src/transforms-text/delete-text.ts`
+- `.tmp/slate-v2/packages/slate/src/core/leaf-lifecycle.ts`
+- `.tmp/slate-v2/packages/slate/src/core/normalize-node.ts`
+- `.tmp/slate-v2/packages/slate/test/delete-contract.ts`
 
 Target:
 
@@ -303,11 +303,11 @@ Use only if DOM selection import/repair is wrong.
 
 Likely files:
 
-- `../slate-v2/packages/slate-react/src/editable/input-controller.ts`
-- `../slate-v2/packages/slate-react/src/editable/keyboard-input-strategy.ts`
-- `../slate-v2/packages/slate-react/src/editable/model-input-strategy.ts`
-- `../slate-v2/packages/slate-react/src/editable/selection-controller.ts`
-- `../slate-v2/packages/slate-dom/src/**`
+- `.tmp/slate-v2/packages/slate-react/src/editable/input-controller.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/keyboard-input-strategy.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/model-input-strategy.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/selection-controller.ts`
+- `.tmp/slate-v2/packages/slate-dom/src/**`
 
 Target:
 
@@ -369,16 +369,16 @@ PLAYWRIGHT_RETRIES=0 bunx playwright test playwright/integration/examples/inline
 
 ## Applicable Skill Review Matrix
 
-| Skill | Status | Reason |
-| --- | --- | --- |
-| `clawsweeper` | applied | #5972 selected through gitcrawl and issue ledger proof. |
-| `tdd` | applied | Execution must start with a red browser row before patching. |
-| `high-risk-deliberate-pass` | applied | Browser destructive editing behavior can corrupt text. |
-| `performance-oracle` | skipped | This lane is not a hot-path/perf claim; existing inline rows are enough. |
-| `performance` | skipped | No cohort/benchmark behavior is being claimed. |
-| `vercel-react-best-practices` | skipped | No React render/subscription API change planned. |
-| `react-useeffect` | skipped | No effect lifecycle change planned. |
-| `shadcn` | skipped | No UI component system change. |
+| Skill                         | Status  | Reason                                                                   |
+| ----------------------------- | ------- | ------------------------------------------------------------------------ |
+| `clawsweeper`                 | applied | #5972 selected through gitcrawl and issue ledger proof.                  |
+| `tdd`                         | applied | Execution must start with a red browser row before patching.             |
+| `high-risk-deliberate-pass`   | applied | Browser destructive editing behavior can corrupt text.                   |
+| `performance-oracle`          | skipped | This lane is not a hot-path/perf claim; existing inline rows are enough. |
+| `performance`                 | skipped | No cohort/benchmark behavior is being claimed.                           |
+| `vercel-react-best-practices` | skipped | No React render/subscription API change planned.                         |
+| `react-useeffect`             | skipped | No effect lifecycle change planned.                                      |
+| `shadcn`                      | skipped | No UI component system change.                                           |
 
 ## High-Risk Pre-Mortem
 
@@ -416,13 +416,13 @@ Verdict: keep plan.
 
 ## Maintainer Objection Ledger
 
-| Objection | Answer |
-| --- | --- |
-| "This is app-specific; raw Slate should not own it." | The issue names the official inlines example and uses editable inline content. Raw Slate owns the default delete contract unless proof shows the example is doing something invalid. |
-| "Backspace should delete a character; empty inline deletion is special." | ProseMirror and Lexical both special-case node/boundary deletion. A model-present empty inline is not a character. |
-| "Nested inline semantics are ambiguous." | Agreed. The first proof only covers the simple official-example case. Nested cases remain non-claims. |
-| "A user can handle this in `onKeyDown`." | That is a workaround, not v2 correctness. The official example should not need a product shortcut to avoid deleting adjacent text. |
-| "Do not overfit Chromium." | Start with Chromium for red proof because the issue is browser-visible, then run Firefox/WebKit before closure. |
+| Objection                                                                | Answer                                                                                                                                                                               |
+| ------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| "This is app-specific; raw Slate should not own it."                     | The issue names the official inlines example and uses editable inline content. Raw Slate owns the default delete contract unless proof shows the example is doing something invalid. |
+| "Backspace should delete a character; empty inline deletion is special." | ProseMirror and Lexical both special-case node/boundary deletion. A model-present empty inline is not a character.                                                                   |
+| "Nested inline semantics are ambiguous."                                 | Agreed. The first proof only covers the simple official-example case. Nested cases remain non-claims.                                                                                |
+| "A user can handle this in `onKeyDown`."                                 | That is a workaround, not v2 correctness. The official example should not need a product shortcut to avoid deleting adjacent text.                                                   |
+| "Do not overfit Chromium."                                               | Start with Chromium for red proof because the issue is browser-visible, then run Firefox/WebKit before closure.                                                                      |
 
 ## Hard Cuts
 
@@ -435,33 +435,33 @@ Verdict: keep plan.
 
 ## Scorecard
 
-| Dimension | Score | Evidence |
-| --- | ---: | --- |
-| React 19.2 runtime performance | 0.90 | No render subscription change; existing model-owned command path in `keyboard-input-strategy.ts` and `mutation-controller.ts`. |
-| Slate-close unopinionated DX | 0.96 | Public API target is no new API; raw Slate owns the primitive. |
-| Plate and slate-yjs migration backbone | 0.90 | Operation determinism and no product shortcut requirement recorded. |
-| Regression-proof testing strategy | 0.96 | Red browser row, owner classification trace, package tests by owner, cross-browser closeout. |
-| Research evidence completeness | 0.94 | Live gitcrawl, current v2 source, Lexical, ProseMirror, and Tiptap local source checked. |
-| shadcn-style composability and hook/component minimalism | 0.92 | No new component/hook surface; example remains normal Slate React composition. |
+| Dimension                                                | Score | Evidence                                                                                                                       |
+| -------------------------------------------------------- | ----: | ------------------------------------------------------------------------------------------------------------------------------ |
+| React 19.2 runtime performance                           |  0.90 | No render subscription change; existing model-owned command path in `keyboard-input-strategy.ts` and `mutation-controller.ts`. |
+| Slate-close unopinionated DX                             |  0.96 | Public API target is no new API; raw Slate owns the primitive.                                                                 |
+| Plate and slate-yjs migration backbone                   |  0.90 | Operation determinism and no product shortcut requirement recorded.                                                            |
+| Regression-proof testing strategy                        |  0.96 | Red browser row, owner classification trace, package tests by owner, cross-browser closeout.                                   |
+| Research evidence completeness                           |  0.94 | Live gitcrawl, current v2 source, Lexical, ProseMirror, and Tiptap local source checked.                                       |
+| shadcn-style composability and hook/component minimalism |  0.92 | No new component/hook surface; example remains normal Slate React composition.                                                 |
 
 Total: `0.93`.
 
 ## Pass-State Ledger
 
-| Pass | Status | Evidence Added | Plan Delta | Open Issues | Next Owner |
-| --- | --- | --- | --- | --- | --- |
-| Current-state read | complete | `.tmp/continue.md`, structural delete checkpoint, current source/test files | Selected new lane, not prior slice continuation | none | Ralplan |
-| ClawSweeper related issue discovery | complete | gitcrawl #5972 and hybrid search | #5972 selected, neighbors classified non-claim | none | Ralplan |
-| Issue-ledger pass | complete | test candidate map, dossier, coverage matrix | #5972 was kept Related until implementation proof landed | none | Ralplan |
-| Intent/boundary | complete | explicit scope/non-goals/decision boundary | no user question needed | none | Ralplan |
-| Ecosystem synthesis | complete | Lexical/ProseMirror/Tiptap local source | concrete steal/reject decisions added | none | Ralplan |
-| High-risk pass | complete | destructive edit pre-mortem | owner classification gate added | none | Ralplan |
-| Issue sync accounting | complete | coverage/dossier/PR pointers | generated live corpus unchanged by design | none | Ralplan |
-| Closure score | complete | score `0.93` with no dimension below `0.90` | ready for execution | none | Ralph |
-| Ralph execution start | complete | `.tmp/completion-checks/slate-v2-inline-delete-boundary-repro-ralplan.md` moved to `pending` | red browser row became the active pass | none | execution agent |
-| Red browser row | complete | `../slate-v2/playwright/integration/examples/inlines.test.ts` | #5972 reproduced: Backspace after clearing the inline deleted the preceding space | none | core delete planner |
-| Core fix | complete | `../slate-v2/packages/slate/src/transforms-text/delete-text.ts`; `../slate-v2/packages/slate/test/delete-contract.ts` | Backspace at the start of an empty editable inline routes to path delete instead of previous-character delete | none | verification |
-| Verification and issue sync | complete | package test, browser parity, typecheck, lint, issue ledgers, PR reference | #5972 moved from Related to Fixes | none | done |
+| Pass                                | Status   | Evidence Added                                                                                                            | Plan Delta                                                                                                    | Open Issues | Next Owner          |
+| ----------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- | ----------- | ------------------- |
+| Current-state read                  | complete | `.tmp/continue.md`, structural delete checkpoint, current source/test files                                               | Selected new lane, not prior slice continuation                                                               | none        | Ralplan             |
+| ClawSweeper related issue discovery | complete | gitcrawl #5972 and hybrid search                                                                                          | #5972 selected, neighbors classified non-claim                                                                | none        | Ralplan             |
+| Issue-ledger pass                   | complete | test candidate map, dossier, coverage matrix                                                                              | #5972 was kept Related until implementation proof landed                                                      | none        | Ralplan             |
+| Intent/boundary                     | complete | explicit scope/non-goals/decision boundary                                                                                | no user question needed                                                                                       | none        | Ralplan             |
+| Ecosystem synthesis                 | complete | Lexical/ProseMirror/Tiptap local source                                                                                   | concrete steal/reject decisions added                                                                         | none        | Ralplan             |
+| High-risk pass                      | complete | destructive edit pre-mortem                                                                                               | owner classification gate added                                                                               | none        | Ralplan             |
+| Issue sync accounting               | complete | coverage/dossier/PR pointers                                                                                              | generated live corpus unchanged by design                                                                     | none        | Ralplan             |
+| Closure score                       | complete | score `0.93` with no dimension below `0.90`                                                                               | ready for execution                                                                                           | none        | Ralph               |
+| Ralph execution start               | complete | `.tmp/completion-checks/slate-v2-inline-delete-boundary-repro-ralplan.md` moved to `pending`                              | red browser row became the active pass                                                                        | none        | execution agent     |
+| Red browser row                     | complete | `.tmp/slate-v2/playwright/integration/examples/inlines.test.ts`                                                           | #5972 reproduced: Backspace after clearing the inline deleted the preceding space                             | none        | core delete planner |
+| Core fix                            | complete | `.tmp/slate-v2/packages/slate/src/transforms-text/delete-text.ts`; `.tmp/slate-v2/packages/slate/test/delete-contract.ts` | Backspace at the start of an empty editable inline routes to path delete instead of previous-character delete | none        | verification        |
+| Verification and issue sync         | complete | package test, browser parity, typecheck, lint, issue ledgers, PR reference                                                | #5972 moved from Related to Fixes                                                                             | none        | done                |
 
 ## Plan Deltas From Review
 
@@ -483,7 +483,7 @@ Total: `0.93`.
 
 Use `[$ralph](/Users/zbeyens/git/plate-2/.agents/skills/ralph/SKILL.md)` on this plan.
 
-Start execution in `../slate-v2` with the red Chromium browser row for #5972. Do not patch before the red row classifies owner. After the first red row, choose the narrow owner branch:
+Start execution in `.tmp/slate-v2` with the red Chromium browser row for #5972. Do not patch before the red row classifies owner. After the first red row, choose the narrow owner branch:
 
 - core delete target;
 - React/DOM selection import/repair;

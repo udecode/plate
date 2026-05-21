@@ -25,7 +25,7 @@ runtime-owned editing engine with React as projection and wiring.
 
 Current hot owner:
 
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
 - high-risk region: `EditableDOMRoot`, especially selectionchange,
   composition, Android input, repair, kernel trace, and force-render wiring
 
@@ -51,7 +51,7 @@ kernel trace, and forced view repair policy.
 
 Current hot owners:
 
-- `../slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
 - root selector region: top-level runtime ids, selected top-level index,
   placeholder state, large-document island plan
 
@@ -204,15 +204,15 @@ Acceptance:
 
 Likely files:
 
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
-- `../slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
-- `../slate-v2/packages/slate-react/src/hooks/use-slate-selector.tsx`
-- `../slate-v2/packages/slate-react/test/surface-contract.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-selector.tsx`
+- `.tmp/slate-v2/packages/slate-react/test/surface-contract.tsx`
 
 Tests:
 
-- `../slate-v2/packages/slate-react/test/surface-contract.tsx`
-- `../slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts`
+- `.tmp/slate-v2/packages/slate-react/test/surface-contract.tsx`
+- `.tmp/slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts`
 
 ### Phase 1: Extract Selectionchange Runtime Owner
 
@@ -235,22 +235,22 @@ Acceptance:
   - `applyEditableDOMSelectionChange`
   - `recordEditableKernelTrace`
   - `completeEditableSelectionChangeImport`
-  inside the component body.
+    inside the component body.
 - Selection import/export browser rows stay green.
 - Kernel trace tests still assert the same ownership transitions.
 
 Likely files:
 
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
-- `../slate-v2/packages/slate-react/src/editable/selection-controller.ts`
-- `../slate-v2/packages/slate-react/src/editable/selection-runtime.ts`
-- new or expanded `../slate-v2/packages/slate-react/src/editable/runtime-selection-engine.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/editable/selection-controller.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/selection-runtime.ts`
+- new or expanded `.tmp/slate-v2/packages/slate-react/src/editable/runtime-selection-engine.ts`
 
 Tests:
 
-- `../slate-v2/packages/slate-react/test/selection-runtime-contract.test.ts`
-- `../slate-v2/packages/slate-react/test/selection-controller-contract.ts`
-- `../slate-v2/packages/slate-react/test/editing-epoch-kernel-contract.ts`
+- `.tmp/slate-v2/packages/slate-react/test/selection-runtime-contract.test.ts`
+- `.tmp/slate-v2/packages/slate-react/test/selection-controller-contract.ts`
+- `.tmp/slate-v2/packages/slate-react/test/editing-epoch-kernel-contract.ts`
 - browser rows:
   - hovering toolbar mouse selection
   - mentions inline void navigation
@@ -288,18 +288,18 @@ Acceptance:
 
 Likely files:
 
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
-- `../slate-v2/packages/slate-react/src/editable/dom-repair-queue.ts`
-- `../slate-v2/packages/slate-react/src/editable/mutation-controller.ts`
-- `../slate-v2/packages/slate-react/src/editable/browser-handle.ts`
-- `../slate-v2/packages/slate-react/src/editable/keyboard-input-strategy.ts`
-- new or expanded `../slate-v2/packages/slate-react/src/editable/runtime-repair-engine.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/editable/dom-repair-queue.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/mutation-controller.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/browser-handle.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/keyboard-input-strategy.ts`
+- new or expanded `.tmp/slate-v2/packages/slate-react/src/editable/runtime-repair-engine.ts`
 
 Tests:
 
-- `../slate-v2/packages/slate-react/test/editing-kernel-contract.ts`
-- `../slate-v2/packages/slate-react/test/target-runtime-contract.ts`
-- `../slate-v2/packages/slate-react/test/rendered-dom-shape-contract.tsx`
+- `.tmp/slate-v2/packages/slate-react/test/editing-kernel-contract.ts`
+- `.tmp/slate-v2/packages/slate-react/test/target-runtime-contract.ts`
+- `.tmp/slate-v2/packages/slate-react/test/rendered-dom-shape-contract.tsx`
 - browser rows:
   - richtext undo/redo
   - persistent native word-delete
@@ -329,17 +329,17 @@ Acceptance:
 
 Likely files:
 
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
-- `../slate-v2/packages/slate-react/src/editable/composition-state.ts`
-- `../slate-v2/packages/slate-react/src/editable/native-input-strategy.ts`
-- `../slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts`
-- new or expanded `../slate-v2/packages/slate-react/src/editable/runtime-composition-engine.ts`
-- new or expanded `../slate-v2/packages/slate-react/src/editable/runtime-android-engine.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/editable/composition-state.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/native-input-strategy.ts`
+- `.tmp/slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts`
+- new or expanded `.tmp/slate-v2/packages/slate-react/src/editable/runtime-composition-engine.ts`
+- new or expanded `.tmp/slate-v2/packages/slate-react/src/editable/runtime-android-engine.ts`
 
 Tests:
 
-- `../slate-v2/packages/slate-react/test/editing-epoch-kernel-contract.ts`
-- `../slate-v2/packages/slate-react/test/large-doc-and-scroll.tsx`
+- `.tmp/slate-v2/packages/slate-react/test/editing-epoch-kernel-contract.ts`
+- `.tmp/slate-v2/packages/slate-react/test/large-doc-and-scroll.tsx`
 - generated IME/composition stress rows
 - scoped mobile guard
 
@@ -370,11 +370,11 @@ Acceptance:
 
 Likely files:
 
-- `../slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
-- new `../slate-v2/packages/slate-react/src/editable/root-selector-sources.ts`
-- `../slate-v2/packages/slate-react/src/hooks/use-slate-selector.tsx`
-- `../slate-v2/packages/slate-react/test/provider-hooks-contract.tsx`
-- `../slate-v2/packages/slate-react/test/surface-contract.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
+- new `.tmp/slate-v2/packages/slate-react/src/editable/root-selector-sources.ts`
+- `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-selector.tsx`
+- `.tmp/slate-v2/packages/slate-react/test/provider-hooks-contract.tsx`
+- `.tmp/slate-v2/packages/slate-react/test/surface-contract.tsx`
 
 Tests:
 
@@ -410,9 +410,9 @@ Acceptance:
 
 Likely tests:
 
-- `../slate-v2/packages/slate-react/test/surface-contract.tsx`
-- `../slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts`
-- release proof guard list under `../slate-v2/packages/slate-browser/src/core/release-proof.ts`
+- `.tmp/slate-v2/packages/slate-react/test/surface-contract.tsx`
+- `.tmp/slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts`
+- release proof guard list under `.tmp/slate-v2/packages/slate-browser/src/core/release-proof.ts`
 
 ### Phase 6: Browser Proof And Stress Expansion
 
@@ -603,7 +603,7 @@ Rejected tactics:
 
 Next action:
 
-- Inspect `../slate-v2/packages/slate-react` hot owner files and add/update the
+- Inspect `.tmp/slate-v2/packages/slate-react` hot owner files and add/update the
   Phase 0 static inventory guard.
 
 ### 2026-04-27 Phase 0 Inventory And Static Tracer
@@ -630,9 +630,9 @@ Commands:
 
 Artifacts:
 
-- `../slate-v2/packages/slate-react/test/surface-contract.tsx`
-- `../slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts`
-- `../slate-v2/packages/slate-react/test/kernel-authority-audit-contract.test.ts`
+- `.tmp/slate-v2/packages/slate-react/test/surface-contract.tsx`
+- `.tmp/slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts`
+- `.tmp/slate-v2/packages/slate-react/test/kernel-authority-audit-contract.test.ts`
 
 Evidence:
 
@@ -663,9 +663,9 @@ Changed files:
 - `.tmp/<session-id>/completion-check.md`
 - `.tmp/continue.md`
 - `docs/plans/2026-04-27-slate-v2-editable-runtime-and-root-selector-hard-cut-plan.md`
-- `../slate-v2/packages/slate-react/test/surface-contract.tsx`
-- `../slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts`
-- `../slate-v2/packages/slate-react/test/kernel-authority-audit-contract.test.ts`
+- `.tmp/slate-v2/packages/slate-react/test/surface-contract.tsx`
+- `.tmp/slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts`
+- `.tmp/slate-v2/packages/slate-react/test/kernel-authority-audit-contract.test.ts`
 
 Rejected tactics:
 
@@ -677,7 +677,7 @@ Rejected tactics:
 Next action:
 
 - Extract `onDOMSelectionChange` construction into
-  `../slate-v2/packages/slate-react/src/editable/runtime-selection-engine.ts`
+  `.tmp/slate-v2/packages/slate-react/src/editable/runtime-selection-engine.ts`
   and leave `EditableDOMRoot` as ref/listener wiring.
 
 ### 2026-04-27 Phase 1 Selectionchange Runtime Extraction
@@ -685,7 +685,7 @@ Next action:
 Actions:
 
 - Extracted the throttled `onDOMSelectionChange` policy into
-  `../slate-v2/packages/slate-react/src/editable/runtime-selection-engine.ts`.
+  `.tmp/slate-v2/packages/slate-react/src/editable/runtime-selection-engine.ts`.
 - Extracted the debounced selectionchange scheduler creation into the same
   runtime module.
 - Left `EditableDOMRoot` responsible for wiring refs/controllers and passing
@@ -706,12 +706,12 @@ Commands:
 
 Artifacts:
 
-- `../slate-v2/packages/slate-react/src/editable/runtime-selection-engine.ts`
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
-- `../slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts`
-- `../slate-v2/packages/slate-react/test/editing-epoch-kernel-contract.test.ts`
-- `../slate-v2/packages/slate-react/test/editing-kernel-contract.test.ts`
-- `../slate-v2/packages/slate-react/test/selection-controller-contract.test.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-selection-engine.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts`
+- `.tmp/slate-v2/packages/slate-react/test/editing-epoch-kernel-contract.test.ts`
+- `.tmp/slate-v2/packages/slate-react/test/editing-kernel-contract.test.ts`
+- `.tmp/slate-v2/packages/slate-react/test/selection-controller-contract.test.ts`
 
 Evidence:
 
@@ -749,13 +749,13 @@ Changed files:
 
 - `.tmp/<session-id>/completion-check.md`
 - `docs/plans/2026-04-27-slate-v2-editable-runtime-and-root-selector-hard-cut-plan.md`
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
-- `../slate-v2/packages/slate-react/src/editable/runtime-selection-engine.ts`
-- `../slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts`
-- `../slate-v2/packages/slate-react/test/editing-epoch-kernel-contract.test.ts`
-- `../slate-v2/packages/slate-react/test/editing-kernel-contract.test.ts`
-- `../slate-v2/packages/slate-react/test/kernel-authority-audit-contract.test.ts`
-- `../slate-v2/packages/slate-react/test/selection-controller-contract.test.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-selection-engine.ts`
+- `.tmp/slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts`
+- `.tmp/slate-v2/packages/slate-react/test/editing-epoch-kernel-contract.test.ts`
+- `.tmp/slate-v2/packages/slate-react/test/editing-kernel-contract.test.ts`
+- `.tmp/slate-v2/packages/slate-react/test/kernel-authority-audit-contract.test.ts`
+- `.tmp/slate-v2/packages/slate-react/test/selection-controller-contract.test.ts`
 
 Rejected tactics:
 
@@ -766,7 +766,7 @@ Rejected tactics:
 
 Next action:
 
-- Create `../slate-v2/packages/slate-react/src/editable/root-selector-sources.ts`
+- Create `.tmp/slate-v2/packages/slate-react/src/editable/root-selector-sources.ts`
   and move top-level runtime ids plus selected top-level index selector bodies
   out of `EditableTextBlocks`.
 
@@ -775,7 +775,7 @@ Next action:
 Actions:
 
 - Added
-  `../slate-v2/packages/slate-react/src/editable/root-selector-sources.ts`.
+  `.tmp/slate-v2/packages/slate-react/src/editable/root-selector-sources.ts`.
 - Moved top-level runtime ids and selected top-level index selector bodies out
   of `EditableTextBlocks`.
 - Kept placeholder visibility as the only remaining generic root selector in
@@ -794,10 +794,10 @@ Commands:
 
 Artifacts:
 
-- `../slate-v2/packages/slate-react/src/editable/root-selector-sources.ts`
-- `../slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
-- `../slate-v2/packages/slate-react/test/provider-hooks-contract.tsx`
-- `../slate-v2/packages/slate-react/test/surface-contract.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/editable/root-selector-sources.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
+- `.tmp/slate-v2/packages/slate-react/test/provider-hooks-contract.tsx`
+- `.tmp/slate-v2/packages/slate-react/test/surface-contract.tsx`
 
 Evidence:
 
@@ -829,10 +829,10 @@ Changed files:
 
 - `.tmp/<session-id>/completion-check.md`
 - `docs/plans/2026-04-27-slate-v2-editable-runtime-and-root-selector-hard-cut-plan.md`
-- `../slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
-- `../slate-v2/packages/slate-react/src/editable/root-selector-sources.ts`
-- `../slate-v2/packages/slate-react/test/provider-hooks-contract.tsx`
-- `../slate-v2/packages/slate-react/test/surface-contract.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/editable/root-selector-sources.ts`
+- `.tmp/slate-v2/packages/slate-react/test/provider-hooks-contract.tsx`
+- `.tmp/slate-v2/packages/slate-react/test/surface-contract.tsx`
 
 Rejected tactics:
 
@@ -851,7 +851,7 @@ Next action:
 Actions:
 
 - Added
-  `../slate-v2/packages/slate-react/src/editable/runtime-repair-engine.ts`.
+  `.tmp/slate-v2/packages/slate-react/src/editable/runtime-repair-engine.ts`.
 - Moved root `EDITOR_TO_FORCE_RENDER` registration into the runtime repair
   engine.
 - Moved root repair request application behind `useRuntimeRepairEngine(...)`.
@@ -870,9 +870,9 @@ Commands:
 
 Artifacts:
 
-- `../slate-v2/packages/slate-react/src/editable/runtime-repair-engine.ts`
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
-- `../slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-repair-engine.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts`
 
 Evidence:
 
@@ -909,9 +909,9 @@ Changed files:
 
 - `.tmp/<session-id>/completion-check.md`
 - `docs/plans/2026-04-27-slate-v2-editable-runtime-and-root-selector-hard-cut-plan.md`
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
-- `../slate-v2/packages/slate-react/src/editable/runtime-repair-engine.ts`
-- `../slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-repair-engine.ts`
+- `.tmp/slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts`
 
 Rejected tactics:
 
@@ -947,10 +947,10 @@ Commands:
 
 Artifacts:
 
-- `../slate-v2/packages/slate-react/src/editable/runtime-composition-engine.ts`
-- `../slate-v2/packages/slate-react/src/editable/runtime-android-engine.ts`
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
-- `../slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-composition-engine.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-android-engine.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts`
 
 Evidence:
 
@@ -991,11 +991,11 @@ Commands:
 
 Artifacts:
 
-- `../slate-v2/packages/slate-react/src/editable/root-selector-sources.ts`
-- `../slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
-- `../slate-v2/packages/slate-react/test/provider-hooks-contract.tsx`
-- `../slate-v2/packages/slate-react/test/surface-contract.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/editable/root-selector-sources.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/test/provider-hooks-contract.tsx`
+- `.tmp/slate-v2/packages/slate-react/test/surface-contract.tsx`
 
 Evidence:
 
@@ -1039,13 +1039,13 @@ Commands:
 
 Artifacts:
 
-- `../slate-v2/packages/slate-react/src/editable/runtime-kernel-trace.ts`
-- `../slate-v2/packages/slate-react/src/editable/runtime-selection-engine.ts`
-- `../slate-v2/packages/slate-react/src/editable/runtime-repair-engine.ts`
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
-- `../slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts`
-- `../slate-v2/packages/slate-react/test/surface-contract.tsx`
-- `../slate-v2/packages/slate/test/escape-hatch-inventory-contract.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-kernel-trace.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-selection-engine.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-repair-engine.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts`
+- `.tmp/slate-v2/packages/slate-react/test/surface-contract.tsx`
+- `.tmp/slate-v2/packages/slate/test/escape-hatch-inventory-contract.ts`
 
 Evidence:
 
@@ -1076,8 +1076,8 @@ Commands:
 
 Artifacts:
 
-- `../slate-v2/test-results/release-proof/persistent-browser-soak.json`
-- generated stress artifacts under `../slate-v2/tmp/stress-artifacts`
+- `.tmp/slate-v2/test-results/release-proof/persistent-browser-soak.json`
+- generated stress artifacts under `.tmp/slate-v2/tmp/stress-artifacts`
 
 Evidence:
 

@@ -49,26 +49,26 @@ that element by path and preserve the original caret through a point ref.
 The behavior lock is:
 
 ```tsx
-// ../slate-v2/packages/slate/test/transforms/delete/voids-false/block-after-multiple-reverse.tsx
+// .tmp/slate-v2/packages/slate/test/transforms/delete/voids-false/block-after-multiple-reverse.tsx
 export const run = (editor) => {
-  editor.text.delete({ reverse: true })
-}
+  editor.text.delete({ reverse: true });
+};
 ```
 
-The fix is in `../slate-v2/packages/slate/src/transforms-text/delete-text.ts`:
+The fix is in `.tmp/slate-v2/packages/slate/src/transforms-text/delete-text.ts`:
 
 ```ts
 const targetNonEditable = voids
   ? undefined
-  : getHighestNonEditable(editor, target)
+  : getHighestNonEditable(editor, target);
 
 if (targetNonEditable && !pathContainsPoint(targetNonEditable[1], at)) {
   return {
-    kind: 'path',
+    kind: "path",
     path: targetNonEditable[1],
     fallbackPoint: at,
     initialAt,
-  }
+  };
 }
 ```
 

@@ -3,7 +3,7 @@
 status: done
 score: 0.94
 date: 2026-05-08
-target: `../slate-v2`
+target: `.tmp/slate-v2`
 source plan: `docs/editor-test-harvester/lexical/report.md`
 skill: `slate-ralplan`
 
@@ -27,7 +27,7 @@ typing and organization, not core/runtime design.
 
 ## Execution Update
 
-Implemented the approved cleanup in `../slate-v2`:
+Implemented the approved cleanup in `.tmp/slate-v2`:
 
 - added `site/examples/ts/mark-utils.ts`;
 - changed `site/examples/ts/custom-types.d.ts` so `CustomTextKey` is derived
@@ -48,8 +48,8 @@ No core, runtime, public API, issue claim, or table-selection model changed.
 - desired outcome: all harvested test rows stay green, the example code is
   easier to maintain, and Slate core remains unopinionated.
 - in scope:
-  - `../slate-v2/site/examples/ts/paste-html.tsx`
-  - `../slate-v2/site/examples/ts/custom-types.d.ts`
+  - `.tmp/slate-v2/site/examples/ts/paste-html.tsx`
+  - `.tmp/slate-v2/site/examples/ts/custom-types.d.ts`
   - repeated mark helpers in `richtext.tsx`, `iframe.tsx`, and
     `hovering-toolbar.tsx`
   - proof naming and verification commands around the new Playwright rows
@@ -88,12 +88,12 @@ Top drivers:
 
 Viable options:
 
-| Option | Verdict | Why |
-| --- | --- | --- |
-| Leave as-is | reject | Green, but repeated casts and a swollen example file will keep getting worse as more source-app paste corpus rows land. |
-| Move paste parsing to core | reject | This would make raw Slate opinionated about Google Docs/Sheets/Word policy. Bad trade. |
-| Extract example-local helpers and split mark/style typing | choose | Keeps core clean, preserves proof, and removes the actual maintenance debt. |
-| Build Lexical-style whole-table selection now | reject for this lane | Current tests do not prove that model and Slate v2 does not own it yet. |
+| Option                                                    | Verdict              | Why                                                                                                                     |
+| --------------------------------------------------------- | -------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| Leave as-is                                               | reject               | Green, but repeated casts and a swollen example file will keep getting worse as more source-app paste corpus rows land. |
+| Move paste parsing to core                                | reject               | This would make raw Slate opinionated about Google Docs/Sheets/Word policy. Bad trade.                                  |
+| Extract example-local helpers and split mark/style typing | choose               | Keeps core clean, preserves proof, and removes the actual maintenance debt.                                             |
+| Build Lexical-style whole-table selection now             | reject for this lane | Current tests do not prove that model and Slate v2 does not own it yet.                                                 |
 
 Consequences:
 
@@ -104,27 +104,27 @@ Consequences:
 
 ## Live Source Evidence
 
-| Surface | Current owner | Finding |
-| --- | --- | --- |
-| HTML paste parser | `../slate-v2/site/examples/ts/paste-html.tsx:32-231` | Element/text tag maps, font-size normalization, styled text import, fragment normalization, and `deserialize` live inside the component file. |
-| Paste transport | `../slate-v2/site/examples/ts/paste-html.tsx:263-305` | `dom.clipboard.insertData` remains the right extension point; iOS plain-text prediction is app policy. |
-| Paste leaf style | `../slate-v2/site/examples/ts/paste-html.tsx:406-434` | `fontSize` rendering is leaf style policy, not a toolbar mark. |
-| Custom leaf type | `../slate-v2/site/examples/ts/custom-types.d.ts:161-177` | `CustomText` includes boolean marks plus `fontSize`; `CustomTextKey` excludes `fontSize`. |
-| Mark casts | `../slate-v2/site/examples/ts/richtext.tsx:159-164`, `iframe.tsx:81-86`, `hovering-toolbar.tsx:62-67` | Three examples repeat the same cast around `state.marks.get()`. |
-| Table containment proof | `../slate-v2/playwright/integration/examples/tables.test.ts:129-179` | Tests lock triple-click and drag containment without claiming whole-table selection. |
-| Browser transport proof | `../slate-v2/playwright/integration/examples/plaintext.test.ts:23-77`, `editable-voids.test.ts:48-71` | `execCommand`, synthetic paste, and native input paste are intentionally separate rows. |
-| IME helper | `../slate-v2/packages/slate-browser/src/playwright/ime.ts:22-95` | Synthetic composition clones the DOM range before mutation; native Chromium CDP remains the stronger path when available. |
-| IME/history proof | `../slate-v2/playwright/stress/generated-editing.test.ts:1070-1179`, `../slate-v2/packages/slate-history/test/history-contract.ts:259-305` | Composition-adjacent rows and history unit rows exist and should stay unchanged. |
+| Surface                 | Current owner                                                                                                                                  | Finding                                                                                                                                       |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| HTML paste parser       | `.tmp/slate-v2/site/examples/ts/paste-html.tsx:32-231`                                                                                         | Element/text tag maps, font-size normalization, styled text import, fragment normalization, and `deserialize` live inside the component file. |
+| Paste transport         | `.tmp/slate-v2/site/examples/ts/paste-html.tsx:263-305`                                                                                        | `dom.clipboard.insertData` remains the right extension point; iOS plain-text prediction is app policy.                                        |
+| Paste leaf style        | `.tmp/slate-v2/site/examples/ts/paste-html.tsx:406-434`                                                                                        | `fontSize` rendering is leaf style policy, not a toolbar mark.                                                                                |
+| Custom leaf type        | `.tmp/slate-v2/site/examples/ts/custom-types.d.ts:161-177`                                                                                     | `CustomText` includes boolean marks plus `fontSize`; `CustomTextKey` excludes `fontSize`.                                                     |
+| Mark casts              | `.tmp/slate-v2/site/examples/ts/richtext.tsx:159-164`, `iframe.tsx:81-86`, `hovering-toolbar.tsx:62-67`                                        | Three examples repeat the same cast around `state.marks.get()`.                                                                               |
+| Table containment proof | `.tmp/slate-v2/playwright/integration/examples/tables.test.ts:129-179`                                                                         | Tests lock triple-click and drag containment without claiming whole-table selection.                                                          |
+| Browser transport proof | `.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:23-77`, `editable-voids.test.ts:48-71`                                        | `execCommand`, synthetic paste, and native input paste are intentionally separate rows.                                                       |
+| IME helper              | `.tmp/slate-v2/packages/slate-browser/src/playwright/ime.ts:22-95`                                                                             | Synthetic composition clones the DOM range before mutation; native Chromium CDP remains the stronger path when available.                     |
+| IME/history proof       | `.tmp/slate-v2/playwright/stress/generated-editing.test.ts:1070-1179`, `.tmp/slate-v2/packages/slate-history/test/history-contract.ts:259-305` | Composition-adjacent rows and history unit rows exist and should stay unchanged.                                                              |
 
 ## Ecosystem Strategy Synthesis
 
-| Source | Mechanism | Slate target | Verdict |
-| --- | --- | --- | --- |
-| Lexical harvested tests: `../lexical/packages/lexical-playground/__tests__/e2e/Composition.spec.mjs`, `History.spec.mjs`, `CopyAndPaste/*`, `Selection.spec.mjs`, `Extensions.spec.mjs` | Issue-shaped browser rows for IME, paste corpus, browser transport, and table selection. | Keep behavior rows, not Lexical node classes, commands, or table model. | partial |
-| Lexical table package tests: `../lexical/packages/lexical-table/src/__tests__/unit/LexicalTableExtension.test.ts` | Dedicated table selection / nested-table policy. | Defer whole-table selection until Slate v2 owns a table-selection model. | diverge |
-| ProseMirror composition tests: `../prosemirror/view/test/webtest-composition.ts:87-305` | Heavy composition matrix around marks, cursor wrappers, widgets, overlap, and cross-paragraph changes. | Keep growing browser/composition coverage while isolating runtime behavior from app paste policy. | agree |
-| ProseMirror composition runtime: `../prosemirror/view/src/input.ts:435-565` | Runtime tracks active composition, Safari/Android quirks, pending DOM records, and composition node ownership. | Keep IME/runtime policy in `slate-react` / `slate-browser`, not in examples. | agree |
-| ProseMirror clipboard tests: `../prosemirror/view/test/webtest-clipboard.ts:44-123` | External HTML parsing stays parser/schema-owned with transformation hooks. | Slate exposes capability hooks; app examples choose source-specific parsing. | partial |
+| Source                                                                                                                                                                                  | Mechanism                                                                                                      | Slate target                                                                                      | Verdict |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- | ------- |
+| Lexical harvested tests: `../lexical/packages/lexical-playground/__tests__/e2e/Composition.spec.mjs`, `History.spec.mjs`, `CopyAndPaste/*`, `Selection.spec.mjs`, `Extensions.spec.mjs` | Issue-shaped browser rows for IME, paste corpus, browser transport, and table selection.                       | Keep behavior rows, not Lexical node classes, commands, or table model.                           | partial |
+| Lexical table package tests: `../lexical/packages/lexical-table/src/__tests__/unit/LexicalTableExtension.test.ts`                                                                       | Dedicated table selection / nested-table policy.                                                               | Defer whole-table selection until Slate v2 owns a table-selection model.                          | diverge |
+| ProseMirror composition tests: `../prosemirror/view/test/webtest-composition.ts:87-305`                                                                                                 | Heavy composition matrix around marks, cursor wrappers, widgets, overlap, and cross-paragraph changes.         | Keep growing browser/composition coverage while isolating runtime behavior from app paste policy. | agree   |
+| ProseMirror composition runtime: `../prosemirror/view/src/input.ts:435-565`                                                                                                             | Runtime tracks active composition, Safari/Android quirks, pending DOM records, and composition node ownership. | Keep IME/runtime policy in `slate-react` / `slate-browser`, not in examples.                      | agree   |
+| ProseMirror clipboard tests: `../prosemirror/view/test/webtest-clipboard.ts:44-123`                                                                                                     | External HTML parsing stays parser/schema-owned with transformation hooks.                                     | Slate exposes capability hooks; app examples choose source-specific parsing.                      | partial |
 
 ## Public API Target
 
@@ -198,11 +198,11 @@ PR references stay unchanged.
 
 Known nearby issue refs from existing ledgers:
 
-| Issue | Cluster | Claim | Why | Proof route | Live ledger sync | PR line |
-| --- | --- | --- | --- | --- | --- | --- |
-| #6034 | DOM selection / table edge | no new claim | Existing PR reference already claims ArrowDown-at-last-table-cell. This cleanup does not widen it. | existing table Playwright row | unchanged | unchanged |
-| Mobile/IME macro rows | mobile/IME/input | no new claim | Current plan explicitly refuses raw mobile closure without device proof. | none in this cleanup | unchanged | unchanged |
-| Clipboard corpus rows | clipboard/paste | no new claim | Existing clipboard execution lane already owns claims; helper extraction should be behavior-neutral. | existing unit/browser gates | unchanged | unchanged |
+| Issue                 | Cluster                    | Claim        | Why                                                                                                  | Proof route                   | Live ledger sync | PR line   |
+| --------------------- | -------------------------- | ------------ | ---------------------------------------------------------------------------------------------------- | ----------------------------- | ---------------- | --------- |
+| #6034                 | DOM selection / table edge | no new claim | Existing PR reference already claims ArrowDown-at-last-table-cell. This cleanup does not widen it.   | existing table Playwright row | unchanged        | unchanged |
+| Mobile/IME macro rows | mobile/IME/input           | no new claim | Current plan explicitly refuses raw mobile closure without device proof.                             | none in this cleanup          | unchanged        | unchanged |
+| Clipboard corpus rows | clipboard/paste            | no new claim | Existing clipboard execution lane already owns claims; helper extraction should be behavior-neutral. | existing unit/browser gates   | unchanged        | unchanged |
 
 ## Legacy Regression Proof Matrix
 
@@ -226,40 +226,40 @@ parallelized.
 Fresh planning-pass verification, run from `/Users/zbeyens/git/slate-v2` on
 2026-05-08:
 
-| Command | Result |
-| --- | --- |
-| `bun check` | passed |
-| `bunx playwright test playwright/integration/examples/paste-html.test.ts --project=chromium` | passed, 8 tests |
-| `PLAYWRIGHT_RETRIES=0 bunx playwright test playwright/integration/examples/tables.test.ts --project=chromium` | passed, 9 tests |
-| `bunx playwright test playwright/integration/examples/plaintext.test.ts --project=chromium` | passed, 3 tests |
-| `bunx playwright test playwright/integration/examples/plaintext.test.ts --project=firefox` | passed, 2 tests, 1 expected skip for blocked synthetic clipboard data |
-| `bunx playwright test playwright/integration/examples/editable-voids.test.ts --project=chromium -g "keeps native paste inside editable void input"` | passed, 1 test |
-| `bunx playwright test playwright/integration/examples/editable-voids.test.ts --project=firefox -g "keeps native paste inside editable void input"` | passed, 1 test |
-| `STRESS_FAMILIES=ime-composition-inline-void-boundary,ime-composition-undo,paste-html-image-void PLAYWRIGHT_RETRIES=0 bunx playwright test playwright/stress/generated-editing.test.ts --project=chromium` | passed, 3 tests |
+| Command                                                                                                                                                                                                    | Result                                                                |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| `bun check`                                                                                                                                                                                                | passed                                                                |
+| `bunx playwright test playwright/integration/examples/paste-html.test.ts --project=chromium`                                                                                                               | passed, 8 tests                                                       |
+| `PLAYWRIGHT_RETRIES=0 bunx playwright test playwright/integration/examples/tables.test.ts --project=chromium`                                                                                              | passed, 9 tests                                                       |
+| `bunx playwright test playwright/integration/examples/plaintext.test.ts --project=chromium`                                                                                                                | passed, 3 tests                                                       |
+| `bunx playwright test playwright/integration/examples/plaintext.test.ts --project=firefox`                                                                                                                 | passed, 2 tests, 1 expected skip for blocked synthetic clipboard data |
+| `bunx playwright test playwright/integration/examples/editable-voids.test.ts --project=chromium -g "keeps native paste inside editable void input"`                                                        | passed, 1 test                                                        |
+| `bunx playwright test playwright/integration/examples/editable-voids.test.ts --project=firefox -g "keeps native paste inside editable void input"`                                                         | passed, 1 test                                                        |
+| `STRESS_FAMILIES=ime-composition-inline-void-boundary,ime-composition-undo,paste-html-image-void PLAYWRIGHT_RETRIES=0 bunx playwright test playwright/stress/generated-editing.test.ts --project=chromium` | passed, 3 tests                                                       |
 
 These proved the current new-test lane was green before cleanup.
 
 Fresh implementation verification, run from `/Users/zbeyens/git/slate-v2` after
 cleanup:
 
-| Command | Result |
-| --- | --- |
-| `bun check` | passed |
-| `bunx playwright test playwright/integration/examples/paste-html.test.ts --project=chromium` | passed, 8 tests |
+| Command                                                                                                            | Result           |
+| ------------------------------------------------------------------------------------------------------------------ | ---------------- |
+| `bun check`                                                                                                        | passed           |
+| `bunx playwright test playwright/integration/examples/paste-html.test.ts --project=chromium`                       | passed, 8 tests  |
 | `bunx playwright test playwright/integration/examples/richtext.test.ts --project=chromium -g "mark\|toolbar bold"` | passed, 12 tests |
-| `bunx playwright test playwright/integration/examples/iframe.test.ts --project=chromium` | passed, 2 tests |
-| `bunx playwright test playwright/integration/examples/hovering-toolbar.test.ts --project=chromium` | passed, 4 tests |
+| `bunx playwright test playwright/integration/examples/iframe.test.ts --project=chromium`                           | passed, 2 tests  |
+| `bunx playwright test playwright/integration/examples/hovering-toolbar.test.ts --project=chromium`                 | passed, 4 tests  |
 
 ## Implementation Skill Review Matrix
 
-| Lens | Status | Result |
-| --- | --- | --- |
-| intent-boundary-pass | applied | Scope is helper extraction/type cleanup; no runtime rewrite. |
-| tdd | applied | Existing harvested tests are the behavior lock. This cleanup should not add new behavior tests unless a refactor exposes a gap. |
-| vercel-react-best-practices | applied | Avoid new render subscriptions; helper extraction must keep selectors stable and no inline component churn. |
-| performance-oracle | applied | Parser helpers are linear in DOM nodes; no new global caches or repeated DOM walks. |
-| steelman-pass | applied | Strongest objection is that cleanup churn risks breaking green proof for little payoff. Chosen plan wins because it removes repeated casts and file bloat without behavior change. |
-| high-risk-deliberate-pass | applied | Browser-sensitive proof exists; any runtime change is out of scope. |
+| Lens                        | Status  | Result                                                                                                                                                                             |
+| --------------------------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| intent-boundary-pass        | applied | Scope is helper extraction/type cleanup; no runtime rewrite.                                                                                                                       |
+| tdd                         | applied | Existing harvested tests are the behavior lock. This cleanup should not add new behavior tests unless a refactor exposes a gap.                                                    |
+| vercel-react-best-practices | applied | Avoid new render subscriptions; helper extraction must keep selectors stable and no inline component churn.                                                                        |
+| performance-oracle          | applied | Parser helpers are linear in DOM nodes; no new global caches or repeated DOM walks.                                                                                                |
+| steelman-pass               | applied | Strongest objection is that cleanup churn risks breaking green proof for little payoff. Chosen plan wins because it removes repeated casts and file bloat without behavior change. |
+| high-risk-deliberate-pass   | applied | Browser-sensitive proof exists; any runtime change is out of scope.                                                                                                                |
 
 ## High-Risk Pre-Mortem
 
@@ -284,21 +284,21 @@ focused test proves runtime drift.
 
 ## Maintainer Objection Ledger
 
-| Objection | Answer | Verdict |
-| --- | --- | --- |
-| "Why touch green code?" | Because the green code introduced repeated casts and a swollen example parser. The fix is organization-only and test-locked. | keep |
-| "Why not solve all table selection now?" | That is a new table model, not cleanup. Shipping fake proof would be worse. | keep defer |
-| "Why not make paste HTML first-class?" | Slate should expose hooks; apps choose import policy. ProseMirror and Slate both support transformation/parser boundaries without hard-coding source apps. | keep |
+| Objection                                | Answer                                                                                                                                                     | Verdict    |
+| ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
+| "Why touch green code?"                  | Because the green code introduced repeated casts and a swollen example parser. The fix is organization-only and test-locked.                               | keep       |
+| "Why not solve all table selection now?" | That is a new table model, not cleanup. Shipping fake proof would be worse.                                                                                | keep defer |
+| "Why not make paste HTML first-class?"   | Slate should expose hooks; apps choose import policy. ProseMirror and Slate both support transformation/parser boundaries without hard-coding source apps. | keep       |
 
 ## Pass-State Ledger
 
-| Pass | Status | Evidence added | Plan delta | Open issues | Next owner |
-| --- | --- | --- | --- | --- | --- |
-| Current-state read and initial score | complete | Live source/test reads listed above; Lexical and ProseMirror evidence sampled; fresh `../slate-v2` `bun check` and focused browser rows passed. | Created cleanup plan; chose helper extraction over rewrite. | none | implementation |
-| Related issue discovery | complete | Existing nearby refs identified only. | Skipped ClawSweeper because implementation stayed behavior-neutral and claim-neutral. | none | none |
-| Issue ledger pass | complete | No claim/API/runtime/browser behavior changed. | Ledgers unchanged by design. | none | none |
-| Implementation cleanup | complete | Mark helper extraction and paste-html parser helper extraction landed in `../slate-v2`. | Removed repeated casts and shrank `paste-html.tsx`. | none | verification |
-| Closure score | complete | `bun check`, paste-html, richtext mark, iframe, and hovering-toolbar Playwright rows passed after cleanup. | Status set to done. | none | none |
+| Pass                                 | Status   | Evidence added                                                                                                                                    | Plan delta                                                                            | Open issues | Next owner     |
+| ------------------------------------ | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- | ----------- | -------------- |
+| Current-state read and initial score | complete | Live source/test reads listed above; Lexical and ProseMirror evidence sampled; fresh `.tmp/slate-v2` `bun check` and focused browser rows passed. | Created cleanup plan; chose helper extraction over rewrite.                           | none        | implementation |
+| Related issue discovery              | complete | Existing nearby refs identified only.                                                                                                             | Skipped ClawSweeper because implementation stayed behavior-neutral and claim-neutral. | none        | none           |
+| Issue ledger pass                    | complete | No claim/API/runtime/browser behavior changed.                                                                                                    | Ledgers unchanged by design.                                                          | none        | none           |
+| Implementation cleanup               | complete | Mark helper extraction and paste-html parser helper extraction landed in `.tmp/slate-v2`.                                                         | Removed repeated casts and shrank `paste-html.tsx`.                                   | none        | verification   |
+| Closure score                        | complete | `bun check`, paste-html, richtext mark, iframe, and hovering-toolbar Playwright rows passed after cleanup.                                        | Status set to done.                                                                   | none        | none           |
 
 ## Plan Deltas From Review
 
@@ -339,4 +339,4 @@ None for this cleanup. Future table selection needs a separate API/model plan.
 
 Current state is `done` because the approved cleanup was implemented under an
 execution lane after the Ralplan pass, with no claim-changing issue surface and
-fresh `../slate-v2` verification.
+fresh `.tmp/slate-v2` verification.

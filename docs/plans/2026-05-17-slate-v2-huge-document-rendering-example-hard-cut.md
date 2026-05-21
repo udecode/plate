@@ -17,7 +17,7 @@ public `rendering-strategy-runtime` and `scroll-into-view` example routes.
 
 ## Scope
 
-In scope in `../slate-v2`:
+In scope in `.tmp/slate-v2`:
 
 - `site/examples/ts/huge-document.tsx`
 - `site/constants/examples.ts`
@@ -79,7 +79,7 @@ Out of scope:
 - `bun --filter slate-browser test:core` passed.
 - `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun run playwright playwright/integration/examples/huge-document.test.ts --project=chromium` passed.
 - `STRESS_FAMILIES=ime-composition-undo PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun run test:stress` passed.
-- `rg -n "rendering-strategy-runtime|Scroll Into View|Rendering Strategy Runtime" . -g '!node_modules/**' -g '!*.tsbuildinfo'` returned no matches in `../slate-v2`.
+- `rg -n "rendering-strategy-runtime|Scroll Into View|Rendering Strategy Runtime" . -g '!node_modules/**' -g '!*.tsbuildinfo'` returned no matches in `.tmp/slate-v2`.
 - `rg -n "scroll-into-view" . -g '!node_modules/**' -g '!*.tsbuildinfo'` only returned the existing `skip-scroll-into-view` policy tag.
 - `node tooling/scripts/completion-check.mjs` passed in `plate-2`.
 - `ce-compound` evaluation updated

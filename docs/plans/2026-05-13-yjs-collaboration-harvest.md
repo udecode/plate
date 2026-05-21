@@ -24,7 +24,7 @@ Run a license-gated harvest of Yjs collaboration tests from `../slate-yjs`, `../
 
 - All four targets are MIT/permissive from local license evidence.
 - `../lexical/packages/lexical-yjs` has no runnable test files under the harvester inventory pattern.
-- Slate v2 already has strong raw collaboration substrate coverage in `../slate-v2/packages/slate/test/collab-history-runtime-contract.ts`.
+- Slate v2 already has strong raw collaboration substrate coverage in `.tmp/slate-v2/packages/slate/test/collab-history-runtime-contract.ts`.
 - Plate already has useful Yjs slow fixtures, but it can still profit from a compact adapter-conversion pack for unicode, marks, nested moves, split/merge/set-node, and cursor projection.
 
 ## Verification

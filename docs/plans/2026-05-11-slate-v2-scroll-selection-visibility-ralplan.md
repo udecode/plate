@@ -79,24 +79,24 @@ Rejected alternatives:
 
 Live Slate v2 after the prior execution attempt:
 
-- `../slate-v2/packages/slate-react/src/components/editable.tsx:420` owns a
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx:420` owns a
   `scrollRectIntoViewIfNeeded` parent walker with a fixed visibility margin.
-- `../slate-v2/packages/slate-react/src/components/editable.tsx:513` owns
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx:513` owns
   `defaultScrollSelectionIntoView`; it measures the collapsed focus range and
   falls back to the leaf rect without mutating DOM methods.
-- `../slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts:239`
+- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts:239`
   still calls `syncSelectionForBeforeInput`.
-- `../slate-v2/packages/slate-react/src/editable/selection-controller.ts:291`
+- `.tmp/slate-v2/packages/slate-react/src/editable/selection-controller.ts:291`
   still carries model-selection preference as a boolean plus source, not a
   reasoned freshness token.
-- `../slate-v2/packages/slate-react/src/editable/selection-reconciler.ts:564`
+- `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts:564`
   still gates `insertText` DOM selection import on
   `preferModelSelectionForInput`.
-- `../slate-v2/playwright/integration/examples/scroll-into-view.test.ts:1`
+- `.tmp/slate-v2/playwright/integration/examples/scroll-into-view.test.ts:1`
   exists, but the row currently selects the final block programmatically. `ralph`
   should tighten it against the user path: scroll, click visible lower text,
   type, scroll away, click/type again.
-- `../slate-v2/site/examples/ts/scroll-into-view.tsx:20` creates the nested
+- `.tmp/slate-v2/site/examples/ts/scroll-into-view.tsx:20` creates the nested
   scroll-parent repro surface.
 
 User evidence:
@@ -119,14 +119,14 @@ Prior learning:
 
 ## Ecosystem Strategy Synthesis
 
-| System | Evidence | Mechanism | Slate target | Verdict |
-| --- | --- | --- | --- | --- |
-| ProseMirror | `../prosemirror-view/src/index.ts:178`, `../prosemirror-view/src/domcoords.ts:32`, `../raw/prosemirror/packages/state/src/transaction.ts:204` | transaction carries scroll intent; view scrolls post-update selection rect through parent chain; non-scroll updates preserve anchors | add commit/request-scoped scroll intent and custom rect walker | agree |
-| Lexical | `../lexical/packages/lexical/src/LexicalEvents.ts:760`, `../lexical/packages/lexical/src/LexicalSelection.ts:2637`, `../lexical/packages/lexical/src/LexicalUtils.ts:1399` | beforeinput applies DOM target range when safe; selection reconciliation chooses DOM selection for native events; scroll accepts a rect | import DOM selection before text insertion unless model-owned reason is explicit | partial |
-| CodeMirror | `node_modules/.pnpm/@codemirror+view@6.39.16/node_modules/@codemirror/view/dist/index.d.ts:861`, `:1125`, `:1365` | scroll is a transaction effect; measurements are batched; scroll margins model obscured areas | schedule read/write geometry and add margin policy | agree |
-| Tiptap | `../tiptap/packages/core/src/commands/scrollIntoView.ts:15`, `../tiptap/packages/core/src/commands/focus.ts:36` | product command delegates to ProseMirror transaction scroll; focus can opt out | keep a simple app-facing customization boundary | partial |
-| Milkdown | `../raw/milkdown/repo/packages/prose/src/toolkit/position/index.ts:53`, `:74` | UI positioning uses ProseMirror `coordsAtPos`; command paths use `tr.scrollIntoView()` | treat Milkdown as ProseMirror confirmation, not a new engine pattern | agree |
-| Obsidian | `../raw/obsidian/developer/en/Reference/TypeScript API/Editor/scrollIntoView.md:16` | product API exposes `scrollIntoView(range, center?)` | keep raw Slate lower-level; Plate can expose product commands | diverge |
+| System      | Evidence                                                                                                                                                                   | Mechanism                                                                                                                               | Slate target                                                                     | Verdict |
+| ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- | ------- |
+| ProseMirror | `../prosemirror-view/src/index.ts:178`, `../prosemirror-view/src/domcoords.ts:32`, `../raw/prosemirror/packages/state/src/transaction.ts:204`                              | transaction carries scroll intent; view scrolls post-update selection rect through parent chain; non-scroll updates preserve anchors    | add commit/request-scoped scroll intent and custom rect walker                   | agree   |
+| Lexical     | `../lexical/packages/lexical/src/LexicalEvents.ts:760`, `../lexical/packages/lexical/src/LexicalSelection.ts:2637`, `../lexical/packages/lexical/src/LexicalUtils.ts:1399` | beforeinput applies DOM target range when safe; selection reconciliation chooses DOM selection for native events; scroll accepts a rect | import DOM selection before text insertion unless model-owned reason is explicit | partial |
+| CodeMirror  | `node_modules/.pnpm/@codemirror+view@6.39.16/node_modules/@codemirror/view/dist/index.d.ts:861`, `:1125`, `:1365`                                                          | scroll is a transaction effect; measurements are batched; scroll margins model obscured areas                                           | schedule read/write geometry and add margin policy                               | agree   |
+| Tiptap      | `../tiptap/packages/core/src/commands/scrollIntoView.ts:15`, `../tiptap/packages/core/src/commands/focus.ts:36`                                                            | product command delegates to ProseMirror transaction scroll; focus can opt out                                                          | keep a simple app-facing customization boundary                                  | partial |
+| Milkdown    | `../raw/milkdown/repo/packages/prose/src/toolkit/position/index.ts:53`, `:74`                                                                                              | UI positioning uses ProseMirror `coordsAtPos`; command paths use `tr.scrollIntoView()`                                                  | treat Milkdown as ProseMirror confirmation, not a new engine pattern             | agree   |
+| Obsidian    | `../raw/obsidian/developer/en/Reference/TypeScript API/Editor/scrollIntoView.md:16`                                                                                        | product API exposes `scrollIntoView(range, center?)`                                                                                    | keep raw Slate lower-level; Plate can expose product commands                    | diverge |
 
 Compiled research:
 
@@ -223,16 +223,16 @@ Next pass:
 
 ## Regression Proof Matrix
 
-| Row | Test owner | Behavior |
-| --- | --- | --- |
-| Stale click selection before typing | `../slate-v2/playwright/integration/examples/scroll-into-view.test.ts` tighten existing row | scroll nested editor, click lower paragraph, type, assert text lands in clicked paragraph and caret remains visible |
-| Repeat scroll/click/type | same browser file | repeat the reported cycle three times; assert scroll does not chase old selection |
-| DOM selection import before beforeinput | `../slate-v2/packages/slate-react/test/selection-controller-contract.test.ts` or new focused test | `insertText` imports current in-editor DOM selection when model preference is stale |
-| Internal control undo/text input | existing editable-void/read-only rows | internal-control preference still protects native controls |
-| Zero rect fallback | `../slate-v2/packages/slate-react/test/editable-behavior.test.tsx` | empty/line-break caret still reveals using fallback rect without mutating element methods |
-| Nested parent scrolling | `../slate-v2/packages/slate-react/test/rendering-strategy-and-scroll.test.tsx` | inner and outer scroll containers receive minimal deltas |
-| Scroll margin | new unit row | sticky chrome margin shrinks visible rect |
-| Composition | existing IME rows plus new skip-scroll row if needed | composition repair does not import/scroll stale non-composed selection |
+| Row                                     | Test owner                                                                                          | Behavior                                                                                                            |
+| --------------------------------------- | --------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| Stale click selection before typing     | `.tmp/slate-v2/playwright/integration/examples/scroll-into-view.test.ts` tighten existing row       | scroll nested editor, click lower paragraph, type, assert text lands in clicked paragraph and caret remains visible |
+| Repeat scroll/click/type                | same browser file                                                                                   | repeat the reported cycle three times; assert scroll does not chase old selection                                   |
+| DOM selection import before beforeinput | `.tmp/slate-v2/packages/slate-react/test/selection-controller-contract.test.ts` or new focused test | `insertText` imports current in-editor DOM selection when model preference is stale                                 |
+| Internal control undo/text input        | existing editable-void/read-only rows                                                               | internal-control preference still protects native controls                                                          |
+| Zero rect fallback                      | `.tmp/slate-v2/packages/slate-react/test/editable-behavior.test.tsx`                                | empty/line-break caret still reveals using fallback rect without mutating element methods                           |
+| Nested parent scrolling                 | `.tmp/slate-v2/packages/slate-react/test/rendering-strategy-and-scroll.test.tsx`                    | inner and outer scroll containers receive minimal deltas                                                            |
+| Scroll margin                           | new unit row                                                                                        | sticky chrome margin shrinks visible rect                                                                           |
+| Composition                             | existing IME rows plus new skip-scroll row if needed                                                | composition repair does not import/scroll stale non-composed selection                                              |
 
 ## Browser Stress Strategy
 
@@ -280,16 +280,16 @@ Next pass:
 
 ## Maintainer Objection Ledger
 
-| Objection | Answer | Verdict |
-| --- | --- | --- |
-| “This is just a bug in the example.” | The example is only the repro shell; the stale selection path is in `slate-react` beforeinput/import logic. | keep |
-| “Existing `scrollSelectionIntoView` is customizable.” | It customizes the final scroll callback, not the selection freshness or correct measured target. | keep |
-| “A custom rect walker is overkill.” | ProseMirror, Lexical, and CodeMirror all own their scroll math/lifecycle; delegating through method mutation already produced a repeat bug. | keep |
-| “Do not steal ProseMirror.” | The plan steals lifecycle discipline only: intent, post-update rect, parent walk, and anchor preservation. | keep |
-| “A new policy prop is API bloat.” | Correct. First slice keeps the policy internal and keeps the existing callback. Public promotion waits for exact customization proof. | revise |
-| “DOM selection import before input can break internal controls.” | Internal-control, composition, shell, and programmatic-export reasons must remain model/native-owned guards; this is the first unit-test row after the browser repro. | keep |
-| “One browser row cannot close mobile/RTL scroll issues.” | Correct. `#5639` and `#5291` stay related/backlog until raw device proof exists. | keep |
-| “The scroll walker might force layout on every keystroke.” | It runs only on explicit visibility requests, not every state change; the target budget is one range rect and one ancestor walk per reveal. | keep |
+| Objection                                                        | Answer                                                                                                                                                                | Verdict |
+| ---------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| “This is just a bug in the example.”                             | The example is only the repro shell; the stale selection path is in `slate-react` beforeinput/import logic.                                                           | keep    |
+| “Existing `scrollSelectionIntoView` is customizable.”            | It customizes the final scroll callback, not the selection freshness or correct measured target.                                                                      | keep    |
+| “A custom rect walker is overkill.”                              | ProseMirror, Lexical, and CodeMirror all own their scroll math/lifecycle; delegating through method mutation already produced a repeat bug.                           | keep    |
+| “Do not steal ProseMirror.”                                      | The plan steals lifecycle discipline only: intent, post-update rect, parent walk, and anchor preservation.                                                            | keep    |
+| “A new policy prop is API bloat.”                                | Correct. First slice keeps the policy internal and keeps the existing callback. Public promotion waits for exact customization proof.                                 | revise  |
+| “DOM selection import before input can break internal controls.” | Internal-control, composition, shell, and programmatic-export reasons must remain model/native-owned guards; this is the first unit-test row after the browser repro. | keep    |
+| “One browser row cannot close mobile/RTL scroll issues.”         | Correct. `#5639` and `#5291` stay related/backlog until raw device proof exists.                                                                                      | keep    |
+| “The scroll walker might force layout on every keystroke.”       | It runs only on explicit visibility requests, not every state change; the target budget is one range rect and one ancestor walk per reveal.                           | keep    |
 
 ## Additional Scroll Algorithm Passes
 
@@ -315,10 +315,10 @@ Algorithm contract:
 
 Execution owner:
 
-- `../slate-v2/packages/slate-react/src/editable/input-state.ts`
-- `../slate-v2/packages/slate-react/src/editable/selection-controller.ts`
-- `../slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`
-- `../slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/input-state.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/selection-controller.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts`
 
 ### Scroll Request Lifecycle Pass
 
@@ -340,10 +340,10 @@ Algorithm contract:
 
 Execution owner:
 
-- `../slate-v2/packages/slate-react/src/editable/selection-controller.ts`
-- `../slate-v2/packages/slate-react/src/editable/dom-repair-queue.ts`
-- `../slate-v2/packages/slate-react/src/editable/runtime-repair-engine.ts`
-- `../slate-v2/packages/slate-react/src/editable/runtime-root-engine.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/selection-controller.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/dom-repair-queue.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-repair-engine.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-root-engine.ts`
 
 ### Geometry And Parent-Walk Pass
 
@@ -368,9 +368,9 @@ Algorithm contract:
 
 Execution owner:
 
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
-- `../slate-v2/packages/slate-react/test/rendering-strategy-and-scroll.test.tsx`
-- `../slate-v2/packages/slate-react/test/editable-behavior.test.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/test/rendering-strategy-and-scroll.test.tsx`
+- `.tmp/slate-v2/packages/slate-react/test/editable-behavior.test.tsx`
 
 ### Browser Proof Pass
 
@@ -391,8 +391,8 @@ Required first row:
 
 Execution owner:
 
-- `../slate-v2/playwright/integration/examples/scroll-into-view.test.ts`
-- `../slate-v2/site/examples/ts/scroll-into-view.tsx`
+- `.tmp/slate-v2/playwright/integration/examples/scroll-into-view.test.ts`
+- `.tmp/slate-v2/site/examples/ts/scroll-into-view.tsx`
 
 ### API Cut Pass
 
@@ -445,8 +445,8 @@ any source/test edits.
 
 First browser row:
 
-- refine `../slate-v2/playwright/integration/examples/scroll-into-view.test.ts`
-- use `../slate-v2/site/examples/ts/scroll-into-view.tsx`
+- refine `.tmp/slate-v2/playwright/integration/examples/scroll-into-view.test.ts`
+- use `.tmp/slate-v2/site/examples/ts/scroll-into-view.tsx`
 - assert both browser DOM text and Slate handle/model text after scroll,
   click-lower-paragraph, type, scroll-away, click-lower-paragraph, type again
 - first issue target: `#5826` related proof; no fixed claim until the row
@@ -454,28 +454,28 @@ First browser row:
 
 First runtime slice:
 
-- `../slate-v2/packages/slate-react/src/editable/input-state.ts`: replace the
+- `.tmp/slate-v2/packages/slate-react/src/editable/input-state.ts`: replace the
   stale boolean-only model preference with reason/source freshness data.
-- `../slate-v2/packages/slate-react/src/editable/selection-controller.ts`:
+- `.tmp/slate-v2/packages/slate-react/src/editable/selection-controller.ts`:
   update `setEditableModelSelectionPreference` and expose a single internal
   helper for stale-preference checks.
-- `../slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`:
+- `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`:
   import current in-editor DOM selection for `insertText` when model preference
   is stale, while preserving internal-control/composition/programmatic guards.
-- `../slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts`:
+- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts`:
   pass the freshness-aware preference instead of the raw boolean.
 
 Second runtime slice:
 
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`: replace
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`: replace
   temporary `getBoundingClientRect` mutation with a rect-based default helper.
-- `../slate-v2/packages/slate-react/src/editable/selection-controller.ts`: queue
+- `.tmp/slate-v2/packages/slate-react/src/editable/selection-controller.ts`: queue
   caret visibility requests after DOM selection export.
-- `../slate-v2/packages/slate-react/test/editable-behavior.test.tsx`: keep the
+- `.tmp/slate-v2/packages/slate-react/test/editable-behavior.test.tsx`: keep the
   two-scroll regression row and add zero-rect fallback proof.
-- `../slate-v2/packages/slate-react/test/rendering-strategy-and-scroll.test.tsx`:
+- `.tmp/slate-v2/packages/slate-react/test/rendering-strategy-and-scroll.test.tsx`:
   prove nested parent deltas and internal policy margins.
-- `../slate-v2/packages/slate-react/test/selection-controller-contract.test.ts`:
+- `.tmp/slate-v2/packages/slate-react/test/selection-controller-contract.test.ts`:
   prove stale model preference expires on explicit user DOM selection.
 
 Cut line:
@@ -503,27 +503,27 @@ bun run completion-check
 
 ## Scorecard
 
-| Dimension | Score | Evidence |
-| --- | ---: | --- |
-| React 19.2 runtime performance | 0.94 | request queue + O(parent depth) target; read/write timing called out; no per-block listeners |
-| Slate-close unopinionated DX | 0.94 | keeps `scrollSelectionIntoView`; first policy stays internal |
-| Plate/slate-yjs migration backbone | 0.88 | margins and `skip-scroll` are specified; remote-follow remains a later proof row |
-| Regression-proof testing | 0.95 | user-path browser row, stale-selection unit, rect walker, zero-rect, and failure-mode rows are named |
-| Research evidence completeness | 0.95 | ProseMirror, Lexical, CodeMirror, Tiptap, Milkdown, Obsidian local evidence compiled and issue-synced |
-| Composability/minimalism | 0.94 | public API bloat cut from first slice; internal policy avoids prop churn |
+| Dimension                          | Score | Evidence                                                                                              |
+| ---------------------------------- | ----: | ----------------------------------------------------------------------------------------------------- |
+| React 19.2 runtime performance     |  0.94 | request queue + O(parent depth) target; read/write timing called out; no per-block listeners          |
+| Slate-close unopinionated DX       |  0.94 | keeps `scrollSelectionIntoView`; first policy stays internal                                          |
+| Plate/slate-yjs migration backbone |  0.88 | margins and `skip-scroll` are specified; remote-follow remains a later proof row                      |
+| Regression-proof testing           |  0.95 | user-path browser row, stale-selection unit, rect walker, zero-rect, and failure-mode rows are named  |
+| Research evidence completeness     |  0.95 | ProseMirror, Lexical, CodeMirror, Tiptap, Milkdown, Obsidian local evidence compiled and issue-synced |
+| Composability/minimalism           |  0.94 | public API bloat cut from first slice; internal policy avoids prop churn                              |
 
 Total: `0.94`.
 
 ## Pass-State Ledger
 
-| Pass | Status | Evidence added | Plan delta | Open issues | Next owner |
-| --- | --- | --- | --- | --- | --- |
-| Current-state and ecosystem source pass | complete | live Slate v2 owners, video frames, compiled research note, ProseMirror/Lexical/CodeMirror/Tiptap/Milkdown/Obsidian source reads | created plan and target architecture | exact browser red row pending | issue/accounting pass |
-| Related issue sync | complete | exact dossier, coverage-matrix, live-open, v2-sync, and test-candidate rows read for `#5826`, `#4995`, `#5639`, `#5291`, `#5524`, `#5806`, `#5711`, and `#4961` | no fixed claims; #5826 identified as first browser red row | proof rows still pending | maintainer objection closure |
-| Maintainer objection closure | complete | steelman/high-risk pressure applied to API bloat, internal-control safety, mobile claim scope, and layout cost | first slice keeps policy internal; public API promotion deferred | exact implementation files/tests still pending | execution plan closure |
-| Execution plan closure | complete | current live source re-read, execution owner map, browser row owner, runtime file owners, and driver gates named | plan status set to ready for user review; execution moved to `ralph` | no fixed issue claims until exact browser proof passes | `ralph` execution after user invocation |
-| Additional scroll-algorithm pass | complete | selection authority, scroll request lifecycle, geometry walker, browser proof, API cut, and failure-mode passes recorded | tightened execution contract before `ralph`; no source edits from ralplan | user-path browser proof still belongs to `ralph` | `ralph` execution after user invocation |
-| Ralph execution closure | complete | repeated manual scroll-away browser row, reasoned model-selection preference, DOM repair caret visibility, rect parent walker, dependency cut, focused unit/type/lint/build proof | `scroll-into-view-if-needed` removed; public API unchanged; issue claims remain conservative | mobile/RTL/raw-device and remote-cursor rows stay unclaimed | none |
+| Pass                                    | Status   | Evidence added                                                                                                                                                                    | Plan delta                                                                                   | Open issues                                                 | Next owner                              |
+| --------------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- | ----------------------------------------------------------- | --------------------------------------- |
+| Current-state and ecosystem source pass | complete | live Slate v2 owners, video frames, compiled research note, ProseMirror/Lexical/CodeMirror/Tiptap/Milkdown/Obsidian source reads                                                  | created plan and target architecture                                                         | exact browser red row pending                               | issue/accounting pass                   |
+| Related issue sync                      | complete | exact dossier, coverage-matrix, live-open, v2-sync, and test-candidate rows read for `#5826`, `#4995`, `#5639`, `#5291`, `#5524`, `#5806`, `#5711`, and `#4961`                   | no fixed claims; #5826 identified as first browser red row                                   | proof rows still pending                                    | maintainer objection closure            |
+| Maintainer objection closure            | complete | steelman/high-risk pressure applied to API bloat, internal-control safety, mobile claim scope, and layout cost                                                                    | first slice keeps policy internal; public API promotion deferred                             | exact implementation files/tests still pending              | execution plan closure                  |
+| Execution plan closure                  | complete | current live source re-read, execution owner map, browser row owner, runtime file owners, and driver gates named                                                                  | plan status set to ready for user review; execution moved to `ralph`                         | no fixed issue claims until exact browser proof passes      | `ralph` execution after user invocation |
+| Additional scroll-algorithm pass        | complete | selection authority, scroll request lifecycle, geometry walker, browser proof, API cut, and failure-mode passes recorded                                                          | tightened execution contract before `ralph`; no source edits from ralplan                    | user-path browser proof still belongs to `ralph`            | `ralph` execution after user invocation |
+| Ralph execution closure                 | complete | repeated manual scroll-away browser row, reasoned model-selection preference, DOM repair caret visibility, rect parent walker, dependency cut, focused unit/type/lint/build proof | `scroll-into-view-if-needed` removed; public API unchanged; issue claims remain conservative | mobile/RTL/raw-device and remote-cursor rows stay unclaimed | none                                    |
 
 ## Completion Gates
 
@@ -539,7 +539,7 @@ Ralph execution gates:
 
 - first user-path browser row exists and fails before the behavior fix, or the
   existing row is tightened to prove the user path directly
-- Slate v2 focused unit/browser gates pass from `../slate-v2`
+- Slate v2 focused unit/browser gates pass from `.tmp/slate-v2`
 - no `scroll-into-view-if-needed` method-mutation dependency remains in default
   caret visibility path
 - final handoff separates fixed, improved, related, and unclaimed issue rows

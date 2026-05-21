@@ -6,7 +6,7 @@ apps/www/public/rd
 **/*.tsbuildinfo
 templates/my-app
 .cursor/local
-
+**/next-env.d.ts
 .pnpm-store/*
 .repo_ignore
 
@@ -134,3 +134,4 @@ packages/plate/docs/
 
 # Local agent state and generated benchmark artifacts
 .omx/
+.clawpatch/

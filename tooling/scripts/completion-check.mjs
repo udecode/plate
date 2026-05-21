@@ -111,6 +111,23 @@ const readContinueFile = (content) => {
   return match?.[1]?.trim().replace(/^['"]|['"]$/g, '');
 };
 
+const readNamedField = (content, name) => {
+  const pattern = new RegExp(`^\\s*${name}\\s*:\\s*(.+?)\\s*$`, 'im');
+  const match = content.match(pattern);
+
+  return match?.[1]?.trim().replace(/^['"]|['"]$/g, '');
+};
+
+const getDoneConflict = (content) => {
+  for (const field of ['ralplan_lane_status', 'final_handoff_status']) {
+    const value = readNamedField(content, field);
+
+    if (value && !doneValues.has(normalize(value))) {
+      return `status done conflicts with ${field}: ${value}`;
+    }
+  }
+};
+
 const hasScopedStateFiles = (cwd) => {
   try {
     if (
@@ -221,6 +238,16 @@ const status = readStatus(content);
 const continueFile = readContinueFile(content);
 
 if (doneValues.has(status)) {
+  const doneConflict = getDoneConflict(content);
+
+  if (doneConflict) {
+    if (continueFile) {
+      console.error(`[completion-check] continue: ${continueFile}`);
+    }
+
+    fail(doneConflict);
+  }
+
   console.log(`[completion-check] complete: ${stateFile}`);
   process.exit(0);
 }

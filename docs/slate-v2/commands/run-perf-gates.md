@@ -16,7 +16,7 @@ This command now has one job:
 
 ## Existing Runnable Gates
 
-Run from `../slate-v2`:
+Run from `.tmp/slate-v2`:
 
 ```sh
 bun run test

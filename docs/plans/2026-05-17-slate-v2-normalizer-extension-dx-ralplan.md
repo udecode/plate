@@ -16,7 +16,7 @@ Next pass: none
 
 ## Ralph Execution Grounding
 
-Task statement: implement the accepted follow-up in `../slate-v2`: split
+Task statement: implement the accepted follow-up in `.tmp/slate-v2`: split
 extension normalization into `normalizers.editor` for editor-root/value repair
 and `normalizers.node` for non-root node repair, keep scoped normalizer `tx`,
 migrate `forced-layout` off `WeakSet + commitListeners`, and prove
@@ -50,13 +50,13 @@ Constraints:
 
 Likely touchpoints:
 
-- `../slate-v2/packages/slate/src/interfaces/editor.ts`
-- `../slate-v2/packages/slate/src/core/editor-extension.ts`
-- `../slate-v2/packages/slate/src/core/normalize-node.ts`
-- `../slate-v2/packages/slate/test/normalization-contract.ts`
-- `../slate-v2/packages/slate/test/public-surface-contract.ts`
-- `../slate-v2/scripts/benchmarks/core/compare/normalization.mjs`
-- `../slate-v2/site/examples/ts/forced-layout.tsx`
+- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`
+- `.tmp/slate-v2/packages/slate/src/core/editor-extension.ts`
+- `.tmp/slate-v2/packages/slate/src/core/normalize-node.ts`
+- `.tmp/slate-v2/packages/slate/test/normalization-contract.ts`
+- `.tmp/slate-v2/packages/slate/test/public-surface-contract.ts`
+- `.tmp/slate-v2/scripts/benchmarks/core/compare/normalization.mjs`
+- `.tmp/slate-v2/site/examples/ts/forced-layout.tsx`
 
 Execution state: active under Ralph as of 2026-05-17. Completion state is
 `.tmp/019e362b-c486-7372-84c1-1c04fef96ff6/completion-check.md` and stays
@@ -87,14 +87,14 @@ This is a public DX/API refinement, not a new schema DSL.
 
 ## Intent Boundary
 
-| Field | Decision |
-| --- | --- |
-| Intent | Make the forced-layout example teach the same mental model as Slate `normalizeNode`: document invariants are repaired during normalization. |
-| Desired outcome | A later Ralph pass can replace `WeakSet + commitListeners` with a normalizer-shaped extension and add package/browser proof. |
-| In scope | `site/examples/ts/forced-layout.tsx`, extension normalizer authoring shape, normalizer context typing, public-surface contract cleanup, focused forced-layout browser proof. |
-| Non-goals | Reintroduce `editor.normalizeNode = ...`, resurrect `withForcedLayout`, invent a Plate-like schema DSL, claim issue fixes without exact proof. |
-| Decision boundary | Breaking changes are allowed if they simplify first-party Slate authoring and preserve full old-normalizer capability through typed extension hooks. |
-| User decision needed | None for the plan direction. The chosen target is strong enough to hand to Ralph. |
+| Field                | Decision                                                                                                                                                                     |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Intent               | Make the forced-layout example teach the same mental model as Slate `normalizeNode`: document invariants are repaired during normalization.                                  |
+| Desired outcome      | A later Ralph pass can replace `WeakSet + commitListeners` with a normalizer-shaped extension and add package/browser proof.                                                 |
+| In scope             | `site/examples/ts/forced-layout.tsx`, extension normalizer authoring shape, normalizer context typing, public-surface contract cleanup, focused forced-layout browser proof. |
+| Non-goals            | Reintroduce `editor.normalizeNode = ...`, resurrect `withForcedLayout`, invent a Plate-like schema DSL, claim issue fixes without exact proof.                               |
+| Decision boundary    | Breaking changes are allowed if they simplify first-party Slate authoring and preserve full old-normalizer capability through typed extension hooks.                         |
+| User decision needed | None for the plan direction. The chosen target is strong enough to hand to Ralph.                                                                                            |
 
 Intent-boundary pass status: complete.
 
@@ -140,30 +140,30 @@ the desired shape is closest to Slate normalization, named consistently as
 
 ## Source-Backed Current State
 
-| Evidence | Current shape | Meaning |
-| --- | --- | --- |
-| `/Users/zbeyens/git/slate-v2/site/examples/ts/forced-layout.tsx:19` | `const ENFORCING_LAYOUT = new WeakSet<CustomEditor>()` | Reentry guard leaks engine concern into the public example. |
-| `/Users/zbeyens/git/slate-v2/site/examples/ts/forced-layout.tsx:34` | `enforceLayout(editor)` reads the whole value and plans repairs manually. | This is normalization policy living outside the normalizer pipeline. |
-| `/Users/zbeyens/git/slate-v2/site/examples/ts/forced-layout.tsx:70` | Repairs run through `editor.update((tx) => ...)`. | Fine for commands; weird as a post-commit normalizer substitute. |
-| `/Users/zbeyens/git/slate-v2/site/examples/ts/forced-layout.tsx:98` | `register({ editor })` runs `enforceLayout(editor)`. | Startup enforcement is hand-scheduled. |
-| `/Users/zbeyens/git/slate-v2/site/examples/ts/forced-layout.tsx:102` | `commitListeners: [() => enforceLayout(editor)]` | This is after-commit repair, not normalization. |
-| `/Users/zbeyens/git/slate-v2/packages/slate/src/interfaces/editor.ts:1198` | `EditorNormalizerArgs` carries `entry` plus normalize options. | The type substrate exists. |
-| `/Users/zbeyens/git/slate-v2/packages/slate/src/interfaces/editor.ts:1207` | normalizer context has `{ editor, next }`. | Missing ergonomic `tx` for public normalizer writes. |
-| `/Users/zbeyens/git/slate-v2/packages/slate/src/interfaces/editor.ts:1297` | extension registration output includes `commitListeners` and `normalizers`. | The example picked the wrong slot for layout repair. |
-| `/Users/zbeyens/git/slate-v2/packages/slate/src/interfaces/editor.ts:1320` | top-level extension input includes `normalizers`. | The existing public slot is map-shaped, not fixed-lane-shaped. |
-| `/Users/zbeyens/git/slate-v2/packages/slate/src/core/editor-extension.ts:421` | normalizers register from `Object.entries(slots.normalizers ?? {})`. | Existing registration is already wired. |
-| `/Users/zbeyens/git/slate-v2/packages/slate/src/core/extension-registry.ts:198` | `registerNormalizer(editor, id, normalizer)` stores by raw id. | Map ids are global, so author-chosen names can collide. |
-| `/Users/zbeyens/git/slate-v2/packages/slate/src/core/normalize-node.ts:433` | runtime reads `getExtensionRegistry(editor).normalizers`. | Extension normalizers run in the real pipeline. |
-| `/Users/zbeyens/git/slate-v2/packages/slate/src/core/normalize-node.ts:452` | normalizer context delegates through `next(...)`. | This already models legacy `normalizeNode` fallback. |
-| `/Users/zbeyens/git/slate-v2/packages/slate/src/editor/normalize.ts:114` | normalize loops until dirty entries reach fixpoint. | A normalizer can repair one thing and return; the engine reruns. |
-| `/Users/zbeyens/git/slate-v2/packages/slate/test/normalization-contract.ts:21` | package test proves ordered extension normalizers before fallback. | The lower-level mechanism is tested. |
-| `/Users/zbeyens/git/slate-v2/packages/slate/test/normalization-contract.ts:57` | package test proves fallback override and cleanup. | The existing normalizer API is real, not speculative. |
-| `/Users/zbeyens/git/slate-v2/packages/slate/test/public-surface-contract.ts:61` | forced-layout is classified as a normalizer example. | The guard already says this should be a normalizer teaching surface. |
-| `/Users/zbeyens/git/slate-v2/playwright/integration/examples/forced-layout.test.ts:19` | browser test clears editor and expects `h2`/`p` to persist. | The behavior has a focused browser proof route. |
-| `/Users/zbeyens/git/slate-v2/package.json:20` | `bench:core:normalization:compare:local` exists. | Ralph can compare Slate v2 core normalization against legacy `../slate`. |
-| `/Users/zbeyens/git/slate-v2/scripts/benchmarks/core/compare/normalization.mjs:1` | benchmark compares current repo and legacy repo, defaulting legacy to `../slate`. | The plan should reuse this lane, not create a new benchmark file. |
-| `/Users/zbeyens/git/slate-v2/scripts/benchmarks/core/compare/normalization.mjs:292` | writes `tmp/slate-normalization-compare-benchmark.json`. | Legacy-normalizer proof has a stable artifact path. |
-| `/Users/zbeyens/git/slate-v2/scripts/benchmarks/README.md:125` | lists `tmp/slate-normalization-compare-benchmark.json` as an artifact owner. | The artifact name is already part of benchmark policy. |
+| Evidence                                                                               | Current shape                                                                     | Meaning                                                                  |
+| -------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| `/Users/zbeyens/git/slate-v2/site/examples/ts/forced-layout.tsx:19`                    | `const ENFORCING_LAYOUT = new WeakSet<CustomEditor>()`                            | Reentry guard leaks engine concern into the public example.              |
+| `/Users/zbeyens/git/slate-v2/site/examples/ts/forced-layout.tsx:34`                    | `enforceLayout(editor)` reads the whole value and plans repairs manually.         | This is normalization policy living outside the normalizer pipeline.     |
+| `/Users/zbeyens/git/slate-v2/site/examples/ts/forced-layout.tsx:70`                    | Repairs run through `editor.update((tx) => ...)`.                                 | Fine for commands; weird as a post-commit normalizer substitute.         |
+| `/Users/zbeyens/git/slate-v2/site/examples/ts/forced-layout.tsx:98`                    | `register({ editor })` runs `enforceLayout(editor)`.                              | Startup enforcement is hand-scheduled.                                   |
+| `/Users/zbeyens/git/slate-v2/site/examples/ts/forced-layout.tsx:102`                   | `commitListeners: [() => enforceLayout(editor)]`                                  | This is after-commit repair, not normalization.                          |
+| `/Users/zbeyens/git/slate-v2/packages/slate/src/interfaces/editor.ts:1198`             | `EditorNormalizerArgs` carries `entry` plus normalize options.                    | The type substrate exists.                                               |
+| `/Users/zbeyens/git/slate-v2/packages/slate/src/interfaces/editor.ts:1207`             | normalizer context has `{ editor, next }`.                                        | Missing ergonomic `tx` for public normalizer writes.                     |
+| `/Users/zbeyens/git/slate-v2/packages/slate/src/interfaces/editor.ts:1297`             | extension registration output includes `commitListeners` and `normalizers`.       | The example picked the wrong slot for layout repair.                     |
+| `/Users/zbeyens/git/slate-v2/packages/slate/src/interfaces/editor.ts:1320`             | top-level extension input includes `normalizers`.                                 | The existing public slot is map-shaped, not fixed-lane-shaped.           |
+| `/Users/zbeyens/git/slate-v2/packages/slate/src/core/editor-extension.ts:421`          | normalizers register from `Object.entries(slots.normalizers ?? {})`.              | Existing registration is already wired.                                  |
+| `/Users/zbeyens/git/slate-v2/packages/slate/src/core/extension-registry.ts:198`        | `registerNormalizer(editor, id, normalizer)` stores by raw id.                    | Map ids are global, so author-chosen names can collide.                  |
+| `/Users/zbeyens/git/slate-v2/packages/slate/src/core/normalize-node.ts:433`            | runtime reads `getExtensionRegistry(editor).normalizers`.                         | Extension normalizers run in the real pipeline.                          |
+| `/Users/zbeyens/git/slate-v2/packages/slate/src/core/normalize-node.ts:452`            | normalizer context delegates through `next(...)`.                                 | This already models legacy `normalizeNode` fallback.                     |
+| `/Users/zbeyens/git/slate-v2/packages/slate/src/editor/normalize.ts:114`               | normalize loops until dirty entries reach fixpoint.                               | A normalizer can repair one thing and return; the engine reruns.         |
+| `/Users/zbeyens/git/slate-v2/packages/slate/test/normalization-contract.ts:21`         | package test proves ordered extension normalizers before fallback.                | The lower-level mechanism is tested.                                     |
+| `/Users/zbeyens/git/slate-v2/packages/slate/test/normalization-contract.ts:57`         | package test proves fallback override and cleanup.                                | The existing normalizer API is real, not speculative.                    |
+| `/Users/zbeyens/git/slate-v2/packages/slate/test/public-surface-contract.ts:61`        | forced-layout is classified as a normalizer example.                              | The guard already says this should be a normalizer teaching surface.     |
+| `/Users/zbeyens/git/slate-v2/playwright/integration/examples/forced-layout.test.ts:19` | browser test clears editor and expects `h2`/`p` to persist.                       | The behavior has a focused browser proof route.                          |
+| `/Users/zbeyens/git/slate-v2/package.json:20`                                          | `bench:core:normalization:compare:local` exists.                                  | Ralph can compare Slate v2 core normalization against legacy `../slate`. |
+| `/Users/zbeyens/git/slate-v2/scripts/benchmarks/core/compare/normalization.mjs:1`      | benchmark compares current repo and legacy repo, defaulting legacy to `../slate`. | The plan should reuse this lane, not create a new benchmark file.        |
+| `/Users/zbeyens/git/slate-v2/scripts/benchmarks/core/compare/normalization.mjs:292`    | writes `tmp/slate-normalization-compare-benchmark.json`.                          | Legacy-normalizer proof has a stable artifact path.                      |
+| `/Users/zbeyens/git/slate-v2/scripts/benchmarks/README.md:125`                         | lists `tmp/slate-normalization-compare-benchmark.json` as an artifact owner.      | The artifact name is already part of benchmark policy.                   |
 
 Live diff note: `git -C /Users/zbeyens/git/slate-v2 diff -- site/examples/ts/forced-layout.tsx`
 returned empty output. The bad DX is in the live file, not an uncommitted local
@@ -191,43 +191,43 @@ Top drivers:
 
 Viable options:
 
-| Option | Verdict | Why |
-| --- | --- | --- |
-| Keep `WeakSet + commitListeners` | reject | It is the wrong mental model and makes normalization look like a userland polling loop. |
-| Rewrite example to `normalizers: { rootLayout(...) {} }` | reject | It uses the right engine, but arbitrary public rule ids create a registry-shaped API and force authors to invent names. |
-| Add top-level `normalizeNode(...)` sugar over the normalizer registry | reject | It is familiar, but it creates two extension grammars beside `transforms` and `queries`. |
-| Use `normalizers.node(...)` as the typed lifecycle slot | choose | It is closest to Slate's normalizer mental model while keeping extension authoring consistent and avoiding public rule ids. |
-| Reintroduce `withForcedLayout(editor)` or `editor.normalizeNode = ...` | reject | Two extension systems is worse DX and regresses the hard cut away from method override teaching. |
-| Add a schema DSL for required root blocks | reject | Too opinionated for raw Slate and too narrow for custom normalizers. |
+| Option                                                                 | Verdict | Why                                                                                                                         |
+| ---------------------------------------------------------------------- | ------- | --------------------------------------------------------------------------------------------------------------------------- |
+| Keep `WeakSet + commitListeners`                                       | reject  | It is the wrong mental model and makes normalization look like a userland polling loop.                                     |
+| Rewrite example to `normalizers: { rootLayout(...) {} }`               | reject  | It uses the right engine, but arbitrary public rule ids create a registry-shaped API and force authors to invent names.     |
+| Add top-level `normalizeNode(...)` sugar over the normalizer registry  | reject  | It is familiar, but it creates two extension grammars beside `transforms` and `queries`.                                    |
+| Use `normalizers.node(...)` as the typed lifecycle slot                | choose  | It is closest to Slate's normalizer mental model while keeping extension authoring consistent and avoiding public rule ids. |
+| Reintroduce `withForcedLayout(editor)` or `editor.normalizeNode = ...` | reject  | Two extension systems is worse DX and regresses the hard cut away from method override teaching.                            |
+| Add a schema DSL for required root blocks                              | reject  | Too opinionated for raw Slate and too narrow for custom normalizers.                                                        |
 
 Chosen target:
 
 ```ts
 export type EditorNormalizerTransaction<V extends Value = Value> = Pick<
   EditorUpdateTransaction<V>,
-  'break' | 'fragment' | 'marks' | 'nodes' | 'selection' | 'text'
+  "break" | "fragment" | "marks" | "nodes" | "selection" | "text"
 > & {
-  value: Pick<EditorUpdateTransaction<V>['value'], 'get'>
-}
+  value: Pick<EditorUpdateTransaction<V>["value"], "get">;
+};
 
 export type EditorNormalizerContext<TEditor extends BaseEditor<any> = Editor> =
   EditorNormalizerArgs<ValueOf<TEditor>> & {
-    editor: TEditor
-    next: EditorNormalizerNext<EditorNormalizerArgs<ValueOf<TEditor>>>
-    tx: EditorNormalizerTransaction<ValueOf<TEditor>>
-  }
+    editor: TEditor;
+    next: EditorNormalizerNext<EditorNormalizerArgs<ValueOf<TEditor>>>;
+    tx: EditorNormalizerTransaction<ValueOf<TEditor>>;
+  };
 
 export type EditorNormalizerMiddlewareMap<
   TEditor extends BaseEditor<any> = Editor,
 > = {
-  node?: EditorNormalizer<TEditor>
-}
+  node?: EditorNormalizer<TEditor>;
+};
 
 export type EditorExtension<TEditor extends BaseEditor<any> = Editor> = {
-  name: string
-  normalizers?: EditorNormalizerMiddlewareMap<TEditor>
+  name: string;
+  normalizers?: EditorNormalizerMiddlewareMap<TEditor>;
   // other existing slots stay
-}
+};
 ```
 
 Registration rule:
@@ -237,10 +237,10 @@ if (slots.normalizers?.node) {
   cleanups.push(
     registerNormalizer(
       editor,
-      getExtensionSlotId(extension.name, 'normalizers.node'),
-      slots.normalizers.node
-    )
-  )
+      getExtensionSlotId(extension.name, "normalizers.node"),
+      slots.normalizers.node,
+    ),
+  );
 }
 ```
 
@@ -253,35 +253,35 @@ public API. The internal id format is not documented.
 Current forced-layout shape:
 
 ```ts
-const ENFORCING_LAYOUT = new WeakSet<CustomEditor>()
+const ENFORCING_LAYOUT = new WeakSet<CustomEditor>();
 
 const enforceLayout = (editor: CustomEditor) => {
-  if (ENFORCING_LAYOUT.has(editor)) return
+  if (ENFORCING_LAYOUT.has(editor)) return;
 
-  const children = editor.read((state) => state.value.get())
+  const children = editor.read((state) => state.value.get());
   // plan repairs...
 
-  ENFORCING_LAYOUT.add(editor)
+  ENFORCING_LAYOUT.add(editor);
   try {
     editor.update((tx) => {
       // insert title, insert paragraph, set types
-    })
+    });
   } finally {
-    ENFORCING_LAYOUT.delete(editor)
+    ENFORCING_LAYOUT.delete(editor);
   }
-}
+};
 
 const forcedLayout = () =>
   defineEditorExtension<CustomEditor>()({
-    name: 'forced-layout',
+    name: "forced-layout",
     register({ editor }) {
-      enforceLayout(editor)
+      enforceLayout(editor);
 
       return {
         commitListeners: [() => enforceLayout(editor)],
-      }
+      };
     },
-  })
+  });
 ```
 
 Target teaching shape:
@@ -289,45 +289,45 @@ Target teaching shape:
 ```ts
 const forcedLayout = () =>
   defineEditorExtension<CustomEditor>()({
-    name: 'forced-layout',
+    name: "forced-layout",
     normalizers: {
       node({ entry, next, tx }) {
-        const [node, path] = entry
+        const [node, path] = entry;
 
         if (!NodeApi.isEditor(node) || path.length !== 0) {
-          next()
-          return
+          next();
+          return;
         }
 
-        const children = tx.value.get()
-        const first = children[0]
-        const second = children[1]
-        const firstText = first ? NodeApi.string(first) : ''
+        const children = tx.value.get();
+        const first = children[0];
+        const second = children[1];
+        const firstText = first ? NodeApi.string(first) : "";
 
-        if (children.length <= 1 && firstText === '') {
-          tx.nodes.insert(createTitle(), { at: [0], select: true })
-          return
+        if (children.length <= 1 && firstText === "") {
+          tx.nodes.insert(createTitle(), { at: [0], select: true });
+          return;
         }
 
         if (children.length < 2) {
-          tx.nodes.insert(createParagraph(), { at: [1] })
-          return
+          tx.nodes.insert(createParagraph(), { at: [1] });
+          return;
         }
 
-        if (NodeApi.isElement(first) && first.type !== 'title') {
-          tx.nodes.set(setType('title'), { at: [0] })
-          return
+        if (NodeApi.isElement(first) && first.type !== "title") {
+          tx.nodes.set(setType("title"), { at: [0] });
+          return;
         }
 
-        if (NodeApi.isElement(second) && second.type !== 'paragraph') {
-          tx.nodes.set(setType('paragraph'), { at: [1] })
-          return
+        if (NodeApi.isElement(second) && second.type !== "paragraph") {
+          tx.nodes.set(setType("paragraph"), { at: [1] });
+          return;
         }
 
-        next()
+        next();
       },
     },
-  })
+  });
 ```
 
 The important rule: one repair per normalizer invocation, then return. The
@@ -339,7 +339,7 @@ First-party usage should call the feature factory by feature name:
 ```ts
 const editor = useSlateEditor({
   extensions: [forcedLayout()],
-})
+});
 ```
 
 ## Public API Target
@@ -425,14 +425,14 @@ Discovery result:
 
 Reviewed issue surfaces:
 
-| Issue | Cluster | Current claim | Why | Proof route |
-| --- | --- | --- | --- | --- |
-| #4641 | normalizeNode property updates | Related, implementation-pressure | Live ledger title is directly about `normalizeNode`; test candidate map says ready with minor setup and expects property-update reproduction not to recur. The current v2 sync bucket is noisy, so the plan treats it as normalizer API pressure. | Add package proof in `normalization-contract.ts`; forced-layout browser row remains example proof only. |
-| #4701 | hardcoded text node inside normalizeNode | Related, no `Fixes` claim | Test candidate map says this is not a direct red-test target and reads as historical/example debt. The plan's `tx` normalizer context helps examples avoid hidden hardcoded repair policy, but does not prove the exact old complaint. | Public API/type proof plus docs/example review; no auto-close. |
-| #3275 | normalizeNode path/entry shape | Related, no `Fixes` claim | Test candidate map classifies it as architecture/API-shape pressure. The chosen API keeps `entry` for Slate familiarity and explicit root checks, so it intentionally does not adopt "path only." | Decision brief, type tests, and maintainer objection row. |
-| #2039 | normalizer infinite loop errors | Related, no `Fixes` claim | Existing sync ledger says not claimed. The forced-layout cleanup removes the example's `WeakSet` smell but does not add named normalizer diagnostics. | Existing fixpoint guard proof only; future debug-label work would need separate scope. |
-| #3950 | transformed-node rerun | Already fixed elsewhere | Coverage matrix and fork dossier already claim custom normalization rechecks transformed nodes until later normalizers finish. | Leave existing `Fixes #3950` rows unchanged. |
-| #5811 | normalization fixpoint/loop guard | Already improved elsewhere | Coverage matrix and fork dossier already claim deterministic fixpoint failure instead of runaway normalization budget. | Leave existing `Improves #5811` rows unchanged. |
+| Issue | Cluster                                  | Current claim                    | Why                                                                                                                                                                                                                                               | Proof route                                                                                             |
+| ----- | ---------------------------------------- | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| #4641 | normalizeNode property updates           | Related, implementation-pressure | Live ledger title is directly about `normalizeNode`; test candidate map says ready with minor setup and expects property-update reproduction not to recur. The current v2 sync bucket is noisy, so the plan treats it as normalizer API pressure. | Add package proof in `normalization-contract.ts`; forced-layout browser row remains example proof only. |
+| #4701 | hardcoded text node inside normalizeNode | Related, no `Fixes` claim        | Test candidate map says this is not a direct red-test target and reads as historical/example debt. The plan's `tx` normalizer context helps examples avoid hidden hardcoded repair policy, but does not prove the exact old complaint.            | Public API/type proof plus docs/example review; no auto-close.                                          |
+| #3275 | normalizeNode path/entry shape           | Related, no `Fixes` claim        | Test candidate map classifies it as architecture/API-shape pressure. The chosen API keeps `entry` for Slate familiarity and explicit root checks, so it intentionally does not adopt "path only."                                                 | Decision brief, type tests, and maintainer objection row.                                               |
+| #2039 | normalizer infinite loop errors          | Related, no `Fixes` claim        | Existing sync ledger says not claimed. The forced-layout cleanup removes the example's `WeakSet` smell but does not add named normalizer diagnostics.                                                                                             | Existing fixpoint guard proof only; future debug-label work would need separate scope.                  |
+| #3950 | transformed-node rerun                   | Already fixed elsewhere          | Coverage matrix and fork dossier already claim custom normalization rechecks transformed nodes until later normalizers finish.                                                                                                                    | Leave existing `Fixes #3950` rows unchanged.                                                            |
+| #5811 | normalization fixpoint/loop guard        | Already improved elsewhere       | Coverage matrix and fork dossier already claim deterministic fixpoint failure instead of runaway normalization budget.                                                                                                                            | Leave existing `Improves #5811` rows unchanged.                                                         |
 
 Issue sync status:
 
@@ -461,39 +461,39 @@ Full issue-ledger pass status: complete.
 
 Wider corpus classifications:
 
-| Issue / cluster | Claim for this plan | Why | Proof / owner |
-| --- | --- | --- | --- |
-| normalization-reentrancy-and-plugin-composability | Improves architecture pressure only | Removing example-local `WeakSet` and adding collision-safe normalizer registration directly answers plugin-composability pressure, but no exact issue closure exists yet. | Ralph package tests for normalizer id namespacing and cleanup. |
-| normalization-and-structural-transform-contracts | Related | The plan keeps normalization in the engine pipeline and does not change structural transform semantics. | Existing structural normalization rows stay owned by prior plans. |
-| #3465 initial-value normalization | Not claimed | Forced-layout startup behavior is an example policy. It does not make full-document initial value normalization/default-root policy a core feature. | Existing issue coverage matrix already marks #3465 not claimed. |
-| #2643 schema veto | Not claimed | Node normalization repairs after mutation. It is not a preflight validation/veto hook. | Existing coverage matrix keeps #2643 related to validation work. |
-| #2405 command-scoped schema rules | Related | Dirty-path/fixpoint scheduling pressure is relevant, but adding `normalizers.node` does not prove command-scoped rule evaluation. | Existing #2405 related row remains. |
-| #2195 skip text nodes in dirty tracking | Related | The plan should avoid adding after-every-commit repair loops, but it does not benchmark dirty-path tracking. | Existing #2195 related row remains. |
-| #2355 selection normalization | Not claimed | The plan normalizes document nodes only. It does not add selection normalization. | Existing #2355 related row remains. |
-| #3430 inline-heavy normalization freeze | Not claimed | The plan names one forced-layout browser row, not an inline-heavy perf/browser repro. | Existing #3430 not-claimed row remains. |
-| #4701 custom empty text-node factory | Related | `tx` in normalizer context improves authoring, but the plan does not add a generic empty-text factory. | Public API docs/example proof only. |
-| #3275 path-only normalizeNode | Rejected alternative | The plan keeps `entry` because Slate normalizers often need node plus path and current v2 already uses `entry`. | Decision brief and type tests. |
+| Issue / cluster                                   | Claim for this plan                 | Why                                                                                                                                                                       | Proof / owner                                                     |
+| ------------------------------------------------- | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| normalization-reentrancy-and-plugin-composability | Improves architecture pressure only | Removing example-local `WeakSet` and adding collision-safe normalizer registration directly answers plugin-composability pressure, but no exact issue closure exists yet. | Ralph package tests for normalizer id namespacing and cleanup.    |
+| normalization-and-structural-transform-contracts  | Related                             | The plan keeps normalization in the engine pipeline and does not change structural transform semantics.                                                                   | Existing structural normalization rows stay owned by prior plans. |
+| #3465 initial-value normalization                 | Not claimed                         | Forced-layout startup behavior is an example policy. It does not make full-document initial value normalization/default-root policy a core feature.                       | Existing issue coverage matrix already marks #3465 not claimed.   |
+| #2643 schema veto                                 | Not claimed                         | Node normalization repairs after mutation. It is not a preflight validation/veto hook.                                                                                    | Existing coverage matrix keeps #2643 related to validation work.  |
+| #2405 command-scoped schema rules                 | Related                             | Dirty-path/fixpoint scheduling pressure is relevant, but adding `normalizers.node` does not prove command-scoped rule evaluation.                                         | Existing #2405 related row remains.                               |
+| #2195 skip text nodes in dirty tracking           | Related                             | The plan should avoid adding after-every-commit repair loops, but it does not benchmark dirty-path tracking.                                                              | Existing #2195 related row remains.                               |
+| #2355 selection normalization                     | Not claimed                         | The plan normalizes document nodes only. It does not add selection normalization.                                                                                         | Existing #2355 related row remains.                               |
+| #3430 inline-heavy normalization freeze           | Not claimed                         | The plan names one forced-layout browser row, not an inline-heavy perf/browser repro.                                                                                     | Existing #3430 not-claimed row remains.                           |
+| #4701 custom empty text-node factory              | Related                             | `tx` in normalizer context improves authoring, but the plan does not add a generic empty-text factory.                                                                    | Public API docs/example proof only.                               |
+| #3275 path-only normalizeNode                     | Rejected alternative                | The plan keeps `entry` because Slate normalizers often need node plus path and current v2 already uses `entry`.                                                           | Decision brief and type tests.                                    |
 
 PR reference status: unchanged in this pass. The accepted API shape is planned,
 not implemented, and no fixed issue claim changed.
 
 ## Regression Proof Matrix
 
-| Surface | Required proof |
-| --- | --- |
-| Type shape | Negative and positive type tests prove `normalizers.node` gets `tx`, `entry`, `next`, and typed custom editor value. |
-| Public normalizer shape | Type tests reject arbitrary normalizer map keys and top-level `normalizeNode`. |
-| Registration order | Test proves extension `normalizers.node` runs before built-in fallback. |
-| Registration collision | Test proves two extensions can both define `normalizers.node` without overwriting. |
-| Normalizer transaction scope | Negative type tests reject `tx.normalize`, `tx.withoutNormalizing`, `tx.operations.replay`, and `tx.value.replace` inside `normalizers.node`. |
-| Double next | Existing double `next()` rejection still applies to `normalizers.node`. |
-| Cleanup | Unextending removes the extension's node normalizer. |
-| Forced layout package test | Add core or site-adjacent test proving root title/paragraph repair uses normalizer loop without `commitListeners`. |
-| Public-surface contract | Grep/contract rejects `ENFORCING_LAYOUT`, `WeakSet<CustomEditor>`, and forced-layout commit-listener layout repair. |
-| Legacy normalizer benchmark | `bench:core:normalization:compare:local` compares v2 to legacy `../slate` and writes `tmp/slate-normalization-compare-benchmark.json`. |
-| Custom normalizer benchmark | Compare legacy `editor.normalizeNode` override against v2 `normalizers.node` no-op dispatch and v2 `normalizers.editor` forced-layout one-repair lanes. |
-| Browser | `forced-layout` route still keeps exactly one `h2` and one `p` after full editor clear. |
-| Broad gate | Package typecheck plus focused tests, then `bun check` when Ralph implementation closes. |
+| Surface                      | Required proof                                                                                                                                          |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Type shape                   | Negative and positive type tests prove `normalizers.node` gets `tx`, `entry`, `next`, and typed custom editor value.                                    |
+| Public normalizer shape      | Type tests reject arbitrary normalizer map keys and top-level `normalizeNode`.                                                                          |
+| Registration order           | Test proves extension `normalizers.node` runs before built-in fallback.                                                                                 |
+| Registration collision       | Test proves two extensions can both define `normalizers.node` without overwriting.                                                                      |
+| Normalizer transaction scope | Negative type tests reject `tx.normalize`, `tx.withoutNormalizing`, `tx.operations.replay`, and `tx.value.replace` inside `normalizers.node`.           |
+| Double next                  | Existing double `next()` rejection still applies to `normalizers.node`.                                                                                 |
+| Cleanup                      | Unextending removes the extension's node normalizer.                                                                                                    |
+| Forced layout package test   | Add core or site-adjacent test proving root title/paragraph repair uses normalizer loop without `commitListeners`.                                      |
+| Public-surface contract      | Grep/contract rejects `ENFORCING_LAYOUT`, `WeakSet<CustomEditor>`, and forced-layout commit-listener layout repair.                                     |
+| Legacy normalizer benchmark  | `bench:core:normalization:compare:local` compares v2 to legacy `../slate` and writes `tmp/slate-normalization-compare-benchmark.json`.                  |
+| Custom normalizer benchmark  | Compare legacy `editor.normalizeNode` override against v2 `normalizers.node` no-op dispatch and v2 `normalizers.editor` forced-layout one-repair lanes. |
+| Browser                      | `forced-layout` route still keeps exactly one `h2` and one `p` after full editor clear.                                                                 |
+| Broad gate                   | Package typecheck plus focused tests, then `bun check` when Ralph implementation closes.                                                                |
 
 ## Browser Stress And Parity Strategy
 
@@ -511,7 +511,7 @@ Run from cwd:
 
 No broader browser matrix is required for the plan itself. If Ralph touches the
 normalizer engine, the implementation closeout should also run the package
-normalization tests and the broad `bun check` gate from `../slate-v2`.
+normalization tests and the broad `bun check` gate from `.tmp/slate-v2`.
 
 ## Performance Review And Legacy Normalizer Benchmark
 
@@ -543,11 +543,11 @@ Repeated unit:
 
 Cohorts:
 
-| Cohort | Benchmark config | Meaning |
-| --- | --- | --- |
-| normal | `NORMALIZATION_BENCH_EXPLICIT_BLOCKS=250`, `NORMALIZATION_BENCH_INSERT_BLOCKS=500`, `NORMALIZATION_BENCH_INSERT_OPS=50` | Default local proof and current script default. |
-| medium | `NORMALIZATION_BENCH_EXPLICIT_BLOCKS=1000`, `NORMALIZATION_BENCH_INSERT_BLOCKS=2000`, `NORMALIZATION_BENCH_INSERT_OPS=200` | Required implementation closeout. |
-| large | `NORMALIZATION_BENCH_EXPLICIT_BLOCKS=5000`, `NORMALIZATION_BENCH_INSERT_BLOCKS=10000`, `NORMALIZATION_BENCH_INSERT_OPS=500` | Required if implementation touches normalization scheduling, dirty-entry queues, or extension registry internals beyond this API. |
+| Cohort | Benchmark config                                                                                                            | Meaning                                                                                                                           |
+| ------ | --------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| normal | `NORMALIZATION_BENCH_EXPLICIT_BLOCKS=250`, `NORMALIZATION_BENCH_INSERT_BLOCKS=500`, `NORMALIZATION_BENCH_INSERT_OPS=50`     | Default local proof and current script default.                                                                                   |
+| medium | `NORMALIZATION_BENCH_EXPLICIT_BLOCKS=1000`, `NORMALIZATION_BENCH_INSERT_BLOCKS=2000`, `NORMALIZATION_BENCH_INSERT_OPS=200`  | Required implementation closeout.                                                                                                 |
+| large  | `NORMALIZATION_BENCH_EXPLICIT_BLOCKS=5000`, `NORMALIZATION_BENCH_INSERT_BLOCKS=10000`, `NORMALIZATION_BENCH_INSERT_OPS=500` | Required if implementation touches normalization scheduling, dirty-entry queues, or extension registry internals beyond this API. |
 
 Benchmark owner:
 
@@ -579,13 +579,13 @@ Custom normalizer lane requirement:
 
 Acceptance budget:
 
-| Metric | Gate |
-| --- | --- |
-| `explicitAdjacentTextNormalizeMs.mean` | v2 must be no slower than legacy by more than 5% or 0.25ms, whichever is larger. |
-| `explicitInlineFlattenNormalizeMs.mean` | v2 must be no slower than legacy by more than 5% or 0.25ms, whichever is larger. |
-| custom no-op normalizer dispatch | v2 overhead must stay below 5% of the built-in explicit-normalize lane. |
-| custom forced-layout repair | v2 must be no slower than equivalent legacy `normalizeNode` override by more than 5% or 0.25ms. |
-| `insertTextReadAfterEachMs.mean` | diagnostic only against legacy, but hard no-regression against the pre-change v2 artifact by more than 5%. |
+| Metric                                  | Gate                                                                                                       |
+| --------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `explicitAdjacentTextNormalizeMs.mean`  | v2 must be no slower than legacy by more than 5% or 0.25ms, whichever is larger.                           |
+| `explicitInlineFlattenNormalizeMs.mean` | v2 must be no slower than legacy by more than 5% or 0.25ms, whichever is larger.                           |
+| custom no-op normalizer dispatch        | v2 overhead must stay below 5% of the built-in explicit-normalize lane.                                    |
+| custom forced-layout repair             | v2 must be no slower than equivalent legacy `normalizeNode` override by more than 5% or 0.25ms.            |
+| `insertTextReadAfterEachMs.mean`        | diagnostic only against legacy, but hard no-regression against the pre-change v2 artifact by more than 5%. |
 
 Memory and DOM tags:
 
@@ -604,30 +604,30 @@ Plan delta:
 
 ## Implementation Review Matrix
 
-| Lens | Status | Finding | Plan delta |
-| --- | --- | --- | --- |
-| React best practices | skipped | No React subscription or rendering API changes are proposed. | Browser proof remains focused on example behavior. |
-| performance-oracle | applied | `commitListeners` repair can run after every commit. Normalizer dirty-path/fixpoint scheduling is the right hot-path owner. | Move layout repair into normalizer pipeline and one-repair-per-pass style. |
-| performance | applied | The existing `bench:core:normalization:compare:local` lane compares current Slate v2 normalization to legacy `../slate`, but the plan must add a custom normalizer lane for the new extension API overhead. | Add legacy normalizer compare gates, medium cohort config, custom no-op dispatch lane, forced-layout repair lane, and artifact summary requirement. |
-| tdd | applied | Public API and example behavior need regression tests before implementation close. | Add type/runtime normalizer tests plus forced-layout browser proof. |
-| shadcn | skipped | No UI component composition change. | None. |
-| react-useeffect | skipped | No effects are involved. | None. |
+| Lens                 | Status  | Finding                                                                                                                                                                                                     | Plan delta                                                                                                                                          |
+| -------------------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| React best practices | skipped | No React subscription or rendering API changes are proposed.                                                                                                                                                | Browser proof remains focused on example behavior.                                                                                                  |
+| performance-oracle   | applied | `commitListeners` repair can run after every commit. Normalizer dirty-path/fixpoint scheduling is the right hot-path owner.                                                                                 | Move layout repair into normalizer pipeline and one-repair-per-pass style.                                                                          |
+| performance          | applied | The existing `bench:core:normalization:compare:local` lane compares current Slate v2 normalization to legacy `../slate`, but the plan must add a custom normalizer lane for the new extension API overhead. | Add legacy normalizer compare gates, medium cohort config, custom no-op dispatch lane, forced-layout repair lane, and artifact summary requirement. |
+| tdd                  | applied | Public API and example behavior need regression tests before implementation close.                                                                                                                          | Add type/runtime normalizer tests plus forced-layout browser proof.                                                                                 |
+| shadcn               | skipped | No UI component composition change.                                                                                                                                                                         | None.                                                                                                                                               |
+| react-useeffect      | skipped | No effects are involved.                                                                                                                                                                                    | None.                                                                                                                                               |
 
 ## Pressure Pass Results
 
 Pressure-passes status: complete.
 
-| Lens | Verdict | Evidence | Plan delta |
-| --- | --- | --- | --- |
-| Performance | pass with benchmark gate | Live forced-layout uses a commit listener that can run after every commit; live Slate v2 normalizers already run inside transaction closeout and dirty-path/fixpoint scheduling; live benchmark scripts include `bench:core:normalization:compare:local` against legacy `../slate`. | Keep one-repair-per-normalize style; require no nested update, no post-commit repair proof, and legacy normalizer compare artifact before Ralph closure. |
-| DX | pass after rename | The Slate concept is normalization, but the best extension grammar is consistent with `transforms` and `queries`. Generic `layout()` is too vague for a first-party example. | Rename the teaching factory to `forcedLayout()`; teach `normalizers.node` as the public path. |
-| Unopinionated core | pass | The target adds a generic normalizer hook only. It does not add required-root schema policy, empty-text factories, Plate presets, or product command catalogs. | Keep schema DSL and validation/veto hooks out of this plan. |
-| Plate migration | pass | Plate already proves typed product-layer plugin registries and `editor.api`; raw Slate should supply extension hooks and let Plate map plugin policy onto them. | Keep raw Slate naming `extensions`; do not import Plate `plugins` vocabulary into core. |
-| slate-yjs migration | pass with no closure claim | Live slate-yjs still patches `editor.apply`, `editor.onChange`, `Editor.withoutNormalizing`, and `editor.normalizeNode`; remote events replay operations and then normalize. | Require normalizer repairs to be ordinary transaction operations with metadata; do not claim current slate-yjs adapter support. |
-| Regression | pass with stricter order | Existing tests cover normalizer order, fallback override, cleanup, and double `next`; forced-layout has a focused browser row. | Add tests for `normalizers.editor` / `normalizers.node` with `tx`, then typed-lane collision/latest-wins tests, then forced-layout browser proof. |
-| Verification workspace | pass for planning | Live source reads came from `/Users/zbeyens/git/slate-v2`; no Slate v2 command was run because this skill is planning-only. | Keep implementation verification in the Ralph phase. |
-| Research | pass | The compiled Lexical/ProseMirror/Tiptap corpus now drives concrete keep/reject/borrow rows. | No new research page needed. |
-| Simplicity | pass | The smallest API that fixes the DX is one typed lifecycle slot plus `tx` in context and internal typed-lane ids. | Do not add aliases, wrapper helpers, schema shortcuts, or a second extension composition path. |
+| Lens                   | Verdict                    | Evidence                                                                                                                                                                                                                                                                            | Plan delta                                                                                                                                               |
+| ---------------------- | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Performance            | pass with benchmark gate   | Live forced-layout uses a commit listener that can run after every commit; live Slate v2 normalizers already run inside transaction closeout and dirty-path/fixpoint scheduling; live benchmark scripts include `bench:core:normalization:compare:local` against legacy `../slate`. | Keep one-repair-per-normalize style; require no nested update, no post-commit repair proof, and legacy normalizer compare artifact before Ralph closure. |
+| DX                     | pass after rename          | The Slate concept is normalization, but the best extension grammar is consistent with `transforms` and `queries`. Generic `layout()` is too vague for a first-party example.                                                                                                        | Rename the teaching factory to `forcedLayout()`; teach `normalizers.node` as the public path.                                                            |
+| Unopinionated core     | pass                       | The target adds a generic normalizer hook only. It does not add required-root schema policy, empty-text factories, Plate presets, or product command catalogs.                                                                                                                      | Keep schema DSL and validation/veto hooks out of this plan.                                                                                              |
+| Plate migration        | pass                       | Plate already proves typed product-layer plugin registries and `editor.api`; raw Slate should supply extension hooks and let Plate map plugin policy onto them.                                                                                                                     | Keep raw Slate naming `extensions`; do not import Plate `plugins` vocabulary into core.                                                                  |
+| slate-yjs migration    | pass with no closure claim | Live slate-yjs still patches `editor.apply`, `editor.onChange`, `Editor.withoutNormalizing`, and `editor.normalizeNode`; remote events replay operations and then normalize.                                                                                                        | Require normalizer repairs to be ordinary transaction operations with metadata; do not claim current slate-yjs adapter support.                          |
+| Regression             | pass with stricter order   | Existing tests cover normalizer order, fallback override, cleanup, and double `next`; forced-layout has a focused browser row.                                                                                                                                                      | Add tests for `normalizers.editor` / `normalizers.node` with `tx`, then typed-lane collision/latest-wins tests, then forced-layout browser proof.        |
+| Verification workspace | pass for planning          | Live source reads came from `/Users/zbeyens/git/slate-v2`; no Slate v2 command was run because this skill is planning-only.                                                                                                                                                         | Keep implementation verification in the Ralph phase.                                                                                                     |
+| Research               | pass                       | The compiled Lexical/ProseMirror/Tiptap corpus now drives concrete keep/reject/borrow rows.                                                                                                                                                                                         | No new research page needed.                                                                                                                             |
+| Simplicity             | pass                       | The smallest API that fixes the DX is one typed lifecycle slot plus `tx` in context and internal typed-lane ids.                                                                                                                                                                    | Do not add aliases, wrapper helpers, schema shortcuts, or a second extension composition path.                                                           |
 
 Hard pressure verdict:
 
@@ -643,26 +643,26 @@ Hard pressure verdict:
 
 ## Maintainer Objection Ledger
 
-| Objection | Answer | Verdict |
-| --- | --- | --- |
-| "Why not add top-level `normalizeNode` because Slate users know it?" | Because extension objects already use plural buckets like `transforms` and `queries`. `normalizers.node` keeps the Slate mental model without creating a one-off lifecycle spelling. | reject sugar, keep typed lane |
-| "Does `tx` in normalizers make normalizers too powerful?" | Full update `tx` would be too powerful. Keep the `tx` name, but expose a normalizer-scoped transaction facade without recursive normalize, replay, disable-normalizing, or whole-document replace controls. | revise |
-| "Could this create hidden infinite loops?" | The existing fixpoint loop and double-next guard remain. The example must mutate once and return. | handled by tests |
-| "Why not keep `commitListeners` for simplicity?" | Commit listeners observe commits. Using them for structural repair means every app author learns the wrong primitive. | reject |
-| "Why not make a required-root schema option?" | Raw Slate should not own that product policy. `normalizers.node` covers title/paragraph, code blocks, embeds, tables, and app-specific rules. | reject |
-| "Why not keep arbitrary named normalizers?" | They make the API look like a registry of user-invented ids. A fixed `node` lane is clearer now; add future lanes only when they are real. | reject public ids |
+| Objection                                                            | Answer                                                                                                                                                                                                      | Verdict                       |
+| -------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- |
+| "Why not add top-level `normalizeNode` because Slate users know it?" | Because extension objects already use plural buckets like `transforms` and `queries`. `normalizers.node` keeps the Slate mental model without creating a one-off lifecycle spelling.                        | reject sugar, keep typed lane |
+| "Does `tx` in normalizers make normalizers too powerful?"            | Full update `tx` would be too powerful. Keep the `tx` name, but expose a normalizer-scoped transaction facade without recursive normalize, replay, disable-normalizing, or whole-document replace controls. | revise                        |
+| "Could this create hidden infinite loops?"                           | The existing fixpoint loop and double-next guard remain. The example must mutate once and return.                                                                                                           | handled by tests              |
+| "Why not keep `commitListeners` for simplicity?"                     | Commit listeners observe commits. Using them for structural repair means every app author learns the wrong primitive.                                                                                       | reject                        |
+| "Why not make a required-root schema option?"                        | Raw Slate should not own that product policy. `normalizers.node` covers title/paragraph, code blocks, embeds, tables, and app-specific rules.                                                               | reject                        |
+| "Why not keep arbitrary named normalizers?"                          | They make the API look like a registry of user-invented ids. A fixed `node` lane is clearer now; add future lanes only when they are real.                                                                  | reject public ids             |
 
 ## Steelman Challenge Ledger
 
 Steelman pass status: complete.
 
-| Decision | Strongest fair objection | Antithesis | Revision / answer | Proof required | Verdict |
-| --- | --- | --- | --- | --- | --- |
-| Use `normalizers.node` | `normalizeNode` is more familiar to legacy Slate users. | Add top-level `normalizeNode` sugar. | Familiarity loses to consistency here. `normalizers.node` still reads as normalization, aligns with `transforms`/`queries`, and avoids two public spellings for one lifecycle. | Type/runtime test for `normalizers.node`; negative type test rejects top-level `normalizeNode` and arbitrary keys. | keep |
-| Put `tx` in normalizer context | Full `EditorUpdateTransaction` gives normalizers dangerous powers and makes recursive normalization easier. | Keep `{ editor, entry, next }` and make users call lower-level APIs. | Revise to a normalizer-scoped `tx` facade. It keeps Slate-like transform ergonomics without exposing `normalize`, `withoutNormalizing`, `operations.replay`, or `value.replace`. | Positive tests for normalizer writes; negative type tests for forbidden members; runtime proof no nested update. | revise |
-| Remove arbitrary public normalizer ids | A future extension might want several node rules under different names. | Keep the current map and namespace ids internally. | Split rules inside `normalizers.node` or use multiple extensions. Public arbitrary ids are not worth the DX tax. | Collision test with two extensions both defining `normalizers.node`; cleanup test. | keep |
-| Rename example factory to `forcedLayout()` | Naming polish is not architecture. | Leave `layout()` and focus on engine API. | First-party examples teach conventions. `forcedLayout()` is clearer and matches lower-case extension factory style without adding API surface. | Example compile and forced-layout browser row. | keep |
-| Cut commit-listener repair | Commit listener is easy to reason about and already works. | Keep it to avoid touching core normalizer API. | It works by teaching the wrong owner. Layout invariants belong in normalization, not after every commit. | Public-surface contract rejects guard/listener repair; browser row stays green. | keep |
+| Decision                                   | Strongest fair objection                                                                                    | Antithesis                                                           | Revision / answer                                                                                                                                                                | Proof required                                                                                                     | Verdict |
+| ------------------------------------------ | ----------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ | ------- |
+| Use `normalizers.node`                     | `normalizeNode` is more familiar to legacy Slate users.                                                     | Add top-level `normalizeNode` sugar.                                 | Familiarity loses to consistency here. `normalizers.node` still reads as normalization, aligns with `transforms`/`queries`, and avoids two public spellings for one lifecycle.   | Type/runtime test for `normalizers.node`; negative type test rejects top-level `normalizeNode` and arbitrary keys. | keep    |
+| Put `tx` in normalizer context             | Full `EditorUpdateTransaction` gives normalizers dangerous powers and makes recursive normalization easier. | Keep `{ editor, entry, next }` and make users call lower-level APIs. | Revise to a normalizer-scoped `tx` facade. It keeps Slate-like transform ergonomics without exposing `normalize`, `withoutNormalizing`, `operations.replay`, or `value.replace`. | Positive tests for normalizer writes; negative type tests for forbidden members; runtime proof no nested update.   | revise  |
+| Remove arbitrary public normalizer ids     | A future extension might want several node rules under different names.                                     | Keep the current map and namespace ids internally.                   | Split rules inside `normalizers.node` or use multiple extensions. Public arbitrary ids are not worth the DX tax.                                                                 | Collision test with two extensions both defining `normalizers.node`; cleanup test.                                 | keep    |
+| Rename example factory to `forcedLayout()` | Naming polish is not architecture.                                                                          | Leave `layout()` and focus on engine API.                            | First-party examples teach conventions. `forcedLayout()` is clearer and matches lower-case extension factory style without adding API surface.                                   | Example compile and forced-layout browser row.                                                                     | keep    |
+| Cut commit-listener repair                 | Commit listener is easy to reason about and already works.                                                  | Keep it to avoid touching core normalizer API.                       | It works by teaching the wrong owner. Layout invariants belong in normalization, not after every commit.                                                                         | Public-surface contract rejects guard/listener repair; browser row stays green.                                    | keep    |
 
 ## High-Risk Deliberate Pass
 
@@ -674,34 +674,34 @@ collaboration authors.
 
 Blast radius:
 
-| Area | Risk |
-| --- | --- |
-| `packages/slate` types | `EditorExtension.normalizers.node`, `EditorExtensionRegistrationOutput`, `EditorNormalizerContext`, and the new normalizer transaction facade become public API. |
-| `packages/slate` runtime | Extension registration, normalizer ordering, cleanup, and active transaction facade creation can change normalization behavior. |
-| Tests | Normalization contracts, extension install contracts, public-surface contracts, and type-only negative tests must move together. |
-| Examples | `site/examples/ts/forced-layout.tsx` changes the teaching path from post-commit repair to normalizer repair. |
-| Downstream authors | Plate/plugin authors need a stable extension-normalizer route; slate-yjs/collab authors need normalizer writes to remain ordinary transaction operations. |
+| Area                     | Risk                                                                                                                                                             |
+| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `packages/slate` types   | `EditorExtension.normalizers.node`, `EditorExtensionRegistrationOutput`, `EditorNormalizerContext`, and the new normalizer transaction facade become public API. |
+| `packages/slate` runtime | Extension registration, normalizer ordering, cleanup, and active transaction facade creation can change normalization behavior.                                  |
+| Tests                    | Normalization contracts, extension install contracts, public-surface contracts, and type-only negative tests must move together.                                 |
+| Examples                 | `site/examples/ts/forced-layout.tsx` changes the teaching path from post-commit repair to normalizer repair.                                                     |
+| Downstream authors       | Plate/plugin authors need a stable extension-normalizer route; slate-yjs/collab authors need normalizer writes to remain ordinary transaction operations.        |
 
 Pre-mortem:
 
-| Failure scenario | How it would show up | Required guard |
-| --- | --- | --- |
-| Normalizer `tx` leaks full update power | A normalizer calls `tx.normalize`, `tx.withoutNormalizing`, `tx.operations.replay`, or `tx.value.replace`, causing recursion or impossible-to-reason repair batches. | Normalizer-scoped facade plus negative type tests for forbidden members. |
-| Typed normalizer-lane registration breaks order or cleanup | Two extensions defining `normalizers.node` overwrite each other, or unextend leaves a stale rule installed. | Collision, order, latest-wins, and cleanup tests across extensions. |
-| Forced-layout browser behavior regresses | Clearing the editor no longer restores one title plus one paragraph, or selection jumps after normalizer repair. | Focused forced-layout Playwright row after package tests. |
-| History/collab metadata gets smeared | Normalizer-generated operations are hidden from commit/history/collab consumers or tagged as a separate nested update. | Runtime test proving no nested `editor.update` and operations stay in the outer normalization transaction. |
-| Extension normalizer dispatch is slower than legacy overrides | The new API looks nicer but adds measurable overhead versus legacy `editor.normalizeNode`. | Legacy compare artifact with custom no-op and forced-layout normalizer lanes; medium cohort must pass budget. |
+| Failure scenario                                              | How it would show up                                                                                                                                                 | Required guard                                                                                                |
+| ------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| Normalizer `tx` leaks full update power                       | A normalizer calls `tx.normalize`, `tx.withoutNormalizing`, `tx.operations.replay`, or `tx.value.replace`, causing recursion or impossible-to-reason repair batches. | Normalizer-scoped facade plus negative type tests for forbidden members.                                      |
+| Typed normalizer-lane registration breaks order or cleanup    | Two extensions defining `normalizers.node` overwrite each other, or unextend leaves a stale rule installed.                                                          | Collision, order, latest-wins, and cleanup tests across extensions.                                           |
+| Forced-layout browser behavior regresses                      | Clearing the editor no longer restores one title plus one paragraph, or selection jumps after normalizer repair.                                                     | Focused forced-layout Playwright row after package tests.                                                     |
+| History/collab metadata gets smeared                          | Normalizer-generated operations are hidden from commit/history/collab consumers or tagged as a separate nested update.                                               | Runtime test proving no nested `editor.update` and operations stay in the outer normalization transaction.    |
+| Extension normalizer dispatch is slower than legacy overrides | The new API looks nicer but adds measurable overhead versus legacy `editor.normalizeNode`.                                                                           | Legacy compare artifact with custom no-op and forced-layout normalizer lanes; medium cohort must pass budget. |
 
 Expanded proof plan:
 
-| Proof lane | Required evidence |
-| --- | --- |
-| Unit | `packages/slate/test/normalization-contract.ts` covers `normalizers.node`, fallback delegation, double-next, cleanup, extension-lane collisions, and one-repair reruns. |
-| Type | Negative type tests reject forbidden normalizer `tx` members, arbitrary normalizer keys, and top-level `normalizeNode`; positive tests prove custom editor value inference survives `defineEditorExtension<CustomEditor>()`. |
-| Integration | Public-surface contract rejects `ENFORCING_LAYOUT`, forced-layout commit-listener repair, and legacy `editor.normalizeNode = ...` teaching in the example. |
-| Browser | Forced-layout Playwright row verifies clear-editor recovery, visible `h2`/`p`, and follow-up typing. |
-| Migration/adoption | Docs/example notes teach `normalizers.node` and explicitly avoid current slate-yjs support claims. |
-| Performance | `bench:core:normalization:compare:local` plus medium cohort and custom normalizer lanes prove v2 normalizer API overhead against legacy `editor.normalizeNode`. |
+| Proof lane         | Required evidence                                                                                                                                                                                                            |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Unit               | `packages/slate/test/normalization-contract.ts` covers `normalizers.node`, fallback delegation, double-next, cleanup, extension-lane collisions, and one-repair reruns.                                                      |
+| Type               | Negative type tests reject forbidden normalizer `tx` members, arbitrary normalizer keys, and top-level `normalizeNode`; positive tests prove custom editor value inference survives `defineEditorExtension<CustomEditor>()`. |
+| Integration        | Public-surface contract rejects `ENFORCING_LAYOUT`, forced-layout commit-listener repair, and legacy `editor.normalizeNode = ...` teaching in the example.                                                                   |
+| Browser            | Forced-layout Playwright row verifies clear-editor recovery, visible `h2`/`p`, and follow-up typing.                                                                                                                         |
+| Migration/adoption | Docs/example notes teach `normalizers.node` and explicitly avoid current slate-yjs support claims.                                                                                                                           |
+| Performance        | `bench:core:normalization:compare:local` plus medium cohort and custom normalizer lanes prove v2 normalizer API overhead against legacy `editor.normalizeNode`.                                                              |
 
 Rollback / hard-cut answer:
 
@@ -723,12 +723,12 @@ Trigger: this proposal changes extension authoring, normalizer registration,
 normalization writes, example behavior, and the migration backbone for plugin
 and collaboration authors.
 
-| Triggered surface | Plate/plugin maintainer answer | slate-yjs/collab maintainer answer | Proof required before closure | Verdict |
-| --- | --- | --- | --- | --- |
-| `EditorExtension.normalizers.node` | Plate can map plugin-owned structural policy to raw Slate node normalization without wrapping every core call. Plate keeps `plugins`, `editor.api`, `editor.tf`, `getApi`, options, and product presets. Raw Slate only adds the lifecycle hook. | Collab adapters do not need arbitrary rule ids. They need the produced operations to be ordinary normalization operations. | Type test with a custom extension, runtime test proving `normalizers.node` composes with fallback, and no Plate API edits. | keep |
-| Normalizer-scoped `tx` | Product plugins get transaction ergonomics without importing legacy global transforms or nesting `editor.update(...)` inside a rule. The restricted facade avoids becoming a second Plate transform registry. | Normalizer repairs must be emitted inside the outer normalization transaction. No hidden update, no replay, no whole-value replace, no dropped metadata. | Runtime proof that normalizer writes are in the outer batch; negative type tests for forbidden `tx` members; history/collab metadata row stays explicit. | keep with scoped facade |
-| Internal typed-lane normalizer ids | Plate and plugin authors do not have to invent names like `root` or `layout`. Latest extension still wins by extension name. | Deterministic registration order and cleanup matter for replay. Internal ids must not reorder rules or leave stale normalizers after unextend. | Collision test for two `normalizers.node` extensions, order test, latest-wins test, and cleanup test. | keep |
-| Forced-layout hard cut from `commitListeners` | Plate does not need to mirror the bad example. A product layer can put layout policy in a plugin/extension normalizer and keep React UI/render ownership elsewhere. | The plan makes no current slate-yjs support promise. It only requires that layout repair is observable as normal Slate operations if a future adapter watches transactions. | Public-surface grep for no `WeakSet` or commit-listener repair, plus focused forced-layout browser proof. | keep |
+| Triggered surface                             | Plate/plugin maintainer answer                                                                                                                                                                                                                   | slate-yjs/collab maintainer answer                                                                                                                                          | Proof required before closure                                                                                                                            | Verdict                 |
+| --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------- |
+| `EditorExtension.normalizers.node`            | Plate can map plugin-owned structural policy to raw Slate node normalization without wrapping every core call. Plate keeps `plugins`, `editor.api`, `editor.tf`, `getApi`, options, and product presets. Raw Slate only adds the lifecycle hook. | Collab adapters do not need arbitrary rule ids. They need the produced operations to be ordinary normalization operations.                                                  | Type test with a custom extension, runtime test proving `normalizers.node` composes with fallback, and no Plate API edits.                               | keep                    |
+| Normalizer-scoped `tx`                        | Product plugins get transaction ergonomics without importing legacy global transforms or nesting `editor.update(...)` inside a rule. The restricted facade avoids becoming a second Plate transform registry.                                    | Normalizer repairs must be emitted inside the outer normalization transaction. No hidden update, no replay, no whole-value replace, no dropped metadata.                    | Runtime proof that normalizer writes are in the outer batch; negative type tests for forbidden `tx` members; history/collab metadata row stays explicit. | keep with scoped facade |
+| Internal typed-lane normalizer ids            | Plate and plugin authors do not have to invent names like `root` or `layout`. Latest extension still wins by extension name.                                                                                                                     | Deterministic registration order and cleanup matter for replay. Internal ids must not reorder rules or leave stale normalizers after unextend.                              | Collision test for two `normalizers.node` extensions, order test, latest-wins test, and cleanup test.                                                    | keep                    |
+| Forced-layout hard cut from `commitListeners` | Plate does not need to mirror the bad example. A product layer can put layout policy in a plugin/extension normalizer and keep React UI/render ownership elsewhere.                                                                              | The plan makes no current slate-yjs support promise. It only requires that layout repair is observable as normal Slate operations if a future adapter watches transactions. | Public-surface grep for no `WeakSet` or commit-listener repair, plus focused forced-layout browser proof.                                                | keep                    |
 
 Affected extension points:
 
@@ -763,15 +763,15 @@ runtime proof that normalizer writes stay in the outer transaction.
 
 ## Ecosystem Strategy Synthesis
 
-| Reference | Observed mechanism | Slate target | Verdict |
-| --- | --- | --- | --- |
-| Legacy Slate | Plugins override `editor.normalizeNode(entry)` and call the captured handler as fallback. slate-yjs examples still show this exact pattern. | Keep the normalization fallback mental model, but express it as `defineEditorExtension({ normalizers: { node(...) {} } })`. | steal mental model, reject monkeypatching |
-| Live Slate v2 | Extension `normalizers` already run before fallback with `next(...)`, cleanup, ordered chaining, dirty-path/fixpoint scheduling, and package tests. | Replace the arbitrary map-shaped public slot with a typed `normalizers.node` lifecycle lane. | build on existing substrate |
-| Lexical | `editor.update` is the mutation boundary, `editor.read` is the coherent read boundary, and extensions register behavior without root method override DX. | Normalizer writes should use the active transaction view; do not teach nested `editor.update(...)` or wrapper composition. | steal lifecycle discipline |
-| ProseMirror | Transactions own document, selection, metadata, and DOM selection discipline; view/input owns DOM import/export. | Structural repair belongs in the editor transaction/normalization pipeline, not post-commit observation or React effects. | steal transaction ownership |
-| Tiptap | Product DX comes from lowercase extension factories and declarative extension objects bundling behavior, commands, events, and React UI. | Keep `forcedLayout()` as a lowercase extension factory with `defineEditorExtension({ normalizers: { node(...) {} } })`. | steal packaging DX |
-| Plate | `SlateEditor` already proves typed plugin registries, `editor.api`, `editor.tf`, `getApi`, and plugin-key inference are valuable at the product layer. | Raw Slate should reserve `extensions` and stay smaller: lifecycle plus extension namespaces. Do not copy Plate's full plugin registry into core. | borrow pressure, keep boundary |
-| slate-yjs | Current adapters patch `editor.apply`, `editor.onChange`, `Editor.withoutNormalizing`, and `editor.normalizeNode`; remote events replay ops into Slate and then normalize. | Normalizer-generated repairs must remain ordinary transaction operations with metadata so future adapters can observe/replay them without wrapper stacks. | migration pressure, no closure claim |
+| Reference     | Observed mechanism                                                                                                                                                         | Slate target                                                                                                                                              | Verdict                                   |
+| ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------- |
+| Legacy Slate  | Plugins override `editor.normalizeNode(entry)` and call the captured handler as fallback. slate-yjs examples still show this exact pattern.                                | Keep the normalization fallback mental model, but express it as `defineEditorExtension({ normalizers: { node(...) {} } })`.                               | steal mental model, reject monkeypatching |
+| Live Slate v2 | Extension `normalizers` already run before fallback with `next(...)`, cleanup, ordered chaining, dirty-path/fixpoint scheduling, and package tests.                        | Replace the arbitrary map-shaped public slot with a typed `normalizers.node` lifecycle lane.                                                              | build on existing substrate               |
+| Lexical       | `editor.update` is the mutation boundary, `editor.read` is the coherent read boundary, and extensions register behavior without root method override DX.                   | Normalizer writes should use the active transaction view; do not teach nested `editor.update(...)` or wrapper composition.                                | steal lifecycle discipline                |
+| ProseMirror   | Transactions own document, selection, metadata, and DOM selection discipline; view/input owns DOM import/export.                                                           | Structural repair belongs in the editor transaction/normalization pipeline, not post-commit observation or React effects.                                 | steal transaction ownership               |
+| Tiptap        | Product DX comes from lowercase extension factories and declarative extension objects bundling behavior, commands, events, and React UI.                                   | Keep `forcedLayout()` as a lowercase extension factory with `defineEditorExtension({ normalizers: { node(...) {} } })`.                                   | steal packaging DX                        |
+| Plate         | `SlateEditor` already proves typed plugin registries, `editor.api`, `editor.tf`, `getApi`, and plugin-key inference are valuable at the product layer.                     | Raw Slate should reserve `extensions` and stay smaller: lifecycle plus extension namespaces. Do not copy Plate's full plugin registry into core.          | borrow pressure, keep boundary            |
+| slate-yjs     | Current adapters patch `editor.apply`, `editor.onChange`, `Editor.withoutNormalizing`, and `editor.normalizeNode`; remote events replay ops into Slate and then normalize. | Normalizer-generated repairs must remain ordinary transaction operations with metadata so future adapters can observe/replay them without wrapper stacks. | migration pressure, no closure claim      |
 
 Research/ecosystem live-source refresh pass status: complete.
 
@@ -822,6 +822,7 @@ was this plan's synthesis, not the research layer.
 ## Implementation Phases
 
 1. Core type/API phase, owner Ralph:
+
    - Add `normalizers.node` to `EditorExtension` and registration output.
    - Remove public arbitrary normalizer map keys.
    - Add normalizer-scoped `tx` to `EditorNormalizerContext`.
@@ -830,6 +831,7 @@ was this plan's synthesis, not the research layer.
    - Add type/runtime tests.
 
 2. Example phase, owner Ralph:
+
    - Rewrite `forced-layout.tsx` to
      `normalizers.node({ entry, tx, next })`.
    - Remove `ENFORCING_LAYOUT`, `enforceLayout`, `register`, and
@@ -837,6 +839,7 @@ was this plan's synthesis, not the research layer.
    - Keep visible title/paragraph behavior unchanged.
 
 3. Public-surface phase, owner Ralph:
+
    - Update `public-surface-contract.ts` classification.
    - Add grep/contract coverage for no forced-layout guard or commit-listener
      repair.
@@ -940,18 +943,18 @@ Chosen API:
 
 ```ts
 defineEditorExtension({
-  name: 'forced-layout',
+  name: "forced-layout",
   normalizers: {
     editor({ next, tx }) {
       // root value/layout repair
-      next()
+      next();
     },
     node({ entry, next, tx }) {
       // non-root node repair
-      next()
+      next();
     },
   },
-})
+});
 ```
 
 Rules:
@@ -976,32 +979,32 @@ Execution result:
 
 ## Pass Schedule And Ledger
 
-| Pass | Status | Evidence added | Plan delta | Open issues | Next owner |
-| --- | --- | --- | --- | --- | --- |
-| 1. Current-state read and initial score | complete | Live forced-layout, normalizer type/runtime, tests, browser row. | Chose `normalizers.node` plus `tx` context, then split editor-root repair into `normalizers.editor`. | resolved in passes 2-3 | Codex |
-| 2. Related issue discovery | complete | Local ledgers and test candidate maps for #4641, #4701, #3275, #2039, #3950, #5811. | Classified #4641 as direct implementation-pressure; kept #4701/#3275/#2039 as related/no-claim; left #3950/#5811 already accounted. | no new fixed issue claim | Codex |
-| 3. Issue-ledger pass | complete | Full corpus normalization/API scan across open ledger, clusters, test/benchmark maps, package impact, requirements, coverage matrix, fork dossier, and PR reference. | Added wider exclusions for #3465, #2643, #2405, #2195, #2355, #3430 and cluster-level normalization pressure. | no new fixed issue claim | Codex |
-| 4. Intent/boundary and decision brief | complete | Hardened accepted/rejected boundaries, no-question status, and `tx` pressure test. | Confirmed no user decision is missing; kept `normalizers.node`, `tx`, internal typed-lane ids, and no wrapper path. | none | Codex |
-| 5. Research/ecosystem refresh | complete | Compiled editor-architecture corpus, live Slate v2 normalizer source, Plate plugin type source, slate-yjs wrapper pressure. | Replaced thin synthesis with steal/reject/borrow rows and no-new-research-page verdict. | none | Codex |
-| 6. Pressure passes | complete | Performance, DX, unopinionated-core, migration, regression, verification workspace, research, and simplicity pressure rows. | Renamed target factory to `forcedLayout()`, narrowed `tx` to active update view, selected `normalizers.node` over top-level sugar or arbitrary map ids, and added legacy normalizer benchmark gates. | none | Codex |
-| 7. Maintainer objection ledger | complete | Steelman rows for `normalizers.node`, `tx`, normalizer ids, `forcedLayout()`, and commit-listener repair. | Revised `tx` into a normalizer-scoped transaction facade and made normalizer id format internal. | none | Codex |
-| 8. High-risk deliberate mode | complete | Blast radius, four failure scenarios, expanded proof plan, and rollback answer. | Kept plan only with scoped-`tx` facade, no nested update examples, and explicit no-collab-closure claim. | none | Codex |
-| 9. Ecosystem maintainer pass | complete | Plate/plugin and slate-yjs/collab maintainer answers for `normalizers.node`, scoped `tx`, internal typed-lane ids, and forced-layout hard cut. | Confirmed raw Slate does not copy Plate plugin APIs and does not claim current slate-yjs adapter support. | none | Codex |
-| 10. Revision pass | complete | Re-read accepted objection, high-risk, and ecosystem rows against the public API target. | Kept API direction unchanged; tightened final handoff wording around scoped `tx`, outer-transaction writes, Plate boundary, and no slate-yjs adapter edits. | none | Codex |
-| 11. Issue sync accounting | complete | Re-read live open ledger, v2 sync ledger, open dossiers, test/benchmark maps, issue coverage matrix, fork dossier, and PR reference for normalization candidates. | Added a normalizer extension DX planning-sync section to the issue coverage matrix; kept PR reference unchanged. | no new fixed or improved issue claim | Codex |
-| 12. Closure score and final gates | complete | Verified every pass row, score cap, handoff, issue accounting, and completion gate. | Marked the Slate Ralplan planning lane done and Ralph-ready; implementation remains a separate `ralph` execution. | none | user / Ralph |
+| Pass                                    | Status   | Evidence added                                                                                                                                                       | Plan delta                                                                                                                                                                                           | Open issues                          | Next owner   |
+| --------------------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------ | ------------ |
+| 1. Current-state read and initial score | complete | Live forced-layout, normalizer type/runtime, tests, browser row.                                                                                                     | Chose `normalizers.node` plus `tx` context, then split editor-root repair into `normalizers.editor`.                                                                                                 | resolved in passes 2-3               | Codex        |
+| 2. Related issue discovery              | complete | Local ledgers and test candidate maps for #4641, #4701, #3275, #2039, #3950, #5811.                                                                                  | Classified #4641 as direct implementation-pressure; kept #4701/#3275/#2039 as related/no-claim; left #3950/#5811 already accounted.                                                                  | no new fixed issue claim             | Codex        |
+| 3. Issue-ledger pass                    | complete | Full corpus normalization/API scan across open ledger, clusters, test/benchmark maps, package impact, requirements, coverage matrix, fork dossier, and PR reference. | Added wider exclusions for #3465, #2643, #2405, #2195, #2355, #3430 and cluster-level normalization pressure.                                                                                        | no new fixed issue claim             | Codex        |
+| 4. Intent/boundary and decision brief   | complete | Hardened accepted/rejected boundaries, no-question status, and `tx` pressure test.                                                                                   | Confirmed no user decision is missing; kept `normalizers.node`, `tx`, internal typed-lane ids, and no wrapper path.                                                                                  | none                                 | Codex        |
+| 5. Research/ecosystem refresh           | complete | Compiled editor-architecture corpus, live Slate v2 normalizer source, Plate plugin type source, slate-yjs wrapper pressure.                                          | Replaced thin synthesis with steal/reject/borrow rows and no-new-research-page verdict.                                                                                                              | none                                 | Codex        |
+| 6. Pressure passes                      | complete | Performance, DX, unopinionated-core, migration, regression, verification workspace, research, and simplicity pressure rows.                                          | Renamed target factory to `forcedLayout()`, narrowed `tx` to active update view, selected `normalizers.node` over top-level sugar or arbitrary map ids, and added legacy normalizer benchmark gates. | none                                 | Codex        |
+| 7. Maintainer objection ledger          | complete | Steelman rows for `normalizers.node`, `tx`, normalizer ids, `forcedLayout()`, and commit-listener repair.                                                            | Revised `tx` into a normalizer-scoped transaction facade and made normalizer id format internal.                                                                                                     | none                                 | Codex        |
+| 8. High-risk deliberate mode            | complete | Blast radius, four failure scenarios, expanded proof plan, and rollback answer.                                                                                      | Kept plan only with scoped-`tx` facade, no nested update examples, and explicit no-collab-closure claim.                                                                                             | none                                 | Codex        |
+| 9. Ecosystem maintainer pass            | complete | Plate/plugin and slate-yjs/collab maintainer answers for `normalizers.node`, scoped `tx`, internal typed-lane ids, and forced-layout hard cut.                       | Confirmed raw Slate does not copy Plate plugin APIs and does not claim current slate-yjs adapter support.                                                                                            | none                                 | Codex        |
+| 10. Revision pass                       | complete | Re-read accepted objection, high-risk, and ecosystem rows against the public API target.                                                                             | Kept API direction unchanged; tightened final handoff wording around scoped `tx`, outer-transaction writes, Plate boundary, and no slate-yjs adapter edits.                                          | none                                 | Codex        |
+| 11. Issue sync accounting               | complete | Re-read live open ledger, v2 sync ledger, open dossiers, test/benchmark maps, issue coverage matrix, fork dossier, and PR reference for normalization candidates.    | Added a normalizer extension DX planning-sync section to the issue coverage matrix; kept PR reference unchanged.                                                                                     | no new fixed or improved issue claim | Codex        |
+| 12. Closure score and final gates       | complete | Verified every pass row, score cap, handoff, issue accounting, and completion gate.                                                                                  | Marked the Slate Ralplan planning lane done and Ralph-ready; implementation remains a separate `ralph` execution.                                                                                    | none                                 | user / Ralph |
 
 ## Current Score
 
-| Dimension | Score | Evidence |
-| --- | ---: | --- |
-| React 19.2 runtime performance | 0.89 | Moving repair from commit listener to dirty-path normalization avoids after-every-commit app repair; the pressure pass added an active-transaction proof guard plus legacy normalizer benchmark gates against `../slate`. |
-| Slate-close unopinionated DX | 0.93 | Revision pass found `normalizers.node` plus scoped `tx` better than top-level `normalizeNode` sugar because it keeps Slate normalization semantics while matching `transforms` and `queries`; wrapper composition, schema DSL, and dual `with*` APIs stay cut. |
-| Plate and slate-yjs migration backbone | 0.88 | Ecosystem pass now names the Plate mapping route and the collab contract: normalizer writes must be regular outer-transaction operations with metadata, but no adapter closure is claimed. |
-| Regression-proof testing strategy | 0.88 | Required type/runtime/browser rows are named and ordered, high-risk pre-mortem failure modes are mapped to proof lanes, issue sync now records conservative claim policy, and implementation proof is still Ralph-owned. |
-| Research evidence completeness | 0.88 | Compiled Lexical/ProseMirror/Tiptap decisions are accepted; live Slate v2, Plate, and slate-yjs source now back both the strategy synthesis and ecosystem answers. |
-| shadcn-style composability | 0.89 | Extension factory is now `forcedLayout()`, lowercase and option-ready without extra aliases. |
-| Total | 0.92 | Planning lane closed; implementation remains Ralph-owned. |
+| Dimension                              | Score | Evidence                                                                                                                                                                                                                                                       |
+| -------------------------------------- | ----: | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| React 19.2 runtime performance         |  0.89 | Moving repair from commit listener to dirty-path normalization avoids after-every-commit app repair; the pressure pass added an active-transaction proof guard plus legacy normalizer benchmark gates against `../slate`.                                      |
+| Slate-close unopinionated DX           |  0.93 | Revision pass found `normalizers.node` plus scoped `tx` better than top-level `normalizeNode` sugar because it keeps Slate normalization semantics while matching `transforms` and `queries`; wrapper composition, schema DSL, and dual `with*` APIs stay cut. |
+| Plate and slate-yjs migration backbone |  0.88 | Ecosystem pass now names the Plate mapping route and the collab contract: normalizer writes must be regular outer-transaction operations with metadata, but no adapter closure is claimed.                                                                     |
+| Regression-proof testing strategy      |  0.88 | Required type/runtime/browser rows are named and ordered, high-risk pre-mortem failure modes are mapped to proof lanes, issue sync now records conservative claim policy, and implementation proof is still Ralph-owned.                                       |
+| Research evidence completeness         |  0.88 | Compiled Lexical/ProseMirror/Tiptap decisions are accepted; live Slate v2, Plate, and slate-yjs source now back both the strategy synthesis and ecosystem answers.                                                                                             |
+| shadcn-style composability             |  0.89 | Extension factory is now `forcedLayout()`, lowercase and option-ready without extra aliases.                                                                                                                                                                   |
+| Total                                  |  0.92 | Planning lane closed; implementation remains Ralph-owned.                                                                                                                                                                                                      |
 
 Score note: this is plan-confidence, not implementation proof. The plan is
 Ralph-ready; source/runtime/browser proof remains in the Ralph execution gates.
@@ -1116,20 +1119,20 @@ Accounting result:
 
 Formal issue matrix:
 
-| Issue | Cluster | Claim | Why | Proof route | V2 sync ledger | PR line |
-| --- | --- | --- | --- | --- | --- | --- |
-| #4641 | normalizeNode property updates | Related | Direct normalizer implementation pressure, but no exact property-copy/update repro is fixed by planning. | Ralph package test in `normalization-contract.ts`. | unchanged `cluster-synced` | related planning sync only |
-| #4701 | custom empty text-node factory | Related / no claim | Scoped normalizer `tx` improves authoring, but it does not add a generic empty-text factory. | Type/docs/example proof only. | unchanged `cluster-synced` | related planning sync only |
-| #3275 | path-only normalizeNode | Rejected alternative | The plan keeps `entry` for Slate familiarity and current v2 substrate; it does not adopt path-only normalization. | Decision brief and type tests. | unchanged `cluster-synced` | related planning sync only |
-| #2039 | normalizer infinite-loop diagnostics | Not claimed | The plan avoids bad example repair loops but does not add named rule diagnostics. | Existing fixpoint proof only; future diagnostics need separate scope. | unchanged `not-claimed` | related planning sync only |
-| #3950 | transformed-node rerun | Existing `Fixes` preserved | Prior structural normalization proof already owns this claim. | Existing `normalization-contract.ts` proof. | unchanged `fixes-claimed` | existing `Fixes #3950` |
-| #5811 | normalization fixpoint/loop guard | Existing `Improves` preserved | Prior structural normalization proof already owns deterministic fixpoint diagnostics. | Existing `normalization-contract.ts` proof. | unchanged `cluster-synced` in manual ledger; coverage matrix keeps `Improves` | existing `Improves #5811` |
-| #3465 | initial-value normalization | Not claimed | Forced-layout example policy does not add full-document/default-root initialization policy. | Existing coverage matrix row. | unchanged `not-claimed` | related matrix only |
-| #2643 | schema veto | Related / not claimed | Normalizer repair is not preflight validation. | Existing coverage matrix row. | unchanged `cluster-synced` | related matrix only |
-| #2405 | command-scoped schema rules | Related | Dirty-path pressure is represented, but this plan does not add command-scoped rule evaluation. | Existing coverage matrix row. | unchanged `cluster-synced` | related matrix only |
-| #2195 | text-node dirty tracking | Related | The plan avoids after-commit repair but does not benchmark or alter dirty tracking. | Existing coverage matrix row. | unchanged `cluster-synced` | related matrix only |
-| #2355 | selection normalization | Related / not claimed | Node normalization DX does not add a selection-normalization hook. | Existing coverage matrix row. | unchanged `cluster-synced` | related matrix only |
-| #3430 | inline-heavy normalization freeze | Not claimed | No inline-heavy performance/browser proof is added. | Existing coverage matrix row. | unchanged existing live row | related matrix only |
+| Issue | Cluster                              | Claim                         | Why                                                                                                               | Proof route                                                           | V2 sync ledger                                                                | PR line                    |
+| ----- | ------------------------------------ | ----------------------------- | ----------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- | ----------------------------------------------------------------------------- | -------------------------- |
+| #4641 | normalizeNode property updates       | Related                       | Direct normalizer implementation pressure, but no exact property-copy/update repro is fixed by planning.          | Ralph package test in `normalization-contract.ts`.                    | unchanged `cluster-synced`                                                    | related planning sync only |
+| #4701 | custom empty text-node factory       | Related / no claim            | Scoped normalizer `tx` improves authoring, but it does not add a generic empty-text factory.                      | Type/docs/example proof only.                                         | unchanged `cluster-synced`                                                    | related planning sync only |
+| #3275 | path-only normalizeNode              | Rejected alternative          | The plan keeps `entry` for Slate familiarity and current v2 substrate; it does not adopt path-only normalization. | Decision brief and type tests.                                        | unchanged `cluster-synced`                                                    | related planning sync only |
+| #2039 | normalizer infinite-loop diagnostics | Not claimed                   | The plan avoids bad example repair loops but does not add named rule diagnostics.                                 | Existing fixpoint proof only; future diagnostics need separate scope. | unchanged `not-claimed`                                                       | related planning sync only |
+| #3950 | transformed-node rerun               | Existing `Fixes` preserved    | Prior structural normalization proof already owns this claim.                                                     | Existing `normalization-contract.ts` proof.                           | unchanged `fixes-claimed`                                                     | existing `Fixes #3950`     |
+| #5811 | normalization fixpoint/loop guard    | Existing `Improves` preserved | Prior structural normalization proof already owns deterministic fixpoint diagnostics.                             | Existing `normalization-contract.ts` proof.                           | unchanged `cluster-synced` in manual ledger; coverage matrix keeps `Improves` | existing `Improves #5811`  |
+| #3465 | initial-value normalization          | Not claimed                   | Forced-layout example policy does not add full-document/default-root initialization policy.                       | Existing coverage matrix row.                                         | unchanged `not-claimed`                                                       | related matrix only        |
+| #2643 | schema veto                          | Related / not claimed         | Normalizer repair is not preflight validation.                                                                    | Existing coverage matrix row.                                         | unchanged `cluster-synced`                                                    | related matrix only        |
+| #2405 | command-scoped schema rules          | Related                       | Dirty-path pressure is represented, but this plan does not add command-scoped rule evaluation.                    | Existing coverage matrix row.                                         | unchanged `cluster-synced`                                                    | related matrix only        |
+| #2195 | text-node dirty tracking             | Related                       | The plan avoids after-commit repair but does not benchmark or alter dirty tracking.                               | Existing coverage matrix row.                                         | unchanged `cluster-synced`                                                    | related matrix only        |
+| #2355 | selection normalization              | Related / not claimed         | Node normalization DX does not add a selection-normalization hook.                                                | Existing coverage matrix row.                                         | unchanged `cluster-synced`                                                    | related matrix only        |
+| #3430 | inline-heavy normalization freeze    | Not claimed                   | No inline-heavy performance/browser proof is added.                                                               | Existing coverage matrix row.                                         | unchanged existing live row                                                   | related matrix only        |
 
 ClawSweeper verdict: applied, ledger-first. No broad live GitHub search was
 needed. The active plan has precise related/no-claim accounting and the PR
@@ -1141,15 +1144,15 @@ Closure final-gates status: complete.
 
 Gate results:
 
-| Gate | Result | Evidence |
-| --- | --- | --- |
-| Every scheduled pass complete | pass | Passes 1-12 are complete in the pass schedule. |
-| No runnable Slate Ralplan pass remains | pass | `next_pass: none`; remaining implementation is Ralph-owned. |
-| Current pass is closure/final-gates | pass | Completion state records `current_pass: closure-final-gates`. |
-| Final handoff complete | pass | The final handoff below lists public API, runtime, migration, issue accounting, rejected alternatives, and implementation gates. |
-| Issue accounting conservative | pass | No new fixed or improved issue claim; planning sync added to `issue-coverage-matrix.md`. |
-| Sibling source untouched by this skill | pass | Slate Ralplan artifacts only; implementation gates point to `../slate-v2` for Ralph. |
-| Completion state can close | pass | Earlier pass rows were complete before this activation; closure is the only pass completed in this activation. |
+| Gate                                   | Result | Evidence                                                                                                                         |
+| -------------------------------------- | ------ | -------------------------------------------------------------------------------------------------------------------------------- |
+| Every scheduled pass complete          | pass   | Passes 1-12 are complete in the pass schedule.                                                                                   |
+| No runnable Slate Ralplan pass remains | pass   | `next_pass: none`; remaining implementation is Ralph-owned.                                                                      |
+| Current pass is closure/final-gates    | pass   | Completion state records `current_pass: closure-final-gates`.                                                                    |
+| Final handoff complete                 | pass   | The final handoff below lists public API, runtime, migration, issue accounting, rejected alternatives, and implementation gates. |
+| Issue accounting conservative          | pass   | No new fixed or improved issue claim; planning sync added to `issue-coverage-matrix.md`.                                         |
+| Sibling source untouched by this skill | pass   | Slate Ralplan artifacts only; implementation gates point to `.tmp/slate-v2` for Ralph.                                           |
+| Completion state can close             | pass   | Earlier pass rows were complete before this activation; closure is the only pass completed in this activation.                   |
 
 Final handoff status: complete.
 

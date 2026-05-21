@@ -21,7 +21,7 @@ Make the doc stack stop fighting itself:
 
 ## Plan
 
-1. Audit plate-2 and `../slate-v2` for duplicated roadmap and status language.
+1. Audit plate-2 and `.tmp/slate-v2` for duplicated roadmap and status language.
 2. Define the exact ownership split for phases, package sequencing, migration,
    and compatibility docs.
 3. Edit docs to remove duplicated roadmap claims and point back to the owning
@@ -38,9 +38,9 @@ Make the doc stack stop fighting itself:
   order in enough detail to drift from the package roadmap.
 - `phase7-migration-story.md` and `phase7-compatibility-envelope.md` are fine as
   supporting docs, but they should not read like primary roadmap owners.
-- `../slate-v2/Readme.md` still contains sequence language like "the next
+- `.tmp/slate-v2/Readme.md` still contains sequence language like "the next
   v2-native inline-family slice after mentions", which will rot.
-- public `../slate-v2` docs are allowed to describe the current proved surface,
+- public `.tmp/slate-v2` docs are allowed to describe the current proved surface,
   but they should not narrate future queue order.
 
 ## Changes Made
@@ -57,9 +57,9 @@ Make the doc stack stop fighting itself:
   concrete package queue
 - removed ordered inline-family queue language from
   `docs/slate-v2/phase7-migration-story.md`
-- removed stale "first/next slice" wording from `../slate-v2/Readme.md`
-- marked `../slate-v2/docs/general/replacement-candidate.md` and
-  `../slate-v2/site/examples/Readme.md` as current-surface docs, not roadmap
+- removed stale "first/next slice" wording from `.tmp/slate-v2/Readme.md`
+- marked `.tmp/slate-v2/docs/general/replacement-candidate.md` and
+  `.tmp/slate-v2/site/examples/Readme.md` as current-surface docs, not roadmap
   owners
 - patched the stale endgame phase ladder in
   `docs/slate-v2/cohesive-program-plan.md`:
@@ -83,7 +83,7 @@ Make the doc stack stop fighting itself:
 
 ## Remaining Follow-Up
 
-- `phase7-compatibility-envelope.md` and `../slate-v2/docs/general/replacement-candidate.md`
+- `phase7-compatibility-envelope.md` and `.tmp/slate-v2/docs/general/replacement-candidate.md`
   both list the current envelope. That duplication is acceptable because one is
   internal and one is public, but they still need sync discipline.
 - anchor-surface bullets are repeated across `Readme.md`, package READMEs, and
@@ -95,7 +95,7 @@ Make the doc stack stop fighting itself:
 ## Progress
 
 - Loaded planning/research skills.
-- Audited top-level plate-2 docs and key `../slate-v2` public docs for roadmap
+- Audited top-level plate-2 docs and key `.tmp/slate-v2` public docs for roadmap
   ownership drift.
 - Edited the doc stack so phases live in `cohesive-program-plan.md` and package
   queue ownership lives in `package-end-state-roadmap.md`.

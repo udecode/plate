@@ -2,11 +2,11 @@
 
 ## Goal
 
-Sweep `../slate-v2/packages/slate/src/editor/**` for methods with the same failure class as `insertBreak`: manual structural rewrites that bypass the primitive seam that already owns selection, nested containers, merge/split semantics, transactions, commits, or command middleware.
+Sweep `.tmp/slate-v2/packages/slate/src/editor/**` for methods with the same failure class as `insertBreak`: manual structural rewrites that bypass the primitive seam that already owns selection, nested containers, merge/split semantics, transactions, commits, or command middleware.
 
 ## Constraints
 
-- Source truth is current `../slate-v2`, compared against legacy `../slate`.
+- Source truth is current `.tmp/slate-v2`, compared against legacy `../slate`.
 - Prefer fixes that route through editor primitives and existing transform seams.
 - Do not revive `Transforms.*` as public API.
 - Do not create a second transaction, commit, or history model.

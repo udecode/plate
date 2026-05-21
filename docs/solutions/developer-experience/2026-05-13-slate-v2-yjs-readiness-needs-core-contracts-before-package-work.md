@@ -60,52 +60,59 @@ from commit listeners:
 
 ```ts
 const extension = defineEditorExtension({
-  name: 'fake-collab-adapter',
+  name: "fake-collab-adapter",
   register(context) {
     const state = context.runtimeState({
       connected: true,
       exports: [],
       paused: false,
-    })
+    });
 
     return {
       cleanup() {
-        state.set((current) => ({ ...current, connected: false, paused: true }))
+        state.set((current) => ({
+          ...current,
+          connected: false,
+          paused: true,
+        }));
       },
       commitListeners: [
         (commit) => {
           if (
-            commit.tags.includes('skip-collab') ||
-            commit.tags.includes('collaboration') ||
-            commit.metadata.collab?.origin === 'remote'
+            commit.tags.includes("skip-collab") ||
+            commit.tags.includes("collaboration") ||
+            commit.metadata.collab?.origin === "remote"
           ) {
-            return
+            return;
           }
 
           state.set((current) => ({
             ...current,
             exports: [...current.exports, commit.operations],
-          }))
+          }));
         },
       ],
-    }
+    };
   },
-})
+});
 ```
 
 Remote imports should stay transaction-owned and metadata-rich:
 
 ```ts
-editor.update((tx) => {
-  tx.operations.replay(remoteOperations)
-}, {
-  metadata: {
-    collab: { origin: 'remote', saveToHistory: false },
-    history: { mode: 'skip' },
-    selection: { dom: 'preserve', focus: false, scroll: false },
+editor.update(
+  (tx) => {
+    tx.operations.replay(remoteOperations);
   },
-  tag: ['collaboration', 'remote-import'],
-})
+  {
+    metadata: {
+      collab: { origin: "remote", saveToHistory: false },
+      history: { mode: "skip" },
+      selection: { dom: "preserve", focus: false, scroll: false },
+    },
+    tag: ["collaboration", "remote-import"],
+  },
+);
 ```
 
 React selection side effects should read the last commit policy instead of
@@ -113,23 +120,23 @@ guessing from call sites:
 
 ```ts
 export const shouldSkipSelectionScroll = (editor: ReactEditor) => {
-  const commit = editor.read((state) => state.value.lastCommit())
+  const commit = editor.read((state) => state.value.lastCommit());
 
   return Boolean(
-    commit?.tags.includes('skip-scroll-into-view') ||
-      commit?.metadata.selection?.scroll === false
-  )
-}
+    commit?.tags.includes("skip-scroll-into-view") ||
+      commit?.metadata.selection?.scroll === false,
+  );
+};
 ```
 
 The final lane added these proof owners:
 
-- `../slate-v2/packages/slate/test/collab-adapter-extension-contract.ts`
-- `../slate-v2/packages/slate/test/collab-selection-stress-contract.ts`
-- `../slate-v2/packages/slate/test/collab-bookmark-position-contract.ts`
-- `../slate-v2/packages/slate/test/collab-canonical-reconcile-contract.ts`
-- `../slate-v2/packages/slate-react/test/selection-side-effect-policy-contract.ts`
-- `../slate-v2/scripts/benchmarks/core/current/collab-readiness.mjs`
+- `.tmp/slate-v2/packages/slate/test/collab-adapter-extension-contract.ts`
+- `.tmp/slate-v2/packages/slate/test/collab-selection-stress-contract.ts`
+- `.tmp/slate-v2/packages/slate/test/collab-bookmark-position-contract.ts`
+- `.tmp/slate-v2/packages/slate/test/collab-canonical-reconcile-contract.ts`
+- `.tmp/slate-v2/packages/slate-react/test/selection-side-effect-policy-contract.ts`
+- `.tmp/slate-v2/scripts/benchmarks/core/current/collab-readiness.mjs`
 
 Issue accounting moved #5771 only to `Improves`, not `Fixes`.
 

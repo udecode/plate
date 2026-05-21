@@ -1,7 +1,7 @@
 ---
 status: done
 owner: slate-v2-dom-present-large-doc-phase-6
-source_repo: ../slate-v2
+source_repo: .tmp/slate-v2
 created: 2026-05-03
 ---
 
@@ -41,12 +41,12 @@ migration, no behavior change, no virtualization.
 Current source facts from the live sibling checkout:
 
 - `LargeDocumentMode` is `auto | dom-present | off | shell`.
-  Source: `../slate-v2/packages/slate-react/src/large-document/create-island-plan.ts`.
+  Source: `.tmp/slate-v2/packages/slate-react/src/large-document/create-island-plan.ts`.
 - Shell islands are planned separately from DOM-present root groups.
   `createIslandPlan` marks active islands and leaves far islands with no mounted
   runtime ids.
 - DOM-present grouping currently lives inside
-  `../slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`.
+  `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`.
   Root groups use `ROOT_GROUP_SIZE = 50`, `ROOT_GROUP_THRESHOLD = 1000`,
   background initial delay `250ms`, interval `16ms`, and batch size `8`.
 - DOM-present pending root groups render coalesced hidden placeholders:
@@ -93,11 +93,11 @@ Status: complete for this activation.
 Evidence:
 
 - Read live large-doc owners:
-  - `../slate-v2/packages/slate-react/src/large-document/create-island-plan.ts`
-  - `../slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
-  - `../slate-v2/packages/slate-react/src/large-document/large-document-commands.ts`
-  - `../slate-v2/packages/slate-dom/src/plugin/dom-coverage.ts`
-  - `../slate-v2/scripts/benchmarks/browser/react/huge-document-legacy-compare.mjs`
+  - `.tmp/slate-v2/packages/slate-react/src/large-document/create-island-plan.ts`
+  - `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
+  - `.tmp/slate-v2/packages/slate-react/src/large-document/large-document-commands.ts`
+  - `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-coverage.ts`
+  - `.tmp/slate-v2/scripts/benchmarks/browser/react/huge-document-legacy-compare.mjs`
 - Read prior hidden-subtree plan and solution note.
 - Confirmed Phase 6 entry gaps: stale full-doc replace, background max latency,
   large-doc selection/copy, browser find classification, IME/mobile target
@@ -278,28 +278,28 @@ Required before even considering a product mode:
 
 ## Execution Ledger
 
-| Time | Pass | Status | Evidence | Next |
-| --- | --- | --- | --- | --- |
-| 2026-05-03 | phase-6-current-state-map | complete | Live large-doc and DOM coverage owners read; prior Phase 6 gates carried forward; solution note applied | Phase 6a read-only registration |
-| 2026-05-03 | phase-6a-read-only-registration | complete | Added root-owned DOM coverage support and DOM-present pending group registration; package tests, `bun check`, and one-iteration huge-doc benchmark smoke passed | Phase 6b shared bridge |
-| 2026-05-03 | phase-6b-shared-bridge | complete | Added mode-specific large-document policy so shell-backed selection is shell-only; DOM-present staged selection export consults DOM coverage before raw DOM lookup; full-document model-backed guard now uses model root count as well as DOM child count; package tests, browser row, and `bun check` passed | Phase 6c staged mounting convergence |
-| 2026-05-03 | phase-6c-staged-mounting-convergence | complete | Added root document epoch and stronger stale-DOM replacement proof; narrowed selection materialization to target root groups; `bun check`, focused large-doc/DOM coverage tests, Chromium DOM-present native typing row, and 5000-block benchmark smoke passed | Lane complete; virtualization research deferred |
-| 2026-05-03 | ce-compound | complete | Captured reusable lesson in `docs/solutions/performance-issues/2026-05-03-slate-dom-present-staging-needs-document-epoch-and-range-materialization.md` | Completion-check |
+| Time       | Pass                                 | Status   | Evidence                                                                                                                                                                                                                                                                                                      | Next                                            |
+| ---------- | ------------------------------------ | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
+| 2026-05-03 | phase-6-current-state-map            | complete | Live large-doc and DOM coverage owners read; prior Phase 6 gates carried forward; solution note applied                                                                                                                                                                                                       | Phase 6a read-only registration                 |
+| 2026-05-03 | phase-6a-read-only-registration      | complete | Added root-owned DOM coverage support and DOM-present pending group registration; package tests, `bun check`, and one-iteration huge-doc benchmark smoke passed                                                                                                                                               | Phase 6b shared bridge                          |
+| 2026-05-03 | phase-6b-shared-bridge               | complete | Added mode-specific large-document policy so shell-backed selection is shell-only; DOM-present staged selection export consults DOM coverage before raw DOM lookup; full-document model-backed guard now uses model root count as well as DOM child count; package tests, browser row, and `bun check` passed | Phase 6c staged mounting convergence            |
+| 2026-05-03 | phase-6c-staged-mounting-convergence | complete | Added root document epoch and stronger stale-DOM replacement proof; narrowed selection materialization to target root groups; `bun check`, focused large-doc/DOM coverage tests, Chromium DOM-present native typing row, and 5000-block benchmark smoke passed                                                | Lane complete; virtualization research deferred |
+| 2026-05-03 | ce-compound                          | complete | Captured reusable lesson in `docs/solutions/performance-issues/2026-05-03-slate-dom-present-staging-needs-document-epoch-and-range-materialization.md`                                                                                                                                                        | Completion-check                                |
 
 ## Changed Files
 
-- `../slate-v2/packages/slate-dom/src/plugin/dom-coverage.ts`
-- `../slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
-- `../slate-v2/packages/slate-react/src/editable/keyboard-input-strategy.ts`
-- `../slate-v2/packages/slate-react/src/editable/root-selector-sources.ts`
-- `../slate-v2/packages/slate-react/src/editable/runtime-event-engine.ts`
-- `../slate-v2/packages/slate-react/src/editable/runtime-keyboard-events.ts`
-- `../slate-v2/packages/slate-react/src/editable/runtime-root-engine.ts`
-- `../slate-v2/packages/slate-react/src/editable/selection-controller.ts`
-- `../slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts`
-- `../slate-v2/packages/slate-react/test/large-doc-and-scroll.tsx`
-- `../slate-v2/packages/slate-react/test/surface-contract.tsx`
+- `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-coverage.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/editable/keyboard-input-strategy.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/root-selector-sources.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-event-engine.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-keyboard-events.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-root-engine.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/selection-controller.ts`
+- `.tmp/slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts`
+- `.tmp/slate-v2/packages/slate-react/test/large-doc-and-scroll.tsx`
+- `.tmp/slate-v2/packages/slate-react/test/surface-contract.tsx`
 - `docs/plans/2026-05-03-slate-v2-dom-present-large-doc-phase-6-plan.md`
 - `docs/solutions/performance-issues/2026-05-03-slate-dom-present-staging-needs-document-epoch-and-range-materialization.md`
 - `.tmp/<session-id>/completion-check.md`

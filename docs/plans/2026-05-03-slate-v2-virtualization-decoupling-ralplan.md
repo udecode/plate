@@ -1,7 +1,7 @@
 ---
 status: done
 owner: slate-v2-virtualization-decoupling-ralplan
-source_repo: ../slate-v2
+source_repo: .tmp/slate-v2
 created: 2026-05-03
 score: 0.94
 next_owner: ralph-execution
@@ -87,58 +87,58 @@ Unresolved user-decision points:
 
 ## Live Source Grounding
 
-Current facts from `../slate-v2`:
+Current facts from `.tmp/slate-v2`:
 
 - `@tanstack/react-virtual` is already a `slate-react` dependency.
-  Source: `../slate-v2/packages/slate-react/package.json:18-23`.
+  Source: `.tmp/slate-v2/packages/slate-react/package.json:18-23`.
 - `RenderingStrategyOptions` is owned by `create-segment-plan.ts`, and the
   virtualized object still exposes `previewChars`.
   Source:
-  `../slate-v2/packages/slate-react/src/rendering-strategy/create-segment-plan.ts:3-25`.
+  `.tmp/slate-v2/packages/slate-react/src/rendering-strategy/create-segment-plan.ts:3-25`.
 - The TanStack hook is real and uses `useVirtualizer`, runtime-id item keys,
   retained selected/promoted indexes, coalesced missing ranges, `scrollToIndex`,
   and `measureElement`.
   Source:
-  `../slate-v2/packages/slate-react/src/rendering-strategy/use-virtualized-root-plan.ts:1-6`,
+  `.tmp/slate-v2/packages/slate-react/src/rendering-strategy/use-virtualized-root-plan.ts:1-6`,
   `:89-179`, and `:181-293`.
 - `EditableTextBlocksInner` imports virtualized types/hooks/components directly,
   stores virtualized state, calls the TanStack plan hook, owns virtualized
   materialization, computes virtualized metrics, and renders virtualized rows
   inline.
   Source:
-  `../slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:47-54`,
+  `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:47-54`,
   `:1260-1377`, `:1436-1478`, `:1580-1664`, and `:1714-1761`.
 - The same component still contains a virtualized-flavored shell fallback:
   `RenderingStrategySegmentShell` receives `coverageReason:
-  'viewport-virtualization'`.
+'viewport-virtualization'`.
   Source:
-  `../slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:1762-1794`.
+  `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:1762-1794`.
 - `RenderingStrategySegmentShell` itself accepts
   `'shell-aggressive' | 'viewport-virtualization'`, derives selection policy
   from that reason, and records `state: 'virtualized'`.
   Source:
-  `../slate-v2/packages/slate-react/src/rendering-strategy/segment-shell.tsx:58-111`.
+  `.tmp/slate-v2/packages/slate-react/src/rendering-strategy/segment-shell.tsx:58-111`.
 - `root-selector-sources.ts` is generic by name but imports
   `createSegmentPlan`, owns shell config with `previewChars`, and returns
   `segmentPlan`.
   Source:
-  `../slate-v2/packages/slate-react/src/editable/root-selector-sources.ts:7-14`
+  `.tmp/slate-v2/packages/slate-react/src/editable/root-selector-sources.ts:7-14`
   and `:208-272`.
 - Keyboard strategy classifies virtualized as shell-backed through
   `isShellRenderingStrategy`.
   Source:
-  `../slate-v2/packages/slate-react/src/editable/keyboard-input-strategy.ts:55-60`,
+  `.tmp/slate-v2/packages/slate-react/src/editable/keyboard-input-strategy.ts:55-60`,
   `:152-164`, and `:209-220`.
 - Tests prove the current behavior: virtualized mode registers viewport DOM
   coverage, keeps broad selections model-backed, reports metrics, and has a
   full browser example with bounded DOM.
   Source:
-  `../slate-v2/packages/slate-react/test/rendering-strategy-and-scroll.tsx:171-364`
+  `.tmp/slate-v2/packages/slate-react/test/rendering-strategy-and-scroll.tsx:171-364`
   and
-  `../slate-v2/playwright/integration/examples/rendering-strategy-runtime.test.ts:329-365`.
+  `.tmp/slate-v2/playwright/integration/examples/rendering-strategy-runtime.test.ts:329-365`.
 - The full example is present.
   Source:
-  `../slate-v2/site/examples/ts/rendering-strategy-runtime.tsx:32-37`
+  `.tmp/slate-v2/site/examples/ts/rendering-strategy-runtime.tsx:32-37`
   and `:380-417`.
 
 Research evidence:
@@ -171,13 +171,13 @@ Top drivers:
 
 Viable options:
 
-| Option | Verdict | Reason |
-| --- | --- | --- |
-| Cosmetic file split only | reject | Leaves materialization, metrics, shell fallback, and naming coupled. |
-| Extract virtualized strategy adapter and renderer | choose | Smallest refactor that makes TanStack private and keeps current behavior. |
-| Rewrite all rendering strategies into a new engine | reject | Too much blast radius for a decoupling pass. |
-| Move virtualization into `slate-dom` | reject | `slate-dom` should own DOM coverage, not React/TanStack hooks. |
-| Expose a public virtualizer plugin | reject | Leaks implementation and makes app authors own editor correctness. |
+| Option                                             | Verdict | Reason                                                                    |
+| -------------------------------------------------- | ------- | ------------------------------------------------------------------------- |
+| Cosmetic file split only                           | reject  | Leaves materialization, metrics, shell fallback, and naming coupled.      |
+| Extract virtualized strategy adapter and renderer  | choose  | Smallest refactor that makes TanStack private and keeps current behavior. |
+| Rewrite all rendering strategies into a new engine | reject  | Too much blast radius for a decoupling pass.                              |
+| Move virtualization into `slate-dom`               | reject  | `slate-dom` should own DOM coverage, not React/TanStack hooks.            |
+| Expose a public virtualizer plugin                 | reject  | Leaks implementation and makes app authors own editor correctness.        |
 
 Chosen option:
 
@@ -305,7 +305,7 @@ extension point.
 Keep:
 
 ```ts
-<Editable renderingStrategy={{ type: 'virtualized', estimatedBlockSize: 32 }} />
+<Editable renderingStrategy={{ type: "virtualized", estimatedBlockSize: 32 }} />
 ```
 
 Revise the option ownership:
@@ -314,22 +314,22 @@ Revise the option ownership:
 type RenderingStrategyOptions =
   | RenderingStrategyType
   | ShellRenderingStrategyOptions
-  | VirtualizedRenderingStrategyOptions
+  | VirtualizedRenderingStrategyOptions;
 
 type ShellRenderingStrategyOptions = {
-  type: 'shell'
-  overscan?: number
-  previewChars?: number
-  segmentSize?: number
-  threshold?: number
-}
+  type: "shell";
+  overscan?: number;
+  previewChars?: number;
+  segmentSize?: number;
+  threshold?: number;
+};
 
 type VirtualizedRenderingStrategyOptions = {
-  type: 'virtualized'
-  estimatedBlockSize?: number
-  overscan?: number
-  threshold?: number
-}
+  type: "virtualized";
+  estimatedBlockSize?: number;
+  overscan?: number;
+  threshold?: number;
+};
 ```
 
 Hard cut:
@@ -390,7 +390,7 @@ Current good seed:
 - `EditableTextBlocks` already uses separate wrappers so the TanStack hook is
   only called in the virtualized wrapper.
   Source:
-  `../slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:1845-1860`.
+  `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:1845-1860`.
 
 Target:
 
@@ -442,19 +442,19 @@ No current-version slate-yjs fixture is required for this refactor.
 
 ## Legacy Regression Proof Matrix
 
-| Proof | Required result |
-| --- | --- |
-| Type: virtualized options | `previewChars` rejected for `type: 'virtualized'`. |
-| Unit: shell boundary | `RenderingStrategySegmentShell` cannot register `viewport-virtualization`. |
-| Unit: virtualized boundary | viewport missing ranges still register `viewport-virtualization`. |
-| Unit: strategy normalization | shell, staged, and virtualized configs normalize independently. |
-| Unit: materialization owner | only one active `DOMCoverage` materializer is installed. |
-| Unit: broad selection | virtualized select-all still becomes model-backed where ranges are unmounted. |
-| Unit: metrics | virtualized metrics survive after moving metrics builder out of `EditableTextBlocks`. |
-| Browser: full example | full virtualized example still renders bounded DOM and scrolls to block 1000. |
-| Browser: no shell leak | virtualized full example has no `[data-slate-rendering-strategy-shell]`. |
-| Browser: typing | mounted virtualized row typing still goes through the normal editor path. |
-| Stress: normal path | non-virtualized modes do not mount virtualizer DOM or viewport boundaries. |
+| Proof                        | Required result                                                                       |
+| ---------------------------- | ------------------------------------------------------------------------------------- |
+| Type: virtualized options    | `previewChars` rejected for `type: 'virtualized'`.                                    |
+| Unit: shell boundary         | `RenderingStrategySegmentShell` cannot register `viewport-virtualization`.            |
+| Unit: virtualized boundary   | viewport missing ranges still register `viewport-virtualization`.                     |
+| Unit: strategy normalization | shell, staged, and virtualized configs normalize independently.                       |
+| Unit: materialization owner  | only one active `DOMCoverage` materializer is installed.                              |
+| Unit: broad selection        | virtualized select-all still becomes model-backed where ranges are unmounted.         |
+| Unit: metrics                | virtualized metrics survive after moving metrics builder out of `EditableTextBlocks`. |
+| Browser: full example        | full virtualized example still renders bounded DOM and scrolls to block 1000.         |
+| Browser: no shell leak       | virtualized full example has no `[data-slate-rendering-strategy-shell]`.              |
+| Browser: typing              | mounted virtualized row typing still goes through the normal editor path.             |
+| Stress: normal path          | non-virtualized modes do not mount virtualizer DOM or viewport boundaries.            |
 
 Keep existing proofs green:
 
@@ -477,15 +477,15 @@ it does not claim virtualization is release-grade default behavior.
 
 ## Applicable Implementation-Skill Review Matrix
 
-| Lens | Applicability | Findings | Plan delta |
-| --- | --- | --- | --- |
-| `vercel-react-best-practices` | applied | Relevant rules: `bundle-conditional`, `client-event-listeners`, `rerender-defer-reads`, `rerender-derived-state`, `rerender-use-ref-transient-values`, `rerender-split-combined-hooks`, `js-set-map-lookups`. | Keep TanStack and scroll state out of non-virtualized surfaces; isolate transient scroll/measurement in virtualized module. |
-| `performance-oracle` | applied | Current hook uses maps and coalescing, but `EditableTextBlocks` still computes all strategy metrics inline. | Move metrics to strategy-neutral builder and keep lookup O(1)/range-coalesced. |
-| `performance` | applied | GitHub lesson: cheap repeated units first, virtualization for p95+ tail. | Decoupling must not add default-path component, handler, effect, or subscription cost. |
-| `tanstack-virtual` | applied | Use `count`, `getScrollElement`, `estimateSize`, `overscan`, `getItemKey`, `rangeExtractor`, `measureElement`, `scrollToIndex`; keep these private. | Virtualized adapter owns these. |
-| `react-useeffect` | applied | Effects are valid only for DOMCoverage external sync, ResizeObserver, and virtualizer measurement. | Replace competing materialization effects with one active strategy handler. |
-| `tdd` | applied | Refactor should be protected through public `Editable` behavior and browser example, not private implementation snapshots. | Add behavior tests for shell/virtualized separation before moving code. |
-| `build-web-apps:shadcn` | skipped | No UI styling or shadcn component surface. | none. |
+| Lens                          | Applicability | Findings                                                                                                                                                                                                      | Plan delta                                                                                                                  |
+| ----------------------------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `vercel-react-best-practices` | applied       | Relevant rules: `bundle-conditional`, `client-event-listeners`, `rerender-defer-reads`, `rerender-derived-state`, `rerender-use-ref-transient-values`, `rerender-split-combined-hooks`, `js-set-map-lookups`. | Keep TanStack and scroll state out of non-virtualized surfaces; isolate transient scroll/measurement in virtualized module. |
+| `performance-oracle`          | applied       | Current hook uses maps and coalescing, but `EditableTextBlocks` still computes all strategy metrics inline.                                                                                                   | Move metrics to strategy-neutral builder and keep lookup O(1)/range-coalesced.                                              |
+| `performance`                 | applied       | GitHub lesson: cheap repeated units first, virtualization for p95+ tail.                                                                                                                                      | Decoupling must not add default-path component, handler, effect, or subscription cost.                                      |
+| `tanstack-virtual`            | applied       | Use `count`, `getScrollElement`, `estimateSize`, `overscan`, `getItemKey`, `rangeExtractor`, `measureElement`, `scrollToIndex`; keep these private.                                                           | Virtualized adapter owns these.                                                                                             |
+| `react-useeffect`             | applied       | Effects are valid only for DOMCoverage external sync, ResizeObserver, and virtualizer measurement.                                                                                                            | Replace competing materialization effects with one active strategy handler.                                                 |
+| `tdd`                         | applied       | Refactor should be protected through public `Editable` behavior and browser example, not private implementation snapshots.                                                                                    | Add behavior tests for shell/virtualized separation before moving code.                                                     |
+| `build-web-apps:shadcn`       | skipped       | No UI styling or shadcn component surface.                                                                                                                                                                    | none.                                                                                                                       |
 
 ## Performance Pass
 
@@ -686,7 +686,7 @@ Rollback answer:
 ## Fast Driver Gates
 
 ```txt
-rg -n "@tanstack/react-virtual|useVirtualizer|Virtualized" ../slate-v2/packages/slate-react/src
+rg -n "@tanstack/react-virtual|useVirtualizer|Virtualized" .tmp/slate-v2/packages/slate-react/src
 ```
 
 Expected after refactor:
@@ -700,28 +700,28 @@ Expected after refactor:
 
 Total score: `0.94`.
 
-| Dimension | Score | Evidence |
-| --- | ---: | --- |
-| React 19.2 runtime performance | 0.94 | TanStack is kept in the virtualized adapter; default/staged/shell paths get explicit no-virtualizer guards; transient scroll/measurement state stays out of repeated blocks. |
-| Slate-close unopinionated DX | 0.95 | Public prop stays `renderingStrategy`; public options stay editor-shaped; raw TanStack options are rejected; `previewChars` becomes shell-only. |
-| Plate and slate-yjs migration backbone | 0.91 | Mount state remains local, runtime ids stay internal keys, operations/collab semantics do not change, and Plate reads metrics instead of importing strategy internals. |
-| Regression-proof testing strategy | 0.94 | Existing behavior proof stays; Phase 0 adds red decoupling guards before any file movement. |
-| Research evidence completeness | 0.93 | Live source, refreshed TanStack/GitHub research, package tests, and browser example all agree on current state and target gap. |
-| shadcn-style composability and minimalism | 0.94 | No UI chrome surface; private component split is minimal and avoids public plugin over-abstraction. |
+| Dimension                                 | Score | Evidence                                                                                                                                                                     |
+| ----------------------------------------- | ----: | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| React 19.2 runtime performance            |  0.94 | TanStack is kept in the virtualized adapter; default/staged/shell paths get explicit no-virtualizer guards; transient scroll/measurement state stays out of repeated blocks. |
+| Slate-close unopinionated DX              |  0.95 | Public prop stays `renderingStrategy`; public options stay editor-shaped; raw TanStack options are rejected; `previewChars` becomes shell-only.                              |
+| Plate and slate-yjs migration backbone    |  0.91 | Mount state remains local, runtime ids stay internal keys, operations/collab semantics do not change, and Plate reads metrics instead of importing strategy internals.       |
+| Regression-proof testing strategy         |  0.94 | Existing behavior proof stays; Phase 0 adds red decoupling guards before any file movement.                                                                                  |
+| Research evidence completeness            |  0.93 | Live source, refreshed TanStack/GitHub research, package tests, and browser example all agree on current state and target gap.                                               |
+| shadcn-style composability and minimalism |  0.94 | No UI chrome surface; private component split is minimal and avoids public plugin over-abstraction.                                                                          |
 
 Ready for `done`: all review passes are complete, no dimension is below `0.85`,
 and the remaining work is implementation, not planning.
 
 ## Pass Schedule And State Ledger
 
-| Pass | Status | Evidence added | Plan delta | Next owner |
-| --- | --- | --- | --- | --- |
-| Current-state read and initial score | complete | Live source refs for options, hook, component, shell, root sources, keyboard, tests, example. | New decoupling plan created. | done |
-| Intent/boundary and decision brief | complete | Full Ralph Closure Pass. | No user decision needed; implementation may proceed later. | done |
-| Performance/DX/regression pressure | complete | Performance Pass and Full Ralph Closure Pass. | Phase 0 red guards locked before refactor. | done |
-| Slate maintainer objection ledger | complete | Three accepted objection rows. | Keep extraction, cut virtualized `previewChars`, remove viewport reason from shell. | done |
-| High-risk deliberate closure | complete | Pre-mortem plus rollback answer. | Current working TanStack implementation is the rollback baseline. | done |
-| Closure score | complete | Scorecard raised to `0.94`. | Completion state may be `done`. | ralph-execution |
+| Pass                                 | Status   | Evidence added                                                                                | Plan delta                                                                          | Next owner      |
+| ------------------------------------ | -------- | --------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- | --------------- |
+| Current-state read and initial score | complete | Live source refs for options, hook, component, shell, root sources, keyboard, tests, example. | New decoupling plan created.                                                        | done            |
+| Intent/boundary and decision brief   | complete | Full Ralph Closure Pass.                                                                      | No user decision needed; implementation may proceed later.                          | done            |
+| Performance/DX/regression pressure   | complete | Performance Pass and Full Ralph Closure Pass.                                                 | Phase 0 red guards locked before refactor.                                          | done            |
+| Slate maintainer objection ledger    | complete | Three accepted objection rows.                                                                | Keep extraction, cut virtualized `previewChars`, remove viewport reason from shell. | done            |
+| High-risk deliberate closure         | complete | Pre-mortem plus rollback answer.                                                              | Current working TanStack implementation is the rollback baseline.                   | done            |
+| Closure score                        | complete | Scorecard raised to `0.94`.                                                                   | Completion state may be `done`.                                                     | ralph-execution |
 
 ## Plan Deltas From This Review
 

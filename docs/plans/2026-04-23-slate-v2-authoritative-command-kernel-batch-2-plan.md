@@ -105,22 +105,22 @@ Batch 2 extends and tightens them.
 
 In scope:
 
-- `../slate-v2/packages/slate-react/src/editable/**`
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
-- `../slate-v2/packages/slate-react/src/hooks/android-input-manager/**`
-- `../slate-v2/packages/slate-browser/src/**`
-- `../slate-v2/playwright/integration/examples/**`
-- `../slate-v2/site/examples/ts/**` only for proof examples and input-rule
+- `.tmp/slate-v2/packages/slate-react/src/editable/**`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/hooks/android-input-manager/**`
+- `.tmp/slate-v2/packages/slate-browser/src/**`
+- `.tmp/slate-v2/playwright/integration/examples/**`
+- `.tmp/slate-v2/site/examples/ts/**` only for proof examples and input-rule
   migration
-- `../slate-v2/packages/slate/**` only if kernel result or command metadata
+- `.tmp/slate-v2/packages/slate/**` only if kernel result or command metadata
   needs core support
-- `../slate-v2/packages/slate-dom/**` only if DOM selection or clipboard bridge
+- `.tmp/slate-v2/packages/slate-dom/**` only if DOM selection or clipboard bridge
   ownership is proven
 
 Out of scope unless a focused failing proof proves ownership:
 
-- `../slate-v2/packages/slate-history/**`
-- `../slate-v2/packages/slate-hyperscript/**`
+- `.tmp/slate-v2/packages/slate-history/**`
+- `.tmp/slate-v2/packages/slate-hyperscript/**`
 - broad public API hard-cut cleanup unrelated to editing kernel proof
 - new performance work unless an editing fix threatens the 5000-block guardrail
 
@@ -134,15 +134,15 @@ Target result:
 
 ```ts
 type EditableKernelResult = {
-  command: EditableCommand | null
-  handled: boolean
-  intent: InputIntent | null
-  nativeAllowed: boolean
-  ownership: EditableOwnership
-  selectionPolicy: EditableSelectionPolicy
-  repairPolicy: EditableRepairPolicy
-  trace: EditableKernelTraceEntry
-}
+  command: EditableCommand | null;
+  handled: boolean;
+  intent: InputIntent | null;
+  nativeAllowed: boolean;
+  ownership: EditableOwnership;
+  selectionPolicy: EditableSelectionPolicy;
+  repairPolicy: EditableRepairPolicy;
+  trace: EditableKernelTraceEntry;
+};
 ```
 
 Required policies:
@@ -164,11 +164,11 @@ It should not decide whether selection should be imported or exported.
 Required APIs:
 
 ```ts
-SelectionController.importDOMSelection(result)
-SelectionController.exportModelSelection(result)
-SelectionController.clearSelection(result)
-SelectionController.captureDOMSelectionSnapshot()
-SelectionController.captureModelSelectionSnapshot()
+SelectionController.importDOMSelection(result);
+SelectionController.exportModelSelection(result);
+SelectionController.clearSelection(result);
+SelectionController.captureDOMSelectionSnapshot();
+SelectionController.captureModelSelectionSnapshot();
 ```
 
 Rules:
@@ -326,8 +326,8 @@ Actions:
 
 Test files:
 
-- `../slate-v2/packages/slate-react/test/editing-kernel-contract.ts`
-- `../slate-v2/playwright/integration/examples/richtext.test.ts`
+- `.tmp/slate-v2/packages/slate-react/test/editing-kernel-contract.ts`
+- `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
 
 Exit gates:
 
@@ -352,8 +352,8 @@ Actions:
 
 Test files:
 
-- `../slate-v2/packages/slate-react/test/selection-controller-contract.ts`
-- `../slate-v2/playwright/integration/examples/richtext.test.ts`
+- `.tmp/slate-v2/packages/slate-react/test/selection-controller-contract.ts`
+- `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
 
 Exit gates:
 
@@ -378,8 +378,8 @@ Actions:
 
 Test files:
 
-- `../slate-v2/packages/slate-react/test/dom-repair-policy-contract.ts`
-- `../slate-v2/playwright/integration/examples/richtext.test.ts`
+- `.tmp/slate-v2/packages/slate-react/test/dom-repair-policy-contract.ts`
+- `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
 
 Exit gates:
 
@@ -405,14 +405,14 @@ Actions:
 
 Test files:
 
-- `../slate-v2/packages/slate-browser/src/playwright/index.ts`
-- `../slate-v2/playwright/integration/examples/richtext.test.ts`
-- `../slate-v2/playwright/integration/examples/mentions.test.ts`
-- `../slate-v2/playwright/integration/examples/inlines.test.ts`
-- `../slate-v2/playwright/integration/examples/editable-voids.test.ts`
-- `../slate-v2/playwright/integration/examples/paste-html.test.ts`
-- `../slate-v2/playwright/integration/examples/shadow-dom.test.ts`
-- `../slate-v2/playwright/integration/examples/large-document-runtime.test.ts`
+- `.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts`
+- `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
+- `.tmp/slate-v2/playwright/integration/examples/mentions.test.ts`
+- `.tmp/slate-v2/playwright/integration/examples/inlines.test.ts`
+- `.tmp/slate-v2/playwright/integration/examples/editable-voids.test.ts`
+- `.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts`
+- `.tmp/slate-v2/playwright/integration/examples/shadow-dom.test.ts`
+- `.tmp/slate-v2/playwright/integration/examples/large-document-runtime.test.ts`
 
 Exit gates:
 
@@ -536,10 +536,10 @@ Actions:
 Evidence:
 
 ```sh
-rg -n "createEditableKernelResult|recordEditableKernelTrace|requestEditableRepair|requestRepair|applyEditableRepairRequest|selectionSourceTransition|preferModelSelection|syncEditorSelectionFromDOM|syncEditableDOMSelectionToEditor|applyEditableDOMSelectionChange" ../slate-v2/packages/slate-react/src/components/editable.tsx ../slate-v2/packages/slate-react/src/editable -g "*.ts"
-rg -n "editor\\.apply|editor\\.selection\\s*=|editor\\.marks\\s*=|editor\\.onChange\\s*=|onDOMBeforeInput|decorate|renderChunk|EditableRoot|EditableBlocks" ../slate-v2/packages/slate-react/src ../slate-v2/site/examples/ts -g "*.ts" -g "*.tsx"
-rg -n "test\\.skip|\\.skip\\(|skip\\(" ../slate-v2/playwright/integration/examples -g "*.ts"
-rg -n "createSlateBrowser.*Gauntlet|ScenarioStep|kind: 'custom'|metadata:|transport: 'semantic|transport: 'native|mobile" ../slate-v2/packages/slate-browser/src/playwright/index.ts ../slate-v2/playwright/integration/examples/richtext.test.ts ../slate-v2/playwright/integration/examples/mentions.test.ts ../slate-v2/playwright/integration/examples/inlines.test.ts
+rg -n "createEditableKernelResult|recordEditableKernelTrace|requestEditableRepair|requestRepair|applyEditableRepairRequest|selectionSourceTransition|preferModelSelection|syncEditorSelectionFromDOM|syncEditableDOMSelectionToEditor|applyEditableDOMSelectionChange" .tmp/slate-v2/packages/slate-react/src/components/editable.tsx .tmp/slate-v2/packages/slate-react/src/editable -g "*.ts"
+rg -n "editor\\.apply|editor\\.selection\\s*=|editor\\.marks\\s*=|editor\\.onChange\\s*=|onDOMBeforeInput|decorate|renderChunk|EditableRoot|EditableBlocks" .tmp/slate-v2/packages/slate-react/src .tmp/slate-v2/site/examples/ts -g "*.ts" -g "*.tsx"
+rg -n "test\\.skip|\\.skip\\(|skip\\(" .tmp/slate-v2/playwright/integration/examples -g "*.ts"
+rg -n "createSlateBrowser.*Gauntlet|ScenarioStep|kind: 'custom'|metadata:|transport: 'semantic|transport: 'native|mobile" .tmp/slate-v2/packages/slate-browser/src/playwright/index.ts .tmp/slate-v2/playwright/integration/examples/richtext.test.ts .tmp/slate-v2/playwright/integration/examples/mentions.test.ts .tmp/slate-v2/playwright/integration/examples/inlines.test.ts
 bunx playwright test ./playwright/integration/examples/richtext.test.ts --project=chromium --grep "selectionchange|repair|navigation|core command metadata" --workers=1 --retries=0
 bun run lint
 ```
@@ -555,21 +555,21 @@ Results:
 Owner classification:
 
 - kernel policy owner:
-  - `../slate-v2/packages/slate-react/src/editable/editing-kernel.ts`
-  - `../slate-v2/packages/slate-react/src/components/editable.tsx`
+  - `.tmp/slate-v2/packages/slate-react/src/editable/editing-kernel.ts`
+  - `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
 - selection import/export owner:
-  - `../slate-v2/packages/slate-react/src/editable/selection-controller.ts`
-  - `../slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`
+  - `.tmp/slate-v2/packages/slate-react/src/editable/selection-controller.ts`
+  - `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`
 - repair policy owner:
-  - `../slate-v2/packages/slate-react/src/editable/mutation-controller.ts`
-  - `../slate-v2/packages/slate-react/src/editable/dom-repair-queue.ts`
-  - `../slate-v2/packages/slate-react/src/editable/model-input-strategy.ts`
-  - `../slate-v2/packages/slate-react/src/editable/keyboard-input-strategy.ts`
-  - `../slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts`
-  - `../slate-v2/packages/slate-react/src/editable/caret-engine.ts`
+  - `.tmp/slate-v2/packages/slate-react/src/editable/mutation-controller.ts`
+  - `.tmp/slate-v2/packages/slate-react/src/editable/dom-repair-queue.ts`
+  - `.tmp/slate-v2/packages/slate-react/src/editable/model-input-strategy.ts`
+  - `.tmp/slate-v2/packages/slate-react/src/editable/keyboard-input-strategy.ts`
+  - `.tmp/slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts`
+  - `.tmp/slate-v2/packages/slate-react/src/editable/caret-engine.ts`
 - generated gauntlet owner:
-  - `../slate-v2/packages/slate-browser/src/playwright/index.ts`
-  - `../slate-v2/playwright/integration/examples/**`
+  - `.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts`
+  - `.tmp/slate-v2/playwright/integration/examples/**`
 - runtime bypass owners:
   - `editor.marks = ...` in composition and Android paths
   - `editor.selection = ...` in selection reconciler
@@ -629,8 +629,8 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-react/src/editable/editing-kernel.ts`
-- `../slate-v2/packages/slate-react/test/editing-kernel-contract.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/editing-kernel.ts`
+- `.tmp/slate-v2/packages/slate-react/test/editing-kernel-contract.ts`
 
 Evidence:
 
@@ -702,8 +702,8 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-react/src/editable/dom-repair-queue.ts`
-- `../slate-v2/playwright/integration/examples/richtext.test.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/dom-repair-queue.ts`
+- `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
 
 Evidence:
 
@@ -787,8 +787,8 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-react/src/editable/selection-controller.ts`
-- `../slate-v2/packages/slate-react/test/selection-controller-contract.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/selection-controller.ts`
+- `.tmp/slate-v2/packages/slate-react/test/selection-controller-contract.ts`
 
 Evidence:
 
@@ -861,9 +861,9 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-react/src/editable/editing-kernel.ts`
-- `../slate-v2/packages/slate-react/src/editable/input-controller.ts`
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/editable/editing-kernel.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/input-controller.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
 
 Evidence:
 
@@ -930,7 +930,7 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`
 
 Evidence:
 
@@ -1000,9 +1000,9 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-react/src/editable/editing-kernel.ts`
-- `../slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/editable/editing-kernel.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
 
 Evidence:
 
@@ -1017,7 +1017,7 @@ bunx playwright test ./playwright/integration/examples/richtext.test.ts --projec
 bunx playwright test ./playwright/integration/examples/richtext.test.ts --project=chromium --grep "ArrowDown|ArrowRight|selectionchange and repair|kernel policies" --workers=1 --retries=0
 bun run lint:fix
 bun run lint
-rg -n "syncEditorSelectionFromDOM\\(|syncEditableDOMSelectionToEditor\\(|executeEditableSelectionImport\\(|executeEditableSelectionExport\\(" ../slate-v2/packages/slate-react/src -g "*.ts" -g "*.tsx"
+rg -n "syncEditorSelectionFromDOM\\(|syncEditableDOMSelectionToEditor\\(|executeEditableSelectionImport\\(|executeEditableSelectionExport\\(" .tmp/slate-v2/packages/slate-react/src -g "*.ts" -g "*.tsx"
 ```
 
 Results:
@@ -1082,10 +1082,10 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-react/src/editable/browser-handle.ts`
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
-- `../slate-v2/packages/slate-browser/src/playwright/index.ts`
-- `../slate-v2/playwright/integration/examples/richtext.test.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/browser-handle.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts`
+- `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
 
 Evidence:
 
@@ -1166,8 +1166,8 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-react/src/editable/mutation-controller.ts`
-- `../slate-v2/packages/slate-react/test/dom-repair-policy-contract.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/mutation-controller.ts`
+- `.tmp/slate-v2/packages/slate-react/test/dom-repair-policy-contract.ts`
 
 Evidence:
 
@@ -1235,7 +1235,7 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-react/src/editable/dom-repair-queue.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/dom-repair-queue.ts`
 
 Evidence:
 
@@ -1301,7 +1301,7 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-react/src/editable/mutation-controller.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/mutation-controller.ts`
 
 Evidence:
 
@@ -1371,7 +1371,7 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/playwright/integration/examples/richtext.test.ts`
+- `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
 
 Evidence:
 
@@ -1434,8 +1434,8 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-browser/src/playwright/index.ts`
-- `../slate-v2/playwright/integration/examples/paste-html.test.ts`
+- `.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts`
+- `.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts`
 
 Evidence:
 
@@ -1499,8 +1499,8 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-browser/src/playwright/index.ts`
-- `../slate-v2/playwright/integration/examples/inlines.test.ts`
+- `.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts`
+- `.tmp/slate-v2/playwright/integration/examples/inlines.test.ts`
 
 Evidence:
 
@@ -1570,8 +1570,8 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-browser/src/playwright/index.ts`
-- `../slate-v2/playwright/integration/examples/editable-voids.test.ts`
+- `.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts`
+- `.tmp/slate-v2/playwright/integration/examples/editable-voids.test.ts`
 
 Evidence:
 
@@ -1644,8 +1644,8 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-browser/src/playwright/index.ts`
-- `../slate-v2/playwright/integration/examples/large-document-runtime.test.ts`
+- `.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts`
+- `.tmp/slate-v2/playwright/integration/examples/large-document-runtime.test.ts`
 
 Evidence:
 
@@ -1726,7 +1726,7 @@ Result:
 
 Owner classification:
 
-- owner is `../slate-v2/packages/slate-browser/src/playwright/index.ts`
+- owner is `.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts`
 - the current harness cannot reliably target/import the nested shadow editor
   handle for generated scenarios
 - existing hand-authored shadow rows work because they use shadow-specific
@@ -1773,8 +1773,8 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-browser/src/playwright/index.ts`
-- `../slate-v2/playwright/integration/examples/shadow-dom.test.ts`
+- `.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts`
+- `.tmp/slate-v2/playwright/integration/examples/shadow-dom.test.ts`
 
 Evidence:
 
@@ -1846,9 +1846,9 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-browser/src/playwright/index.ts`
-- `../slate-v2/packages/slate-react/src/editable/input-controller.ts`
-- `../slate-v2/playwright/integration/examples/large-document-runtime.test.ts`
+- `.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/input-controller.ts`
+- `.tmp/slate-v2/playwright/integration/examples/large-document-runtime.test.ts`
 
 Evidence:
 
@@ -1928,8 +1928,8 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-browser/src/playwright/index.ts`
-- `../slate-v2/playwright/integration/examples/richtext.test.ts`
+- `.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts`
+- `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
 
 Evidence:
 
@@ -2032,7 +2032,7 @@ Continue checkpoint:
   proving semantic transport; Phase 5 must classify this explicitly.
 - earliest gates:
   - `bunx playwright test ./playwright/integration/examples/richtext.test.ts ./playwright/integration/examples/plaintext.test.ts ./playwright/integration/examples/mentions.test.ts --project=mobile --workers=1 --retries=0`
-  - platform skip/return inventory under `../slate-v2/playwright/integration/examples/**`
+  - platform skip/return inventory under `.tmp/slate-v2/playwright/integration/examples/**`
 - next move: Phase 5 tracer 1, inventory mobile/platform transport returns and
   classify them as native-proved, semantic-proved, or blocked.
 - do-not-do list:
@@ -2057,7 +2057,7 @@ Actions:
 Evidence:
 
 ```sh
-rg -n "project\\.name === 'mobile'|project\\.name !== 'mobile'|browserName === 'webkit'|browserName === 'firefox'|return$|test\\.skip|\\.skip\\(" ../slate-v2/playwright/integration/examples -g "*.ts"
+rg -n "project\\.name === 'mobile'|project\\.name !== 'mobile'|browserName === 'webkit'|browserName === 'firefox'|return$|test\\.skip|\\.skip\\(" .tmp/slate-v2/playwright/integration/examples -g "*.ts"
 bunx playwright test ./playwright/integration/examples/richtext.test.ts ./playwright/integration/examples/plaintext.test.ts ./playwright/integration/examples/mentions.test.ts --project=mobile --workers=1 --retries=0
 bunx playwright test ./playwright/integration/examples/richtext.test.ts --project=mobile --grep "runs a traced slate-browser scenario" --workers=1 --retries=0
 bunx playwright test ./playwright/integration/examples/mentions.test.ts --project=mobile --workers=1 --retries=0
@@ -2116,7 +2116,7 @@ Continue checkpoint:
 - risks: accepting/defering mobile mentions should not turn into a hidden skip;
   keep it named in closure.
 - earliest gates:
-  - `rg -n "editor\\.apply|editor\\.selection\\s*=|editor\\.marks\\s*=|editor\\.onChange\\s*=|onDOMBeforeInput|decorate|renderChunk" ../slate-v2/packages/slate-react/src ../slate-v2/site/examples/ts -g "*.ts" -g "*.tsx"`
+  - `rg -n "editor\\.apply|editor\\.selection\\s*=|editor\\.marks\\s*=|editor\\.onChange\\s*=|onDOMBeforeInput|decorate|renderChunk" .tmp/slate-v2/packages/slate-react/src .tmp/slate-v2/site/examples/ts -g "*.ts" -g "*.tsx"`
   - `bun run lint`
 - next move: Phase 6 tracer 1, burn down one runtime bypass that directly
   threatens the kernel, starting with richtext mark hotkeys if feasible.
@@ -2140,7 +2140,7 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/site/examples/ts/richtext.tsx`
+- `.tmp/slate-v2/site/examples/ts/richtext.tsx`
 
 Evidence:
 
@@ -2182,7 +2182,7 @@ Continue checkpoint:
   generated proof stays green.
 - risks: more example `onDOMBeforeInput` and mutable editor field writes remain.
 - earliest gates:
-  - `rg -n "editor\\.apply|editor\\.selection\\s*=|editor\\.marks\\s*=|editor\\.onChange\\s*=|onDOMBeforeInput|decorate|renderChunk" ../slate-v2/packages/slate-react/src ../slate-v2/site/examples/ts -g "*.ts" -g "*.tsx"`
+  - `rg -n "editor\\.apply|editor\\.selection\\s*=|editor\\.marks\\s*=|editor\\.onChange\\s*=|onDOMBeforeInput|decorate|renderChunk" .tmp/slate-v2/packages/slate-react/src .tmp/slate-v2/site/examples/ts -g "*.ts" -g "*.tsx"`
   - `bun run lint`
 - next move: Phase 6 tracer 2, rerun bypass inventory and pick the next
   kernel-threatening bypass.
@@ -2205,12 +2205,12 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/site/examples/ts/hovering-toolbar.tsx`
+- `.tmp/slate-v2/site/examples/ts/hovering-toolbar.tsx`
 
 Evidence:
 
 ```sh
-rg -n "editor\\.apply|editor\\.selection\\s*=|editor\\.marks\\s*=|editor\\.onChange\\s*=|onDOMBeforeInput|decorate|renderChunk" ../slate-v2/packages/slate-react/src ../slate-v2/site/examples/ts -g "*.ts" -g "*.tsx"
+rg -n "editor\\.apply|editor\\.selection\\s*=|editor\\.marks\\s*=|editor\\.onChange\\s*=|onDOMBeforeInput|decorate|renderChunk" .tmp/slate-v2/packages/slate-react/src .tmp/slate-v2/site/examples/ts -g "*.ts" -g "*.tsx"
 bunx playwright test ./playwright/integration/examples/markdown-shortcuts.test.ts ./playwright/integration/examples/richtext.test.ts --project=chromium --grep "generated mark|kernel policies|markdown|list|h1" --workers=1 --retries=0
 bun run lint:fix
 bun run lint

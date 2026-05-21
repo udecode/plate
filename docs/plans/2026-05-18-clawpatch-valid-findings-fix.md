@@ -2,14 +2,14 @@
 
 ## Goal
 
-Fix every valid finding from `../slate-v2/.clawpatch/reports/20260517T152655-41ac65.md`, skip false positives with evidence, and revalidate with Clawpatch where the CLI can verify the result.
+Fix every valid finding from `.tmp/slate-v2/.clawpatch/reports/20260517T152655-41ac65.md`, skip false positives with evidence, and revalidate with Clawpatch where the CLI can verify the result.
 
 ## Source Of Truth
 
 - Clawpatch docs: `https://clawpatch.ai/`
-- Report: `../slate-v2/.clawpatch/reports/20260517T152655-41ac65.md`
-- Findings state: `../slate-v2/.clawpatch/findings/*.json`
-- Implementation repo: `../slate-v2`
+- Report: `.tmp/slate-v2/.clawpatch/reports/20260517T152655-41ac65.md`
+- Findings state: `.tmp/slate-v2/.clawpatch/findings/*.json`
+- Implementation repo: `.tmp/slate-v2`
 
 ## Finding Verdicts
 
@@ -113,14 +113,147 @@ Source review:
 
 - `clawpatch review --json --limit 50`
 - Run: `20260518T033126-00862f`
-- Report: `../slate-v2/.clawpatch/reports/20260518T033126-00862f.md`
+- Report: `.tmp/slate-v2/.clawpatch/reports/20260518T033126-00862f.md`
 - Result before this fix batch: 72 open findings.
 
 Execution target:
 
-1. Temporarily set `../slate-v2/.clawpatch/config.json` `git.requireCleanWorktreeForFix` to `false` so later Clawpatch fixes are not blocked by earlier Clawpatch edits.
+1. Temporarily set `.tmp/slate-v2/.clawpatch/config.json` `git.requireCleanWorktreeForFix` to `false` so later Clawpatch fixes are not blocked by earlier Clawpatch edits.
 2. Run `clawpatch fix --finding <id> --json` in controlled chunks.
 3. Inspect Clawpatch changes after each chunk; stop on validation failure, provider failure, or broad suspicious edits.
 4. Restore `requireCleanWorktreeForFix: true` before handoff.
 5. Run focused verification by touched package, then `bun lint:fix` and `bun check` if source edits survive review.
 6. Revalidate remaining findings and record final `clawpatch status --json`.
+
+Result:
+
+- Fixed and revalidated all remaining valid findings from `20260518T033126-00862f`.
+- Final Clawpatch state in `.tmp/slate-v2`: `findings: 95`, `openFindings: 0`, `activeLocks: 0`.
+- `clawpatch report --status open --json`: returned no items.
+- Restored `.tmp/slate-v2/.clawpatch/config.json` to `"requireCleanWorktreeForFix": true`.
+
+Final same-turn verification:
+
+- `npm run typecheck`: passed across packages, site, and root.
+- `npm run lint`: passed with one existing warning in `packages/slate-react/src/components/slate.tsx` and no errors.
+- `npm run test`: passed; Bun package tests `1022 pass`, `95 skip`, `0 fail`; slate-react Vitest `34 files`, `304 tests` passed.
+
+## 2026-05-19 Fresh Clawpatch Review Batch
+
+Source state before review:
+
+- `clawpatch status --json`: `findings: 95`, `openFindings: 0`, `activeLocks: 0`, `lockFiles: 0`.
+- `.tmp/slate-v2/.clawpatch/config.json`: `"requireCleanWorktreeForFix": true`.
+
+Execution target:
+
+1. Run `clawpatch review --json --limit 50` in `.tmp/slate-v2`.
+2. Inspect the generated report and `clawpatch status --json`.
+3. Record new findings, or record a zero-open result if the review produces none.
+4. Keep `.tmp/019e362b-c486-7372-84c1-1c04fef96ff6/completion-check.md` pending until this review batch is closed.
+
+Result:
+
+- `clawpatch review --json --limit 50`: run `20260519T143737-1f263b`.
+- Report: `.tmp/slate-v2/.clawpatch/reports/20260519T143737-1f263b.md`.
+- Reviewed `31` features and produced `12` new open findings.
+- `clawpatch status --json`: `findings: 107`, `openFindings: 12`, `activeLocks: 0`, `lockFiles: 0`.
+- Quick source pass: no obvious false positives. Treat the 12 findings as valid enough for a fix batch unless a targeted repro proves otherwise.
+
+Open findings:
+
+- `fnd_sig-feat-release-a235aa99b1-4903_035655915a`: site typecheck omits `--noEmit`.
+- `fnd_sig-feat-test-suite-cb681e102d-7_cccedbe3b1`: slate-browser aggregate test runs selection browser suite twice.
+- `fnd_sig-feat-ui-flow-6a27e982ce-f94c_532ec95c63`: inline void shell child order can differ between SSR and Mac client render.
+- `fnd_sig-feat-ui-flow-6feb103d8d-ae72_f0494f2e0b`: placeholder `as` type accepts void HTML elements that cannot render children.
+- `fnd_sig-feat-ui-flow-7e14dc4c24-2e7d_8a458c669b`: shelled segment preview/coverage can go stale after hidden content changes.
+- `fnd_sig-feat-ui-flow-b96511949d-48f1_601dca3f51`: deferred selector callback can flush after unsubscribe.
+- `fnd_sig-feat-ui-flow-b96511949d-b05d_5266b77c35`: mount-time editor commits can happen before Slate subscribes.
+- `fnd_sig-feat-ui-flow-cfa3a8c90a-ae9f_505553d0bf`: default selection scrolling misses scroll containers outside a shadow root.
+- `fnd_sig-feat-ui-flow-cfa3a8c90a-b4c0_f3acc7896c`: documented `zIndex` workaround is emitted as ignored `zindex` DOM attribute.
+- `fnd_sig-feat-ui-flow-d9b2f7f1a2-c714_b31cf1ed14`: bound text can stay stale when skipped React render is not DOM-synced.
+- `fnd_sig-feat-ui-flow-e1e5bc9333-e201_2053767467`: `SlateElement` does not rebind DOM maps when its path changes.
+- `fnd_sig-feat-ui-flow-f991203b7d-e62d_fdbe54b63d`: `domSyncReason` is attached when `domSync` is false and suppressed when true.
+
+## 2026-05-19 Clawpatch Fix Batch
+
+Source report:
+
+- `.tmp/slate-v2/.clawpatch/reports/20260519T143737-1f263b.md`
+
+Validity pass:
+
+- All 12 open findings are valid enough to fix. No false positives identified before the fix batch.
+
+Execution target:
+
+1. Temporarily set `.tmp/slate-v2/.clawpatch/config.json` `git.requireCleanWorktreeForFix` to `false` so multiple Clawpatch fixes can run in one dirty working tree.
+2. Run `clawpatch fix --finding <id> --json` for the 12 valid findings.
+3. Stop and inspect manually if a fix fails validation, looks too broad, or touches an unrelated surface.
+4. Restore `requireCleanWorktreeForFix: true` before handoff.
+5. Revalidate all fixed findings and record final `clawpatch status --json`.
+6. Run relevant package checks and the Plate completion-check gate.
+
+Result:
+
+- Fixed 11 valid findings from run `20260519T143737-1f263b`.
+- Marked `fnd_sig-feat-ui-flow-f991203b7d-e62d_fdbe54b63d` false-positive: `domSyncReason` is intentionally emitted only when DOM sync is disabled; inverting it broke the existing rendering-strategy DOM sync contract.
+- Rebuilt `slate-react` so the fixed source paths are reflected in `packages/slate-react/dist/index.js`.
+- Restored `/Users/zbeyens/git/slate-v2/.clawpatch/config.json` to `"requireCleanWorktreeForFix": true`.
+- Added `/Users/zbeyens/git/slate-v2/.changeset/slate-react-clawpatch-ui-flow-fixes.md`.
+- `clawpatch report --status open --json`: `findings: 0`.
+- `clawpatch status --json`: `openFindings: 0`, `activeLocks: 0`, `lockFiles: 0`.
+
+Revalidation:
+
+- `fnd_sig-feat-ui-flow-6a27e982ce-f94c_532ec95c63`: fixed after rebuilding `slate-react` dist.
+- `fnd_sig-feat-ui-flow-6feb103d8d-ae72_f0494f2e0b`: fixed.
+- `fnd_sig-feat-ui-flow-7e14dc4c24-2e7d_8a458c669b`: fixed.
+
+Final verification:
+
+- `npm run typecheck`: passed.
+- `npm run lint:fix`: passed, no fixes applied.
+- `npm run lint`: passed.
+- `npm run test`: passed (`bun test`: 1022 pass, 95 skip, 0 fail; `slate-react` Vitest: 35 files, 312 tests passed).
+
+## 2026-05-19 Unlimited Clawpatch Review
+
+Source state before review:
+
+- Previous Clawpatch closeout: `openFindings: 0`.
+- `/Users/zbeyens/git/slate-v2/.clawpatch/config.json`: `"requireCleanWorktreeForFix": true`.
+
+Command:
+
+- `clawpatch review --json`
+
+Result:
+
+- Run: `20260519T174319-47a168`.
+- Report: `/Users/zbeyens/git/slate-v2/.clawpatch/reports/20260519T174319-47a168.md`.
+- Reviewed `0` features and produced `0` new findings.
+- `clawpatch report --status open --json`: `findings: 0`.
+- `clawpatch status --json`: `findings: 107`, `openFindings: 0`, `activeLocks: 0`, `lockFiles: 0`.
+
+Note:
+
+- No fix work was done in this pass. The review command ran with no `--limit`, but Clawpatch had no pending review features to process.
+
+## 2026-05-20 Force Re-Review Blocker
+
+Requested state:
+
+- Force re-review every known Clawpatch feature in `/Users/zbeyens/git/slate-v2`.
+
+Current filesystem state:
+
+- `/Users/zbeyens/git/slate-v2` no longer contains the full Slate v2 checkout or prior Clawpatch project state.
+- Current files under that path are only `.clawpatch/features/feat_ui-flow_6feb103d8d.json` and `.clawpatch/runs/20260520T083030-e09d29.json`.
+- `clawpatch status --json`: failed with `error: not initialized; run clawpatch init`.
+- Current feature count from `.clawpatch/features/*.json`: `1`, not the expected `92`.
+- Existing run `20260520T083030-e09d29` already reviewed `feat_ui-flow_6feb103d8d` and completed with `findingIds: []`.
+
+Result:
+
+- Marked this pass blocked. The requested 92-feature force re-review cannot be completed from the current `/Users/zbeyens/git/slate-v2` filesystem state without restoring the full checkout or Clawpatch state.

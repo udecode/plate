@@ -454,7 +454,7 @@
 - 2026-04-04: logged the native event sequence and found the clean Chromium
   path ended on `compositionend` after transient `insertCompositionText` events.
 - 2026-04-04: updated
-  `../slate-v2/site/examples/ts/slate-v2-placeholder.tsx`
+  `.tmp/slate-v2/site/examples/ts/slate-v2-placeholder.tsx`
   so the proof surface ignores transient composition input and commits from DOM
   on `compositionend`.
 - 2026-04-04: verified the browser proof with:
@@ -462,7 +462,7 @@
 - 2026-04-04: verified TypeScript/lint sanity with:
   - `yarn lint:typescript`
 - 2026-04-04: wired the new proof into the existing IME lane by updating
-  `../slate-v2/package.json` so `test:slate-browser:ime` and
+  `.tmp/slate-v2/package.json` so `test:slate-browser:ime` and
   `test:slate-browser:ime:local` both include
   `playwright/integration/examples/slate-v2-placeholder-ime.test.ts`.
 - 2026-04-04: verified the combined local IME lane with:
@@ -470,14 +470,14 @@
 - 2026-04-04: documented the reusable rule in
   `docs/solutions/logic-errors/2026-04-04-slate-v2-placeholder-ime-proofs-must-commit-on-compositionend.md`.
 - 2026-04-04: extracted the shared placeholder proof surface into
-  `../slate-v2/site/examples/ts/components/slate-v2-placeholder-surface.tsx`,
-  kept the FEFF route in `../slate-v2/site/examples/ts/slate-v2-placeholder.tsx`,
+  `.tmp/slate-v2/site/examples/ts/components/slate-v2-placeholder-surface.tsx`,
+  kept the FEFF route in `.tmp/slate-v2/site/examples/ts/slate-v2-placeholder.tsx`,
   and added the no-FEFF route in
-  `../slate-v2/site/examples/ts/slate-v2-placeholder-no-feff.tsx`.
+  `.tmp/slate-v2/site/examples/ts/slate-v2-placeholder-no-feff.tsx`.
 - 2026-04-04: added the hidden no-FEFF example path in
-  `../slate-v2/site/constants/examples.ts`.
+  `.tmp/slate-v2/site/constants/examples.ts`.
 - 2026-04-04: extended
-  `../slate-v2/playwright/integration/examples/slate-v2-placeholder-ime.test.ts`
+  `.tmp/slate-v2/playwright/integration/examples/slate-v2-placeholder-ime.test.ts`
   with a Chromium proof for the no-FEFF placeholder path.
 - 2026-04-04: reproduced the initial no-FEFF red and confirmed the page crashed
   with `NotFoundError: Failed to execute 'removeChild' on 'Node'`.
@@ -493,22 +493,22 @@
 - 2026-04-04: documented the no-FEFF renderer-boundary rule in
   `docs/solutions/logic-errors/2026-04-04-slate-v2-no-feff-line-break-placeholders-need-dom-owned-br-interiors.md`.
 - 2026-04-04: added the shared renderer seam in
-  `../slate-v2/packages/slate-react-v2/src/components/zero-width-string.tsx`
+  `.tmp/slate-v2/packages/slate-react-v2/src/components/zero-width-string.tsx`
   and exported it from
-  `../slate-v2/packages/slate-react-v2/src/index.ts`.
+  `.tmp/slate-v2/packages/slate-react-v2/src/index.ts`.
 - 2026-04-04: added direct package tests for the shared zero-width component in
-  `../slate-v2/packages/slate-react-v2/test/runtime.tsx`.
+  `.tmp/slate-v2/packages/slate-react-v2/test/runtime.tsx`.
 - 2026-04-04: switched the placeholder proof surface to consume the shared
   `ZeroWidthString` component in
-  `../slate-v2/site/examples/ts/components/slate-v2-placeholder-surface.tsx`.
+  `.tmp/slate-v2/site/examples/ts/components/slate-v2-placeholder-surface.tsx`.
 - 2026-04-04: added the hidden browser matrix example in
-  `../slate-v2/site/examples/ts/slate-v2-zero-width-matrix.tsx`
+  `.tmp/slate-v2/site/examples/ts/slate-v2-zero-width-matrix.tsx`
   and wired it in
-  `../slate-v2/site/constants/examples.ts`.
+  `.tmp/slate-v2/site/constants/examples.ts`.
 - 2026-04-04: added the browser matrix proof in
-  `../slate-v2/playwright/integration/examples/slate-v2-zero-width-matrix.test.ts`.
+  `.tmp/slate-v2/playwright/integration/examples/slate-v2-zero-width-matrix.test.ts`.
 - 2026-04-04: updated
-  `../slate-v2/package.json`
+  `.tmp/slate-v2/package.json`
   so the Playwright e2e/IME lanes build
   `slate-react-v2` alongside `slate-browser`, `slate-react`, and
   `slate-dom-v2` before running.
@@ -518,36 +518,36 @@
   - `yarn test:slate-browser:e2e:local`
   - `yarn test:slate-browser:ime:local`
 - 2026-04-04: extended
-  `../slate-v2/packages/slate-v2/src/core.ts`
+  `.tmp/slate-v2/packages/slate-v2/src/core.ts`
   so `Editor.getFragment(...)` and `Transforms.insertFragment(...)` support the
   current one-block mixed-inline proof shape in addition to the earlier simple
   text-block proof shape.
 - 2026-04-04: extended
-  `../slate-v2/packages/slate-dom-v2/src/clipboard.ts`
+  `.tmp/slate-v2/packages/slate-dom-v2/src/clipboard.ts`
   and
-  `../slate-v2/packages/slate-dom-v2/test/clipboard-boundary.ts`
+  `.tmp/slate-v2/packages/slate-dom-v2/test/clipboard-boundary.ts`
   so the clipboard boundary accepts the same mixed-inline proof shape and proves
   the round-trip.
 - 2026-04-04: extended
-  `../slate-v2/playwright/integration/examples/slate-v2-mixed-inline.test.ts`
+  `.tmp/slate-v2/playwright/integration/examples/slate-v2-mixed-inline.test.ts`
   from “fail closed for now” into the real mixed-inline browser proof:
   selection, typing, and copy/paste round-trip.
 - 2026-04-04: fixed
-  `../slate-v2/packages/slate-react-v2/src/components/editable.tsx`
+  `.tmp/slate-v2/packages/slate-react-v2/src/components/editable.tsx`
   so `Editable` can commit through `snapshotFromDom(...)` instead of only the
   old flat-text `snapshotForText(...)` path.
 - 2026-04-04: fixed
-  `../slate-v2/packages/slate-react-v2/src/components/editable-text-blocks.tsx`
+  `.tmp/slate-v2/packages/slate-react-v2/src/components/editable-text-blocks.tsx`
   so `EditableBlocks` preserves the current descendant shape and only replaces
   text-leaf content when DOM edits commit back into editor state.
 - 2026-04-04: fixed
-  `../slate-v2/packages/slate-browser/src/playwright/index.ts`
+  `.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts`
   so nested-path selection helpers:
   - pass handle keys explicitly into page-eval snapshots
   - wait for handle hydration before falling back
   - avoid the earlier false-null selection reads
 - 2026-04-04: updated
-  `../slate-v2/package.json`
+  `.tmp/slate-v2/package.json`
   so `build:slate-browser:playwright` also rebuilds `slate-v2`, which the site
   examples consume during browser proofs.
 - 2026-04-04: verified the mixed-inline tranche with:
@@ -558,28 +558,28 @@
   - `yarn test:slate-browser:e2e:local`
   - `yarn test:slate-browser:ime:local`
 - 2026-04-04: extended
-  `../slate-v2/packages/slate-v2/src/core.ts`
+  `.tmp/slate-v2/packages/slate-v2/src/core.ts`
   so mixed-inline fragment extraction can span multiple top-level blocks and
   mixed-inline fragment insertion can paste multi-block fragments into the
   current proved mixed-inline target shape.
 - 2026-04-04: extended
-  `../slate-v2/packages/slate-v2/test/clipboard-contract.ts`
+  `.tmp/slate-v2/packages/slate-v2/test/clipboard-contract.ts`
   with multi-block mixed-inline fragment extraction and insertion proofs.
 - 2026-04-04: extended
-  `../slate-v2/packages/slate-dom-v2/test/clipboard-boundary.ts`
+  `.tmp/slate-v2/packages/slate-dom-v2/test/clipboard-boundary.ts`
   with the matching cross-block clipboard boundary round-trip proof.
 - 2026-04-04: extracted the shared mixed-inline surface into
-  `../slate-v2/site/examples/ts/components/slate-v2-mixed-inline-surface.tsx`,
+  `.tmp/slate-v2/site/examples/ts/components/slate-v2-mixed-inline-surface.tsx`,
   kept the existing one-block route in
-  `../slate-v2/site/examples/ts/slate-v2-mixed-inline.tsx`,
+  `.tmp/slate-v2/site/examples/ts/slate-v2-mixed-inline.tsx`,
   and added the dedicated multi-block route in
-  `../slate-v2/site/examples/ts/slate-v2-mixed-inline-multiblock.tsx`.
+  `.tmp/slate-v2/site/examples/ts/slate-v2-mixed-inline-multiblock.tsx`.
 - 2026-04-04: added the hidden multi-block example path in
-  `../slate-v2/site/constants/examples.ts`.
+  `.tmp/slate-v2/site/constants/examples.ts`.
 - 2026-04-04: added the browser proof in
-  `../slate-v2/playwright/integration/examples/slate-v2-mixed-inline-multiblock.test.ts`
+  `.tmp/slate-v2/playwright/integration/examples/slate-v2-mixed-inline-multiblock.test.ts`
   and folded it into the local e2e lane in
-  `../slate-v2/package.json`.
+  `.tmp/slate-v2/package.json`.
 - 2026-04-04: verified the multi-block mixed-inline tranche with:
   - `bun test /Users/zbeyens/git/slate-v2/packages/slate-v2/test/clipboard-contract.ts`
   - `yarn workspace slate-dom-v2 test clipboard-boundary`
@@ -587,18 +587,18 @@
   - `yarn test:slate-browser:e2e:local`
   - `yarn test:slate-browser:ime:local`
 - 2026-04-04: extended
-  `../slate-v2/packages/slate-v2/src/core.ts`
+  `.tmp/slate-v2/packages/slate-v2/src/core.ts`
   so explicit-at mixed-inline inserts rebase editor selections through
   block-relative text offsets inside the current proved mixed-inline shape.
 - 2026-04-04: extended
-  `../slate-v2/packages/slate-v2/src/range-ref-transform.ts`
+  `.tmp/slate-v2/packages/slate-v2/src/range-ref-transform.ts`
   so later-block mixed-inline range refs shift correctly after explicit
   multi-block fragment inserts.
 - 2026-04-04: extended
-  `../slate-v2/packages/slate-v2/test/clipboard-contract.ts`
+  `.tmp/slate-v2/packages/slate-v2/test/clipboard-contract.ts`
   with explicit-at mixed-inline selection rebasing proofs.
 - 2026-04-04: extended
-  `../slate-v2/packages/slate-v2/test/range-ref-contract.ts`
+  `.tmp/slate-v2/packages/slate-v2/test/range-ref-contract.ts`
   with the later-block mixed-inline range-ref rebasing proof.
 - 2026-04-04: verified the explicit-at mixed-inline rebasing tranche with:
   - `bun test /Users/zbeyens/git/slate-v2/packages/slate-v2/test/clipboard-contract.ts`
@@ -607,12 +607,12 @@
   - `yarn test:slate-browser:e2e:local`
   - `yarn test:slate-browser:ime:local`
 - 2026-04-04: extended
-  `../slate-v2/packages/slate-v2/src/core.ts`
+  `.tmp/slate-v2/packages/slate-v2/src/core.ts`
   with a core-only mixed-inline range-ref transform path for `insert_fragment`
   operations so same-block mixed-inline refs can rebase without bloating the
   public operation shape with synthetic metadata.
 - 2026-04-04: extended
-  `../slate-v2/packages/slate-v2/test/range-ref-contract.ts`
+  `.tmp/slate-v2/packages/slate-v2/test/range-ref-contract.ts`
   with same-block mixed-inline range-ref proofs for:
   - refs before the explicit insertion target
   - refs after the explicit insertion target
@@ -623,28 +623,28 @@
   - `yarn test:slate-browser:e2e:local`
   - `yarn test:slate-browser:ime:local`
 - 2026-04-04: extended
-  `../slate-v2/packages/slate-v2/src/core.ts`
+  `.tmp/slate-v2/packages/slate-v2/src/core.ts`
   so simple text-block fragment extraction and insertion can operate inside a
   nested sibling-block container and preserve the wrapper element in the
   fragment.
 - 2026-04-04: extended
-  `../slate-v2/packages/slate-v2/test/clipboard-contract.ts`
+  `.tmp/slate-v2/packages/slate-v2/test/clipboard-contract.ts`
   with the nested quote extraction and insertion proofs.
 - 2026-04-04: extended
-  `../slate-v2/packages/slate-dom-v2/src/clipboard.ts`
+  `.tmp/slate-v2/packages/slate-dom-v2/src/clipboard.ts`
   so plain-text export preserves nested block breaks and the accepted proof
   fragment subset includes the nested quote wrapper case.
 - 2026-04-04: extended
-  `../slate-v2/packages/slate-dom-v2/test/clipboard-boundary.ts`
+  `.tmp/slate-v2/packages/slate-dom-v2/test/clipboard-boundary.ts`
   with the nested quote round-trip proof and a sharper unsupported nested shape.
 - 2026-04-04: added the hidden browser proof surface in
-  `../slate-v2/site/examples/ts/slate-v2-nested-quote.tsx`
+  `.tmp/slate-v2/site/examples/ts/slate-v2-nested-quote.tsx`
   and registered it in
-  `../slate-v2/site/constants/examples.ts`.
+  `.tmp/slate-v2/site/constants/examples.ts`.
 - 2026-04-04: added the Chromium browser proof in
-  `../slate-v2/playwright/integration/examples/slate-v2-nested-quote.test.ts`
+  `.tmp/slate-v2/playwright/integration/examples/slate-v2-nested-quote.test.ts`
   and folded it into the local e2e lane in
-  `../slate-v2/package.json`.
+  `.tmp/slate-v2/package.json`.
 - 2026-04-04: verified the nested quote tranche with:
   - `bun test /Users/zbeyens/git/slate-v2/packages/slate-v2/test/clipboard-contract.ts`
   - `yarn workspace slate-dom-v2 test clipboard-boundary`
@@ -652,19 +652,19 @@
   - `yarn test:slate-browser:e2e:local`
   - `yarn test:slate-browser:ime:local`
 - 2026-04-04: extended
-  `../slate-v2/packages/slate-v2/src/core.ts`
+  `.tmp/slate-v2/packages/slate-v2/src/core.ts`
   so explicit-at editor selections inside nested quote paragraph containers
   rebase by stripping the container prefix, reusing the top-level text-block
   rebasing logic, and prefixing the container path back.
 - 2026-04-04: extended
-  `../slate-v2/packages/slate-v2/src/core.ts`
+  `.tmp/slate-v2/packages/slate-v2/src/core.ts`
   with a second core-only insert-fragment range-ref transform path for the same
   simple nested block-container shape.
 - 2026-04-04: extended
-  `../slate-v2/packages/slate-v2/test/clipboard-contract.ts`
+  `.tmp/slate-v2/packages/slate-v2/test/clipboard-contract.ts`
   with nested quote explicit-at selection rebasing proofs.
 - 2026-04-04: extended
-  `../slate-v2/packages/slate-v2/test/range-ref-contract.ts`
+  `.tmp/slate-v2/packages/slate-v2/test/range-ref-contract.ts`
   with nested quote explicit-at range-ref rebasing proofs.
 - 2026-04-04: re-verified after the nested explicit-at rebasing tranche with:
   - `bun test /Users/zbeyens/git/slate-v2/packages/slate-v2/test/clipboard-contract.ts`
@@ -674,13 +674,13 @@
   - `yarn test:slate-browser:e2e:local`
   - `yarn test:slate-browser:ime:local`
 - 2026-04-04: added the FEFF-backed inline-edge proof surface in
-  `../slate-v2/site/examples/ts/components/slate-v2-inline-edge-surface.tsx`
+  `.tmp/slate-v2/site/examples/ts/components/slate-v2-inline-edge-surface.tsx`
   and the hidden route in
-  `../slate-v2/site/examples/ts/slate-v2-inline-edge.tsx`.
+  `.tmp/slate-v2/site/examples/ts/slate-v2-inline-edge.tsx`.
 - 2026-04-04: added the inline-edge IME proof in
-  `../slate-v2/playwright/integration/examples/slate-v2-inline-edge-ime.test.ts`
+  `.tmp/slate-v2/playwright/integration/examples/slate-v2-inline-edge-ime.test.ts`
   and folded it into the IME lane in
-  `../slate-v2/package.json`.
+  `.tmp/slate-v2/package.json`.
 - 2026-04-04: proved the inline-edge IME path passes in Chromium once the test
   sets the Slate selection semantically before composition instead of trusting
   a generic root click.
@@ -691,17 +691,17 @@
 - 2026-04-04: documented the inline-edge setup rule in
   `docs/solutions/logic-errors/2026-04-04-inline-edge-ime-proofs-should-set-selection-semantically-before-composition.md`.
 - 2026-04-04: added the FEFF-backed void-like proof surface in
-  `../slate-v2/site/examples/ts/components/slate-v2-void-edge-surface.tsx`
+  `.tmp/slate-v2/site/examples/ts/components/slate-v2-void-edge-surface.tsx`
   and the hidden route in
-  `../slate-v2/site/examples/ts/slate-v2-void-edge.tsx`.
+  `.tmp/slate-v2/site/examples/ts/slate-v2-void-edge.tsx`.
 - 2026-04-04: added the focused browser proof in
-  `../slate-v2/playwright/integration/examples/slate-v2-void-edge-ime.test.ts`
+  `.tmp/slate-v2/playwright/integration/examples/slate-v2-void-edge-ime.test.ts`
   and folded it into the IME lane in
-  `../slate-v2/package.json`.
+  `.tmp/slate-v2/package.json`.
 - 2026-04-04: proved the first void-like red was a false negative caused by a
   proof surface that did not mirror the real void spacer structure.
 - 2026-04-04: updated
-  `../slate-v2/site/examples/ts/components/slate-v2-void-edge-surface.tsx`
+  `.tmp/slate-v2/site/examples/ts/components/slate-v2-void-edge-surface.tsx`
   so it matches the real legacy void seam:
   `data-slate-void="true"` element, non-editable content wrapper, and separate
   absolutely positioned spacer leaf.
@@ -710,13 +710,13 @@
 - 2026-04-04: documented the structural void-like rule in
   `docs/solutions/logic-errors/2026-04-04-void-like-zero-width-ime-proofs-need-the-real-void-spacer-structure.md`.
 - 2026-04-04: added the shared `TextString` primitive in
-  `../slate-v2/packages/slate-react-v2/src/components/text-string.tsx`
+  `.tmp/slate-v2/packages/slate-react-v2/src/components/text-string.tsx`
   and exported it from
-  `../slate-v2/packages/slate-react-v2/src/index.ts`.
+  `.tmp/slate-v2/packages/slate-react-v2/src/index.ts`.
 - 2026-04-04: migrated the v2 placeholder, inline-edge, void-edge, and
   zero-width matrix proof surfaces to consume `TextString`.
 - 2026-04-04: added a focused package test in
-  `../slate-v2/packages/slate-react-v2/test/runtime.tsx`
+  `.tmp/slate-v2/packages/slate-react-v2/test/runtime.tsx`
   proving `TextString` repairs stale DOM text on rerender.
 - 2026-04-04: re-verified:
   - `yarn workspace slate-react-v2 test`
@@ -726,15 +726,15 @@
 - 2026-04-04: documented the shared text-boundary rule in
   `docs/solutions/logic-errors/2026-04-04-v2-text-string-primitives-should-own-the-dom-text-boundary.md`.
 - 2026-04-04: added the minimal renderer-shape primitives in
-  `../slate-v2/packages/slate-react-v2/src/components/`:
+  `.tmp/slate-v2/packages/slate-react-v2/src/components/`:
   `slate-text.tsx`, `slate-leaf.tsx`, `slate-element.tsx`, and
   `slate-spacer.tsx`.
 - 2026-04-04: exported those primitives from
-  `../slate-v2/packages/slate-react-v2/src/index.ts`
+  `.tmp/slate-v2/packages/slate-react-v2/src/index.ts`
   and migrated the v2 placeholder, inline-edge, void-edge, and zero-width
   matrix proof surfaces to consume them.
 - 2026-04-04: added focused package tests for the renderer node shapes in
-  `../slate-v2/packages/slate-react-v2/test/runtime.tsx`.
+  `.tmp/slate-v2/packages/slate-react-v2/test/runtime.tsx`.
 - 2026-04-04: re-verified:
   - `yarn workspace slate-react-v2 test`
   - `yarn lint:typescript`
@@ -743,15 +743,15 @@
 - 2026-04-04: documented the renderer-shape rule in
   `docs/solutions/logic-errors/2026-04-04-v2-renderer-primitives-should-own-node-shapes-not-example-markup.md`.
 - 2026-04-04: added the shared placeholder primitive in
-  `../slate-v2/packages/slate-react-v2/src/components/slate-placeholder.tsx`
+  `.tmp/slate-v2/packages/slate-react-v2/src/components/slate-placeholder.tsx`
   and exported it from
-  `../slate-v2/packages/slate-react-v2/src/index.ts`.
+  `.tmp/slate-v2/packages/slate-react-v2/src/index.ts`.
 - 2026-04-04: migrated the v2 placeholder proof surface to `SlatePlaceholder`
   in
-  `../slate-v2/site/examples/ts/components/slate-v2-placeholder-surface.tsx`.
+  `.tmp/slate-v2/site/examples/ts/components/slate-v2-placeholder-surface.tsx`.
 - 2026-04-04: added a focused package test for placeholder overlay attrs/style
   in
-  `../slate-v2/packages/slate-react-v2/test/runtime.tsx`.
+  `.tmp/slate-v2/packages/slate-react-v2/test/runtime.tsx`.
 - 2026-04-04: re-verified:
   - `yarn workspace slate-react-v2 test`
   - `yarn lint:typescript`
@@ -759,13 +759,13 @@
 - 2026-04-04: documented the placeholder-layer rule in
   `docs/solutions/logic-errors/2026-04-04-v2-placeholder-primitives-should-own-overlay-attrs-and-style.md`.
 - 2026-04-04: added the compositional `EditableText` primitive in
-  `../slate-v2/packages/slate-react-v2/src/components/editable-text.tsx`
+  `.tmp/slate-v2/packages/slate-react-v2/src/components/editable-text.tsx`
   and exported it from
-  `../slate-v2/packages/slate-react-v2/src/index.ts`.
+  `.tmp/slate-v2/packages/slate-react-v2/src/index.ts`.
 - 2026-04-04: migrated the v2 placeholder, inline-edge, void-edge, and
   zero-width matrix proof surfaces to consume `EditableText`.
 - 2026-04-04: added a focused package test for `EditableText` in
-  `../slate-v2/packages/slate-react-v2/test/runtime.tsx`.
+  `.tmp/slate-v2/packages/slate-react-v2/test/runtime.tsx`.
 - 2026-04-04: re-verified:
   - `yarn workspace slate-react-v2 test`
   - `yarn lint:typescript`
@@ -774,17 +774,17 @@
 - 2026-04-04: documented the compositional text-layer rule in
   `docs/solutions/logic-errors/2026-04-04-v2-editable-text-primitives-should-compose-leaf-text-zero-width-and-placeholder.md`.
 - 2026-04-04: added the compositional element-layer primitives in
-  `../slate-v2/packages/slate-react-v2/src/components/editable-element.tsx`
+  `.tmp/slate-v2/packages/slate-react-v2/src/components/editable-element.tsx`
   and
-  `../slate-v2/packages/slate-react-v2/src/components/void-element.tsx`,
+  `.tmp/slate-v2/packages/slate-react-v2/src/components/void-element.tsx`,
   then exported them from
-  `../slate-v2/packages/slate-react-v2/src/index.ts`.
+  `.tmp/slate-v2/packages/slate-react-v2/src/index.ts`.
 - 2026-04-04: migrated the v2 placeholder, inline-edge, void-edge, and
   zero-width matrix proof surfaces to consume the element layer instead of
   rebuilding wrappers and void spacer layout by hand.
 - 2026-04-04: added focused package tests for `EditableElement` and
   `VoidElement` in
-  `../slate-v2/packages/slate-react-v2/test/runtime.tsx`.
+  `.tmp/slate-v2/packages/slate-react-v2/test/runtime.tsx`.
 - 2026-04-04: re-verified:
   - `yarn workspace slate-react-v2 test`
   - `yarn lint:typescript`
@@ -793,14 +793,14 @@
 - 2026-04-04: documented the element-layer rule in
   `docs/solutions/logic-errors/2026-04-04-v2-element-primitives-should-compose-element-and-void-contracts.md`.
 - 2026-04-04: added the minimal editable root in
-  `../slate-v2/packages/slate-react-v2/src/components/editable.tsx`
+  `.tmp/slate-v2/packages/slate-react-v2/src/components/editable.tsx`
   and exported it from
-  `../slate-v2/packages/slate-react-v2/src/index.ts`.
+  `.tmp/slate-v2/packages/slate-react-v2/src/index.ts`.
 - 2026-04-04: migrated the v2 placeholder, inline-edge, and void-edge proof
   surfaces to the packaged editable root loop.
 - 2026-04-04: added a focused package test for `Editable` DOM-to-snapshot
   reconciliation in
-  `../slate-v2/packages/slate-react-v2/test/runtime.tsx`.
+  `.tmp/slate-v2/packages/slate-react-v2/test/runtime.tsx`.
 - 2026-04-04: re-verified:
   - `yarn workspace slate-react-v2 test`
   - `yarn lint:typescript`
@@ -812,11 +812,11 @@
   multiple rendered leaves from projection slices via `runtimeId` and
   `renderSegment(...)`.
 - 2026-04-04: added the highlighted rich-text proof surface in
-  `../slate-v2/site/examples/ts/slate-v2-highlighted-text.tsx`
+  `.tmp/slate-v2/site/examples/ts/slate-v2-highlighted-text.tsx`
   and the browser proof in
-  `../slate-v2/playwright/integration/examples/slate-v2-highlighted-text.test.ts`,
+  `.tmp/slate-v2/playwright/integration/examples/slate-v2-highlighted-text.test.ts`,
   then folded it into
-  `../slate-v2/package.json` e2e scripts.
+  `.tmp/slate-v2/package.json` e2e scripts.
 - 2026-04-04: fixed the decorated-text browser seam by teaching
   `slate-dom-v2` and `slate-browser` to map cumulative offsets across
   multi-leaf text nodes instead of assuming one DOM text node per Slate text
@@ -837,11 +837,11 @@
   to the path-bound `EditableText` API.
 - 2026-04-04: added focused package coverage for path-bound `EditableText` and
   zero-length mark-placeholder rendering in
-  `../slate-v2/packages/slate-react-v2/test/runtime.tsx`.
+  `.tmp/slate-v2/packages/slate-react-v2/test/runtime.tsx`.
 - 2026-04-04: added the mark-placeholder browser proof in
-  `../slate-v2/playwright/integration/examples/slate-v2-mark-placeholder.test.ts`
+  `.tmp/slate-v2/playwright/integration/examples/slate-v2-mark-placeholder.test.ts`
   and folded it into
-  `../slate-v2/package.json` e2e scripts.
+  `.tmp/slate-v2/package.json` e2e scripts.
 - 2026-04-04: re-verified:
   - `yarn workspace slate-react-v2 test`
   - `yarn lint:typescript`
@@ -853,9 +853,9 @@
   and paste semantics.
 - 2026-04-04: added browser proofs for decorated selection/copy and
   mark-placeholder selection transitions in
-  `../slate-v2/playwright/integration/examples/slate-v2-highlighted-text.test.ts`
+  `.tmp/slate-v2/playwright/integration/examples/slate-v2-highlighted-text.test.ts`
   and
-  `../slate-v2/playwright/integration/examples/slate-v2-mark-placeholder.test.ts`.
+  `.tmp/slate-v2/playwright/integration/examples/slate-v2-mark-placeholder.test.ts`.
 - 2026-04-04: normalized `slate-browser` selected-text reads so FEFF sentinels
   do not leak through mark-placeholder selections.
 - 2026-04-04: re-verified:
@@ -866,7 +866,7 @@
 - 2026-04-04: documented the rich-text browser helper rule in
   `docs/solutions/logic-errors/2026-04-04-decorated-clipboard-and-selected-text-helpers-should-strip-render-only-wrappers-and-feff.md`.
 - 2026-04-04: exposed `EditableBlocks` from
-  `../slate-v2/packages/slate-react-v2/src/components/editable-blocks.tsx`
+  `.tmp/slate-v2/packages/slate-react-v2/src/components/editable-blocks.tsx`
   as the first narrow public editor-facing surface over the proved renderer
   stack.
 - 2026-04-04: migrated the highlighted-text and mark-placeholder examples to
@@ -874,35 +874,35 @@
 - 2026-04-04: documented the public-surface conclusion in
   `docs/solutions/logic-errors/2026-04-04-v2-editable-blocks-can-be-the-first-public-editor-surface.md`.
 - 2026-04-04: extended
-  `../slate-v2/packages/slate-v2/src/core.ts`
+  `.tmp/slate-v2/packages/slate-v2/src/core.ts`
   so nested mixed-inline quote paragraph containers can:
   - extract wrapped fragments
   - insert wrapped fragments back into the same container shape
   - rebase explicit-at editor selections by stripping the wrapper path and
     reusing the top-level mixed-inline transform
 - 2026-04-04: extended
-  `../slate-v2/packages/slate-v2/src/core.ts`
+  `.tmp/slate-v2/packages/slate-v2/src/core.ts`
   with a fourth core-only insert-fragment range-ref transform path for nested
   mixed-inline block containers.
 - 2026-04-04: extended
-  `../slate-v2/packages/slate-v2/test/clipboard-contract.ts`
+  `.tmp/slate-v2/packages/slate-v2/test/clipboard-contract.ts`
   with nested mixed-inline quote extraction, insertion, and explicit-at
   selection rebasing proofs.
 - 2026-04-04: extended
-  `../slate-v2/packages/slate-v2/test/range-ref-contract.ts`
+  `.tmp/slate-v2/packages/slate-v2/test/range-ref-contract.ts`
   with nested mixed-inline quote explicit-at range-ref rebasing proofs.
 - 2026-04-04: extended
-  `../slate-v2/packages/slate-dom-v2/src/clipboard.ts`
+  `.tmp/slate-v2/packages/slate-dom-v2/src/clipboard.ts`
   so the clipboard proof subset includes a wrapped container whose child blocks
   are mixed-inline blocks.
 - 2026-04-04: added the hidden browser proof surface in
-  `../slate-v2/site/examples/ts/slate-v2-nested-mixed-inline.tsx`
+  `.tmp/slate-v2/site/examples/ts/slate-v2-nested-mixed-inline.tsx`
   and registered it in
-  `../slate-v2/site/constants/examples.ts`.
+  `.tmp/slate-v2/site/constants/examples.ts`.
 - 2026-04-04: added the Chromium browser proof in
-  `../slate-v2/playwright/integration/examples/slate-v2-nested-mixed-inline.test.ts`
+  `.tmp/slate-v2/playwright/integration/examples/slate-v2-nested-mixed-inline.test.ts`
   and folded it into the local e2e lane in
-  `../slate-v2/package.json`.
+  `.tmp/slate-v2/package.json`.
 - 2026-04-04: installed the missing local Playwright Chromium binaries with:
   - `yarn exec playwright install chromium`
 - 2026-04-04: re-verified after the nested mixed-inline tranche with:
@@ -917,32 +917,32 @@
   - `docs/slate-v2/cohesive-program-plan.md`
   - `docs/slate-v2/final-synthesis.md`
 - 2026-04-04: generalized the core block-geometry helpers in
-  `../slate-v2/packages/slate-v2/src/core.ts`
+  `.tmp/slate-v2/packages/slate-v2/src/core.ts`
   from the old direct-child / one-hop assumption to recursive text-leaf entry
   mapping inside a block.
 - 2026-04-04: extended
-  `../slate-v2/packages/slate-v2/test/clipboard-contract.ts`
+  `.tmp/slate-v2/packages/slate-v2/test/clipboard-contract.ts`
   with richer-inline top-level and nested quote proofs for:
   - extraction
   - insertion
   - explicit-at selection rebasing
 - 2026-04-04: extended
-  `../slate-v2/packages/slate-v2/test/range-ref-contract.ts`
+  `.tmp/slate-v2/packages/slate-v2/test/range-ref-contract.ts`
   with richer-inline top-level and nested quote proofs for explicit-at
   range-ref rebasing.
 - 2026-04-04: extended
-  `../slate-v2/packages/slate-dom-v2/src/clipboard.ts`
+  `.tmp/slate-v2/packages/slate-dom-v2/src/clipboard.ts`
   so the supported proof subset includes richer inline descendant trees inside
   a block, not only the earlier direct single-text-child inline shape.
 - 2026-04-04: added the hidden browser proof surfaces in:
-  - `../slate-v2/site/examples/ts/slate-v2-rich-inline.tsx`
-  - `../slate-v2/site/examples/ts/slate-v2-nested-rich-inline.tsx`
-  - `../slate-v2/site/examples/ts/components/slate-v2-rich-inline-surface.tsx`
+  - `.tmp/slate-v2/site/examples/ts/slate-v2-rich-inline.tsx`
+  - `.tmp/slate-v2/site/examples/ts/slate-v2-nested-rich-inline.tsx`
+  - `.tmp/slate-v2/site/examples/ts/components/slate-v2-rich-inline-surface.tsx`
 - 2026-04-04: added the Chromium browser proofs in:
-  - `../slate-v2/playwright/integration/examples/slate-v2-rich-inline.test.ts`
-  - `../slate-v2/playwright/integration/examples/slate-v2-nested-rich-inline.test.ts`
+  - `.tmp/slate-v2/playwright/integration/examples/slate-v2-rich-inline.test.ts`
+  - `.tmp/slate-v2/playwright/integration/examples/slate-v2-nested-rich-inline.test.ts`
     and folded them into the local e2e lane in
-    `../slate-v2/package.json`.
+    `.tmp/slate-v2/package.json`.
 - 2026-04-04: re-verified after the richer-inline geometry tranche with:
   - `bun test /Users/zbeyens/git/slate-v2/packages/slate-v2/test/clipboard-contract.ts`
   - `bun test /Users/zbeyens/git/slate-v2/packages/slate-v2/test/range-ref-contract.ts`
@@ -957,13 +957,13 @@
 - 2026-04-05: probed wrapper block units using list-item wrappers around
   richer-inline paragraphs.
 - 2026-04-05: added the hidden top-level browser proof surface in
-  `../slate-v2/site/examples/ts/slate-v2-list-rich-inline.tsx`
+  `.tmp/slate-v2/site/examples/ts/slate-v2-list-rich-inline.tsx`
   and registered it in
-  `../slate-v2/site/constants/examples.ts`.
+  `.tmp/slate-v2/site/constants/examples.ts`.
 - 2026-04-05: added the Chromium browser proof in
-  `../slate-v2/playwright/integration/examples/slate-v2-list-rich-inline.test.ts`
+  `.tmp/slate-v2/playwright/integration/examples/slate-v2-list-rich-inline.test.ts`
   and folded it into the local e2e lane in
-  `../slate-v2/package.json`.
+  `.tmp/slate-v2/package.json`.
 - 2026-04-05: verified the wrapper-unit top-level slice with:
   - `bun test /Users/zbeyens/git/slate-v2/packages/slate-v2/test/clipboard-contract.ts`
   - `bun test /Users/zbeyens/git/slate-v2/packages/slate-v2/test/range-ref-contract.ts`
@@ -971,15 +971,15 @@
   - `yarn lint:typescript`
   - `yarn test:slate-browser:e2e:local`
 - 2026-04-05: added the hidden nested wrapper-stack browser proof surface in
-  `../slate-v2/site/examples/ts/slate-v2-nested-list-rich-inline.tsx`
+  `.tmp/slate-v2/site/examples/ts/slate-v2-nested-list-rich-inline.tsx`
   and registered it in
-  `../slate-v2/site/constants/examples.ts`.
+  `.tmp/slate-v2/site/constants/examples.ts`.
 - 2026-04-05: added the Chromium browser proof in
-  `../slate-v2/playwright/integration/examples/slate-v2-nested-list-rich-inline.test.ts`
+  `.tmp/slate-v2/playwright/integration/examples/slate-v2-nested-list-rich-inline.test.ts`
   and folded it into the local e2e lane in
-  `../slate-v2/package.json`.
+  `.tmp/slate-v2/package.json`.
 - 2026-04-05: extended
-  `../slate-v2/packages/slate-v2/test/range-ref-contract.ts`
+  `.tmp/slate-v2/packages/slate-v2/test/range-ref-contract.ts`
   with top-level and nested wrapper-stack range-ref rebasing proofs.
 - 2026-04-05: promoted nested quote+list wrapper stacks from contract-only probe
   to browser-proved state after the Chromium proof matched the contract layer.
@@ -995,12 +995,12 @@
   - `docs/slate-v2/cohesive-program-plan.md`
   - `docs/slate-v2/final-synthesis.md`
 - 2026-04-05: added top-level and quote-wrapped list-unit browser proof routes in:
-  - `../slate-v2/site/examples/ts/slate-v2-list-unit-rich-inline.tsx`
-  - `../slate-v2/site/examples/ts/slate-v2-nested-list-unit-rich-inline.tsx`
+  - `.tmp/slate-v2/site/examples/ts/slate-v2-list-unit-rich-inline.tsx`
+  - `.tmp/slate-v2/site/examples/ts/slate-v2-nested-list-unit-rich-inline.tsx`
 - 2026-04-05: added the matching Chromium proofs in:
-  - `../slate-v2/playwright/integration/examples/slate-v2-list-unit-rich-inline.test.ts`
-  - `../slate-v2/playwright/integration/examples/slate-v2-nested-list-unit-rich-inline.test.ts`
-- 2026-04-05: extended `../slate-v2/packages/slate-dom-v2/test/clipboard-boundary.ts`
+  - `.tmp/slate-v2/playwright/integration/examples/slate-v2-list-unit-rich-inline.test.ts`
+  - `.tmp/slate-v2/playwright/integration/examples/slate-v2-nested-list-unit-rich-inline.test.ts`
+- 2026-04-05: extended `.tmp/slate-v2/packages/slate-dom-v2/test/clipboard-boundary.ts`
   with list-unit clipboard round-trip coverage.
 - 2026-04-05: re-verified the list-unit promotion tranche with:
   - `bun test /Users/zbeyens/git/slate-v2/packages/slate-v2/test/clipboard-contract.ts`
@@ -1010,12 +1010,12 @@
   - `yarn test:slate-browser:e2e:local`
 - 2026-04-05: added top-level and quote-wrapped paragraph-plus-quote list-unit
   routes in:
-  - `../slate-v2/site/examples/ts/slate-v2-list-unit-quote-rich-inline.tsx`
-  - `../slate-v2/site/examples/ts/slate-v2-nested-list-unit-quote-rich-inline.tsx`
+  - `.tmp/slate-v2/site/examples/ts/slate-v2-list-unit-quote-rich-inline.tsx`
+  - `.tmp/slate-v2/site/examples/ts/slate-v2-nested-list-unit-quote-rich-inline.tsx`
 - 2026-04-05: added the matching Chromium proofs in:
-  - `../slate-v2/playwright/integration/examples/slate-v2-list-unit-quote-rich-inline.test.ts`
-  - `../slate-v2/playwright/integration/examples/slate-v2-nested-list-unit-quote-rich-inline.test.ts`
-- 2026-04-05: extended `../slate-v2/packages/slate-dom-v2/test/clipboard-boundary.ts`
+  - `.tmp/slate-v2/playwright/integration/examples/slate-v2-list-unit-quote-rich-inline.test.ts`
+  - `.tmp/slate-v2/playwright/integration/examples/slate-v2-nested-list-unit-quote-rich-inline.test.ts`
+- 2026-04-05: extended `.tmp/slate-v2/packages/slate-dom-v2/test/clipboard-boundary.ts`
   with paragraph-plus-quote list-unit round-trip coverage.
 - 2026-04-05: re-verified the paragraph-plus-quote list-unit tranche with:
   - `bun test /Users/zbeyens/git/slate-v2/packages/slate-v2/test/clipboard-contract.ts`
@@ -1025,13 +1025,13 @@
   - `yarn test:slate-browser:e2e:local`
 - 2026-04-05: added top-level and quote-wrapped paragraph-plus-list-plus-quote
   list-unit routes in:
-  - `../slate-v2/site/examples/ts/slate-v2-list-unit-quote-rich-inline.tsx`
-  - `../slate-v2/site/examples/ts/slate-v2-nested-list-unit-quote-rich-inline.tsx`
+  - `.tmp/slate-v2/site/examples/ts/slate-v2-list-unit-quote-rich-inline.tsx`
+  - `.tmp/slate-v2/site/examples/ts/slate-v2-nested-list-unit-quote-rich-inline.tsx`
 - 2026-04-05: added the matching Chromium proofs in:
-  - `../slate-v2/playwright/integration/examples/slate-v2-list-unit-quote-rich-inline.test.ts`
-  - `../slate-v2/playwright/integration/examples/slate-v2-nested-list-unit-quote-rich-inline.test.ts`
-- 2026-04-05: extended `../slate-v2/packages/slate-v2/test/range-ref-contract.ts`
-  and `../slate-v2/packages/slate-dom-v2/test/clipboard-boundary.ts`
+  - `.tmp/slate-v2/playwright/integration/examples/slate-v2-list-unit-quote-rich-inline.test.ts`
+  - `.tmp/slate-v2/playwright/integration/examples/slate-v2-nested-list-unit-quote-rich-inline.test.ts`
+- 2026-04-05: extended `.tmp/slate-v2/packages/slate-v2/test/range-ref-contract.ts`
+  and `.tmp/slate-v2/packages/slate-dom-v2/test/clipboard-boundary.ts`
   for the paragraph-plus-list-plus-quote wrapper-unit shape.
 - 2026-04-05: re-verified the paragraph-plus-list-plus-quote tranche with:
   - `bun test /Users/zbeyens/git/slate-v2/packages/slate-v2/test/clipboard-contract.ts`
@@ -1040,13 +1040,13 @@
   - `yarn lint:typescript`
   - `yarn test:slate-browser:e2e:local`
 - 2026-04-05: added top-level and quote-wrapped multi-unit complex list routes in:
-  - `../slate-v2/site/examples/ts/slate-v2-complex-list-units-rich-inline.tsx`
-  - `../slate-v2/site/examples/ts/slate-v2-nested-complex-list-units-rich-inline.tsx`
+  - `.tmp/slate-v2/site/examples/ts/slate-v2-complex-list-units-rich-inline.tsx`
+  - `.tmp/slate-v2/site/examples/ts/slate-v2-nested-complex-list-units-rich-inline.tsx`
 - 2026-04-05: added the matching Chromium proofs in:
-  - `../slate-v2/playwright/integration/examples/slate-v2-complex-list-units-rich-inline.test.ts`
-  - `../slate-v2/playwright/integration/examples/slate-v2-nested-complex-list-units-rich-inline.test.ts`
-- 2026-04-05: extended `../slate-v2/packages/slate-v2/test/clipboard-contract.ts`
-  and `../slate-v2/packages/slate-dom-v2/test/clipboard-boundary.ts`
+  - `.tmp/slate-v2/playwright/integration/examples/slate-v2-complex-list-units-rich-inline.test.ts`
+  - `.tmp/slate-v2/playwright/integration/examples/slate-v2-nested-complex-list-units-rich-inline.test.ts`
+- 2026-04-05: extended `.tmp/slate-v2/packages/slate-v2/test/clipboard-contract.ts`
+  and `.tmp/slate-v2/packages/slate-dom-v2/test/clipboard-boundary.ts`
   for multi-unit complex wrapper-list fragments.
 - 2026-04-05: re-verified the multi-unit complex wrapper-list tranche with:
   - `bun test /Users/zbeyens/git/slate-v2/packages/slate-v2/test/clipboard-contract.ts`
@@ -1055,11 +1055,11 @@
   - `yarn lint:typescript`
   - `yarn test:slate-browser:e2e:local`
 - 2026-04-05: added top-level and quote-wrapped multi-unit complex list routes in:
-  - `../slate-v2/site/examples/ts/slate-v2-complex-list-units-rich-inline.tsx`
-  - `../slate-v2/site/examples/ts/slate-v2-nested-complex-list-units-rich-inline.tsx`
+  - `.tmp/slate-v2/site/examples/ts/slate-v2-complex-list-units-rich-inline.tsx`
+  - `.tmp/slate-v2/site/examples/ts/slate-v2-nested-complex-list-units-rich-inline.tsx`
 - 2026-04-05: added the matching Chromium proofs in:
-  - `../slate-v2/playwright/integration/examples/slate-v2-complex-list-units-rich-inline.test.ts`
-  - `../slate-v2/playwright/integration/examples/slate-v2-nested-complex-list-units-rich-inline.test.ts`
+  - `.tmp/slate-v2/playwright/integration/examples/slate-v2-complex-list-units-rich-inline.test.ts`
+  - `.tmp/slate-v2/playwright/integration/examples/slate-v2-nested-complex-list-units-rich-inline.test.ts`
 - 2026-04-05: re-verified the sibling complex wrapper-list tranche with:
   - `bun test /Users/zbeyens/git/slate-v2/packages/slate-v2/test/clipboard-contract.ts`
   - `bun test /Users/zbeyens/git/slate-v2/packages/slate-v2/test/range-ref-contract.ts`
@@ -1067,7 +1067,7 @@
   - `yarn lint:typescript`
   - `yarn test:slate-browser:e2e:local`
 - 2026-04-05: aligned broader sibling-unit explicit-at range-ref behavior with
-  the real selection semantics in `../slate-v2/packages/slate-v2/src/core.ts`.
+  the real selection semantics in `.tmp/slate-v2/packages/slate-v2/src/core.ts`.
 - 2026-04-05: re-verified the explicit-at rebasing tranche with:
   - `bun test /Users/zbeyens/git/slate-v2/packages/slate-v2/test/clipboard-contract.ts`
   - `bun test /Users/zbeyens/git/slate-v2/packages/slate-v2/test/range-ref-contract.ts`
@@ -1076,13 +1076,13 @@
   - `yarn test:slate-browser:e2e:local`
 - 2026-04-05: added top-level and quote-wrapped multi-block-child complex unit
   routes in:
-  - `../slate-v2/site/examples/ts/slate-v2-multi-block-complex-list-units-rich-inline.tsx`
-  - `../slate-v2/site/examples/ts/slate-v2-nested-multi-block-complex-list-units-rich-inline.tsx`
+  - `.tmp/slate-v2/site/examples/ts/slate-v2-multi-block-complex-list-units-rich-inline.tsx`
+  - `.tmp/slate-v2/site/examples/ts/slate-v2-nested-multi-block-complex-list-units-rich-inline.tsx`
 - 2026-04-05: added the matching Chromium proofs in:
-  - `../slate-v2/playwright/integration/examples/slate-v2-multi-block-complex-list-units-rich-inline.test.ts`
-  - `../slate-v2/playwright/integration/examples/slate-v2-nested-multi-block-complex-list-units-rich-inline.test.ts`
-- 2026-04-05: extended `../slate-v2/packages/slate-v2/test/clipboard-contract.ts`
-  and `../slate-v2/packages/slate-dom-v2/test/clipboard-boundary.ts`
+  - `.tmp/slate-v2/playwright/integration/examples/slate-v2-multi-block-complex-list-units-rich-inline.test.ts`
+  - `.tmp/slate-v2/playwright/integration/examples/slate-v2-nested-multi-block-complex-list-units-rich-inline.test.ts`
+- 2026-04-05: extended `.tmp/slate-v2/packages/slate-v2/test/clipboard-contract.ts`
+  and `.tmp/slate-v2/packages/slate-dom-v2/test/clipboard-boundary.ts`
   for sibling complex units whose nested list and quote children each contain
   multiple blocks.
 - 2026-04-05: re-verified the multi-block-child-container tranche with:
@@ -1091,29 +1091,29 @@
   - `yarn workspace slate-dom-v2 test clipboard-boundary`
   - `yarn lint:typescript`
   - `yarn test:slate-browser:e2e:local`
-- 2026-04-05: extended `../slate-v2/packages/slate-v2/test/clipboard-contract.ts`
-  and `../slate-v2/packages/slate-v2/test/range-ref-contract.ts`
+- 2026-04-05: extended `.tmp/slate-v2/packages/slate-v2/test/clipboard-contract.ts`
+  and `.tmp/slate-v2/packages/slate-v2/test/range-ref-contract.ts`
   with explicit-at selection/range-ref proofs for broader sibling units whose
   child containers are multi-block.
 - 2026-04-05: re-verified the multi-block-child explicit-at tranche with:
   - `bun test /Users/zbeyens/git/slate-v2/packages/slate-v2/test/clipboard-contract.ts`
   - `bun test /Users/zbeyens/git/slate-v2/packages/slate-v2/test/range-ref-contract.ts`
   - `yarn lint:typescript`
-- 2026-04-05: extended `../slate-v2/packages/slate-v2/test/clipboard-contract.ts`
-  and `../slate-v2/packages/slate-v2/test/range-ref-contract.ts`
+- 2026-04-05: extended `.tmp/slate-v2/packages/slate-v2/test/clipboard-contract.ts`
+  and `.tmp/slate-v2/packages/slate-v2/test/range-ref-contract.ts`
   with expanded cross-unit explicit-at selection/range-ref proofs.
 - 2026-04-05: re-verified the expanded cross-unit explicit-at tranche with:
   - `bun test /Users/zbeyens/git/slate-v2/packages/slate-v2/test/clipboard-contract.ts`
   - `bun test /Users/zbeyens/git/slate-v2/packages/slate-v2/test/range-ref-contract.ts`
   - `yarn lint:typescript`
 - 2026-04-05: added the ordered-list browser proof route in:
-  - `../slate-v2/site/examples/ts/slate-v2-ordered-list-unit-rich-inline.tsx`
+  - `.tmp/slate-v2/site/examples/ts/slate-v2-ordered-list-unit-rich-inline.tsx`
 - 2026-04-05: added the matching Chromium proof in:
-  - `../slate-v2/playwright/integration/examples/slate-v2-ordered-list-unit-rich-inline.test.ts`
-- 2026-04-05: extended `../slate-v2/packages/slate-v2/src/core.ts`,
-  `../slate-v2/packages/slate-v2/test/clipboard-contract.ts`,
-  `../slate-v2/packages/slate-v2/test/range-ref-contract.ts`,
-  and `../slate-v2/packages/slate-dom-v2/test/clipboard-boundary.ts`
+  - `.tmp/slate-v2/playwright/integration/examples/slate-v2-ordered-list-unit-rich-inline.test.ts`
+- 2026-04-05: extended `.tmp/slate-v2/packages/slate-v2/src/core.ts`,
+  `.tmp/slate-v2/packages/slate-v2/test/clipboard-contract.ts`,
+  `.tmp/slate-v2/packages/slate-v2/test/range-ref-contract.ts`,
+  and `.tmp/slate-v2/packages/slate-dom-v2/test/clipboard-boundary.ts`
   for the ordered-list wrapper-unit variant.
 - 2026-04-05: re-verified the ordered-list wrapper-unit tranche with:
   - `bun test /Users/zbeyens/git/slate-v2/packages/slate-v2/test/clipboard-contract.ts`
@@ -1123,18 +1123,18 @@
   - `yarn test:slate-browser:e2e:local`
 - 2026-04-05: extended the ordered-list tranche to cover cross-container
   ordered-list -> bulleted-list transplant in:
-  - `../slate-v2/packages/slate-v2/test/clipboard-contract.ts`
-  - `../slate-v2/packages/slate-v2/test/range-ref-contract.ts`
+  - `.tmp/slate-v2/packages/slate-v2/test/clipboard-contract.ts`
+  - `.tmp/slate-v2/packages/slate-v2/test/range-ref-contract.ts`
 - 2026-04-05: re-verified the cross-container list transplant tranche with:
   - `bun test /Users/zbeyens/git/slate-v2/packages/slate-v2/test/clipboard-contract.ts`
   - `bun test /Users/zbeyens/git/slate-v2/packages/slate-v2/test/range-ref-contract.ts`
   - `yarn lint:typescript`
 - 2026-04-05: extended the wrapper-unit seam in
-  `../slate-v2/packages/slate-v2/src/core.ts`
+  `.tmp/slate-v2/packages/slate-v2/src/core.ts`
   from hardcoded `list-item` to compatible homogeneous unit types.
 - 2026-04-05: added the check-list contract proofs in:
-  - `../slate-v2/packages/slate-v2/test/clipboard-contract.ts`
-  - `../slate-v2/packages/slate-v2/test/range-ref-contract.ts`
+  - `.tmp/slate-v2/packages/slate-v2/test/clipboard-contract.ts`
+  - `.tmp/slate-v2/packages/slate-v2/test/range-ref-contract.ts`
 - 2026-04-05: re-verified the compatible unit-type tranche with:
   - `bun test /Users/zbeyens/git/slate-v2/packages/slate-v2/test/clipboard-contract.ts`
   - `bun test /Users/zbeyens/git/slate-v2/packages/slate-v2/test/range-ref-contract.ts`
@@ -1142,16 +1142,16 @@
   - `yarn lint:typescript`
   - `yarn test:slate-browser:e2e:local`
 - 2026-04-05: added the check-list browser proof route in:
-  - `../slate-v2/site/examples/ts/slate-v2-check-list-unit-rich-inline.tsx`
+  - `.tmp/slate-v2/site/examples/ts/slate-v2-check-list-unit-rich-inline.tsx`
 - 2026-04-05: added the matching Chromium proof in:
-  - `../slate-v2/playwright/integration/examples/slate-v2-check-list-unit-rich-inline.test.ts`
+  - `.tmp/slate-v2/playwright/integration/examples/slate-v2-check-list-unit-rich-inline.test.ts`
 - 2026-04-05: re-verified the explicit `check-list-item` variant with:
   - `bun test /Users/zbeyens/git/slate-v2/packages/slate-v2/test/clipboard-contract.ts`
   - `bun test /Users/zbeyens/git/slate-v2/packages/slate-v2/test/range-ref-contract.ts`
   - `yarn workspace slate-dom-v2 test clipboard-boundary`
   - `yarn lint:typescript`
   - `yarn test:slate-browser:e2e:local`
-- 2026-04-05: extended the seam again in `../slate-v2/packages/slate-v2/src/core.ts`
+- 2026-04-05: extended the seam again in `.tmp/slate-v2/packages/slate-v2/src/core.ts`
   so compatible heterogeneous sibling unit types can reuse the same wrapper-list
   path when the outer container contract still matches.
 - 2026-04-05: re-verified the heterogeneous sibling-unit tranche with:
@@ -1161,15 +1161,15 @@
   - `yarn lint:typescript`
   - `yarn test:slate-browser:e2e:local`
 - 2026-04-05: added the hidden deeper wrapper-stack browser proof surface in
-  `../slate-v2/site/examples/ts/slate-v2-deep-wrapper-rich-inline.tsx`
+  `.tmp/slate-v2/site/examples/ts/slate-v2-deep-wrapper-rich-inline.tsx`
   and registered it in
-  `../slate-v2/site/constants/examples.ts`.
+  `.tmp/slate-v2/site/constants/examples.ts`.
 - 2026-04-05: added the Chromium browser proof in
-  `../slate-v2/playwright/integration/examples/slate-v2-deep-wrapper-rich-inline.test.ts`
+  `.tmp/slate-v2/playwright/integration/examples/slate-v2-deep-wrapper-rich-inline.test.ts`
   and folded it into the local e2e lane in
-  `../slate-v2/package.json`.
+  `.tmp/slate-v2/package.json`.
 - 2026-04-05: extended
-  `../slate-v2/packages/slate-v2/test/range-ref-contract.ts`
+  `.tmp/slate-v2/packages/slate-v2/test/range-ref-contract.ts`
   with deeper wrapper-stack range-ref rebasing proofs.
 - 2026-04-05: promoted deeper wrapper stacks from “should probably still work”
   into browser-proved state after the Chromium proof matched the contract layer.

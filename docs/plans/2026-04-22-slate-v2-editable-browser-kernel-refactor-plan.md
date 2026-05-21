@@ -98,7 +98,7 @@ Current concrete bug class:
 ## Target Modules
 
 All paths below are proposed under
-`../slate-v2/packages/slate-react/src/editable/`.
+`.tmp/slate-v2/packages/slate-react/src/editable/`.
 
 ### `selection-reconciler.ts`
 
@@ -124,12 +124,12 @@ Key API:
 
 ```ts
 type SelectionReconciler = {
-  captureDOMSelection(): DOMSelectionSnapshot | null
-  syncDOMSelectionFromModel(options?: { force?: boolean }): DOMRange | null
-  syncModelSelectionFromDOM(options?: { exactMatch?: boolean }): Range | null
-  repairCaretAfterModelOperation(options: RepairCaretOptions): void
-  isCanonicalDOMCaretForModelSelection(): boolean
-}
+  captureDOMSelection(): DOMSelectionSnapshot | null;
+  syncDOMSelectionFromModel(options?: { force?: boolean }): DOMRange | null;
+  syncModelSelectionFromDOM(options?: { exactMatch?: boolean }): Range | null;
+  repairCaretAfterModelOperation(options: RepairCaretOptions): void;
+  isCanonicalDOMCaretForModelSelection(): boolean;
+};
 ```
 
 ### `input-router.ts`
@@ -159,12 +159,12 @@ Key API:
 
 ```ts
 type InputRouter = {
-  onDOMBeforeInput(event: InputEvent): void
-  onDOMInput(event: InputEvent): void
-  onKeyDown(event: React.KeyboardEvent<HTMLDivElement>): void
-  onPaste(event: React.ClipboardEvent<HTMLDivElement>): void
-  onDrop(event: React.DragEvent<HTMLDivElement>): void
-}
+  onDOMBeforeInput(event: InputEvent): void;
+  onDOMInput(event: InputEvent): void;
+  onKeyDown(event: React.KeyboardEvent<HTMLDivElement>): void;
+  onPaste(event: React.ClipboardEvent<HTMLDivElement>): void;
+  onDrop(event: React.DragEvent<HTMLDivElement>): void;
+};
 ```
 
 ### `native-input-strategy.ts`
@@ -186,8 +186,8 @@ Key API:
 
 ```ts
 type NativeInputStrategy = {
-  canUseNativeInput(context: NativeInputContext): NativeInputDecision
-}
+  canUseNativeInput(context: NativeInputContext): NativeInputDecision;
+};
 ```
 
 ### `model-input-strategy.ts`
@@ -212,8 +212,8 @@ Key API:
 
 ```ts
 type ModelInputStrategy = {
-  applyInputIntent(intent: InputIntent): void
-}
+  applyInputIntent(intent: InputIntent): void;
+};
 ```
 
 ### `dom-repair-queue.ts`
@@ -236,9 +236,9 @@ Key API:
 
 ```ts
 type DOMRepairQueue = {
-  enqueue(operationClass: DOMRepairClass, options: DOMRepairOptions): void
-  flushAfterCommit(): void
-}
+  enqueue(operationClass: DOMRepairClass, options: DOMRepairOptions): void;
+  flushAfterCommit(): void;
+};
 ```
 
 ### `browser-handle.ts`
@@ -455,25 +455,25 @@ Each user-path row must assert:
 - DOM selection anchor/focus
 - visual caret location where relevant
 
-| Operation class | Required rows | Projects |
-| --- | --- | --- |
-| Insert text before text | rich text before trailing punctuation; plain paragraph start | Chromium, WebKit; semantic handle on mobile/Firefox where transport is not the target |
-| Insert text inside text | rich text middle leaf; plain text middle leaf | Chromium, WebKit |
-| Insert text after text | end of first rich text block; end of plain block | Chromium, WebKit |
-| Delete backward | before text, after text, around inline boundary, after DOM-owned sync | Chromium, WebKit, mobile semantic |
-| Delete forward | before punctuation, before inline/void boundary, after DOM-owned sync | Chromium, WebKit, mobile semantic |
-| Expanded range delete | same text node, cross leaf, cross block, inline/void included | Chromium, Firefox, WebKit, mobile semantic |
-| Select text + add mark | select range, apply bold, assert model marks, DOM markup, caret after operation | Chromium, WebKit |
-| Insert with active mark | set mark, type text, assert mark and caret | Chromium, WebKit, mobile semantic |
-| Split block / Enter | plain paragraph, rich leaf boundary, after inline/void, shell-backed island | Chromium, Firefox, WebKit, mobile where transport is honest |
-| Paste plain | collapsed and expanded selection | Chromium, Firefox, WebKit, mobile semantic |
-| Paste rich HTML | collapsed and expanded selection | Chromium, Firefox, WebKit, mobile semantic where clipboard transport is limited |
-| Paste Slate fragment | full document, partial shell-backed selection, inline/void fragment | Chromium, Firefox, WebKit, mobile semantic |
-| IME composition | empty text, non-empty text, inline edge, void edge, DOM-owned opt-out | Chromium proxy/direct, Firefox direct where honest, WebKit proxy, mobile semantic/proxy |
-| Undo/redo after native edit | native insert then undo/redo, DOM text and caret repaired | Chromium, WebKit |
-| Undo/redo after model-owned edit | handle/model insert/delete/paste then undo/redo | All projects |
-| Focus/blur selection restore | focus editor, focus void child/input, blur Safari, nested editable Firefox | Chromium, Firefox, WebKit |
-| Shadow DOM editing | insert, delete, Enter, follow-up typing, selection rect | Chromium, Firefox, WebKit, mobile if honest |
+| Operation class                  | Required rows                                                                   | Projects                                                                                |
+| -------------------------------- | ------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| Insert text before text          | rich text before trailing punctuation; plain paragraph start                    | Chromium, WebKit; semantic handle on mobile/Firefox where transport is not the target   |
+| Insert text inside text          | rich text middle leaf; plain text middle leaf                                   | Chromium, WebKit                                                                        |
+| Insert text after text           | end of first rich text block; end of plain block                                | Chromium, WebKit                                                                        |
+| Delete backward                  | before text, after text, around inline boundary, after DOM-owned sync           | Chromium, WebKit, mobile semantic                                                       |
+| Delete forward                   | before punctuation, before inline/void boundary, after DOM-owned sync           | Chromium, WebKit, mobile semantic                                                       |
+| Expanded range delete            | same text node, cross leaf, cross block, inline/void included                   | Chromium, Firefox, WebKit, mobile semantic                                              |
+| Select text + add mark           | select range, apply bold, assert model marks, DOM markup, caret after operation | Chromium, WebKit                                                                        |
+| Insert with active mark          | set mark, type text, assert mark and caret                                      | Chromium, WebKit, mobile semantic                                                       |
+| Split block / Enter              | plain paragraph, rich leaf boundary, after inline/void, shell-backed island     | Chromium, Firefox, WebKit, mobile where transport is honest                             |
+| Paste plain                      | collapsed and expanded selection                                                | Chromium, Firefox, WebKit, mobile semantic                                              |
+| Paste rich HTML                  | collapsed and expanded selection                                                | Chromium, Firefox, WebKit, mobile semantic where clipboard transport is limited         |
+| Paste Slate fragment             | full document, partial shell-backed selection, inline/void fragment             | Chromium, Firefox, WebKit, mobile semantic                                              |
+| IME composition                  | empty text, non-empty text, inline edge, void edge, DOM-owned opt-out           | Chromium proxy/direct, Firefox direct where honest, WebKit proxy, mobile semantic/proxy |
+| Undo/redo after native edit      | native insert then undo/redo, DOM text and caret repaired                       | Chromium, WebKit                                                                        |
+| Undo/redo after model-owned edit | handle/model insert/delete/paste then undo/redo                                 | All projects                                                                            |
+| Focus/blur selection restore     | focus editor, focus void child/input, blur Safari, nested editable Firefox      | Chromium, Firefox, WebKit                                                               |
+| Shadow DOM editing               | insert, delete, Enter, follow-up typing, selection rect                         | Chromium, Firefox, WebKit, mobile if honest                                             |
 
 ## Proposed Phases
 
@@ -803,7 +803,7 @@ Current owner:
 Next action:
 
 - run focused browser-handle baseline rows, then extract `__slateBrowserHandle`
-  setup/cleanup into `../slate-v2/packages/slate-react/src/editable/browser-handle.ts`
+  setup/cleanup into `.tmp/slate-v2/packages/slate-react/src/editable/browser-handle.ts`
 
 ## 2026-04-22 Phase 1 Browser Handle Extraction
 
@@ -811,7 +811,7 @@ Status: closed.
 
 Actions:
 
-- created `../slate-v2/packages/slate-react/src/editable/browser-handle.ts`
+- created `.tmp/slate-v2/packages/slate-react/src/editable/browser-handle.ts`
 - moved `__slateBrowserHandle` setup/cleanup, semantic handle methods, browser
   handle range-ref bookkeeping, and cleanup into `attachSlateBrowserHandle`
 - kept behavior unchanged:
@@ -824,8 +824,8 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-react/src/editable/browser-handle.ts`
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/editable/browser-handle.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
 
 Moved comments:
 
@@ -900,7 +900,7 @@ Status: closed.
 
 Actions:
 
-- created `../slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`
+- created `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`
 - moved pure DOM-selection to Slate-range conversion helpers:
   - `toSlateCollapsedRangeFromDOMSelection`
   - `toSlateRangeFromDOMSelection`
@@ -910,8 +910,8 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
 
 Moved comments:
 
@@ -990,7 +990,7 @@ Status: closed.
 Actions:
 
 - moved DOM selection sync layout-effect ownership into
-  `../slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`
+  `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`
 - moved `syncDOMSelectionToEditor` into `useEditableSelectionReconciler`
 - `EditableDOMRoot` now calls `useEditableSelectionReconciler(...)` and
   consumes only `syncDOMSelectionToEditor`
@@ -999,8 +999,8 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
 
 Moved comments:
 
@@ -1094,7 +1094,7 @@ Status: closed for model-owned `insertText` caret repair.
 
 Actions:
 
-- created `../slate-v2/packages/slate-react/src/editable/dom-repair-queue.ts`
+- created `.tmp/slate-v2/packages/slate-react/src/editable/dom-repair-queue.ts`
 - moved the ad hoc model-owned `insertText` `requestAnimationFrame` caret
   repair behind `createDOMRepairQueue(...)`
 - kept the repair behavior unchanged:
@@ -1104,8 +1104,8 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-react/src/editable/dom-repair-queue.ts`
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/editable/dom-repair-queue.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
 
 Moved comments:
 
@@ -1182,7 +1182,7 @@ Status: closed for native single-character `insertText` eligibility.
 
 Actions:
 
-- created `../slate-v2/packages/slate-react/src/editable/native-input-strategy.ts`
+- created `.tmp/slate-v2/packages/slate-react/src/editable/native-input-strategy.ts`
 - moved the native single-character `insertText` eligibility cluster out of
   `EditableDOMRoot`
 - preserved all native eligibility comments with the strategy:
@@ -1200,8 +1200,8 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-react/src/editable/native-input-strategy.ts`
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/editable/native-input-strategy.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
 
 Commands:
 
@@ -1274,7 +1274,7 @@ Status: closed for model-owned `insertText`.
 
 Actions:
 
-- created `../slate-v2/packages/slate-react/src/editable/model-input-strategy.ts`
+- created `.tmp/slate-v2/packages/slate-react/src/editable/model-input-strategy.ts`
 - moved model-owned `insertText` application into
   `applyModelOwnedTextInput(...)`
 - the model input strategy now owns:
@@ -1286,8 +1286,8 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-react/src/editable/model-input-strategy.ts`
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/editable/model-input-strategy.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
 
 Moved comments:
 
@@ -1363,7 +1363,7 @@ Status: closed.
 
 Actions:
 
-- extended `../slate-v2/packages/slate-react/src/editable/model-input-strategy.ts`
+- extended `.tmp/slate-v2/packages/slate-react/src/editable/model-input-strategy.ts`
   with `applyModelOwnedDeleteIntent(...)`
 - moved collapsed delete backward/forward application into the model input
   strategy:
@@ -1377,8 +1377,8 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-react/src/editable/model-input-strategy.ts`
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/editable/model-input-strategy.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
 
 Commands:
 
@@ -1448,7 +1448,7 @@ Status: closed.
 
 Actions:
 
-- extended `../slate-v2/packages/slate-react/src/editable/model-input-strategy.ts`
+- extended `.tmp/slate-v2/packages/slate-react/src/editable/model-input-strategy.ts`
   with `applyModelOwnedExpandedDelete(...)`
 - moved expanded selection delete application into the model input strategy
 - preserved direction selection:
@@ -1459,8 +1459,8 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-react/src/editable/model-input-strategy.ts`
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/editable/model-input-strategy.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
 
 Commands:
 
@@ -1529,7 +1529,7 @@ Status: closed.
 
 Actions:
 
-- extended `../slate-v2/packages/slate-react/src/editable/model-input-strategy.ts`
+- extended `.tmp/slate-v2/packages/slate-react/src/editable/model-input-strategy.ts`
   with `applyModelOwnedLineBreak(...)`
 - moved:
   - `insertLineBreak` => `Editor.insertSoftBreak(editor)`
@@ -1539,8 +1539,8 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-react/src/editable/model-input-strategy.ts`
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/editable/model-input-strategy.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
 
 Commands:
 
@@ -1612,7 +1612,7 @@ Status: closed.
 
 Actions:
 
-- extended `../slate-v2/packages/slate-react/src/editable/model-input-strategy.ts`
+- extended `.tmp/slate-v2/packages/slate-react/src/editable/model-input-strategy.ts`
   with `applyModelOwnedDataTransferInput(...)`
 - moved only the `DataTransfer` application branch to the model input strategy
 - preserved the weak DataTransfer detection comment in `EditableDOMRoot`
@@ -1622,8 +1622,8 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-react/src/editable/model-input-strategy.ts`
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/editable/model-input-strategy.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
 
 Commands:
 
@@ -1693,7 +1693,7 @@ Status: closed for `insertFromComposition` state reset.
 
 Actions:
 
-- created `../slate-v2/packages/slate-react/src/editable/composition-state.ts`
+- created `.tmp/slate-v2/packages/slate-react/src/editable/composition-state.ts`
 - moved the Safari `insertFromComposition` composing-state reset into
   `commitInsertFromComposition(...)`
 - preserved the Safari event-order comment exactly with the helper
@@ -1703,8 +1703,8 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-react/src/editable/composition-state.ts`
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/editable/composition-state.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
 
 Commands:
 
@@ -1775,7 +1775,7 @@ Status: closed.
 
 Actions:
 
-- extended `../slate-v2/packages/slate-react/src/editable/composition-state.ts`
+- extended `.tmp/slate-v2/packages/slate-react/src/editable/composition-state.ts`
   with `commitChromeCompositionEndFallback(...)`
 - moved the Chrome compositionend fallback branch out of `EditableDOMRoot`
 - preserved the Chrome comment with the helper:
@@ -1788,8 +1788,8 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-react/src/editable/composition-state.ts`
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/editable/composition-state.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
 
 Commands:
 
@@ -1856,7 +1856,7 @@ Status: closed.
 
 Actions:
 
-- extended `../slate-v2/packages/slate-react/src/editable/model-input-strategy.ts`
+- extended `.tmp/slate-v2/packages/slate-react/src/editable/model-input-strategy.ts`
   with `applyModelOwnedHistoryIntent(...)`
 - moved model undo/redo application out of:
   - native history event handling
@@ -1868,8 +1868,8 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-react/src/editable/model-input-strategy.ts`
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/editable/model-input-strategy.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
 
 Commands:
 
@@ -1935,7 +1935,7 @@ Status: closed.
 
 Actions:
 
-- created `../slate-v2/packages/slate-react/src/editable/input-router.ts`
+- created `.tmp/slate-v2/packages/slate-react/src/editable/input-router.ts`
 - moved only native root listener attach/detach mechanics into
   `attachEditableNativeInputListeners(...)`
 - preserved native listener comments with the helper:
@@ -1948,8 +1948,8 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-react/src/editable/input-router.ts`
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/editable/input-router.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
 
 Commands:
 
@@ -2014,7 +2014,7 @@ Status: closed.
 
 Actions:
 
-- extended `../slate-v2/packages/slate-react/src/editable/input-router.ts`
+- extended `.tmp/slate-v2/packages/slate-react/src/editable/input-router.ts`
   with `useEditableDOMInputHandler(...)`
 - moved native `input` callback creation out of `EditableDOMRoot`
 - kept `repairDOMInput(...)` in `EditableDOMRoot`
@@ -2023,8 +2023,8 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-react/src/editable/input-router.ts`
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/editable/input-router.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
 
 Commands:
 
@@ -2089,7 +2089,7 @@ Status: closed.
 
 Actions:
 
-- extended `../slate-v2/packages/slate-react/src/editable/input-router.ts`
+- extended `.tmp/slate-v2/packages/slate-react/src/editable/input-router.ts`
   with `useEditableReactBeforeInputHandler(...)`
 - moved React fallback `onBeforeInput` wrapper creation out of
   `EditableDOMRoot`
@@ -2103,8 +2103,8 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-react/src/editable/input-router.ts`
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/editable/input-router.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
 
 Commands:
 
@@ -2170,7 +2170,7 @@ Status: closed.
 
 Actions:
 
-- extended `../slate-v2/packages/slate-react/src/editable/input-router.ts`
+- extended `.tmp/slate-v2/packages/slate-react/src/editable/input-router.ts`
   with `useEditablePasteHandler(...)`
 - moved paste handler callback creation through the input router
 - kept paste semantics in `EditableDOMRoot`
@@ -2182,8 +2182,8 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-react/src/editable/input-router.ts`
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/editable/input-router.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
 
 Commands:
 
@@ -2258,7 +2258,7 @@ Status: closed.
 
 Actions:
 
-- extended `../slate-v2/packages/slate-react/src/editable/input-router.ts`
+- extended `.tmp/slate-v2/packages/slate-react/src/editable/input-router.ts`
   with `useEditableClipboardHandler(...)`
 - moved copy/cut handler callback creation through the input router
 - kept fragment serialization, void cut deletion, and expanded-selection
@@ -2268,8 +2268,8 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-react/src/editable/input-router.ts`
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/editable/input-router.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
 
 Commands:
 
@@ -2341,7 +2341,7 @@ Status: closed.
 
 Actions:
 
-- extended `../slate-v2/packages/slate-react/src/editable/input-router.ts`
+- extended `.tmp/slate-v2/packages/slate-react/src/editable/input-router.ts`
   with `useEditableDragHandler(...)`
 - moved drag/drop handler callback creation through the input router
 - kept drag/drop semantics in `EditableDOMRoot`
@@ -2352,8 +2352,8 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-react/src/editable/input-router.ts`
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/editable/input-router.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
 
 Commands:
 
@@ -2425,7 +2425,7 @@ Status: closed.
 
 Actions:
 
-- extended `../slate-v2/packages/slate-react/src/editable/input-router.ts`
+- extended `.tmp/slate-v2/packages/slate-react/src/editable/input-router.ts`
   with `useEditableCompositionHandler(...)`
 - moved composition handler callback creation through the input router
 - kept composition semantics in `EditableDOMRoot`
@@ -2435,8 +2435,8 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-react/src/editable/input-router.ts`
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/editable/input-router.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
 
 Commands:
 
@@ -2506,7 +2506,7 @@ Status: closed.
 
 Actions:
 
-- extended `../slate-v2/packages/slate-react/src/editable/input-router.ts`
+- extended `.tmp/slate-v2/packages/slate-react/src/editable/input-router.ts`
   with `useEditableInputHandler(...)`
 - moved React `onInput` handler callback creation through the input router
 - kept React `onInput` semantics in `EditableDOMRoot`
@@ -2517,8 +2517,8 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-react/src/editable/input-router.ts`
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/editable/input-router.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
 
 Commands:
 
@@ -2593,7 +2593,7 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
 
 Commands:
 
@@ -2662,7 +2662,7 @@ Status: closed.
 
 Actions:
 
-- extended `../slate-v2/packages/slate-react/src/editable/input-router.ts`
+- extended `.tmp/slate-v2/packages/slate-react/src/editable/input-router.ts`
   with `useEditableFocusHandler(...)`
 - moved focus/blur handler callback creation through the input router
 - kept focus/blur semantics in `EditableDOMRoot`
@@ -2673,8 +2673,8 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-react/src/editable/input-router.ts`
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/editable/input-router.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
 
 Commands:
 
@@ -2744,7 +2744,7 @@ Status: closed.
 
 Actions:
 
-- extended `../slate-v2/packages/slate-react/src/editable/input-router.ts`
+- extended `.tmp/slate-v2/packages/slate-react/src/editable/input-router.ts`
   with `useEditableMouseHandler(...)`
 - moved click and mouse-down handler callback creation through the input router
 - kept click/mouse-down semantics in `EditableDOMRoot`
@@ -2755,8 +2755,8 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-react/src/editable/input-router.ts`
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/editable/input-router.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
 
 Commands:
 
@@ -2828,7 +2828,7 @@ Status: closed.
 
 Actions:
 
-- extended `../slate-v2/packages/slate-react/src/editable/input-router.ts`
+- extended `.tmp/slate-v2/packages/slate-react/src/editable/input-router.ts`
   with `useEditableKeyboardHandler(...)`
 - moved keydown handler callback creation through the input router
 - kept keydown semantics in `EditableDOMRoot`
@@ -2839,8 +2839,8 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-react/src/editable/input-router.ts`
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/editable/input-router.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
 
 Commands:
 
@@ -2911,7 +2911,7 @@ Status: closed.
 
 Actions:
 
-- extended `../slate-v2/packages/slate-react/src/editable/input-router.ts`
+- extended `.tmp/slate-v2/packages/slate-react/src/editable/input-router.ts`
   with `useEditableDOMBeforeInputHandler(...)`
 - renamed the semantic native `beforeinput` callback to
   `handleDOMBeforeInput`
@@ -2924,8 +2924,8 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-react/src/editable/input-router.ts`
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/editable/input-router.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
 
 Commands:
 
@@ -3001,7 +3001,7 @@ Status: closed.
 Actions:
 
 - added `attachEditableSelectionChangeListener(...)` to
-  `../slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`
+  `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`
 - moved native `selectionchange` listener attachment and Chrome
   input/textarea filtering out of `EditableDOMRoot`
 - preserved the React `onSelect` compatibility comment with the listener owner
@@ -3010,8 +3010,8 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
 
 Commands:
 
@@ -3081,7 +3081,7 @@ Status: closed.
 Actions:
 
 - added `attachEditableGlobalDragLifecycleListeners(...)` to
-  `../slate-v2/packages/slate-react/src/editable/input-router.ts`
+  `.tmp/slate-v2/packages/slate-react/src/editable/input-router.ts`
 - moved global `dragend`/`drop` lifecycle listener attachment out of
   `EditableDOMRoot`
 - preserved the Firefox compatibility comment with the listener owner
@@ -3090,8 +3090,8 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-react/src/editable/input-router.ts`
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/editable/input-router.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
 
 Commands:
 
@@ -3239,7 +3239,7 @@ Status: closed.
 
 Actions:
 
-- extended `../slate-v2/packages/slate-react/src/editable/dom-repair-queue.ts`
+- extended `.tmp/slate-v2/packages/slate-react/src/editable/dom-repair-queue.ts`
   so `DOMRepairQueue` owns `repairDOMInput(...)`
 - moved DOM input repair behavior out of `EditableDOMRoot`
 - wired native `input` and React `onInputCapture` repair paths through
@@ -3249,8 +3249,8 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-react/src/editable/dom-repair-queue.ts`
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/editable/dom-repair-queue.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
 
 Commands:
 
@@ -3322,7 +3322,7 @@ Status: closed.
 Actions:
 
 - added `syncSelectionForBeforeInput(...)` to
-  `../slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`
+  `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`
 - moved native `beforeinput` target-range selection synchronization out of
   `EditableDOMRoot`
 - preserved the existing input target range rules:
@@ -3338,8 +3338,8 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
 
 Commands:
 
@@ -3412,7 +3412,7 @@ Status: closed.
 Actions:
 
 - added `applyModelOwnedBeforeInputOperation(...)` to
-  `../slate-v2/packages/slate-react/src/editable/model-input-strategy.ts`
+  `.tmp/slate-v2/packages/slate-react/src/editable/model-input-strategy.ts`
 - moved native `beforeinput` operation dispatch out of `EditableDOMRoot`
 - preserved expanded-delete handling, delete units, line-break routing,
   composition commit, DataTransfer routing, native insert deferral, model-owned
@@ -3422,8 +3422,8 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-react/src/editable/model-input-strategy.ts`
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/editable/model-input-strategy.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
 
 Commands:
 
@@ -3493,7 +3493,7 @@ Status: closed.
 Actions:
 
 - added `getNativeBeforeInputDecision(...)` to
-  `../slate-v2/packages/slate-react/src/editable/native-input-strategy.ts`
+  `.tmp/slate-v2/packages/slate-react/src/editable/native-input-strategy.ts`
 - moved native `beforeinput` input type/data extraction, composition-change
   detection, composition abort decision, and native insert eligibility out of
   `EditableDOMRoot`
@@ -3504,8 +3504,8 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-react/src/editable/native-input-strategy.ts`
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/editable/native-input-strategy.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
 
 Commands:
 
@@ -3574,7 +3574,7 @@ Status: closed.
 Actions:
 
 - added `restoreUserSelectionAfterBeforeInput(...)` to
-  `../slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`
+  `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`
 - moved saved user-selection restore out of `EditableDOMRoot`
 - preserved `EDITOR_TO_USER_SELECTION` unref/delete behavior and
   live-selection comparison before `Transforms.select(...)`
@@ -3582,8 +3582,8 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
 
 Commands:
 
@@ -3614,7 +3614,7 @@ Status: closed.
 Actions:
 
 - added `applyModelOwnedNativeHistoryEvent(...)` to
-  `../slate-v2/packages/slate-react/src/editable/model-input-strategy.ts`
+  `.tmp/slate-v2/packages/slate-react/src/editable/model-input-strategy.ts`
 - moved `historyUndo`/`historyRedo` native input handling out of
   `EditableDOMRoot`
 - reused the existing history intent helper
@@ -3622,8 +3622,8 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-react/src/editable/model-input-strategy.ts`
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/editable/model-input-strategy.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
 
 Commands:
 
@@ -3692,7 +3692,7 @@ Status: closed.
 Actions:
 
 - added `handleWebKitShadowDOMBeforeInput(...)` to
-  `../slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`
+  `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`
 - moved the WebKit ShadowRoot `beforeinput` target-range repair branch out of
   `EditableDOMRoot`
 - preserved early-return behavior when no DOM target range or Slate range
@@ -3702,8 +3702,8 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
 
 Commands:
 
@@ -3775,7 +3775,7 @@ Status: closed.
 Actions:
 
 - added `usePendingInsertionMarksEffect(...)` to
-  `../slate-v2/packages/slate-react/src/editable/composition-state.ts`
+  `.tmp/slate-v2/packages/slate-react/src/editable/composition-state.ts`
 - moved pending insertion marks effect out of `EditableDOMRoot`
 - preserved `setTimeout` timing, loose `Text.equals(...)` mark comparison,
   and `EDITOR_TO_PENDING_INSERTION_MARKS` set/delete behavior
@@ -3783,8 +3783,8 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-react/src/editable/composition-state.ts`
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/editable/composition-state.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
 
 Commands:
 
@@ -3858,7 +3858,7 @@ Status: closed.
 
 Actions:
 
-- added `../slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts`
+- added `.tmp/slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts`
 - moved paste semantics out of `EditableDOMRoot` into
   `applyEditablePaste(...)`
 - preserved shell-backed full-document plain-text replacement
@@ -3870,8 +3870,8 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts`
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
 
 Commands:
 
@@ -3942,7 +3942,7 @@ Status: closed.
 
 Actions:
 
-- extended `../slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts`
+- extended `.tmp/slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts`
   with `applyEditableCopy(...)` and `applyEditableCut(...)`
 - moved copy/cut semantics out of `EditableDOMRoot`
 - preserved decorated fragment serialization through
@@ -3956,8 +3956,8 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts`
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
 
 Commands:
 
@@ -4033,7 +4033,7 @@ Status: closed.
 
 Actions:
 
-- extended `../slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts`
+- extended `.tmp/slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts`
   with drag/drop strategy functions:
   - `applyEditableDragEnd(...)`
   - `applyEditableDragOver(...)`
@@ -4046,8 +4046,8 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts`
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
 
 Commands:
 
@@ -4118,7 +4118,7 @@ Status: closed.
 Actions:
 
 - added a browser cut row to
-  `../slate-v2/playwright/integration/examples/highlighted-text.test.ts`
+  `.tmp/slate-v2/playwright/integration/examples/highlighted-text.test.ts`
 - used the real browser shortcut path, `ControlOrMeta+X`, instead of a
   synthetic `ClipboardEvent`
 - asserted:
@@ -4127,7 +4127,7 @@ Actions:
   - model/visible text becomes `aa`
   - Slate selection collapses at the cut start
 - fixed product behavior in
-  `../slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts`
+  `.tmp/slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts`
   so expanded-selection cut preserves a point ref, deletes the fragment,
   restores the collapsed model selection, and syncs DOM focus/selection
 - removed a flaky post-cut `clipboard.assert.types(...)` assertion because it
@@ -4135,8 +4135,8 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/playwright/integration/examples/highlighted-text.test.ts`
-- `../slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts`
+- `.tmp/slate-v2/playwright/integration/examples/highlighted-text.test.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts`
 
 Commands:
 
@@ -4217,7 +4217,7 @@ Status: closed.
 
 Actions:
 
-- extended `../slate-v2/packages/slate-react/src/editable/composition-state.ts`
+- extended `.tmp/slate-v2/packages/slate-react/src/editable/composition-state.ts`
   with composition event strategy functions:
   - `applyEditableCompositionEnd(...)`
   - `applyEditableCompositionStart(...)`
@@ -4230,8 +4230,8 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-react/src/editable/composition-state.ts`
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/editable/composition-state.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
 
 Commands:
 
@@ -4301,7 +4301,7 @@ Status: closed.
 
 Actions:
 
-- extended `../slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`
+- extended `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`
   with focus/click selection policy functions:
   - `applyEditableBlur(...)`
   - `applyEditableFocus(...)`
@@ -4317,8 +4317,8 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
 
 Commands:
 
@@ -4389,7 +4389,7 @@ Status: closed.
 
 Actions:
 
-- added `../slate-v2/packages/slate-react/src/editable/keyboard-input-strategy.ts`
+- added `.tmp/slate-v2/packages/slate-react/src/editable/keyboard-input-strategy.ts`
 - moved keydown policy out of `EditableDOMRoot`
 - preserved:
   - Android keydown manager dispatch
@@ -4405,8 +4405,8 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-react/src/editable/keyboard-input-strategy.ts`
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/editable/keyboard-input-strategy.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
 
 Commands:
 
@@ -4478,7 +4478,7 @@ Status: closed.
 
 Actions:
 
-- extended `../slate-v2/packages/slate-react/src/editable/input-router.ts`
+- extended `.tmp/slate-v2/packages/slate-react/src/editable/input-router.ts`
   with `useEditableRootRef(...)`
 - moved root ref lifecycle out of `EditableDOMRoot`
 - preserved:
@@ -4491,8 +4491,8 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-react/src/editable/input-router.ts`
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/editable/input-router.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
 
 Commands:
 
@@ -4565,7 +4565,7 @@ Status: closed.
 
 Actions:
 
-- extended `../slate-v2/packages/slate-react/src/editable/model-input-strategy.ts`
+- extended `.tmp/slate-v2/packages/slate-react/src/editable/model-input-strategy.ts`
   with `applyEditableInput(...)`
 - moved React `onInput` semantics out of `EditableDOMRoot`
 - preserved:
@@ -4579,8 +4579,8 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-react/src/editable/model-input-strategy.ts`
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/editable/model-input-strategy.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
 
 Commands:
 
@@ -4677,7 +4677,7 @@ Why:
 
 Current root size:
 
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`: `1066`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`: `1066`
   lines
 
 Next move:
@@ -4742,7 +4742,7 @@ Actions:
 
 Final root size:
 
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`: `1066`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`: `1066`
   lines
 
 Final gate commands:

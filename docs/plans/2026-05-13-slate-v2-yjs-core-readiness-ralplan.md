@@ -69,7 +69,7 @@ Decision boundaries:
 
 ## Current Slate v2 evidence
 
-Read from `../slate-v2`:
+Read from `.tmp/slate-v2`:
 
 - `packages/slate/src/interfaces/editor.ts`
 - `packages/slate/src/core/public-state.ts`
@@ -131,7 +131,7 @@ Future Slate v2 shape:
 - local export from a commit listener, reading `EditorCommit.operations`,
   metadata, tags, dirty runtime ids, and snapshot only when needed
 - remote import through `editor.update(tx => tx.operations.replay(...), {
-  metadata, tag })`
+metadata, tag })`
 - canonical reconcile through `tx.value.replace(...)` when Y event deltas are
   incomplete or ambiguous
 
@@ -321,12 +321,12 @@ Applicability: applied.
 
 Existing benchmark lanes inspected:
 
-- `../slate-v2/scripts/benchmarks/README.md`
-- `../slate-v2/scripts/benchmarks/core/current/transaction-execution.mjs`
-- `../slate-v2/scripts/benchmarks/core/current/refs-projection.mjs`
-- `../slate-v2/scripts/benchmarks/core/current/query-ref-observation.mjs`
-- `../slate-v2/scripts/benchmarks/core/current/history-retained-memory.mjs`
-- `../slate-v2/scripts/benchmarks/shared/stats.mjs`
+- `.tmp/slate-v2/scripts/benchmarks/README.md`
+- `.tmp/slate-v2/scripts/benchmarks/core/current/transaction-execution.mjs`
+- `.tmp/slate-v2/scripts/benchmarks/core/current/refs-projection.mjs`
+- `.tmp/slate-v2/scripts/benchmarks/core/current/query-ref-observation.mjs`
+- `.tmp/slate-v2/scripts/benchmarks/core/current/history-retained-memory.mjs`
+- `.tmp/slate-v2/scripts/benchmarks/shared/stats.mjs`
 
 Existing lanes already cover:
 
@@ -344,11 +344,11 @@ skip, canonical reconcile, pause/reconnect cleanup, and heap tags in one lane.
 
 Add during `ralph` execution, not in this planning pass:
 
-- `../slate-v2/scripts/benchmarks/core/current/collab-readiness.mjs`
+- `.tmp/slate-v2/scripts/benchmarks/core/current/collab-readiness.mjs`
 - package script:
   - `bench:core:collab-readiness:local`: `bun ./scripts/benchmarks/core/current/collab-readiness.mjs`
 - artifact:
-  - `../slate-v2/tmp/slate-collab-readiness-benchmark.json`
+  - `.tmp/slate-v2/tmp/slate-collab-readiness-benchmark.json`
 
 Use `scripts/benchmarks/shared/stats.mjs` for summaries. Do not add another
 stats helper.
@@ -365,12 +365,12 @@ Primary repeated units:
 
 ### Cohorts
 
-| Cohort | Blocks | Remote ops | Bookmarks | Purpose |
-| --- | ---: | ---: | ---: | --- |
-| normal | 100 | 50 | 25 | Common small editor with collaboration burst. |
-| large | 1,000 | 100 | 100 | Real app document with active anchors. |
-| stress | 10,000 | 250 | 250 | Large document import/replay pressure before package work. |
-| pathological | 1 | 1,000 same-node inserts | 50 | #5771-style hot text node pressure. |
+| Cohort       | Blocks |              Remote ops | Bookmarks | Purpose                                                    |
+| ------------ | -----: | ----------------------: | --------: | ---------------------------------------------------------- |
+| normal       |    100 |                      50 |        25 | Common small editor with collaboration burst.              |
+| large        |  1,000 |                     100 |       100 | Real app document with active anchors.                     |
+| stress       | 10,000 |                     250 |       250 | Large document import/replay pressure before package work. |
+| pathological |      1 | 1,000 same-node inserts |        50 | #5771-style hot text node pressure.                        |
 
 ### Benchmark lanes
 
@@ -508,7 +508,7 @@ the API change proposal.
 
 Target file:
 
-- `../slate-v2/packages/slate/test/collab-adapter-extension-contract.ts`
+- `.tmp/slate-v2/packages/slate/test/collab-adapter-extension-contract.ts`
 
 Public APIs only:
 
@@ -556,8 +556,8 @@ Why this matters:
 
 Target file:
 
-- either extend `../slate-v2/packages/slate/test/collab-history-runtime-contract.ts`
-- or create `../slate-v2/packages/slate/test/collab-selection-stress-contract.ts`
+- either extend `.tmp/slate-v2/packages/slate/test/collab-history-runtime-contract.ts`
+- or create `.tmp/slate-v2/packages/slate/test/collab-selection-stress-contract.ts`
 
 Use the separate file if the test grows past a few scenarios.
 
@@ -614,7 +614,7 @@ Why this matters:
 
 Target file:
 
-- `../slate-v2/packages/slate/test/collab-bookmark-position-contract.ts`
+- `.tmp/slate-v2/packages/slate/test/collab-bookmark-position-contract.ts`
 
 Document shape:
 
@@ -650,21 +650,18 @@ Why this matters:
 
 Target file:
 
-- `../slate-v2/packages/slate/test/collab-canonical-reconcile-contract.ts`
+- `.tmp/slate-v2/packages/slate/test/collab-canonical-reconcile-contract.ts`
 
 Core operation:
 
 ```ts
-editor.update(
-  (tx) => {
-    tx.value.replace({
-      children: remoteCanonicalChildren,
-      selection: currentSelectionOrNull,
-      marks: null,
-    })
-  },
-  remoteOptions
-)
+editor.update((tx) => {
+  tx.value.replace({
+    children: remoteCanonicalChildren,
+    selection: currentSelectionOrNull,
+    marks: null,
+  });
+}, remoteOptions);
 ```
 
 Required assertions:
@@ -749,15 +746,15 @@ generic extension APIs. If the P0 adapter test needs private state, runtime
 monkey-patching, or metadata unavailable from public commits, that failing test
 becomes the API-change request.
 
-| Decision | Strongest fair objection | Viable alternatives | Why current decision wins | Proof required | Verdict |
-| --- | --- | --- | --- | --- | --- |
-| Do not add public `editor.apply` | A collaboration adapter needs to intercept every op; commit listeners may be too late. | Restore public `editor.apply`; add adapter-specific op interceptors; use operation middleware. | Public `editor.apply` is exactly the legacy escape hatch v2 cut. Operation middleware already routes `tx.operations.replay`; commit listeners see typed metadata and tags for export control. | `collab-adapter-extension-contract.ts` proves local export and remote import loop suppression without `editor.apply`. | keep |
-| Do not add public `editor.onChange` | Adapter authors know the old `onChange` flush model; commit listeners may feel unfamiliar. | Restore `onChange`; add `onCommit`; keep extension commit listeners. | Extension commit listeners are already the `onCommit` shape, with cleanup, ordering, frozen commit data, and optional snapshot. A second public callback surface would split truth. | Adapter test exports once per local commit and cleanup stops future export. | keep |
-| Do not add adapter-specific methods on the editor object | A first-party `slate-yjs` package may want ergonomic `editor.connectYjs()` / `editor.disconnectYjs()`. | Editor object methods; extension editor group; standalone adapter controller. | Raw Slate should not grow Yjs nouns. If ergonomics are needed, the package can expose a controller or extension editor group without polluting core. | P0 adapter lifecycle test uses extension runtime state and cleanup; future package docs can expose a package-level wrapper. | keep |
-| Do not pass update metadata into operation middleware yet | Per-operation middleware cannot know whether the current op came from remote import. | Add metadata to middleware context now; use commit listener for export gating; add tx-scoped metadata getter. | Export gating belongs at commit level because Yjs batches and history decisions are commit-level. Adding metadata to middleware before a failing test would widen hot-path API for speculation. | P0 test proves remote imports do not re-export via commit metadata. If an actual transform middleware needs metadata, add it with a failing adapter test. | keep, watch |
-| Do not add raw `Y.Doc` / provider / awareness handles to Slate core | A first-party package could be cleaner if core understands Yjs lifecycle. | Core Yjs handles; extension capabilities; package-local controller. | Core must stay collaboration-backend agnostic. `slate-yjs` can own Yjs lifecycle through extension options, runtime state, cleanup signal, and package exports. | Adapter lifecycle test proves connect, pause, reconnect, cleanup without core Yjs nouns. | keep |
-| Do not add moved-node payloads to `move_node` now | OT/Yjs transports often benefit from the moved node payload; #3741 asks for it directly. | Add payload; canonical reconcile fallback; adapter reconstructs from Y state. | Current v2 proves remote `move_node` replay and runtime-id rebase. A payload bloats every move op for one transport theory before the adapter proves the need. | P0 canonical reconcile plus bookmark matrix. If adapter cannot reconstruct moves without payload, add a focused operation-shape proposal. | keep |
-| Do not make cursor/awareness a raw Slate API | Collaboration without cursors feels incomplete. | Raw cursor store; slate-react package hook; Plate/product cursor UI. | Cursor rendering is UI policy. Raw core should supply stable anchors/bookmarks and side-effect metadata only. | P0 bookmark matrix and P1 remote side-effect proof. | keep |
+| Decision                                                            | Strongest fair objection                                                                               | Viable alternatives                                                                                           | Why current decision wins                                                                                                                                                                       | Proof required                                                                                                                                            | Verdict     |
+| ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- |
+| Do not add public `editor.apply`                                    | A collaboration adapter needs to intercept every op; commit listeners may be too late.                 | Restore public `editor.apply`; add adapter-specific op interceptors; use operation middleware.                | Public `editor.apply` is exactly the legacy escape hatch v2 cut. Operation middleware already routes `tx.operations.replay`; commit listeners see typed metadata and tags for export control.   | `collab-adapter-extension-contract.ts` proves local export and remote import loop suppression without `editor.apply`.                                     | keep        |
+| Do not add public `editor.onChange`                                 | Adapter authors know the old `onChange` flush model; commit listeners may feel unfamiliar.             | Restore `onChange`; add `onCommit`; keep extension commit listeners.                                          | Extension commit listeners are already the `onCommit` shape, with cleanup, ordering, frozen commit data, and optional snapshot. A second public callback surface would split truth.             | Adapter test exports once per local commit and cleanup stops future export.                                                                               | keep        |
+| Do not add adapter-specific methods on the editor object            | A first-party `slate-yjs` package may want ergonomic `editor.connectYjs()` / `editor.disconnectYjs()`. | Editor object methods; extension editor group; standalone adapter controller.                                 | Raw Slate should not grow Yjs nouns. If ergonomics are needed, the package can expose a controller or extension editor group without polluting core.                                            | P0 adapter lifecycle test uses extension runtime state and cleanup; future package docs can expose a package-level wrapper.                               | keep        |
+| Do not pass update metadata into operation middleware yet           | Per-operation middleware cannot know whether the current op came from remote import.                   | Add metadata to middleware context now; use commit listener for export gating; add tx-scoped metadata getter. | Export gating belongs at commit level because Yjs batches and history decisions are commit-level. Adding metadata to middleware before a failing test would widen hot-path API for speculation. | P0 test proves remote imports do not re-export via commit metadata. If an actual transform middleware needs metadata, add it with a failing adapter test. | keep, watch |
+| Do not add raw `Y.Doc` / provider / awareness handles to Slate core | A first-party package could be cleaner if core understands Yjs lifecycle.                              | Core Yjs handles; extension capabilities; package-local controller.                                           | Core must stay collaboration-backend agnostic. `slate-yjs` can own Yjs lifecycle through extension options, runtime state, cleanup signal, and package exports.                                 | Adapter lifecycle test proves connect, pause, reconnect, cleanup without core Yjs nouns.                                                                  | keep        |
+| Do not add moved-node payloads to `move_node` now                   | OT/Yjs transports often benefit from the moved node payload; #3741 asks for it directly.               | Add payload; canonical reconcile fallback; adapter reconstructs from Y state.                                 | Current v2 proves remote `move_node` replay and runtime-id rebase. A payload bloats every move op for one transport theory before the adapter proves the need.                                  | P0 canonical reconcile plus bookmark matrix. If adapter cannot reconstruct moves without payload, add a focused operation-shape proposal.                 | keep        |
+| Do not make cursor/awareness a raw Slate API                        | Collaboration without cursors feels incomplete.                                                        | Raw cursor store; slate-react package hook; Plate/product cursor UI.                                          | Cursor rendering is UI policy. Raw core should supply stable anchors/bookmarks and side-effect metadata only.                                                                                   | P0 bookmark matrix and P1 remote side-effect proof.                                                                                                       | keep        |
 
 Accepted revision from this pass:
 
@@ -833,27 +830,27 @@ Evidence read:
 
 Exact decisions:
 
-| Issue | Current ledger state | This plan decision |
-| --- | --- | --- |
-| `#5771` | `Related` / `cluster-synced` | Promote to `Improves` only after P0 proof lands. Exact closure still waits for provider/browser proof. |
-| `#5533` | `Related` | Keep. v2 operation replay is collaboration substrate, not a first-party OT or non-Yjs collaboration protocol. |
-| `#3741` | `Related` | Keep. Do not add `move_node.node` payloads before adapter proof shows current replay/canonical reconcile is insufficient. |
-| `#4477` | `Improves` | Keep. Annotation/bookmark substrate helps, but collaborative comments remain product/Plate/package policy. |
-| `#3715` | `not-claimed` | Keep. Docs/examples pressure belongs to the later `slate-yjs` package/docs lane, not raw core readiness. |
-| `#3482` | `cluster-synced` | Keep. Void children/collaboration pressure is covered by core model/selection architecture; only promote if the P0 bookmark matrix exposes a void-adjacent gap. |
+| Issue   | Current ledger state         | This plan decision                                                                                                                                              |
+| ------- | ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `#5771` | `Related` / `cluster-synced` | Promote to `Improves` only after P0 proof lands. Exact closure still waits for provider/browser proof.                                                          |
+| `#5533` | `Related`                    | Keep. v2 operation replay is collaboration substrate, not a first-party OT or non-Yjs collaboration protocol.                                                   |
+| `#3741` | `Related`                    | Keep. Do not add `move_node.node` payloads before adapter proof shows current replay/canonical reconcile is insufficient.                                       |
+| `#4477` | `Improves`                   | Keep. Annotation/bookmark substrate helps, but collaborative comments remain product/Plate/package policy.                                                      |
+| `#3715` | `not-claimed`                | Keep. Docs/examples pressure belongs to the later `slate-yjs` package/docs lane, not raw core readiness.                                                        |
+| `#3482` | `cluster-synced`             | Keep. Void children/collaboration pressure is covered by core model/selection architecture; only promote if the P0 bookmark matrix exposes a void-adjacent gap. |
 
 No `Fixes #...` claims are allowed from this plan. The strongest honest
 claim after this planning pass is "readiness work queued."
 
 ## Maintainer objection ledger
 
-| Objection | Answer | Verdict |
-| --- | --- | --- |
-| "Why not just port slate-yjs?" | Because it depends on mutable editor hooks v2 deliberately removed. Porting that shape would reintroduce legacy coupling. | reject |
-| "Why no `move_node.node` payload for #3741?" | Existing v2 proof covers remote move replay and runtime-id rebasing. Payload expansion needs adapter proof first. | keep current op |
-| "Why not put Yjs in raw Slate?" | Raw Slate should remain unopinionated. Yjs belongs in a package extension. | reject |
-| "Is this overbuilding before a package exists?" | No. The P0 tests are the minimum proof that the package can be clean instead of a monkey-patch wrapper. | keep |
-| "Can cursor UI wait?" | Yes. Core readiness needs stable anchors and side-effect policy. Cursor UI belongs to React/Plate/package work. | defer UI |
+| Objection                                       | Answer                                                                                                                    | Verdict         |
+| ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- | --------------- |
+| "Why not just port slate-yjs?"                  | Because it depends on mutable editor hooks v2 deliberately removed. Porting that shape would reintroduce legacy coupling. | reject          |
+| "Why no `move_node.node` payload for #3741?"    | Existing v2 proof covers remote move replay and runtime-id rebasing. Payload expansion needs adapter proof first.         | keep current op |
+| "Why not put Yjs in raw Slate?"                 | Raw Slate should remain unopinionated. Yjs belongs in a package extension.                                                | reject          |
+| "Is this overbuilding before a package exists?" | No. The P0 tests are the minimum proof that the package can be clean instead of a monkey-patch wrapper.                   | keep            |
+| "Can cursor UI wait?"                           | Yes. Core readiness needs stable anchors and side-effect policy. Cursor UI belongs to React/Plate/package work.           | defer UI        |
 
 ## Applied review notes
 
@@ -893,7 +890,7 @@ Next pass: none for `slate-ralplan`.
 
 Next owner:
 
-1. `ralph` executes the accepted core readiness queue in `../slate-v2`.
+1. `ralph` executes the accepted core readiness queue in `.tmp/slate-v2`.
 2. `ralph` keeps `slate-yjs` package creation blocked until P0 tests and the
    collab-readiness benchmark are green.
 
@@ -912,7 +909,7 @@ Decision: planning is complete and execution-ready. Do not create a
 Why this can close:
 
 - Intent, outcome, scope, non-goals, and ownership boundaries are explicit.
-- Existing core substrate evidence is grounded in live `../slate-v2` files and
+- Existing core substrate evidence is grounded in live `.tmp/slate-v2` files and
   focused tests.
 - External editor evidence is converted into Slate-specific mechanisms instead
   of copy-pasted adapter shapes.
@@ -937,7 +934,7 @@ What remains before package creation:
 
 Ralph handoff:
 
-- Execute the plan in `../slate-v2`.
+- Execute the plan in `.tmp/slate-v2`.
 - Do not touch `plate-2` issue claims until passing proof justifies a ledger
   update.
 - Do not create a `slate-yjs` package until all P0 rows and the benchmark gate
@@ -949,7 +946,7 @@ Ralph handoff:
 
 Status: complete.
 
-Current owner: `../slate-v2/packages/slate`.
+Current owner: `.tmp/slate-v2/packages/slate`.
 
 Current pass: `p0-collab-adapter-extension-contract`.
 
@@ -958,7 +955,7 @@ Continuation prompt:
 
 Scope:
 
-- Add `../slate-v2/packages/slate/test/collab-adapter-extension-contract.ts`.
+- Add `.tmp/slate-v2/packages/slate/test/collab-adapter-extension-contract.ts`.
 - Prove a fake collaboration adapter can use public extension/runtime/commit
   APIs without editor monkey-patching.
 - Keep issue ledgers unchanged unless passing proof changes a claim.
@@ -966,7 +963,7 @@ Scope:
 Next action:
 
 - Completed
-  `../slate-v2/packages/slate/test/collab-adapter-extension-contract.ts`.
+  `.tmp/slate-v2/packages/slate/test/collab-adapter-extension-contract.ts`.
 
 Evidence:
 
@@ -984,16 +981,16 @@ Verdict:
 Next action:
 
 - Implement
-  `../slate-v2/packages/slate/test/collab-selection-stress-contract.ts`.
+  `.tmp/slate-v2/packages/slate/test/collab-selection-stress-contract.ts`.
 
 ### 2026-05-13 - P0 remote selection stress
 
 Status: complete.
 
-Current owner: `../slate-v2/packages/slate`.
+Current owner: `.tmp/slate-v2/packages/slate`.
 
 Changed file:
-`../slate-v2/packages/slate/test/collab-selection-stress-contract.ts`.
+`.tmp/slate-v2/packages/slate/test/collab-selection-stress-contract.ts`.
 
 Evidence:
 
@@ -1014,16 +1011,16 @@ Verdict:
 Next action:
 
 - Implement
-  `../slate-v2/packages/slate/test/collab-bookmark-position-contract.ts`.
+  `.tmp/slate-v2/packages/slate/test/collab-bookmark-position-contract.ts`.
 
 ### 2026-05-13 - P0 bookmark position matrix
 
 Status: complete.
 
-Current owner: `../slate-v2/packages/slate`.
+Current owner: `.tmp/slate-v2/packages/slate`.
 
 Changed file:
-`../slate-v2/packages/slate/test/collab-bookmark-position-contract.ts`.
+`.tmp/slate-v2/packages/slate/test/collab-bookmark-position-contract.ts`.
 
 Evidence:
 
@@ -1044,16 +1041,16 @@ Verdict:
 Next action:
 
 - Implement
-  `../slate-v2/packages/slate/test/collab-canonical-reconcile-contract.ts`.
+  `.tmp/slate-v2/packages/slate/test/collab-canonical-reconcile-contract.ts`.
 
 ### 2026-05-13 - P0 canonical remote reconcile
 
 Status: complete.
 
-Current owner: `../slate-v2/packages/slate`.
+Current owner: `.tmp/slate-v2/packages/slate`.
 
 Changed file:
-`../slate-v2/packages/slate/test/collab-canonical-reconcile-contract.ts`.
+`.tmp/slate-v2/packages/slate/test/collab-canonical-reconcile-contract.ts`.
 
 Evidence:
 
@@ -1073,7 +1070,7 @@ Verdict:
 
 Next action:
 
-- Inspect `../slate-v2/packages/slate-react` handling for
+- Inspect `.tmp/slate-v2/packages/slate-react` handling for
   `skip-scroll-into-view`, `skip-selection-focus`, and
   `metadata.selection`, then add the smallest proof or queue the exact owner.
 
@@ -1083,17 +1080,17 @@ Status: complete.
 
 Current owners:
 
-- `../slate-v2/packages/slate-react/src/editable/selection-side-effect-policy.ts`
-- `../slate-v2/packages/slate-react/src/editable/selection-controller.ts`
-- `../slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`
-- `../slate-v2/packages/slate-react/src/editable/mutation-controller.ts`
-- `../slate-v2/packages/slate-react/src/editable/dom-repair-queue.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/selection-side-effect-policy.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/selection-controller.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/mutation-controller.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/dom-repair-queue.ts`
 
 Changed tests:
 
-- `../slate-v2/packages/slate-react/test/app-owned-customization.tsx`
-- `../slate-v2/packages/slate-react/test/selection-side-effect-policy-contract.ts`
-- `../slate-v2/packages/slate-react/test/selection-side-effect-policy-contract.test.ts`
+- `.tmp/slate-v2/packages/slate-react/test/app-owned-customization.tsx`
+- `.tmp/slate-v2/packages/slate-react/test/selection-side-effect-policy-contract.ts`
+- `.tmp/slate-v2/packages/slate-react/test/selection-side-effect-policy-contract.test.ts`
 
 Evidence:
 
@@ -1113,7 +1110,7 @@ Verdict:
 Next action:
 
 - Implement
-  `../slate-v2/scripts/benchmarks/core/current/collab-readiness.mjs` and
+  `.tmp/slate-v2/scripts/benchmarks/core/current/collab-readiness.mjs` and
   `bench:core:collab-readiness:local`.
 
 ### 2026-05-13 - Collab-readiness benchmark
@@ -1123,8 +1120,8 @@ sweep.
 
 Current owners:
 
-- `../slate-v2/scripts/benchmarks/core/current/collab-readiness.mjs`
-- `../slate-v2/package.json`
+- `.tmp/slate-v2/scripts/benchmarks/core/current/collab-readiness.mjs`
+- `.tmp/slate-v2/package.json`
 
 Evidence:
 
@@ -1190,12 +1187,12 @@ Source inspected from live local checkouts:
 - `../y-prosemirror/src/positions.js`
 - `../y-prosemirror/src/undo-plugin.js`
 - `../y-prosemirror/src/cursor-plugin.js`
-- `../slate-v2/packages/slate/src/interfaces/editor.ts`
-- `../slate-v2/packages/slate/src/core/public-state.ts`
-- `../slate-v2/packages/slate/src/core/editor-extension.ts`
-- `../slate-v2/packages/slate/src/core/extension-registry.ts`
-- `../slate-v2/packages/slate-history/src/with-history.ts`
-- `../slate-v2/packages/slate/test/collab-history-runtime-contract.ts`
+- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`
+- `.tmp/slate-v2/packages/slate/src/core/public-state.ts`
+- `.tmp/slate-v2/packages/slate/src/core/editor-extension.ts`
+- `.tmp/slate-v2/packages/slate/src/core/extension-registry.ts`
+- `.tmp/slate-v2/packages/slate-history/src/with-history.ts`
+- `.tmp/slate-v2/packages/slate/test/collab-history-runtime-contract.ts`
 
 Final verification sweep:
 

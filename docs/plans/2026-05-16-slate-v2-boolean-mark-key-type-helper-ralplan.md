@@ -35,47 +35,47 @@ Live source proves the bad shape exists now:
 
 ```ts
 type BooleanTextKey<T> = {
-  [K in keyof T]: Exclude<T[K], undefined> extends boolean ? K : never
-}[keyof T]
+  [K in keyof T]: Exclude<T[K], undefined> extends boolean ? K : never;
+}[keyof T];
 
-export type CustomTextKey = Extract<BooleanTextKey<CustomText>, string>
+export type CustomTextKey = Extract<BooleanTextKey<CustomText>, string>;
 ```
 
-Source: `../slate-v2/site/examples/ts/custom-types.d.ts`.
+Source: `.tmp/slate-v2/site/examples/ts/custom-types.d.ts`.
 
 The copied type feeds public example helpers:
 
 ```ts
-type ActiveMarks = Partial<Pick<CustomText, CustomTextKey>>
+type ActiveMarks = Partial<Pick<CustomText, CustomTextKey>>;
 
 export const toggleMark = (editor: CustomEditor, format: CustomTextKey) => {
   editor.update((tx) => {
-    tx.marks.toggle(format)
-  })
-}
+    tx.marks.toggle(format);
+  });
+};
 ```
 
-Source: `../slate-v2/site/examples/ts/mark-utils.ts`.
+Source: `.tmp/slate-v2/site/examples/ts/mark-utils.ts`.
 
 Current core already owns adjacent generic mark helpers:
 
 ```ts
-export type MarksOf<N> = Simplify<UnionToIntersection<TextProps<TextOf<N>>>>
-export type MarksIn<V extends readonly unknown[]> = MarksOf<V[number]>
-export type MarkKeysOf<N> = {} extends MarksOf<N> ? unknown : keyof MarksOf<N>
+export type MarksOf<N> = Simplify<UnionToIntersection<TextProps<TextOf<N>>>>;
+export type MarksIn<V extends readonly unknown[]> = MarksOf<V[number]>;
+export type MarkKeysOf<N> = {} extends MarksOf<N> ? unknown : keyof MarksOf<N>;
 ```
 
-Source: `../slate-v2/packages/slate/src/interfaces/text.ts`.
+Source: `.tmp/slate-v2/packages/slate/src/interfaces/text.ts`.
 
 Current tests intentionally preserve the `MarkKeysOf` fallback:
 
 ```ts
 type _OptionalMarkKeysFollowPlateFallback = Assert<
   Equal<MarkKeysOf<ParagraphElement>, unknown>
->
+>;
 ```
 
-Source: `../slate-v2/packages/slate/test/generic-value-contract.ts`.
+Source: `.tmp/slate-v2/packages/slate/test/generic-value-contract.ts`.
 
 ## Decision Brief
 
@@ -97,13 +97,13 @@ Top drivers:
 
 Options:
 
-| Option | Verdict | Reason |
-| --- | --- | --- |
-| Keep `BooleanTextKey` in examples | reject | This leaks advanced TS into starter code and duplicates a Slate concept. |
-| Change `MarkKeysOf` to return optional mark keys | reject | It silently changes an existing contract and broadens keys beyond boolean marks. |
-| Export generic `BooleanKeys<T>` | reject | Too general for Slate core; it looks like a utility library. |
-| Add `BooleanMarkKeysOf<N>` only | revise | Fixes key typing but leaves `ActiveMarks = Partial<Pick<...>>` noise. |
-| Add `BooleanMarkKeysOf<N>` and `BooleanMarksOf<N>` | choose | Small, Slate-named, type-only, and enough to clean examples without runtime API. |
+| Option                                             | Verdict | Reason                                                                           |
+| -------------------------------------------------- | ------- | -------------------------------------------------------------------------------- |
+| Keep `BooleanTextKey` in examples                  | reject  | This leaks advanced TS into starter code and duplicates a Slate concept.         |
+| Change `MarkKeysOf` to return optional mark keys   | reject  | It silently changes an existing contract and broadens keys beyond boolean marks. |
+| Export generic `BooleanKeys<T>`                    | reject  | Too general for Slate core; it looks like a utility library.                     |
+| Add `BooleanMarkKeysOf<N>` only                    | revise  | Fixes key typing but leaves `ActiveMarks = Partial<Pick<...>>` noise.            |
+| Add `BooleanMarkKeysOf<N>` and `BooleanMarksOf<N>` | choose  | Small, Slate-named, type-only, and enough to clean examples without runtime API. |
 
 Chosen option:
 
@@ -112,14 +112,12 @@ export type BooleanMarkKeysOf<N> = Extract<
   {
     [K in keyof MarksOf<N>]-?: Exclude<MarksOf<N>[K], undefined> extends boolean
       ? K
-      : never
+      : never;
   }[keyof MarksOf<N>],
   string
->
+>;
 
-export type BooleanMarksOf<N> = Partial<
-  Pick<MarksOf<N>, BooleanMarkKeysOf<N>>
->
+export type BooleanMarksOf<N> = Partial<Pick<MarksOf<N>, BooleanMarkKeysOf<N>>>;
 ```
 
 Consequences:
@@ -138,40 +136,38 @@ Follow-ups:
 
 ## Public API Target
 
-Add to `../slate-v2/packages/slate/src/interfaces/text.ts`:
+Add to `.tmp/slate-v2/packages/slate/src/interfaces/text.ts`:
 
 ```ts
 export type BooleanMarkKeysOf<N> = Extract<
   {
     [K in keyof MarksOf<N>]-?: Exclude<MarksOf<N>[K], undefined> extends boolean
       ? K
-      : never
+      : never;
   }[keyof MarksOf<N>],
   string
->
+>;
 
-export type BooleanMarksOf<N> = Partial<
-  Pick<MarksOf<N>, BooleanMarkKeysOf<N>>
->
+export type BooleanMarksOf<N> = Partial<Pick<MarksOf<N>, BooleanMarkKeysOf<N>>>;
 ```
 
-Export through `../slate-v2/packages/slate/src/index.ts` next to `MarksOf`,
+Export through `.tmp/slate-v2/packages/slate/src/index.ts` next to `MarksOf`,
 `MarksIn`, and `MarkKeysOf`.
 
 Example target:
 
 ```ts
-import type { BooleanMarkKeysOf } from 'slate'
+import type { BooleanMarkKeysOf } from "slate";
 
-export type CustomTextKey = BooleanMarkKeysOf<CustomText>
+export type CustomTextKey = BooleanMarkKeysOf<CustomText>;
 ```
 
 Mark helper target:
 
 ```ts
-import type { BooleanMarksOf } from 'slate'
+import type { BooleanMarksOf } from "slate";
 
-type ActiveMarks = BooleanMarksOf<CustomText>
+type ActiveMarks = BooleanMarksOf<CustomText>;
 ```
 
 Do not export a generic `BooleanKeys<T>` unless another Slate-owned type surface
@@ -195,11 +191,11 @@ Examples should show:
 
 Affected live examples:
 
-- `../slate-v2/site/examples/ts/custom-types.d.ts`
-- `../slate-v2/site/examples/ts/mark-utils.ts`
-- `../slate-v2/site/examples/ts/richtext.tsx`
-- `../slate-v2/site/examples/ts/hovering-toolbar.tsx`
-- `../slate-v2/site/examples/ts/iframe.tsx`
+- `.tmp/slate-v2/site/examples/ts/custom-types.d.ts`
+- `.tmp/slate-v2/site/examples/ts/mark-utils.ts`
+- `.tmp/slate-v2/site/examples/ts/richtext.tsx`
+- `.tmp/slate-v2/site/examples/ts/hovering-toolbar.tsx`
+- `.tmp/slate-v2/site/examples/ts/iframe.tsx`
 
 ## Migration Backbone
 
@@ -216,8 +212,8 @@ ClawSweeper related-issue pass: ledger-first, no live GitHub needed.
 
 Touched issue:
 
-| Issue | Cluster | Claim | Why | Proof route | V2 sync ledger | PR line |
-| --- | --- | --- | --- | --- | --- | --- |
+| Issue | Cluster                       | Claim                    | Why                                                                                                                                                                                                                       | Proof route                          | V2 sync ledger                                                       | PR line                                            |
+| ----- | ----------------------------- | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------ | -------------------------------------------------------------------- | -------------------------------------------------- |
 | #5075 | example-typescript-ergonomics | Improves after execution | The issue is exactly formatting-key TypeScript ergonomics. This plan removes the copied example type stunt and gives examples a Slate-owned helper. Do not mark `Fixes` without replaying the exact original issue shape. | type contract plus example typecheck | currently `not-claimed`; execution may move to `improves` with proof | related matrix only unless exact closure is proven |
 
 Related but not fixed:
@@ -230,26 +226,26 @@ PR reference sync: required because accepted API shape and examples change.
 
 ## Ecosystem Strategy Synthesis
 
-| System | Source | Mechanism | Avoids | Steal | Reject | Slate target | Verdict |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| Current Slate v2 | `../slate-v2/packages/slate/src/interfaces/text.ts` | `MarksOf<N>` derives marks from `TextOf<N>` and strips `text`. | Ad hoc `Omit<T, 'text'>` copies in every example. | Reuse `MarksOf<N>` as the base. | Changing `MarkKeysOf` fallback. | Add boolean-specific helpers beside `MarksOf`. | agree |
-| Current Slate v2 tests | `../slate-v2/packages/slate/test/generic-value-contract.ts` | `MarkKeysOf` intentionally returns `unknown` for optional marks. | Breaking existing type expectations. | Add new contracts for boolean mark keys. | Mutating old helper semantics. | Keep old tests green, add new helper tests. | agree |
-| Prior generics plan | `docs/plans/2026-04-26-slate-v2-plate-generics-type-system-plan.md` | Value-first helpers derive marks from text unions. | Declaration-merging and `any` mark objects. | Keep helper derivation value-first. | A generic schema object as primary typing model. | Type-only helper derived from current value model. | agree |
-| Issue corpus | `docs/slate-issues/requirements-from-issues.md` | Public API/type surface needs helpers matching actual runtime guarantees. | Growing core because docs are weak. | Small type helper where runtime guarantee is real. | Product toolbar helper in raw core. | Type-only public helper, no runtime abstraction. | partial |
+| System                 | Source                                                              | Mechanism                                                                 | Avoids                                            | Steal                                              | Reject                                           | Slate target                                       | Verdict |
+| ---------------------- | ------------------------------------------------------------------- | ------------------------------------------------------------------------- | ------------------------------------------------- | -------------------------------------------------- | ------------------------------------------------ | -------------------------------------------------- | ------- |
+| Current Slate v2       | `.tmp/slate-v2/packages/slate/src/interfaces/text.ts`               | `MarksOf<N>` derives marks from `TextOf<N>` and strips `text`.            | Ad hoc `Omit<T, 'text'>` copies in every example. | Reuse `MarksOf<N>` as the base.                    | Changing `MarkKeysOf` fallback.                  | Add boolean-specific helpers beside `MarksOf`.     | agree   |
+| Current Slate v2 tests | `.tmp/slate-v2/packages/slate/test/generic-value-contract.ts`       | `MarkKeysOf` intentionally returns `unknown` for optional marks.          | Breaking existing type expectations.              | Add new contracts for boolean mark keys.           | Mutating old helper semantics.                   | Keep old tests green, add new helper tests.        | agree   |
+| Prior generics plan    | `docs/plans/2026-04-26-slate-v2-plate-generics-type-system-plan.md` | Value-first helpers derive marks from text unions.                        | Declaration-merging and `any` mark objects.       | Keep helper derivation value-first.                | A generic schema object as primary typing model. | Type-only helper derived from current value model. | agree   |
+| Issue corpus           | `docs/slate-issues/requirements-from-issues.md`                     | Public API/type surface needs helpers matching actual runtime guarantees. | Growing core because docs are weak.               | Small type helper where runtime guarantee is real. | Product toolbar helper in raw core.              | Type-only public helper, no runtime abstraction.   | partial |
 
 No Lexical, ProseMirror, or Tiptap evidence is needed for this narrow type
 helper. This is not a runtime architecture decision.
 
 ## Applicable Review Matrix
 
-| Lens | Applicability | Finding | Plan delta |
-| --- | --- | --- | --- |
-| Vercel React | skipped | No React render/subscription/effect change. | None. |
-| performance-oracle | applied | Type-only exports have zero runtime cost; helper should not add runtime mark registry. | Keep helper type-only. |
-| performance | skipped | No production perf claim or benchmark surface. | None. |
-| tdd | applied | Public type helper needs type-contract proof, not implementation-detail tests. | Add compile contract before example migration. |
-| shadcn | skipped | No UI component surface changes. | None. |
-| react-useeffect | skipped | No effects or external synchronization. | None. |
+| Lens               | Applicability | Finding                                                                                | Plan delta                                     |
+| ------------------ | ------------- | -------------------------------------------------------------------------------------- | ---------------------------------------------- |
+| Vercel React       | skipped       | No React render/subscription/effect change.                                            | None.                                          |
+| performance-oracle | applied       | Type-only exports have zero runtime cost; helper should not add runtime mark registry. | Keep helper type-only.                         |
+| performance        | skipped       | No production perf claim or benchmark surface.                                         | None.                                          |
+| tdd                | applied       | Public type helper needs type-contract proof, not implementation-detail tests.         | Add compile contract before example migration. |
+| shadcn             | skipped       | No UI component surface changes.                                                       | None.                                          |
+| react-useeffect    | skipped       | No effects or external synchronization.                                                | None.                                          |
 
 ## High-Risk Deliberate Mode
 
@@ -287,9 +283,9 @@ Rollback answer:
 
 ## Slate Maintainer Objection Ledger
 
-| Change | Likely objection | Steelman antithesis | Tradeoff tension | Answer | Rejected alternative | Proof | Verdict |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| Add `BooleanMarkKeysOf<N>` and `BooleanMarksOf<N>` | "This is too niche for core; examples can keep their own type." | Slate core should stay minimal and avoid every docs convenience. | Two new public type names are API surface. | The helper names a Slate concept: boolean marks. The current example has to reimplement it because `MarkKeysOf` intentionally does not solve optional boolean marks. Type-only, no runtime cost, no product API. | Generic `BooleanKeys<T>` and changing `MarkKeysOf`. | Generic type contracts plus example typecheck. | keep |
+| Change                                             | Likely objection                                                | Steelman antithesis                                              | Tradeoff tension                           | Answer                                                                                                                                                                                                           | Rejected alternative                                | Proof                                          | Verdict |
+| -------------------------------------------------- | --------------------------------------------------------------- | ---------------------------------------------------------------- | ------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------- | ---------------------------------------------- | ------- |
+| Add `BooleanMarkKeysOf<N>` and `BooleanMarksOf<N>` | "This is too niche for core; examples can keep their own type." | Slate core should stay minimal and avoid every docs convenience. | Two new public type names are API surface. | The helper names a Slate concept: boolean marks. The current example has to reimplement it because `MarkKeysOf` intentionally does not solve optional boolean marks. Type-only, no runtime cost, no product API. | Generic `BooleanKeys<T>` and changing `MarkKeysOf`. | Generic type contracts plus example typecheck. | keep    |
 
 ## Hard Cuts And Rejected Alternatives
 
@@ -302,13 +298,13 @@ Rollback answer:
 
 ## Legacy Regression Proof Matrix
 
-| Risk | Proof |
-| --- | --- |
-| Boolean helper includes string-valued marks | type contract rejects `fontSize` |
-| Optional boolean marks collapse to `unknown` | type contract expects concrete union |
-| Existing `MarkKeysOf` contract changes | existing `generic-value-contract.ts` rows stay green |
-| Examples still carry copied helper | `rg "BooleanTextKey" site/examples/ts` returns none |
-| Example helpers lose active-mark precision | `BooleanMarksOf<CustomText>` used in `mark-utils.ts` |
+| Risk                                         | Proof                                                |
+| -------------------------------------------- | ---------------------------------------------------- |
+| Boolean helper includes string-valued marks  | type contract rejects `fontSize`                     |
+| Optional boolean marks collapse to `unknown` | type contract expects concrete union                 |
+| Existing `MarkKeysOf` contract changes       | existing `generic-value-contract.ts` rows stay green |
+| Examples still carry copied helper           | `rg "BooleanTextKey" site/examples/ts` returns none  |
+| Example helpers lose active-mark precision   | `BooleanMarksOf<CustomText>` used in `mark-utils.ts` |
 
 ## Browser Stress And Parity Strategy
 
@@ -320,11 +316,11 @@ does not change here.
 ## Implementation Phases
 
 1. Type contract RED: add `BooleanMarkKeysOf` / `BooleanMarksOf` expectations
-   to `../slate-v2/packages/slate/test/generic-value-contract.ts`.
+   to `.tmp/slate-v2/packages/slate/test/generic-value-contract.ts`.
 2. Core helper: add type exports in
-   `../slate-v2/packages/slate/src/interfaces/text.ts` and public index export.
+   `.tmp/slate-v2/packages/slate/src/interfaces/text.ts` and public index export.
 3. Example cleanup: replace `BooleanTextKey` in
-   `../slate-v2/site/examples/ts/custom-types.d.ts`; use
+   `.tmp/slate-v2/site/examples/ts/custom-types.d.ts`; use
    `BooleanMarksOf<CustomText>` in `mark-utils.ts`.
 4. Example audit: ensure richtext, hovering toolbar, and iframe keep inferred
    `CustomTextKey` usage without local generic gymnastics.
@@ -333,24 +329,24 @@ does not change here.
 
 ## Fast Driver Gates
 
-- cwd `../slate-v2`: `bunx tsc --project packages/slate/test/tsconfig.generic-types.json --noEmit --pretty false`
-- cwd `../slate-v2`: `bun --filter slate typecheck`
-- cwd `../slate-v2`: `bun typecheck:site` or the repo's current site/example
+- cwd `.tmp/slate-v2`: `bunx tsc --project packages/slate/test/tsconfig.generic-types.json --noEmit --pretty false`
+- cwd `.tmp/slate-v2`: `bun --filter slate typecheck`
+- cwd `.tmp/slate-v2`: `bun typecheck:site` or the repo's current site/example
   typecheck command if different
-- cwd `../slate-v2`: `rg "BooleanTextKey" site/examples/ts`
+- cwd `.tmp/slate-v2`: `rg "BooleanTextKey" site/examples/ts`
 - cwd `plate-2`: `pnpm lint:fix`
 - cwd `plate-2`: `node tooling/scripts/completion-check.mjs`
 
 ## Confidence Scorecard
 
-| Dimension | Weight | Score | Evidence |
-| --- | ---: | ---: | --- |
-| React 19.2 runtime performance | 0.20 | 0.98 | no runtime/React change |
-| Slate-close unopinionated DX | 0.20 | 0.96 | helper derives from `MarksOf<N>` and stays type-only |
-| Plate and slate-yjs migration backbone | 0.15 | 0.94 | value-first generics plan and no collab/runtime change |
-| Regression-proof testing strategy | 0.20 | 0.92 | named type contracts and example typecheck gates |
-| Research evidence completeness | 0.15 | 0.92 | live source, prior generics plan, issue corpus |
-| shadcn-style composability/minimalism | 0.10 | 0.95 | no UI/product API; examples stay tiny |
+| Dimension                              | Weight | Score | Evidence                                               |
+| -------------------------------------- | -----: | ----: | ------------------------------------------------------ |
+| React 19.2 runtime performance         |   0.20 |  0.98 | no runtime/React change                                |
+| Slate-close unopinionated DX           |   0.20 |  0.96 | helper derives from `MarksOf<N>` and stays type-only   |
+| Plate and slate-yjs migration backbone |   0.15 |  0.94 | value-first generics plan and no collab/runtime change |
+| Regression-proof testing strategy      |   0.20 |  0.92 | named type contracts and example typecheck gates       |
+| Research evidence completeness         |   0.15 |  0.92 | live source, prior generics plan, issue corpus         |
+| shadcn-style composability/minimalism  |   0.10 |  0.95 | no UI/product API; examples stay tiny                  |
 
 Weighted score: `0.946`.
 
@@ -358,20 +354,20 @@ Threshold result: pass.
 
 ## Pass-State Ledger
 
-| Pass | Status | Evidence added | Plan delta | Open issues | Next owner |
-| --- | --- | --- | --- | --- | --- |
-| 1. Current-state read and initial score | complete | live example/core/test reads | accepted additive helper target | none | closure |
-| 2. Related issue discovery | complete | #5075 ledger/live rows read | classify as future `Improves`, not `Fixes` | no exact closure proof | closure |
-| 3. Issue-ledger pass | complete | requirements, issue clusters, coverage matrix, dossier | no fixed issue claim | #5075 proof awaits execution | closure |
-| 4. Intent/boundary and decision brief | complete | boundary and decision sections | reject local helper and generic utility | none | closure |
-| 5. Research/ecosystem/live-source refresh | complete | live source plus prior generics plan | no external runtime research needed | none | closure |
-| 6. Pressure passes | complete | review matrix and hard cuts | helper is type-only | none | closure |
-| 7. Maintainer objection ledger | complete | objection row | keep tiny type-only helper | none | closure |
-| 8. High-risk deliberate mode | complete | pre-mortem/proof plan | public API proof added | none | closure |
-| 9. Ecosystem maintainer pass | skipped | no runtime/plugin/collab behavior change | no Plate/slate-yjs adapter work | none | closure |
-| 10. Revision pass | complete | rejected alternatives and API target | add `BooleanMarksOf` with key helper | none | closure |
-| 11. Issue sync accounting | complete | #5075 sync/coverage rows read | no ledger claim until execution proof | none | closure |
-| 12. Closure score and final gates | complete | scorecard, handoff, completion gates | ready for Ralph execution | none | none |
+| Pass                                      | Status   | Evidence added                                         | Plan delta                                 | Open issues                  | Next owner |
+| ----------------------------------------- | -------- | ------------------------------------------------------ | ------------------------------------------ | ---------------------------- | ---------- |
+| 1. Current-state read and initial score   | complete | live example/core/test reads                           | accepted additive helper target            | none                         | closure    |
+| 2. Related issue discovery                | complete | #5075 ledger/live rows read                            | classify as future `Improves`, not `Fixes` | no exact closure proof       | closure    |
+| 3. Issue-ledger pass                      | complete | requirements, issue clusters, coverage matrix, dossier | no fixed issue claim                       | #5075 proof awaits execution | closure    |
+| 4. Intent/boundary and decision brief     | complete | boundary and decision sections                         | reject local helper and generic utility    | none                         | closure    |
+| 5. Research/ecosystem/live-source refresh | complete | live source plus prior generics plan                   | no external runtime research needed        | none                         | closure    |
+| 6. Pressure passes                        | complete | review matrix and hard cuts                            | helper is type-only                        | none                         | closure    |
+| 7. Maintainer objection ledger            | complete | objection row                                          | keep tiny type-only helper                 | none                         | closure    |
+| 8. High-risk deliberate mode              | complete | pre-mortem/proof plan                                  | public API proof added                     | none                         | closure    |
+| 9. Ecosystem maintainer pass              | skipped  | no runtime/plugin/collab behavior change               | no Plate/slate-yjs adapter work            | none                         | closure    |
+| 10. Revision pass                         | complete | rejected alternatives and API target                   | add `BooleanMarksOf` with key helper       | none                         | closure    |
+| 11. Issue sync accounting                 | complete | #5075 sync/coverage rows read                          | no ledger claim until execution proof      | none                         | closure    |
+| 12. Closure score and final gates         | complete | scorecard, handoff, completion gates                   | ready for Ralph execution                  | none                         | none       |
 
 ## Plan Deltas From Review
 
@@ -452,7 +448,7 @@ Execution checkpoints:
 
 - Added the generic type contract first and observed the expected RED failure.
 - Implemented `BooleanMarkKeysOf<N>` and `BooleanMarksOf<N>` in
-  `../slate-v2/packages/slate/src/interfaces/text.ts`.
+  `.tmp/slate-v2/packages/slate/src/interfaces/text.ts`.
 - Replaced example-local `BooleanTextKey` with `BooleanMarkKeysOf<CustomText>`.
 - Replaced local active-mark `Partial<Pick<...>>` with
   `BooleanMarksOf<CustomText>`.
@@ -462,12 +458,12 @@ Execution checkpoints:
 
 Execution verification:
 
-- cwd `../slate-v2`: `bunx tsc --project packages/slate/test/tsconfig.generic-types.json --noEmit --pretty false` red before helper.
-- cwd `../slate-v2`: `bunx tsc --project packages/slate/test/tsconfig.generic-types.json --noEmit --pretty false` pass after helper.
-- cwd `../slate-v2`: `bun --filter slate typecheck` pass.
-- cwd `../slate-v2`: `bun typecheck:site` pass.
-- cwd `../slate-v2`: `rg "BooleanTextKey" site/examples/ts` no matches.
-- cwd `../slate-v2`: `bun lint:fix` pass; Biome fixed one file.
-- cwd `../slate-v2`: `bun check` pass; lint, package/site/root typecheck,
+- cwd `.tmp/slate-v2`: `bunx tsc --project packages/slate/test/tsconfig.generic-types.json --noEmit --pretty false` red before helper.
+- cwd `.tmp/slate-v2`: `bunx tsc --project packages/slate/test/tsconfig.generic-types.json --noEmit --pretty false` pass after helper.
+- cwd `.tmp/slate-v2`: `bun --filter slate typecheck` pass.
+- cwd `.tmp/slate-v2`: `bun typecheck:site` pass.
+- cwd `.tmp/slate-v2`: `rg "BooleanTextKey" site/examples/ts` no matches.
+- cwd `.tmp/slate-v2`: `bun lint:fix` pass; Biome fixed one file.
+- cwd `.tmp/slate-v2`: `bun check` pass; lint, package/site/root typecheck,
   1008 Bun tests, and 267 Slate React Vitest tests passed.
 - cwd `plate-2`: `pnpm lint:fix` pass; no fixes applied.

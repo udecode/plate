@@ -242,7 +242,7 @@ Work:
 - keep:
   - `slate-dom-legacy-draft-contract-corpus.md`
   - `slate-react-legacy-draft-contract-corpus.md`
-  as the package merged-corpus owners
+    as the package merged-corpus owners
 
 Exit:
 
@@ -555,8 +555,8 @@ Target command lanes from the draft/runtime plan:
 
 Current repo truth:
 
-- these command names do not exist in `../slate-v2/package.json`
-- there are no matching owner files under `../slate-v2/scripts/benchmarks/**`
+- these command names do not exist in `.tmp/slate-v2/package.json`
+- there are no matching owner files under `.tmp/slate-v2/scripts/benchmarks/**`
 - phase 7 is still a missing-owner lane, not a closed perf program
 
 Hard rule from the learnings:
@@ -812,8 +812,8 @@ It’s garbage.
     files exist
   - do not reopen chunking-as-main-story to fake a large-doc perf narrative
 - why:
-  - `../slate-v2/package.json` only exposes core/history benchmark commands
-  - `../slate-v2/scripts/benchmarks/**` only contains core/history/slate files
+  - `.tmp/slate-v2/package.json` only exposes core/history benchmark commands
+  - `.tmp/slate-v2/scripts/benchmarks/**` only contains core/history/slate files
   - there is no live owner for:
     - `bench:react:overlay-subscriptions:local`
     - `bench:replacement:huge-document:islands:local`
@@ -874,7 +874,7 @@ It’s garbage.
 - latest landed `slate-react` owner:
   - `bun run bench:react:rerender-breadth:local`
   - implementation:
-    - `../slate-v2/scripts/benchmarks/browser/react/rerender-breadth.tsx`
+    - `.tmp/slate-v2/scripts/benchmarks/browser/react/rerender-breadth.tsx`
 - latest keep / skip / cut decision:
   - keep `rerender-breadth` as the first real north-star perf owner
   - keep it package-owned and headless; do not wait for huge-document browser perf
@@ -886,7 +886,7 @@ It’s garbage.
     - `createSlateProjectionStore(...)`
     - current `useSlateSelector(editor => ...)`
     - current projection-store metrics
-  - the command now runs from `../slate-v2`
+  - the command now runs from `.tmp/slate-v2`
   - the output proves locality on the kept React/runtime families without
     relying on phantom browser harnesses
 - earliest gates:
@@ -941,7 +941,7 @@ It’s garbage.
 - latest landed `slate-react` owner:
   - `bun run bench:react:rerender-breadth:local`
   - implementation:
-    - `../slate-v2/scripts/benchmarks/browser/react/rerender-breadth.tsx`
+    - `.tmp/slate-v2/scripts/benchmarks/browser/react/rerender-breadth.tsx`
 - latest keep / skip / cut decision:
   - keep `rerender-breadth` as the live owner for React locality and
     source-scoped invalidation
@@ -1016,12 +1016,12 @@ It’s garbage.
 - latest landed `slate-react` owner:
   - `bun run bench:react:huge-document-overlays:local`
   - implementation:
-    - `../slate-v2/scripts/benchmarks/browser/react/huge-document-overlays.tsx`
+    - `.tmp/slate-v2/scripts/benchmarks/browser/react/huge-document-overlays.tsx`
     - shared harness:
-      - `../slate-v2/scripts/benchmarks/shared/react-benchmark.tsx`
+      - `.tmp/slate-v2/scripts/benchmarks/shared/react-benchmark.tsx`
 - latest keep / skip / cut decision:
   - keep a real headless huge-document owner on the current `EditableBlocks
-    largeDocument` surface
+largeDocument` surface
   - keep the result honest: shell counts and mounted text counts stay bounded,
     but far-only overlay toggles still rerender both projection subscribers
   - cut the live docs claim that huge-document overlay-local perf is still a
@@ -1041,7 +1041,7 @@ It’s garbage.
   - the same lane also exposes the remaining projection-store fanout truth:
     - active projection subscriber rerenders `1`
     - far projection subscriber rerenders `1`
-    on a far-only overlay toggle
+      on a far-only overlay toggle
 - earliest gates:
   - correctness:
     existing focused DOM/React package owners remain the runtime floor
@@ -1069,7 +1069,7 @@ It’s garbage.
   - the next risk is stopping at perf-owner creation without cashing it out
     into final truth and same-turn end-state evidence
 - next move:
-  - run the required end-state gates from `../slate-v2`
+  - run the required end-state gates from `.tmp/slate-v2`
   - then update the remaining live closure docs based on the actual results
 - do not do:
   - do not reopen the old chunking example and pretend that is the new owner
@@ -1168,8 +1168,8 @@ It’s garbage.
 - latest landed `slate-react` owner:
   - `bun run bench:react:huge-document-overlays:local`
   - implementation:
-    - `../slate-v2/scripts/benchmarks/browser/react/huge-document-overlays.tsx`
-    - `../slate-v2/scripts/benchmarks/shared/react-benchmark.tsx`
+    - `.tmp/slate-v2/scripts/benchmarks/browser/react/huge-document-overlays.tsx`
+    - `.tmp/slate-v2/scripts/benchmarks/shared/react-benchmark.tsx`
 - latest keep / skip / cut decision:
   - keep tranche-5 / tranche-6 runtime closure as the live claim
   - keep the new huge-document perf owner and rerender-breadth owner as the
@@ -1559,8 +1559,8 @@ It’s garbage.
     - absent current-only example/proof names in `example-parity-matrix.md`
 - why:
   - repo truth check showed those file rows do not exist in
-    `../slate-v2/site/examples/ts/**` or
-    `../slate-v2/playwright/integration/examples/**`
+    `.tmp/slate-v2/site/examples/ts/**` or
+    `.tmp/slate-v2/playwright/integration/examples/**`
   - live docs now point broader browser/input parity at
     `true-slate-rc-proof-ledger.md` instead of pretending absent files are
     pending in-repo owners
@@ -1645,7 +1645,7 @@ It’s garbage.
   - keep tranche-5 / tranche-6 frozen
   - keep only live current-only TS example surfaces in the live parity matrix
   - cut draft-only current-only names that do not map to files in
-    `../slate-v2/site/examples/ts/**`
+    `.tmp/slate-v2/site/examples/ts/**`
 - why:
   - repo truth check showed the old current-only TS list was mostly ghosts
   - `example-parity-matrix.md` now keeps only the four live v2-only current-only
@@ -1892,7 +1892,7 @@ It’s garbage.
 - latest landed `slate-react` owner:
   - `bun run bench:react:huge-document:legacy-compare:local`
   - implementation:
-    - `../slate-v2/scripts/benchmarks/browser/react/huge-document-legacy-compare.mjs`
+    - `.tmp/slate-v2/scripts/benchmarks/browser/react/huge-document-legacy-compare.mjs`
 - latest keep / skip / cut decision:
   - keep the new direct legacy chunk-on / legacy chunk-off / v2 compare owner
   - keep the existing rerender and overlay benchmarks as useful but insufficient

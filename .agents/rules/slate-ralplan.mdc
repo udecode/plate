@@ -46,7 +46,7 @@ and the plan is ready for user review before a later `ralph` run executes it.
 - Treat that as a hard editing boundary. Slate Ralplan may edit only planning,
   research, issue-ledger, PR-reference, and scoped completion/continuation
   artifacts it explicitly owns.
-- Do not create, modify, or delete `../slate-v2` implementation, test, example,
+- Do not create, modify, or delete `.tmp/slate-v2` implementation, test, example,
   package, build, or config files from this skill.
 - User phrases like "go", "rewrite", "feel free to build", "fix it", or
   "execute" do not override this boundary when `slate-ralplan` is the active
@@ -58,6 +58,15 @@ and the plan is ready for user review before a later `ralph` run executes it.
 - The top-level completion status is the lane status, not the current pass
   status. Close a pass with `current_pass_status: complete`; do not use
   top-level `done` unless the whole lane is closed.
+- Never write contradictory closeout state. If the completion file says
+  `ralplan_lane_status: pending`, `final_handoff_status: pending`, a non-`none`
+  `next_pass`, or a runnable `next_action`, the top-level status must be
+  `pending`. Side-channel fields do not override the Stop hook; they make
+  top-level `done` invalid.
+- If the user asks to run only one pass, that means close only the current pass:
+  write `current_pass_status: complete`, record the next pass, keep top-level
+  `status: pending`, and let the Stop hook stop. Do not translate "this pass is
+  done" into hook-level `done`.
 - Top-level `done` is legal only in the closure/final-gates pass, after the
   active plan proves every earlier pass-state row is complete or explicitly
   skipped with evidence.
@@ -95,13 +104,13 @@ and the plan is ready for user review before a later `ralph` run executes it.
 - Workspace verification is part of evidence. `plate-2` commands prove only
   planning, ledgers, and completion-state artifacts. Any Slate v2 source,
   runtime, browser, package, public API, or issue-fix claim must be verified
-  from the live `../slate-v2` workspace with the relevant `../slate-v2` command.
+  from the live `.tmp/slate-v2` workspace with the relevant `.tmp/slate-v2` command.
 - Do not count `bun run test`, typecheck, lint, Playwright, package filters, or
   completion scripts run in `plate-2` as Slate v2 verification. They may be
   recorded only as plan-artifact checks.
-- If a prior or current `ralph` execution touched `../slate-v2`, Slate Ralplan
-  closure must require the applicable `../slate-v2` verification command set.
-  A failing relevant `../slate-v2` command keeps the plan or execution review
+- If a prior or current `ralph` execution touched `.tmp/slate-v2`, Slate Ralplan
+  closure must require the applicable `.tmp/slate-v2` verification command set.
+  A failing relevant `.tmp/slate-v2` command keeps the plan or execution review
   `pending` unless the failure is proven unrelated with a cited command,
   failing scope, and owner.
 
@@ -122,10 +131,10 @@ and the plan is ready for user review before a later `ralph` run executes it.
   leave, append to, or trust a prior `done` file just because it uses the same
   runtime id. One Codex thread can run many ralplans, so same-id `done` state is
   stale unless the latest user request is explicitly resuming that same plan.
-  If the user is only asking to update or test this reset policy, do not end the
-  assistant turn with the active hook state still `pending`; close that
-  meta-maintenance task as `done` after recording that the next real Slate
-  Ralplan activation must reset itself to `pending`.
+  If the user is only asking to update or test this reset policy, do not reuse
+  an active Slate Ralplan completion file for meta-maintenance closeout. A
+  meta-maintenance task may be `done` only in its own state file or when the
+  active state file does not describe a pending Slate Ralplan lane.
 - Continuation prompt: `.tmp/<id>/continue.md` beside the active completion file
   when further autonomous plan work remains.
 - Research updates under `docs/research/` when the evidence lane is stale or
@@ -260,7 +269,7 @@ reset it for the new plan.
    `docs/slate-v2/references/pr-description.md`.
 8. Relevant compiled research pages for Lexical, ProseMirror, Tiptap, Slate,
    React 19.2, node/render DX, and browser proof.
-9. Live `../slate-v2` API surfaces touched by the review.
+9. Live `.tmp/slate-v2` API surfaces touched by the review.
 
 Read when relevant:
 
@@ -288,7 +297,7 @@ Use `research-wiki` when the compiled layer is stale, contradictory, or missing
 coverage for the current question. For framework evidence, inspect local
 official clones under `..` or normalized `../raw` before external docs.
 
-If the review depends on current `../slate-v2` behavior, cite live source files
+If the review depends on current `.tmp/slate-v2` behavior, cite live source files
 or tests. If it depends on React 19.2, Lexical, ProseMirror, Tiptap, or Slate
 legacy behavior, cite the compiled research page or local source read used for
 that claim.
@@ -302,7 +311,7 @@ Before any pass, score, ledger row, migration answer, docs/example answer,
 proof row, implementation phase, final handoff, or user-facing explanation that
 relies on what currently exists:
 
-1. Re-read the live `../slate-v2` source, example, test, or generated contract
+1. Re-read the live `.tmp/slate-v2` source, example, test, or generated contract
    that owns the shape.
 2. State the exact current owner: file, test, route, generated contract, or
    explicit gap.
@@ -316,13 +325,13 @@ relies on what currently exists:
    or `gap: ...` instead of inventing a current state.
 
 Stale docs and closed plans are not current API evidence. They can explain why
-a decision exists, but they cannot prove what `../slate-v2` exposes today.
+a decision exists, but they cannot prove what `.tmp/slate-v2` exposes today.
 
 For render/API examples, grep the exact symbols first. Examples:
 
-- `rg -n "RenderVoidProps|renderVoid|renderElement" ../slate-v2/packages/slate-react ../slate-v2/site`
-- `rg -n "EditorExtension|commands\\?|setup\\(|extend\\(" ../slate-v2/packages/slate/src`
-- `rg -n "useElementSelected|useNodeSelector|useEditorState" ../slate-v2/packages/slate-react/src`
+- `rg -n "RenderVoidProps|renderVoid|renderElement" .tmp/slate-v2/packages/slate-react .tmp/slate-v2/site`
+- `rg -n "EditorExtension|commands\\?|setup\\(|extend\\(" .tmp/slate-v2/packages/slate/src`
+- `rg -n "useElementSelected|useNodeSelector|useEditorState" .tmp/slate-v2/packages/slate-react/src`
 
 Do not translate from old Slate by memory. If the current code says void
 renderers already receive content-only props, do not describe a migration from
@@ -337,38 +346,38 @@ uses a stale "before". Re-ground those steps before writing them.
 
 ## Verification Workspace Gate
 
-Slate v2 verification runs in `../slate-v2`, not in this planning repo.
+Slate v2 verification runs in `.tmp/slate-v2`, not in this planning repo.
 
 Rules:
 
 1. Before scoring, closing, or reviewing an implementation slice that changes or
-   claims `../slate-v2` behavior, run the relevant command from
-   `workdir: /Users/zbeyens/git/slate-v2` or with an explicit `cd ../slate-v2`
+   claims `.tmp/slate-v2` behavior, run the relevant command from
+   `workdir: /Users/zbeyens/git/slate-v2` or with an explicit `cd .tmp/slate-v2`
    equivalent.
 2. Record the exact command, cwd, result, and failure scope in the active plan
    or completion file.
 3. `bun run completion-check` in `plate-2` is only a planning-state gate. It
-   cannot substitute for `../slate-v2` tests.
+   cannot substitute for `.tmp/slate-v2` tests.
 4. Broad Slate v2 closure after a `ralph` implementation pass needs the broadest
-   feasible `../slate-v2` gate for the touched surface. If `bun run test` is
+   feasible `.tmp/slate-v2` gate for the touched surface. If `bun run test` is
    the project-level release gate and it fails, closure stays `pending` until
    the failure is fixed, isolated as unrelated, or explicitly moved to a
    recorded owner.
 5. Focused gates are acceptable during intermediate passes, but the plan must
-   name the remaining broad `../slate-v2` gate before calling the implementation
+   name the remaining broad `.tmp/slate-v2` gate before calling the implementation
    release-ready.
 6. If tooling, time, browser availability, or device access prevents a required
-   `../slate-v2` gate, record `verification gap: <command>` and keep status
+   `.tmp/slate-v2` gate, record `verification gap: <command>` and keep status
    `pending` or `blocked` according to whether more autonomous work remains.
 
 Common command ownership examples:
 
 - Core package changes: run the relevant `bun --filter slate ...` test/typecheck
-  from `../slate-v2`, then the broader `../slate-v2` gate named by the package.
+  from `.tmp/slate-v2`, then the broader `.tmp/slate-v2` gate named by the package.
 - React/runtime/browser changes: run focused `slate-react` tests and matching
-  Playwright rows from `../slate-v2`; do not use `plate-2` tests as proof.
-- Public API/export changes: run public-surface contracts from `../slate-v2`.
-- Issue-fix claims: run the exact proof route from `../slate-v2` and keep issue
+  Playwright rows from `.tmp/slate-v2`; do not use `plate-2` tests as proof.
+- Public API/export changes: run public-surface contracts from `.tmp/slate-v2`.
+- Issue-fix claims: run the exact proof route from `.tmp/slate-v2` and keep issue
   claims conservative until it passes.
 - Planning-only docs/ledger changes in `plate-2`: run `bun run completion-check`
   in `plate-2`; no Slate v2 test claim may be made from that alone.
@@ -405,9 +414,9 @@ explicitly asks to resume or inspect that same plan. Clearing to an empty file
 is also invalid; the file must be rewritten into a parseable pending state.
 Do not apply this reset as a standalone closeout action and then stop. If the
 current task is rule/state maintenance rather than an active Slate Ralplan pass,
-record the reset-policy maintenance as complete and leave the active Stop-hook
-state `done`, with a note that the next real activation must overwrite it with
-fresh `pending`.
+do not mark the active Slate Ralplan lane `done` to get a green Stop hook. If a
+completion file still names a runnable Slate Ralplan next pass, it remains
+`pending`.
 
 Use:
 
@@ -442,6 +451,8 @@ Single-pass completion is invalid by default:
 
 - one activation may complete at most one scheduled review pass
 - a newly created or newly activated review plan must stay `pending`
+- a one-pass-only user instruction keeps the lane `pending` after that pass
+  unless `next_pass` is `none`
 - only the closure pass may set `done`
 - the closure pass is valid only after earlier pass-state rows are already
   recorded as complete in the active plan before the current activation starts
@@ -466,6 +477,8 @@ Before writing `status: done`, prove in the plan and completion file:
 - `current_pass_status` is `complete`
 - `next_pass` is `none`
 - `next_action` is `none`
+- `ralplan_lane_status`, if present, is `complete`, `done`, or `closed`
+- `final_handoff_status`, if present, is `complete`, `done`, or `closed`
 - every completion threshold row below passes
 - `final_handoff_status` is `complete`
 - the final chat response includes the exhaustive Done Handoff bullet list
@@ -550,12 +563,12 @@ completed pass <name/date>`
 - pass-state ledger proves earlier passes completed before closure
 - plan deltas from review are recorded
 - verification workspace gate is satisfied: every Slate v2 source, behavior,
-  package, browser, or issue-fix claim has a recorded `../slate-v2` command and
-  result, and no relevant failing `../slate-v2` command is left without a fix,
+  package, browser, or issue-fix claim has a recorded `.tmp/slate-v2` command and
+  result, and no relevant failing `.tmp/slate-v2` command is left without a fix,
   unrelated-failure proof, or explicit owner
 - final user-review handoff gate complete: the active plan contains the final
   handoff outline, the completion file records `final_handoff_status:
-  complete`, and the final chat response lists every accepted plan
+complete`, and the final chat response lists every accepted plan
   item/decision with before/after shape when applicable
 
 If any gate fails, status stays `pending`.
@@ -607,7 +620,7 @@ The plan must include:
 25. Final completion gates.
 
 Fast driver gates must include the cwd. For any gate that proves Slate v2
-behavior, the cwd is `../slate-v2`. For planning-only gates, the cwd is
+behavior, the cwd is `.tmp/slate-v2`. For planning-only gates, the cwd is
 `plate-2`.
 
 ## Pass Schedule
@@ -740,7 +753,7 @@ Ledger/cache discipline:
   `docs/slate-v2/references/pr-description.md`.
 - If those files already contain a completed ClawSweeper pass for the same
   surface, cite and reuse it. Record `already covered by completed pass
-  <name/date>` instead of rediscovering the same issues.
+<name/date>` instead of rediscovering the same issues.
 - Do not run broad `gh issue list`, `gh search issues`, or unscoped live GitHub
   discovery in Slate Ralplan. Broad corpus state belongs to generated gitcrawl
   ledgers and ClawSweeper refreshes.
@@ -812,7 +825,7 @@ Classification rules:
 The active plan must include an issue matrix with at least:
 
 | Issue | Cluster | Claim | Why | Proof route | V2 sync ledger | PR line |
-| ----- | ------- | ----- | --- | ----------- | ---------------- | ------- |
+| ----- | ------- | ----- | --- | ----------- | -------------- | ------- |
 
 `V2 sync ledger` is the exact status change for the issue row in
 `docs/slate-issues/gitcrawl-v2-sync-ledger.md`, using
@@ -1112,7 +1125,7 @@ Record:
 - dropped decisions
 - strengthened acceptance criteria
 - new tests/proof rows
-- verification commands with cwd, especially any `../slate-v2` focused or broad
+- verification commands with cwd, especially any `.tmp/slate-v2` focused or broad
   gate used to support a claim
 - unresolved items moved to the next pass
 - no-change decisions with the evidence that made change unnecessary
@@ -1151,7 +1164,7 @@ in the plan:
   example-by-example patching. Use `tdd` expectations for behavior slices that
   should be introduced or fixed test-first.
 - Verification workspace pass: prove all Slate v2 behavior/source/test claims
-  were checked in `../slate-v2`, not `plate-2`. If a relevant `../slate-v2`
+  were checked in `.tmp/slate-v2`, not `plate-2`. If a relevant `.tmp/slate-v2`
   command fails, keep status `pending` and record the failing command, scope,
   and next owner.
 - Research pass: prove Lexical, ProseMirror, and Tiptap were used as evidence,

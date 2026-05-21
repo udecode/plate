@@ -11,22 +11,22 @@ Completion:
 
 ## Ralph Execution Ledger
 
-| Time | Pass | Owner | Status | Evidence |
-| --- | --- | --- | --- | --- |
-| 2026-05-13T05:44:53Z | `ralph-history-selection-precondition` | `../slate-v2/packages/slate-history` | started | Completion state set back to `pending`; continuation prompt refreshed with repo-relative gates. |
-| 2026-05-13T05:48:06Z | `ralph-history-selection-precondition` | `../slate-v2/packages/slate-history` | complete | Added mixed-commit package red/green tests, fixed batch precondition capture, kept trailing selection ops, and passed focused package/type/browser/lint gates. |
-| 2026-05-13T06:39:00Z | `ralph-scroll-into-view-caret-regression` | `../slate-v2/packages/slate-react` | complete | Added strict scroll-into-view Playwright row for repeated manual scroll-away, delayed undo, restored selection, and third typing target; repaired model-owned history caret ownership and passed focused browser/package gates. |
+| Time                 | Pass                                      | Owner                                  | Status   | Evidence                                                                                                                                                                                                                        |
+| -------------------- | ----------------------------------------- | -------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-05-13T05:44:53Z | `ralph-history-selection-precondition`    | `.tmp/slate-v2/packages/slate-history` | started  | Completion state set back to `pending`; continuation prompt refreshed with repo-relative gates.                                                                                                                                 |
+| 2026-05-13T05:48:06Z | `ralph-history-selection-precondition`    | `.tmp/slate-v2/packages/slate-history` | complete | Added mixed-commit package red/green tests, fixed batch precondition capture, kept trailing selection ops, and passed focused package/type/browser/lint gates.                                                                  |
+| 2026-05-13T06:39:00Z | `ralph-scroll-into-view-caret-regression` | `.tmp/slate-v2/packages/slate-react`   | complete | Added strict scroll-into-view Playwright row for repeated manual scroll-away, delayed undo, restored selection, and third typing target; repaired model-owned history caret ownership and passed focused browser/package gates. |
 
 Implementation files:
 
-- `../slate-v2/packages/slate-history/src/with-history.ts`
-- `../slate-v2/packages/slate-history/test/history-contract.ts`
-- `../slate-v2/packages/slate-react/src/editable/input-controller.ts`
-- `../slate-v2/packages/slate-react/src/editable/keyboard-input-strategy.ts`
-- `../slate-v2/packages/slate-react/src/editable/mutation-controller.ts`
-- `../slate-v2/packages/slate-react/src/editable/runtime-selection-engine.ts`
-- `../slate-v2/packages/slate-react/src/editable/selection-controller.ts`
-- `../slate-v2/playwright/integration/examples/scroll-into-view.test.ts`
+- `.tmp/slate-v2/packages/slate-history/src/with-history.ts`
+- `.tmp/slate-v2/packages/slate-history/test/history-contract.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/input-controller.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/keyboard-input-strategy.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/mutation-controller.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-selection-engine.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/selection-controller.ts`
+- `.tmp/slate-v2/playwright/integration/examples/scroll-into-view.test.ts`
 
 Implementation proof:
 
@@ -107,14 +107,14 @@ Closure verdict: Ralph execution complete.
 
 ## Intent Boundary
 
-| Field | Decision |
-| --- | --- |
-| Intent | Fix undo after typing at a DOM-imported caret so history restores the edit point, not the stale model selection from before selection import. |
-| Desired outcome | Typing in the middle of a block, undoing, and then typing again leaves selection at the original edit point across package and browser proof. |
-| In scope | `slate-history` batch construction, leading `set_selection` handling inside mixed commits, undo/redo package contracts, focused React browser rows, local fork issue `udecode/slate#9` accounting. |
-| Non-goals | Public history API, ProseMirror integer positions, Lexical snapshot history, broad DOM selection rewrite, raw mobile/IME claims, unrelated history memory work. |
-| Decision boundary | Slate Ralplan may choose the internal history target and proof gates; `ralph` owns source/test edits later. |
-| User decision needed | None. |
+| Field                | Decision                                                                                                                                                                                           |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Intent               | Fix undo after typing at a DOM-imported caret so history restores the edit point, not the stale model selection from before selection import.                                                      |
+| Desired outcome      | Typing in the middle of a block, undoing, and then typing again leaves selection at the original edit point across package and browser proof.                                                      |
+| In scope             | `slate-history` batch construction, leading `set_selection` handling inside mixed commits, undo/redo package contracts, focused React browser rows, local fork issue `udecode/slate#9` accounting. |
+| Non-goals            | Public history API, ProseMirror integer positions, Lexical snapshot history, broad DOM selection rewrite, raw mobile/IME claims, unrelated history memory work.                                    |
+| Decision boundary    | Slate Ralplan may choose the internal history target and proof gates; `ralph` owns source/test edits later.                                                                                        |
+| User decision needed | None.                                                                                                                                                                                              |
 
 Pressure test:
 
@@ -124,17 +124,17 @@ Pressure test:
 
 ## Live Source Evidence
 
-| Surface | Current owner | Current shape | Verdict |
-| --- | --- | --- | --- |
-| History batch shape | `../slate-v2/packages/slate-history/src/history.ts:9-12` | `Batch` stores `operations` and `selectionBefore`. | Keep the shape for now; compute `selectionBefore` correctly. |
-| Undo | `../slate-v2/packages/slate-history/src/with-history.ts:56-78` | Replays inverse batch operations, then sets `batch.selectionBefore`. | Correct order, wrong value when the batch start selection is stale. |
-| Redo | `../slate-v2/packages/slate-history/src/with-history.ts:33-54` | Sets `batch.selectionBefore`, then replays original operations. | Can stay if leading selection imports are trimmed or made harmless. |
-| Batch capture | `../slate-v2/packages/slate-history/src/with-history.ts:140-148` | New batch stores all `committedOps` and `change.selectionBefore`. | Root bug: commit-wide `selectionBefore` predates leading DOM-import `set_selection`. |
-| Save policy | `../slate-v2/packages/slate-history/src/with-history.ts:219-228` | `set_selection` does not make a commit saveable. | Reuse this distinction to find the first saveable op. |
-| Commit metadata | `../slate-v2/packages/slate/src/interfaces/editor.ts:943-983` | Commits include operations, metadata, tags, `selectionBefore`, and `selectionAfter`. | Enough data exists; no public API needed. |
-| Commit dirtiness | `../slate-v2/packages/slate/src/core/public-state.ts:659-827` | Text commits may include `set_selection` and text ops in one commit. | History must understand mixed commits. |
-| Existing browser row | `../slate-v2/playwright/integration/examples/plaintext.test.ts:271-300` | Plaintext middle-line typing undo restores caret. | Useful guard, but not enough; it does not catch the mixed-commit package bug. |
-| Existing history row | `../slate-v2/packages/slate-history/test/history-contract.ts:356-396` | Covers selection import sharing a later text commit, but starts from `null` and does not assert stale model selection before import. | Keep, then add the exact red. |
+| Surface              | Current owner                                                             | Current shape                                                                                                                        | Verdict                                                                              |
+| -------------------- | ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------ |
+| History batch shape  | `.tmp/slate-v2/packages/slate-history/src/history.ts:9-12`                | `Batch` stores `operations` and `selectionBefore`.                                                                                   | Keep the shape for now; compute `selectionBefore` correctly.                         |
+| Undo                 | `.tmp/slate-v2/packages/slate-history/src/with-history.ts:56-78`          | Replays inverse batch operations, then sets `batch.selectionBefore`.                                                                 | Correct order, wrong value when the batch start selection is stale.                  |
+| Redo                 | `.tmp/slate-v2/packages/slate-history/src/with-history.ts:33-54`          | Sets `batch.selectionBefore`, then replays original operations.                                                                      | Can stay if leading selection imports are trimmed or made harmless.                  |
+| Batch capture        | `.tmp/slate-v2/packages/slate-history/src/with-history.ts:140-148`        | New batch stores all `committedOps` and `change.selectionBefore`.                                                                    | Root bug: commit-wide `selectionBefore` predates leading DOM-import `set_selection`. |
+| Save policy          | `.tmp/slate-v2/packages/slate-history/src/with-history.ts:219-228`        | `set_selection` does not make a commit saveable.                                                                                     | Reuse this distinction to find the first saveable op.                                |
+| Commit metadata      | `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:943-983`           | Commits include operations, metadata, tags, `selectionBefore`, and `selectionAfter`.                                                 | Enough data exists; no public API needed.                                            |
+| Commit dirtiness     | `.tmp/slate-v2/packages/slate/src/core/public-state.ts:659-827`           | Text commits may include `set_selection` and text ops in one commit.                                                                 | History must understand mixed commits.                                               |
+| Existing browser row | `.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:271-300` | Plaintext middle-line typing undo restores caret.                                                                                    | Useful guard, but not enough; it does not catch the mixed-commit package bug.        |
+| Existing history row | `.tmp/slate-v2/packages/slate-history/test/history-contract.ts:356-396`   | Covers selection import sharing a later text commit, but starts from `null` and does not assert stale model selection before import. | Keep, then add the exact red.                                                        |
 
 Verification evidence from `/Users/zbeyens/git/slate-v2`:
 
@@ -178,20 +178,20 @@ Top drivers:
 
 Viable options:
 
-| Option | Pros | Cons | Verdict |
-| --- | --- | --- | --- |
-| Force DOM selection export after undo | May mask browser symptoms quickly. | Leaves wrong package history state and redo/replay risk. | reject |
-| Add `Batch.selectionAfter` immediately | Gives explicit redo target. | Extra model surface before the failing class requires it. | defer |
-| Store full snapshots like Lexical | Robust selection restore. | Too much memory and abandons operation-first history/collab shape. | reject |
-| ProseMirror-style public selection bookmarks | Durable mapping story. | Public API churn and integer-position mismatch. | reject |
-| Compute batch start selection from leading non-saveable selection ops | Small, Slate-close, fixes root cause, preserves operation history. | Needs careful partial `set_selection` helper. | choose |
+| Option                                                                | Pros                                                               | Cons                                                               | Verdict |
+| --------------------------------------------------------------------- | ------------------------------------------------------------------ | ------------------------------------------------------------------ | ------- |
+| Force DOM selection export after undo                                 | May mask browser symptoms quickly.                                 | Leaves wrong package history state and redo/replay risk.           | reject  |
+| Add `Batch.selectionAfter` immediately                                | Gives explicit redo target.                                        | Extra model surface before the failing class requires it.          | defer   |
+| Store full snapshots like Lexical                                     | Robust selection restore.                                          | Too much memory and abandons operation-first history/collab shape. | reject  |
+| ProseMirror-style public selection bookmarks                          | Durable mapping story.                                             | Public API churn and integer-position mismatch.                    | reject  |
+| Compute batch start selection from leading non-saveable selection ops | Small, Slate-close, fixes root cause, preserves operation history. | Needs careful partial `set_selection` helper.                      | choose  |
 
 Chosen consequence:
 
 - `withHistory` needs a small pure helper, not a public API:
 
 ```ts
-prepareHistoryBatch(change.selectionBefore, committedOps)
+prepareHistoryBatch(change.selectionBefore, committedOps);
 ```
 
 It should return:
@@ -293,12 +293,12 @@ or DOM data to history entries.
 
 ## Ecosystem Strategy Synthesis
 
-| System | Source | Mechanism | Avoids | Steal | Reject | Slate target | Verdict |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| Legacy Slate | `../slate/packages/slate-history/src/with-history.ts:69-116` | History wraps `editor.apply`; `set_selection` is skipped; first saveable op captures the current selection. | Storing stale selection from before DOM import. | Capture batch precondition at first saveable op. | Mutable public editor fields and op-by-op plugin interception. | Compute the same precondition from v2 commit operations. | agree |
-| ProseMirror | `../raw/prosemirror/packages/history/src/history.ts:15-19`, `:82-109`, `:331-343`; `../raw/prosemirror/packages/state/src/selection.ts:173-203` | Event start stores a selection bookmark; history maps bookmarks through changes and resolves on replay. | Selection restore tied to stale document or selection-only transactions. | Event-start selection discipline and mapping proof. | Integer position model and public bookmarks for Slate. | Internal range precondition plus existing range transform/rebase. | partial |
-| Lexical | `../lexical/packages/lexical-history/src/index.ts:52-60`, `:356-410`, `:466-486` | History entries store whole `EditorState`; undo/redo swaps snapshots with a historic tag. | Partial replay selection drift. | Historic-tag skip and dirty/change classification discipline. | Full snapshot history for Slate core. | Keep operation history; use `historic`/metadata only as proof support. | partial |
-| Tiptap | `docs/research/sources/editor-architecture/tiptap-extension-command-react-dx.md` | Product commands wrap transaction semantics. | App commands fighting history grouping. | Keep future command sugar over one transaction. | Command-first history fix. | No public API; fix core batch semantics. | diverge |
+| System       | Source                                                                                                                                          | Mechanism                                                                                                   | Avoids                                                                   | Steal                                                         | Reject                                                         | Slate target                                                           | Verdict |
+| ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ | ------------------------------------------------------------- | -------------------------------------------------------------- | ---------------------------------------------------------------------- | ------- |
+| Legacy Slate | `../slate/packages/slate-history/src/with-history.ts:69-116`                                                                                    | History wraps `editor.apply`; `set_selection` is skipped; first saveable op captures the current selection. | Storing stale selection from before DOM import.                          | Capture batch precondition at first saveable op.              | Mutable public editor fields and op-by-op plugin interception. | Compute the same precondition from v2 commit operations.               | agree   |
+| ProseMirror  | `../raw/prosemirror/packages/history/src/history.ts:15-19`, `:82-109`, `:331-343`; `../raw/prosemirror/packages/state/src/selection.ts:173-203` | Event start stores a selection bookmark; history maps bookmarks through changes and resolves on replay.     | Selection restore tied to stale document or selection-only transactions. | Event-start selection discipline and mapping proof.           | Integer position model and public bookmarks for Slate.         | Internal range precondition plus existing range transform/rebase.      | partial |
+| Lexical      | `../lexical/packages/lexical-history/src/index.ts:52-60`, `:356-410`, `:466-486`                                                                | History entries store whole `EditorState`; undo/redo swaps snapshots with a historic tag.                   | Partial replay selection drift.                                          | Historic-tag skip and dirty/change classification discipline. | Full snapshot history for Slate core.                          | Keep operation history; use `historic`/metadata only as proof support. | partial |
+| Tiptap       | `docs/research/sources/editor-architecture/tiptap-extension-command-react-dx.md`                                                                | Product commands wrap transaction semantics.                                                                | App commands fighting history grouping.                                  | Keep future command sugar over one transaction.               | Command-first history fix.                                     | No public API; fix core batch semantics.                               | diverge |
 
 ## Issue-Ledger Accounting
 
@@ -307,12 +307,12 @@ regression slice, and cached ledgers already contain the relevant upstream
 history clusters and `udecode/slate#9` dossier rows. No broad `gh issue list`
 or `gh search issues` was needed.
 
-| Issue | Cluster | Claim | Why | Proof route | V2 sync ledger | PR line |
-| --- | --- | --- | --- | --- | --- | --- |
+| Issue             | Cluster                                      | Claim                | Why                                                                                                                                                                            | Proof route                                                             | V2 sync ledger           | PR line             |
+| ----------------- | -------------------------------------------- | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------- | ------------------------ | ------------------- |
 | `udecode/slate#9` | v2-dom-selection / history-selection-restore | Improves after Ralph | The exact user report is caret jump after text undo. The simple plaintext browser row passes, but the package mixed-commit red now proves the underlying history capture hole. | new `slate-history` red/green, plaintext and richtext browser undo rows | fork dossier append only | no upstream PR line |
-| #3534 | undo-selection-state-corruption | Preserve fixed claim | Existing claim is multi-block Enter undo. This plan must not weaken it. | `history-contract.ts` and coverage matrix existing row | unchanged | unchanged |
-| #3551 | undo-selection-state-corruption | Preserve fixed claim | Existing claim is `moveNodes` undo tree and selection restore. This plan must not weaken it. | existing history/core proof | unchanged | unchanged |
-| #3921 | history-set-selection-errors | Related | The leading partial/full `set_selection` handling is adjacent, but this plan does not claim the original refocus issue. | new package helper tests only | unchanged | related only |
+| #3534             | undo-selection-state-corruption              | Preserve fixed claim | Existing claim is multi-block Enter undo. This plan must not weaken it.                                                                                                        | `history-contract.ts` and coverage matrix existing row                  | unchanged                | unchanged           |
+| #3551             | undo-selection-state-corruption              | Preserve fixed claim | Existing claim is `moveNodes` undo tree and selection restore. This plan must not weaken it.                                                                                   | existing history/core proof                                             | unchanged                | unchanged           |
+| #3921             | history-set-selection-errors                 | Related              | The leading partial/full `set_selection` handling is adjacent, but this plan does not claim the original refocus issue.                                                        | new package helper tests only                                           | unchanged                | related only        |
 
 PR reference status: unchanged. This plan adds no new upstream fixed issue claim
 until Ralph proof passes and the user accepts claim wording.
@@ -321,30 +321,30 @@ Fork dossier status: appended a new `udecode/slate#9` regression planning row.
 
 ## Regression Proof Matrix
 
-| Contract | Must prove |
-| --- | --- |
-| Leading selection import red | One commit with `set_selection(start -> middle)` then `insert_text` undoes to `middle`. |
-| Leading selection import trimmed | The stored batch does not need to replay the leading `set_selection` to undo/redo correctly. |
-| Trailing selection preserved | `insert_text` followed by `set_selection` redoes to the explicit post-edit selection. |
-| Contiguous typing merge | Normal consecutive text input still merges into one undo unit. |
-| Non-contiguous typing split | Moving caret and typing elsewhere starts a new batch unless explicit merge metadata says otherwise. |
-| Partial set_selection guard | Partial selection patches before first saveable op work only when a current range exists. |
-| Structural history | Existing range replace, move_node, insertBreak, marked Enter, and deleteFragment undo rows remain green. |
-| Collaboration rebase | Remote skip/rebase contracts still transform `selectionBefore`. |
-| Browser caret | Plaintext/richtext middle typing undo restores caret and allows repeat typing/undo. |
+| Contract                         | Must prove                                                                                               |
+| -------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| Leading selection import red     | One commit with `set_selection(start -> middle)` then `insert_text` undoes to `middle`.                  |
+| Leading selection import trimmed | The stored batch does not need to replay the leading `set_selection` to undo/redo correctly.             |
+| Trailing selection preserved     | `insert_text` followed by `set_selection` redoes to the explicit post-edit selection.                    |
+| Contiguous typing merge          | Normal consecutive text input still merges into one undo unit.                                           |
+| Non-contiguous typing split      | Moving caret and typing elsewhere starts a new batch unless explicit merge metadata says otherwise.      |
+| Partial set_selection guard      | Partial selection patches before first saveable op work only when a current range exists.                |
+| Structural history               | Existing range replace, move_node, insertBreak, marked Enter, and deleteFragment undo rows remain green. |
+| Collaboration rebase             | Remote skip/rebase contracts still transform `selectionBefore`.                                          |
+| Browser caret                    | Plaintext/richtext middle typing undo restores caret and allows repeat typing/undo.                      |
 
 ## Applicable Review Matrix
 
-| Lens | Applicability | Finding | Plan delta |
-| --- | --- | --- | --- |
-| `tdd` | applied | The package red is precise and currently fails. | Ralph must start with the mixed-commit red before source edits. |
-| `performance-oracle` | applied | The helper is O(number of leading selection ops), usually 0 or 1. | Do not scan document or allocate snapshots. |
-| `vercel-react-best-practices` | applied | React must stay a projection layer; package history owns the root fix. | Browser rows are verification, not the primary implementation. |
-| `high-risk-deliberate-pass` | applied | History replay touches undo/redo correctness and collaboration rebase. | Add pre-mortem and broad gates. |
-| `steelman-pass` | applied | The strongest alternative is `Batch.selectionAfter`. | Defer until redo proof demands it. |
-| `react-useeffect` | skipped | No effects are proposed. | None. |
-| `build-web-apps:shadcn` | skipped | No UI surface. | None. |
-| `performance` | skipped | No production/RUM claim. | None. |
+| Lens                          | Applicability | Finding                                                                | Plan delta                                                      |
+| ----------------------------- | ------------- | ---------------------------------------------------------------------- | --------------------------------------------------------------- |
+| `tdd`                         | applied       | The package red is precise and currently fails.                        | Ralph must start with the mixed-commit red before source edits. |
+| `performance-oracle`          | applied       | The helper is O(number of leading selection ops), usually 0 or 1.      | Do not scan document or allocate snapshots.                     |
+| `vercel-react-best-practices` | applied       | React must stay a projection layer; package history owns the root fix. | Browser rows are verification, not the primary implementation.  |
+| `high-risk-deliberate-pass`   | applied       | History replay touches undo/redo correctness and collaboration rebase. | Add pre-mortem and broad gates.                                 |
+| `steelman-pass`               | applied       | The strongest alternative is `Batch.selectionAfter`.                   | Defer until redo proof demands it.                              |
+| `react-useeffect`             | skipped       | No effects are proposed.                                               | None.                                                           |
+| `build-web-apps:shadcn`       | skipped       | No UI surface.                                                         | None.                                                           |
+| `performance`                 | skipped       | No production/RUM claim.                                               | None.                                                           |
 
 ## High-Risk Deliberate Mode
 
@@ -376,11 +376,11 @@ Rollback/hard-cut answer:
 
 ## Slate Maintainer Objection Ledger
 
-| Change | Likely objection | Steelman antithesis | Tradeoff tension | Answer | Migration answer | Docs/example answer | Regression proof | Verdict |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Compute `batch.selectionBefore` after leading `set_selection` ops | "Commit selectionBefore is supposed to be the before state." | History should use the commit as the atomic unit. | History now has a small commit-internal precondition rule. | The first saveable operation is the undoable event. Leading selection import is not user content and legacy Slate already behaved this way. | No public migration. | No docs needed unless history internals are documented. | Mixed-commit red/green plus browser undo rows. | keep |
-| Trim leading selection-only ops from history operations | "Operation history should preserve the exact commit operations." | Exact operation logs are easier to reason about. | Batch operations differ from commit operations. | History already ignores selection-only commits; trimming only precondition selection ops makes undo/redo less noisy while preserving content operations. | No public migration. | None. | Leading/trailing selection tests. | keep |
-| Defer `Batch.selectionAfter` | "Redo should have an explicit final selection." | ProseMirror stores bookmarks for both branch directions through addTransform. | Redo relies on replay semantics for now. | The current bug is the start selection. Add `selectionAfter` only if a focused redo red proves replay is insufficient. | Internal only if needed. | None. | Redo counterpart gate. | keep |
+| Change                                                            | Likely objection                                                 | Steelman antithesis                                                           | Tradeoff tension                                           | Answer                                                                                                                                                   | Migration answer         | Docs/example answer                                     | Regression proof                               | Verdict |
+| ----------------------------------------------------------------- | ---------------------------------------------------------------- | ----------------------------------------------------------------------------- | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------ | ------------------------------------------------------- | ---------------------------------------------- | ------- |
+| Compute `batch.selectionBefore` after leading `set_selection` ops | "Commit selectionBefore is supposed to be the before state."     | History should use the commit as the atomic unit.                             | History now has a small commit-internal precondition rule. | The first saveable operation is the undoable event. Leading selection import is not user content and legacy Slate already behaved this way.              | No public migration.     | No docs needed unless history internals are documented. | Mixed-commit red/green plus browser undo rows. | keep    |
+| Trim leading selection-only ops from history operations           | "Operation history should preserve the exact commit operations." | Exact operation logs are easier to reason about.                              | Batch operations differ from commit operations.            | History already ignores selection-only commits; trimming only precondition selection ops makes undo/redo less noisy while preserving content operations. | No public migration.     | None.                                                   | Leading/trailing selection tests.              | keep    |
+| Defer `Batch.selectionAfter`                                      | "Redo should have an explicit final selection."                  | ProseMirror stores bookmarks for both branch directions through addTransform. | Redo relies on replay semantics for now.                   | The current bug is the start selection. Add `selectionAfter` only if a focused redo red proves replay is insufficient.                                   | Internal only if needed. | None.                                                   | Redo counterpart gate.                         | keep    |
 
 ## Hard Cuts And Rejected Alternatives
 
@@ -394,7 +394,7 @@ Rollback/hard-cut answer:
 
 ## Implementation Phases For Ralph
 
-1. Add red tests in `../slate-v2/packages/slate-history/test/history-contract.ts`:
+1. Add red tests in `.tmp/slate-v2/packages/slate-history/test/history-contract.ts`:
    - leading `set_selection` plus `insert_text` undo restores the imported
      caret;
    - redo returns to the post-insert caret;
@@ -429,14 +429,14 @@ bun run completion-check
 
 ## Scorecard
 
-| Dimension | Score | Evidence |
-| --- | ---: | --- |
-| React 19.2 runtime performance | 0.93 | React remains projection; helper is package-level and O(leading selection ops). |
-| Slate-close unopinionated DX | 0.95 | No public API; keeps operation history and `withHistory`. |
-| Plate and slate-yjs migration-backbone shape | 0.93 | Operation serialization unchanged; rebase path preserved; Plate gets deterministic command history substrate. |
-| Regression-proof testing strategy | 0.95 | Current failing inline repro, package red/green plan, existing history suite, collab suite, and browser rows named. |
-| Research evidence completeness | 0.94 | Live v2 source, legacy Slate, ProseMirror, Lexical, existing research decisions, and issue ledgers cited. |
-| shadcn-style composability and hook/component minimalism | 0.92 | No UI/API surface added; hook/component surfaces untouched. |
+| Dimension                                                | Score | Evidence                                                                                                            |
+| -------------------------------------------------------- | ----: | ------------------------------------------------------------------------------------------------------------------- |
+| React 19.2 runtime performance                           |  0.93 | React remains projection; helper is package-level and O(leading selection ops).                                     |
+| Slate-close unopinionated DX                             |  0.95 | No public API; keeps operation history and `withHistory`.                                                           |
+| Plate and slate-yjs migration-backbone shape             |  0.93 | Operation serialization unchanged; rebase path preserved; Plate gets deterministic command history substrate.       |
+| Regression-proof testing strategy                        |  0.95 | Current failing inline repro, package red/green plan, existing history suite, collab suite, and browser rows named. |
+| Research evidence completeness                           |  0.94 | Live v2 source, legacy Slate, ProseMirror, Lexical, existing research decisions, and issue ledgers cited.           |
+| shadcn-style composability and hook/component minimalism |  0.92 | No UI/API surface added; hook/component surfaces untouched.                                                         |
 
 Weighted total: `0.94`.
 
@@ -444,12 +444,12 @@ Status: `done`. The plan is ready for Ralph execution.
 
 ## Pass-State Ledger
 
-| Pass | Status | Evidence added | Plan delta | Open issues | Next owner |
-| --- | --- | --- | --- | --- | --- |
-| Current-state read and initial score | complete | live `with-history.ts`, history tests, commit metadata, existing browser row | root cause narrowed to commit-wide selectionBefore versus first saveable op | none | closure |
-| Research and ecosystem pass | complete | legacy Slate, ProseMirror history/bookmarks, Lexical snapshot history, prior v2 research | chose precondition capture over snapshots/bookmarks/public API | none | closure |
-| Issue-ledger pass | complete | cached upstream history clusters and `udecode/slate#9` dossier rows | no upstream fixed claim; fork dossier append | no live GitHub needed | ralph |
-| Closure score and final gates | complete | inline package repro failed as expected; focused plaintext browser row passed; gates named | plan ready for implementation | source edits still needed | ralph |
+| Pass                                 | Status   | Evidence added                                                                             | Plan delta                                                                  | Open issues               | Next owner |
+| ------------------------------------ | -------- | ------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------- | ------------------------- | ---------- |
+| Current-state read and initial score | complete | live `with-history.ts`, history tests, commit metadata, existing browser row               | root cause narrowed to commit-wide selectionBefore versus first saveable op | none                      | closure    |
+| Research and ecosystem pass          | complete | legacy Slate, ProseMirror history/bookmarks, Lexical snapshot history, prior v2 research   | chose precondition capture over snapshots/bookmarks/public API              | none                      | closure    |
+| Issue-ledger pass                    | complete | cached upstream history clusters and `udecode/slate#9` dossier rows                        | no upstream fixed claim; fork dossier append                                | no live GitHub needed     | ralph      |
+| Closure score and final gates        | complete | inline package repro failed as expected; focused plaintext browser row passed; gates named | plan ready for implementation                                               | source edits still needed | ralph      |
 
 ## Plan Deltas From Review
 

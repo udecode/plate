@@ -66,7 +66,7 @@ The event runtime drives the editor.
 
 Add an internal event runtime facade:
 
-- `../slate-v2/packages/slate-react/src/editable/runtime-event-engine.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-event-engine.ts`
 
 Preferred hook shape:
 
@@ -90,7 +90,7 @@ const eventRuntime = useEditableEventRuntime({
   setExplicitShellBackedSelection,
   setIsComposing,
   shellBackedSelection,
-})
+});
 ```
 
 Returned shape:
@@ -236,9 +236,9 @@ Acceptance:
 
 Likely files:
 
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
-- `../slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts`
-- `../slate-v2/packages/slate-react/test/surface-contract.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts`
+- `.tmp/slate-v2/packages/slate-react/test/surface-contract.tsx`
 
 Driver gate:
 
@@ -270,11 +270,11 @@ Acceptance:
 
 Likely files:
 
-- `../slate-v2/packages/slate-react/src/editable/runtime-event-engine.ts`
-- `../slate-v2/packages/slate-react/src/editable/runtime-selection-engine.ts`
-- `../slate-v2/packages/slate-react/src/editable/runtime-repair-engine.ts`
-- `../slate-v2/packages/slate-react/src/editable/runtime-kernel-trace.ts`
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-event-engine.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-selection-engine.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-repair-engine.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-kernel-trace.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
 
 Driver gate:
 
@@ -300,11 +300,11 @@ Acceptance:
 
 Likely files:
 
-- `../slate-v2/packages/slate-react/src/editable/runtime-clipboard-events.ts`
-- `../slate-v2/packages/slate-react/src/editable/runtime-drag-events.ts`
-- `../slate-v2/packages/slate-react/src/editable/runtime-focus-mouse-events.ts`
-- `../slate-v2/packages/slate-react/src/editable/runtime-event-engine.ts`
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-clipboard-events.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-drag-events.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-focus-mouse-events.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-event-engine.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
 
 Driver gates:
 
@@ -331,10 +331,10 @@ Acceptance:
 
 Likely files:
 
-- `../slate-v2/packages/slate-react/src/editable/runtime-composition-events.ts`
-- `../slate-v2/packages/slate-react/src/editable/runtime-composition-engine.ts`
-- `../slate-v2/packages/slate-react/src/editable/runtime-android-engine.ts`
-- `../slate-v2/packages/slate-react/src/editable/runtime-event-engine.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-composition-events.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-composition-engine.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-android-engine.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-event-engine.ts`
 
 Driver gates:
 
@@ -372,11 +372,11 @@ Acceptance:
 
 Likely files:
 
-- `../slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts`
-- `../slate-v2/packages/slate-react/src/editable/runtime-input-events.ts`
-- `../slate-v2/packages/slate-react/src/editable/model-input-strategy.ts`
-- `../slate-v2/packages/slate-react/src/editable/native-input-strategy.ts`
-- `../slate-v2/packages/slate-react/src/editable/runtime-event-engine.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-input-events.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/model-input-strategy.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/native-input-strategy.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-event-engine.ts`
 
 Driver gates:
 
@@ -410,9 +410,9 @@ Acceptance:
 
 Likely files:
 
-- `../slate-v2/packages/slate-react/src/editable/runtime-keyboard-events.ts`
-- `../slate-v2/packages/slate-react/src/editable/keyboard-input-strategy.ts`
-- `../slate-v2/packages/slate-react/src/editable/runtime-event-engine.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-keyboard-events.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/keyboard-input-strategy.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-event-engine.ts`
 
 Driver gates:
 
@@ -441,10 +441,10 @@ Acceptance:
 
 Likely files:
 
-- `../slate-v2/packages/slate-react/src/editable/runtime-browser-handle-events.ts`
-- `../slate-v2/packages/slate-react/src/editable/runtime-event-engine.ts`
-- `../slate-v2/packages/slate-react/src/editable/browser-handle.ts`
-- `../slate-v2/packages/slate-react/src/editable/runtime-mutation-state.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-browser-handle-events.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-event-engine.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/browser-handle.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-mutation-state.ts`
 
 Driver gate:
 
@@ -477,9 +477,9 @@ Acceptance:
 
 Likely files:
 
-- `../slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts`
-- `../slate-v2/packages/slate-react/test/surface-contract.tsx`
-- possible new `../slate-v2/packages/slate-react/test/event-runtime-contract.test.tsx`
+- `.tmp/slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts`
+- `.tmp/slate-v2/packages/slate-react/test/surface-contract.tsx`
+- possible new `.tmp/slate-v2/packages/slate-react/test/event-runtime-contract.test.tsx`
 
 Driver gates:
 
@@ -650,7 +650,7 @@ Rejected tactics:
 Next action:
 
 - Add the Phase 0 event-worker import and handler-closure inventory guard to
-  `../slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts`.
+  `.tmp/slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts`.
 
 ### 2026-04-27 Phase 0-2 Checkpoint
 
@@ -684,13 +684,13 @@ Evidence:
 
 Changed files:
 
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
-- `../slate-v2/packages/slate-react/src/editable/runtime-clipboard-events.ts`
-- `../slate-v2/packages/slate-react/src/editable/runtime-drag-events.ts`
-- `../slate-v2/packages/slate-react/src/editable/runtime-event-engine.ts`
-- `../slate-v2/packages/slate-react/src/editable/runtime-focus-mouse-events.ts`
-- `../slate-v2/packages/slate-react/src/editable/runtime-selection-engine.ts`
-- `../slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-clipboard-events.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-drag-events.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-event-engine.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-focus-mouse-events.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-selection-engine.ts`
+- `.tmp/slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts`
 
 Decision:
 
@@ -736,9 +736,9 @@ Evidence:
 
 Changed files:
 
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
-- `../slate-v2/packages/slate-react/src/editable/runtime-composition-events.ts`
-- `../slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-composition-events.ts`
+- `.tmp/slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts`
 
 Decision:
 
@@ -789,10 +789,10 @@ Evidence:
 
 Changed files:
 
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
-- `../slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts`
-- `../slate-v2/packages/slate-react/src/editable/runtime-input-events.ts`
-- `../slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-input-events.ts`
+- `.tmp/slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts`
 
 Decision:
 
@@ -838,9 +838,9 @@ Evidence:
 
 Changed files:
 
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
-- `../slate-v2/packages/slate-react/src/editable/runtime-keyboard-events.ts`
-- `../slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-keyboard-events.ts`
+- `.tmp/slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts`
 
 Decision:
 
@@ -890,11 +890,11 @@ Evidence:
 
 Changed files:
 
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
-- `../slate-v2/packages/slate-react/src/editable/runtime-browser-handle-events.ts`
-- `../slate-v2/packages/slate-react/src/editable/runtime-event-engine.ts`
-- `../slate-v2/packages/slate-react/src/editable/runtime-target-bridge.ts`
-- `../slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-browser-handle-events.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-event-engine.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-target-bridge.ts`
+- `.tmp/slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts`
 
 Decision:
 
@@ -959,19 +959,19 @@ Evidence:
 
 Changed files:
 
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
-- `../slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts`
-- `../slate-v2/packages/slate-react/src/editable/runtime-browser-handle-events.ts`
-- `../slate-v2/packages/slate-react/src/editable/runtime-clipboard-events.ts`
-- `../slate-v2/packages/slate-react/src/editable/runtime-composition-events.ts`
-- `../slate-v2/packages/slate-react/src/editable/runtime-drag-events.ts`
-- `../slate-v2/packages/slate-react/src/editable/runtime-event-engine.ts`
-- `../slate-v2/packages/slate-react/src/editable/runtime-focus-mouse-events.ts`
-- `../slate-v2/packages/slate-react/src/editable/runtime-input-events.ts`
-- `../slate-v2/packages/slate-react/src/editable/runtime-keyboard-events.ts`
-- `../slate-v2/packages/slate-react/src/editable/runtime-selection-engine.ts`
-- `../slate-v2/packages/slate-react/src/editable/runtime-target-bridge.ts`
-- `../slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-browser-handle-events.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-clipboard-events.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-composition-events.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-drag-events.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-event-engine.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-focus-mouse-events.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-input-events.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-keyboard-events.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-selection-engine.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-target-bridge.ts`
+- `.tmp/slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts`
 - `.tmp/<session-id>/completion-check.md`
 - `.tmp/continue.md`
 

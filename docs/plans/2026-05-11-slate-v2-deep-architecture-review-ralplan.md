@@ -17,7 +17,7 @@ The core bet is right:
 
 - Slate document model stays simple JSON.
 - Operations remain the collaboration truth.
-- `editor.read` / `editor.update` are the public lifecycle.
+- `editor.read` / `edi)tor.update` are the public lifecycle.
 - `EditorCommit` is the runtime publication unit.
 - Extension power goes through named `editor`, `state`, and `tx` groups, not
   flat method injection.
@@ -81,7 +81,7 @@ Intent/boundary hardening pass, 2026-05-11:
   measured React and browser proof gaps faster.
 - decision boundary accepted: the plan may recommend `keep`, `revise`, `gate`,
   or `cut`; it may not mark implementation complete, close issues, or mutate
-  `../slate-v2` code.
+  `.tmp/slate-v2` code.
 - remaining ambiguity: none that requires the user. The next useful work is
   research/source refresh, not a clarification question.
 
@@ -113,14 +113,14 @@ Top drivers:
 
 Viable options:
 
-| Option | Pros | Cons | Verdict |
-| --- | --- | --- | --- |
-| Keep architecture, rewrite hot spots | Preserves the good core while attacking measured weak points | Requires discipline across docs, selectors, root runtime, and perf proof | chosen |
-| Whole rewrite toward Lexical-style core | Strong dirty runtime story | Throws away Slate JSON/op familiarity and migration backbone | reject |
-| Move toward ProseMirror/Tiptap engine model | Strong schema/view discipline and product DX | Too far from Slate's core identity and React-native authoring target | reject |
-| Freeze current v2 as done | Avoids churn | Ignores stale docs, custom selector risk, root runtime density, and perf red lanes | reject |
-| Docs-only cleanup | Fastest route to cleaner maintainer text | Leaves selector substrate, root runtime density, and public virtualized policy unresolved | reject as incomplete |
-| Implementation-first cleanup | May produce quick code wins | Risks patching without accepted issue/proof boundaries | reject until plan passes |
+| Option                                      | Pros                                                         | Cons                                                                                      | Verdict                  |
+| ------------------------------------------- | ------------------------------------------------------------ | ----------------------------------------------------------------------------------------- | ------------------------ |
+| Keep architecture, rewrite hot spots        | Preserves the good core while attacking measured weak points | Requires discipline across docs, selectors, root runtime, and perf proof                  | chosen                   |
+| Whole rewrite toward Lexical-style core     | Strong dirty runtime story                                   | Throws away Slate JSON/op familiarity and migration backbone                              | reject                   |
+| Move toward ProseMirror/Tiptap engine model | Strong schema/view discipline and product DX                 | Too far from Slate's core identity and React-native authoring target                      | reject                   |
+| Freeze current v2 as done                   | Avoids churn                                                 | Ignores stale docs, custom selector risk, root runtime density, and perf red lanes        | reject                   |
+| Docs-only cleanup                           | Fastest route to cleaner maintainer text                     | Leaves selector substrate, root runtime density, and public virtualized policy unresolved | reject as incomplete     |
+| Implementation-first cleanup                | May produce quick code wins                                  | Risks patching without accepted issue/proof boundaries                                    | reject until plan passes |
 
 Consequences:
 
@@ -145,51 +145,51 @@ Follow-ups:
 
 ## Current Source Evidence
 
-| Surface | Current owner | Read |
-| --- | --- | --- |
-| Core public lifecycle | `../slate-v2/packages/slate/src/interfaces/editor.ts:480` | `BaseEditor` exposes `read`, `subscribe`, `update`, and `extend`. |
-| Internal transforms | `../slate-v2/packages/slate/src/interfaces/editor.ts:493` | transform API is explicitly internal runtime implementation. |
-| Extension shape | `../slate-v2/packages/slate/src/interfaces/editor.ts:890` | extension fields include `editor`, `state`, and `tx`; no public `methods`. |
-| Legacy extension rejection | `../slate-v2/packages/slate/src/core/editor-extension.ts:60` | `methods` and public `commands` throw with state/tx guidance. |
-| Internal command registry | `../slate-v2/packages/slate/src/interfaces/editor.ts:1551` | `defineCommand` and `registerCommand` remain internal/static APIs. |
-| Main editor selector substrate | `../slate-v2/packages/slate-react/src/hooks/use-generic-selector.tsx:22` | custom selector hook uses refs plus reducer `forceRender`. |
-| Runtime-id selector fanout | `../slate-v2/packages/slate-react/src/hooks/use-editor-selector.tsx:189` | selector context owns global, runtime-id, and deferred listener sets. |
-| Root runtime coordinator | `../slate-v2/packages/slate-react/src/editable/runtime-root-engine.ts:1` | imports selection, Android, composition, event, repair, trace, and input owners. |
-| Root runtime global listeners | `../slate-v2/packages/slate-react/src/editable/runtime-root-engine.ts:412` | attaches document selectionchange and global drag lifecycle listeners. |
-| Void renderer | `../slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:450` | `renderVoid` receives `{ element, path }`; runtime wraps shell/spacer. |
-| Void contract proof | `../slate-v2/packages/slate-react/test/surface-contract.tsx:492` | tests prove no `target`, `actions`, `selected`, `focused`, `children`, or `attributes`. |
-| Rendering strategy API | `../slate-v2/packages/slate-react/src/rendering-strategy/create-segment-plan.ts:3` | `virtualized` is part of public `RenderingStrategyType`. |
-| Virtualized implementation | `../slate-v2/packages/slate-react/src/rendering-strategy/use-virtualized-root-plan.ts:181` | viewport-only plan is implemented with retained selected/promoted rows. |
-| Stale release claim | `docs/slate-v2/absolute-architecture-release-claim.md:72` | docs still teach `editor.extend({ methods })`. |
-| Stale readiness claim | `docs/slate-v2/release-readiness-decision.md:56` | docs still say extension methods compose through `methods`. |
-| Perf red lane | `docs/slate-v2/slate-react-perf-loop-context.md:75` | shell wins startup/full-doc lanes but loses steady typing/select lanes. |
-| Replacement gate | `docs/slate-v2/replacement-gates-scoreboard.md:32` | Slate React perf superiority is `pending / typing red`. |
-| Issue pressure | `docs/slate-issues/requirements-from-issues.md:36` | frozen corpus shows runtime boundary ownership dominates core-engine ownership. |
-| Coverage ledger | `docs/slate-v2/ledgers/issue-coverage-matrix.md:17` | fixed/improved/related claims require proof matching the issue type. |
+| Surface                        | Current owner                                                                                | Read                                                                                    |
+| ------------------------------ | -------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| Core public lifecycle          | `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:480`                                  | `BaseEditor` exposes `read`, `subscribe`, `update`, and `extend`.                       |
+| Internal transforms            | `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:493`                                  | transform API is explicitly internal runtime implementation.                            |
+| Extension shape                | `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:890`                                  | extension fields include `editor`, `state`, and `tx`; no public `methods`.              |
+| Legacy extension rejection     | `.tmp/slate-v2/packages/slate/src/core/editor-extension.ts:60`                               | `methods` and public `commands` throw with state/tx guidance.                           |
+| Internal command registry      | `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:1551`                                 | `defineCommand` and `registerCommand` remain internal/static APIs.                      |
+| Main editor selector substrate | `.tmp/slate-v2/packages/slate-react/src/hooks/use-generic-selector.tsx:22`                   | custom selector hook uses refs plus reducer `forceRender`.                              |
+| Runtime-id selector fanout     | `.tmp/slate-v2/packages/slate-react/src/hooks/use-editor-selector.tsx:189`                   | selector context owns global, runtime-id, and deferred listener sets.                   |
+| Root runtime coordinator       | `.tmp/slate-v2/packages/slate-react/src/editable/runtime-root-engine.ts:1`                   | imports selection, Android, composition, event, repair, trace, and input owners.        |
+| Root runtime global listeners  | `.tmp/slate-v2/packages/slate-react/src/editable/runtime-root-engine.ts:412`                 | attaches document selectionchange and global drag lifecycle listeners.                  |
+| Void renderer                  | `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:450`             | `renderVoid` receives `{ element, path }`; runtime wraps shell/spacer.                  |
+| Void contract proof            | `.tmp/slate-v2/packages/slate-react/test/surface-contract.tsx:492`                           | tests prove no `target`, `actions`, `selected`, `focused`, `children`, or `attributes`. |
+| Rendering strategy API         | `.tmp/slate-v2/packages/slate-react/src/rendering-strategy/create-segment-plan.ts:3`         | `virtualized` is part of public `RenderingStrategyType`.                                |
+| Virtualized implementation     | `.tmp/slate-v2/packages/slate-react/src/rendering-strategy/use-virtualized-root-plan.ts:181` | viewport-only plan is implemented with retained selected/promoted rows.                 |
+| Stale release claim            | `docs/slate-v2/absolute-architecture-release-claim.md:72`                                    | docs still teach `editor.extend({ methods })`.                                          |
+| Stale readiness claim          | `docs/slate-v2/release-readiness-decision.md:56`                                             | docs still say extension methods compose through `methods`.                             |
+| Perf red lane                  | `docs/slate-v2/slate-react-perf-loop-context.md:75`                                          | shell wins startup/full-doc lanes but loses steady typing/select lanes.                 |
+| Replacement gate               | `docs/slate-v2/replacement-gates-scoreboard.md:32`                                           | Slate React perf superiority is `pending / typing red`.                                 |
+| Issue pressure                 | `docs/slate-issues/requirements-from-issues.md:36`                                           | frozen corpus shows runtime boundary ownership dominates core-engine ownership.         |
+| Coverage ledger                | `docs/slate-v2/ledgers/issue-coverage-matrix.md:17`                                          | fixed/improved/related claims require proof matching the issue type.                    |
 
 ## Rewrite And Cut Decisions
 
-| Priority | Decision | Status | Why | Proof or next gate |
-| --- | --- | --- | --- | --- |
-| P0 | Rewrite extension-contract docs and release claims away from `methods` | revise | Live code rejects that API; maintainer-facing docs are stale | grep docs for `extend({ methods })`, patch active docs, run docs grep |
-| P0 | Audit main editor selector substrate against `useSyncExternalStore` | revise | Current custom reducer/ref helper differs from React-backed stores used elsewhere | focused selector contracts plus rerender breadth benchmark |
-| P0 | Split `useEditableRootRuntime` into smaller controller owners | revise | root coordinator imports and wires too many behavior owners | static inventory, focused tests per controller, event/listener proof |
-| P1 | Cut or hard-contain public `virtualized` editing mode | gate | Typed public mode is too easy to treat as stable editing semantics | native behavior matrix before stable docs/API claim |
-| P1 | Keep shell mode explicit, not default | keep | current perf proof is mixed and native behavior proof is incomplete | huge-doc compare plus browser native behavior rows |
-| P1 | Keep runtime-owned void shell contract | keep | current source and tests already prove content-only API | surface contract stays green |
-| P2 | Keep internal command registry, but keep it out of public docs | keep | internal command ordering is useful; public command maps were cut | public-surface contracts and docs grep |
-| P2 | Add Plate/slate-yjs substrate proof rows before release claims | gate | current backbone is plausible but adapter proof is not the target yet | state/tx extension and operation replay proofs |
+| Priority | Decision                                                               | Status | Why                                                                               | Proof or next gate                                                    |
+| -------- | ---------------------------------------------------------------------- | ------ | --------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| P0       | Rewrite extension-contract docs and release claims away from `methods` | revise | Live code rejects that API; maintainer-facing docs are stale                      | grep docs for `extend({ methods })`, patch active docs, run docs grep |
+| P0       | Audit main editor selector substrate against `useSyncExternalStore`    | revise | Current custom reducer/ref helper differs from React-backed stores used elsewhere | focused selector contracts plus rerender breadth benchmark            |
+| P0       | Split `useEditableRootRuntime` into smaller controller owners          | revise | root coordinator imports and wires too many behavior owners                       | static inventory, focused tests per controller, event/listener proof  |
+| P1       | Cut or hard-contain public `virtualized` editing mode                  | gate   | Typed public mode is too easy to treat as stable editing semantics                | native behavior matrix before stable docs/API claim                   |
+| P1       | Keep shell mode explicit, not default                                  | keep   | current perf proof is mixed and native behavior proof is incomplete               | huge-doc compare plus browser native behavior rows                    |
+| P1       | Keep runtime-owned void shell contract                                 | keep   | current source and tests already prove content-only API                           | surface contract stays green                                          |
+| P2       | Keep internal command registry, but keep it out of public docs         | keep   | internal command ordering is useful; public command maps were cut                 | public-surface contracts and docs grep                                |
+| P2       | Add Plate/slate-yjs substrate proof rows before release claims         | gate   | current backbone is plausible but adapter proof is not the target yet             | state/tx extension and operation replay proofs                        |
 
 ## Confidence Scorecard
 
-| Dimension | Weight | Score | Evidence | Gap |
-| --- | ---: | ---: | --- | --- |
-| React 19.2 runtime performance | 0.20 | 0.90 | selector/runtime owners are live; React external-store research is cited; proof-first selector target is accepted | execution still needs selector benchmark and hot-read proof |
-| Slate-close unopinionated DX | 0.20 | 0.93 | core read/update and state/tx groups are live; stale docs patch scope is exact | docs still need implementation patch |
-| Plate and slate-yjs migration backbone | 0.15 | 0.91 | state/tx, operations, commits, and substrate-level non-adapter claim are explicit | adapter proof is intentionally not claimed |
-| Regression-proof testing strategy | 0.20 | 0.92 | unit, browser, benchmark, issue, and raw-device gates are named by surface | execution must still run the gates |
-| Research evidence completeness | 0.15 | 0.94 | React, ProseMirror, Tiptap, Lexical, virtualized, live source, and issue corpus research are cited with concrete Slate strategy | no open research contradiction for this plan |
-| shadcn-style composability and minimal hooks/components | 0.10 | 0.93 | content-only void renderers are already proven; root runtime split is owner/test-driven | root split still needs execution |
+| Dimension                                               | Weight | Score | Evidence                                                                                                                        | Gap                                                         |
+| ------------------------------------------------------- | -----: | ----: | ------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| React 19.2 runtime performance                          |   0.20 |  0.90 | selector/runtime owners are live; React external-store research is cited; proof-first selector target is accepted               | execution still needs selector benchmark and hot-read proof |
+| Slate-close unopinionated DX                            |   0.20 |  0.93 | core read/update and state/tx groups are live; stale docs patch scope is exact                                                  | docs still need implementation patch                        |
+| Plate and slate-yjs migration backbone                  |   0.15 |  0.91 | state/tx, operations, commits, and substrate-level non-adapter claim are explicit                                               | adapter proof is intentionally not claimed                  |
+| Regression-proof testing strategy                       |   0.20 |  0.92 | unit, browser, benchmark, issue, and raw-device gates are named by surface                                                      | execution must still run the gates                          |
+| Research evidence completeness                          |   0.15 |  0.94 | React, ProseMirror, Tiptap, Lexical, virtualized, live source, and issue corpus research are cited with concrete Slate strategy | no open research contradiction for this plan                |
+| shadcn-style composability and minimal hooks/components |   0.10 |  0.93 | content-only void renderers are already proven; root runtime split is owner/test-driven                                         | root split still needs execution                            |
 
 Weighted score: `0.92`.
 
@@ -248,18 +248,18 @@ renderer-shaped document model.
 
 ## Ecosystem Strategy Synthesis
 
-| System | Source | Mechanism | Avoids | Steal | Reject | Slate target | Verdict |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| React 19.2 | `docs/research/sources/editor-architecture/react-19-2-external-store-and-background-ui.md:31` | external-store subscriptions, non-urgent UI, Activity, performance tracks | effect-mirrored subscriptions and hidden UI churn | use external-store backbone and Activity only for background UI | treating React as the editor invalidation engine | selector substrate proof or rewrite | partial |
-| ProseMirror | `docs/research/sources/editor-architecture/read-update-runtime-corpus-ledger.md:83` | transactions, mapped selection, bookmarks, one view authority | partial state drift across DOM/model | transaction metadata and durable anchors | ProseMirror view/node model as public Slate API | keep op/commit truth and improve bulk fitting proof | agree |
-| Tiptap | `docs/research/sources/editor-architecture/node-text-mark-render-dx-corpus-ledger.md:175` | extension packaging, command chains, React selector hooks | app code scattering product policy | extension packaging lessons above raw Slate | chain command API as raw Slate core | Plate/product layer can own command sugar | partial |
-| Lexical | `docs/research/systems/editor-architecture-landscape.md:210` | dirty-node reconcile engine | broad recompute on hot paths | dirty bucket discipline and locality proof | class-node public model and plugin weight | targeted dirty runtime proof, not wholesale rewrite | partial |
+| System      | Source                                                                                        | Mechanism                                                                 | Avoids                                            | Steal                                                           | Reject                                           | Slate target                                        | Verdict |
+| ----------- | --------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- | ------------------------------------------------- | --------------------------------------------------------------- | ------------------------------------------------ | --------------------------------------------------- | ------- |
+| React 19.2  | `docs/research/sources/editor-architecture/react-19-2-external-store-and-background-ui.md:31` | external-store subscriptions, non-urgent UI, Activity, performance tracks | effect-mirrored subscriptions and hidden UI churn | use external-store backbone and Activity only for background UI | treating React as the editor invalidation engine | selector substrate proof or rewrite                 | partial |
+| ProseMirror | `docs/research/sources/editor-architecture/read-update-runtime-corpus-ledger.md:83`           | transactions, mapped selection, bookmarks, one view authority             | partial state drift across DOM/model              | transaction metadata and durable anchors                        | ProseMirror view/node model as public Slate API  | keep op/commit truth and improve bulk fitting proof | agree   |
+| Tiptap      | `docs/research/sources/editor-architecture/node-text-mark-render-dx-corpus-ledger.md:175`     | extension packaging, command chains, React selector hooks                 | app code scattering product policy                | extension packaging lessons above raw Slate                     | chain command API as raw Slate core              | Plate/product layer can own command sugar           | partial |
+| Lexical     | `docs/research/systems/editor-architecture-landscape.md:210`                                  | dirty-node reconcile engine                                               | broad recompute on hot paths                      | dirty bucket discipline and locality proof                      | class-node public model and plugin weight        | targeted dirty runtime proof, not wholesale rewrite | partial |
 
 ## Research And Source Refresh - 2026-05-11
 
 Refresh scope:
 
-- live `../slate-v2` source for extension slots, selector hooks, root runtime,
+- live `.tmp/slate-v2` source for extension slots, selector hooks, root runtime,
   adjacent external stores, and virtualized rendering;
 - compiled React, ProseMirror, Tiptap, Lexical, and virtualized research pages;
 - active Slate v2 release/readiness docs that still carry old extension text.
@@ -267,22 +267,22 @@ Refresh scope:
 Findings:
 
 - extension decision unchanged. Live source rejects `methods` and public
-  `commands` in `../slate-v2/packages/slate/src/core/editor-extension.ts:60`,
+  `commands` in `.tmp/slate-v2/packages/slate/src/core/editor-extension.ts:60`,
   while the current extension type exposes `editor`, `state`, and `tx` groups in
-  `../slate-v2/packages/slate/src/interfaces/editor.ts:886`.
+  `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:886`.
 - docs truth sync remains P0. `docs/slate-v2/absolute-architecture-release-claim.md:72`
   and `docs/slate-v2/release-readiness-decision.md:56` still teach
   `editor.extend({ methods })`.
 - selector decision unchanged. The main selector path still uses
   `useGenericSelector` with refs plus reducer-driven `forceRender` in
-  `../slate-v2/packages/slate-react/src/hooks/use-generic-selector.tsx:22`,
+  `.tmp/slate-v2/packages/slate-react/src/hooks/use-generic-selector.tsx:22`,
   and runtime-id/deferred fanout is still owned by
-  `../slate-v2/packages/slate-react/src/hooks/use-editor-selector.tsx:189`.
+  `.tmp/slate-v2/packages/slate-react/src/hooks/use-editor-selector.tsx:189`.
 - external-store pressure is stronger, not weaker. Adjacent annotation, widget,
   and projection stores use `useSyncExternalStore` in
-  `../slate-v2/packages/slate-react/src/hooks/use-slate-annotations.tsx:65`,
-  `../slate-v2/packages/slate-react/src/hooks/use-slate-widgets.tsx:68`, and
-  `../slate-v2/packages/slate-react/src/hooks/use-slate-projections.tsx:53`.
+  `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-annotations.tsx:65`,
+  `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-widgets.tsx:68`, and
+  `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-projections.tsx:53`.
 - React research still says the same thing:
   `docs/research/sources/editor-architecture/react-19-2-external-store-and-background-ui.md:31`
   makes external-store subscription the React-native baseline, while
@@ -291,13 +291,13 @@ Findings:
   selection, Android, composition, repair, trace, input rules, event runtime,
   root refs, DOM export, global selection listeners, drag lifecycle listeners,
   and pending marks across
-  `../slate-v2/packages/slate-react/src/editable/runtime-root-engine.ts:1`,
+  `.tmp/slate-v2/packages/slate-react/src/editable/runtime-root-engine.ts:1`,
   `:200`, `:284`, `:346`, and `:412`.
 - virtualized policy unchanged. The public option is still present beside stable
   modes in
-  `../slate-v2/packages/slate-react/src/rendering-strategy/create-segment-plan.ts:3`,
+  `.tmp/slate-v2/packages/slate-react/src/rendering-strategy/create-segment-plan.ts:3`,
   and test coverage proves viewport DOM coverage/materialization behavior in
-  `../slate-v2/packages/slate-react/test/rendering-strategy-and-scroll.tsx:197`;
+  `.tmp/slate-v2/packages/slate-react/test/rendering-strategy-and-scroll.tsx:197`;
   that proof supports an explicit experimental mode, not stable native-behavior
   parity.
 - virtualized research agrees:
@@ -434,13 +434,13 @@ No fixed issue claim is added in this pass.
 
 Issue matrix for this review:
 
-| Issue | Cluster | Claim | Why | Proof route | V2 sync ledger | PR line |
-| --- | --- | --- | --- | --- | --- | --- |
-| #3656 | react-runtime-and-rerender-breadth | Related | selector and hot read proof may improve it, but this pass does not rerun exact proof | future rerender breadth benchmark | unchanged | related matrix only |
-| #3430 | react-runtime-and-rerender-breadth | Related | many-inline/freeze pressure overlaps selector fanout, but no exact repro closure | future focused benchmark/test | unchanged | related matrix only |
-| #5945 | large-document-edit-performance | Related | virtualized/shell containment affects perf posture, not exact paste closure | future benchmark/browser row | unchanged | related matrix only |
-| #5992 | large-document-edit-performance | Related | shell/virtualized policy affects large cut posture, not exact auto-close | future benchmark/browser row | unchanged | related matrix only |
-| udecode #6 | IME composition | Related | mobile/IME proof remains a release gate, no new implementation here | future raw/browser IME proof | fork dossier unchanged | related matrix only |
+| Issue      | Cluster                            | Claim   | Why                                                                                  | Proof route                       | V2 sync ledger         | PR line             |
+| ---------- | ---------------------------------- | ------- | ------------------------------------------------------------------------------------ | --------------------------------- | ---------------------- | ------------------- |
+| #3656      | react-runtime-and-rerender-breadth | Related | selector and hot read proof may improve it, but this pass does not rerun exact proof | future rerender breadth benchmark | unchanged              | related matrix only |
+| #3430      | react-runtime-and-rerender-breadth | Related | many-inline/freeze pressure overlaps selector fanout, but no exact repro closure     | future focused benchmark/test     | unchanged              | related matrix only |
+| #5945      | large-document-edit-performance    | Related | virtualized/shell containment affects perf posture, not exact paste closure          | future benchmark/browser row      | unchanged              | related matrix only |
+| #5992      | large-document-edit-performance    | Related | shell/virtualized policy affects large cut posture, not exact auto-close             | future benchmark/browser row      | unchanged              | related matrix only |
+| udecode #6 | IME composition                    | Related | mobile/IME proof remains a release gate, no new implementation here                  | future raw/browser IME proof      | fork dossier unchanged | related matrix only |
 
 ClawSweeper pass: `applied via existing durable outputs`. The same surface is
 already covered by completed performance, React runtime, Android/IME, and
@@ -473,14 +473,14 @@ touched issues; this pass adds no new issue section.
 
 ## Legacy Regression Proof Matrix
 
-| Area | Current proof | Gap |
-| --- | --- | --- |
-| core read/update and transaction lifecycle | package contracts and public surface tests | no gap for core architecture |
-| renderVoid runtime shells | `surface-contract.tsx` content-only proof | keep green |
-| React selector locality | rerender breadth benchmark exists | substrate proof and hot read owner still needed |
-| huge documents | shell/full-doc lanes green in places | steady typing/select red versus legacy chunking |
-| mobile/IME | scoped proof exists in prior lanes | raw device and exact IME closure remain gated |
-| virtualized editing | implementation exists | native behavior classification incomplete |
+| Area                                       | Current proof                              | Gap                                             |
+| ------------------------------------------ | ------------------------------------------ | ----------------------------------------------- |
+| core read/update and transaction lifecycle | package contracts and public surface tests | no gap for core architecture                    |
+| renderVoid runtime shells                  | `surface-contract.tsx` content-only proof  | keep green                                      |
+| React selector locality                    | rerender breadth benchmark exists          | substrate proof and hot read owner still needed |
+| huge documents                             | shell/full-doc lanes green in places       | steady typing/select red versus legacy chunking |
+| mobile/IME                                 | scoped proof exists in prior lanes         | raw device and exact IME closure remain gated   |
+| virtualized editing                        | implementation exists                      | native behavior classification incomplete       |
 
 ## Browser And Performance Strategy
 
@@ -501,15 +501,15 @@ screen-reader traversal, undo/history, and collaboration behavior are classified
 
 ## Applicable Implementation-Skill Review Matrix
 
-| Lens | Status | Finding | Plan delta |
-| --- | --- | --- | --- |
-| Vercel React | applied | external store/subscription and event-listener rules apply to selector substrate and root runtime | added selector rewrite/defense and root listener split gates |
-| performance-oracle | applied | hot reads and fanout must be bounded at 10x/100x/1000x | added hot read proof before perf closure |
-| performance | applied | huge-doc work needs cohorts, repeated-unit budgets, memory tags, and degradation contracts | added browser/perf strategy gates |
-| tdd | applied | any implementation slice needs a red/green contract or benchmark before code | each phase has focused gates |
-| code-simplicity-reviewer | applied | root runtime coordinator and public virtualized option are likely carrying too much | added split and contain/cut decisions |
-| shadcn | skipped | no UI chrome or registry component change in this pass | no change |
-| react-useeffect | applied through React/subscription review | root runtime effects/listeners and selector subscription posture need scrutiny | added root coordinator split gate |
+| Lens                     | Status                                    | Finding                                                                                           | Plan delta                                                   |
+| ------------------------ | ----------------------------------------- | ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| Vercel React             | applied                                   | external store/subscription and event-listener rules apply to selector substrate and root runtime | added selector rewrite/defense and root listener split gates |
+| performance-oracle       | applied                                   | hot reads and fanout must be bounded at 10x/100x/1000x                                            | added hot read proof before perf closure                     |
+| performance              | applied                                   | huge-doc work needs cohorts, repeated-unit budgets, memory tags, and degradation contracts        | added browser/perf strategy gates                            |
+| tdd                      | applied                                   | any implementation slice needs a red/green contract or benchmark before code                      | each phase has focused gates                                 |
+| code-simplicity-reviewer | applied                                   | root runtime coordinator and public virtualized option are likely carrying too much               | added split and contain/cut decisions                        |
+| shadcn                   | skipped                                   | no UI chrome or registry component change in this pass                                            | no change                                                    |
+| react-useeffect          | applied through React/subscription review | root runtime effects/listeners and selector subscription posture need scrutiny                    | added root coordinator split gate                            |
 
 ## High-Risk Deliberate Mode
 
@@ -529,13 +529,13 @@ Pre-mortem, revised 2026-05-11:
 1. Extension docs cleanup is treated as a source API change and accidentally
    reopens the removed `methods` model. That would be backwards. This is a docs
    truth-sync slice: live code already rejects `methods` and `commands` in
-   `../slate-v2/packages/slate/src/core/editor-extension.ts:60`, and the live
+   `.tmp/slate-v2/packages/slate/src/core/editor-extension.ts:60`, and the live
    extension type already exposes `editor`, `state`, and `tx` groups at
-   `../slate-v2/packages/slate/src/interfaces/editor.ts:886`.
+   `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:886`.
 2. Selector rewrite regresses runtime-id fanout, deferred flush behavior, or
    selector error replay. The proof spike must compare the current
    `useGenericSelector` path in
-   `../slate-v2/packages/slate-react/src/hooks/use-generic-selector.tsx:22`
+   `.tmp/slate-v2/packages/slate-react/src/hooks/use-generic-selector.tsx:22`
    against an external-store adapter before replacing it.
 3. Root runtime split moves code without reducing ordering risk. Splitting is
    allowed only around tested owners: selection import/export, input and
@@ -569,15 +569,15 @@ experimental behavior.
 
 ## Slate Maintainer Objection Ledger
 
-| Change | Strongest fair objection | Steelman antithesis | Tradeoff tension | Adoption/docs answer | Proof required | Verdict |
-| --- | --- | --- | --- | --- | --- | --- |
-| Cut extension `methods` from docs | "You are making the public extension story less obvious and less friendly." | method injection is easy to teach and lines up with historical Slate plugin expectations | state/tx groups require better docs and examples; short-term migration text is less cute | docs should teach named `editor`, `state`, and `tx` groups with small examples, not resurrect `methods` | docs grep, extension contract tests, public-surface contract | revise docs, keep source |
-| Audit selector substrate | "Custom selectors already work; rewriting them is churn that can break hot editing." | current helper may intentionally encode runtime-id fanout, deferred flush, and error replay better than a generic store hook | external-store alignment improves React semantics, but a naive adapter can widen fanout or lose error timing | proof spike must decide: external-store adapter, keep custom with written proof, or hybrid; no blind rewrite | selector contracts, runtime-id/deferred fanout tests, rerender breadth benchmark, selector error replay coverage | revise to proof-first |
-| Split root runtime coordinator | "A single root hook keeps browser event ordering visible; splitting it can hide bugs." | one owner can make ordering easier to audit during IME, Android, and selection repair work | smaller modules improve testability but can scatter ordering constraints | split only by behavior owner and require an ordering map; root coordinator remains the assembly point | controller tests, global listener cleanup proof, selection/composition/browser regression rows | revise, not mechanical split |
-| Contain `virtualized` | "Pathological documents need a real escape hatch, and hiding the option weakens the perf story." | performance escape hatches are necessary and the current tests prove viewport DOM coverage/materialization basics | public names beside stable modes invite users to assume native behavior parity | keep explicit `virtualized` only as experimental; docs/JSDoc must name browser-find, screen-reader, selection, IME, and mobile caveats | native behavior matrix, rendering metrics, huge-doc benchmark rows, DOM coverage tests | gate hard |
-| Keep core JSON/op/read-update architecture | "If you are rewriting anyway, adopt Lexical/ProseMirror-class runtime identity fully." | Lexical and ProseMirror have stronger dirty/view machinery and less legacy Slate baggage | wholesale identity shift breaks Slate-close DX and migration value | steal dirty-locality, transaction metadata, and view-authority mechanisms without changing Slate's public identity | core contracts, operation replay, commit metadata proof, perf proof | keep |
-| Keep internal command middleware out of public docs | "Commands are how developers expect editor APIs to compose." | Tiptap command chains are excellent product DX | public raw-Slate command sugar can make Plate's job bleed into core and confuse transaction ownership | raw Slate docs stay lifecycle/state/tx-first; Plate can own product command chains later | public-surface contract and docs grep | keep internal |
-| Keep Plate/slate-yjs claims substrate-level | "A rewrite that cannot demo adapters is not migration-ready." | adapter proof would be more convincing | requiring current adapter parity would block raw Slate architecture decisions on product integration work | claim only state/tx groups, operation streams, commits, metadata, and replayability until adapter work starts | operation replay and commit metadata tests; no adapter promise | gate |
+| Change                                              | Strongest fair objection                                                                         | Steelman antithesis                                                                                                          | Tradeoff tension                                                                                             | Adoption/docs answer                                                                                                                   | Proof required                                                                                                   | Verdict                      |
+| --------------------------------------------------- | ------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- | ---------------------------- |
+| Cut extension `methods` from docs                   | "You are making the public extension story less obvious and less friendly."                      | method injection is easy to teach and lines up with historical Slate plugin expectations                                     | state/tx groups require better docs and examples; short-term migration text is less cute                     | docs should teach named `editor`, `state`, and `tx` groups with small examples, not resurrect `methods`                                | docs grep, extension contract tests, public-surface contract                                                     | revise docs, keep source     |
+| Audit selector substrate                            | "Custom selectors already work; rewriting them is churn that can break hot editing."             | current helper may intentionally encode runtime-id fanout, deferred flush, and error replay better than a generic store hook | external-store alignment improves React semantics, but a naive adapter can widen fanout or lose error timing | proof spike must decide: external-store adapter, keep custom with written proof, or hybrid; no blind rewrite                           | selector contracts, runtime-id/deferred fanout tests, rerender breadth benchmark, selector error replay coverage | revise to proof-first        |
+| Split root runtime coordinator                      | "A single root hook keeps browser event ordering visible; splitting it can hide bugs."           | one owner can make ordering easier to audit during IME, Android, and selection repair work                                   | smaller modules improve testability but can scatter ordering constraints                                     | split only by behavior owner and require an ordering map; root coordinator remains the assembly point                                  | controller tests, global listener cleanup proof, selection/composition/browser regression rows                   | revise, not mechanical split |
+| Contain `virtualized`                               | "Pathological documents need a real escape hatch, and hiding the option weakens the perf story." | performance escape hatches are necessary and the current tests prove viewport DOM coverage/materialization basics            | public names beside stable modes invite users to assume native behavior parity                               | keep explicit `virtualized` only as experimental; docs/JSDoc must name browser-find, screen-reader, selection, IME, and mobile caveats | native behavior matrix, rendering metrics, huge-doc benchmark rows, DOM coverage tests                           | gate hard                    |
+| Keep core JSON/op/read-update architecture          | "If you are rewriting anyway, adopt Lexical/ProseMirror-class runtime identity fully."           | Lexical and ProseMirror have stronger dirty/view machinery and less legacy Slate baggage                                     | wholesale identity shift breaks Slate-close DX and migration value                                           | steal dirty-locality, transaction metadata, and view-authority mechanisms without changing Slate's public identity                     | core contracts, operation replay, commit metadata proof, perf proof                                              | keep                         |
+| Keep internal command middleware out of public docs | "Commands are how developers expect editor APIs to compose."                                     | Tiptap command chains are excellent product DX                                                                               | public raw-Slate command sugar can make Plate's job bleed into core and confuse transaction ownership        | raw Slate docs stay lifecycle/state/tx-first; Plate can own product command chains later                                               | public-surface contract and docs grep                                                                            | keep internal                |
+| Keep Plate/slate-yjs claims substrate-level         | "A rewrite that cannot demo adapters is not migration-ready."                                    | adapter proof would be more convincing                                                                                       | requiring current adapter parity would block raw Slate architecture decisions on product integration work    | claim only state/tx groups, operation streams, commits, metadata, and replayability until adapter work starts                          | operation replay and commit metadata tests; no adapter promise                                                   | gate                         |
 
 Revision accepted from this pass:
 
@@ -609,15 +609,15 @@ Rejected:
 
 ## Pass Schedule And State Ledger
 
-| Pass | Status | Evidence added | Plan delta | Open issues | Next owner |
-| --- | --- | --- | --- | --- | --- |
-| current-state-read-and-initial-score | complete | live source/docs/issue reads listed above | created rewrite/cut verdicts and scorecard | score below threshold | related-issue-discovery |
-| related-issue-discovery | complete | reused existing ClawSweeper ledger/dossier rows for runtime/render/perf/IME surface | confirmed no new fixed/improved/related claim changes from this planning pass | no new issue claims | issue-ledger-accounting |
-| issue-ledger-accounting | complete | sync ledger, coverage matrix, fork dossier, and PR reference checked from cache | recorded no-change accounting; no ledger mutation needed | no new claims | intent-decision-brief-hardening |
-| intent-decision-brief-hardening | complete | intent/boundary pressure test and expanded decision brief recorded | clarified review-only boundary, no user question, proof/claim boundaries, and rejected docs-only/implementation-first shortcuts | none | research-ecosystem-refresh |
-| research-ecosystem-refresh | complete | live source and compiled research reread for extension docs, selector substrate, root runtime, and virtualized policy | decisions unchanged; stale docs remain explicit P0 implementation scope | no research mutation needed | objection-high-risk-revision |
-| objection-high-risk-revision | complete | steelman and high-risk rows revised for extension docs, selector substrate, root runtime split, virtualized policy, core identity, command middleware, and migration claims | selector changed to proof-first; root split changed to owner-first; virtualized stays hard-gated | score still below threshold | closure-score |
-| closure-score | complete | final scorecard and closure gates recorded | plan is ready for user review; implementation remains separate | no planning gate remains | done |
+| Pass                                 | Status   | Evidence added                                                                                                                                                              | Plan delta                                                                                                                      | Open issues                 | Next owner                      |
+| ------------------------------------ | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- | --------------------------- | ------------------------------- |
+| current-state-read-and-initial-score | complete | live source/docs/issue reads listed above                                                                                                                                   | created rewrite/cut verdicts and scorecard                                                                                      | score below threshold       | related-issue-discovery         |
+| related-issue-discovery              | complete | reused existing ClawSweeper ledger/dossier rows for runtime/render/perf/IME surface                                                                                         | confirmed no new fixed/improved/related claim changes from this planning pass                                                   | no new issue claims         | issue-ledger-accounting         |
+| issue-ledger-accounting              | complete | sync ledger, coverage matrix, fork dossier, and PR reference checked from cache                                                                                             | recorded no-change accounting; no ledger mutation needed                                                                        | no new claims               | intent-decision-brief-hardening |
+| intent-decision-brief-hardening      | complete | intent/boundary pressure test and expanded decision brief recorded                                                                                                          | clarified review-only boundary, no user question, proof/claim boundaries, and rejected docs-only/implementation-first shortcuts | none                        | research-ecosystem-refresh      |
+| research-ecosystem-refresh           | complete | live source and compiled research reread for extension docs, selector substrate, root runtime, and virtualized policy                                                       | decisions unchanged; stale docs remain explicit P0 implementation scope                                                         | no research mutation needed | objection-high-risk-revision    |
+| objection-high-risk-revision         | complete | steelman and high-risk rows revised for extension docs, selector substrate, root runtime split, virtualized policy, core identity, command middleware, and migration claims | selector changed to proof-first; root split changed to owner-first; virtualized stays hard-gated                                | score still below threshold | closure-score                   |
+| closure-score                        | complete | final scorecard and closure gates recorded                                                                                                                                  | plan is ready for user review; implementation remains separate                                                                  | no planning gate remains    | done                            |
 
 ## Plan Deltas From This Pass
 
@@ -736,45 +736,45 @@ Scope:
 
 - compare the live selector substrate with a React external-store adapter
   direction;
-- record the proof shape before changing `../slate-v2` implementation code;
+- record the proof shape before changing `.tmp/slate-v2` implementation code;
 - keep completion `pending` because selector contracts, root runtime split,
   rendering policy, perf proof, and issue sync still have runnable owners.
 
 Live source read:
 
-- `../slate-v2/packages/slate-react/src/hooks/use-generic-selector.tsx:22`
-  through `../slate-v2/packages/slate-react/src/hooks/use-generic-selector.tsx:85`
+- `.tmp/slate-v2/packages/slate-react/src/hooks/use-generic-selector.tsx:22`
+  through `.tmp/slate-v2/packages/slate-react/src/hooks/use-generic-selector.tsx:85`
   owns selector result reuse, equality filtering, cached selector identity,
   subscription error capture, render-time error replay, and intentionally stable
   `update`.
-- `../slate-v2/packages/slate-react/src/hooks/use-editor-selector.tsx:68`
-  through `../slate-v2/packages/slate-react/src/hooks/use-editor-selector.tsx:120`
+- `.tmp/slate-v2/packages/slate-react/src/hooks/use-editor-selector.tsx:68`
+  through `.tmp/slate-v2/packages/slate-react/src/hooks/use-editor-selector.tsx:120`
   threads editor commit operations into selectors before calling the generic
   selector update path.
-- `../slate-v2/packages/slate-react/src/hooks/use-editor-selector.tsx:189`
-  through `../slate-v2/packages/slate-react/src/hooks/use-editor-selector.tsx:343`
+- `.tmp/slate-v2/packages/slate-react/src/hooks/use-editor-selector.tsx:189`
+  through `.tmp/slate-v2/packages/slate-react/src/hooks/use-editor-selector.tsx:343`
   owns global selector listeners, runtime-id listener maps, deferred microtask
   flush, stale runtime-id fanout skipping, `shouldUpdate`, and selector profiler
   markers.
-- `../slate-v2/packages/slate-react/src/hooks/use-slate-annotations.tsx:65`,
-  `../slate-v2/packages/slate-react/src/hooks/use-slate-widgets.tsx:68`, and
-  `../slate-v2/packages/slate-react/src/hooks/use-slate-projections.tsx:53`
+- `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-annotations.tsx:65`,
+  `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-widgets.tsx:68`, and
+  `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-projections.tsx:53`
   show adjacent external-store usage for annotation, widget, and projection
   stores.
 
 Existing proof read:
 
-- `../slate-v2/packages/slate-react/test/provider-hooks-contract.tsx:89`
-  through `../slate-v2/packages/slate-react/test/provider-hooks-contract.tsx:127`
+- `.tmp/slate-v2/packages/slate-react/test/provider-hooks-contract.tsx:89`
+  through `.tmp/slate-v2/packages/slate-react/test/provider-hooks-contract.tsx:127`
   already locks equality behavior across selector identity changes.
-- `../slate-v2/packages/slate-react/test/provider-hooks-contract.tsx:253`
-  through `../slate-v2/packages/slate-react/test/provider-hooks-contract.tsx:416`
+- `.tmp/slate-v2/packages/slate-react/test/provider-hooks-contract.tsx:253`
+  through `.tmp/slate-v2/packages/slate-react/test/provider-hooks-contract.tsx:416`
   locks runtime-id locality and profiler evidence for unrelated runtime commits.
-- `../slate-v2/packages/slate-react/test/provider-hooks-contract.tsx:541`
-  through `../slate-v2/packages/slate-react/test/provider-hooks-contract.tsx:606`
+- `.tmp/slate-v2/packages/slate-react/test/provider-hooks-contract.tsx:541`
+  through `.tmp/slate-v2/packages/slate-react/test/provider-hooks-contract.tsx:606`
   locks root-order and full-document fanout expectations.
-- `../slate-v2/packages/slate-react/test/provider-hooks-contract.tsx:613`
-  through `../slate-v2/packages/slate-react/test/provider-hooks-contract.tsx:689`
+- `.tmp/slate-v2/packages/slate-react/test/provider-hooks-contract.tsx:613`
+  through `.tmp/slate-v2/packages/slate-react/test/provider-hooks-contract.tsx:689`
   locks mounted render selectors skipping synced text commits while catching
   later node commits.
 
@@ -811,7 +811,7 @@ Current status: `complete`.
 
 Files updated:
 
-- `../slate-v2/packages/slate-react/test/provider-hooks-contract.tsx`
+- `.tmp/slate-v2/packages/slate-react/test/provider-hooks-contract.tsx`
 
 Result:
 
@@ -822,12 +822,12 @@ Result:
 - added a deferred selector contract proving two same-turn commits coalesce to
   one selected render update while still preserving `check` and `notify`
   profiler markers;
-- left `../slate-v2` selector implementation code unchanged.
+- left `.tmp/slate-v2` selector implementation code unchanged.
 
 Verification:
 
 ```sh
-cd ../slate-v2
+cd .tmp/slate-v2
 bun test ./packages/slate-react/test/provider-hooks-contract.tsx
 bun --filter slate-react typecheck
 bunx biome check packages/slate-react/test/provider-hooks-contract.tsx --fix
@@ -853,10 +853,10 @@ Current status: `complete`.
 
 Files updated:
 
-- `../slate-v2/packages/slate-react/src/editable/runtime-root-engine.ts`
-- `../slate-v2/packages/slate-react/src/editable/runtime-root-lifecycle.ts`
-- `../slate-v2/packages/slate-react/src/editable/runtime-root-selection-export.ts`
-- `../slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-root-engine.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-root-lifecycle.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-root-selection-export.ts`
+- `.tmp/slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts`
 
 Result:
 
@@ -873,7 +873,7 @@ Result:
 Verification:
 
 ```sh
-cd ../slate-v2
+cd .tmp/slate-v2
 bun test ./packages/slate-react/test/kernel-authority-audit-contract.ts ./packages/slate-react/test/provider-hooks-contract.tsx
 bun test ./packages/slate-react/test/kernel-authority-audit-contract.ts ./packages/slate-react/test/provider-hooks-contract.tsx ./packages/slate-react/test/selection-runtime-contract.test.ts
 bun --filter slate-react typecheck
@@ -886,8 +886,8 @@ formatting in touched files.
 
 Error encountered:
 
-| Error | Attempt | Resolution |
-| --- | --- | --- |
+| Error                                                                       | Attempt                                             | Resolution                                                                                        |
+| --------------------------------------------------------------------------- | --------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
 | `ReferenceError: ReactEditor is not defined` in `runtime-root-lifecycle.ts` | first focused test after extracting lifecycle owner | changed `ReactEditor` from a type-only import to a runtime import, then reran tests and typecheck |
 
 Risks accepted:
@@ -907,9 +907,9 @@ Current status: `complete`.
 
 Files updated:
 
-- `../slate-v2/packages/slate-react/src/rendering-strategy/create-segment-plan.ts`
-- `../slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
-- `../slate-v2/packages/slate-react/test/surface-contract.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/rendering-strategy/create-segment-plan.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
+- `.tmp/slate-v2/packages/slate-react/test/surface-contract.tsx`
 
 Result:
 
@@ -924,7 +924,7 @@ Result:
 Verification:
 
 ```sh
-cd ../slate-v2
+cd .tmp/slate-v2
 bun test ./packages/slate-react/test/rendering-strategy-and-scroll.tsx ./packages/slate-react/test/surface-contract.tsx
 bun --filter slate-react typecheck
 bunx biome check packages/slate-react/src/rendering-strategy/create-segment-plan.ts packages/slate-react/src/components/editable-text-blocks.tsx packages/slate-react/test/surface-contract.tsx --fix
@@ -951,7 +951,7 @@ Current status: `complete`.
 Commands run:
 
 ```sh
-cd ../slate-v2
+cd .tmp/slate-v2
 bun run bench:react:rerender-breadth:local
 REACT_HUGE_COMPARE_BLOCKS=5000 REACT_HUGE_COMPARE_ITERATIONS=5 REACT_HUGE_COMPARE_TYPE_OPS=10 bun run bench:react:huge-document:legacy-compare:local
 ```
@@ -964,7 +964,7 @@ Result:
   selection changes woke selection rows only, and external refreshes did not
   recompute text or selection rows;
 - huge-document compare wrote
-  `../slate-v2/tmp/slate-react-huge-document-legacy-compare-benchmark.json`
+  `.tmp/slate-v2/tmp/slate-react-huge-document-legacy-compare-benchmark.json`
   with 5,000 blocks, 5 iterations, and 10 type ops per run;
 - `v2DefaultRenderAuto` beat `legacyChunkOn` on the main huge-doc means:
   ready `17.01ms` vs `298.87ms`, start type `15.64ms` vs `36.66ms`,
@@ -1029,7 +1029,7 @@ rg -n "\.tmp/completion-check\.md" .agents docs
 bun run completion-check
 ```
 
-Slate v2 gates, cwd `../slate-v2`, when implementation starts:
+Slate v2 gates, cwd `.tmp/slate-v2`, when implementation starts:
 
 ```sh
 bun test ./packages/slate/test/extension-methods-contract.ts ./packages/slate/test/public-surface-contract.ts
@@ -1040,7 +1040,7 @@ REACT_HUGE_COMPARE_BLOCKS=5000 REACT_HUGE_COMPARE_ITERATIONS=5 REACT_HUGE_COMPAR
 bun check
 ```
 
-Browser/device gates, cwd `../slate-v2`, only when the touched slice claims
+Browser/device gates, cwd `.tmp/slate-v2`, only when the touched slice claims
 browser behavior:
 
 ```sh

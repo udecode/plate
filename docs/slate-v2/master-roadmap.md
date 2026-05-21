@@ -8,8 +8,8 @@ status: active
 
 ## Purpose
 
-Canonical tranche order for porting `../slate-v2-draft` into the fresh
-`../slate-v2` clone.
+Canonical tranche order for porting `.tmp/slate-v2-draft` into the fresh
+`.tmp/slate-v2` clone.
 
 ## Execution Doctrine
 

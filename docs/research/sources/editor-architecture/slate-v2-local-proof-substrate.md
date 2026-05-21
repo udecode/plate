@@ -3,23 +3,23 @@ title: Slate v2 local overlay proof substrate
 type: source
 status: partial
 source_refs:
-  - ../slate-v2/packages/slate-react/src/projection-store.ts
-  - ../slate-v2/packages/slate-react/src/annotation-store.ts
-  - ../slate-v2/packages/slate-react/src/widget-store.ts
-  - ../slate-v2/packages/slate-react/src/hooks/use-slate-projections.tsx
-  - ../slate-v2/packages/slate-react/src/hooks/use-decoration-selector.tsx
-  - ../slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx
-  - ../slate-v2/packages/slate-react/test/annotation-store-contract.tsx
-  - ../slate-v2/packages/slate-react/test/widget-layer-contract.tsx
-  - ../slate-v2/packages/slate/src/interfaces/bookmark.ts
-  - ../slate-v2/packages/slate/src/interfaces/editor.ts
-  - ../slate-v2/packages/slate/src/editor.ts
-  - ../slate-v2/packages/slate/src/range-projection.ts
-  - ../slate-v2/packages/slate/src/core/get-dirty-paths.ts
-  - ../slate-v2/packages/slate/src/core/draft-helpers.ts
-  - ../slate-v2/packages/slate/test/snapshot-contract.ts
-  - ../slate-v2/scripts/benchmarks/browser/react/rerender-breadth.tsx
-  - ../slate-v2/scripts/benchmarks/browser/react/huge-document-overlays.tsx
+  - .tmp/slate-v2/packages/slate-react/src/projection-store.ts
+  - .tmp/slate-v2/packages/slate-react/src/annotation-store.ts
+  - .tmp/slate-v2/packages/slate-react/src/widget-store.ts
+  - .tmp/slate-v2/packages/slate-react/src/hooks/use-slate-projections.tsx
+  - .tmp/slate-v2/packages/slate-react/src/hooks/use-decoration-selector.tsx
+  - .tmp/slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx
+  - .tmp/slate-v2/packages/slate-react/test/annotation-store-contract.tsx
+  - .tmp/slate-v2/packages/slate-react/test/widget-layer-contract.tsx
+  - .tmp/slate-v2/packages/slate/src/interfaces/bookmark.ts
+  - .tmp/slate-v2/packages/slate/src/interfaces/editor.ts
+  - .tmp/slate-v2/packages/slate/src/editor.ts
+  - .tmp/slate-v2/packages/slate/src/range-projection.ts
+  - .tmp/slate-v2/packages/slate/src/core/get-dirty-paths.ts
+  - .tmp/slate-v2/packages/slate/src/core/draft-helpers.ts
+  - .tmp/slate-v2/packages/slate/test/snapshot-contract.ts
+  - .tmp/slate-v2/scripts/benchmarks/browser/react/rerender-breadth.tsx
+  - .tmp/slate-v2/scripts/benchmarks/browser/react/huge-document-overlays.tsx
 updated: 2026-04-28
 related:
   - docs/research/entities/slate.md

@@ -7,7 +7,7 @@ problem_type: workflow_issue
 component: development_workflow
 symptoms:
   - `plate-2` completion-check stayed pending while the real Slate v2 cleanup was not fully closed.
-  - `bun test:release-discipline` in `../slate-v2` failed on a stale `editor.operations` test usage.
+  - `bun test:release-discipline` in `.tmp/slate-v2` failed on a stale `editor.operations` test usage.
   - The escape-hatch inventory counts were stale after classified source drift.
 root_cause: missing_workflow_step
 resolution_type: workflow_improvement
@@ -20,7 +20,7 @@ tags: [slate-v2, release-discipline, completion-check, escape-hatch, bun-check]
 ## Problem
 
 Architecture/deslop work is coordinated from `plate-2`, but the code and tests
-live in `../slate-v2`. A green `plate-2` completion file only proves the loop
+live in `.tmp/slate-v2`. A green `plate-2` completion file only proves the loop
 state; it does not prove the sibling package.
 
 ## Symptoms
@@ -28,7 +28,7 @@ state; it does not prove the sibling package.
 - `bun run completion-check` in `plate-2` reported `pending`.
 - The active plan had already closed docs/example cleanup, but later package
   test cleanup still needed sibling proof.
-- `bun test:release-discipline` in `../slate-v2` failed on
+- `bun test:release-discipline` in `.tmp/slate-v2` failed on
   `packages/slate-dom/test/bridge.ts` because it still assigned
   `editor.operations`.
 - After that stale field was removed, the escape-hatch inventory still failed
@@ -67,7 +67,7 @@ the paths remain classified and the source drift is intentional.
 ## Why This Works
 
 The workflow separates state proof from package proof. `plate-2` owns the
-continuation loop and completion markdown; `../slate-v2` owns the actual code,
+continuation loop and completion markdown; `.tmp/slate-v2` owns the actual code,
 release discipline, typecheck, unit tests, Vitest tests, and browser row.
 
 The release-discipline gate protects the public API cleanup goal better than a

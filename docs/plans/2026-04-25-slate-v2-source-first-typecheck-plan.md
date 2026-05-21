@@ -33,7 +33,7 @@ Make Slate v2 local typecheck behave like Plate: source-first during development
 ## Evidence
 
 - `bunx turbo typecheck --filter=./packages/slate --filter=./packages/slate-history --filter=./packages/slate-dom --filter=./packages/slate-react --filter=./packages/slate-browser --filter=./packages/slate-hyperscript --force` passed without build tasks.
-- `bun run lint` passed in `../slate-v2`.
+- `bun run lint` passed in `.tmp/slate-v2`.
 - `bun typecheck` package phase ran only Turbo `typecheck` tasks and no package builds, then stopped in `site` because site still typechecks against package contract/dist.
 - `bun typecheck:site` with temporary source aliases failed because site custom `CustomTypes` forced package source internals to satisfy app-specific `Editor`, `Element`, and `Text` shapes. The temporary site alias experiment was reverted.
 - `.agents/AGENTS.md` and generated `AGENTS.md` now default to source-first typecheck and reserve builds for artifact-facing checks or packages that lack a source-first path.

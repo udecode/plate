@@ -50,6 +50,7 @@ Use those skills when relevant:
 - `major-task` for heavyweight architecture, framework comparison, migration, benchmark, or proposal work
 - `ralph` for generating a project continuation prompt from the active plan for Stop-hook continuation
 - `clawsweeper` for Slate issue-ledger triage, duplicate/stale/invalid classification, small high-confidence issue processing, and exact claim sync
+- `clawpatch` for Clawpatch init/map/review/report/fix/revalidate workflows and `.clawpatch` state recovery
 - `resolve-slate-issue` for one Slate issue at a time: fetch source, prove current Slate v2 behavior, fix or classify, then comment directly with `gh`
 - `editor-test-harvester` for mining external editor repositories for portable editor-behavior tests, Slate v2 coverage gaps, and copy/refactor/create decisions
 - `editor-harvest-ralplan` for turning an `editor-test-harvester` result into a lane-specific Slate v2 or Plate ralplan queue

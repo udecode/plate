@@ -52,15 +52,15 @@ The public runtime contract becomes:
 
 ```ts
 editor.read(() => {
-  const selection = editor.getSelection()
-  const active = editor.hasNodes({ match: isHeading })
-})
+  const selection = editor.getSelection();
+  const active = editor.hasNodes({ match: isHeading });
+});
 
 editor.update(() => {
-  editor.unwrapNodes({ match: isList })
-  editor.setNodes({ type: 'list-item' })
-  editor.wrapNodes({ type: 'bulleted-list', children: [] })
-})
+  editor.unwrapNodes({ match: isList });
+  editor.setNodes({ type: "list-item" });
+  editor.wrapNodes({ type: "bulleted-list", children: [] });
+});
 ```
 
 The internal runtime contract remains:
@@ -185,12 +185,12 @@ Primary coherent read boundary:
 
 ```ts
 editor.read(() => {
-  editor.getSelection()
-  editor.getChildren()
-  editor.getMarks()
-  editor.getOperations()
-  editor.getLastCommit()
-})
+  editor.getSelection();
+  editor.getChildren();
+  editor.getMarks();
+  editor.getOperations();
+  editor.getLastCommit();
+});
 ```
 
 Rules:
@@ -208,8 +208,8 @@ Primary write boundary:
 
 ```ts
 editor.update(() => {
-  editor.setNodes({ type: 'heading-one' })
-})
+  editor.setNodes({ type: "heading-one" });
+});
 ```
 
 Rules:
@@ -261,9 +261,9 @@ Optional later sugar:
 editor
   .chain()
   .unwrapNodes({ match: isList })
-  .setNodes({ type: 'list-item' })
-  .wrapNodes({ type: 'bulleted-list', children: [] })
-  .run()
+  .setNodes({ type: "list-item" })
+  .wrapNodes({ type: "bulleted-list", children: [] })
+  .run();
 ```
 
 Rules:
@@ -278,32 +278,32 @@ Public extension shape:
 
 ```ts
 editor.extend({
-  name: 'todo',
+  name: "todo",
   methods: {
     toggleTodo() {
       this.update(() => {
-        this.setNodes({ type: 'todo', checked: true })
-      })
+        this.setNodes({ type: "todo", checked: true });
+      });
     },
   },
-})
+});
 ```
 
 Named package shape:
 
 ```ts
 const TodoExtension = defineEditorExtension({
-  name: 'todo',
+  name: "todo",
   methods: {
     toggleTodo() {
       this.update(() => {
-        this.setNodes({ type: 'todo', checked: true })
-      })
+        this.setNodes({ type: "todo", checked: true });
+      });
     },
   },
   normalizers: [],
   commands: [],
-})
+});
 ```
 
 Rules:
@@ -393,9 +393,9 @@ Allowed internally:
 
 Files:
 
-- `../slate-v2/packages/slate/src/interfaces/editor.ts`
-- `../slate-v2/packages/slate/src/create-editor.ts`
-- `../slate-v2/packages/slate/src/core/public-state.ts`
+- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`
+- `.tmp/slate-v2/packages/slate/src/create-editor.ts`
+- `.tmp/slate-v2/packages/slate/src/core/public-state.ts`
 
 Implement:
 
@@ -416,17 +416,17 @@ Implement:
 
 Tests:
 
-- `../slate-v2/packages/slate/test/read-update-contract.ts`
-- `../slate-v2/packages/slate/test/transaction-contract.ts`
+- `.tmp/slate-v2/packages/slate/test/read-update-contract.ts`
+- `.tmp/slate-v2/packages/slate/test/transaction-contract.ts`
 
 ### Phase 2: Primitive Method Runtime Contract
 
 Files:
 
-- `../slate-v2/packages/slate/src/transforms-node/**`
-- `../slate-v2/packages/slate/src/transforms-text/**`
-- `../slate-v2/packages/slate/src/transforms-selection/**`
-- `../slate-v2/packages/slate/src/editor/**`
+- `.tmp/slate-v2/packages/slate/src/transforms-node/**`
+- `.tmp/slate-v2/packages/slate/src/transforms-text/**`
+- `.tmp/slate-v2/packages/slate/src/transforms-selection/**`
+- `.tmp/slate-v2/packages/slate/src/editor/**`
 
 Implement:
 
@@ -439,17 +439,17 @@ Implement:
 
 Tests:
 
-- `../slate-v2/packages/slate/test/primitive-method-runtime-contract.ts`
-- `../slate-v2/packages/slate/test/editor-methods-contract.ts`
-- `../slate-v2/packages/slate/test/transaction-target-runtime-contract.ts`
+- `.tmp/slate-v2/packages/slate/test/primitive-method-runtime-contract.ts`
+- `.tmp/slate-v2/packages/slate/test/editor-methods-contract.ts`
+- `.tmp/slate-v2/packages/slate/test/transaction-target-runtime-contract.ts`
 
 ### Phase 3: Extension Runtime
 
 Files:
 
-- `../slate-v2/packages/slate/src/core/extension-registry.ts`
-- `../slate-v2/packages/slate/src/interfaces/editor.ts`
-- `../slate-v2/packages/slate/test/extension-methods-contract.ts`
+- `.tmp/slate-v2/packages/slate/src/core/extension-registry.ts`
+- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`
+- `.tmp/slate-v2/packages/slate/test/extension-methods-contract.ts`
 
 Implement:
 
@@ -464,10 +464,10 @@ Implement:
 
 Files:
 
-- `../slate-v2/packages/slate-react/src/components/slate.tsx`
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
-- `../slate-v2/packages/slate-react/src/editable/**`
-- `../slate-v2/packages/slate-react/src/hooks/**`
+- `.tmp/slate-v2/packages/slate-react/src/components/slate.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/editable/**`
+- `.tmp/slate-v2/packages/slate-react/src/hooks/**`
 
 Implement:
 
@@ -480,18 +480,18 @@ Implement:
 
 Tests:
 
-- `../slate-v2/packages/slate-react/test/target-runtime-contract.ts`
-- `../slate-v2/packages/slate-react/test/dom-text-sync-contract.ts`
-- `../slate-v2/packages/slate-react/test/large-doc-and-scroll.tsx`
-- `../slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx`
+- `.tmp/slate-v2/packages/slate-react/test/target-runtime-contract.ts`
+- `.tmp/slate-v2/packages/slate-react/test/dom-text-sync-contract.ts`
+- `.tmp/slate-v2/packages/slate-react/test/large-doc-and-scroll.tsx`
+- `.tmp/slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx`
 
 ### Phase 5: Public API Hard Cuts
 
 Files:
 
-- `../slate-v2/packages/slate/src/interfaces/editor.ts`
-- `../slate-v2/packages/slate/src/index.ts`
-- `../slate-v2/site/examples/ts/**`
+- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`
+- `.tmp/slate-v2/packages/slate/src/index.ts`
+- `.tmp/slate-v2/site/examples/ts/**`
 - docs under `docs/slate-v2/**`
 
 Cut:
@@ -504,16 +504,16 @@ Cut:
 
 Tests:
 
-- `../slate-v2/packages/slate/test/public-field-hard-cut-contract.ts`
-- `../slate-v2/packages/slate/test/write-boundary-contract.ts`
+- `.tmp/slate-v2/packages/slate/test/public-field-hard-cut-contract.ts`
+- `.tmp/slate-v2/packages/slate/test/write-boundary-contract.ts`
 - type tests for public surface if available
 
 ### Phase 6: Browser Gauntlets
 
 Files:
 
-- `../slate-v2/packages/slate-browser/src/playwright/**`
-- `../slate-v2/playwright/integration/examples/**`
+- `.tmp/slate-v2/packages/slate-browser/src/playwright/**`
+- `.tmp/slate-v2/playwright/integration/examples/**`
 
 Generate scenario families:
 
@@ -603,11 +603,11 @@ Do not expose command policy objects, command kinds, `dispatchCommand`, or
 The public DX should be:
 
 ```ts
-editor.toggleBlock('heading-one')
-editor.toggleMark('bold')
-editor.setNodes({ type: 'heading-one' })
-editor.insertText('x')
-editor.deleteBackward()
+editor.toggleBlock("heading-one");
+editor.toggleMark("bold");
+editor.setNodes({ type: "heading-one" });
+editor.insertText("x");
+editor.deleteBackward();
 ```
 
 The internal architecture should be:
@@ -650,26 +650,26 @@ Not:
 
 ```ts
 ReactEditor.runCommand(editor, () => {
-  Transforms.setNodes(editor, { type: 'heading-one' })
-})
+  Transforms.setNodes(editor, { type: "heading-one" });
+});
 ```
 
 Not:
 
 ```ts
 editor.dispatchCommand({
-  kind: 'set-block',
-  policy: 'import-dom-before-command',
-})
+  kind: "set-block",
+  policy: "import-dom-before-command",
+});
 ```
 
 Not:
 
 ```ts
-editor.registerCommand('toggleTodo', {
-  kind: 'selection-transform',
+editor.registerCommand("toggleTodo", {
+  kind: "selection-transform",
   run() {},
-})
+});
 ```
 
 The final API must not require normal app or plugin authors to know DOM import
@@ -687,8 +687,8 @@ Plugin authors should write:
 
 ```ts
 editor.toggleTodo = (options) => {
-  editor.setBlock({ type: 'todo', checked: options.checked })
-}
+  editor.setBlock({ type: "todo", checked: options.checked });
+};
 ```
 
 The safety lives in `editor.setBlock(...)` resolving its implicit target through the transaction runtime, not in the plugin author choosing a policy.
@@ -758,13 +758,13 @@ Freshness is not triggered by:
 Examples:
 
 ```ts
-editor.setNodes({ type: 'heading-one' })
+editor.setNodes({ type: "heading-one" });
 // implicit target; tx.resolveTarget imports current DOM selection if DOM owns selection
 
-editor.setNodes({ type: 'heading-one' }, { at: [1] })
+editor.setNodes({ type: "heading-one" }, { at: [1] });
 // explicit target; no DOM import required
 
-editor.insertText('x')
+editor.insertText("x");
 // input pipeline already model-owned; target freshness no-ops
 ```
 
@@ -777,9 +777,9 @@ Core owns a framework-neutral target runtime hook:
 ```ts
 editor.targetRuntime = {
   resolveImplicitTarget(editor, request) {
-    return Editor.getLiveSelection(editor)
+    return Editor.getLiveSelection(editor);
   },
-}
+};
 ```
 
 `slate-react` installs the browser implementation:
@@ -829,10 +829,10 @@ Good:
 editor.extend({
   methods: {
     toggleTodo(options) {
-      this.setBlock({ type: 'todo', checked: options.checked })
+      this.setBlock({ type: "todo", checked: options.checked });
     },
   },
-})
+});
 ```
 
 Also good for package authors that want a named extension unit:
@@ -841,18 +841,18 @@ Also good for package authors that want a named extension unit:
 const TodoExtension = defineEditorExtension({
   methods: {
     toggleTodo(options) {
-      this.setBlock({ type: 'todo', checked: options.checked })
+      this.setBlock({ type: "todo", checked: options.checked });
     },
   },
-})
+});
 ```
 
 Bad:
 
 ```ts
 editor.toggleTodo = (options) => {
-  this.setBlock({ type: 'todo', checked: options.checked })
-}
+  this.setBlock({ type: "todo", checked: options.checked });
+};
 ```
 
 Lower-level extensions can still use transactions inside registered methods:
@@ -862,12 +862,12 @@ editor.extend({
   methods: {
     myTransform(options) {
       return Editor.withTransaction(this, (tx) => {
-        const selection = tx.getSelection()
+        const selection = tx.getSelection();
         // selection is fresh if needed
-      })
+      });
     },
   },
-})
+});
 ```
 
 Bad:
@@ -875,26 +875,26 @@ Bad:
 ```ts
 editor.myTransform = (options) =>
   Editor.withTransaction(editor, (tx) => {
-    const selection = tx.getSelection()
-  })
+    const selection = tx.getSelection();
+  });
 ```
 
 Bad:
 
 ```ts
-Transforms.setNodes(editor, props)
+Transforms.setNodes(editor, props);
 ```
 
 Bad:
 
 ```ts
-editor.selection
+editor.selection;
 ```
 
 Bad:
 
 ```ts
-editor.registerCommand('x', { policy: 'formatting' })
+editor.registerCommand("x", { policy: "formatting" });
 ```
 
 The command registry may exist internally, but the public plugin surface is
@@ -922,17 +922,17 @@ through a named editor method or transaction API that creates a commit.
 Bad:
 
 ```ts
-editor.apply(op)
-editor.operations.push(op)
-editor.selection = range
+editor.apply(op);
+editor.operations.push(op);
+editor.selection = range;
 ```
 
 Good:
 
 ```ts
-editor.applyOperation(op)
-editor.withTransaction((tx) => tx.apply(op))
-editor.select(range)
+editor.applyOperation(op);
+editor.withTransaction((tx) => tx.apply(op));
+editor.select(range);
 ```
 
 `editor.applyOperation(...)` is allowed only if it creates/uses a transaction
@@ -982,10 +982,10 @@ The editor may keep private/internal storage for:
 But public access goes through methods:
 
 ```ts
-editor.getSelection()
-editor.getChildren()
-editor.getMarks()
-editor.getOperations()
+editor.getSelection();
+editor.getChildren();
+editor.getMarks();
+editor.getOperations();
 ```
 
 Public writes go through editor methods:
@@ -1022,8 +1022,8 @@ The React runtime already knows whether DOM selection is authoritative.
 So the safest API is:
 
 ```ts
-editor.setNodes(props)
-editor.setNodes(props, { at })
+editor.setNodes(props);
+editor.setNodes(props, { at });
 ```
 
 No extra policy.
@@ -1062,15 +1062,15 @@ Before new code, inventory the actual current state.
 
 Do:
 
-- list existing editor methods in `../slate-v2/packages/slate/src/interfaces/editor.ts`
+- list existing editor methods in `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`
 - list which methods already call `Editor.withTransaction`
 - list which methods or transforms resolve implicit selection unsafely
 - list `Transforms.*` wrappers that already delegate to editor methods and
   wrappers that still bypass the method runtime
 - list public mutable field reads/writes in:
-  - `../slate-v2/packages/slate/**`
-  - `../slate-v2/packages/slate-react/**`
-  - `../slate-v2/site/examples/ts/**`
+  - `.tmp/slate-v2/packages/slate/**`
+  - `.tmp/slate-v2/packages/slate-react/**`
+  - `.tmp/slate-v2/site/examples/ts/**`
 - list direct `Transforms.*` use in examples and React-facing tests
 - classify each mutable field use:
   - internal storage
@@ -1110,22 +1110,22 @@ rg -n "editor\\.(selection|children|marks|operations|onChange|apply)\\b|Transfor
 
 High-signal findings:
 
-| Area | Current state | Contract status | Owner |
-| --- | --- | --- | --- |
-| Existing editor methods | `createEditor()` already wires many methods including `setNodes`, `insertText`, `insertFragment`, `deleteBackward`, `select`, `withTransaction`, `getChildren`, `getLiveSelection`, `getOperations` | Do not invent duplicate methods | Audit-only |
-| `NodeTransforms` | `insertNodes`, `liftNodes`, `mergeNodes`, `moveNodes`, `removeNodes`, `setNodes`, `splitNodes`, `unsetNodes`, `unwrapNodes`, `wrapNodes` delegate to editor methods | Mostly good as temporary wrappers | Keep until primary API migration, then remove from docs/examples |
-| `SelectionTransforms` | `collapse`, `deselect`, `move`, `select`, `setPoint`, `setSelection` delegate to editor methods | Mostly good as temporary wrappers | Keep until primary API migration, then remove from docs/examples |
-| `TextTransforms.insertText` | Has direct logic and calls `Transforms.delete`, `Transforms.setSelection`, `Transforms.deselect`, `applyOperation` | Bypasses final method runtime shape | Core method runtime owner |
-| `TextTransforms.removeText` | Reads `Editor.getSnapshot(editor).selection?.anchor` | Stale-by-default; wrong hot/read source | Core method runtime owner |
-| `Editor.addMark/removeMark` | Use `getCurrentSelection`, then call `Transforms.setNodes/unsetNodes` for expanded selections | Needs lazy target freshness for implicit target | Core method runtime owner |
-| `Editor.deleteBackward/deleteForward/deleteFragment` | Read `editor.selection` directly and call `Transforms.delete` | P0 stale selection risk | First core owner after browser tracer |
-| `Editor.insertText` | Reads `getCurrentSelection`, delegates back through `Transforms.insertNodes/insertText` | Needs method runtime contract | Core method runtime owner |
-| `core/public-state.ts` | Initializes and publishes from `editor.selection`, `editor.marks`, `editor.operations`; uses `editor.apply` fallback internally | Required storage exists, but public fields are still source pressure | Public field hard-cut owner |
-| `transforms-node/*` | Many internal transform helpers call `Transforms.*`; `lift-nodes` and `delete-text` can fall back to `editor.apply` | Some are internal composition, but final write boundary must be transaction-only | Core write-boundary owner |
-| `slate-react` runtime | Uses `Transforms.*` in caret, selection, clipboard, model input, DOM repair, Android manager | Runtime internal usage can remain temporarily, but must flow through editor methods before closure | React migration owner |
-| React hooks | `use-selected`, `use-slate-selection` read `editor.selection` | Stale/public-field pressure | React public-field owner |
-| Examples | `richtext`, `inlines`, `markdown-shortcuts`, `images`, `check-lists`, `mentions`, etc. still call `Transforms.*` | Public DX is not final | Example migration owner |
-| UI command tracer | `richtext.tsx` toolbar `toggleBlock` still calls `Transforms.unwrapNodes`, `Transforms.setNodes`, `Transforms.wrapNodes` | Direct source of paragraph-2 heading bug | Phase 1 red test owner |
+| Area                                                 | Current state                                                                                                                                                                                       | Contract status                                                                                    | Owner                                                            |
+| ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| Existing editor methods                              | `createEditor()` already wires many methods including `setNodes`, `insertText`, `insertFragment`, `deleteBackward`, `select`, `withTransaction`, `getChildren`, `getLiveSelection`, `getOperations` | Do not invent duplicate methods                                                                    | Audit-only                                                       |
+| `NodeTransforms`                                     | `insertNodes`, `liftNodes`, `mergeNodes`, `moveNodes`, `removeNodes`, `setNodes`, `splitNodes`, `unsetNodes`, `unwrapNodes`, `wrapNodes` delegate to editor methods                                 | Mostly good as temporary wrappers                                                                  | Keep until primary API migration, then remove from docs/examples |
+| `SelectionTransforms`                                | `collapse`, `deselect`, `move`, `select`, `setPoint`, `setSelection` delegate to editor methods                                                                                                     | Mostly good as temporary wrappers                                                                  | Keep until primary API migration, then remove from docs/examples |
+| `TextTransforms.insertText`                          | Has direct logic and calls `Transforms.delete`, `Transforms.setSelection`, `Transforms.deselect`, `applyOperation`                                                                                  | Bypasses final method runtime shape                                                                | Core method runtime owner                                        |
+| `TextTransforms.removeText`                          | Reads `Editor.getSnapshot(editor).selection?.anchor`                                                                                                                                                | Stale-by-default; wrong hot/read source                                                            | Core method runtime owner                                        |
+| `Editor.addMark/removeMark`                          | Use `getCurrentSelection`, then call `Transforms.setNodes/unsetNodes` for expanded selections                                                                                                       | Needs lazy target freshness for implicit target                                                    | Core method runtime owner                                        |
+| `Editor.deleteBackward/deleteForward/deleteFragment` | Read `editor.selection` directly and call `Transforms.delete`                                                                                                                                       | P0 stale selection risk                                                                            | First core owner after browser tracer                            |
+| `Editor.insertText`                                  | Reads `getCurrentSelection`, delegates back through `Transforms.insertNodes/insertText`                                                                                                             | Needs method runtime contract                                                                      | Core method runtime owner                                        |
+| `core/public-state.ts`                               | Initializes and publishes from `editor.selection`, `editor.marks`, `editor.operations`; uses `editor.apply` fallback internally                                                                     | Required storage exists, but public fields are still source pressure                               | Public field hard-cut owner                                      |
+| `transforms-node/*`                                  | Many internal transform helpers call `Transforms.*`; `lift-nodes` and `delete-text` can fall back to `editor.apply`                                                                                 | Some are internal composition, but final write boundary must be transaction-only                   | Core write-boundary owner                                        |
+| `slate-react` runtime                                | Uses `Transforms.*` in caret, selection, clipboard, model input, DOM repair, Android manager                                                                                                        | Runtime internal usage can remain temporarily, but must flow through editor methods before closure | React migration owner                                            |
+| React hooks                                          | `use-selected`, `use-slate-selection` read `editor.selection`                                                                                                                                       | Stale/public-field pressure                                                                        | React public-field owner                                         |
+| Examples                                             | `richtext`, `inlines`, `markdown-shortcuts`, `images`, `check-lists`, `mentions`, etc. still call `Transforms.*`                                                                                    | Public DX is not final                                                                             | Example migration owner                                          |
+| UI command tracer                                    | `richtext.tsx` toolbar `toggleBlock` still calls `Transforms.unwrapNodes`, `Transforms.setNodes`, `Transforms.wrapNodes`                                                                            | Direct source of paragraph-2 heading bug                                                           | Phase 1 red test owner                                           |
 
 First owner:
 
@@ -1162,7 +1162,7 @@ Scenario:
 
 Primary file:
 
-- `../slate-v2/playwright/integration/examples/richtext.test.ts`
+- `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
 
 Expected first owner:
 
@@ -1436,10 +1436,10 @@ Add the framework-neutral target runtime hook.
 
 Primary files:
 
-- `../slate-v2/packages/slate/src/core/public-state.ts`
-- `../slate-v2/packages/slate/src/core/transaction.ts`
-- `../slate-v2/packages/slate/src/core/apply.ts`
-- `../slate-v2/packages/slate/src/interfaces/editor.ts`
+- `.tmp/slate-v2/packages/slate/src/core/public-state.ts`
+- `.tmp/slate-v2/packages/slate/src/core/transaction.ts`
+- `.tmp/slate-v2/packages/slate/src/core/apply.ts`
+- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`
 
 Required behavior:
 
@@ -1452,7 +1452,7 @@ Required behavior:
 
 Tests:
 
-- `../slate-v2/packages/slate/test/transaction-target-runtime-contract.ts`
+- `.tmp/slate-v2/packages/slate/test/transaction-target-runtime-contract.ts`
 
 Scenarios:
 
@@ -1468,11 +1468,11 @@ Promote editor methods as the only primary write API.
 
 Primary files:
 
-- `../slate-v2/packages/slate/src/create-editor.ts`
-- `../slate-v2/packages/slate/src/interfaces/editor.ts`
-- `../slate-v2/packages/slate/src/transforms-node/**`
-- `../slate-v2/packages/slate/src/transforms-selection/**`
-- `../slate-v2/packages/slate/src/transforms-text/**`
+- `.tmp/slate-v2/packages/slate/src/create-editor.ts`
+- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`
+- `.tmp/slate-v2/packages/slate/src/transforms-node/**`
+- `.tmp/slate-v2/packages/slate/src/transforms-selection/**`
+- `.tmp/slate-v2/packages/slate/src/transforms-text/**`
 
 Required methods:
 
@@ -1504,8 +1504,8 @@ Rules:
 
 Tests:
 
-- `../slate-v2/packages/slate/test/editor-methods-contract.ts`
-- `../slate-v2/packages/slate/test/public-field-hard-cut-contract.ts`
+- `.tmp/slate-v2/packages/slate/test/editor-methods-contract.ts`
+- `.tmp/slate-v2/packages/slate/test/public-field-hard-cut-contract.ts`
 
 ### Phase 4: Public Field Hard Cut
 
@@ -1513,10 +1513,10 @@ Hard cut stalable fields from the public type/documented surface.
 
 Primary files:
 
-- `../slate-v2/packages/slate/src/interfaces/editor.ts`
-- `../slate-v2/packages/slate/src/create-editor.ts`
-- `../slate-v2/packages/slate/src/core/public-state.ts`
-- `../slate-v2/packages/slate/src/index.ts`
+- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`
+- `.tmp/slate-v2/packages/slate/src/create-editor.ts`
+- `.tmp/slate-v2/packages/slate/src/core/public-state.ts`
+- `.tmp/slate-v2/packages/slate/src/index.ts`
 
 Cut from public primary surface:
 
@@ -1547,7 +1547,7 @@ Rules:
 
 Tests:
 
-- `../slate-v2/packages/slate/test/public-field-hard-cut-contract.ts`
+- `.tmp/slate-v2/packages/slate/test/public-field-hard-cut-contract.ts`
 - type-level public API test if the package already has a type-test lane
 
 ### Phase 5: React Target Runtime
@@ -1556,11 +1556,11 @@ Install browser implicit-target resolution in `slate-react`.
 
 Primary files:
 
-- `../slate-v2/packages/slate-react/src/components/slate.tsx`
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
-- `../slate-v2/packages/slate-react/src/editable/selection-controller.ts`
-- `../slate-v2/packages/slate-react/src/editable/input-controller.ts`
-- `../slate-v2/packages/slate-react/src/editable/editing-kernel.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/slate.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/editable/selection-controller.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/input-controller.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/editing-kernel.ts`
 
 Required behavior:
 
@@ -1574,9 +1574,9 @@ Required behavior:
 
 Tests:
 
-- `../slate-v2/packages/slate-react/test/target-runtime-contract.ts`
-- `../slate-v2/packages/slate-react/test/editing-kernel-contract.ts`
-- `../slate-v2/packages/slate-react/test/selection-controller-contract.ts`
+- `.tmp/slate-v2/packages/slate-react/test/target-runtime-contract.ts`
+- `.tmp/slate-v2/packages/slate-react/test/editing-kernel-contract.ts`
+- `.tmp/slate-v2/packages/slate-react/test/selection-controller-contract.ts`
 
 ### Phase 6: Example And Plugin Surface Migration
 
@@ -1584,9 +1584,9 @@ Migrate examples from `Transforms.*` and stale public fields to editor methods.
 
 Primary files:
 
-- `../slate-v2/site/examples/ts/richtext.tsx`
-- `../slate-v2/site/examples/ts/hovering-toolbar.tsx`
-- `../slate-v2/site/examples/ts/markdown-shortcuts.tsx` only after Android
+- `.tmp/slate-v2/site/examples/ts/richtext.tsx`
+- `.tmp/slate-v2/site/examples/ts/hovering-toolbar.tsx`
+- `.tmp/slate-v2/site/examples/ts/markdown-shortcuts.tsx` only after Android
   scheduling is accounted for
 - other examples only when a search proves direct `Transforms.*` use
 
@@ -1634,10 +1634,10 @@ Every row asserts:
 
 Primary files:
 
-- `../slate-v2/packages/slate-browser/src/playwright/index.ts`
-- `../slate-v2/playwright/integration/examples/richtext.test.ts`
-- `../slate-v2/playwright/integration/examples/highlighted-text.test.ts`
-- `../slate-v2/playwright/integration/examples/inlines.test.ts`
+- `.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts`
+- `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
+- `.tmp/slate-v2/playwright/integration/examples/highlighted-text.test.ts`
+- `.tmp/slate-v2/playwright/integration/examples/inlines.test.ts`
 
 ### Phase 8: Public Surface Cleanup
 
@@ -1971,23 +1971,23 @@ Owner classification:
 
 Changed files:
 
-- `../slate-v2/packages/slate/src/core/public-state.ts`
-- `../slate-v2/packages/slate/src/create-editor.ts`
-- `../slate-v2/packages/slate/src/editor/add-mark.ts`
-- `../slate-v2/packages/slate/src/editor/remove-mark.ts`
-- `../slate-v2/packages/slate/src/editor/toggle-mark.ts`
-- `../slate-v2/packages/slate/src/editor/index.ts`
-- `../slate-v2/packages/slate/src/editor/is-editor.ts`
-- `../slate-v2/packages/slate/src/interfaces/editor.ts`
-- `../slate-v2/packages/slate/test/editor-methods-contract.ts`
-- `../slate-v2/packages/slate/test/transaction-target-runtime-contract.ts`
-- `../slate-v2/packages/slate-react/src/components/slate.tsx`
-- `../slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`
-- `../slate-v2/packages/slate-react/src/hooks/use-slate-node-ref.tsx`
-- `../slate-v2/packages/slate-react/test/large-doc-and-scroll.tsx`
-- `../slate-v2/site/examples/ts/richtext.tsx`
-- `../slate-v2/playwright/integration/examples/richtext.test.ts`
-- `../slate-v2/.changeset/editor-method-target-fresh-marks.md`
+- `.tmp/slate-v2/packages/slate/src/core/public-state.ts`
+- `.tmp/slate-v2/packages/slate/src/create-editor.ts`
+- `.tmp/slate-v2/packages/slate/src/editor/add-mark.ts`
+- `.tmp/slate-v2/packages/slate/src/editor/remove-mark.ts`
+- `.tmp/slate-v2/packages/slate/src/editor/toggle-mark.ts`
+- `.tmp/slate-v2/packages/slate/src/editor/index.ts`
+- `.tmp/slate-v2/packages/slate/src/editor/is-editor.ts`
+- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`
+- `.tmp/slate-v2/packages/slate/test/editor-methods-contract.ts`
+- `.tmp/slate-v2/packages/slate/test/transaction-target-runtime-contract.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/slate.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`
+- `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-node-ref.tsx`
+- `.tmp/slate-v2/packages/slate-react/test/large-doc-and-scroll.tsx`
+- `.tmp/slate-v2/site/examples/ts/richtext.tsx`
+- `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
+- `.tmp/slate-v2/.changeset/editor-method-target-fresh-marks.md`
 - `docs/solutions/ui-bugs/2026-04-23-slate-react-unsynced-dom-text-ops-must-force-react-fallback.md`
 
 Rejected tactics:

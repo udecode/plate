@@ -14,36 +14,36 @@ Current live source:
 ```ts
 export type EditorElementVoidKind =
   | boolean
-  | 'block'
-  | 'editable-island'
-  | 'inline'
-  | 'markable-inline'
+  | "block"
+  | "editable-island"
+  | "inline"
+  | "markable-inline";
 ```
 
 Source owner:
 
-- `../slate-v2/packages/slate/src/interfaces/editor.ts:386`
-- `../slate-v2/packages/slate/src/interfaces/editor.ts:413`
-- `../slate-v2/packages/slate/src/create-editor.ts:151`
-- `../slate-v2/packages/slate/src/create-editor.ts:209`
+- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:386`
+- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:413`
+- `.tmp/slate-v2/packages/slate/src/create-editor.ts:151`
+- `.tmp/slate-v2/packages/slate/src/create-editor.ts:209`
 
 Recommended target:
 
 ```ts
 export type EditorElementVoidKind =
-  | 'block'
-  | 'editable-island'
-  | 'inline'
-  | 'markable-inline'
+  | "block"
+  | "editable-island"
+  | "inline"
+  | "markable-inline";
 
 export type EditorElementSpec = {
-  type: string
-  void?: EditorElementVoidKind
-  inline?: boolean
-  markableVoid?: boolean
-  atom?: boolean
+  type: string;
+  void?: EditorElementVoidKind;
+  inline?: boolean;
+  markableVoid?: boolean;
+  atom?: boolean;
   // existing behavior flags stay explicit
-}
+};
 ```
 
 `void: true` should be cut from the public type. If runtime compatibility is
@@ -85,12 +85,12 @@ Drivers:
 
 Options:
 
-| Option | Verdict | Why |
-| --- | --- | --- |
-| Keep current union including `boolean` | reject | Smallest migration cost, but public API keeps an ambiguous legacy shorthand. |
-| Cut `boolean`, keep four string presets | choose | Explicit, Slate-close, minimal, and already matches current docs/examples. |
-| Split into `void?: boolean`, `voidKind?: ...` | reject | More props, worse shadcn-style minimalism, and still teaches boolean voidness. |
-| Use fully orthogonal flags only: `void?: true`, `inline`, `markableVoid`, `editableIsland` | reject | Mechanically clean but worse for common mention/image authoring and easier to configure contradictory policy. |
+| Option                                                                                     | Verdict | Why                                                                                                           |
+| ------------------------------------------------------------------------------------------ | ------- | ------------------------------------------------------------------------------------------------------------- |
+| Keep current union including `boolean`                                                     | reject  | Smallest migration cost, but public API keeps an ambiguous legacy shorthand.                                  |
+| Cut `boolean`, keep four string presets                                                    | choose  | Explicit, Slate-close, minimal, and already matches current docs/examples.                                    |
+| Split into `void?: boolean`, `voidKind?: ...`                                              | reject  | More props, worse shadcn-style minimalism, and still teaches boolean voidness.                                |
+| Use fully orthogonal flags only: `void?: true`, `inline`, `markableVoid`, `editableIsland` | reject  | Mechanically clean but worse for common mention/image authoring and easier to configure contradictory policy. |
 
 Chosen option: cut public `boolean`, keep four string presets.
 
@@ -109,41 +109,41 @@ Consequences:
 ## Current Source Evidence
 
 - `EditorElementSpec.void` is public and typed from
-  `EditorElementVoidKind` at `../slate-v2/packages/slate/src/interfaces/editor.ts:424`.
+  `EditorElementVoidKind` at `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:424`.
 - `isInlineVoidKind` treats only `'inline'` and `'markable-inline'` as inline
-  at `../slate-v2/packages/slate/src/create-editor.ts:151`.
+  at `.tmp/slate-v2/packages/slate/src/create-editor.ts:151`.
 - `isVoidKind` currently accepts every truthy value at
-  `../slate-v2/packages/slate/src/create-editor.ts:154`.
+  `.tmp/slate-v2/packages/slate/src/create-editor.ts:154`.
 - `editable-island` intentionally makes the element void but not atom, proven
-  by `../slate-v2/packages/slate/test/schema-contract.ts:177` and
-  `../slate-v2/packages/slate/test/schema-contract.ts:204`.
+  by `.tmp/slate-v2/packages/slate/test/schema-contract.ts:177` and
+  `.tmp/slate-v2/packages/slate/test/schema-contract.ts:204`.
 - docs already teach strings, not boolean, in
-  `../slate-v2/docs/concepts/08-plugins.md:217` and
-  `../slate-v2/docs/libraries/slate-react/editable.md:255`.
+  `.tmp/slate-v2/docs/concepts/08-plugins.md:217` and
+  `.tmp/slate-v2/docs/libraries/slate-react/editable.md:255`.
 - real examples use strings for first-party surfaces:
-  `../slate-v2/site/examples/ts/images.tsx:67`,
-  `../slate-v2/site/examples/ts/mentions.tsx:187`,
-  and `../slate-v2/site/examples/ts/editable-voids.tsx:45`.
+  `.tmp/slate-v2/site/examples/ts/images.tsx:67`,
+  `.tmp/slate-v2/site/examples/ts/mentions.tsx:187`,
+  and `.tmp/slate-v2/site/examples/ts/editable-voids.tsx:45`.
 - tests still use `void: true` in compatibility-like rows, e.g.
-  `../slate-v2/packages/slate/test/transforms-contract.ts:537` and
-  `../slate-v2/packages/slate/test/query-contract.ts:126`.
-- live re-check found no `void: true` in `../slate-v2/packages/slate/src`,
-  `../slate-v2/docs`, or `../slate-v2/site/examples`; remaining hits are in
+  `.tmp/slate-v2/packages/slate/test/transforms-contract.ts:537` and
+  `.tmp/slate-v2/packages/slate/test/query-contract.ts:126`.
+- live re-check found no `void: true` in `.tmp/slate-v2/packages/slate/src`,
+  `.tmp/slate-v2/docs`, or `.tmp/slate-v2/site/examples`; remaining hits are in
   package tests and are mostly document-fixture markers consumed by explicit
   `match` specs such as `defineVoidFlag` and `defineInlineVoidFlag` in
-  `../slate-v2/packages/slate/test/query-contract.ts:24`.
-- `../slate-v2/README.md:42` says Slate is beta and some APIs are not finalized;
+  `.tmp/slate-v2/packages/slate/test/query-contract.ts:24`.
+- `.tmp/slate-v2/README.md:42` says Slate is beta and some APIs are not finalized;
   package versions are still `0.x` (`slate@0.124.1`,
   `slate-react@0.124.0`). This is exactly when to remove the public boolean.
 
 ## Ecosystem Strategy Synthesis
 
-| System | Source | Mechanism | Avoids | Steal | Reject | Slate target | Verdict |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| ProseMirror | `../prosemirror-model/src/schema.ts:390-445` | Orthogonal node spec flags: `inline`, `atom`, `selectable`, `draggable`, `isolating`. | String enums that hide too many independent semantics. | Keep `atom`, `selectable`, and `isolating` as separate Slate flags. | Raw ProseMirror content-expression complexity as Slate authoring syntax. | `void` string presets plus separate advanced flags. | partial |
-| Lexical | `../lexical/packages/lexical/src/nodes/LexicalDecoratorNode.ts:23-44` | Decorator nodes expose methods for inline, isolated, and keyboard-selectable policy. | One overloaded property pretending to cover every behavior. | Explicit runtime behavior buckets for embedded UI. | Class subclassing as the raw Slate extension API. | Keep named schema policy and runtime-owned shells. | partial |
-| Tiptap | `../tiptap/packages/extension-image/src/image.ts:76-96`; `../tiptap/packages/extension-emoji/src/emoji.ts:97-105` | Extension authors set concise node flags/options that compile to ProseMirror specs. | Making app authors write low-level schema repeatedly. | Nice extension DX over explicit schema flags. | Product-like node presets in raw Slate core. | Plate packages friendly presets; raw Slate exposes explicit behavior presets. | agree |
-| Plate | `packages/mention/src/lib/BaseMentionPlugin.ts:34-39`; `packages/media/src/lib/image/BaseImagePlugin.ts:35-39`; `packages/footnote/src/lib/BaseFootnoteReferencePlugin.ts:98-102` | Plugins currently express `isVoid`, `isInline`, and `isMarkableVoid` as separate booleans. | Raw API forcing Plate into custom predicate wrappers. | Deterministic mapping from booleans to `void` string presets. | Current Plate API as raw Slate syntax. | Adapter maps image -> `block`, mention -> `markable-inline`, footnote -> `inline`. | agree |
+| System      | Source                                                                                                                                                                            | Mechanism                                                                                  | Avoids                                                      | Steal                                                               | Reject                                                                   | Slate target                                                                       | Verdict |
+| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ | ----------------------------------------------------------- | ------------------------------------------------------------------- | ------------------------------------------------------------------------ | ---------------------------------------------------------------------------------- | ------- |
+| ProseMirror | `../prosemirror-model/src/schema.ts:390-445`                                                                                                                                      | Orthogonal node spec flags: `inline`, `atom`, `selectable`, `draggable`, `isolating`.      | String enums that hide too many independent semantics.      | Keep `atom`, `selectable`, and `isolating` as separate Slate flags. | Raw ProseMirror content-expression complexity as Slate authoring syntax. | `void` string presets plus separate advanced flags.                                | partial |
+| Lexical     | `../lexical/packages/lexical/src/nodes/LexicalDecoratorNode.ts:23-44`                                                                                                             | Decorator nodes expose methods for inline, isolated, and keyboard-selectable policy.       | One overloaded property pretending to cover every behavior. | Explicit runtime behavior buckets for embedded UI.                  | Class subclassing as the raw Slate extension API.                        | Keep named schema policy and runtime-owned shells.                                 | partial |
+| Tiptap      | `../tiptap/packages/extension-image/src/image.ts:76-96`; `../tiptap/packages/extension-emoji/src/emoji.ts:97-105`                                                                 | Extension authors set concise node flags/options that compile to ProseMirror specs.        | Making app authors write low-level schema repeatedly.       | Nice extension DX over explicit schema flags.                       | Product-like node presets in raw Slate core.                             | Plate packages friendly presets; raw Slate exposes explicit behavior presets.      | agree   |
+| Plate       | `packages/mention/src/lib/BaseMentionPlugin.ts:34-39`; `packages/media/src/lib/image/BaseImagePlugin.ts:35-39`; `packages/footnote/src/lib/BaseFootnoteReferencePlugin.ts:98-102` | Plugins currently express `isVoid`, `isInline`, and `isMarkableVoid` as separate booleans. | Raw API forcing Plate into custom predicate wrappers.       | Deterministic mapping from booleans to `void` string presets.       | Current Plate API as raw Slate syntax.                                   | Adapter maps image -> `block`, mention -> `markable-inline`, footnote -> `inline`. | agree   |
 
 ## Public API Target
 
@@ -177,11 +177,11 @@ short. Adding a second name is API noise.
 Hard cut. The runtime should not normalize `spec.void === true`.
 
 ```ts
-const isVoidKind = (kind: EditorElementSpec['void']) =>
-  kind === 'block' ||
-  kind === 'editable-island' ||
-  kind === 'inline' ||
-  kind === 'markable-inline'
+const isVoidKind = (kind: EditorElementSpec["void"]) =>
+  kind === "block" ||
+  kind === "editable-island" ||
+  kind === "inline" ||
+  kind === "markable-inline";
 ```
 
 No dev warning, no compatibility parser, no exported boolean. JavaScript
@@ -203,12 +203,12 @@ Void kind should stay schema-level, not renderer-level:
 
 Mapping:
 
-| Plate node config | Slate v2 spec |
-| --- | --- |
-| `isVoid: true` only | `void: 'block'` |
-| `isVoid: true`, `isInline: true` | `void: 'inline'` |
+| Plate node config                                        | Slate v2 spec             |
+| -------------------------------------------------------- | ------------------------- |
+| `isVoid: true` only                                      | `void: 'block'`           |
+| `isVoid: true`, `isInline: true`                         | `void: 'inline'`          |
 | `isVoid: true`, `isInline: true`, `isMarkableVoid: true` | `void: 'markable-inline'` |
-| editable nested widget | `void: 'editable-island'` |
+| editable nested widget                                   | `void: 'editable-island'` |
 
 Plate can keep its existing product-level booleans. Raw Slate should not.
 
@@ -235,15 +235,15 @@ unchanged.
 
 Touched issue families to cite, not auto-close:
 
-| Issue | Cluster | Claim | Why | Proof route | V2 sync ledger | PR line |
-| --- | --- | --- | --- | --- | --- | --- |
-| #3991 | inline-void-and-void-selection | Related | Explicit `block` kind preserves block void delete semantics; no new fix claim. | `../slate-v2/playwright/integration/examples/images.test.ts` | existing fixed row | unchanged |
-| #4301 | inline-void-and-void-selection | Related | Explicit `block` kind preserves selected block void Enter semantics; no new fix claim. | `../slate-v2/playwright/integration/examples/images.test.ts` | existing fixed row | unchanged |
-| #4802 | clipboard-html-fragment-serialization | Related | Explicit inline kind helps clipboard policy stay clear; no exact inter-editor proof. | `../slate-v2/packages/slate-dom/test/clipboard-boundary.ts` | existing improves row | unchanged |
-| #4806 | clipboard-html-fragment-serialization | Related | Same inline-void clipboard family; no new closure. | `../slate-v2/packages/slate-dom/test/clipboard-boundary.ts` | existing improves row | unchanged |
-| #5183 | android-inline-void-keyboard | Related | `inline` and `markable-inline` must keep mobile proof family; no Android device proof in this pass. | `../slate-v2/packages/slate-browser/test/core/scenario.test.ts` | existing related row | unchanged |
-| #5391 | android-inline-void-keyboard | Related | iOS inline void selection remains device-proof owner. | `../slate-v2/packages/slate-browser/test/core/scenario.test.ts` | existing related row | unchanged |
-| #3482 | void-element-contract-and-data-model-shape | Related | API removes boolean ambiguity but does not remove required empty children. | data-model/schema proof | existing roadmap row | unchanged |
+| Issue | Cluster                                    | Claim   | Why                                                                                                 | Proof route                                                       | V2 sync ledger        | PR line   |
+| ----- | ------------------------------------------ | ------- | --------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- | --------------------- | --------- |
+| #3991 | inline-void-and-void-selection             | Related | Explicit `block` kind preserves block void delete semantics; no new fix claim.                      | `.tmp/slate-v2/playwright/integration/examples/images.test.ts`    | existing fixed row    | unchanged |
+| #4301 | inline-void-and-void-selection             | Related | Explicit `block` kind preserves selected block void Enter semantics; no new fix claim.              | `.tmp/slate-v2/playwright/integration/examples/images.test.ts`    | existing fixed row    | unchanged |
+| #4802 | clipboard-html-fragment-serialization      | Related | Explicit inline kind helps clipboard policy stay clear; no exact inter-editor proof.                | `.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts`     | existing improves row | unchanged |
+| #4806 | clipboard-html-fragment-serialization      | Related | Same inline-void clipboard family; no new closure.                                                  | `.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts`     | existing improves row | unchanged |
+| #5183 | android-inline-void-keyboard               | Related | `inline` and `markable-inline` must keep mobile proof family; no Android device proof in this pass. | `.tmp/slate-v2/packages/slate-browser/test/core/scenario.test.ts` | existing related row  | unchanged |
+| #5391 | android-inline-void-keyboard               | Related | iOS inline void selection remains device-proof owner.                                               | `.tmp/slate-v2/packages/slate-browser/test/core/scenario.test.ts` | existing related row  | unchanged |
+| #3482 | void-element-contract-and-data-model-shape | Related | API removes boolean ambiguity but does not remove required empty children.                          | data-model/schema proof                                           | existing roadmap row  | unchanged |
 
 PR reference: updated by the `ralph` implementation pass. No fixed issue count
 changes.
@@ -252,26 +252,26 @@ changes.
 
 Required before implementation closure:
 
-| Contract | Command owner |
-| --- | --- |
-| schema rejects/does not expose public boolean void kind | `../slate-v2/packages/slate/type-tests` or package typecheck |
-| `void: 'block'` preserves `isVoid=true`, `isInline=false`, `atom=true` | `../slate-v2/packages/slate/test/schema-contract.ts` |
-| `void: 'inline'` preserves inline void behavior | `../slate-v2/packages/slate/test/query-contract.ts` |
-| `void: 'markable-inline'` preserves add/remove mark behavior | `../slate-v2/packages/slate/test/snapshot-contract.ts` |
-| `void: 'editable-island'` preserves non-atom editable child policy | `../slate-v2/packages/slate/test/schema-contract.ts` plus editable-void browser row |
-| public source/docs/examples do not use `void: true` | `rg "void:\\s*true" ../slate-v2/packages/slate/src ../slate-v2/docs ../slate-v2/site/examples` |
-| package tests use `void: true` only as fixture data, not `EditorElementSpec.void` | review `../slate-v2/packages/slate/test/query-contract.ts:24` and matching rows |
+| Contract                                                                          | Command owner                                                                                        |
+| --------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| schema rejects/does not expose public boolean void kind                           | `.tmp/slate-v2/packages/slate/type-tests` or package typecheck                                       |
+| `void: 'block'` preserves `isVoid=true`, `isInline=false`, `atom=true`            | `.tmp/slate-v2/packages/slate/test/schema-contract.ts`                                               |
+| `void: 'inline'` preserves inline void behavior                                   | `.tmp/slate-v2/packages/slate/test/query-contract.ts`                                                |
+| `void: 'markable-inline'` preserves add/remove mark behavior                      | `.tmp/slate-v2/packages/slate/test/snapshot-contract.ts`                                             |
+| `void: 'editable-island'` preserves non-atom editable child policy                | `.tmp/slate-v2/packages/slate/test/schema-contract.ts` plus editable-void browser row                |
+| public source/docs/examples do not use `void: true`                               | `rg "void:\\s*true" .tmp/slate-v2/packages/slate/src .tmp/slate-v2/docs .tmp/slate-v2/site/examples` |
+| package tests use `void: true` only as fixture data, not `EditorElementSpec.void` | review `.tmp/slate-v2/packages/slate/test/query-contract.ts:24` and matching rows                    |
 
 ## Applicable Implementation-Skill Review Matrix
 
-| Lens | Applicability | Finding | Plan delta |
-| --- | --- | --- | --- |
-| Vercel React | skipped | No React subscription or render loop changed by this API-only review. | none |
-| performance-oracle | applied | Public `void` kind feeds hot selection/delete/clipboard predicates; avoid runtime branching on vague boolean in authored specs. | hard cut boolean at schema registration; no hidden shim. |
-| performance | skipped | No benchmark claim in this pass. | none |
-| tdd | applied | API hard cut needs type-level and behavior-level tests before implementation. | add proof matrix. |
-| shadcn | applied | Minimal prop API wins: one `void` string preset beats split `voidKind` or object shape. | reject `voidKind` / object shape. |
-| react-useeffect | skipped | No effects. | none |
+| Lens               | Applicability | Finding                                                                                                                         | Plan delta                                               |
+| ------------------ | ------------- | ------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
+| Vercel React       | skipped       | No React subscription or render loop changed by this API-only review.                                                           | none                                                     |
+| performance-oracle | applied       | Public `void` kind feeds hot selection/delete/clipboard predicates; avoid runtime branching on vague boolean in authored specs. | hard cut boolean at schema registration; no hidden shim. |
+| performance        | skipped       | No benchmark claim in this pass.                                                                                                | none                                                     |
+| tdd                | applied       | API hard cut needs type-level and behavior-level tests before implementation.                                                   | add proof matrix.                                        |
+| shadcn             | applied       | Minimal prop API wins: one `void` string preset beats split `voidKind` or object shape.                                         | reject `voidKind` / object shape.                        |
+| react-useeffect    | skipped       | No effects.                                                                                                                     | none                                                     |
 
 ## High-Risk Deliberate Mode
 
@@ -301,24 +301,24 @@ Verdict: keep. The target is ready for execution only with a hard cut.
 
 ## Maintainer Objection Ledger
 
-| Change | Objection | Steelman | Tradeoff | Rejected alternative | Migration answer | Proof | Verdict |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| Cut `boolean` from `EditorElementVoidKind` | "`void: true` is the obvious Slate shorthand." | The shorthand is familiar and easy for tiny demos. | More explicit config for simple block voids. | Keep boolean forever or hide a runtime shim. Both preserve ambiguity and let docs drift. | Use `void: 'block'`; this is pre-1.0/beta, so no shim. Legacy test fixtures may map arbitrary node data to explicit string specs. | typecheck, schema contracts, docs/source grep, fixture review. | keep |
-| Keep `markable-inline` as preset | "Markability is not a void kind." | Orthogonal flags are cleaner in theory. | Preset duplicates `markableVoid?: true`. | Force `void: 'inline', markableVoid: true`. That is noisier for the canonical mention case. | Advanced users can still set explicit flags; docs lead with preset. | markable void snapshot tests. | keep |
-| Keep `editable-island` under `void` | "`void: 'editable-island'` sounds contradictory." | It is weird: void but editable. | Name needs docs. | Use separate `editableIsland: true`. More public props and easier contradictions. | Explain as void shell/render policy with cursor projection into children. | editable-void browser family. | keep |
+| Change                                     | Objection                                         | Steelman                                           | Tradeoff                                     | Rejected alternative                                                                        | Migration answer                                                                                                                  | Proof                                                          | Verdict |
+| ------------------------------------------ | ------------------------------------------------- | -------------------------------------------------- | -------------------------------------------- | ------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- | ------- |
+| Cut `boolean` from `EditorElementVoidKind` | "`void: true` is the obvious Slate shorthand."    | The shorthand is familiar and easy for tiny demos. | More explicit config for simple block voids. | Keep boolean forever or hide a runtime shim. Both preserve ambiguity and let docs drift.    | Use `void: 'block'`; this is pre-1.0/beta, so no shim. Legacy test fixtures may map arbitrary node data to explicit string specs. | typecheck, schema contracts, docs/source grep, fixture review. | keep    |
+| Keep `markable-inline` as preset           | "Markability is not a void kind."                 | Orthogonal flags are cleaner in theory.            | Preset duplicates `markableVoid?: true`.     | Force `void: 'inline', markableVoid: true`. That is noisier for the canonical mention case. | Advanced users can still set explicit flags; docs lead with preset.                                                               | markable void snapshot tests.                                  | keep    |
+| Keep `editable-island` under `void`        | "`void: 'editable-island'` sounds contradictory." | It is weird: void but editable.                    | Name needs docs.                             | Use separate `editableIsland: true`. More public props and easier contradictions.           | Explain as void shell/render policy with cursor projection into children.                                                         | editable-void browser family.                                  | keep    |
 
 ## Pass Schedule / State Ledger
 
-| Pass | Status | Evidence added | Plan delta | Open issues | Next owner |
-| --- | --- | --- | --- | --- | --- |
-| Current-state read and initial score | complete | live Slate v2 source/tests/docs, Plate source, ProseMirror/Lexical/Tiptap source reads | initial verdict: cut public boolean, keep four string presets | none | done |
-| Related issue discovery | complete | existing void issue ledgers and live generated rows reused | no new issue claims | none | done |
-| Issue-ledger pass | complete | touched issue families listed, no fixed count changes | ledger writes deferred until implementation claims API shape | none | done |
-| Intent/boundary and decision brief | complete | hard-cut decision recorded; no shim | open decision closed | none | done |
-| Research/ecosystem refresh | complete | source rows present; string preset strategy kept | no new research gap | none | done |
-| Objection/high-risk revision | complete | objection ledger revised against hidden-shim alternative | final verdict hard cut | none | done |
-| Closure score | complete | score raised to 0.93 | ready for user review before `ralph` | none | ralph implementation |
-| Ralph implementation | complete | Slate v2 type/runtime/test hard cut, PR reference update, full `bun check` | boolean cut implemented; stale slate-react force-render audit inventory corrected | none | done |
+| Pass                                 | Status   | Evidence added                                                                         | Plan delta                                                                        | Open issues | Next owner           |
+| ------------------------------------ | -------- | -------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- | ----------- | -------------------- |
+| Current-state read and initial score | complete | live Slate v2 source/tests/docs, Plate source, ProseMirror/Lexical/Tiptap source reads | initial verdict: cut public boolean, keep four string presets                     | none        | done                 |
+| Related issue discovery              | complete | existing void issue ledgers and live generated rows reused                             | no new issue claims                                                               | none        | done                 |
+| Issue-ledger pass                    | complete | touched issue families listed, no fixed count changes                                  | ledger writes deferred until implementation claims API shape                      | none        | done                 |
+| Intent/boundary and decision brief   | complete | hard-cut decision recorded; no shim                                                    | open decision closed                                                              | none        | done                 |
+| Research/ecosystem refresh           | complete | source rows present; string preset strategy kept                                       | no new research gap                                                               | none        | done                 |
+| Objection/high-risk revision         | complete | objection ledger revised against hidden-shim alternative                               | final verdict hard cut                                                            | none        | done                 |
+| Closure score                        | complete | score raised to 0.93                                                                   | ready for user review before `ralph`                                              | none        | ralph implementation |
+| Ralph implementation                 | complete | Slate v2 type/runtime/test hard cut, PR reference update, full `bun check`             | boolean cut implemented; stale slate-react force-render audit inventory corrected | none        | done                 |
 
 ## Plan Deltas From Review
 
@@ -330,9 +330,9 @@ Verdict: keep. The target is ready for execution only with a hard cut.
 - closed the hard-cut vs hidden-shim decision: hard cut, no runtime shim.
 - narrowed the implementation grep gate so legacy-oracle document fixture
   markers are reviewed, not blindly deleted.
-- implemented the hard cut in `../slate-v2/packages/slate/src/interfaces/editor.ts`
-  and `../slate-v2/packages/slate/src/create-editor.ts`.
-- wired `../slate-v2/packages/slate/test/public-element-void-kind-contract.ts`
+- implemented the hard cut in `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`
+  and `.tmp/slate-v2/packages/slate/src/create-editor.ts`.
+- wired `.tmp/slate-v2/packages/slate/test/public-element-void-kind-contract.ts`
   into the `slate` package typecheck gate.
 - added a schema contract proving `spec.void === true` is not normalized as a
   void kind.
@@ -341,7 +341,7 @@ Verdict: keep. The target is ready for execution only with a hard cut.
 
 ## Ralph Implementation Result
 
-Changed in `../slate-v2`:
+Changed in `.tmp/slate-v2`:
 
 - `EditorElementVoidKind` is now string-only.
 - Runtime `isVoidKind` recognizes only `block`, `editable-island`, `inline`,
@@ -389,7 +389,7 @@ shim.
 
 ## Fast Driver Gates
 
-From `../slate-v2`:
+From `.tmp/slate-v2`:
 
 ```bash
 bun --filter slate typecheck
@@ -418,14 +418,14 @@ bun run completion-check
 
 ## Closure Score
 
-| Dimension | Score | Evidence |
-| --- | ---: | --- |
-| React 19.2 runtime performance | 0.92 | Hard cut removes runtime shim branching from schema behavior; React layer unaffected. |
-| Slate-close unopinionated DX | 0.95 | `void: 'block'` is explicit while keeping the Slate-close `void` key; no extra `voidKind` prop. |
-| Plate and slate-yjs migration backbone | 0.90 | Plate booleans map deterministically to string presets; slate-yjs stays schema-derived and document JSON unchanged. |
-| Regression-proof testing strategy | 0.92 | Type-level no-boolean contract, schema/query/snapshot rows, public source/docs grep, and browser rows are named. |
-| Research evidence completeness | 0.90 | ProseMirror/Lexical/Tiptap/Plate strategies are synthesized into a concrete hard-cut target. |
-| shadcn-style composability and minimalism | 0.95 | One public string preset union beats boolean shorthand, `voidKind`, or object-shaped config. |
+| Dimension                                 | Score | Evidence                                                                                                            |
+| ----------------------------------------- | ----: | ------------------------------------------------------------------------------------------------------------------- |
+| React 19.2 runtime performance            |  0.92 | Hard cut removes runtime shim branching from schema behavior; React layer unaffected.                               |
+| Slate-close unopinionated DX              |  0.95 | `void: 'block'` is explicit while keeping the Slate-close `void` key; no extra `voidKind` prop.                     |
+| Plate and slate-yjs migration backbone    |  0.90 | Plate booleans map deterministically to string presets; slate-yjs stays schema-derived and document JSON unchanged. |
+| Regression-proof testing strategy         |  0.92 | Type-level no-boolean contract, schema/query/snapshot rows, public source/docs grep, and browser rows are named.    |
+| Research evidence completeness            |  0.90 | ProseMirror/Lexical/Tiptap/Plate strategies are synthesized into a concrete hard-cut target.                        |
+| shadcn-style composability and minimalism |  0.95 | One public string preset union beats boolean shorthand, `voidKind`, or object-shaped config.                        |
 
 Weighted score: `0.93`.
 
@@ -443,4 +443,4 @@ Weighted score: `0.93`.
 - Docs/examples: keep teaching string kinds only.
 - Issue accounting: no new `Fixes` claims; existing void/inline-void issue rows
   remain the proof family.
-- Next owner: `ralph` implementation in `../slate-v2`.
+- Next owner: `ralph` implementation in `.tmp/slate-v2`.

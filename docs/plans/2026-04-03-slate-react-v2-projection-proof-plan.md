@@ -227,7 +227,7 @@ Acceptance:
 - confirmed the current seam is tiny: selector store exists, projection store does not
 - chose the first proof cut:
   `Editor.projectRange(...)` plus a React-owned projection store
-- landed the proof in `../slate-v2`:
+- landed the proof in `.tmp/slate-v2`:
   - `slate-v2` pure range projection
   - `slate-react-v2` projection store, context wiring, and local projection hook
 - verified with:

@@ -64,7 +64,7 @@ Editor
 
 This is not greenfield.
 
-Existing `../slate-v2` already has important pieces that must be audited and
+Existing `.tmp/slate-v2` already has important pieces that must be audited and
 completed, not duplicated:
 
 - `packages/slate/src/core/public-state.ts` has transaction and commit
@@ -192,11 +192,11 @@ Required shape:
 
 ```ts
 type ExtensionRegistry = {
-  commands: CommandRegistry
-  normalizers: NormalizerRegistry
-  capabilities: CapabilityRegistry
-  commitListeners: CommitListenerRegistry
-}
+  commands: CommandRegistry;
+  normalizers: NormalizerRegistry;
+  capabilities: CapabilityRegistry;
+  commitListeners: CommitListenerRegistry;
+};
 ```
 
 Exit:
@@ -236,8 +236,8 @@ Required shape:
 ```ts
 type CommandHandler<TCommand> = (
   ctx: CommandContext<TCommand>,
-  next: () => CommandResult
-) => CommandResult
+  next: () => CommandResult,
+) => CommandResult;
 ```
 
 Hard rule:
@@ -263,7 +263,7 @@ Required shape:
 ```ts
 Editor.withTransaction(editor, meta, () => {
   // commands/transforms/normalization
-})
+});
 ```
 
 ### 4. EditorCommit
@@ -390,17 +390,17 @@ Kernel result:
 
 ```ts
 type EditableKernelResult = {
-  handled: boolean
-  nativeAllowed: boolean
-  ownership: EditableOwnership
-  targetOwner: EditableEventTargetOwner
-  intent: InputIntent | null
-  command: EditableCommand | null
-  selectionSource: SelectionSource
-  repair: RepairPolicy | null
-  transition: EditableKernelTransition
-  trace: EditableKernelTraceEntry
-}
+  handled: boolean;
+  nativeAllowed: boolean;
+  ownership: EditableOwnership;
+  targetOwner: EditableEventTargetOwner;
+  intent: InputIntent | null;
+  command: EditableCommand | null;
+  selectionSource: SelectionSource;
+  repair: RepairPolicy | null;
+  transition: EditableKernelTransition;
+  trace: EditableKernelTraceEntry;
+};
 ```
 
 Hard rule:
@@ -694,9 +694,9 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate/src/interfaces/editor.ts`
-- `../slate-v2/packages/slate/src/core/public-state.ts`
-- `../slate-v2/packages/slate-history/test/integrity-contract.ts`
+- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`
+- `.tmp/slate-v2/packages/slate/src/core/public-state.ts`
+- `.tmp/slate-v2/packages/slate-history/test/integrity-contract.ts`
 
 Evidence:
 
@@ -786,14 +786,14 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate/src/core/command-registry.ts`
-- `../slate-v2/packages/slate/src/core/index.ts`
-- `../slate-v2/packages/slate/src/editor/insert-text.ts`
-- `../slate-v2/packages/slate/src/interfaces/editor.ts`
-- `../slate-v2/packages/slate/src/core/public-state.ts`
-- `../slate-v2/packages/slate/test/transaction-contract.ts`
-- `../slate-v2/packages/slate-history/src/with-history.ts`
-- `../slate-v2/packages/slate-history/test/integrity-contract.ts`
+- `.tmp/slate-v2/packages/slate/src/core/command-registry.ts`
+- `.tmp/slate-v2/packages/slate/src/core/index.ts`
+- `.tmp/slate-v2/packages/slate/src/editor/insert-text.ts`
+- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`
+- `.tmp/slate-v2/packages/slate/src/core/public-state.ts`
+- `.tmp/slate-v2/packages/slate/test/transaction-contract.ts`
+- `.tmp/slate-v2/packages/slate-history/src/with-history.ts`
+- `.tmp/slate-v2/packages/slate-history/test/integrity-contract.ts`
 
 Evidence:
 
@@ -891,8 +891,8 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-history/src/with-history.ts`
-- `../slate-v2/packages/slate-history/test/history-contract.ts`
+- `.tmp/slate-v2/packages/slate-history/src/with-history.ts`
+- `.tmp/slate-v2/packages/slate-history/test/history-contract.ts`
 
 Evidence:
 
@@ -972,8 +972,8 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate/src/editor/insert-break.ts`
-- `../slate-v2/packages/slate/test/transaction-contract.ts`
+- `.tmp/slate-v2/packages/slate/src/editor/insert-break.ts`
+- `.tmp/slate-v2/packages/slate/test/transaction-contract.ts`
 
 Evidence:
 
@@ -1047,10 +1047,10 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate/src/editor/delete-backward.ts`
-- `../slate-v2/packages/slate/src/editor/delete-forward.ts`
-- `../slate-v2/packages/slate/src/editor/delete-fragment.ts`
-- `../slate-v2/packages/slate/test/transaction-contract.ts`
+- `.tmp/slate-v2/packages/slate/src/editor/delete-backward.ts`
+- `.tmp/slate-v2/packages/slate/src/editor/delete-forward.ts`
+- `.tmp/slate-v2/packages/slate/src/editor/delete-fragment.ts`
+- `.tmp/slate-v2/packages/slate/test/transaction-contract.ts`
 
 Evidence:
 
@@ -1128,11 +1128,11 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate/src/transforms-selection/select.ts`
-- `../slate-v2/packages/slate/src/transforms-selection/set-selection.ts`
-- `../slate-v2/packages/slate/src/transforms-selection/deselect.ts`
-- `../slate-v2/packages/slate/test/transaction-contract.ts`
-- `../slate-v2/packages/slate-history/test/integrity-contract.ts`
+- `.tmp/slate-v2/packages/slate/src/transforms-selection/select.ts`
+- `.tmp/slate-v2/packages/slate/src/transforms-selection/set-selection.ts`
+- `.tmp/slate-v2/packages/slate/src/transforms-selection/deselect.ts`
+- `.tmp/slate-v2/packages/slate/test/transaction-contract.ts`
+- `.tmp/slate-v2/packages/slate-history/test/integrity-contract.ts`
 
 Evidence:
 
@@ -1207,9 +1207,9 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate/src/transforms-selection/move.ts`
-- `../slate-v2/packages/slate/test/transaction-contract.ts`
-- `../slate-v2/packages/slate-history/test/integrity-contract.ts`
+- `.tmp/slate-v2/packages/slate/src/transforms-selection/move.ts`
+- `.tmp/slate-v2/packages/slate/test/transaction-contract.ts`
+- `.tmp/slate-v2/packages/slate-history/test/integrity-contract.ts`
 
 Evidence:
 
@@ -1282,10 +1282,10 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate/src/editor/add-mark.ts`
-- `../slate-v2/packages/slate/src/editor/remove-mark.ts`
-- `../slate-v2/packages/slate/test/transaction-contract.ts`
-- `../slate-v2/packages/slate-history/test/integrity-contract.ts`
+- `.tmp/slate-v2/packages/slate/src/editor/add-mark.ts`
+- `.tmp/slate-v2/packages/slate/src/editor/remove-mark.ts`
+- `.tmp/slate-v2/packages/slate/test/transaction-contract.ts`
+- `.tmp/slate-v2/packages/slate-history/test/integrity-contract.ts`
 
 Evidence:
 
@@ -1361,11 +1361,11 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate/src/core/extension-registry.ts`
-- `../slate-v2/packages/slate/src/core/command-registry.ts`
-- `../slate-v2/packages/slate/src/core/index.ts`
-- `../slate-v2/packages/slate/src/interfaces/editor.ts`
-- `../slate-v2/packages/slate/test/transaction-contract.ts`
+- `.tmp/slate-v2/packages/slate/src/core/extension-registry.ts`
+- `.tmp/slate-v2/packages/slate/src/core/command-registry.ts`
+- `.tmp/slate-v2/packages/slate/src/core/index.ts`
+- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`
+- `.tmp/slate-v2/packages/slate/test/transaction-contract.ts`
 
 Evidence:
 
@@ -1442,9 +1442,9 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate/src/core/extension-registry.ts`
-- `../slate-v2/packages/slate/src/interfaces/editor.ts`
-- `../slate-v2/packages/slate/test/transaction-contract.ts`
+- `.tmp/slate-v2/packages/slate/src/core/extension-registry.ts`
+- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`
+- `.tmp/slate-v2/packages/slate/test/transaction-contract.ts`
 
 Evidence:
 
@@ -1520,8 +1520,8 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate/src/transforms-text/insert-fragment.ts`
-- `../slate-v2/packages/slate/test/transaction-contract.ts`
+- `.tmp/slate-v2/packages/slate/src/transforms-text/insert-fragment.ts`
+- `.tmp/slate-v2/packages/slate/test/transaction-contract.ts`
 
 Evidence:
 
@@ -1598,11 +1598,11 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate/src/interfaces/editor.ts`
-- `../slate-v2/packages/slate/src/core/public-state.ts`
-- `../slate-v2/packages/slate/src/core/apply.ts`
-- `../slate-v2/packages/slate/src/core/command-registry.ts`
-- `../slate-v2/packages/slate/test/transaction-contract.ts`
+- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`
+- `.tmp/slate-v2/packages/slate/src/core/public-state.ts`
+- `.tmp/slate-v2/packages/slate/src/core/apply.ts`
+- `.tmp/slate-v2/packages/slate/src/core/command-registry.ts`
+- `.tmp/slate-v2/packages/slate/test/transaction-contract.ts`
 
 Evidence:
 
@@ -1677,10 +1677,10 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate/src/core/extension-registry.ts`
-- `../slate-v2/packages/slate/src/core/public-state.ts`
-- `../slate-v2/packages/slate/src/interfaces/editor.ts`
-- `../slate-v2/packages/slate/test/transaction-contract.ts`
+- `.tmp/slate-v2/packages/slate/src/core/extension-registry.ts`
+- `.tmp/slate-v2/packages/slate/src/core/public-state.ts`
+- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`
+- `.tmp/slate-v2/packages/slate/test/transaction-contract.ts`
 
 Evidence:
 
@@ -1762,9 +1762,9 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-browser/src/playwright/index.ts`
-- `../slate-v2/playwright/integration/examples/richtext.test.ts`
-- generated `../slate-v2/packages/slate-browser/dist/**` from package build
+- `.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts`
+- `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
+- generated `.tmp/slate-v2/packages/slate-browser/dist/**` from package build
 
 Evidence:
 
@@ -1830,11 +1830,11 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-react/src/editable/browser-handle.ts`
-- `../slate-v2/packages/slate-browser/src/playwright/index.ts`
-- `../slate-v2/playwright/integration/examples/richtext.test.ts`
-- generated `../slate-v2/packages/slate-browser/dist/**` from package build
-- generated `../slate-v2/packages/slate-react/dist/**` from package build
+- `.tmp/slate-v2/packages/slate-react/src/editable/browser-handle.ts`
+- `.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts`
+- `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
+- generated `.tmp/slate-v2/packages/slate-browser/dist/**` from package build
+- generated `.tmp/slate-v2/packages/slate-react/dist/**` from package build
 
 Evidence:
 
@@ -1930,7 +1930,7 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/playwright/integration/examples/richtext.test.ts`
+- `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
 
 Evidence:
 
@@ -2024,8 +2024,8 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/playwright/integration/examples/richtext.test.ts`
-- regenerated `../slate-v2/packages/slate-react/dist/**` after reverting the
+- `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
+- regenerated `.tmp/slate-v2/packages/slate-react/dist/**` after reverting the
   unproven runtime experiment
 
 Evidence:

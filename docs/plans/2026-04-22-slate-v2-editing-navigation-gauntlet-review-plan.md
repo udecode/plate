@@ -54,7 +54,7 @@ helpers.
 
 ## Required Evidence
 
-- RED Playwright row in `../slate-v2/playwright/integration/examples/richtext.test.ts`
+- RED Playwright row in `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
 - focused run against Chromium first
 - compare failing owner against `../slate/packages/slate-react/src/components/editable.tsx`
 - decide whether to:
@@ -93,7 +93,7 @@ Root cause:
 Fix:
 
 - Added `syncEditorSelectionFromDOM(...)` in
-  `../slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`.
+  `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`.
 - `EditableDOMRoot` now imports current in-editor DOM selection before
   model-owned key handling.
 - The import is skipped for interactive internal controls so embedded inputs do
@@ -284,23 +284,23 @@ Required state shape:
 
 ```ts
 type SelectionProvenance =
-  | 'dom-current'
-  | 'model-owned'
-  | 'internal-control'
-  | 'composition'
-  | 'shell-backed'
-  | 'unknown'
+  | "dom-current"
+  | "model-owned"
+  | "internal-control"
+  | "composition"
+  | "shell-backed"
+  | "unknown";
 
 type InputIntent =
-  | 'native-selection-move'
-  | 'model-selection-move'
-  | 'text-insert'
-  | 'delete'
-  | 'format'
-  | 'clipboard'
-  | 'composition'
-  | 'history'
-  | 'internal-control'
+  | "native-selection-move"
+  | "model-selection-move"
+  | "text-insert"
+  | "delete"
+  | "format"
+  | "clipboard"
+  | "composition"
+  | "history"
+  | "internal-control";
 ```
 
 Golden rule:
@@ -333,6 +333,7 @@ Current tests are too row-isolated.
 Keep focused rows, but add one mandatory gauntlet per browser editing class:
 
 1. **Navigation Gauntlet**
+
    - DOM selection setup
    - ArrowDown
    - ArrowRight
@@ -342,6 +343,7 @@ Keep focused rows, but add one mandatory gauntlet per browser editing class:
    - follow-up typing
 
 2. **Mutation Gauntlet**
+
    - native typing
    - Backspace
    - Delete
@@ -350,6 +352,7 @@ Keep focused rows, but add one mandatory gauntlet per browser editing class:
    - follow-up typing
 
 3. **Formatting Gauntlet**
+
    - selected text
    - `mod+b`
    - type with active mark
@@ -357,6 +360,7 @@ Keep focused rows, but add one mandatory gauntlet per browser editing class:
    - arrow movement through marked leaves
 
 4. **Clipboard Gauntlet**
+
    - copy
    - cut
    - paste plain
@@ -364,6 +368,7 @@ Keep focused rows, but add one mandatory gauntlet per browser editing class:
    - fallback when clipboard APIs are denied
 
 5. **Composition Gauntlet**
+
    - composition start/update/end
    - delete around composition
    - follow-up typing
@@ -430,18 +435,21 @@ truth for editor cursor movement.
 Create four runtime owners:
 
 1. `EditableInputController`
+
    - owns event ordering
    - classifies every event into an intent
    - decides whether event is model-owned, DOM-owned, or app-owned
    - routes to the right worker
 
 2. `EditableSelectionController`
+
    - owns model selection as runtime truth
    - imports DOM selection only for pointer/drag/native selection gestures
    - exports model selection to DOM after model-owned commands
    - owns focus/blur and internal control opt-outs
 
 3. `EditableCaretEngine`
+
    - owns keyboard cursor movement
    - maps Slate points to DOM rects
    - maps DOM rects back to Slate points
@@ -518,22 +526,22 @@ The caret engine must support:
 Core API it needs:
 
 ```ts
-Editor.getLiveText(editor, path)
-Editor.getLiveNode(editor, path)
-Editor.getPathByRuntimeId(editor, id)
-Editor.getRuntimeId(editor, path)
-Editor.getDirtyRuntimeIds(editor, commit)
-Editor.getLastCommit(editor)
+Editor.getLiveText(editor, path);
+Editor.getLiveNode(editor, path);
+Editor.getPathByRuntimeId(editor, id);
+Editor.getRuntimeId(editor, path);
+Editor.getDirtyRuntimeIds(editor, commit);
+Editor.getLastCommit(editor);
 ```
 
 DOM bridge API it needs:
 
 ```ts
-toDOMPoint(point)
-toSlatePoint(domPoint)
-getClientRects(point | range)
-findClosestPointByRect(rect, direction)
-syncDOMSelection(selection)
+toDOMPoint(point);
+toSlatePoint(domPoint);
+getClientRects(point | range);
+findClosestPointByRect(rect, direction);
+syncDOMSelection(selection);
 ```
 
 This must be a runtime service, not a React hook hidden inside text components.
@@ -577,15 +585,18 @@ The current suite must become an executable state-machine spec.
 Required test layers:
 
 1. **Controller unit tests**
+
    - event + current state -> intent + selection source + action
    - no DOM required
 
 2. **Caret engine contract tests**
+
    - Slate point -> rect -> Slate point round trips
    - cross-leaf / marked text / inline / void / RTL fixtures
    - deterministic JSDOM only where geometry is mocked honestly
 
 3. **Browser gauntlets**
+
    - raw click/DOM selection setup
    - raw keyboard event sequence
    - model text
@@ -596,6 +607,7 @@ Required test layers:
    - follow-up typing
 
 4. **Platform matrix**
+
    - Chromium
    - Firefox
    - WebKit
@@ -660,34 +672,39 @@ Define a serializable scenario format:
 
 ```ts
 type SlateBrowserScenario = {
-  name: string
-  surface: { example: string; scope?: string }
-  setup: ScenarioStep[]
-  steps: ScenarioStep[]
-  assertions: ScenarioAssertion[]
-  capabilities?: BrowserCapabilityRequirement[]
-}
+  name: string;
+  surface: { example: string; scope?: string };
+  setup: ScenarioStep[];
+  steps: ScenarioStep[];
+  assertions: ScenarioAssertion[];
+  capabilities?: BrowserCapabilityRequirement[];
+};
 
 type ScenarioStep =
-  | { kind: 'select-dom'; range: SelectionSnapshot }
-  | { kind: 'select-model'; range: SelectionSnapshot }
-  | { kind: 'click'; selector?: string; clickCount?: number }
-  | { kind: 'key'; key: string }
-  | { kind: 'type'; text: string; transport?: 'native' | 'semantic' }
-  | { kind: 'paste'; html?: string; text: string; transport?: 'native' | 'semantic' }
-  | { kind: 'compose'; text: string; transport?: 'native' | 'synthetic' }
-  | { kind: 'blur' }
-  | { kind: 'focus' }
-  | { kind: 'wait'; ms: number }
+  | { kind: "select-dom"; range: SelectionSnapshot }
+  | { kind: "select-model"; range: SelectionSnapshot }
+  | { kind: "click"; selector?: string; clickCount?: number }
+  | { kind: "key"; key: string }
+  | { kind: "type"; text: string; transport?: "native" | "semantic" }
+  | {
+      kind: "paste";
+      html?: string;
+      text: string;
+      transport?: "native" | "semantic";
+    }
+  | { kind: "compose"; text: string; transport?: "native" | "synthetic" }
+  | { kind: "blur" }
+  | { kind: "focus" }
+  | { kind: "wait"; ms: number };
 
 type ScenarioAssertion =
-  | { kind: 'model-text'; value: string | RegExp }
-  | { kind: 'visible-text'; value: string | RegExp }
-  | { kind: 'model-selection'; value: SelectionSnapshot | null }
-  | { kind: 'dom-selection'; value: DOMSelectionSnapshot | null }
-  | { kind: 'caret-rect-near'; value: SelectionRectSnapshot }
-  | { kind: 'focus-owner'; value: 'editor' | 'internal-control' | 'outside' }
-  | { kind: 'trace'; value: Partial<EventTraceEntry>[] }
+  | { kind: "model-text"; value: string | RegExp }
+  | { kind: "visible-text"; value: string | RegExp }
+  | { kind: "model-selection"; value: SelectionSnapshot | null }
+  | { kind: "dom-selection"; value: DOMSelectionSnapshot | null }
+  | { kind: "caret-rect-near"; value: SelectionRectSnapshot }
+  | { kind: "focus-owner"; value: "editor" | "internal-control" | "outside" }
+  | { kind: "trace"; value: Partial<EventTraceEntry>[] };
 ```
 
 Scenarios should live beside tests or under:
@@ -705,30 +722,30 @@ Every scenario run should optionally capture:
 
 ```ts
 type EventTraceEntry = {
-  eventType: string
-  inputType?: string
-  key?: string
-  targetKind: 'editor' | 'internal-control' | 'nested-editor' | 'outside'
+  eventType: string;
+  inputType?: string;
+  key?: string;
+  targetKind: "editor" | "internal-control" | "nested-editor" | "outside";
   before: {
-    selectionSource: SelectionSource
-    modelSelection: SelectionSnapshot | null
-    domSelection: DOMSelectionSnapshot | null
-  }
-  intent: InputIntent
+    selectionSource: SelectionSource;
+    modelSelection: SelectionSnapshot | null;
+    domSelection: DOMSelectionSnapshot | null;
+  };
+  intent: InputIntent;
   action:
-    | 'native-default'
-    | 'model-command'
-    | 'ignored'
-    | 'internal-control'
-    | 'composition'
-    | 'clipboard'
+    | "native-default"
+    | "model-command"
+    | "ignored"
+    | "internal-control"
+    | "composition"
+    | "clipboard";
   after: {
-    selectionSource: SelectionSource
-    modelSelection: SelectionSnapshot | null
-    domSelection: DOMSelectionSnapshot | null
-    repair: 'none' | 'sync-selection' | 'repair-caret' | 'force-render'
-  }
-}
+    selectionSource: SelectionSource;
+    modelSelection: SelectionSnapshot | null;
+    domSelection: DOMSelectionSnapshot | null;
+    repair: "none" | "sync-selection" | "repair-caret" | "force-render";
+  };
+};
 ```
 
 On failure, write:
@@ -755,28 +772,28 @@ It should expose:
 
 ```ts
 type BrowserCapability =
-  | 'native-keyboard-contenteditable'
-  | 'native-beforeinput'
-  | 'native-composition'
-  | 'clipboard-read'
-  | 'clipboard-write'
-  | 'clipboard-event-payload'
-  | 'dom-selection-range'
-  | 'visual-caret-rect'
-  | 'shadow-dom-selection'
+  | "native-keyboard-contenteditable"
+  | "native-beforeinput"
+  | "native-composition"
+  | "clipboard-read"
+  | "clipboard-write"
+  | "clipboard-event-payload"
+  | "dom-selection-range"
+  | "visual-caret-rect"
+  | "shadow-dom-selection";
 ```
 
 Capabilities are detected per project/browser:
 
 ```ts
-const capabilities = await editor.capabilities.detect()
+const capabilities = await editor.capabilities.detect();
 ```
 
 Rows can require or narrow:
 
 ```ts
-await editor.capabilities.require('visual-caret-rect')
-await editor.capabilities.narrow('clipboard-read', 'webkit denies readText')
+await editor.capabilities.require("visual-caret-rect");
+await editor.capabilities.narrow("clipboard-read", "webkit denies readText");
 ```
 
 No more ad hoc `if (project.name === 'mobile')` unless the helper itself is
@@ -788,10 +805,16 @@ Add deterministic scenario generation:
 
 ```ts
 type ScenarioSeed = {
-  documentShape: 'richtext' | 'decorated' | 'inline' | 'void' | 'shell' | 'shadow'
-  operations: readonly InputIntent[]
-  seed: number
-}
+  documentShape:
+    | "richtext"
+    | "decorated"
+    | "inline"
+    | "void"
+    | "shell"
+    | "shadow";
+  operations: readonly InputIntent[];
+  seed: number;
+};
 ```
 
 Start with bounded generators:
@@ -834,13 +857,13 @@ DOM, or both.
 Add named reusable gauntlets:
 
 ```ts
-editor.gauntlets.navigation()
-editor.gauntlets.mutation()
-editor.gauntlets.formatting()
-editor.gauntlets.clipboard()
-editor.gauntlets.composition()
-editor.gauntlets.internalTargets()
-editor.gauntlets.largeDocument()
+editor.gauntlets.navigation();
+editor.gauntlets.mutation();
+editor.gauntlets.formatting();
+editor.gauntlets.clipboard();
+editor.gauntlets.composition();
+editor.gauntlets.internalTargets();
+editor.gauntlets.largeDocument();
 ```
 
 Each gauntlet must run:
@@ -924,18 +947,18 @@ arrow-key whack-a-mole.
 
 Primary code owners:
 
-- `../slate-v2/packages/slate-react/src/editable/**`
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
-- `../slate-v2/packages/slate-browser/src/playwright/**` only for test helper
+- `.tmp/slate-v2/packages/slate-react/src/editable/**`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-browser/src/playwright/**` only for test helper
   honesty
-- `../slate-v2/playwright/integration/examples/**`
+- `.tmp/slate-v2/playwright/integration/examples/**`
 
 Do not touch:
 
-- `../slate-v2/packages/slate-history/**` unless a focused failing history row
+- `.tmp/slate-v2/packages/slate-history/**` unless a focused failing history row
   proves ownership
-- `../slate-v2/packages/slate-hyperscript/**`
-- `../slate-v2/packages/slate/**` unless a focused row proves core selection
+- `.tmp/slate-v2/packages/slate-hyperscript/**`
+- `.tmp/slate-v2/packages/slate/**` unless a focused row proves core selection
   transform ownership
 
 ### Non-Negotiable Hard Cuts
@@ -960,34 +983,34 @@ Core types:
 
 ```ts
 type InputIntent =
-  | 'native-selection-move'
-  | 'model-selection-move'
-  | 'text-insert'
-  | 'delete'
-  | 'format'
-  | 'history'
-  | 'clipboard'
-  | 'composition'
-  | 'internal-control'
-  | 'shell-selection'
+  | "native-selection-move"
+  | "model-selection-move"
+  | "text-insert"
+  | "delete"
+  | "format"
+  | "history"
+  | "clipboard"
+  | "composition"
+  | "internal-control"
+  | "shell-selection";
 
 type SelectionSource =
-  | 'dom-current'
-  | 'model-owned'
-  | 'composition-owned'
-  | 'shell-backed'
-  | 'internal-control'
-  | 'unknown'
+  | "dom-current"
+  | "model-owned"
+  | "composition-owned"
+  | "shell-backed"
+  | "internal-control"
+  | "unknown";
 
 type EditableInputControllerState = {
-  activeIntent: InputIntent | null
-  selectionSource: SelectionSource
-  isComposing: boolean
-  isDraggingInternally: boolean
-  isUpdatingSelection: boolean
-  latestElement: DOMElement | null
-  pendingDOMSelectionImport: boolean
-}
+  activeIntent: InputIntent | null;
+  selectionSource: SelectionSource;
+  isComposing: boolean;
+  isDraggingInternally: boolean;
+  isUpdatingSelection: boolean;
+  latestElement: DOMElement | null;
+  pendingDOMSelectionImport: boolean;
+};
 ```
 
 Controller responsibilities:
@@ -1032,7 +1055,7 @@ Actions:
 Proof commands:
 
 ```sh
-rg -n "preferModelSelectionForInputRef|isUpdatingSelection|IS_FOCUSED|Transforms\\.select|ReactEditor\\.focus" ../slate-v2/packages/slate-react/src
+rg -n "preferModelSelectionForInputRef|isUpdatingSelection|IS_FOCUSED|Transforms\\.select|ReactEditor\\.focus" .tmp/slate-v2/packages/slate-react/src
 bun test:integration-local
 ```
 
@@ -1118,7 +1141,7 @@ Status: complete.
 
 Actions:
 
-- Added `../slate-v2/packages/slate-react/src/editable/input-state.ts`.
+- Added `.tmp/slate-v2/packages/slate-react/src/editable/input-state.ts`.
 - Introduced `InputIntent`, `SelectionSource`,
   `EditableInputControllerState`, and `EditableInputController`.
 - Routed existing `EditableDOMRoot` mutable event state through
@@ -1127,8 +1150,8 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-react/src/editable/input-state.ts`
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/editable/input-state.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
 
 Evidence:
 
@@ -1190,22 +1213,22 @@ Status: complete.
 
 Actions:
 
-- Added `../slate-v2/packages/slate-react/src/editable/input-controller.ts`.
+- Added `.tmp/slate-v2/packages/slate-react/src/editable/input-controller.ts`.
 - Moved `isInteractiveInternalTarget` under the controller owner.
 - Re-exported controller state helpers from `input-controller.ts`.
-- Deleted `../slate-v2/packages/slate-react/src/editable/target-policy.ts`.
+- Deleted `.tmp/slate-v2/packages/slate-react/src/editable/target-policy.ts`.
 - Updated all callers to import target classification from
   `editable/input-controller`.
 - Preserved behavior.
 
 Changed files:
 
-- `../slate-v2/packages/slate-react/src/editable/input-controller.ts`
-- `../slate-v2/packages/slate-react/src/editable/keyboard-input-strategy.ts`
-- `../slate-v2/packages/slate-react/src/editable/input-router.ts`
-- `../slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
-- deleted `../slate-v2/packages/slate-react/src/editable/target-policy.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/input-controller.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/keyboard-input-strategy.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/input-router.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
+- deleted `.tmp/slate-v2/packages/slate-react/src/editable/target-policy.ts`
 
 Evidence:
 
@@ -1280,9 +1303,9 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-react/src/editable/input-controller.ts`
-- `../slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/editable/input-controller.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
 
 Evidence:
 
@@ -1348,7 +1371,7 @@ Status: complete for behavior-neutral event family classification.
 Actions:
 
 - Added controller-owned classifiers in
-  `../slate-v2/packages/slate-react/src/editable/input-controller.ts`:
+  `.tmp/slate-v2/packages/slate-react/src/editable/input-controller.ts`:
   - `classifyKeyboardIntent`
   - `classifyBeforeInputIntent`
   - `classifyClipboardIntent`
@@ -1359,8 +1382,8 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-react/src/editable/input-controller.ts`
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/editable/input-controller.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
 
 Evidence:
 
@@ -1434,9 +1457,9 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-react/src/editable/input-controller.ts`
-- `../slate-v2/packages/slate-react/src/editable/keyboard-input-strategy.ts`
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/editable/input-controller.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/keyboard-input-strategy.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
 
 Evidence:
 
@@ -1481,8 +1504,8 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-react/src/editable/model-input-strategy.ts`
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/editable/model-input-strategy.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
 
 Evidence:
 
@@ -1526,7 +1549,7 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-react/src/editable/model-input-strategy.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/model-input-strategy.ts`
 
 Evidence:
 
@@ -1579,7 +1602,7 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-react/src/editable/model-input-strategy.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/model-input-strategy.ts`
 
 Evidence:
 
@@ -1623,7 +1646,7 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-react/src/editable/model-input-strategy.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/model-input-strategy.ts`
 
 Evidence:
 
@@ -1669,8 +1692,8 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-react/src/editable/model-input-strategy.ts`
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/editable/model-input-strategy.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
 
 Evidence:
 
@@ -1722,8 +1745,8 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-react/src/editable/model-input-strategy.ts`
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/editable/model-input-strategy.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
 
 Evidence:
 
@@ -1800,7 +1823,7 @@ Status: complete.
 Actions:
 
 - Added a controller-owned composition state writer in
-  `../slate-v2/packages/slate-react/src/editable/input-controller.ts`.
+  `.tmp/slate-v2/packages/slate-react/src/editable/input-controller.ts`.
 - Routed composition start/update/end, stuck composition reset, and
   `insertFromComposition` commit through that writer.
 - Extended controller repair requests with explicit `focus` ownership.
@@ -1813,12 +1836,12 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
-- `../slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts`
-- `../slate-v2/packages/slate-react/src/editable/composition-state.ts`
-- `../slate-v2/packages/slate-react/src/editable/input-controller.ts`
-- `../slate-v2/packages/slate-react/src/editable/keyboard-input-strategy.ts`
-- `../slate-v2/packages/slate-react/src/editable/model-input-strategy.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/composition-state.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/input-controller.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/keyboard-input-strategy.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/model-input-strategy.ts`
 
 Evidence:
 
@@ -1898,7 +1921,7 @@ Status: complete for the current controller rewrite slice.
 Actions:
 
 - Added `setEditableModelSelectionPreference(...)` in
-  `../slate-v2/packages/slate-react/src/editable/input-controller.ts`.
+  `.tmp/slate-v2/packages/slate-react/src/editable/input-controller.ts`.
 - Replaced raw `preferModelSelectionForInputRef.current = ...` writes outside
   the controller with the controller helper.
 - Routed click and mousedown internal-control ownership through the controller
@@ -2024,7 +2047,7 @@ Status: complete for the richtext/controller tracer.
 Actions:
 
 - Added `getDOMSelectionLocation(...)` to
-  `../slate-v2/playwright/integration/examples/richtext.test.ts`.
+  `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`.
 - Added active row:
   `keeps navigation and mutation chained through browser editing state`.
 - The row chains:
@@ -2072,9 +2095,9 @@ Fixes:
 
 Changed files:
 
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
-- `../slate-v2/packages/slate-react/src/editable/input-controller.ts`
-- `../slate-v2/playwright/integration/examples/richtext.test.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/editable/input-controller.ts`
+- `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
 
 Evidence:
 
@@ -2217,7 +2240,7 @@ Status: first slice complete.
 Actions:
 
 - Added
-  `../slate-v2/packages/slate-react/src/editable/selection-controller.ts`.
+  `.tmp/slate-v2/packages/slate-react/src/editable/selection-controller.ts`.
 - Moved:
   - `syncEditorSelectionFromDOM(...)`
   - `setEditableModelSelectionPreference(...)`
@@ -2227,8 +2250,8 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-react/src/editable/input-controller.ts`
-- `../slate-v2/packages/slate-react/src/editable/selection-controller.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/input-controller.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/selection-controller.ts`
 
 Evidence:
 
@@ -2265,7 +2288,7 @@ Status: complete.
 Actions:
 
 - Added `applyEditableDOMSelectionChange(...)` to
-  `../slate-v2/packages/slate-react/src/editable/selection-controller.ts`.
+  `.tmp/slate-v2/packages/slate-react/src/editable/selection-controller.ts`.
 - Moved the inline `EditableDOMRoot` native `selectionchange` body into that
   function.
 - Kept throttle/debounce timing unchanged.
@@ -2274,9 +2297,9 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
-- `../slate-v2/packages/slate-react/src/editable/input-controller.ts`
-- `../slate-v2/packages/slate-react/src/editable/selection-controller.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/editable/input-controller.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/selection-controller.ts`
 
 Evidence:
 
@@ -2315,7 +2338,7 @@ Status: complete.
 Actions:
 
 - Added `syncEditableDOMSelectionToEditor(...)` to
-  `../slate-v2/packages/slate-react/src/editable/selection-controller.ts`.
+  `.tmp/slate-v2/packages/slate-react/src/editable/selection-controller.ts`.
 - Routed `useEditableSelectionReconciler(...).syncDOMSelectionToEditor` through
   that helper.
 - Kept Android animation-frame export/repair code in
@@ -2324,9 +2347,9 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-react/src/editable/input-controller.ts`
-- `../slate-v2/packages/slate-react/src/editable/selection-controller.ts`
-- `../slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/input-controller.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/selection-controller.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`
 
 Evidence:
 
@@ -2367,7 +2390,7 @@ Status: first slice complete.
 Actions:
 
 - Added
-  `../slate-v2/packages/slate-react/src/editable/mutation-controller.ts`.
+  `.tmp/slate-v2/packages/slate-react/src/editable/mutation-controller.ts`.
 - Moved:
   - `EditableRepairRequest`
   - `applyEditableRepairRequest(...)`
@@ -2382,8 +2405,8 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-react/src/editable/input-controller.ts`
-- `../slate-v2/packages/slate-react/src/editable/mutation-controller.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/input-controller.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/mutation-controller.ts`
 
 Evidence:
 
@@ -2435,9 +2458,9 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-react/src/editable/input-controller.ts`
-- `../slate-v2/packages/slate-react/src/editable/model-input-strategy.ts`
-- `../slate-v2/packages/slate-react/src/editable/mutation-controller.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/input-controller.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/model-input-strategy.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/mutation-controller.ts`
 
 Evidence:
 
@@ -2476,7 +2499,7 @@ Status: first slice complete.
 
 Actions:
 
-- Added `../slate-v2/packages/slate-react/src/editable/caret-engine.ts`.
+- Added `.tmp/slate-v2/packages/slate-react/src/editable/caret-engine.ts`.
 - Moved existing model-owned caret movement branches from
   `keyboard-input-strategy.ts` into `applyEditableCaretMovement(...)`:
   - line backward / line forward
@@ -2495,8 +2518,8 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-react/src/editable/caret-engine.ts`
-- `../slate-v2/packages/slate-react/src/editable/keyboard-input-strategy.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/caret-engine.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/keyboard-input-strategy.ts`
 
 Evidence:
 
@@ -2583,7 +2606,7 @@ Status: first slice complete.
 Actions:
 
 - Added scenario and trace types to
-  `../slate-v2/packages/slate-browser/src/playwright/index.ts`:
+  `.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts`:
   - `SlateBrowserTraceEntry`
   - `SlateBrowserScenarioStep`
   - `SlateBrowserScenarioResult`
@@ -2608,8 +2631,8 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-browser/src/playwright/index.ts`
-- `../slate-v2/playwright/integration/examples/richtext.test.ts`
+- `.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts`
+- `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
 
 Evidence:
 
@@ -2665,8 +2688,8 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-browser/src/playwright/index.ts`
-- `../slate-v2/playwright/integration/examples/richtext.test.ts`
+- `.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts`
+- `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
 
 Evidence:
 
@@ -2723,12 +2746,12 @@ Actions:
   - single-step removal candidates
 - Empty scenarios are filtered out.
 - Added unit coverage in
-  `../slate-v2/packages/slate-browser/test/core/scenario.test.ts`.
+  `.tmp/slate-v2/packages/slate-browser/test/core/scenario.test.ts`.
 
 Changed files:
 
-- `../slate-v2/packages/slate-browser/src/playwright/index.ts`
-- `../slate-v2/packages/slate-browser/test/core/scenario.test.ts`
+- `.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts`
+- `.tmp/slate-v2/packages/slate-browser/test/core/scenario.test.ts`
 
 Evidence:
 
@@ -2787,10 +2810,10 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-browser/src/playwright/index.ts`
-- `../slate-v2/packages/slate-browser/test/core/scenario.test.ts`
-- `../slate-v2/playwright/integration/examples/richtext.test.ts`
-- `../slate-v2/playwright/integration/examples/markdown-shortcuts.test.ts`
+- `.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts`
+- `.tmp/slate-v2/packages/slate-browser/test/core/scenario.test.ts`
+- `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
+- `.tmp/slate-v2/playwright/integration/examples/markdown-shortcuts.test.ts`
 
 Evidence:
 

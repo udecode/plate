@@ -47,9 +47,9 @@ Desired outcome:
 
 In scope:
 
-- `../slate-v2/packages/slate-history/test/history-contract.ts`
-- `../slate-v2/packages/slate-history/src/with-history.ts`
-- `../slate-v2/packages/slate/src/editor/insert-break.ts`
+- `.tmp/slate-v2/packages/slate-history/test/history-contract.ts`
+- `.tmp/slate-v2/packages/slate-history/src/with-history.ts`
+- `.tmp/slate-v2/packages/slate/src/editor/insert-break.ts`
 - current `splitNodes({ always: true })` behavior only as the operation source
 - issue coverage, fork dossier, PR reference, and completion state sync
 
@@ -99,28 +99,31 @@ Top drivers:
   restoration needs separate history proof.
 - `docs/slate-v2/references/pr-description.md:214` keeps `#3499` as related
   open debt for undo/mark restoration.
-- `../slate-v2/packages/slate/test/snapshot-contract.ts:1189` proves the
+- `.tmp/slate-v2/packages/slate/test/snapshot-contract.ts:1189` proves the
   current core package can place the selection into a new block after marked
   text.
-- `../slate-v2/packages/slate-history/src/with-history.ts:48` replays inverse
+- `.tmp/slate-v2/packages/slate-history/src/with-history.ts:48` replays inverse
   operations on undo and restores `selectionBefore`.
-- `../slate-v2/packages/slate-history/src/with-history.ts:133` records
+- `.tmp/slate-v2/packages/slate-history/src/with-history.ts:133` records
   `selectionBefore` from the previous snapshot for new undo batches.
 
 Viable options:
 
 1. Treat `#3499` as already fixed by the `#3964` marked-Enter proof.
+
    - Pro: avoids another lane.
    - Con: ignores the explicit undo/mark half of the issue.
    - Verdict: reject.
 
 2. Patch React/DOM selection handling first.
+
    - Pro: matches the richtext browser repro surface.
    - Con: the remaining claim is undo state restoration, which has a package
      owner and package tests already.
    - Verdict: reject for the first pass.
 
 3. Add a `slate-history` red contract test around marked Enter plus undo.
+
    - Pro: proves the exact remaining issue without public API expansion.
    - Con: may expose deeper split-operation data if history receives an
      already-lossy commit.
@@ -145,14 +148,14 @@ Consequences:
 
 ## 4. Confidence Scorecard
 
-| Dimension | Weight | Score | Evidence |
-| --- | ---: | ---: | --- |
-| React 19.2 runtime performance | 0.20 | 0.90 | No React surface is selected; browser/React proof is gated behind package proof and cannot contaminate the first patch. |
-| Slate-close unopinionated DX | 0.20 | 0.94 | Plan adds no API; it uses current `Editor.insertBreak`, `editor.undo()`, and snapshot contracts. |
-| Plate and slate-yjs migration backbone | 0.15 | 0.91 | Local history is the owner; any operation/history metadata change must record Plate/slate-yjs impact before issue closure. |
-| Regression-proof testing strategy | 0.20 | 0.94 | Ralph must start with one red `slate-history` contract and rerun existing history selection/insertBreak guards. |
-| Research evidence completeness | 0.15 | 0.90 | ClawSweeper reviewed the target, neighbors, coverage matrix, dossier, live ledger, and current source/test owners. |
-| shadcn-style composability and minimalism | 0.10 | 0.94 | No component API, hook API, prop shape, or renderer expansion is planned. |
+| Dimension                                 | Weight | Score | Evidence                                                                                                                   |
+| ----------------------------------------- | -----: | ----: | -------------------------------------------------------------------------------------------------------------------------- |
+| React 19.2 runtime performance            |   0.20 |  0.90 | No React surface is selected; browser/React proof is gated behind package proof and cannot contaminate the first patch.    |
+| Slate-close unopinionated DX              |   0.20 |  0.94 | Plan adds no API; it uses current `Editor.insertBreak`, `editor.undo()`, and snapshot contracts.                           |
+| Plate and slate-yjs migration backbone    |   0.15 |  0.91 | Local history is the owner; any operation/history metadata change must record Plate/slate-yjs impact before issue closure. |
+| Regression-proof testing strategy         |   0.20 |  0.94 | Ralph must start with one red `slate-history` contract and rerun existing history selection/insertBreak guards.            |
+| Research evidence completeness            |   0.15 |  0.90 | ClawSweeper reviewed the target, neighbors, coverage matrix, dossier, live ledger, and current source/test owners.         |
+| shadcn-style composability and minimalism |   0.10 |  0.94 | No component API, hook API, prop shape, or renderer expansion is planned.                                                  |
 
 Weighted total: `0.92`.
 
@@ -167,15 +170,15 @@ tree and selection.
 
 Current source owners:
 
-- `../slate-v2/packages/slate/src/editor/insert-break.ts:9` delegates to
+- `.tmp/slate-v2/packages/slate/src/editor/insert-break.ts:9` delegates to
   `splitNodes({ always: true })` through the command registry.
-- `../slate-v2/packages/slate-history/src/with-history.ts:57` wraps undo replay
+- `.tmp/slate-v2/packages/slate-history/src/with-history.ts:57` wraps undo replay
   in `HistoryEditor.withoutSaving`.
-- `../slate-v2/packages/slate-history/src/with-history.ts:60` computes inverse
+- `.tmp/slate-v2/packages/slate-history/src/with-history.ts:60` computes inverse
   operations and replays them in reverse order.
-- `../slate-v2/packages/slate-history/src/with-history.ts:63` restores the
+- `.tmp/slate-v2/packages/slate-history/src/with-history.ts:63` restores the
   saved `selectionBefore`.
-- `../slate-v2/packages/slate-history/src/with-history.ts:211` excludes pure
+- `.tmp/slate-v2/packages/slate-history/src/with-history.ts:211` excludes pure
   `set_selection` operations from history saves.
 
 ## 6. Ecosystem Strategy Synthesis
@@ -187,12 +190,12 @@ browser behavior as affirmative evidence. The target is an existing raw Slate
 history invariant with local source and issue proof. External comparison would
 be research theater unless the red test exposes a real design fork:
 
-| Reference | Status | Needed only if |
-| --- | --- | --- |
-| React 19.2 | skipped | Browser selection export/import becomes the owner. |
-| Lexical | skipped | History batching or command transaction strategy needs comparison. |
+| Reference   | Status  | Needed only if                                                         |
+| ----------- | ------- | ---------------------------------------------------------------------- |
+| React 19.2  | skipped | Browser selection export/import becomes the owner.                     |
+| Lexical     | skipped | History batching or command transaction strategy needs comparison.     |
 | ProseMirror | skipped | Operation transaction inversion or selection mapping needs comparison. |
-| Tiptap | skipped | Extension-facing history behavior becomes a public DX question. |
+| Tiptap      | skipped | Extension-facing history behavior becomes a public DX question.        |
 
 ## 7. Public API Target
 
@@ -276,17 +279,17 @@ ClawSweeper related-issue pass:
 
 Issue decisions:
 
-| Issue | Current decision | Reason |
-| --- | --- | --- |
+| Issue   | Current decision | Reason                                                                                                       |
+| ------- | ---------------- | ------------------------------------------------------------------------------------------------------------ |
 | `#3499` | target for Ralph | Caret half appears covered; undo/mark restoration remains open and has a direct `slate-history` proof route. |
-| `#3964` | already fixed | Existing package proof covers marked Enter caret placement. |
-| `#4357` | already fixed | Same marked Enter new-block focus family as `#3964`. |
-| `#4195` | related | Same return-key placement family; exact repro not yet proven here. |
-| `#3841` | related | Firefox custom `insertBreak` override requires browser proof. |
-| `#5629` | related | Punctuation word navigation is adjacent policy, not this undo lane. |
-| `#4648` | not claimed | Punctuation policy remains outside this target. |
-| `#3756` | related guard | Same history/selection family, but broader multi-block delete selection restore; do not auto-close. |
-| `#3497` | not claimed | React parent-rerender focus loss, not local history undo restoration. |
+| `#3964` | already fixed    | Existing package proof covers marked Enter caret placement.                                                  |
+| `#4357` | already fixed    | Same marked Enter new-block focus family as `#3964`.                                                         |
+| `#4195` | related          | Same return-key placement family; exact repro not yet proven here.                                           |
+| `#3841` | related          | Firefox custom `insertBreak` override requires browser proof.                                                |
+| `#5629` | related          | Punctuation word navigation is adjacent policy, not this undo lane.                                          |
+| `#4648` | not claimed      | Punctuation policy remains outside this target.                                                              |
+| `#3756` | related guard    | Same history/selection family, but broader multi-block delete selection restore; do not auto-close.          |
+| `#3497` | not claimed      | React parent-rerender focus loss, not local history undo restoration.                                        |
 
 Live ledger sync:
 
@@ -304,13 +307,13 @@ PR reference sync:
 
 ## 13. Legacy Regression Proof Matrix
 
-| Behavior | Proof route | Status |
-| --- | --- | --- |
-| Marked Enter caret placement | `../slate-v2/packages/slate/test/snapshot-contract.ts:1189` | existing package proof |
-| Marked Enter undo restores marks | new `slate-history` contract | missing |
-| Marked Enter undo restores selection | new `slate-history` contract | missing |
-| Browser richtext reproduction | Playwright richtext only if package proof is insufficient | conditional |
-| Firefox custom override from `#3841` | browser-specific proof | out of scope for first implementation |
+| Behavior                             | Proof route                                                   | Status                                |
+| ------------------------------------ | ------------------------------------------------------------- | ------------------------------------- |
+| Marked Enter caret placement         | `.tmp/slate-v2/packages/slate/test/snapshot-contract.ts:1189` | existing package proof                |
+| Marked Enter undo restores marks     | new `slate-history` contract                                  | missing                               |
+| Marked Enter undo restores selection | new `slate-history` contract                                  | missing                               |
+| Browser richtext reproduction        | Playwright richtext only if package proof is insufficient     | conditional                           |
+| Firefox custom override from `#3841` | browser-specific proof                                        | out of scope for first implementation |
 
 ## 14. Browser Stress And Parity Strategy
 
@@ -331,18 +334,18 @@ Explicit non-claims:
 
 ## 15. Applicable Implementation-Skill Review Matrix
 
-| Skill | Status | Reason |
-| --- | --- | --- |
-| `slate-ralplan` | applied | This plan is scored and execution-ready. |
-| `continue` | applied | Existing `#5080` lane was done; this pivots to the next lane. |
-| `clawsweeper` | applied | Related issues were reviewed and durable accounting was updated. |
-| `tdd` | applied as requirement | Implementation must start with one red behavior test. |
-| `intent-boundary-pass` | applied inline | Intent, scope, non-goals, and decision boundaries are explicit. |
-| `steelman-pass` | applied inline | Maintainer objections are recorded and answered. |
-| `high-risk-deliberate-pass` | applied inline | User-visible undo behavior has a pre-mortem and proof plan. |
-| `vercel-react-best-practices` | skipped | No React code target unless package proof clears and browser still fails. |
-| `performance-oracle` | skipped | No hot path or algorithm change selected. |
-| `performance` | skipped | No browser-scale performance lane selected. |
+| Skill                         | Status                 | Reason                                                                    |
+| ----------------------------- | ---------------------- | ------------------------------------------------------------------------- |
+| `slate-ralplan`               | applied                | This plan is scored and execution-ready.                                  |
+| `continue`                    | applied                | Existing `#5080` lane was done; this pivots to the next lane.             |
+| `clawsweeper`                 | applied                | Related issues were reviewed and durable accounting was updated.          |
+| `tdd`                         | applied as requirement | Implementation must start with one red behavior test.                     |
+| `intent-boundary-pass`        | applied inline         | Intent, scope, non-goals, and decision boundaries are explicit.           |
+| `steelman-pass`               | applied inline         | Maintainer objections are recorded and answered.                          |
+| `high-risk-deliberate-pass`   | applied inline         | User-visible undo behavior has a pre-mortem and proof plan.               |
+| `vercel-react-best-practices` | skipped                | No React code target unless package proof clears and browser still fails. |
+| `performance-oracle`          | skipped                | No hot path or algorithm change selected.                                 |
+| `performance`                 | skipped                | No browser-scale performance lane selected.                               |
 
 ## 16. High-Risk Deliberate-Mode Pre-Mortem
 
@@ -379,25 +382,25 @@ Status: applied.
 
 Initial objections:
 
-| Objection | Current answer | Status |
-| --- | --- | --- |
-| This is already fixed by `#3964`. | Not fully. `#3964` covers caret placement; `#3499` also asks for undo preserving bold text. | keep |
-| This is old Slate `0.57.1` noise. | Maybe, but v2 has a direct history proof route and current source owners. Red test decides. | keep |
-| Browser richtext repro means React owns it. | Only if package state is already correct. History gets first proof. | keep |
-| Fixing history might touch collaborative undo. | True if operation semantics change; Ralph must record Plate/slate-yjs impact before claiming closure. | keep |
+| Objection                                      | Current answer                                                                                        | Status |
+| ---------------------------------------------- | ----------------------------------------------------------------------------------------------------- | ------ |
+| This is already fixed by `#3964`.              | Not fully. `#3964` covers caret placement; `#3499` also asks for undo preserving bold text.           | keep   |
+| This is old Slate `0.57.1` noise.              | Maybe, but v2 has a direct history proof route and current source owners. Red test decides.           | keep   |
+| Browser richtext repro means React owns it.    | Only if package state is already correct. History gets first proof.                                   | keep   |
+| Fixing history might touch collaborative undo. | True if operation semantics change; Ralph must record Plate/slate-yjs impact before claiming closure. | keep   |
 
 ## 19. Pass Schedule And Pass-State Ledger
 
-| Pass | Status | Evidence added | Plan delta | Open issues | Next owner |
-| --- | --- | --- | --- | --- | --- |
-| current-state read and target selection | complete | `gitcrawl` #3499 thread/neighbors; coverage row; PR reference row; live source/test owners | selected `#3499` undo/mark restoration | none | ClawSweeper |
-| related issue discovery | complete | gitcrawl threads/search, live ledger rows, dossier rows, coverage rows | narrowed target and rejected neighbors | none | slate-ralplan |
-| issue-ledger pass | complete | coverage matrix, fork dossier, PR reference, live ledger checked | `#3499` points to this plan | none | slate-ralplan |
-| intent/boundary and decision brief | complete | explicit scope, non-goals, decision boundaries, options | no user question needed | none | slate-ralplan |
-| research and live-source refresh | complete | current `insertBreak`, `with-history`, `history-contract`, `snapshot-contract` owners | external research skipped with reason | none | slate-ralplan |
-| pressure passes | complete | TDD, high-risk, steelman, React/perf skips recorded | proof plan tightened | none | slate-ralplan |
-| issue sync accounting | complete | issue coverage, fork dossier, PR reference updated | no fixed claim added | none | slate-ralplan |
-| closure score | complete | score `0.92`, no dimension below `0.85` | ready for Ralph | none | Ralph |
+| Pass                                    | Status   | Evidence added                                                                             | Plan delta                             | Open issues | Next owner    |
+| --------------------------------------- | -------- | ------------------------------------------------------------------------------------------ | -------------------------------------- | ----------- | ------------- |
+| current-state read and target selection | complete | `gitcrawl` #3499 thread/neighbors; coverage row; PR reference row; live source/test owners | selected `#3499` undo/mark restoration | none        | ClawSweeper   |
+| related issue discovery                 | complete | gitcrawl threads/search, live ledger rows, dossier rows, coverage rows                     | narrowed target and rejected neighbors | none        | slate-ralplan |
+| issue-ledger pass                       | complete | coverage matrix, fork dossier, PR reference, live ledger checked                           | `#3499` points to this plan            | none        | slate-ralplan |
+| intent/boundary and decision brief      | complete | explicit scope, non-goals, decision boundaries, options                                    | no user question needed                | none        | slate-ralplan |
+| research and live-source refresh        | complete | current `insertBreak`, `with-history`, `history-contract`, `snapshot-contract` owners      | external research skipped with reason  | none        | slate-ralplan |
+| pressure passes                         | complete | TDD, high-risk, steelman, React/perf skips recorded                                        | proof plan tightened                   | none        | slate-ralplan |
+| issue sync accounting                   | complete | issue coverage, fork dossier, PR reference updated                                         | no fixed claim added                   | none        | slate-ralplan |
+| closure score                           | complete | score `0.92`, no dimension below `0.85`                                                    | ready for Ralph                        | none        | Ralph         |
 
 ## 20. Plan Deltas From Review
 
@@ -479,7 +482,7 @@ When closure is ready, the handoff should list:
 - exact issue claim text;
 - proof commands and results;
 - issue rows changed;
-- source files changed in `../slate-v2`;
+- source files changed in `.tmp/slate-v2`;
 - whether browser proof was needed;
 - remaining related non-claims.
 
@@ -506,11 +509,11 @@ Status: done.
 Implementation result:
 
 - Added `slate-history` proof for marked Enter plus undo:
-  `../slate-v2/packages/slate-history/test/history-contract.ts`.
+  `.tmp/slate-v2/packages/slate-history/test/history-contract.ts`.
 - The red run exposed the real loss: core split created an empty right text leaf
   before the moved bold leaf, so selection landed on the empty leaf.
 - Patched the core split owner:
-  `../slate-v2/packages/slate/src/transforms-node/split-nodes.ts`.
+  `.tmp/slate-v2/packages/slate/src/transforms-node/split-nodes.ts`.
 - The patch tracks the next sibling start when splitting at the end of a text
   leaf and skips manufacturing an empty split leaf before moved marked text.
 

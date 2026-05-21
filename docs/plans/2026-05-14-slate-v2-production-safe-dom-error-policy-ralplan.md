@@ -27,11 +27,11 @@ control flow.
 The mentions example shape is the smell:
 
 ```ts
-let domRange: globalThis.Range
+let domRange: globalThis.Range;
 try {
-  domRange = editor.dom.toDOMRange(target)
+  domRange = editor.dom.toDOMRange(target);
 } catch {
-  return
+  return;
 }
 ```
 
@@ -39,15 +39,15 @@ That is acceptable as a temporary local guard. It is bad API design if app
 authors are expected to copy it. The target is:
 
 ```ts
-const rect = editor.dom.getRangeRect(target)
-if (!rect) return
+const rect = editor.dom.getRangeRect(target);
+if (!rect) return;
 ```
 
 or, when the caller really needs the native `Range`:
 
 ```ts
-const domRange = editor.dom.tryToDOMRange(target)
-if (!domRange) return
+const domRange = editor.dom.tryToDOMRange(target);
+if (!domRange) return;
 ```
 
 Score is `0.93`, done by Slate Ralplan rules. That means the plan is ready for a
@@ -123,13 +123,13 @@ Top drivers:
 
 Viable options:
 
-| Option | Pros | Cons | Verdict |
-| --- | --- | --- | --- |
-| A. Make all DOM helpers return `null` | Safer for apps | Hides invariant bugs; weak tests; bad direct API | reject |
-| B. Keep strict helpers and tell users to catch | Minimal code | Bad DX; examples teach cargo-cult catches; telemetry loses reasons | reject |
-| C. Keep strict helpers, add public `try*` helpers, internal classifier, and recoverable runtime policy | Clear DX; preserves invariants; matches other editors | Requires API cleanup and focused proof | choose |
-| D. Add only `onError` / error boundary guidance | Easy story | Still crashes before recovery; treats symptoms as architecture | reject |
-| E. Copy ProseMirror/Lexical wholesale | Battle-tested pieces | Wrong document model and runtime ownership for Slate | partial evidence only |
+| Option                                                                                                 | Pros                                                  | Cons                                                               | Verdict               |
+| ------------------------------------------------------------------------------------------------------ | ----------------------------------------------------- | ------------------------------------------------------------------ | --------------------- |
+| A. Make all DOM helpers return `null`                                                                  | Safer for apps                                        | Hides invariant bugs; weak tests; bad direct API                   | reject                |
+| B. Keep strict helpers and tell users to catch                                                         | Minimal code                                          | Bad DX; examples teach cargo-cult catches; telemetry loses reasons | reject                |
+| C. Keep strict helpers, add public `try*` helpers, internal classifier, and recoverable runtime policy | Clear DX; preserves invariants; matches other editors | Requires API cleanup and focused proof                             | choose                |
+| D. Add only `onError` / error boundary guidance                                                        | Easy story                                            | Still crashes before recovery; treats symptoms as architecture     | reject                |
+| E. Copy ProseMirror/Lexical wholesale                                                                  | Battle-tested pieces                                  | Wrong document model and runtime ownership for Slate               | partial evidence only |
 
 Chosen direction:
 
@@ -142,14 +142,14 @@ Chosen direction:
 
 ## 4. Confidence Scorecard
 
-| Dimension | Score | Evidence |
-| --- | ---: | --- |
-| React 19.2 runtime performance | 0.92 | Hot path stays `Range | null` / `DOMRange | null`; rich reason objects are for diagnostics. Current source already gates selection import with `hasSelectableTarget` before `toSlateRange` in `../slate-v2/packages/slate-react/src/editable/selection-controller.ts:278` and uses `suppressThrow: true` at `:284-287`. |
-| Slate-close unopinionated DX | 0.95 | Strict helpers stay strict in the current public surface at `../slate-v2/packages/slate-dom/src/plugin/dom-editor.ts:75-108`; nullable mirrors replace `suppressThrow` for app/runtime code; `getRangeRect` covers the exact mentions smell at `../slate-v2/site/examples/ts/mentions.tsx:123-129`. |
-| Plate and slate-yjs migration backbone | 0.90 | Runtime emits model `Range | null`, not raw DOM ranges, so Plate overlays and Yjs cursors do not depend on transient browser state. Collaboration still treats `internal-invariant` as fatal. |
-| Regression-proof testing | 0.93 | Existing bridge and selection-controller focused gate passed in `../slate-v2`; execution adds strict/nullable paired tests, public-surface contract, reconciler repair tests, mentions browser row, and shadow event-range row. |
-| Research evidence completeness | 0.94 | ProseMirror strict `posAtDOM` vs nullable runtime APIs is grounded in `../prosemirror-view/src/index.ts:373-423` and `../prosemirror-view/src/selection.ts:9-47`; Lexical error/update tags in `../lexical/README.md:52-55` and `../lexical/packages/lexical/src/LexicalUpdateTags.ts:45-59`; Tiptap rect helper in `../tiptap/packages/core/src/helpers/posToDOMRect.ts:5-35`. |
-| shadcn-style composability and hook/component minimalism | 0.91 | No new React component props required for normal use; optional diagnostics can be centralized later. Public helpers are capability methods, not UI policy. |
+| Dimension                                                | Score | Evidence                                                                                                                                                                                                                                                                                                                                                                        |
+| -------------------------------------------------------- | ----: | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| React 19.2 runtime performance                           |  0.92 | Hot path stays `Range                                                                                                                                                                                                                                                                                                                                                           | null`/`DOMRange                                                                                                                                                  | null`; rich reason objects are for diagnostics. Current source already gates selection import with `hasSelectableTarget`before`toSlateRange`in`.tmp/slate-v2/packages/slate-react/src/editable/selection-controller.ts:278`and uses`suppressThrow: true`at`:284-287`. |
+| Slate-close unopinionated DX                             |  0.95 | Strict helpers stay strict in the current public surface at `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts:75-108`; nullable mirrors replace `suppressThrow` for app/runtime code; `getRangeRect` covers the exact mentions smell at `.tmp/slate-v2/site/examples/ts/mentions.tsx:123-129`.                                                                         |
+| Plate and slate-yjs migration backbone                   |  0.90 | Runtime emits model `Range                                                                                                                                                                                                                                                                                                                                                      | null`, not raw DOM ranges, so Plate overlays and Yjs cursors do not depend on transient browser state. Collaboration still treats `internal-invariant` as fatal. |
+| Regression-proof testing                                 |  0.93 | Existing bridge and selection-controller focused gate passed in `.tmp/slate-v2`; execution adds strict/nullable paired tests, public-surface contract, reconciler repair tests, mentions browser row, and shadow event-range row.                                                                                                                                               |
+| Research evidence completeness                           |  0.94 | ProseMirror strict `posAtDOM` vs nullable runtime APIs is grounded in `../prosemirror-view/src/index.ts:373-423` and `../prosemirror-view/src/selection.ts:9-47`; Lexical error/update tags in `../lexical/README.md:52-55` and `../lexical/packages/lexical/src/LexicalUpdateTags.ts:45-59`; Tiptap rect helper in `../tiptap/packages/core/src/helpers/posToDOMRect.ts:5-35`. |
+| shadcn-style composability and hook/component minimalism |  0.91 | No new React component props required for normal use; optional diagnostics can be centralized later. Public helpers are capability methods, not UI policy.                                                                                                                                                                                                                      |
 
 Total: `0.93`.
 
@@ -157,18 +157,18 @@ Status: `done`. Closure means the planning target is precise enough to execute.
 
 ## 5. Current Source Findings
 
-| Surface | Current shape | Problem |
-| --- | --- | --- |
-| `DOMEditor.toDOMPoint` | Throws when it cannot map a model point to mounted DOM (`../slate-v2/packages/slate-dom/src/plugin/dom-editor.ts:91`, implementation starts at `:885`). | Correct for strict direct calls, unsafe for runtime projection without a non-throwing wrapper. |
-| `DOMEditor.toDOMRange` | Calls strict `toDOMPoint` for anchor/focus (`../slate-v2/packages/slate-dom/src/plugin/dom-editor.ts:975-981`). | Any transient missing DOM leaf becomes a thrown exception. |
-| `DOMEditor.toSlatePoint` / `toSlateRange` | Already supports `suppressThrow` and returns `null` in runtime paths (`../slate-v2/packages/slate-dom/src/plugin/dom-editor.ts:94-108`, `:1050-1080`, `:1458-1495`). | The boolean option is awkward public DX and erases reason data. |
-| `DOMEditor.findPath` | Uses runtime id fallback, then weak-map parent/index, then throws (`../slate-v2/packages/slate-dom/src/plugin/dom-editor.ts:618-638`). | `tryFindPath` is still missing for app/event code and `#5697` / `#5938` pressure. |
-| `DOMEditor.findEventRange` | Throws for missing coordinates or unresolved DOM range, then calls `toSlateRange(... suppressThrow: false)` (`../slate-v2/packages/slate-dom/src/plugin/dom-editor.ts:530-604`). | Drop/drag/event code should have a nullable event-range API. |
-| `selection-controller` | Imports DOM selection with ownership guards and `suppressThrow: true` (`../slate-v2/packages/slate-react/src/editable/selection-controller.ts:278-287`). | Good direction, but still falls back to strict `toDOMRange` on export (`:737-742`). |
-| `selection-reconciler` | Uses nullable import paths in places (`../slate-v2/packages/slate-react/src/editable/selection-reconciler.ts:618-675`) and catches `toDOMRange` during repair (`:932-935`). | Correct recovery intent, but the catch belongs behind a named helper. |
-| `mentions` example | Catches `editor.dom.toDOMRange(target)` and returns (`../slate-v2/site/examples/ts/mentions.tsx:123-129`). | This is the public DX failure the user called out. |
-| `hovering-toolbar` example | Reads native DOM selection rect directly. | Works only when DOM selection is already the right owner; no model-to-DOM rect helper. |
-| `lines.ts` | Uses strict `DOMEditor.toDOMRange(...).getBoundingClientRect()`. | Internal utility needs a strict or nullable choice, not accidental throws. |
+| Surface                                   | Current shape                                                                                                                                                                      | Problem                                                                                        |
+| ----------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `DOMEditor.toDOMPoint`                    | Throws when it cannot map a model point to mounted DOM (`.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts:91`, implementation starts at `:885`).                          | Correct for strict direct calls, unsafe for runtime projection without a non-throwing wrapper. |
+| `DOMEditor.toDOMRange`                    | Calls strict `toDOMPoint` for anchor/focus (`.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts:975-981`).                                                                  | Any transient missing DOM leaf becomes a thrown exception.                                     |
+| `DOMEditor.toSlatePoint` / `toSlateRange` | Already supports `suppressThrow` and returns `null` in runtime paths (`.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts:94-108`, `:1050-1080`, `:1458-1495`).             | The boolean option is awkward public DX and erases reason data.                                |
+| `DOMEditor.findPath`                      | Uses runtime id fallback, then weak-map parent/index, then throws (`.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts:618-638`).                                           | `tryFindPath` is still missing for app/event code and `#5697` / `#5938` pressure.              |
+| `DOMEditor.findEventRange`                | Throws for missing coordinates or unresolved DOM range, then calls `toSlateRange(... suppressThrow: false)` (`.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts:530-604`). | Drop/drag/event code should have a nullable event-range API.                                   |
+| `selection-controller`                    | Imports DOM selection with ownership guards and `suppressThrow: true` (`.tmp/slate-v2/packages/slate-react/src/editable/selection-controller.ts:278-287`).                         | Good direction, but still falls back to strict `toDOMRange` on export (`:737-742`).            |
+| `selection-reconciler`                    | Uses nullable import paths in places (`.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts:618-675`) and catches `toDOMRange` during repair (`:932-935`).      | Correct recovery intent, but the catch belongs behind a named helper.                          |
+| `mentions` example                        | Catches `editor.dom.toDOMRange(target)` and returns (`.tmp/slate-v2/site/examples/ts/mentions.tsx:123-129`).                                                                       | This is the public DX failure the user called out.                                             |
+| `hovering-toolbar` example                | Reads native DOM selection rect directly.                                                                                                                                          | Works only when DOM selection is already the right owner; no model-to-DOM rect helper.         |
+| `lines.ts`                                | Uses strict `DOMEditor.toDOMRange(...).getBoundingClientRect()`.                                                                                                                   | Internal utility needs a strict or nullable choice, not accidental throws.                     |
 
 Key existing solution notes:
 
@@ -179,14 +179,14 @@ Key existing solution notes:
 
 ## 6. Ecosystem Strategy Synthesis
 
-| Reference | Mechanism observed | Slate target | Verdict |
-| --- | --- | --- | --- |
-| ProseMirror | `posAtDOM` throws for direct invalid DOM positions, while `posAtCoords` and `selectionFromDOM` return `null` for user/runtime uncertainty. | Keep strict direct APIs, add nullable runtime/app APIs. | agree |
-| ProseMirror | `selectionToDOM` owns import/export centrally and catches browser `Selection` weirdness locally. | Centralize recovery in Slate DOM/React runtime, not in every example. | agree |
-| Lexical | `onError` is a central fatal error hook, but DOM selection code still guards nested/foreign editor selection and can return previous/null selection. | Add recoverable classification before fatal errors; do not rely on React boundaries. | partial |
-| Lexical | `SKIP_DOM_SELECTION_TAG`, `SKIP_SELECTION_FOCUS_TAG`, and `SKIP_SCROLL_INTO_VIEW_TAG` separate update intent from DOM side effects. | Keep Slate's selection side-effect policy explicit; route recoverable DOM failures through that policy. | agree |
-| Tiptap | `posToDOMRect(view, from, to)` gives product code a rectangle helper for menus and suggestions. | Add `editor.dom.getRangeRect(range): DOMRect | null` for overlay DX. | agree |
-| Tiptap | Engine behavior still comes from ProseMirror. | Use Tiptap as DX evidence, not as engine evidence. | partial |
+| Reference   | Mechanism observed                                                                                                                                   | Slate target                                                                                            | Verdict               |
+| ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- | --------------------- | ----- |
+| ProseMirror | `posAtDOM` throws for direct invalid DOM positions, while `posAtCoords` and `selectionFromDOM` return `null` for user/runtime uncertainty.           | Keep strict direct APIs, add nullable runtime/app APIs.                                                 | agree                 |
+| ProseMirror | `selectionToDOM` owns import/export centrally and catches browser `Selection` weirdness locally.                                                     | Centralize recovery in Slate DOM/React runtime, not in every example.                                   | agree                 |
+| Lexical     | `onError` is a central fatal error hook, but DOM selection code still guards nested/foreign editor selection and can return previous/null selection. | Add recoverable classification before fatal errors; do not rely on React boundaries.                    | partial               |
+| Lexical     | `SKIP_DOM_SELECTION_TAG`, `SKIP_SELECTION_FOCUS_TAG`, and `SKIP_SCROLL_INTO_VIEW_TAG` separate update intent from DOM side effects.                  | Keep Slate's selection side-effect policy explicit; route recoverable DOM failures through that policy. | agree                 |
+| Tiptap      | `posToDOMRect(view, from, to)` gives product code a rectangle helper for menus and suggestions.                                                      | Add `editor.dom.getRangeRect(range): DOMRect                                                            | null` for overlay DX. | agree |
+| Tiptap      | Engine behavior still comes from ProseMirror.                                                                                                        | Use Tiptap as DX evidence, not as engine evidence.                                                      | partial               |
 
 What Slate should steal:
 
@@ -229,23 +229,23 @@ editor.dom.getRangeRect(range): DOMRect | null
 
 Concrete implementation contract:
 
-| Helper | Implementation target | Strict counterpart |
-| --- | --- | --- |
-| `tryToDOMPoint` | Do not implement as a naked `try { toDOMPoint } catch { null }`. Factor the resolver behind `toDOMPoint` into `resolveDOMPoint(editor, point, mode)`, where nullable mode returns `null` for `unmounted-node`, `stale-node-map`, `covered-range-boundary`, `void-boundary`, and `composition-transient`, while `invalid-model-range` and `internal-invariant` stay fatal. | `toDOMPoint` calls the same resolver in strict mode and throws typed `DOMResolveError`. |
-| `tryToDOMRange` | Resolve anchor/focus through nullable point resolution, build a native `Range`, catch only DOM `setStart` / `setEnd` mismatch caused by stale/foreign DOM, and return `null`. | `toDOMRange` stays strict and still throws for impossible model ranges. |
-| `tryToSlatePoint` | Rename the current `suppressThrow` behavior into a real helper. Keep `exactMatch` and `searchDirection`, but remove the exception-policy boolean from public options. | `toSlatePoint` defaults to strict and throws typed errors for direct invalid calls. |
-| `tryToSlateRange` | Use nullable point resolution for anchor/focus and return `null` when either endpoint is not recoverable. | `toSlateRange` stays the invariant API. |
-| `tryFindPath` | Share `findPath` internals. Return runtime-id path when available, weak-map path when available, `null` when the node is not owned/mounted, and throw only for broken editor invariants in strict mode. | `findPath` keeps the current throw-on-missing contract. |
-| `tryFindEventRange` | Validate coordinates and target ownership first; use `caretRangeFromPoint` / `caretPositionFromPoint`; return `null` for missing caret range or foreign/shadow mismatch; call `tryToSlateRange`. | `findEventRange` remains strict for direct drag/drop callers that want failure. |
-| `getRangeRect` | Call `tryToDOMRange`, use `getClientRects()[0] ?? getBoundingClientRect()`, normalize zero/empty rects to `null` when the range is not measurable, and never expose native `Range` when the caller only needs geometry. | `toDOMRange(...).getBoundingClientRect()` remains available for invariant tests. |
+| Helper              | Implementation target                                                                                                                                                                                                                                                                                                                                                     | Strict counterpart                                                                      |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| `tryToDOMPoint`     | Do not implement as a naked `try { toDOMPoint } catch { null }`. Factor the resolver behind `toDOMPoint` into `resolveDOMPoint(editor, point, mode)`, where nullable mode returns `null` for `unmounted-node`, `stale-node-map`, `covered-range-boundary`, `void-boundary`, and `composition-transient`, while `invalid-model-range` and `internal-invariant` stay fatal. | `toDOMPoint` calls the same resolver in strict mode and throws typed `DOMResolveError`. |
+| `tryToDOMRange`     | Resolve anchor/focus through nullable point resolution, build a native `Range`, catch only DOM `setStart` / `setEnd` mismatch caused by stale/foreign DOM, and return `null`.                                                                                                                                                                                             | `toDOMRange` stays strict and still throws for impossible model ranges.                 |
+| `tryToSlatePoint`   | Rename the current `suppressThrow` behavior into a real helper. Keep `exactMatch` and `searchDirection`, but remove the exception-policy boolean from public options.                                                                                                                                                                                                     | `toSlatePoint` defaults to strict and throws typed errors for direct invalid calls.     |
+| `tryToSlateRange`   | Use nullable point resolution for anchor/focus and return `null` when either endpoint is not recoverable.                                                                                                                                                                                                                                                                 | `toSlateRange` stays the invariant API.                                                 |
+| `tryFindPath`       | Share `findPath` internals. Return runtime-id path when available, weak-map path when available, `null` when the node is not owned/mounted, and throw only for broken editor invariants in strict mode.                                                                                                                                                                   | `findPath` keeps the current throw-on-missing contract.                                 |
+| `tryFindEventRange` | Validate coordinates and target ownership first; use `caretRangeFromPoint` / `caretPositionFromPoint`; return `null` for missing caret range or foreign/shadow mismatch; call `tryToSlateRange`.                                                                                                                                                                          | `findEventRange` remains strict for direct drag/drop callers that want failure.         |
+| `getRangeRect`      | Call `tryToDOMRange`, use `getClientRects()[0] ?? getBoundingClientRect()`, normalize zero/empty rects to `null` when the range is not measurable, and never expose native `Range` when the caller only needs geometry.                                                                                                                                                   | `toDOMRange(...).getBoundingClientRect()` remains available for invariant tests.        |
 
 Typed error shape:
 
 ```ts
 class DOMResolveError extends Error {
-  phase: DOMResolvePhase
-  reason: DOMResolveReason
-  recoverable: boolean
+  phase: DOMResolvePhase;
+  reason: DOMResolveReason;
+  recoverable: boolean;
 }
 ```
 
@@ -265,14 +265,14 @@ Recommended first-party example:
 
 ```ts
 useEffect(() => {
-  if (!target || chars.length === 0 || !ref.current) return
+  if (!target || chars.length === 0 || !ref.current) return;
 
-  const rect = editor.dom.getRangeRect(target)
-  if (!rect) return
+  const rect = editor.dom.getRangeRect(target);
+  if (!rect) return;
 
-  ref.current.style.top = `${rect.top + window.pageYOffset + 24}px`
-  ref.current.style.left = `${rect.left + window.pageXOffset}px`
-}, [chars.length, editor, target])
+  ref.current.style.top = `${rect.top + window.pageYOffset + 24}px`;
+  ref.current.style.left = `${rect.left + window.pageXOffset}px`;
+}, [chars.length, editor, target]);
 ```
 
 ## 8. Internal Runtime Target
@@ -281,33 +281,33 @@ Internal classifier:
 
 ```ts
 type DOMResolvePhase =
-  | 'model-to-dom'
-  | 'dom-to-model'
-  | 'event-to-model'
-  | 'range-rect'
+  | "model-to-dom"
+  | "dom-to-model"
+  | "event-to-model"
+  | "range-rect";
 
 type DOMResolveReason =
-  | 'unmounted-node'
-  | 'stale-node-map'
-  | 'foreign-dom'
-  | 'nested-editor-boundary'
-  | 'shadow-boundary'
-  | 'covered-range-boundary'
-  | 'void-boundary'
-  | 'composition-transient'
-  | 'invalid-dom-selection'
-  | 'invalid-model-range'
-  | 'missing-caret-range'
-  | 'internal-invariant'
+  | "unmounted-node"
+  | "stale-node-map"
+  | "foreign-dom"
+  | "nested-editor-boundary"
+  | "shadow-boundary"
+  | "covered-range-boundary"
+  | "void-boundary"
+  | "composition-transient"
+  | "invalid-dom-selection"
+  | "invalid-model-range"
+  | "missing-caret-range"
+  | "internal-invariant";
 
 type DOMResolveResult<T> =
   | { ok: true; value: T }
   | {
-      ok: false
-      phase: DOMResolvePhase
-      reason: DOMResolveReason
-      recoverable: boolean
-    }
+      ok: false;
+      phase: DOMResolvePhase;
+      reason: DOMResolveReason;
+      recoverable: boolean;
+    };
 ```
 
 Hot path policy:
@@ -320,16 +320,16 @@ Hot path policy:
 
 Recoverability policy:
 
-| Reason | Runtime action |
-| --- | --- |
-| `foreign-dom` | ignore import, keep model selection or null |
-| `nested-editor-boundary` | ignore for parent, let focused child own input |
-| `stale-node-map` | defer or repair after commit; do not crash |
-| `unmounted-node` | return null for overlay/focus/scroll; strict helper still throws |
-| `composition-transient` | defer to composition/native input owner |
-| `shadow-boundary` | use root-aware path if supported, otherwise null |
-| `invalid-model-range` | strict throw for direct calls; runtime null plus recovery |
-| `internal-invariant` | throw or route to fatal `onError` |
+| Reason                   | Runtime action                                                   |
+| ------------------------ | ---------------------------------------------------------------- |
+| `foreign-dom`            | ignore import, keep model selection or null                      |
+| `nested-editor-boundary` | ignore for parent, let focused child own input                   |
+| `stale-node-map`         | defer or repair after commit; do not crash                       |
+| `unmounted-node`         | return null for overlay/focus/scroll; strict helper still throws |
+| `composition-transient`  | defer to composition/native input owner                          |
+| `shadow-boundary`        | use root-aware path if supported, otherwise null                 |
+| `invalid-model-range`    | strict throw for direct calls; runtime null plus recovery        |
+| `internal-invariant`     | throw or route to fatal `onError`                                |
 
 Scrubber policy:
 
@@ -392,20 +392,20 @@ Do not add new `Fixes #...` claims from this plan.
 
 Issues this plan should improve or classify:
 
-| Issue | Target classification | Why |
-| --- | --- | --- |
-| `#3641` | Improves | This directly answers "exceptions too liberally" by making runtime paths non-throwing. Needs exact historical repro to close. |
-| `#3948` | Improves | Production runtime becomes less crash-prone, but the issue needs current minimal repro before exact closure. |
-| `#4088` | Improves or Fixes after browser row | Mentions portal gets `getRangeRect` / `tryToDOMRange`; exact example proof can close if replayed. |
-| `#4643` | Improves | Invalid selection should be classified as recoverable unless it violates invariants. |
-| `#4564` | Improves | Programmatic removal stale-DOM projection returns null in runtime; exact repro still required. |
-| `#4851` | Related/Improves | Katex/contenteditable false DOM point needs exact app-owned DOM proof. |
-| `#5697` | Improves | Add `tryFindPath` and keep runtime-id fallback; exact performance/reliability proof required. |
-| `#5938` | Improves | Same path-computation family as `tryFindPath`; no exact closure without current repro. |
-| `#5690` | Related | Inline boundary double-click/delete needs browser gesture proof. |
-| `#5107`, `#5749`, `#4337` | Related/Improves | Shadow DOM event-range gets nullable `tryFindEventRange`; exact rows needed. |
-| `#5711`, `#5066`, `#4847`, `#5014`, `#4001`, `#3568` | Related | IME/mobile/keyboard rows need device/browser-specific proof. |
-| `#5435`, `#5355` | Related | Read-only/table DOM selection crash pressure, exact table/readonly proof needed. |
+| Issue                                                | Target classification               | Why                                                                                                                           |
+| ---------------------------------------------------- | ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `#3641`                                              | Improves                            | This directly answers "exceptions too liberally" by making runtime paths non-throwing. Needs exact historical repro to close. |
+| `#3948`                                              | Improves                            | Production runtime becomes less crash-prone, but the issue needs current minimal repro before exact closure.                  |
+| `#4088`                                              | Improves or Fixes after browser row | Mentions portal gets `getRangeRect` / `tryToDOMRange`; exact example proof can close if replayed.                             |
+| `#4643`                                              | Improves                            | Invalid selection should be classified as recoverable unless it violates invariants.                                          |
+| `#4564`                                              | Improves                            | Programmatic removal stale-DOM projection returns null in runtime; exact repro still required.                                |
+| `#4851`                                              | Related/Improves                    | Katex/contenteditable false DOM point needs exact app-owned DOM proof.                                                        |
+| `#5697`                                              | Improves                            | Add `tryFindPath` and keep runtime-id fallback; exact performance/reliability proof required.                                 |
+| `#5938`                                              | Improves                            | Same path-computation family as `tryFindPath`; no exact closure without current repro.                                        |
+| `#5690`                                              | Related                             | Inline boundary double-click/delete needs browser gesture proof.                                                              |
+| `#5107`, `#5749`, `#4337`                            | Related/Improves                    | Shadow DOM event-range gets nullable `tryFindEventRange`; exact rows needed.                                                  |
+| `#5711`, `#5066`, `#4847`, `#5014`, `#4001`, `#3568` | Related                             | IME/mobile/keyboard rows need device/browser-specific proof.                                                                  |
+| `#5435`, `#5355`                                     | Related                             | Read-only/table DOM selection crash pressure, exact table/readonly proof needed.                                              |
 
 Issue-sync pass result:
 
@@ -426,20 +426,20 @@ Issue-sync pass result:
   related classification, because this plan directly targets mentions range
   geometry.
 - No PR-description update in this pass. The accepted code/API shape has not
-  landed in `../slate-v2`, and no new fixed issue claim exists.
+  landed in `.tmp/slate-v2`, and no new fixed issue claim exists.
 
 ## 13. Legacy Regression Proof Matrix
 
-| Behavior family | Required proof |
-| --- | --- |
-| Strict helper invariant | Strict `toDOMPoint`, `toDOMRange`, `findPath`, `findEventRange` still throw in direct invalid calls. |
-| Nullable helper DX | `tryToDOMPoint`, `tryToDOMRange`, `tryFindPath`, `tryFindEventRange`, `getRangeRect` return `null` for recoverable cases. |
-| DOM-to-model import | Foreign/nested/stale DOM selections classify before conversion and do not throw. |
-| Model-to-DOM export | Selection export and scroll restore tolerate unmounted or stale DOM. |
-| Mention/overlay rect | Mention portal and hovering/floating UI can position or skip without React error fallback. |
-| Shadow/event range | Shadow-root drag/drop event range returns `null` or valid range, never production crash. |
-| IME/composition | Composition transient DOM mismatch is deferred to native/composition owner. |
-| Telemetry | Recoverable errors can be counted in tests/debug without crashing production. |
+| Behavior family         | Required proof                                                                                                            |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| Strict helper invariant | Strict `toDOMPoint`, `toDOMRange`, `findPath`, `findEventRange` still throw in direct invalid calls.                      |
+| Nullable helper DX      | `tryToDOMPoint`, `tryToDOMRange`, `tryFindPath`, `tryFindEventRange`, `getRangeRect` return `null` for recoverable cases. |
+| DOM-to-model import     | Foreign/nested/stale DOM selections classify before conversion and do not throw.                                          |
+| Model-to-DOM export     | Selection export and scroll restore tolerate unmounted or stale DOM.                                                      |
+| Mention/overlay rect    | Mention portal and hovering/floating UI can position or skip without React error fallback.                                |
+| Shadow/event range      | Shadow-root drag/drop event range returns `null` or valid range, never production crash.                                  |
+| IME/composition         | Composition transient DOM mismatch is deferred to native/composition owner.                                               |
+| Telemetry               | Recoverable errors can be counted in tests/debug without crashing production.                                             |
 
 ## 14. Browser Stress And Parity Strategy
 
@@ -457,13 +457,13 @@ Minimum browser rows before exact claims:
 
 ## 15. Applicable Implementation-Skill Review Matrix
 
-| Skill | Status | Reason |
-| --- | --- | --- |
+| Skill                       | Status  | Reason                                                                                                                           |
+| --------------------------- | ------- | -------------------------------------------------------------------------------------------------------------------------------- |
 | Vercel React best practices | skipped | No React rendering implementation in this planning pass. Later execution should apply it to `selection-controller` and examples. |
-| performance-oracle | applied | Hot path primitive return policy rejects rich object allocation on `selectionchange`. |
-| tdd | planned | Execution must start with strict-vs-nullable unit tests and one browser RED for the example/runtime path touched. |
-| shadcn | skipped | No UI component library work. |
-| react-useeffect | planned | Example rewrites must keep effect dependencies narrow and avoid stale DOM refs. |
+| performance-oracle          | applied | Hot path primitive return policy rejects rich object allocation on `selectionchange`.                                            |
+| tdd                         | planned | Execution must start with strict-vs-nullable unit tests and one browser RED for the example/runtime path touched.                |
+| shadcn                      | skipped | No UI component library work.                                                                                                    |
+| react-useeffect             | planned | Example rewrites must keep effect dependencies narrow and avoid stale DOM refs.                                                  |
 
 ## 16. High-Risk Deliberate Pass
 
@@ -484,11 +484,11 @@ Blast radius:
 
 Pre-mortem:
 
-| Failure | Why it happens | Prevention |
-| --- | --- | --- |
-| Silent data corruption | `try*` hides a real model invariant bug. | Keep strict helpers and direct-call tests; `internal-invariant` stays fatal. |
-| Hot path slowdown | Classifier allocates reason objects on every selectionchange. | Primitive nullable hot path; reason objects only for tests/debug. |
-| Overclaimed issue closure | Generic no-throw behavior is treated as fixing all DOM point issues. | Exact issue-shaped browser/device proof before `Fixes #...`. |
+| Failure                   | Why it happens                                                       | Prevention                                                                   |
+| ------------------------- | -------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| Silent data corruption    | `try*` hides a real model invariant bug.                             | Keep strict helpers and direct-call tests; `internal-invariant` stays fatal. |
+| Hot path slowdown         | Classifier allocates reason objects on every selectionchange.        | Primitive nullable hot path; reason objects only for tests/debug.            |
+| Overclaimed issue closure | Generic no-throw behavior is treated as fixing all DOM point issues. | Exact issue-shaped browser/device proof before `Fixes #...`.                 |
 
 Verdict: keep the plan, but split implementation into API, runtime, example,
 and proof phases.
@@ -504,25 +504,25 @@ and proof phases.
 
 ## 18. Slate Maintainer Objection Ledger
 
-| Objection | Answer | Verdict |
-| --- | --- | --- |
-| "Throwing is how users know their DOM is broken." | Direct strict helpers still throw. Runtime paths stop turning recoverable browser timing into app crashes. | keep |
-| "This bloats the public API." | The API adds predictable `try*` mirrors for existing sharp helpers and one rect helper that examples already need. It removes the worse `suppressThrow` boolean from user-facing DX. | keep |
-| "Null loses useful debugging context." | Runtime hot paths return null; tests/debug traces can request structured reasons. | keep |
-| "Apps may need custom DOM policies." | Apps get `DOMRect | null` and model `Range | null`. Raw DOM policy remains Slate-owned until a concrete use case proves otherwise. | keep |
-| "This could hide real bugs in production." | Only classified recoverable reasons fail closed. `internal-invariant` stays fatal. | keep |
+| Objection                                         | Answer                                                                                                                                                                               | Verdict              |
+| ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------- | ------------------------------------------------------------------------------------- | ---- |
+| "Throwing is how users know their DOM is broken." | Direct strict helpers still throw. Runtime paths stop turning recoverable browser timing into app crashes.                                                                           | keep                 |
+| "This bloats the public API."                     | The API adds predictable `try*` mirrors for existing sharp helpers and one rect helper that examples already need. It removes the worse `suppressThrow` boolean from user-facing DX. | keep                 |
+| "Null loses useful debugging context."            | Runtime hot paths return null; tests/debug traces can request structured reasons.                                                                                                    | keep                 |
+| "Apps may need custom DOM policies."              | Apps get `DOMRect                                                                                                                                                                    | null`and model`Range | null`. Raw DOM policy remains Slate-owned until a concrete use case proves otherwise. | keep |
+| "This could hide real bugs in production."        | Only classified recoverable reasons fail closed. `internal-invariant` stays fatal.                                                                                                   | keep                 |
 
 ## 19. Pass Schedule And Pass-State Ledger
 
-| Pass | Status | Evidence |
-| --- | --- | --- |
-| 1. Current-state read | complete | Live `../slate-v2` DOM editor, selection controller, selection reconciler, examples, tests. |
-| 2. Related issue cache read | complete | Cached live ledger, coverage matrix, fork dossier, requirements file. |
-| 3. Ecosystem comparison | complete | Local ProseMirror, Lexical, Tiptap source plus compiled editor architecture pages. |
-| 4. Intent and decision brief | complete | Sections 2 and 3. |
-| 5. High-risk and steelman pass | complete | Sections 16 and 18. |
-| 6. Issue-sync write pass | complete | Cache-first issue ledgers read; `#4088` stale sync row updated; no new fixed claims. |
-| 7. Closure score | complete | Score `0.93`; plan is ready for later `ralph` execution. |
+| Pass                           | Status   | Evidence                                                                                      |
+| ------------------------------ | -------- | --------------------------------------------------------------------------------------------- |
+| 1. Current-state read          | complete | Live `.tmp/slate-v2` DOM editor, selection controller, selection reconciler, examples, tests. |
+| 2. Related issue cache read    | complete | Cached live ledger, coverage matrix, fork dossier, requirements file.                         |
+| 3. Ecosystem comparison        | complete | Local ProseMirror, Lexical, Tiptap source plus compiled editor architecture pages.            |
+| 4. Intent and decision brief   | complete | Sections 2 and 3.                                                                             |
+| 5. High-risk and steelman pass | complete | Sections 16 and 18.                                                                           |
+| 6. Issue-sync write pass       | complete | Cache-first issue ledgers read; `#4088` stale sync row updated; no new fixed claims.          |
+| 7. Closure score               | complete | Score `0.93`; plan is ready for later `ralph` execution.                                      |
 
 ## 20. Plan Deltas From Review
 
@@ -568,14 +568,14 @@ My take:
 
 ## 22. Implementation Phases With Owners
 
-| Phase | Owner | Work | Proof |
-| --- | --- | --- | --- |
-| 1. API contract | `slate-dom` | Add `try*` helpers and `getRangeRect`; keep strict helpers. Remove public `suppressThrow`. | `public-surface-contract`, `bridge.ts`, type tests. |
-| 2. Internal classifier | `slate-dom` | Implement shared classifier/result helpers behind strict and nullable APIs. | Reason tests for stale, foreign, nested, shadow, invalid model range. |
-| 3. React runtime consumption | `slate-react` | Replace catch-based runtime export/import paths with nullable helpers. | `selection-controller-contract`, `selection-reconciler-contract`, `dom-repair-policy-contract`. |
-| 4. Examples and app DX | `site/examples` | Rewrite mentions and overlay examples to `getRangeRect` / `tryToDOMRange`. | Mentions browser row, hovering toolbar row if needed. |
-| 5. Shadow and event range | `slate-dom` + `slate-react` | Add `tryFindEventRange` and route drag/drop/event callers. | Shadow DOM Playwright row. |
-| 6. Issue accounting | `plate-2` docs | Sync ledgers only for accepted code/proof changes. | Coverage matrix, fork dossier, v2 sync ledger. |
+| Phase                        | Owner                       | Work                                                                                       | Proof                                                                                           |
+| ---------------------------- | --------------------------- | ------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------- |
+| 1. API contract              | `slate-dom`                 | Add `try*` helpers and `getRangeRect`; keep strict helpers. Remove public `suppressThrow`. | `public-surface-contract`, `bridge.ts`, type tests.                                             |
+| 2. Internal classifier       | `slate-dom`                 | Implement shared classifier/result helpers behind strict and nullable APIs.                | Reason tests for stale, foreign, nested, shadow, invalid model range.                           |
+| 3. React runtime consumption | `slate-react`               | Replace catch-based runtime export/import paths with nullable helpers.                     | `selection-controller-contract`, `selection-reconciler-contract`, `dom-repair-policy-contract`. |
+| 4. Examples and app DX       | `site/examples`             | Rewrite mentions and overlay examples to `getRangeRect` / `tryToDOMRange`.                 | Mentions browser row, hovering toolbar row if needed.                                           |
+| 5. Shadow and event range    | `slate-dom` + `slate-react` | Add `tryFindEventRange` and route drag/drop/event callers.                                 | Shadow DOM Playwright row.                                                                      |
+| 6. Issue accounting          | `plate-2` docs              | Sync ledgers only for accepted code/proof changes.                                         | Coverage matrix, fork dossier, v2 sync ledger.                                                  |
 
 ## 23. Fast Driver Gates
 
@@ -648,8 +648,8 @@ This plan is `done` for planning when:
 
 Execution remains separate:
 
-- A later `ralph` run must implement this in `../slate-v2`.
-- That run must prove the implementation with the `../slate-v2` unit/type/browser
+- A later `ralph` run must implement this in `.tmp/slate-v2`.
+- That run must prove the implementation with the `.tmp/slate-v2` unit/type/browser
   gates named in section 23.
 - Only after those gates pass may the ledgers or PR narrative promote any issue
   from related/improves to `Fixes #...`.

@@ -7,7 +7,7 @@ status: completed
 # Goal
 
 Recover the next highest-leverage `slate` API seam that is actually backed by
-the real draft in `../slate-v2-draft`:
+the real draft in `.tmp/slate-v2-draft`:
 
 - `getChildren`
 - `setChildren`
@@ -24,8 +24,8 @@ Primary truth, in order:
 
 1. legacy source and docs under `../slate/packages/slate/**` and
    `../slate/docs/**`
-2. current `../slate-v2/packages/slate/**`
-3. real draft source under `../slate-v2-draft/packages/slate/**`
+2. current `.tmp/slate-v2/packages/slate/**`
+3. real draft source under `.tmp/slate-v2-draft/packages/slate/**`
 4. banked cut decisions already recorded in live docs/ledgers
 
 Hard rule:

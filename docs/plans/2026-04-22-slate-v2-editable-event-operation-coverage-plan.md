@@ -82,7 +82,7 @@ state, not just model state.
 
 ## Current Runtime Owners
 
-Current owner files in `../slate-v2/packages/slate-react/src/editable/`:
+Current owner files in `.tmp/slate-v2/packages/slate-react/src/editable/`:
 
 - `browser-handle.ts`
 - `clipboard-input-strategy.ts`
@@ -150,8 +150,8 @@ Before calling this lane complete, build a parity ledger from:
 - `../slate/packages/slate-react/**`
 - `../slate/site/examples/**`
 - `../slate/playwright/**` if present
-- current v2 examples/tests under `../slate-v2/playwright/integration/examples/**`
-- current v2 React contracts under `../slate-v2/packages/slate-react/test/**`
+- current v2 examples/tests under `.tmp/slate-v2/playwright/integration/examples/**`
+- current v2 React contracts under `.tmp/slate-v2/packages/slate-react/test/**`
 
 Every legacy browser-editing behavior must be classified:
 
@@ -176,13 +176,13 @@ Required artifact:
 Minimum columns:
 
 | Legacy behavior | Final v2 behavior | Status | Proof command | Owner | Rationale |
-| --- | --- | --- | --- | --- | --- |
+| --------------- | ----------------- | ------ | ------------- | ----- | --------- |
 
 ## Legacy No-Regression Ledger
 
 Skip inventory:
 
-- v2 `../slate-v2/playwright/integration/examples/**`: no skipped rows found
+- v2 `.tmp/slate-v2/playwright/integration/examples/**`: no skipped rows found
   with `rg -n "test\\.skip|\\.skip\\(|skip\\("`.
 - legacy `../slate/playwright/integration/examples/**`: one skipped row,
   `inlines.test.ts` arrow-key read-only inline navigation.
@@ -190,31 +190,31 @@ Skip inventory:
   `playwright/integration/examples/inlines.test.ts` /
   `arrow keys skip over read-only inline`.
 
-| Legacy behavior | Final v2 behavior | Status | Proof command | Owner | Rationale |
-| --- | --- | --- | --- | --- | --- |
-| Editable void structure, duplication, and embedded input editing | `editable-voids` keeps legacy rows and adds outer-selection restoration, nested editor input, and selectionchange-noise rows | recovered | `bun test:integration-local` | `slate-react` browser event policy | v2 proves the original behavior plus the higher-risk focus/selection paths that legacy did not cover. |
-| Check-list checkbox toggling | `check-lists` toggles checkbox and preserves editor selection/follow-up insertion | recovered | `bun test:integration-local` | `slate-react` internal interactive target policy | v2 keeps the checkbox behavior and proves the non-editable target does not corrupt selection. |
-| Read-only inline arrow navigation | Active `inlines` row for arrow keys around read-only inline | recovered | `bun test:integration-local` | `slate-react` selection/navigation | Legacy skipped this row; v2 runs it. |
-| Inline link cut | `inlines` cut row deletes selected inline link text and keeps desktop caret follow-up; mobile proves deletion only | recovered / mobile transport narrowed | `bun test:integration-local` | clipboard transport / mobile automation | Desktop projects prove caret follow-up; mobile cannot use forbidden clipboard reads or reliable role follow-up after cut, so it proves deletion. |
-| Richtext render and typing | `richtext` covers render, browser insertion, visual caret, movement, delete/backspace, undo, paste-over-selection, and route remount | recovered | `bun test:integration-local` | `slate-react` input/selection/history | v2 exceeds legacy's render/type/undo coverage with browser-visible selection and caret assertions. |
-| Plaintext typing | `plaintext` inserts typed text | recovered | `bun test:integration-local` | browser input | Legacy behavior remains active. |
-| Paste HTML bold/code | `paste-html` keeps bold/code rows and adds selected-content rich paste/follow-up proof; mobile uses semantic insertion where clipboard write is denied | recovered / mobile transport narrowed | `bun test:integration-local` | clipboard transport | Desktop proves clipboard path; mobile proves model/visible rich insertion because `navigator.clipboard.write*` is denied. |
-| Shadow DOM editor render/edit/line break | `shadow-dom` covers nested shadow rendering, editing, and new-line typing | recovered | `bun test:integration-local` | `slate-react` DOM bridge | Legacy behavior remains active and green across projects. |
-| Markdown shortcuts quote/list/heading | `markdown-shortcuts` keeps quote, list, and heading rows | recovered | `bun test:integration-local` | app shortcut example | Legacy behavior remains active. |
-| Mentions render/list/insert | `mentions` keeps render/list/insert rows | recovered | `bun test:integration-local` | inline void/app example | Legacy behavior remains active after earlier mention/full-selection fixes. |
-| Images render/delete invalid URL/selected image | `images` covers image render, invalid prompt rejection, and selected image deletion | recovered | `bun test:integration-local` | void element selection/deletion | v2 keeps legacy image behavior and adds invalid prompt proof. |
-| Tables render | `tables` table tag row remains active | recovered | `bun test:integration-local` | table rendering | Legacy behavior remains active. |
-| Huge document chunking example | v2 huge document renders without child-count chunking | replaced | `bun test:integration-local`; `REACT_HUGE_COMPARE_BLOCKS=5000 REACT_HUGE_COMPARE_ITERATIONS=5 REACT_HUGE_COMPARE_TYPE_OPS=10 bun run bench:react:huge-document:legacy-compare:local` | semantic islands / large-document runtime | Legacy chunking behavior is intentionally replaced by semantic islands, corridor, and occlusion. |
-| Code highlighting visual token rendering | v2 uses semantic token projection assertions | replaced | `bun test:integration-local` | projection-source overlays | Final API teaches projection sources instead of legacy `decorate` as primary overlay story. |
-| Search highlighting | v2 active row highlights searched text | recovered | `bun test:integration-local` | projection/decorated text | Legacy behavior remains active. |
-| Hovering toolbar | v2 keeps appear/disappear rows | recovered | `bun test:integration-local` | selection/floating UI | Legacy behavior remains active. |
-| Styling via `style` and `className` | v2 keeps both styling rows | recovered | `bun test:integration-local` | public `Editable` props | Legacy behavior remains active. |
-| Iframe editor | v2 iframe editor remains editable | recovered | `bun test:integration-local` | DOM bridge | Legacy behavior remains active. |
-| Read-only editor | v2 read-only row remains non-editable | recovered | `bun test:integration-local` | read-only policy | Legacy behavior remains active. |
-| Forced layout deletion persistence | v2 forced-layout rows remain active | recovered | `bun test:integration-local` | example rendering | Legacy behavior remains active. |
-| Placeholder rendering and editor height | v2 placeholder rows remain active | recovered | `bun test:integration-local` | placeholder rendering | Legacy behavior remains active. |
-| Markdown preview | v2 markdown preview row remains active | recovered | `bun test:integration-local` | example rendering | Legacy behavior remains active. |
-| Embeds | v2 embeds row remains active | recovered | `bun test:integration-local` | void/embed rendering | Legacy behavior remains active. |
+| Legacy behavior                                                  | Final v2 behavior                                                                                                                                      | Status                                | Proof command                                                                                                                                                                        | Owner                                            | Rationale                                                                                                                                        |
+| ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Editable void structure, duplication, and embedded input editing | `editable-voids` keeps legacy rows and adds outer-selection restoration, nested editor input, and selectionchange-noise rows                           | recovered                             | `bun test:integration-local`                                                                                                                                                         | `slate-react` browser event policy               | v2 proves the original behavior plus the higher-risk focus/selection paths that legacy did not cover.                                            |
+| Check-list checkbox toggling                                     | `check-lists` toggles checkbox and preserves editor selection/follow-up insertion                                                                      | recovered                             | `bun test:integration-local`                                                                                                                                                         | `slate-react` internal interactive target policy | v2 keeps the checkbox behavior and proves the non-editable target does not corrupt selection.                                                    |
+| Read-only inline arrow navigation                                | Active `inlines` row for arrow keys around read-only inline                                                                                            | recovered                             | `bun test:integration-local`                                                                                                                                                         | `slate-react` selection/navigation               | Legacy skipped this row; v2 runs it.                                                                                                             |
+| Inline link cut                                                  | `inlines` cut row deletes selected inline link text and keeps desktop caret follow-up; mobile proves deletion only                                     | recovered / mobile transport narrowed | `bun test:integration-local`                                                                                                                                                         | clipboard transport / mobile automation          | Desktop projects prove caret follow-up; mobile cannot use forbidden clipboard reads or reliable role follow-up after cut, so it proves deletion. |
+| Richtext render and typing                                       | `richtext` covers render, browser insertion, visual caret, movement, delete/backspace, undo, paste-over-selection, and route remount                   | recovered                             | `bun test:integration-local`                                                                                                                                                         | `slate-react` input/selection/history            | v2 exceeds legacy's render/type/undo coverage with browser-visible selection and caret assertions.                                               |
+| Plaintext typing                                                 | `plaintext` inserts typed text                                                                                                                         | recovered                             | `bun test:integration-local`                                                                                                                                                         | browser input                                    | Legacy behavior remains active.                                                                                                                  |
+| Paste HTML bold/code                                             | `paste-html` keeps bold/code rows and adds selected-content rich paste/follow-up proof; mobile uses semantic insertion where clipboard write is denied | recovered / mobile transport narrowed | `bun test:integration-local`                                                                                                                                                         | clipboard transport                              | Desktop proves clipboard path; mobile proves model/visible rich insertion because `navigator.clipboard.write*` is denied.                        |
+| Shadow DOM editor render/edit/line break                         | `shadow-dom` covers nested shadow rendering, editing, and new-line typing                                                                              | recovered                             | `bun test:integration-local`                                                                                                                                                         | `slate-react` DOM bridge                         | Legacy behavior remains active and green across projects.                                                                                        |
+| Markdown shortcuts quote/list/heading                            | `markdown-shortcuts` keeps quote, list, and heading rows                                                                                               | recovered                             | `bun test:integration-local`                                                                                                                                                         | app shortcut example                             | Legacy behavior remains active.                                                                                                                  |
+| Mentions render/list/insert                                      | `mentions` keeps render/list/insert rows                                                                                                               | recovered                             | `bun test:integration-local`                                                                                                                                                         | inline void/app example                          | Legacy behavior remains active after earlier mention/full-selection fixes.                                                                       |
+| Images render/delete invalid URL/selected image                  | `images` covers image render, invalid prompt rejection, and selected image deletion                                                                    | recovered                             | `bun test:integration-local`                                                                                                                                                         | void element selection/deletion                  | v2 keeps legacy image behavior and adds invalid prompt proof.                                                                                    |
+| Tables render                                                    | `tables` table tag row remains active                                                                                                                  | recovered                             | `bun test:integration-local`                                                                                                                                                         | table rendering                                  | Legacy behavior remains active.                                                                                                                  |
+| Huge document chunking example                                   | v2 huge document renders without child-count chunking                                                                                                  | replaced                              | `bun test:integration-local`; `REACT_HUGE_COMPARE_BLOCKS=5000 REACT_HUGE_COMPARE_ITERATIONS=5 REACT_HUGE_COMPARE_TYPE_OPS=10 bun run bench:react:huge-document:legacy-compare:local` | semantic islands / large-document runtime        | Legacy chunking behavior is intentionally replaced by semantic islands, corridor, and occlusion.                                                 |
+| Code highlighting visual token rendering                         | v2 uses semantic token projection assertions                                                                                                           | replaced                              | `bun test:integration-local`                                                                                                                                                         | projection-source overlays                       | Final API teaches projection sources instead of legacy `decorate` as primary overlay story.                                                      |
+| Search highlighting                                              | v2 active row highlights searched text                                                                                                                 | recovered                             | `bun test:integration-local`                                                                                                                                                         | projection/decorated text                        | Legacy behavior remains active.                                                                                                                  |
+| Hovering toolbar                                                 | v2 keeps appear/disappear rows                                                                                                                         | recovered                             | `bun test:integration-local`                                                                                                                                                         | selection/floating UI                            | Legacy behavior remains active.                                                                                                                  |
+| Styling via `style` and `className`                              | v2 keeps both styling rows                                                                                                                             | recovered                             | `bun test:integration-local`                                                                                                                                                         | public `Editable` props                          | Legacy behavior remains active.                                                                                                                  |
+| Iframe editor                                                    | v2 iframe editor remains editable                                                                                                                      | recovered                             | `bun test:integration-local`                                                                                                                                                         | DOM bridge                                       | Legacy behavior remains active.                                                                                                                  |
+| Read-only editor                                                 | v2 read-only row remains non-editable                                                                                                                  | recovered                             | `bun test:integration-local`                                                                                                                                                         | read-only policy                                 | Legacy behavior remains active.                                                                                                                  |
+| Forced layout deletion persistence                               | v2 forced-layout rows remain active                                                                                                                    | recovered                             | `bun test:integration-local`                                                                                                                                                         | example rendering                                | Legacy behavior remains active.                                                                                                                  |
+| Placeholder rendering and editor height                          | v2 placeholder rows remain active                                                                                                                      | recovered                             | `bun test:integration-local`                                                                                                                                                         | placeholder rendering                            | Legacy behavior remains active.                                                                                                                  |
+| Markdown preview                                                 | v2 markdown preview row remains active                                                                                                                 | recovered                             | `bun test:integration-local`                                                                                                                                                         | example rendering                                | Legacy behavior remains active.                                                                                                                  |
+| Embeds                                                           | v2 embeds row remains active                                                                                                                           | recovered                             | `bun test:integration-local`                                                                                                                                                         | void/embed rendering                             | Legacy behavior remains active.                                                                                                                  |
 
 Classification summary:
 
@@ -660,7 +660,7 @@ Status: closed.
 Actions:
 
 - added `keeps caret editable after browser Backspace at selected text end` to
-  `../slate-v2/playwright/integration/examples/richtext.test.ts`
+  `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
 - changed the tracer to reproduce the real user path:
   - select end of first richtext block
   - browser-type `O`
@@ -678,10 +678,10 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/playwright/integration/examples/richtext.test.ts`
-- `../slate-v2/packages/slate-react/src/editable/dom-repair-queue.ts`
-- `../slate-v2/packages/slate-react/src/editable/model-input-strategy.ts`
-- `../slate-v2/packages/slate-react/src/hooks/use-slate-node-ref.tsx`
+- `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/dom-repair-queue.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/model-input-strategy.ts`
+- `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-node-ref.tsx`
 
 Evidence:
 
@@ -734,7 +734,7 @@ Status: closed.
 Actions:
 
 - added `keeps caret editable after browser Delete before trailing punctuation`
-  to `../slate-v2/playwright/integration/examples/richtext.test.ts`
+  to `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
 - mirrored the Backspace contract:
   - native Delete removes trailing punctuation
   - Slate selection remains non-null and collapsed
@@ -744,7 +744,7 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/playwright/integration/examples/richtext.test.ts`
+- `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
 
 Evidence:
 
@@ -777,9 +777,9 @@ Status: closed.
 Actions:
 
 - added `keeps caret editable after browser Backspace deletes selected range`
-  to `../slate-v2/playwright/integration/examples/richtext.test.ts`
+  to `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
 - added `keeps caret editable after browser Delete deletes selected range` to
-  `../slate-v2/playwright/integration/examples/richtext.test.ts`
+  `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
 - both rows assert:
   - visible DOM text after deletion
   - model text after deletion
@@ -789,7 +789,7 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/playwright/integration/examples/richtext.test.ts`
+- `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
 
 Evidence:
 
@@ -828,17 +828,17 @@ Status: closed.
 Actions:
 
 - added `keeps caret editable after Backspace inside decorated text` to
-  `../slate-v2/playwright/integration/examples/highlighted-text.test.ts`
+  `.tmp/slate-v2/playwright/integration/examples/highlighted-text.test.ts`
 - added `keeps caret editable after Delete inside decorated text` to
-  `../slate-v2/playwright/integration/examples/highlighted-text.test.ts`
+  `.tmp/slate-v2/playwright/integration/examples/highlighted-text.test.ts`
 - added `keeps caret editable after deleting a decorated selected range` to
-  `../slate-v2/playwright/integration/examples/highlighted-text.test.ts`
+  `.tmp/slate-v2/playwright/integration/examples/highlighted-text.test.ts`
 - rows assert decorated rendering remains, model text, Slate selection, DOM
   selection, and follow-up typing
 
 Changed files:
 
-- `../slate-v2/playwright/integration/examples/highlighted-text.test.ts`
+- `.tmp/slate-v2/playwright/integration/examples/highlighted-text.test.ts`
 
 Evidence:
 
@@ -888,7 +888,7 @@ Status: partially closed.
 Actions:
 
 - added `keeps caret editable after plain text paste over selected range` to
-  `../slate-v2/playwright/integration/examples/richtext.test.ts`
+  `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
 - the row uses real clipboard paste transport through `slate-browser`
 - asserts:
   - model text after paste
@@ -903,10 +903,10 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/playwright/integration/examples/richtext.test.ts`
-- `../slate-v2/packages/slate-react/src/editable/model-input-strategy.ts`
-- `../slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts`
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/model-input-strategy.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
 
 Evidence:
 
@@ -950,7 +950,7 @@ Status: partially closed.
 Actions:
 
 - added `keeps caret editable after rich HTML paste over selected content` to
-  `../slate-v2/playwright/integration/examples/paste-html.test.ts`
+  `.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts`
 - used real clipboard paste through `slate-browser`
 - asserted:
   - rich HTML paste preserves formatting
@@ -962,7 +962,7 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/playwright/integration/examples/paste-html.test.ts`
+- `.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts`
 
 Evidence:
 
@@ -992,7 +992,7 @@ Status: partially closed.
 Actions:
 
 - added `keeps caret editable after cutting inline link text` to
-  `../slate-v2/playwright/integration/examples/inlines.test.ts`
+  `.tmp/slate-v2/playwright/integration/examples/inlines.test.ts`
 - the row uses real `ControlOrMeta+X`
 - asserted clipboard text, removal of the link text, non-null selection, and
   follow-up typing
@@ -1004,8 +1004,8 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/playwright/integration/examples/inlines.test.ts`
-- `../slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts`
+- `.tmp/slate-v2/playwright/integration/examples/inlines.test.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts`
 
 Evidence:
 
@@ -1145,8 +1145,8 @@ Decision:
 
 Changed files:
 
-- `../slate-v2/packages/slate-browser/src/playwright/ime.ts`
-- `../slate-v2/packages/slate-browser/src/playwright/index.ts`
+- `.tmp/slate-v2/packages/slate-browser/src/playwright/ime.ts`
+- `.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts`
 
 Rejected tactic:
 
@@ -1187,7 +1187,7 @@ Status: partially closed.
 Actions:
 
 - added `keeps selection synchronized after browser ArrowLeft and ArrowRight`
-  to `../slate-v2/playwright/integration/examples/richtext.test.ts`
+  to `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
 - row asserts Slate selection and DOM caret after ArrowLeft and ArrowRight
 - initial attempt used immediate manual DOM selection and failed because Slate
   had not observed selectionchange yet
@@ -1196,7 +1196,7 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/playwright/integration/examples/richtext.test.ts`
+- `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
 
 Evidence:
 
@@ -1298,14 +1298,14 @@ Status: partially closed.
 Actions:
 
 - added `selects the current block on browser triple click` to
-  `../slate-v2/playwright/integration/examples/richtext.test.ts`
+  `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
 - row asserts:
   - Slate selection spans the first block
   - DOM selection is non-collapsed and inside the editor
 
 Changed files:
 
-- `../slate-v2/playwright/integration/examples/richtext.test.ts`
+- `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
 
 Evidence:
 
@@ -1340,13 +1340,13 @@ Status: partially closed.
 Actions:
 
 - added `selects void content by browser click without mutating content` to
-  `../slate-v2/playwright/integration/examples/large-document-runtime.test.ts`
+  `.tmp/slate-v2/playwright/integration/examples/large-document-runtime.test.ts`
 - row clicks rendered void content in the final large-document runtime
 - asserts Slate selection collapses at the void path and content is not mutated
 
 Changed files:
 
-- `../slate-v2/playwright/integration/examples/large-document-runtime.test.ts`
+- `.tmp/slate-v2/playwright/integration/examples/large-document-runtime.test.ts`
 
 Evidence:
 
@@ -1401,13 +1401,13 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-react/src/editable/target-policy.ts`
-- `../slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`
-- `../slate-v2/packages/slate-react/src/editable/keyboard-input-strategy.ts`
-- `../slate-v2/packages/slate-react/src/editable/input-router.ts`
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
-- `../slate-v2/playwright/integration/examples/editable-voids.test.ts`
-- `../slate-v2/playwright/integration/examples/check-lists.test.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/target-policy.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/keyboard-input-strategy.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/input-router.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/playwright/integration/examples/editable-voids.test.ts`
+- `.tmp/slate-v2/playwright/integration/examples/check-lists.test.ts`
 
 Evidence:
 
@@ -1469,9 +1469,9 @@ Status: closed for focused lifecycle rows.
 Actions:
 
 - added `ignores selectionchange noise from input inside editable void`
-  to `../slate-v2/playwright/integration/examples/editable-voids.test.ts`
+  to `.tmp/slate-v2/playwright/integration/examples/editable-voids.test.ts`
 - added `does not duplicate native input handling after route remount`
-  to `../slate-v2/playwright/integration/examples/richtext.test.ts`
+  to `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
 - used route navigation through `/examples/plaintext` as the browser-visible
   unmount/remount proof
 - kept mobile remount follow-up insertion on semantic handle transport because
@@ -1480,8 +1480,8 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/playwright/integration/examples/editable-voids.test.ts`
-- `../slate-v2/playwright/integration/examples/richtext.test.ts`
+- `.tmp/slate-v2/playwright/integration/examples/editable-voids.test.ts`
+- `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
 
 Evidence:
 
@@ -1585,12 +1585,12 @@ Actions:
 
 Changed files:
 
-- `../slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts`
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
-- `../slate-v2/playwright/integration/examples/highlighted-text.test.ts`
-- `../slate-v2/playwright/integration/examples/inlines.test.ts`
-- `../slate-v2/playwright/integration/examples/paste-html.test.ts`
-- `../slate-v2/playwright/integration/examples/richtext.test.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/playwright/integration/examples/highlighted-text.test.ts`
+- `.tmp/slate-v2/playwright/integration/examples/inlines.test.ts`
+- `.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts`
+- `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
 
 Evidence:
 

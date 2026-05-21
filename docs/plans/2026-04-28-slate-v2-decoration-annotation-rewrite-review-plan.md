@@ -45,14 +45,14 @@ render tax.
 
 ## 2. Confidence Scorecard With Evidence References
 
-| Dimension | Weight | Score | Evidence |
-| --- | ---: | ---: | --- |
-| React 19.2 runtime performance | 0.20 | 0.92 | Core publishes dirty paths, touched runtime ids, decoration impact ids, and node impact ids in `/Users/zbeyens/git/slate-v2/packages/slate/src/core/public-state.ts:518` through `:613` and `:1361` through `:1408`. `createSlateProjectionStore` has runtime/source subscribers and runtime-scope skips, but still calls `source(context.snapshot)` and rebuilds a whole projection snapshot in `/Users/zbeyens/git/slate-v2/packages/slate-react/src/projection-store.ts:295` through `:308`. `createSlateAnnotationStore` still rebuilds all annotation and projection snapshots in `/Users/zbeyens/git/slate-v2/packages/slate-react/src/annotation-store.ts:238` through `:254`. Pass 4 and Pass 7 make dirty-id recompute, metric budgets, and field-best claim gates mandatory before implementation closure. |
-| Slate-close unopinionated DX | 0.20 | 0.92 | Pass 3 accepts classic `decorate` for simple transient ranges and product-noun source lanes for scale. Pass 7 accepts the hard cut: normal docs and examples teach `decorate`, `createDecorationSource`, `createAnnotationStore`, and `createWidgetStore`; `ProjectionStore`, `dirtiness`, `runtimeScope`, `sourceId`, and low-level projection selectors move to advanced/internal territory. |
-| Plate and slate-yjs migration-backbone shape | 0.15 | 0.93 | Pass 6 verifies the raw Slate backbone: schema specs and state/tx extension namespaces in `/Users/zbeyens/git/slate-v2/packages/slate/test/migration-backbone-contract.ts:32` through `:133` and `/Users/zbeyens/git/slate-v2/packages/slate/test/extension-namespaces-contract.ts:27` through `:209`; deterministic operation replay, commit tags, and local-only runtime targets in `/Users/zbeyens/git/slate-v2/packages/slate/test/migration-backbone-contract.ts:135` through `:195` and `/Users/zbeyens/git/slate-v2/packages/slate/test/collab-history-runtime-contract.ts:28` through `:203`; command/operation middleware and commit metadata in `/Users/zbeyens/git/slate-v2/packages/slate/test/transaction-contract.ts:385` through `:432` and `:560` through `:698`. Current-version Plate and slate-yjs adapters remain explicitly out of scope. |
-| Regression-proof testing strategy | 0.20 | 0.95 | `/Users/zbeyens/git/slate-v2/package.json` keeps fast `check` separate from `check:full` and `test:stress`. `slate-browser` first-party contracts enumerate operation families and legacy parity in `/Users/zbeyens/git/slate-v2/packages/slate-browser/src/core/first-party-browser-contracts.ts`. Generated stress/replay exists in `/Users/zbeyens/git/slate-v2/playwright/stress/generated-editing.test.ts` and `replay.test.ts`. Integration rows cover search focus, hover toolbar, tables, images, mentions, review comments, persistent annotations, and external decorations. Pass 5 and Pass 7 make overlay load rows and hard metric budgets required implementation acceptance criteria, not optional follow-up. |
-| Research evidence completeness | 0.15 | 0.93 | Existing research covers React 19.2 external stores/background UI, ProseMirror decorations/bookmarks, Lexical mark/comment/decorator split, Tiptap comments/suggestions, Slate v2 overlay decisions, source-scoped invalidation, and state/tx extension namespaces. Pass 2 corrected stale local Slate v2 proof refs; Pass 7 ties closure decisions back to `/Users/zbeyens/git/plate-2/docs/research/systems/slate-v2-overlay-architecture.md:25` through `:127`, `/Users/zbeyens/git/plate-2/docs/research/decisions/slate-v2-source-scoped-overlay-invalidation.md:25` through `:88`, and `/Users/zbeyens/git/plate-2/docs/research/decisions/slate-v2-state-tx-public-api-and-extension-namespaces.md:25` through `:180`. |
-| shadcn-style composability and hook/component minimalism | 0.10 | 0.92 | Pass 3 cuts normal authoring away from projection plumbing and toward small store/controller objects plus product-noun hooks. Pass 7 accepts minimal normal hooks by concept: `useDecorations`, `useAnnotations`, `useAnnotation(id)`, `useWidgets`, and `useWidget(id)`, with projection selectors kept advanced/internal. |
+| Dimension                                                | Weight | Score | Evidence                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| -------------------------------------------------------- | -----: | ----: | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| React 19.2 runtime performance                           |   0.20 |  0.92 | Core publishes dirty paths, touched runtime ids, decoration impact ids, and node impact ids in `/Users/zbeyens/git/slate-v2/packages/slate/src/core/public-state.ts:518` through `:613` and `:1361` through `:1408`. `createSlateProjectionStore` has runtime/source subscribers and runtime-scope skips, but still calls `source(context.snapshot)` and rebuilds a whole projection snapshot in `/Users/zbeyens/git/slate-v2/packages/slate-react/src/projection-store.ts:295` through `:308`. `createSlateAnnotationStore` still rebuilds all annotation and projection snapshots in `/Users/zbeyens/git/slate-v2/packages/slate-react/src/annotation-store.ts:238` through `:254`. Pass 4 and Pass 7 make dirty-id recompute, metric budgets, and field-best claim gates mandatory before implementation closure.                                           |
+| Slate-close unopinionated DX                             |   0.20 |  0.92 | Pass 3 accepts classic `decorate` for simple transient ranges and product-noun source lanes for scale. Pass 7 accepts the hard cut: normal docs and examples teach `decorate`, `createDecorationSource`, `createAnnotationStore`, and `createWidgetStore`; `ProjectionStore`, `dirtiness`, `runtimeScope`, `sourceId`, and low-level projection selectors move to advanced/internal territory.                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| Plate and slate-yjs migration-backbone shape             |   0.15 |  0.93 | Pass 6 verifies the raw Slate backbone: schema specs and state/tx extension namespaces in `/Users/zbeyens/git/slate-v2/packages/slate/test/migration-backbone-contract.ts:32` through `:133` and `/Users/zbeyens/git/slate-v2/packages/slate/test/extension-namespaces-contract.ts:27` through `:209`; deterministic operation replay, commit tags, and local-only runtime targets in `/Users/zbeyens/git/slate-v2/packages/slate/test/migration-backbone-contract.ts:135` through `:195` and `/Users/zbeyens/git/slate-v2/packages/slate/test/collab-history-runtime-contract.ts:28` through `:203`; command/operation middleware and commit metadata in `/Users/zbeyens/git/slate-v2/packages/slate/test/transaction-contract.ts:385` through `:432` and `:560` through `:698`. Current-version Plate and slate-yjs adapters remain explicitly out of scope. |
+| Regression-proof testing strategy                        |   0.20 |  0.95 | `/Users/zbeyens/git/slate-v2/package.json` keeps fast `check` separate from `check:full` and `test:stress`. `slate-browser` first-party contracts enumerate operation families and legacy parity in `/Users/zbeyens/git/slate-v2/packages/slate-browser/src/core/first-party-browser-contracts.ts`. Generated stress/replay exists in `/Users/zbeyens/git/slate-v2/playwright/stress/generated-editing.test.ts` and `replay.test.ts`. Integration rows cover search focus, hover toolbar, tables, images, mentions, review comments, persistent annotations, and external decorations. Pass 5 and Pass 7 make overlay load rows and hard metric budgets required implementation acceptance criteria, not optional follow-up.                                                                                                                                   |
+| Research evidence completeness                           |   0.15 |  0.93 | Existing research covers React 19.2 external stores/background UI, ProseMirror decorations/bookmarks, Lexical mark/comment/decorator split, Tiptap comments/suggestions, Slate v2 overlay decisions, source-scoped invalidation, and state/tx extension namespaces. Pass 2 corrected stale local Slate v2 proof refs; Pass 7 ties closure decisions back to `/Users/zbeyens/git/plate-2/docs/research/systems/slate-v2-overlay-architecture.md:25` through `:127`, `/Users/zbeyens/git/plate-2/docs/research/decisions/slate-v2-source-scoped-overlay-invalidation.md:25` through `:88`, and `/Users/zbeyens/git/plate-2/docs/research/decisions/slate-v2-state-tx-public-api-and-extension-namespaces.md:25` through `:180`.                                                                                                                                  |
+| shadcn-style composability and hook/component minimalism |   0.10 |  0.92 | Pass 3 cuts normal authoring away from projection plumbing and toward small store/controller objects plus product-noun hooks. Pass 7 accepts minimal normal hooks by concept: `useDecorations`, `useAnnotations`, `useAnnotation(id)`, `useWidgets`, and `useWidget(id)`, with projection selectors kept advanced/internal.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 
 Weighted total: `0.929`.
 
@@ -70,7 +70,7 @@ that the system is still too projection-store-shaped at the public edge.
 
 The refresh also found stale compiled research references. The local proof page
 still pointed at `decoration-sources.ts` and `use-slate-decoration-sources.tsx`,
-but current `../slate-v2` has no dedicated decoration-source layer. Decoration
+but current `.tmp/slate-v2` has no dedicated decoration-source layer. Decoration
 source behavior lives in `projection-store.ts` through `dirtiness`,
 `runtimeScope`, `sourceId`, `refresh`, and runtime/source subscribers. I updated
 `docs/research/sources/editor-architecture/slate-v2-local-proof-substrate.md`
@@ -78,14 +78,14 @@ and `docs/research/log.md` to reflect that.
 
 Score after Pass 2: `0.852`.
 
-| Dimension | Weight | Score | Pass 2 evidence |
-| --- | ---: | ---: | --- |
-| React 19.2 runtime performance | 0.20 | 0.85 | `useSlateProjections` and `useDecorationSelector` subscribe by runtime id when possible. `projection-store.ts` has source ids, dirtiness, runtime scopes, targeted refresh, and metrics. But source recompute still calls `source(context.snapshot)` and rebuilds a whole projection snapshot once dirty. |
-| Slate-close unopinionated DX | 0.20 | 0.79 | `/Users/zbeyens/git/slate-v2/docs/libraries/slate-react/editable.md:147` still teaches `projectionStore` as the overlay API. `/Users/zbeyens/git/slate-v2/docs/libraries/slate-react/hooks.md:66` exposes `useDecorationSelector`. `/Users/zbeyens/git/slate-v2/site/examples/ts/review-comments.tsx:379` still casts `annotationStore.projectionStore as any`. |
-| Plate and slate-yjs migration-backbone shape | 0.15 | 0.86 | Research still supports external annotation metadata plus editor/runtime anchors. Tiptap and Lexical evidence reinforces keeping comments/suggestions/product metadata outside raw core, while raw Slate owns the anchor/projection substrate. |
-| Regression-proof testing strategy | 0.20 | 0.89 | Unit tests prove runtime-id projection subscribers, source refresh, annotation rebase, and widget selection behavior. Browser tests cover search focus, external decoration refresh, review comments, persistent annotation anchors, highlighted text, and large-document projection behavior. Stress has an external decoration row. Benchmarks now record overlay recompute counts. Missing: generated many-source/many-annotation/many-widget budgets and current-vs-legacy overlay parity. |
-| Research evidence completeness | 0.15 | 0.91 | React 19.2, ProseMirror, Lexical, Tiptap, local Slate v2 proof, and source-scoped invalidation pages were refreshed or rechecked. The stale local proof source refs were corrected. |
-| shadcn-style composability and hook/component minimalism | 0.10 | 0.80 | The store/controller direction is composable, but the normal examples still expose projection store setup, explicit refresh calls, and projection hooks before simpler decoration/annotation/widget concepts. |
+| Dimension                                                | Weight | Score | Pass 2 evidence                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| -------------------------------------------------------- | -----: | ----: | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| React 19.2 runtime performance                           |   0.20 |  0.85 | `useSlateProjections` and `useDecorationSelector` subscribe by runtime id when possible. `projection-store.ts` has source ids, dirtiness, runtime scopes, targeted refresh, and metrics. But source recompute still calls `source(context.snapshot)` and rebuilds a whole projection snapshot once dirty.                                                                                                                                                                                      |
+| Slate-close unopinionated DX                             |   0.20 |  0.79 | `/Users/zbeyens/git/slate-v2/docs/libraries/slate-react/editable.md:147` still teaches `projectionStore` as the overlay API. `/Users/zbeyens/git/slate-v2/docs/libraries/slate-react/hooks.md:66` exposes `useDecorationSelector`. `/Users/zbeyens/git/slate-v2/site/examples/ts/review-comments.tsx:379` still casts `annotationStore.projectionStore as any`.                                                                                                                                |
+| Plate and slate-yjs migration-backbone shape             |   0.15 |  0.86 | Research still supports external annotation metadata plus editor/runtime anchors. Tiptap and Lexical evidence reinforces keeping comments/suggestions/product metadata outside raw core, while raw Slate owns the anchor/projection substrate.                                                                                                                                                                                                                                                 |
+| Regression-proof testing strategy                        |   0.20 |  0.89 | Unit tests prove runtime-id projection subscribers, source refresh, annotation rebase, and widget selection behavior. Browser tests cover search focus, external decoration refresh, review comments, persistent annotation anchors, highlighted text, and large-document projection behavior. Stress has an external decoration row. Benchmarks now record overlay recompute counts. Missing: generated many-source/many-annotation/many-widget budgets and current-vs-legacy overlay parity. |
+| Research evidence completeness                           |   0.15 |  0.91 | React 19.2, ProseMirror, Lexical, Tiptap, local Slate v2 proof, and source-scoped invalidation pages were refreshed or rechecked. The stale local proof source refs were corrected.                                                                                                                                                                                                                                                                                                            |
+| shadcn-style composability and hook/component minimalism |   0.10 |  0.80 | The store/controller direction is composable, but the normal examples still expose projection store setup, explicit refresh calls, and projection hooks before simpler decoration/annotation/widget concepts.                                                                                                                                                                                                                                                                                  |
 
 Weighted total: `0.852`.
 
@@ -158,17 +158,17 @@ Pass 3 inspected the live React package exports, docs, and examples:
 
 Accepted API decisions:
 
-| Decision | Accepted shape | Rejected shape |
-| --- | --- | --- |
-| Simple transient ranges | Keep classic `<Editable decorate={decorate} />`. It is the Slate-close path and should lower into the overlay runtime internally. | Making every search/highlight use a store upfront. |
-| High-scale decorations | Add a product-noun source API such as `createDecorationSource(...)`, registered through a Slate React overlay lane. | Teaching `createSlateProjectionStore` as normal DX. |
-| Registration | Prefer a product-noun provider shape: `<Slate editor={editor} overlays={{ decorations: [search], annotations: [comments], widgets: [commentWidgets] }}>`. Keep direct `decorate` on `<Editable>` for classic Slate compatibility. | One heterogeneous `overlays={[...]}` array with hidden kinds, or many low-level `projectionStore` props. |
-| Editor namespace | Do not put React overlay stores on `editor.*` as the normal API. Core `editor.read/update` owns model and transaction work; overlay sources have React/app lifecycle and external-store subscriptions. | `editor.decorations.source(...)` as the default raw Slate React API. |
-| ProjectionStore | Move out of normal docs. Keep only as advanced/internal/testing transport, preferably under unstable naming. | Public examples that pass `projectionStore` or call `refresh({ sourceId })`. |
-| Annotations | Expose `createAnnotationStore(...)` / `useAnnotations(...)` / `useAnnotation(id)` and let the runtime connect inline projections internally. | App code passing `annotationStore.projectionStore`, especially with casts. |
-| Widgets | Keep a separate widget store/source lane with `useWidgets(...)` and `useWidget(id)`. Widget anchors can target selection, runtime ids, or annotation ids. | Treating widgets as decoration ranges or forcing decoration hooks to power positioned UI. |
-| Rendering | Normal docs should teach `decorate`, `renderLeaf`/`renderText`, `renderDecoration`, and annotation/widget renderers. Keep `renderSegment` as advanced low-level escape hatch if needed. | Making `EditableTextSegment` and projection slices the first rendering story. |
-| Hooks | Product-noun hooks first: `useDecorations(...)`, `useAnnotations(...)`, `useAnnotation(id)`, `useWidgets(...)`, `useWidget(id)`. Projection selectors stay advanced/internal. | `useDecorationSelector` as the main public hook over `SlateProjectionStore`. |
+| Decision                | Accepted shape                                                                                                                                                                                                                    | Rejected shape                                                                                           |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| Simple transient ranges | Keep classic `<Editable decorate={decorate} />`. It is the Slate-close path and should lower into the overlay runtime internally.                                                                                                 | Making every search/highlight use a store upfront.                                                       |
+| High-scale decorations  | Add a product-noun source API such as `createDecorationSource(...)`, registered through a Slate React overlay lane.                                                                                                               | Teaching `createSlateProjectionStore` as normal DX.                                                      |
+| Registration            | Prefer a product-noun provider shape: `<Slate editor={editor} overlays={{ decorations: [search], annotations: [comments], widgets: [commentWidgets] }}>`. Keep direct `decorate` on `<Editable>` for classic Slate compatibility. | One heterogeneous `overlays={[...]}` array with hidden kinds, or many low-level `projectionStore` props. |
+| Editor namespace        | Do not put React overlay stores on `editor.*` as the normal API. Core `editor.read/update` owns model and transaction work; overlay sources have React/app lifecycle and external-store subscriptions.                            | `editor.decorations.source(...)` as the default raw Slate React API.                                     |
+| ProjectionStore         | Move out of normal docs. Keep only as advanced/internal/testing transport, preferably under unstable naming.                                                                                                                      | Public examples that pass `projectionStore` or call `refresh({ sourceId })`.                             |
+| Annotations             | Expose `createAnnotationStore(...)` / `useAnnotations(...)` / `useAnnotation(id)` and let the runtime connect inline projections internally.                                                                                      | App code passing `annotationStore.projectionStore`, especially with casts.                               |
+| Widgets                 | Keep a separate widget store/source lane with `useWidgets(...)` and `useWidget(id)`. Widget anchors can target selection, runtime ids, or annotation ids.                                                                         | Treating widgets as decoration ranges or forcing decoration hooks to power positioned UI.                |
+| Rendering               | Normal docs should teach `decorate`, `renderLeaf`/`renderText`, `renderDecoration`, and annotation/widget renderers. Keep `renderSegment` as advanced low-level escape hatch if needed.                                           | Making `EditableTextSegment` and projection slices the first rendering story.                            |
+| Hooks                   | Product-noun hooks first: `useDecorations(...)`, `useAnnotations(...)`, `useAnnotation(id)`, `useWidgets(...)`, `useWidget(id)`. Projection selectors stay advanced/internal.                                                     | `useDecorationSelector` as the main public hook over `SlateProjectionStore`.                             |
 
 Accepted public target:
 
@@ -315,27 +315,27 @@ Pass 4 inspected the live core/runtime files, tests, and benchmarks:
 
 Accepted perf model decisions:
 
-| Area | Required model | Current gap |
-| --- | --- | --- |
-| Decoration source invalidation | Each source has a stable id, declared dirty classes, optional path/runtime scope, and a read API that can consume a dirty scope. Full source reads are fallback only. | Current `SlateProjectionSource` returns all projections for the whole snapshot once dirty. Runtime scope can skip a source, but cannot update only the dirty range of that source. |
-| Projection index updates | Projection runtime stores buckets by source id and runtime id. Dirty source updates replace only affected source buckets, diff changed runtime buckets, then notify runtime/source/global listeners. | Current `buildProjectionSnapshot` rebuilds a whole store snapshot for the dirty source. |
-| Annotation dirtiness | Annotation store keeps indexes by annotation id, runtime id, and last resolved range. Editor commits produce candidate annotation ids from dirty paths/runtime ids intersecting previous ranges. Metadata updates produce dirty annotation ids directly. | Current store resolves and projects every annotation on each refresh. |
-| Annotation metadata-only changes | Notify annotation-id subscribers and dependent widgets. Do not wake text projection subscribers unless inline decoration payload changed. | Current equality compares whole data and projection data, then notifies the whole annotation store. |
-| Annotation bookmark rebase | Resolve candidate bookmark ids, project only changed annotation ids, update affected runtime buckets, count full fallback when structural impact is unknown. | Current rebase proof exists, but implementation still rebuilds all annotation projections. |
-| Widget dirtiness | Widget store indexes widgets by id and anchor. Selection changes dirty selection widgets; node changes dirty matching runtime-id widgets; annotation changes dirty widgets for changed annotation ids. | Current store can skip unrelated text for selection widgets, but computes all widgets when it does recompute and has no per-widget subscription. |
-| Metrics | Runtime must report source read count, scoped source read count, full source read count, projected range count, changed runtime bucket count, runtime subscriber wakes, source subscriber wakes, annotation resolve/project counts, widget resolve count, widget subscriber wakes, invalid range drops, and full fallback count. | Current projection/widget metrics expose only recompute count; annotation store exposes no metrics of its own. |
+| Area                             | Required model                                                                                                                                                                                                                                                                                                                   | Current gap                                                                                                                                                                        |
+| -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Decoration source invalidation   | Each source has a stable id, declared dirty classes, optional path/runtime scope, and a read API that can consume a dirty scope. Full source reads are fallback only.                                                                                                                                                            | Current `SlateProjectionSource` returns all projections for the whole snapshot once dirty. Runtime scope can skip a source, but cannot update only the dirty range of that source. |
+| Projection index updates         | Projection runtime stores buckets by source id and runtime id. Dirty source updates replace only affected source buckets, diff changed runtime buckets, then notify runtime/source/global listeners.                                                                                                                             | Current `buildProjectionSnapshot` rebuilds a whole store snapshot for the dirty source.                                                                                            |
+| Annotation dirtiness             | Annotation store keeps indexes by annotation id, runtime id, and last resolved range. Editor commits produce candidate annotation ids from dirty paths/runtime ids intersecting previous ranges. Metadata updates produce dirty annotation ids directly.                                                                         | Current store resolves and projects every annotation on each refresh.                                                                                                              |
+| Annotation metadata-only changes | Notify annotation-id subscribers and dependent widgets. Do not wake text projection subscribers unless inline decoration payload changed.                                                                                                                                                                                        | Current equality compares whole data and projection data, then notifies the whole annotation store.                                                                                |
+| Annotation bookmark rebase       | Resolve candidate bookmark ids, project only changed annotation ids, update affected runtime buckets, count full fallback when structural impact is unknown.                                                                                                                                                                     | Current rebase proof exists, but implementation still rebuilds all annotation projections.                                                                                         |
+| Widget dirtiness                 | Widget store indexes widgets by id and anchor. Selection changes dirty selection widgets; node changes dirty matching runtime-id widgets; annotation changes dirty widgets for changed annotation ids.                                                                                                                           | Current store can skip unrelated text for selection widgets, but computes all widgets when it does recompute and has no per-widget subscription.                                   |
+| Metrics                          | Runtime must report source read count, scoped source read count, full source read count, projected range count, changed runtime bucket count, runtime subscriber wakes, source subscriber wakes, annotation resolve/project counts, widget resolve count, widget subscriber wakes, invalid range drops, and full fallback count. | Current projection/widget metrics expose only recompute count; annotation store exposes no metrics of its own.                                                                     |
 
 Complexity targets:
 
-| Operation family | Target complexity |
-| --- | --- |
-| Selection move | `O(selection sources + previous/next selected runtime buckets + selection widgets)`. No text source recompute, no annotation projection recompute. |
-| Text edit in one block | `O(dirty paths/runtime ids + sources whose declared scope intersects + changed projected ranges)`. No unrelated source reads. |
-| External search refresh | `O(changed search ranges + changed runtime buckets)`. Other sources stay cold. Search input focus must not be coupled to editor rerender. |
-| Annotation metadata update | `O(changed annotation ids + dependent widgets/subscribers)`. Inline text projections update only if the inline payload changes. |
-| Annotation bookmark rebase | `O(candidate annotation ids + changed projected ranges + changed runtime buckets)`. Structural unknown may fallback. |
-| Widget visibility update | `O(changed widget ids + geometry reads for visible/dirty widgets)`. No full widget-list notification as the normal path. |
-| Replace or unknown structural edit | Full fallback allowed and counted. This is the safety valve, not the steady-state path. |
+| Operation family                   | Target complexity                                                                                                                                  |
+| ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Selection move                     | `O(selection sources + previous/next selected runtime buckets + selection widgets)`. No text source recompute, no annotation projection recompute. |
+| Text edit in one block             | `O(dirty paths/runtime ids + sources whose declared scope intersects + changed projected ranges)`. No unrelated source reads.                      |
+| External search refresh            | `O(changed search ranges + changed runtime buckets)`. Other sources stay cold. Search input focus must not be coupled to editor rerender.          |
+| Annotation metadata update         | `O(changed annotation ids + dependent widgets/subscribers)`. Inline text projections update only if the inline payload changes.                    |
+| Annotation bookmark rebase         | `O(candidate annotation ids + changed projected ranges + changed runtime buckets)`. Structural unknown may fallback.                               |
+| Widget visibility update           | `O(changed widget ids + geometry reads for visible/dirty widgets)`. No full widget-list notification as the normal path.                           |
+| Replace or unknown structural edit | Full fallback allowed and counted. This is the safety valve, not the steady-state path.                                                            |
 
 Accepted fallback rules:
 
@@ -428,12 +428,12 @@ integration examples, generated stress runner, and replay artifacts:
 
 Accepted CI/stress split:
 
-| Lane | Belongs here | Must not go here |
-| --- | --- | --- |
-| Fast `bun check` | Unit contracts for overlay source invalidation, annotation dirty ids, widget dirty ids, runtime/source/widget subscriptions, projection metrics, and first-party contract registry shape. | Full Playwright integration, generated stress, wall-clock perf gates, persistent browser soak. |
-| `bun check:full` / release proof | Release-discipline guards, `slate-browser` proof contracts, persistent profile soak, mobile proof where available, and the normal integration examples for search, hover toolbar, tables, images, mentions, annotations, and widgets. | Randomized/generated large stress sweeps that make every local iteration slow. |
-| `test:stress` | Generated operation-family scenarios, many-source overlays, many annotations, many widgets, mixed overlays, large documents, artifact writing, replay, current-vs-legacy parity packs, and browser-family filters. | Required default CI work unless explicitly promoted to release proof. |
-| Benchmarks | Rerender breadth, huge-document overlays, source-scoped invalidation, annotation/widget breadth, and trend output. | Pass/fail claims based only on noisy wall-clock timings. |
+| Lane                             | Belongs here                                                                                                                                                                                                                          | Must not go here                                                                               |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| Fast `bun check`                 | Unit contracts for overlay source invalidation, annotation dirty ids, widget dirty ids, runtime/source/widget subscriptions, projection metrics, and first-party contract registry shape.                                             | Full Playwright integration, generated stress, wall-clock perf gates, persistent browser soak. |
+| `bun check:full` / release proof | Release-discipline guards, `slate-browser` proof contracts, persistent profile soak, mobile proof where available, and the normal integration examples for search, hover toolbar, tables, images, mentions, annotations, and widgets. | Randomized/generated large stress sweeps that make every local iteration slow.                 |
+| `test:stress`                    | Generated operation-family scenarios, many-source overlays, many annotations, many widgets, mixed overlays, large documents, artifact writing, replay, current-vs-legacy parity packs, and browser-family filters.                    | Required default CI work unless explicitly promoted to release proof.                          |
+| Benchmarks                       | Rerender breadth, huge-document overlays, source-scoped invalidation, annotation/widget breadth, and trend output.                                                                                                                    | Pass/fail claims based only on noisy wall-clock timings.                                       |
 
 Fast unit contract target:
 
@@ -454,15 +454,15 @@ Fast unit contract target:
 
 Generated stress target:
 
-| Family | Routes | Required assertions |
-| --- | --- | --- |
-| `overlay-many-decoration-sources` | `search-highlighting`, `external-decoration-sources`, `richtext` | N sources, one source refresh, only changed source/runtime buckets wake, editor focus stays correct. |
-| `overlay-annotation-metadata-only` | `review-comments`, `persistent-annotation-anchors` | Metadata update changes sidebar/widget state without text projection wake unless inline payload changes. |
-| `overlay-annotation-bookmark-rebase` | `review-comments`, `persistent-annotation-anchors` | Text/fragment insert rebases candidate annotation ids only; stale ranges drop with counted invalid-range metric. |
-| `overlay-widget-dirty-id` | `review-comments`, `hovering-toolbar` | Selection and annotation widgets wake by widget id, not whole widget store. |
-| `overlay-mixed-update` | `review-comments`, `search-highlighting` | Decoration source refresh plus annotation update plus widget visibility update stays inside dirty bucket budgets. |
-| `overlay-large-document-budget` | `large-document-runtime`, `huge-document` | Far overlay refresh does not promote unrelated islands or reproject unrelated blocks. |
-| `legacy-parity-user-regressions` | `mentions`, `images`, `embeds`, `tables`, `search-highlighting`, `hovering-toolbar` | Current and legacy agree on model selection, DOM selection, focus owner, visible void layout, toolbar visibility, and table cell offset 0. |
+| Family                               | Routes                                                                              | Required assertions                                                                                                                        |
+| ------------------------------------ | ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `overlay-many-decoration-sources`    | `search-highlighting`, `external-decoration-sources`, `richtext`                    | N sources, one source refresh, only changed source/runtime buckets wake, editor focus stays correct.                                       |
+| `overlay-annotation-metadata-only`   | `review-comments`, `persistent-annotation-anchors`                                  | Metadata update changes sidebar/widget state without text projection wake unless inline payload changes.                                   |
+| `overlay-annotation-bookmark-rebase` | `review-comments`, `persistent-annotation-anchors`                                  | Text/fragment insert rebases candidate annotation ids only; stale ranges drop with counted invalid-range metric.                           |
+| `overlay-widget-dirty-id`            | `review-comments`, `hovering-toolbar`                                               | Selection and annotation widgets wake by widget id, not whole widget store.                                                                |
+| `overlay-mixed-update`               | `review-comments`, `search-highlighting`                                            | Decoration source refresh plus annotation update plus widget visibility update stays inside dirty bucket budgets.                          |
+| `overlay-large-document-budget`      | `large-document-runtime`, `huge-document`                                           | Far overlay refresh does not promote unrelated islands or reproject unrelated blocks.                                                      |
+| `legacy-parity-user-regressions`     | `mentions`, `images`, `embeds`, `tables`, `search-highlighting`, `hovering-toolbar` | Current and legacy agree on model selection, DOM selection, focus owner, visible void layout, toolbar visibility, and table cell offset 0. |
 
 Hard budgets versus diagnostics:
 
@@ -484,16 +484,16 @@ Hard budgets versus diagnostics:
 
 Current-vs-legacy parity rows:
 
-| User-reported class | Required row |
-| --- | --- |
-| Search input loses focus while decorations update | `external-decoration-refresh` on `search-highlighting`: search input remains focused, highlights update, editor root/element/void render count stays zero. |
-| Hovering toolbar never appears on mouse selection | `mouse-selection-toolbar` on `hovering-toolbar`: native selection text non-empty, model selection expanded, toolbar visible and positioned. |
-| Inline void keyboard navigation before/after mentions | `inline-void-boundary-navigation` and `markable-inline-void-formatting` on `mentions`: model and DOM selection land at expected paths from both sides. |
-| Table ArrowRight lands at offset 1 | `table-cell-boundary-navigation` on `tables`: next cell path with offset `0`, DOM offset `0`, editor focus retained. |
-| Image/block void keyboard navigation broken | `block-void-navigation` on `images` and `embeds`: enter, exit, and re-enter voids with model/DOM selection agreement. |
-| Visible void spacer gap above image | `block-void-navigation` on `images`: visible content offset between `0` and `1px`; hidden anchor stays runtime-owned. |
-| Editable void/native island focus | `editable-island-native-focus` on `editable-voids`: native input owns focus while edited; outer editor selection and follow-up typing remain valid. |
-| Review/comment overlays drift | `overlay-annotation-bookmark-rebase` and existing review/persistent annotation rows: sidebar, inline highlight, and widget panel stay in sync. |
+| User-reported class                                   | Required row                                                                                                                                               |
+| ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Search input loses focus while decorations update     | `external-decoration-refresh` on `search-highlighting`: search input remains focused, highlights update, editor root/element/void render count stays zero. |
+| Hovering toolbar never appears on mouse selection     | `mouse-selection-toolbar` on `hovering-toolbar`: native selection text non-empty, model selection expanded, toolbar visible and positioned.                |
+| Inline void keyboard navigation before/after mentions | `inline-void-boundary-navigation` and `markable-inline-void-formatting` on `mentions`: model and DOM selection land at expected paths from both sides.     |
+| Table ArrowRight lands at offset 1                    | `table-cell-boundary-navigation` on `tables`: next cell path with offset `0`, DOM offset `0`, editor focus retained.                                       |
+| Image/block void keyboard navigation broken           | `block-void-navigation` on `images` and `embeds`: enter, exit, and re-enter voids with model/DOM selection agreement.                                      |
+| Visible void spacer gap above image                   | `block-void-navigation` on `images`: visible content offset between `0` and `1px`; hidden anchor stays runtime-owned.                                      |
+| Editable void/native island focus                     | `editable-island-native-focus` on `editable-voids`: native input owns focus while edited; outer editor selection and follow-up typing remain valid.        |
+| Review/comment overlays drift                         | `overlay-annotation-bookmark-rebase` and existing review/persistent annotation rows: sidebar, inline highlight, and widget panel stay in sync.             |
 
 Plan delta from Pass 5:
 
@@ -598,26 +598,26 @@ slate-yjs pressure:
 
 Accepted substrate for Plate-style libraries:
 
-| Need | Raw Slate substrate | Out of scope |
-| --- | --- | --- |
-| Plugin specs | `editor.schema.define`, element specs, state/tx extension groups, normalizers, command middleware, operation middleware, commit listeners. | Current Plate `createTSlatePlugin`, `createTPlatePlugin`, `editor.api`, `editor.tf`, plugin option store, or React UI registry. |
-| Plugin commands | Extension tx groups and command middleware. Commands may be product sugar above raw Slate, but raw Slate keeps `editor.update((tx) => ...)` as the primitive. | Flat core `editor.commands`, Plate command catalog compatibility, or chain-first raw Slate API. |
-| Node behavior | Element specs for inline, void kind, selectable, read-only, markable-void. | App-owned void shell/spacer policy, or current Plate node metadata as raw Slate syntax. |
-| Decorations | Classic `decorate` plus `createDecorationSource` lowering into overlay runtime. | Public `ProjectionStore` as the normal authoring API. |
-| Annotations | Bookmark-backed `createAnnotationStore`, annotation-id subscriptions, inline projection generated by runtime. | App passing `annotationStore.projectionStore`, current comments adapter shape, or broad annotation refresh as the accepted scale path. |
-| Widgets | `createWidgetStore`, widget-id subscriptions, anchors by selection/runtime id/annotation id. | Forcing positioned UI through decoration ranges or current Plate floating UI APIs. |
-| React composition | Product-noun hooks and tiny renderer props. | Broad editor subscriptions or hook names centered on projection plumbing. |
+| Need              | Raw Slate substrate                                                                                                                                           | Out of scope                                                                                                                           |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| Plugin specs      | `editor.schema.define`, element specs, state/tx extension groups, normalizers, command middleware, operation middleware, commit listeners.                    | Current Plate `createTSlatePlugin`, `createTPlatePlugin`, `editor.api`, `editor.tf`, plugin option store, or React UI registry.        |
+| Plugin commands   | Extension tx groups and command middleware. Commands may be product sugar above raw Slate, but raw Slate keeps `editor.update((tx) => ...)` as the primitive. | Flat core `editor.commands`, Plate command catalog compatibility, or chain-first raw Slate API.                                        |
+| Node behavior     | Element specs for inline, void kind, selectable, read-only, markable-void.                                                                                    | App-owned void shell/spacer policy, or current Plate node metadata as raw Slate syntax.                                                |
+| Decorations       | Classic `decorate` plus `createDecorationSource` lowering into overlay runtime.                                                                               | Public `ProjectionStore` as the normal authoring API.                                                                                  |
+| Annotations       | Bookmark-backed `createAnnotationStore`, annotation-id subscriptions, inline projection generated by runtime.                                                 | App passing `annotationStore.projectionStore`, current comments adapter shape, or broad annotation refresh as the accepted scale path. |
+| Widgets           | `createWidgetStore`, widget-id subscriptions, anchors by selection/runtime id/annotation id.                                                                  | Forcing positioned UI through decoration ranges or current Plate floating UI APIs.                                                     |
+| React composition | Product-noun hooks and tiny renderer props.                                                                                                                   | Broad editor subscriptions or hook names centered on projection plumbing.                                                              |
 
 Accepted substrate for slate-yjs-style collaboration:
 
-| Need | Raw Slate substrate | Out of scope |
-| --- | --- | --- |
-| Remote import | `applyOperations(ops, { tag: 'remote-import' })` with deterministic snapshots and one commit. | Current `withYjs` monkeypatching of `editor.apply`, `editor.children`, or `editor.onChange`. |
-| Local export | Commit subscribers read operations, tags, before/after selection, dirty regions, and operation classes. | Raw Slate owning a Yjs document or depending on Yjs. |
-| Local-only targets | Runtime ids are local, never serialized in operation JSON; remote remove/move nulls or rebases local runtime targets. | Assuming runtime ids are stable cross-client ids. |
-| Durable anchors | Bookmarks/range refs and future annotation dirty-id contracts. | Storing every product annotation as editor document nodes. |
-| Presence | Remote cursor ranges should feed decoration sources and widgets, not broad `decorate` callbacks over the whole tree. | Current slate-yjs React hook compatibility as a raw Slate test requirement. |
-| History/collab ordering | One commit truth for history, subscribers, extension listeners, and remote tags. | Adapter-specific history implementation details in raw Slate. |
+| Need                    | Raw Slate substrate                                                                                                   | Out of scope                                                                                 |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| Remote import           | `applyOperations(ops, { tag: 'remote-import' })` with deterministic snapshots and one commit.                         | Current `withYjs` monkeypatching of `editor.apply`, `editor.children`, or `editor.onChange`. |
+| Local export            | Commit subscribers read operations, tags, before/after selection, dirty regions, and operation classes.               | Raw Slate owning a Yjs document or depending on Yjs.                                         |
+| Local-only targets      | Runtime ids are local, never serialized in operation JSON; remote remove/move nulls or rebases local runtime targets. | Assuming runtime ids are stable cross-client ids.                                            |
+| Durable anchors         | Bookmarks/range refs and future annotation dirty-id contracts.                                                        | Storing every product annotation as editor document nodes.                                   |
+| Presence                | Remote cursor ranges should feed decoration sources and widgets, not broad `decorate` callbacks over the whole tree.  | Current slate-yjs React hook compatibility as a raw Slate test requirement.                  |
+| History/collab ordering | One commit truth for history, subscribers, extension listeners, and remote tags.                                      | Adapter-specific history implementation details in raw Slate.                                |
 
 Overlay-specific ecosystem decisions:
 
@@ -686,29 +686,29 @@ Score after Pass 7: `0.929`.
 
 Final keep/cut decisions:
 
-| Area | Keep | Cut |
-| --- | --- | --- |
-| Public concepts | `Decoration`, `Annotation`, `Widget`, `Bookmark`, classic `decorate`, product-noun source/store APIs. | Projection-first public docs, examples that pass `projectionStore`, app code passing `annotationStore.projectionStore`, and `as any` examples. |
-| Decoration scale path | `createDecorationSource` with runtime-owned projection and safe default invalidation. | Making authors learn `SlateProjectionSource`, `dirtiness`, `runtimeScope`, `sourceId`, or refresh reasons for normal search/highlight work. |
-| Annotation scale path | `createAnnotationStore`, annotation ids, dirty annotation ids, bookmark rebase, runtime-id projection subscriptions. | Full annotation resolve/project on every editor commit as the accepted scale path. |
-| Widget scale path | `createWidgetStore`, widget ids, anchors by selection/runtime id/annotation id, widget-id subscriptions. | Whole-widget-store notification as the normal positioned UI path. |
-| Metrics | Source reads, scoped/full source reads, projected ranges, changed runtime buckets, subscriber wakes, annotation resolves/projects, widget resolves, invalid ranges, full fallbacks. | `recomputeCount` as the only serious perf metric. |
-| React shape | `useSyncExternalStore` over already-sliced runtime/source/annotation/widget facts; non-urgent side UI can use React 19.2 background primitives. | Broad React editor subscriptions as the hot overlay path. |
-| Ecosystem scope | Raw Slate owns schema specs, state/tx extension groups, operations, commits, bookmarks, runtime ids, and overlay source/store primitives. | Current Plate adapters, current slate-yjs `withYjs`, `editor.api`, `editor.tf`, or a raw Slate dependency on Yjs. |
+| Area                  | Keep                                                                                                                                                                                | Cut                                                                                                                                            |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| Public concepts       | `Decoration`, `Annotation`, `Widget`, `Bookmark`, classic `decorate`, product-noun source/store APIs.                                                                               | Projection-first public docs, examples that pass `projectionStore`, app code passing `annotationStore.projectionStore`, and `as any` examples. |
+| Decoration scale path | `createDecorationSource` with runtime-owned projection and safe default invalidation.                                                                                               | Making authors learn `SlateProjectionSource`, `dirtiness`, `runtimeScope`, `sourceId`, or refresh reasons for normal search/highlight work.    |
+| Annotation scale path | `createAnnotationStore`, annotation ids, dirty annotation ids, bookmark rebase, runtime-id projection subscriptions.                                                                | Full annotation resolve/project on every editor commit as the accepted scale path.                                                             |
+| Widget scale path     | `createWidgetStore`, widget ids, anchors by selection/runtime id/annotation id, widget-id subscriptions.                                                                            | Whole-widget-store notification as the normal positioned UI path.                                                                              |
+| Metrics               | Source reads, scoped/full source reads, projected ranges, changed runtime buckets, subscriber wakes, annotation resolves/projects, widget resolves, invalid ranges, full fallbacks. | `recomputeCount` as the only serious perf metric.                                                                                              |
+| React shape           | `useSyncExternalStore` over already-sliced runtime/source/annotation/widget facts; non-urgent side UI can use React 19.2 background primitives.                                     | Broad React editor subscriptions as the hot overlay path.                                                                                      |
+| Ecosystem scope       | Raw Slate owns schema specs, state/tx extension groups, operations, commits, bookmarks, runtime ids, and overlay source/store primitives.                                           | Current Plate adapters, current slate-yjs `withYjs`, `editor.api`, `editor.tf`, or a raw Slate dependency on Yjs.                              |
 
 Accepted maintainer objection ledger:
 
-| Objection | Decision | Plan response |
-| --- | --- | --- |
-| "`ProjectionStore` is the common abstraction; why hide it?" | Accepted objection, rejected conclusion. Projection remains internal/advanced because common transport is not good normal DX. | Normal docs teach `decorate`, `createDecorationSource`, `createAnnotationStore`, and `createWidgetStore`. Projection APIs stay behind advanced/internal naming and test helpers. |
-| "Full source recompute is simpler and probably fine." | Rejected for scale. Simpler can exist only as fallback. | Pass 4 requires source-scoped invalidation, runtime buckets, full fallback counting, and metrics. Pass 5 requires stress rows that prove source refresh does not wake unrelated runtime ids. |
-| "Annotations are external data, so full refresh is acceptable." | Rejected. External ownership does not justify broad range resolution/projection. | Annotation metadata may remain external, but runtime projection must index by annotation id and runtime id. Metadata-only updates must wake annotation/widget subscribers without text projection wake unless inline payload changes. |
-| "Advanced authors need `dirtiness` and `runtimeScope`." | Accepted as an escape hatch only. | Advanced hints remain possible, but normal APIs infer safe invalidation and hide transport names. |
-| "Tests already cover projection subscriptions." | Accepted but insufficient. | Existing tests prove local slices. Implementation acceptance additionally requires generated overlay load rows, dirty-id stress, mixed overlay rows, large-document budgets, and hard metric budgets. |
-| "This drifts too far from Slate DX." | Rejected. The split is closer to what Slate authors actually need. | Classic `decorate` stays. The hard cut is only against forcing durable comments and positioned UI through a transient decoration callback or projection transport. |
-| "This should live in Plate, not Slate." | Partly accepted. Product APIs live in Plate; primitive overlay lanes belong in Slate React. | Raw Slate stays unopinionated: ranges, bookmarks, source/store primitives, subscriptions, and browser contracts. Plate can wrap those into plugin specs later. |
-| "Collaboration needs current slate-yjs compatibility." | Rejected for raw Slate before publish. | Raw Slate proves deterministic operations, commit metadata, tags, bookmarks, and local runtime targets. slate-yjs can migrate to those primitives without raw Slate supporting today's monkeypatch API. |
-| "Metrics and stress rows are overkill for CI." | Accepted for default CI only. | Fast `check` keeps unit contracts. `check:full`, `test:stress`, and release proof own generated browser rows and heavy budgets. |
+| Objection                                                       | Decision                                                                                                                      | Plan response                                                                                                                                                                                                                         |
+| --------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| "`ProjectionStore` is the common abstraction; why hide it?"     | Accepted objection, rejected conclusion. Projection remains internal/advanced because common transport is not good normal DX. | Normal docs teach `decorate`, `createDecorationSource`, `createAnnotationStore`, and `createWidgetStore`. Projection APIs stay behind advanced/internal naming and test helpers.                                                      |
+| "Full source recompute is simpler and probably fine."           | Rejected for scale. Simpler can exist only as fallback.                                                                       | Pass 4 requires source-scoped invalidation, runtime buckets, full fallback counting, and metrics. Pass 5 requires stress rows that prove source refresh does not wake unrelated runtime ids.                                          |
+| "Annotations are external data, so full refresh is acceptable." | Rejected. External ownership does not justify broad range resolution/projection.                                              | Annotation metadata may remain external, but runtime projection must index by annotation id and runtime id. Metadata-only updates must wake annotation/widget subscribers without text projection wake unless inline payload changes. |
+| "Advanced authors need `dirtiness` and `runtimeScope`."         | Accepted as an escape hatch only.                                                                                             | Advanced hints remain possible, but normal APIs infer safe invalidation and hide transport names.                                                                                                                                     |
+| "Tests already cover projection subscriptions."                 | Accepted but insufficient.                                                                                                    | Existing tests prove local slices. Implementation acceptance additionally requires generated overlay load rows, dirty-id stress, mixed overlay rows, large-document budgets, and hard metric budgets.                                 |
+| "This drifts too far from Slate DX."                            | Rejected. The split is closer to what Slate authors actually need.                                                            | Classic `decorate` stays. The hard cut is only against forcing durable comments and positioned UI through a transient decoration callback or projection transport.                                                                    |
+| "This should live in Plate, not Slate."                         | Partly accepted. Product APIs live in Plate; primitive overlay lanes belong in Slate React.                                   | Raw Slate stays unopinionated: ranges, bookmarks, source/store primitives, subscriptions, and browser contracts. Plate can wrap those into plugin specs later.                                                                        |
+| "Collaboration needs current slate-yjs compatibility."          | Rejected for raw Slate before publish.                                                                                        | Raw Slate proves deterministic operations, commit metadata, tags, bookmarks, and local runtime targets. slate-yjs can migrate to those primitives without raw Slate supporting today's monkeypatch API.                               |
+| "Metrics and stress rows are overkill for CI."                  | Accepted for default CI only.                                                                                                 | Fast `check` keeps unit contracts. `check:full`, `test:stress`, and release proof own generated browser rows and heavy budgets.                                                                                                       |
 
 Final implementation acceptance criteria:
 
@@ -903,11 +903,7 @@ Perf target:
 Pass 1 target, to be pressure-tested in later passes:
 
 ```tsx
-<Editable
-  decorate={decorate}
-  annotations={comments}
-  widgets={commentWidgets}
-/>
+<Editable decorate={decorate} annotations={comments} widgets={commentWidgets} />
 ```
 
 Plain Slate-style decoration should stay familiar:
@@ -917,9 +913,9 @@ const decorate = ({ entry, range, text }) => {
   return findSearchMatches(text, query).map((match) => ({
     anchor: { path: entry.path, offset: match.start },
     focus: { path: entry.path, offset: match.end },
-    type: 'search',
-  }))
-}
+    type: "search",
+  }));
+};
 ```
 
 External or high-scale decoration sources need a source object, but it should be
@@ -927,39 +923,39 @@ named after the user problem:
 
 ```ts
 const searchDecorations = createDecorationSource(editor, {
-  id: 'search',
+  id: "search",
   read({ state, scope }) {
-    return searchIndex.rangesFor(scope)
+    return searchIndex.rangesFor(scope);
   },
   invalidates(change) {
-    return change.textChanged || queryChanged
+    return change.textChanged || queryChanged;
   },
-})
+});
 ```
 
 Durable annotations should not look like projection plumbing:
 
 ```ts
 const comments = createAnnotationStore(editor, {
-  id: 'comments',
+  id: "comments",
   read() {
-    return commentStore.anchors()
+    return commentStore.anchors();
   },
   renderInline(annotation) {
-    return { className: 'commented', data: { id: annotation.id } }
+    return { className: "commented", data: { id: annotation.id } };
   },
-})
+});
 ```
 
 Widgets should be positioned UI, not decoration ranges:
 
 ```ts
 const commentWidgets = createWidgetStore(editor, {
-  id: 'comment-popovers',
+  id: "comment-popovers",
   read({ annotations, selection }) {
-    return visibleCommentWidgets(annotations, selection)
+    return visibleCommentWidgets(annotations, selection);
   },
-})
+});
 ```
 
 Open questions for Pass 3:
@@ -989,12 +985,12 @@ Candidate invalidation primitives:
 
 ```ts
 type OverlayInvalidation = {
-  annotationIds?: readonly string[]
-  force?: boolean
-  paths?: readonly Path[]
-  runtimeIds?: readonly RuntimeId[]
-  sourceIds?: readonly string[]
-}
+  annotationIds?: readonly string[];
+  force?: boolean;
+  paths?: readonly Path[];
+  runtimeIds?: readonly RuntimeId[];
+  sourceIds?: readonly string[];
+};
 ```
 
 Rules:
@@ -1032,31 +1028,31 @@ release proof.
 
 ## 8. Pass Schedule
 
-| Pass | Status | Goal |
-| --- | --- | --- |
-| Pass 1 | complete | Initial live-source review, score, and findings. |
+| Pass   | Status   | Goal                                                                                                        |
+| ------ | -------- | ----------------------------------------------------------------------------------------------------------- |
+| Pass 1 | complete | Initial live-source review, score, and findings.                                                            |
 | Pass 2 | complete | Refresh research and live implementation evidence against current overlay files, docs, examples, and tests. |
-| Pass 3 | complete | API simplification pass: decide normal public names, advanced escape hatches, and what leaves docs. |
-| Pass 4 | complete | Perf model pass: source-scoped invalidation, annotation id dirtiness, metrics, and fallbacks. |
-| Pass 5 | complete | Regression plan pass: generated browser/stress matrix and fast CI subset. |
-| Pass 6 | complete | Ecosystem backbone pass: Plate and slate-yjs migration substrate without current adapters. |
-| Pass 7 | complete | Maintainer objection ledger and final keep/cut decisions. |
+| Pass 3 | complete | API simplification pass: decide normal public names, advanced escape hatches, and what leaves docs.         |
+| Pass 4 | complete | Perf model pass: source-scoped invalidation, annotation id dirtiness, metrics, and fallbacks.               |
+| Pass 5 | complete | Regression plan pass: generated browser/stress matrix and fast CI subset.                                   |
+| Pass 6 | complete | Ecosystem backbone pass: Plate and slate-yjs migration substrate without current adapters.                  |
+| Pass 7 | complete | Maintainer objection ledger and final keep/cut decisions.                                                   |
 
 ## 9. Maintainer Objection Ledger
 
 Status: accepted.
 
-| Objection | Final answer | Status |
-| --- | --- | --- |
-| "`ProjectionStore` is the common abstraction; why hide it?" | Hide it from normal DX because the user-facing concepts are decorations, annotations, and widgets. Keep projection transport advanced/internal. | accepted |
-| "Full source recompute is simpler and probably fine." | Keep full recompute only as fallback and count it. Normal path must be source-scoped and runtime-bucketed. | accepted |
-| "Annotations are external data, so full refresh is acceptable." | Keep metadata external, but resolve/project by annotation id and runtime id. Broad refresh is not the accepted scale path. | accepted |
-| "Advanced authors need `dirtiness` and `runtimeScope`." | Keep advanced hints, but not as normal authoring vocabulary. Normal APIs infer safe invalidation. | accepted |
-| "Tests already cover projection subscriptions." | Current tests are necessary, not sufficient. Add generated overlay load stress and hard metric budgets. | accepted |
-| "This drifts too far from Slate DX." | Classic `decorate` stays. Durable anchors and widgets get better APIs because legacy decoration callbacks were doing too much. | accepted |
-| "This should live in Plate, not Slate." | Plate owns product plugin APIs. Slate React owns unopinionated overlay primitives and browser contracts. | accepted |
-| "Collaboration needs current slate-yjs compatibility." | Raw Slate proves operations, commits, tags, bookmarks, and local runtime ids. Current `withYjs` adapter compatibility is out of scope. | accepted |
-| "Metrics and stress rows are overkill for CI." | Agree for default CI. Keep them in `check:full`, `test:stress`, replay, and release proof. | accepted |
+| Objection                                                       | Final answer                                                                                                                                    | Status   |
+| --------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
+| "`ProjectionStore` is the common abstraction; why hide it?"     | Hide it from normal DX because the user-facing concepts are decorations, annotations, and widgets. Keep projection transport advanced/internal. | accepted |
+| "Full source recompute is simpler and probably fine."           | Keep full recompute only as fallback and count it. Normal path must be source-scoped and runtime-bucketed.                                      | accepted |
+| "Annotations are external data, so full refresh is acceptable." | Keep metadata external, but resolve/project by annotation id and runtime id. Broad refresh is not the accepted scale path.                      | accepted |
+| "Advanced authors need `dirtiness` and `runtimeScope`."         | Keep advanced hints, but not as normal authoring vocabulary. Normal APIs infer safe invalidation.                                               | accepted |
+| "Tests already cover projection subscriptions."                 | Current tests are necessary, not sufficient. Add generated overlay load stress and hard metric budgets.                                         | accepted |
+| "This drifts too far from Slate DX."                            | Classic `decorate` stays. Durable anchors and widgets get better APIs because legacy decoration callbacks were doing too much.                  | accepted |
+| "This should live in Plate, not Slate."                         | Plate owns product plugin APIs. Slate React owns unopinionated overlay primitives and browser contracts.                                        | accepted |
+| "Collaboration needs current slate-yjs compatibility."          | Raw Slate proves operations, commits, tags, bookmarks, and local runtime ids. Current `withYjs` adapter compatibility is out of scope.          | accepted |
+| "Metrics and stress rows are overkill for CI."                  | Agree for default CI. Keep them in `check:full`, `test:stress`, replay, and release proof.                                                      | accepted |
 
 ## 10. Completion Target
 
@@ -1078,7 +1074,7 @@ The review lane is complete. The next move is implementation via
 Status: complete as of 2026-04-28. Slices 1-4 complete.
 
 `complete-plan` activated implementation after review closure. The first
-execution owner is the smallest durable tracer in `../slate-v2/packages/slate-react`:
+execution owner is the smallest durable tracer in `.tmp/slate-v2/packages/slate-react`:
 
 - add product-noun overlay API scaffolding over the existing projection
   transport;

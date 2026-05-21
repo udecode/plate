@@ -64,15 +64,15 @@ specific question:
   - `docs/research/systems/slate-v2-overlay-architecture.md`
   - `docs/research/decisions/slate-v2-overlay-superiority-vs-legacy-and-field.md`
 - raw paths inspected:
-  - `../slate-v2/packages/slate-react/src`
-  - `../slate-v2/packages/slate-react/test`
-  - `../slate-v2/docs/walkthroughs/09-performance.md`
+  - `.tmp/slate-v2/packages/slate-react/src`
+  - `.tmp/slate-v2/packages/slate-react/test`
+  - `.tmp/slate-v2/docs/walkthroughs/09-performance.md`
 - direct raw files read:
-  - `../slate-v2/packages/slate-react/src/projection-store.ts`
-  - `../slate-v2/packages/slate-react/src/hooks/use-slate-selector.tsx`
-  - `../slate-v2/packages/slate-react/src/hooks/use-slate-annotations.tsx`
-  - `../slate-v2/packages/slate-react/src/hooks/use-slate-widgets.tsx`
-  - `../slate-v2/docs/walkthroughs/09-performance.md`
+  - `.tmp/slate-v2/packages/slate-react/src/projection-store.ts`
+  - `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-selector.tsx`
+  - `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-annotations.tsx`
+  - `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-widgets.tsx`
+  - `.tmp/slate-v2/docs/walkthroughs/09-performance.md`
 - official source entrypoints checked:
   - local repo source
 - strongest evidence found:

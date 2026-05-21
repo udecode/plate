@@ -37,12 +37,12 @@ Outcome:
 
 In scope:
 
-- `../slate-v2/site/examples/ts/**`
-- `../slate-v2/packages/slate-react/src/hooks/use-slate-editor.ts`
-- `../slate-v2/packages/slate-react/src/decoration-source.ts`
-- `../slate-v2/packages/slate-react/src/hooks/use-slate-annotations.tsx`
-- `../slate-v2/packages/slate-react/src/components/slate.tsx`
-- `../slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
+- `.tmp/slate-v2/site/examples/ts/**`
+- `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-editor.ts`
+- `.tmp/slate-v2/packages/slate-react/src/decoration-source.ts`
+- `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-annotations.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/components/slate.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
 - `.agents/rules/ralph.mdc` rule update, during execution only
 
 Non-goals:
@@ -78,7 +78,7 @@ Editor creation:
 History examples:
 
 - Many examples repeat `withEditor: (editor) => withHistory(editor) as
-  CustomEditor`, for example code highlighting:
+CustomEditor`, for example code highlighting:
   `/Users/zbeyens/git/slate-v2/site/examples/ts/code-highlighting.tsx:54`.
 - Simple examples can pass `withEditor: withHistory`, for example plain text:
   `/Users/zbeyens/git/slate-v2/site/examples/ts/plaintext.tsx:6`.
@@ -197,7 +197,7 @@ Target:
 const editor = useSlateEditor({
   initialValue,
   withEditor: withHistory,
-})
+});
 ```
 
 For custom behavior:
@@ -206,7 +206,7 @@ For custom behavior:
 const editor = useSlateEditor({
   initialValue,
   withEditor: (editor) => withImages(withHistory(editor)),
-})
+});
 ```
 
 Execution requirement:
@@ -220,7 +220,7 @@ Execution requirement:
 Rejected:
 
 ```tsx
-const editor = useSlateEditor({ initialValue }) // hidden history
+const editor = useSlateEditor({ initialValue }); // hidden history
 ```
 
 That is convenient but wrong for Slate.
@@ -263,21 +263,24 @@ Current code is too much:
 ```tsx
 const codeHighlightingSource = useMemo(
   () => createDecorationSource(editor, options),
-  [editor]
-)
+  [editor],
+);
 
-useEffect(() => () => codeHighlightingSource.destroy(), [codeHighlightingSource])
+useEffect(
+  () => () => codeHighlightingSource.destroy(),
+  [codeHighlightingSource],
+);
 ```
 
 Target:
 
 ```tsx
 const codeHighlightingSource = useSlateDecorationSource(editor, {
-  id: 'code-highlighting',
-  dirtiness: ['text', 'node'],
+  id: "code-highlighting",
+  dirtiness: ["text", "node"],
   read: ({ snapshot }) => collectCodeProjections(snapshot.children),
   runtimeScope: ({ snapshot }) => collectCodeRuntimeScope(snapshot),
-})
+});
 ```
 
 Rules:
@@ -295,13 +298,13 @@ Decision: clean examples aggressively.
 Current worst offender:
 
 ```tsx
-match: (n: SlateNode) => Node.isElement(n) && n.type === ParagraphType
+match: (n: SlateNode) => Node.isElement(n) && n.type === ParagraphType;
 ```
 
 Target:
 
 ```tsx
-match: (node) => Node.isElement(node) && node.type === ParagraphType
+match: (node) => Node.isElement(node) && node.type === ParagraphType;
 ```
 
 Execution:
@@ -343,7 +346,7 @@ Target:
 ```
 
 ```tsx
-const snapshot = useSlateAnnotations()
+const snapshot = useSlateAnnotations();
 ```
 
 API shape:
@@ -368,21 +371,21 @@ value becomes a real target object first.
 Current API says:
 
 ```ts
-target: Path
+target: Path;
 ```
 
 That is vague. If the value is a `Path`, the prop should be:
 
 ```ts
-path: Path
+path: Path;
 ```
 
 Future option, only if useful:
 
 ```ts
 target: {
-  path: Path
-  runtimeId: RuntimeId
+  path: Path;
+  runtimeId: RuntimeId;
 }
 ```
 
@@ -474,7 +477,7 @@ Acceptance:
 
 Acceptance:
 
-- `rg -n "match: \\(n: SlateNode\\)|type Node as SlateNode| as any| as CustomEditor" ../slate-v2/site/examples/ts`
+- `rg -n "match: \\(n: SlateNode\\)|type Node as SlateNode| as any| as CustomEditor" .tmp/slate-v2/site/examples/ts`
   only returns justified leftovers.
 - `.agents/rules/ralph.mdc` includes the inference rule.
 
@@ -556,14 +559,14 @@ design. Either call it `path` or make it a real target object.
 
 ## Score
 
-| Dimension | Score | Evidence |
-| --- | ---: | --- |
-| React 19.2 runtime performance | 0.90 | Decoration hook keeps runtime-scope contract; annotation context avoids prop threading without adding per-node state. |
-| Slate-close unopinionated DX | 0.94 | History remains explicit; `withEditor` remains current accepted shape. |
-| Plate and slate-yjs migration backbone | 0.88 | No hidden history; annotation stores remain external, collaboration-compatible. |
-| Regression-proof testing strategy | 0.90 | Focused tests and browser examples listed by affected behavior. |
-| Research evidence completeness | 0.92 | Local Lexical, ProseMirror, Tiptap, and live Slate source cited. |
-| shadcn-style composability and minimalism | 0.92 | Hook hides lifecycle, props become literal, examples reduce casts. |
+| Dimension                                 | Score | Evidence                                                                                                              |
+| ----------------------------------------- | ----: | --------------------------------------------------------------------------------------------------------------------- |
+| React 19.2 runtime performance            |  0.90 | Decoration hook keeps runtime-scope contract; annotation context avoids prop threading without adding per-node state. |
+| Slate-close unopinionated DX              |  0.94 | History remains explicit; `withEditor` remains current accepted shape.                                                |
+| Plate and slate-yjs migration backbone    |  0.88 | No hidden history; annotation stores remain external, collaboration-compatible.                                       |
+| Regression-proof testing strategy         |  0.90 | Focused tests and browser examples listed by affected behavior.                                                       |
+| Research evidence completeness            |  0.92 | Local Lexical, ProseMirror, Tiptap, and live Slate source cited.                                                      |
+| shadcn-style composability and minimalism |  0.92 | Hook hides lifecycle, props become literal, examples reduce casts.                                                    |
 
 Weighted score: `0.91`.
 

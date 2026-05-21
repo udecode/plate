@@ -9,7 +9,7 @@ status: completed
 ## Goal
 
 Give the frozen Phase 6 benchmark and compatibility lanes a durable GitHub
-Actions home in [../slate-v2](/Users/zbeyens/git/slate-v2) so the recent large-paste
+Actions home in [.tmp/slate-v2](/Users/zbeyens/git/slate-v2) so the recent large-paste
 win stays measured, not local-only.
 
 ## Scope

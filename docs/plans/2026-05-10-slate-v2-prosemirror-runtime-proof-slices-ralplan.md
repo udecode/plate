@@ -22,7 +22,7 @@ runtime proof slices:
 
 The broad ProseMirror harvest is already complete. The all-editor and
 remaining-harvest plans already closed the first execution wave, and the live
-`../slate-v2` owner scan confirms that several rows are now covered directly.
+`.tmp/slate-v2` owner scan confirms that several rows are now covered directly.
 So the next move is not "add all five again." The next move is a focused
 ClawSweeper and live-source revalidation pass that classifies each row as:
 already sufficient, needs one hardening row, or explicitly no-claim/defer.
@@ -43,7 +43,7 @@ the PR narrative.
 In scope:
 
 - The five raw Slate rows PM-08, PM-09, PM-10, PM-12, and PM-13.
-- Live `../slate-v2` owner tests for input routing, editing kernel,
+- Live `.tmp/slate-v2` owner tests for input routing, editing kernel,
   collaboration, projection, widgets, annotations, and browser selection.
 - Issue-ledger accounting before any fixed/improved claim changes.
 - Plate-owned routing for ProseMirror PluginView/NodeView/MarkView leftovers.
@@ -93,7 +93,7 @@ Drivers:
 Chosen path:
 
 - Run one issue-facing ClawSweeper revalidation for the five PM rows.
-- Read the exact current live source ranges in `../slate-v2`.
+- Read the exact current live source ranges in `.tmp/slate-v2`.
 - Only schedule hardening rows where the live tests still miss a ProseMirror
   invariant.
 - Keep PM plugin/view authoring rows as Plate-owned unless reduced to a raw
@@ -121,64 +121,68 @@ Consequences:
 Live-source probe:
 
 ```bash
-rg -n "describe\(|it\(|test\(" ../slate-v2/packages/slate-react/test/model-input-strategy-contract.test.ts ../slate-v2/packages/slate-react/test/editing-kernel-contract.ts ../slate-v2/packages/slate-react/test/selection-reconciler-contract.ts ../slate-v2/packages/slate/test/collab-history-runtime-contract.ts ../slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx ../slate-v2/packages/slate-react/test/annotation-store-contract.tsx ../slate-v2/packages/slate-react/test/widget-layer-contract.tsx ../slate-v2/packages/slate-browser/test/browser/selection.browser.test.ts ../slate-v2/playwright/integration/examples/dom-coverage-boundaries.test.ts ../slate-v2/playwright/stress/generated-editing.test.ts
+rg -n "describe\(|it\(|test\(" .tmp/slate-v2/packages/slate-react/test/model-input-strategy-contract.test.ts .tmp/slate-v2/packages/slate-react/test/editing-kernel-contract.ts .tmp/slate-v2/packages/slate-react/test/selection-reconciler-contract.ts .tmp/slate-v2/packages/slate/test/collab-history-runtime-contract.ts .tmp/slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx .tmp/slate-v2/packages/slate-react/test/annotation-store-contract.tsx .tmp/slate-v2/packages/slate-react/test/widget-layer-contract.tsx .tmp/slate-v2/packages/slate-browser/test/browser/selection.browser.test.ts .tmp/slate-v2/playwright/integration/examples/dom-coverage-boundaries.test.ts .tmp/slate-v2/playwright/stress/generated-editing.test.ts
 ```
 
-| PM row | Current owner evidence | Initial classification |
-| --- | --- | --- |
-| PM-10 composition | `model-input-strategy-contract.test.ts:23-449`, `editing-kernel-contract.ts:276-314`, `selection-reconciler-contract.ts:27-98`, `dom-coverage-boundaries.test.ts:291`, `richtext.test.ts`, `rendering-strategy-runtime.test.ts` | Covered. Existing package and browser rows include replacement ranges, Android-style newline/backspace, expanded CJK composition, composition ownership, hidden-boundary IME, formatted/rich-text IME, overlap cancellation, rapid follow-up composition, and cross-paragraph replacement. |
-| PM-09 DOM-change | `model-input-strategy-contract.test.ts:24-449`, `editing-kernel-contract.ts:138-419`, `generated-editing.test.ts:1261`, `richtext.test.ts:1159` | Covered. Ambiguous replacement, native repair target ranges, beforeinput command ownership, backspace, Enter split, DOM-selection refresh, and generated/browser stress ownership are represented. |
-| PM-08 collab convergence | `collab-history-runtime-contract.ts:62-578`, especially three-peer convergence at `233`, range-delete replay at `352`, history rebase at `452`, bookmark rebase at `496`, and remote move/remove runtime target rows at `530` | Covered for raw Slate package convergence. Exact collaboration issue closure remains unclaimed where the issue needs high-QPS selection or first-party collaboration protocol proof. |
-| PM-12 projection/widget mapping | `projections-and-selection-contract.tsx:105-1084`, `annotation-store-contract.tsx:126-824`, `widget-layer-contract.tsx:88-275` | Covered for raw projection, annotation, and widget mapping. Plate-owned NodeView/MarkView/PluginView lifecycle APIs stay out. |
-| PM-13 geometry/RTL | `selection.browser.test.ts:8-128` has simple snapshots, FEFF normalization, RTL geometry direction, and wrapped-line rectangles | Covered for this ralplan's browser geometry/RTL slice. Atom arrow-motion and block-boundary rectangles can be future browser rows, but they are not a current hardening requirement. |
+| PM row                          | Current owner evidence                                                                                                                                                                                                          | Initial classification                                                                                                                                                                                                                                                                     |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| PM-10 composition               | `model-input-strategy-contract.test.ts:23-449`, `editing-kernel-contract.ts:276-314`, `selection-reconciler-contract.ts:27-98`, `dom-coverage-boundaries.test.ts:291`, `richtext.test.ts`, `rendering-strategy-runtime.test.ts` | Covered. Existing package and browser rows include replacement ranges, Android-style newline/backspace, expanded CJK composition, composition ownership, hidden-boundary IME, formatted/rich-text IME, overlap cancellation, rapid follow-up composition, and cross-paragraph replacement. |
+| PM-09 DOM-change                | `model-input-strategy-contract.test.ts:24-449`, `editing-kernel-contract.ts:138-419`, `generated-editing.test.ts:1261`, `richtext.test.ts:1159`                                                                                 | Covered. Ambiguous replacement, native repair target ranges, beforeinput command ownership, backspace, Enter split, DOM-selection refresh, and generated/browser stress ownership are represented.                                                                                         |
+| PM-08 collab convergence        | `collab-history-runtime-contract.ts:62-578`, especially three-peer convergence at `233`, range-delete replay at `352`, history rebase at `452`, bookmark rebase at `496`, and remote move/remove runtime target rows at `530`   | Covered for raw Slate package convergence. Exact collaboration issue closure remains unclaimed where the issue needs high-QPS selection or first-party collaboration protocol proof.                                                                                                       |
+| PM-12 projection/widget mapping | `projections-and-selection-contract.tsx:105-1084`, `annotation-store-contract.tsx:126-824`, `widget-layer-contract.tsx:88-275`                                                                                                  | Covered for raw projection, annotation, and widget mapping. Plate-owned NodeView/MarkView/PluginView lifecycle APIs stay out.                                                                                                                                                              |
+| PM-13 geometry/RTL              | `selection.browser.test.ts:8-128` has simple snapshots, FEFF normalization, RTL geometry direction, and wrapped-line rectangles                                                                                                 | Covered for this ralplan's browser geometry/RTL slice. Atom arrow-motion and block-boundary rectangles can be future browser rows, but they are not a current hardening requirement.                                                                                                       |
 
 ## Ecosystem Strategy Synthesis
 
-| Source | Mechanism to steal | Shape to reject | Slate target |
-| --- | --- | --- | --- |
-| ProseMirror composition | Real DOM composition lifecycle pressure, especially mutations inside marked text and ambiguous browser-owned ranges | PM view abstraction and numeric positions | Input strategy, editing kernel, selection reconciler, browser composition rows |
-| ProseMirror DOM-change | Ambiguous native mutations must route once to model command, repair, or DOM import | One-off DOM diff policy as public API | Model input strategy, editing-kernel traces, generated browser stress |
-| ProseMirror collab | Peer convergence under delayed local/remote edits and rebased history | PM Step JSON and collab plugin API | Commit replay, remote metadata, history rebase, slate-yjs future browser proof |
-| ProseMirror decorations | Projection/widget mapping through structural edits with local subscriber wakeups | NodeView/MarkView/PluginView lifecycle APIs in raw Slate | Projection store, annotation store, widget layer, Plate plugin backlog |
-| ProseMirror selection geometry | Browser proof for RTL, wrapped lines, coordinates, and native selection import/export | PM coordinate helpers as Slate API | `slate-browser` selection snapshots and example/stress browser proof |
+| Source                         | Mechanism to steal                                                                                                  | Shape to reject                                          | Slate target                                                                   |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| ProseMirror composition        | Real DOM composition lifecycle pressure, especially mutations inside marked text and ambiguous browser-owned ranges | PM view abstraction and numeric positions                | Input strategy, editing kernel, selection reconciler, browser composition rows |
+| ProseMirror DOM-change         | Ambiguous native mutations must route once to model command, repair, or DOM import                                  | One-off DOM diff policy as public API                    | Model input strategy, editing-kernel traces, generated browser stress          |
+| ProseMirror collab             | Peer convergence under delayed local/remote edits and rebased history                                               | PM Step JSON and collab plugin API                       | Commit replay, remote metadata, history rebase, slate-yjs future browser proof |
+| ProseMirror decorations        | Projection/widget mapping through structural edits with local subscriber wakeups                                    | NodeView/MarkView/PluginView lifecycle APIs in raw Slate | Projection store, annotation store, widget layer, Plate plugin backlog         |
+| ProseMirror selection geometry | Browser proof for RTL, wrapped lines, coordinates, and native selection import/export                               | PM coordinate helpers as Slate API                       | `slate-browser` selection snapshots and example/stress browser proof           |
 
 ## Revalidation Queue
 
 1. PM-10 composition:
+
    - Read the live rows around Android newline, expanded CJK replacement,
      composition lifecycle ownership, DOM coverage composition, and the two IME
      solution notes.
    - If any PM pressure is missing, add exactly one focused row to the existing
      package or browser owner. Browser rows must use honest DOM/native proof.
-   - Fast gate: `cd ../slate-v2 && bun test ./packages/slate-react/test/model-input-strategy-contract.test.ts ./packages/slate-react/test/selection-reconciler-contract.ts`
-   - Browser gate if changed: `cd ../slate-v2 && bun playwright test playwright/integration/examples/dom-coverage-boundaries.test.ts --project=chromium`
+   - Fast gate: `cd .tmp/slate-v2 && bun test ./packages/slate-react/test/model-input-strategy-contract.test.ts ./packages/slate-react/test/selection-reconciler-contract.ts`
+   - Browser gate if changed: `cd .tmp/slate-v2 && bun playwright test playwright/integration/examples/dom-coverage-boundaries.test.ts --project=chromium`
 
 2. PM-09 DOM-change:
+
    - Read ambiguous replacement, Android backspace, Enter split, DOM selection
      refresh, and generated stress ownership.
    - If still thin, add one package routing row before touching browser stress.
-   - Fast gate: `cd ../slate-v2 && bun test ./packages/slate-react/test/model-input-strategy-contract.test.ts ./packages/slate-react/test/editing-kernel-contract.ts`
+   - Fast gate: `cd .tmp/slate-v2 && bun test ./packages/slate-react/test/model-input-strategy-contract.test.ts ./packages/slate-react/test/editing-kernel-contract.ts`
 
 3. PM-08 collaboration convergence:
+
    - Read the three-peer convergence and history rebase rows.
    - If PM's delayed-local or undo/redo peer case is not covered, add one small
      convergence row to `collab-history-runtime-contract.ts`.
-   - Fast gate: `cd ../slate-v2 && bun test ./packages/slate/test/collab-history-runtime-contract.ts`
+   - Fast gate: `cd .tmp/slate-v2 && bun test ./packages/slate/test/collab-history-runtime-contract.ts`
 
 4. PM-12 projection/widget mapping:
+
    - Read moved-node projection, nested moved-node projection, runtime bucket,
      annotation bucket, node-widget move, and widget metrics rows.
    - If missing, add one hardening row only in the existing owner file.
    - Keep NodeView/MarkView/contentDOM/update/ignoreMutation/destroy/getPos as
      Plate-owned unless the row reduces to raw projection/widget behavior.
-   - Fast gate: `cd ../slate-v2/packages/slate-react && bun test:vitest -- projections-and-selection-contract annotation-store-contract widget-layer-contract`
+   - Fast gate: `cd .tmp/slate-v2/packages/slate-react && bun test:vitest -- projections-and-selection-contract annotation-store-contract widget-layer-contract`
 
 5. PM-13 geometry/RTL:
    - Read simple snapshot, FEFF zero-width, RTL geometry, and wrapped-line
      rectangle rows.
    - If missing, schedule atom arrow-motion or block-boundary rectangle as a
      browser-only future row.
-   - Fast gate: `cd ../slate-v2 && bun --filter slate-browser test:selection`
+   - Fast gate: `cd .tmp/slate-v2 && bun --filter slate-browser test:selection`
 
 ## Issue-Ledger Accounting
 
@@ -209,32 +213,32 @@ Decision:
 
 Final row classification:
 
-| PM row | Final classification | Issue policy |
-| --- | --- | --- |
-| PM-10 | covered | Input/runtime issues stay related or proof-needed; no mobile/device promotion. |
-| PM-09 | covered | DOM-change and beforeinput issues stay related unless exact native-event proof exists. |
-| PM-08 | covered for raw package convergence | Collaboration issues stay related or unchanged improves; no slate-yjs/OT/browser closure. |
-| PM-12 | covered for raw projection/widget mapping | Projection/comment issues keep existing improves/related statuses; Plate-owned lifecycle rows stay out. |
-| PM-13 | covered for RTL/wrapped-line geometry | Browser-selection issues stay related; no atom/table/mobile closure. |
+| PM row | Final classification                      | Issue policy                                                                                            |
+| ------ | ----------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| PM-10  | covered                                   | Input/runtime issues stay related or proof-needed; no mobile/device promotion.                          |
+| PM-09  | covered                                   | DOM-change and beforeinput issues stay related unless exact native-event proof exists.                  |
+| PM-08  | covered for raw package convergence       | Collaboration issues stay related or unchanged improves; no slate-yjs/OT/browser closure.               |
+| PM-12  | covered for raw projection/widget mapping | Projection/comment issues keep existing improves/related statuses; Plate-owned lifecycle rows stay out. |
+| PM-13  | covered for RTL/wrapped-line geometry     | Browser-selection issues stay related; no atom/table/mobile closure.                                    |
 
 ## Maintainer Objection Ledger
 
-| Objection | Answer |
-| --- | --- |
-| "Didn't we already process ProseMirror?" | Yes. This is not a new harvest; it is a narrow revalidation of five runtime proof rows against current Slate v2 and issue claims. |
-| "Why keep the plan pending if tests already exist?" | Because coverage proof and issue-claim proof are different. The ClawSweeper pass is still required before closure. |
-| "Why not copy ProseMirror APIs for plugin/view lifecycle?" | Raw Slate should expose primitive behavior. Plate owns opinionated authoring/lifecycle ergonomics. |
-| "Why not close mobile/IME from these rows?" | Desktop browser/package rows are not raw-device proof. Mobile/device claims need real Appium/Android/iOS artifacts. |
+| Objection                                                  | Answer                                                                                                                            |
+| ---------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| "Didn't we already process ProseMirror?"                   | Yes. This is not a new harvest; it is a narrow revalidation of five runtime proof rows against current Slate v2 and issue claims. |
+| "Why keep the plan pending if tests already exist?"        | Because coverage proof and issue-claim proof are different. The ClawSweeper pass is still required before closure.                |
+| "Why not copy ProseMirror APIs for plugin/view lifecycle?" | Raw Slate should expose primitive behavior. Plate owns opinionated authoring/lifecycle ergonomics.                                |
+| "Why not close mobile/IME from these rows?"                | Desktop browser/package rows are not raw-device proof. Mobile/device claims need real Appium/Android/iOS artifacts.               |
 
 ## Implementation-Skill Review Notes
 
-| Skill/lens | Status | Reason |
-| --- | --- | --- |
-| `tdd` | applied as acceptance criteria | Any remaining row should be a focused test in the existing owner before implementation. |
-| `performance-oracle` | applied as review lens | PM-12 must not broaden projection or widget invalidation; local subscriber wakeups matter. |
-| `vercel-react-best-practices` | applied as review lens | Projection and widget React rows must avoid broad rerender pressure. |
-| `shadcn` | skipped | No UI component or registry surface changes. |
-| `react-useeffect` | skipped | No hook/effect implementation edits in this planning pass. |
+| Skill/lens                    | Status                         | Reason                                                                                     |
+| ----------------------------- | ------------------------------ | ------------------------------------------------------------------------------------------ |
+| `tdd`                         | applied as acceptance criteria | Any remaining row should be a focused test in the existing owner before implementation.    |
+| `performance-oracle`          | applied as review lens         | PM-12 must not broaden projection or widget invalidation; local subscriber wakeups matter. |
+| `vercel-react-best-practices` | applied as review lens         | Projection and widget React rows must avoid broad rerender pressure.                       |
+| `shadcn`                      | skipped                        | No UI component or registry surface changes.                                               |
+| `react-useeffect`             | skipped                        | No hook/effect implementation edits in this planning pass.                                 |
 
 ## Research And Learnings Input
 
@@ -260,14 +264,14 @@ by the learnings skill but does not exist in this repo.
 
 ## Confidence Score
 
-| Dimension | Weight | Score | Reason |
-| --- | ---: | ---: | --- |
-| React 19.2 runtime performance | 0.20 | 0.87 | PM-12 has projection/widget owner rows, but issue/perf revalidation is pending. |
-| Slate-close unopinionated DX | 0.15 | 0.91 | PM API cloning is rejected; Plate-owned rows are separated. |
-| Plate/slate-yjs migration backbone | 0.15 | 0.86 | Collab substrate rows exist; browser/yjs adapter proof remains out of scope. |
-| Regression-proof testing | 0.20 | 0.90 | Current live owner tests are strong, but exact row-by-row reads are pending. |
-| Research evidence completeness | 0.15 | 0.89 | Harvest, prior plans, live source probes, and IME learnings are recorded. |
-| Issue claim discipline | 0.15 | 0.94 | ClawSweeper revalidation completed and no claim promotion was made. |
+| Dimension                          | Weight | Score | Reason                                                                          |
+| ---------------------------------- | -----: | ----: | ------------------------------------------------------------------------------- |
+| React 19.2 runtime performance     |   0.20 |  0.87 | PM-12 has projection/widget owner rows, but issue/perf revalidation is pending. |
+| Slate-close unopinionated DX       |   0.15 |  0.91 | PM API cloning is rejected; Plate-owned rows are separated.                     |
+| Plate/slate-yjs migration backbone |   0.15 |  0.86 | Collab substrate rows exist; browser/yjs adapter proof remains out of scope.    |
+| Regression-proof testing           |   0.20 |  0.90 | Current live owner tests are strong, but exact row-by-row reads are pending.    |
+| Research evidence completeness     |   0.15 |  0.89 | Harvest, prior plans, live source probes, and IME learnings are recorded.       |
+| Issue claim discipline             |   0.15 |  0.94 | ClawSweeper revalidation completed and no claim promotion was made.             |
 
 Weighted score: 0.94.
 
@@ -294,14 +298,14 @@ bun --filter slate-browser test:selection
 
 ## Pass-State Ledger
 
-| Pass | Status | Evidence | Next owner |
-| --- | --- | --- | --- |
-| Skill reload | complete | Loaded `slate-ralplan`, `editor-test-harvester`, `clawsweeper`, `ralph`, `planning-with-files`, and `learnings-researcher`. | n/a |
-| Current-state read and initial score | complete | Read ProseMirror harvest, current done plans, focused live `../slate-v2` owner probes, and IME learnings. | n/a |
-| Related issue revalidation | complete | Existing ledgers already preserve conservative statuses; fork dossier audit section appended. | n/a |
-| Exact live-source row reads | complete | Read package/browser owner rows for all five PM slices. | n/a |
-| Hardening/no-op decision | complete | All five rows are covered or explicitly future-owned; no current hardening row remains. | n/a |
-| Implementation prompt | complete | No implementation prompt needed. | n/a |
+| Pass                                 | Status   | Evidence                                                                                                                    | Next owner |
+| ------------------------------------ | -------- | --------------------------------------------------------------------------------------------------------------------------- | ---------- |
+| Skill reload                         | complete | Loaded `slate-ralplan`, `editor-test-harvester`, `clawsweeper`, `ralph`, `planning-with-files`, and `learnings-researcher`. | n/a        |
+| Current-state read and initial score | complete | Read ProseMirror harvest, current done plans, focused live `.tmp/slate-v2` owner probes, and IME learnings.                 | n/a        |
+| Related issue revalidation           | complete | Existing ledgers already preserve conservative statuses; fork dossier audit section appended.                               | n/a        |
+| Exact live-source row reads          | complete | Read package/browser owner rows for all five PM slices.                                                                     | n/a        |
+| Hardening/no-op decision             | complete | All five rows are covered or explicitly future-owned; no current hardening row remains.                                     | n/a        |
+| Implementation prompt                | complete | No implementation prompt needed.                                                                                            | n/a        |
 
 ## Closure
 

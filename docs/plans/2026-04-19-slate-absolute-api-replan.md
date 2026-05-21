@@ -258,18 +258,18 @@ Current hard-cut ledger:
 ## Current Gates
 
 - correctness owner:
-  - `cd ../slate-v2 && bun test ./packages/slate/test/snapshot-contract.ts --bail 1`
+  - `cd .tmp/slate-v2 && bun test ./packages/slate/test/snapshot-contract.ts --bail 1`
 - package floor:
-  - `cd ../slate-v2 && bun test ./packages/slate/test`
-  - `cd ../slate-v2 && bunx turbo build --filter=./packages/slate`
-  - `cd ../slate-v2 && bunx turbo typecheck --filter=./packages/slate`
-  - `cd ../slate-v2 && bun run lint:fix`
-  - `cd ../slate-v2 && bun run lint`
+  - `cd .tmp/slate-v2 && bun test ./packages/slate/test`
+  - `cd .tmp/slate-v2 && bunx turbo build --filter=./packages/slate`
+  - `cd .tmp/slate-v2 && bunx turbo typecheck --filter=./packages/slate`
+  - `cd .tmp/slate-v2 && bun run lint:fix`
+  - `cd .tmp/slate-v2 && bun run lint`
 - perf floor:
-  - `cd ../slate-v2 && bun run bench:slate:6038:local`
-  - `cd ../slate-v2 && bun run bench:core:normalization:compare:local`
-  - `cd ../slate-v2 && bun run bench:core:observation:compare:local`
-  - `cd ../slate-v2 && bun run bench:core:huge-document:compare:local`
+  - `cd .tmp/slate-v2 && bun run bench:slate:6038:local`
+  - `cd .tmp/slate-v2 && bun run bench:core:normalization:compare:local`
+  - `cd .tmp/slate-v2 && bun run bench:core:observation:compare:local`
+  - `cd .tmp/slate-v2 && bun run bench:core:huge-document:compare:local`
 
 ## Next Move
 

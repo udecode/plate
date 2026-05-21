@@ -52,20 +52,20 @@ becomes model-owned:
 ```ts
 export const shouldDeferBackspaceToNativeInput = ({
   isIOS = IS_IOS,
-  language = typeof navigator === 'undefined' ? '' : navigator.language,
+  language = typeof navigator === "undefined" ? "" : navigator.language,
   nativeEvent,
 }: {
-  isIOS?: boolean
-  language?: string
-  nativeEvent: KeyboardEvent
-}) => isIOS && language === 'ko-KR' && Hotkeys.isDeleteBackward(nativeEvent)
+  isIOS?: boolean;
+  language?: string;
+  nativeEvent: KeyboardEvent;
+}) => isIOS && language === "ko-KR" && Hotkeys.isDeleteBackward(nativeEvent);
 ```
 
 Then return `keyDownUnhandled()` for that case, letting the native browser input
 path own the action.
 
 The regression row lives in
-`../slate-v2/packages/slate-react/test/keyboard-input-strategy-contract.test.ts`
+`.tmp/slate-v2/packages/slate-react/test/keyboard-input-strategy-contract.test.ts`
 and asserts:
 
 - iOS + `ko-KR` + Backspace defers to native input;

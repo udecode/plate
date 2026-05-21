@@ -81,4 +81,4 @@ gitcrawl threads ianstormtaylor/slate --json
 - Treat [gitcrawl-recluster-map.md](gitcrawl-recluster-map.md) as the human
   architecture overlay that later ClawSweeper batches should extend.
 - Reconcile exact v2 fix claims only through
-  [../slate-v2/ledgers/issue-coverage-matrix.md](../slate-v2/ledgers/issue-coverage-matrix.md).
+  [.tmp/slate-v2/ledgers/issue-coverage-matrix.md](.tmp/slate-v2/ledgers/issue-coverage-matrix.md).

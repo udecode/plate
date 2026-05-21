@@ -60,7 +60,7 @@ Every idea should land in exactly one bucket:
 
 ## Current Baseline
 
-Already proven in `../slate-v2`:
+Already proven in `.tmp/slate-v2`:
 
 - `slate-v2`
 - `slate-dom-v2`
@@ -677,7 +677,7 @@ Status: `completed`
   - `LayoutInput`
   - `LayoutOutput`
   - `MappingIndex`
-  in [packages/core/src/index.ts](/Users/zbeyens/git/premirror/packages/core/src/index.ts)
+    in [packages/core/src/index.ts](/Users/zbeyens/git/premirror/packages/core/src/index.ts)
 
 Classification:
 
@@ -955,7 +955,7 @@ Classification:
   - `children` render function
   - regex renderers
   - custom highlight renderer helpers
-  in [index.ts](/Users/zbeyens/git/rich-textarea/src/index.ts)
+    in [index.ts](/Users/zbeyens/git/rich-textarea/src/index.ts)
 
 Classification:
 
@@ -1021,7 +1021,7 @@ Reason:
 - the README openly documents structural constraints:
   - custom components break if character counts change
   - `display:block` breaks layout assumptions
-  in [README.md](/Users/zbeyens/git/markdown-editor/README.md)
+    in [README.md](/Users/zbeyens/git/markdown-editor/README.md)
 
 Classification:
 
@@ -1570,7 +1570,7 @@ Reason:
   - text input updates `EditContext`, not the DOM
   - authors receive `textupdate` and `textformatupdate`
   - the DOM host still receives `beforeinput` intent
-  in [explainer.md](/Users/zbeyens/git/edit-context/explainer.md)
+    in [explainer.md](/Users/zbeyens/git/edit-context/explainer.md)
 - the current spec also says that when an `EditContext` is active the user agent must not directly update the DOM, fire `input`, or fire composition events on the host as a direct result of user action
 - but caret navigation and selection remain tricky:
   - selection can stay in DOM space

@@ -28,9 +28,9 @@ and `getApi(...)` typing.
 
 In scope:
 
-- `../slate-v2/packages/slate-react/src/plugin/with-react.ts`
-- `../slate-v2/packages/slate-react/src/plugin/react-editor.ts`
-- `../slate-v2/packages/slate-react/src/index.ts`
+- `.tmp/slate-v2/packages/slate-react/src/plugin/with-react.ts`
+- `.tmp/slate-v2/packages/slate-react/src/plugin/react-editor.ts`
+- `.tmp/slate-v2/packages/slate-react/src/index.ts`
 - call sites importing `ReactEditorInstance`
 - focused generic type contracts if the existing contracts do not cover the
   public rename
@@ -71,7 +71,7 @@ Required before `done`:
 ## Ralph Ledger
 
 - 2026-05-17: Started via Ralph. Completion reset to `pending`; next owner is
-  `../slate-v2/packages/slate-react`.
+  `.tmp/slate-v2/packages/slate-react`.
 - 2026-05-17: Implemented public `ReactEditor<V, TExtensions>` as
   `Editor<V, [react(), history(), ...TExtensions]>`, removed public
   `ReactEditorInstance`, updated examples and docs, and kept `HistoryExtension`
@@ -99,11 +99,11 @@ Required before `done`:
 
 ## Pass Accounting
 
-| Pass | Status | Evidence | Result |
-| --- | --- | --- | --- |
-| implementation | complete | Files listed in the ledger below. | Public `ReactEditor` type is extension-derived and `ReactEditorInstance` source/docs usage is gone. |
-| diff-review-pass | complete | Changed-files review found the stale internal `ReactEditor` interface. | Fixed with `ReactRuntimeEditor` internal annotations; no stale `ReactEditorInstance` or internal `interface ReactEditor` source/docs hits remain. |
-| verification-sweep-pass | complete | Commands listed below. | Passed. |
+| Pass                    | Status   | Evidence                                                               | Result                                                                                                                                            |
+| ----------------------- | -------- | ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| implementation          | complete | Files listed in the ledger below.                                      | Public `ReactEditor` type is extension-derived and `ReactEditorInstance` source/docs usage is gone.                                               |
+| diff-review-pass        | complete | Changed-files review found the stale internal `ReactEditor` interface. | Fixed with `ReactRuntimeEditor` internal annotations; no stale `ReactEditorInstance` or internal `interface ReactEditor` source/docs hits remain. |
+| verification-sweep-pass | complete | Commands listed below.                                                 | Passed.                                                                                                                                           |
 
 ## Verification
 
@@ -116,8 +116,8 @@ Required before `done`:
 - `bun typecheck:site`: passed after lint.
 - `bun check`: passed; existing eslint warning remains in
   `packages/slate-react/src/components/slate.tsx`.
-- `rg -n "ReactEditorInstance" ../slate-v2`: no source/docs hits.
-- `rg -n "ReactEditorInstance|export interface ReactEditor\b|interface ReactEditor\b|ReactRuntimeEditor\." ../slate-v2/packages/slate-react ../slate-v2/docs ../slate-v2/site/examples/ts`: no hits.
+- `rg -n "ReactEditorInstance" .tmp/slate-v2`: no source/docs hits.
+- `rg -n "ReactEditorInstance|export interface ReactEditor\b|interface ReactEditor\b|ReactRuntimeEditor\." .tmp/slate-v2/packages/slate-react .tmp/slate-v2/docs .tmp/slate-v2/site/examples/ts`: no hits.
 - `node tooling/scripts/completion-check.mjs`: passed.
 - `node tooling/scripts/completion-check.mjs`: passed after the `ce-compound`
   doc capture.

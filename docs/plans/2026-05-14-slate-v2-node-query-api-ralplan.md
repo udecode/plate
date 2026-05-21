@@ -12,10 +12,10 @@ No, the current example shape is not absolute best:
 const [link] = editor.read((state) =>
   Array.from(
     state.nodes.match({
-      match: (n) => NodeApi.isElement(n) && n.type === 'link',
-    })
-  )
-)
+      match: (n) => NodeApi.isElement(n) && n.type === "link",
+    }),
+  ),
+);
 ```
 
 The underlying v2 traversal is still lazy and generator-based, but this call
@@ -27,15 +27,15 @@ Draft target:
 ```ts
 const link = editor.read((state) =>
   state.nodes.find({
-    match: (n) => NodeApi.isElement(n) && n.type === 'link',
-  })
-)
+    match: (n) => NodeApi.isElement(n) && n.type === "link",
+  }),
+);
 
 const isActive = editor.read((state) =>
   state.nodes.some({
-    match: (n) => NodeApi.isElement(n) && n.type === 'link',
-  })
-)
+    match: (n) => NodeApi.isElement(n) && n.type === "link",
+  }),
+);
 
 for (const [node, path] of state.nodes.entries({ at, match })) {
   // lazy all-match traversal
@@ -72,9 +72,9 @@ Desired outcome:
 
 In scope:
 
-- `../slate-v2/packages/slate/src/core/public-state.ts`
-- `../slate-v2/packages/slate/src/interfaces/editor.ts`
-- `../slate-v2/packages/slate/src/editor/nodes.ts`
+- `.tmp/slate-v2/packages/slate/src/core/public-state.ts`
+- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`
+- `.tmp/slate-v2/packages/slate/src/editor/nodes.ts`
 - current examples that use `state.nodes.match` for first-match checks
 - focused query-contract tests and a small query benchmark
 - issue-ledger accounting for the `Editor.nodes` / query API cluster
@@ -91,7 +91,7 @@ Non-goals:
 Decision boundaries:
 
 - Slate Ralplan may decide public API target shape and proof gates.
-- Ralph owns implementation edits in `../slate-v2`.
+- Ralph owns implementation edits in `.tmp/slate-v2`.
 - Hard cut `state.nodes.match` to `state.nodes.entries` by default. The local
   built `dist` contains the draft API, but the package changelog has no public
   v2/state-query release note; treat this as pre-release until a release owner
@@ -118,28 +118,28 @@ Principles:
 Top drivers:
 
 - Current v2 query owner is a generator:
-  `../slate-v2/packages/slate/src/editor/nodes.ts:6`.
+  `.tmp/slate-v2/packages/slate/src/editor/nodes.ts:6`.
 - Raw node traversal is also a generator:
-  `../slate-v2/packages/slate/src/interfaces/node.ts:677`.
+  `.tmp/slate-v2/packages/slate/src/interfaces/node.ts:677`.
 - Public read state exposes `state.nodes.match`:
-  `../slate-v2/packages/slate/src/core/public-state.ts:960`.
+  `.tmp/slate-v2/packages/slate/src/core/public-state.ts:960`.
 - Examples materialize first-match checks:
-  `../slate-v2/site/examples/ts/inlines.tsx:180` and
-  `../slate-v2/site/examples/ts/richtext.tsx:411`.
+  `.tmp/slate-v2/site/examples/ts/inlines.tsx:180` and
+  `.tmp/slate-v2/site/examples/ts/richtext.tsx:411`.
 - Legacy Slate let first-match destructuring consume only the first generator
   yield: `../slate/packages/slate/src/editor/nodes.ts:6`.
 
 Viable options:
 
-| Option | Pros | Cons | Verdict |
-| --- | --- | --- | --- |
-| Keep `state.nodes.match` only | Smallest change; current tests already use it. | Keeps `match({ match })` stutter and encourages `Array.from(...)[0]`. | reject as not absolute best |
-| Add `find` / `some`, keep `match` as lazy all-match name | Low churn; fixes performance footgun for common checks. | Still leaves the odd all-match name public. | viable fallback |
-| Rename all-match to `entries`, add `find` / `some` | Best DX and preserves lazy semantics with clear result naming. | Breaking rename from current v2 draft API. | chosen if pre-release |
-| Restore public static `Editor.nodes(editor, ...)` | Closest to legacy Slate snippets. | Fights accepted state/tx read lifecycle and creates two public read routes. | reject |
-| Copy ProseMirror callback traversal | Allocation-free. | Worse Slate DX; no natural first entry return. | reject |
-| Copy Lexical array/type-map query surface | Can be fast for type-index reads. | Overfits Lexical's key/node-map runtime and makes Slate less path/tree-native. | reject for this slice |
-| Copy Tiptap product query helpers | Broad app DX: `querySelector`, `findChildren`, `isNodeActive`. | Moves plugin/product policy into raw Slate and encourages selector/string APIs. | reject for core |
+| Option                                                   | Pros                                                           | Cons                                                                            | Verdict                     |
+| -------------------------------------------------------- | -------------------------------------------------------------- | ------------------------------------------------------------------------------- | --------------------------- |
+| Keep `state.nodes.match` only                            | Smallest change; current tests already use it.                 | Keeps `match({ match })` stutter and encourages `Array.from(...)[0]`.           | reject as not absolute best |
+| Add `find` / `some`, keep `match` as lazy all-match name | Low churn; fixes performance footgun for common checks.        | Still leaves the odd all-match name public.                                     | viable fallback             |
+| Rename all-match to `entries`, add `find` / `some`       | Best DX and preserves lazy semantics with clear result naming. | Breaking rename from current v2 draft API.                                      | chosen if pre-release       |
+| Restore public static `Editor.nodes(editor, ...)`        | Closest to legacy Slate snippets.                              | Fights accepted state/tx read lifecycle and creates two public read routes.     | reject                      |
+| Copy ProseMirror callback traversal                      | Allocation-free.                                               | Worse Slate DX; no natural first entry return.                                  | reject                      |
+| Copy Lexical array/type-map query surface                | Can be fast for type-index reads.                              | Overfits Lexical's key/node-map runtime and makes Slate less path/tree-native.  | reject for this slice       |
+| Copy Tiptap product query helpers                        | Broad app DX: `querySelector`, `findChildren`, `isNodeActive`. | Moves plugin/product policy into raw Slate and encourages selector/string APIs. | reject for core             |
 
 Chosen option: rename lazy all-match read API to `state.nodes.entries`, add
 `state.nodes.find`, and add `state.nodes.some`. Keep `match` as the predicate
@@ -160,14 +160,14 @@ Follow-ups:
 
 ## 4. Confidence Scorecard
 
-| Dimension | Score | Evidence |
-| --- | ---: | --- |
-| React 19.2 runtime performance | 0.93 | No React surface changes; the hot-path concern is avoiding allocation during read selectors and toolbar active checks. Current examples at `../slate-v2/site/examples/ts/inlines.tsx:180`, `../slate-v2/site/examples/ts/richtext.tsx:411` materialize first-match reads; the target replaces them with early-exit helpers. The DX audit rejects ambiguous all-selected helpers unless a candidate/predicate split is proven. `cwd ../slate-v2`, `bun ./scripts/benchmarks/core/current/query-ref-observation.mjs` passed and recorded current query-read overhead for the existing all-match path. |
-| Slate-close unopinionated DX | 0.94 | Keeps `editor.read`, `NodeEntry`, `match`, `mode`, `voids`, `pass`; rejects static API restoration. Evidence: `../slate-v2/packages/slate/src/interfaces/editor.ts:180`, `../slate-v2/packages/slate/src/interfaces/editor.ts:1047`; legacy generator pressure from `../slate/packages/slate/src/editor/nodes.ts:6`. |
-| Plate and slate-yjs migration-backbone shape | 0.90 | Deterministic lazy query primitives remain substrate-level and plugin-friendly; no serialized operation, remote-apply, or current Plate adapter claim is made. Maintainer pass accepts the raw-core boundary and rejects product helpers. |
-| Regression-proof testing strategy | 0.94 | Focused query-contract, public-surface typecheck, early-exit visit-count tests, reverse/pass/void/mode parity, and grep cleanup gates are named. Current gates passed: `cwd ../slate-v2`, `bun test ./packages/slate/test/query-contract.ts` -> `79 pass`; `bun --filter slate typecheck` -> pass. |
-| Research evidence completeness | 0.93 | Local legacy Slate, ProseMirror, Lexical, and Tiptap sources were read; research decision added at `docs/research/decisions/slate-v2-node-query-api-should-keep-lazy-entries-and-add-first-match-helpers.md`; issue cache rows were reused without broad GitHub rediscovery. |
-| shadcn-style composability and hook/component minimalism | 0.88 | No UI; the API removes app helper boilerplate while keeping raw Slate core small. Example cleanup is part of Ralph scope, not an extra product layer. |
+| Dimension                                                | Score | Evidence                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| -------------------------------------------------------- | ----: | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| React 19.2 runtime performance                           |  0.93 | No React surface changes; the hot-path concern is avoiding allocation during read selectors and toolbar active checks. Current examples at `.tmp/slate-v2/site/examples/ts/inlines.tsx:180`, `.tmp/slate-v2/site/examples/ts/richtext.tsx:411` materialize first-match reads; the target replaces them with early-exit helpers. The DX audit rejects ambiguous all-selected helpers unless a candidate/predicate split is proven. `cwd .tmp/slate-v2`, `bun ./scripts/benchmarks/core/current/query-ref-observation.mjs` passed and recorded current query-read overhead for the existing all-match path. |
+| Slate-close unopinionated DX                             |  0.94 | Keeps `editor.read`, `NodeEntry`, `match`, `mode`, `voids`, `pass`; rejects static API restoration. Evidence: `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:180`, `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:1047`; legacy generator pressure from `../slate/packages/slate/src/editor/nodes.ts:6`.                                                                                                                                                                                                                                                                                  |
+| Plate and slate-yjs migration-backbone shape             |  0.90 | Deterministic lazy query primitives remain substrate-level and plugin-friendly; no serialized operation, remote-apply, or current Plate adapter claim is made. Maintainer pass accepts the raw-core boundary and rejects product helpers.                                                                                                                                                                                                                                                                                                                                                                 |
+| Regression-proof testing strategy                        |  0.94 | Focused query-contract, public-surface typecheck, early-exit visit-count tests, reverse/pass/void/mode parity, and grep cleanup gates are named. Current gates passed: `cwd .tmp/slate-v2`, `bun test ./packages/slate/test/query-contract.ts` -> `79 pass`; `bun --filter slate typecheck` -> pass.                                                                                                                                                                                                                                                                                                      |
+| Research evidence completeness                           |  0.93 | Local legacy Slate, ProseMirror, Lexical, and Tiptap sources were read; research decision added at `docs/research/decisions/slate-v2-node-query-api-should-keep-lazy-entries-and-add-first-match-helpers.md`; issue cache rows were reused without broad GitHub rediscovery.                                                                                                                                                                                                                                                                                                                              |
+| shadcn-style composability and hook/component minimalism |  0.88 | No UI; the API removes app helper boilerplate while keeping raw Slate core small. Example cleanup is part of Ralph scope, not an extra product layer.                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 
 Total: `0.94`.
 
@@ -185,12 +185,12 @@ Slate v2 should remain:
 
 ## 6. Ecosystem Strategy Synthesis
 
-| System | Source | Mechanism | Avoids | Steal | Reject | Slate target | Verdict |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| Legacy Slate | `../slate/packages/slate/src/editor/nodes.ts:6` | Generator-based `Editor.nodes` traversal. | Full-array work for first entry destructuring. | Lazy node-entry iteration semantics. | Static editor-first public route as normal v2 API. | `state.nodes.entries(...)` lazy iterable. | partial |
-| ProseMirror | `../prosemirror-model/src/node.ts:79`; `../prosemirror-model/src/fragment.ts:29` | Callback traversal with prune-by-`false`. | Allocation in core traversal. | Allocation-free traversal and prune discipline. | Callback-only public DX. | Existing `pass` plus lazy entries. | partial |
-| Lexical | `../lexical/packages/lexical/src/LexicalEditorState.ts:122`; `../lexical/packages/lexical/src/LexicalSelection.ts:527`; `../lexical/packages/lexical/src/LexicalUtils.ts:1274` | Read lifecycle, cached selection arrays, optional type-to-node map for read-only type lookup. | Unsafe reads and repeated full scans for type groups. | Keep read lifecycle; consider indexes only with benchmark proof. | Array return shape for Slate DFS query. | `editor.read` plus lazy `entries` / `find` / `some`. | partial |
-| Tiptap | `../tiptap/packages/core/src/NodePos.ts:206`; `../tiptap/packages/core/src/helpers/findChildren.ts:11`; `../tiptap/packages/core/src/helpers/isNodeActive.ts:8` | Product helpers return arrays; `querySelector` has first-item escape. | Bad product DX around common queries. | First-match and active-check convenience. | Product-layer array helpers and selector strings as raw core law. | `find` / `some` in core, arrays only by caller spread. | partial |
+| System       | Source                                                                                                                                                                         | Mechanism                                                                                     | Avoids                                                | Steal                                                            | Reject                                                            | Slate target                                           | Verdict |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------- | ----------------------------------------------------- | ---------------------------------------------------------------- | ----------------------------------------------------------------- | ------------------------------------------------------ | ------- |
+| Legacy Slate | `../slate/packages/slate/src/editor/nodes.ts:6`                                                                                                                                | Generator-based `Editor.nodes` traversal.                                                     | Full-array work for first entry destructuring.        | Lazy node-entry iteration semantics.                             | Static editor-first public route as normal v2 API.                | `state.nodes.entries(...)` lazy iterable.              | partial |
+| ProseMirror  | `../prosemirror-model/src/node.ts:79`; `../prosemirror-model/src/fragment.ts:29`                                                                                               | Callback traversal with prune-by-`false`.                                                     | Allocation in core traversal.                         | Allocation-free traversal and prune discipline.                  | Callback-only public DX.                                          | Existing `pass` plus lazy entries.                     | partial |
+| Lexical      | `../lexical/packages/lexical/src/LexicalEditorState.ts:122`; `../lexical/packages/lexical/src/LexicalSelection.ts:527`; `../lexical/packages/lexical/src/LexicalUtils.ts:1274` | Read lifecycle, cached selection arrays, optional type-to-node map for read-only type lookup. | Unsafe reads and repeated full scans for type groups. | Keep read lifecycle; consider indexes only with benchmark proof. | Array return shape for Slate DFS query.                           | `editor.read` plus lazy `entries` / `find` / `some`.   | partial |
+| Tiptap       | `../tiptap/packages/core/src/NodePos.ts:206`; `../tiptap/packages/core/src/helpers/findChildren.ts:11`; `../tiptap/packages/core/src/helpers/isNodeActive.ts:8`                | Product helpers return arrays; `querySelector` has first-item escape.                         | Bad product DX around common queries.                 | First-match and active-check convenience.                        | Product-layer array helpers and selector strings as raw core law. | `find` / `some` in core, arrays only by caller spread. | partial |
 
 ## 7. Public API Target
 
@@ -199,13 +199,13 @@ Target:
 ```ts
 type EditorStateNodesApi = {
   entries: <T extends Node>(
-    options?: EditorNodesOptions<T>
-  ) => Generator<NodeEntry<T>, void, undefined>
+    options?: EditorNodesOptions<T>,
+  ) => Generator<NodeEntry<T>, void, undefined>;
   find: <T extends Node>(
-    options?: EditorNodesOptions<T>
-  ) => NodeEntry<T> | undefined
-  some: <T extends Node>(options?: EditorNodesOptions<T>) => boolean
-}
+    options?: EditorNodesOptions<T>,
+  ) => NodeEntry<T> | undefined;
+  some: <T extends Node>(options?: EditorNodesOptions<T>) => boolean;
+};
 ```
 
 Keep existing direct accessors like `above`, `children`, `first(at)`, `get`,
@@ -215,7 +215,7 @@ matching because it already means first node at a location.
 Hard cut:
 
 - Cut `state.nodes.match` by default. The local `dist` artifact contains the
-  draft API, but `../slate-v2/packages/slate/CHANGELOG.md` has no
+  draft API, but `.tmp/slate-v2/packages/slate/CHANGELOG.md` has no
   v2/state-query release entry. Treat this as pre-release local build state.
 - If a release owner confirms that `state.nodes.match` already shipped outside
   this repo, keep a deprecated alias to `entries` for one cycle only, with
@@ -228,15 +228,15 @@ and `some`.
 
 Rejected or deferred:
 
-| Candidate | Reference pressure | Verdict | Reason |
-| --- | --- | --- | --- |
-| `state.nodes.every(options)` | JavaScript collection symmetry; all-selected checks in editor toolbars; ProseMirror callback traversal can stop on first false. | reject for this plan | With Slate's current `EditorNodesOptions`, `match` is the yield filter. An `every` helper would either be vacuous over already-matched entries or require a second candidate predicate. Use `some` with a negative match or a product helper until a clean candidate/assertion API is proven. |
-| `state.nodes.closest` / `findParent` | Lexical `$findMatchingParent`; Tiptap parent helpers. | reject for this plan | Slate already has `above`, which is the established path/location-aware ancestor query. Adding a second name weakens Slate-close DX. |
-| `state.nodes.querySelector` / `querySelectorAll` | Tiptap `NodePos` selector DX. | reject for core | Selector strings are product-layer policy and do not map cleanly to Slate's unopinionated node shape, custom element typing, or path options. |
-| `state.nodes.findChildren` / `findChildrenInRange` | Tiptap helper surface. | reject for core | `entries({ at, match })` is the raw primitive; product helpers can live in Plate or examples. |
-| `state.nodes.count` | Common app convenience. | defer | It can avoid array allocation but still forces full traversal unless a limit is introduced. Add only after real first-party or Plate migration call sites prove repeated count checks are hot. |
-| `state.nodes.toArray` / `filter` / `map` | Lexical/Tiptap array-heavy helpers; later `slate-dom` read-boundary materialization pressure. | split by follow-up plan | `filter` / `map` stay rejected for raw core. A narrow allocation-explicit `state.nodes.toArray(options, map?)` materializer is reopened by `docs/plans/2026-05-14-slate-v2-generator-materialization-api-ralplan.md` because manual loops inside `editor.read` are worse DX and returning a generator from `read` is unsafe. |
-| Type-index lookup by element type | Lexical read-only type-to-node map. | benchmark-only future lane | Could win repeated global type queries, but it changes memory/update complexity. Do not add without a benchmark showing DFS is the bottleneck. |
+| Candidate                                          | Reference pressure                                                                                                              | Verdict                    | Reason                                                                                                                                                                                                                                                                                                                       |
+| -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- | -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `state.nodes.every(options)`                       | JavaScript collection symmetry; all-selected checks in editor toolbars; ProseMirror callback traversal can stop on first false. | reject for this plan       | With Slate's current `EditorNodesOptions`, `match` is the yield filter. An `every` helper would either be vacuous over already-matched entries or require a second candidate predicate. Use `some` with a negative match or a product helper until a clean candidate/assertion API is proven.                                |
+| `state.nodes.closest` / `findParent`               | Lexical `$findMatchingParent`; Tiptap parent helpers.                                                                           | reject for this plan       | Slate already has `above`, which is the established path/location-aware ancestor query. Adding a second name weakens Slate-close DX.                                                                                                                                                                                         |
+| `state.nodes.querySelector` / `querySelectorAll`   | Tiptap `NodePos` selector DX.                                                                                                   | reject for core            | Selector strings are product-layer policy and do not map cleanly to Slate's unopinionated node shape, custom element typing, or path options.                                                                                                                                                                                |
+| `state.nodes.findChildren` / `findChildrenInRange` | Tiptap helper surface.                                                                                                          | reject for core            | `entries({ at, match })` is the raw primitive; product helpers can live in Plate or examples.                                                                                                                                                                                                                                |
+| `state.nodes.count`                                | Common app convenience.                                                                                                         | defer                      | It can avoid array allocation but still forces full traversal unless a limit is introduced. Add only after real first-party or Plate migration call sites prove repeated count checks are hot.                                                                                                                               |
+| `state.nodes.toArray` / `filter` / `map`           | Lexical/Tiptap array-heavy helpers; later `slate-dom` read-boundary materialization pressure.                                   | split by follow-up plan    | `filter` / `map` stay rejected for raw core. A narrow allocation-explicit `state.nodes.toArray(options, map?)` materializer is reopened by `docs/plans/2026-05-14-slate-v2-generator-materialization-api-ralplan.md` because manual loops inside `editor.read` are worse DX and returning a generator from `read` is unsafe. |
+| Type-index lookup by element type                  | Lexical read-only type-to-node map.                                                                                             | benchmark-only future lane | Could win repeated global type queries, but it changes memory/update complexity. Do not add without a benchmark showing DFS is the bottleneck.                                                                                                                                                                               |
 
 ## 8. Internal Runtime Target
 
@@ -272,13 +272,13 @@ serialized operation or remote-apply claim.
 ClawSweeper / cache status: reuse existing query-surface cache. Do not run
 broad live GitHub discovery.
 
-| Issue | Cluster | Claim | Why | Proof route | V2 sync ledger | PR line |
-| --- | --- | --- | --- | --- | --- | --- |
-| #5080 | editor-nodes-reverse-iteration-order | already fixed by prior lane | Current plan must not reopen reverse-order semantics; it depends on the existing lazy query owner. | `../slate-v2/packages/slate/test/query-contract.ts`; coverage matrix row already present. | unchanged | unchanged |
-| #5684 | editor-nodes-traversal-ambiguity | Related | Vague `SlateEditor.nodes` match issue; this API cleanup may improve ergonomics but cannot claim the unknown repro. | ask-for-repro if issue is revisited | unchanged | related matrix only |
-| #5028 | editor-nodes-pass-filtering | Related | `pass` already exists; this plan keeps it and does not create a new pass claim. | source pointers in `interfaces/editor.ts` and `interfaces/node.ts` | unchanged | related matrix only |
-| #3885 | docs-api-confusion-and-example-gaps | Not claimed | Renaming `match` to `entries` and examples using `find`/`some` improves local example clarity, but the issue asks docs to explain selection-relative `Editor.nodes`; closure needs an explicit docs route. | docs/example cleanup only if Ralph includes it | unchanged | related matrix only |
-| #4041 | legacy-browser-and-compatibility-debt | Not claimed | Generator transpilation for IE11 is stale environment debt, not current v2 API law. | none | unchanged | none |
+| Issue | Cluster                               | Claim                       | Why                                                                                                                                                                                                        | Proof route                                                                                 | V2 sync ledger | PR line             |
+| ----- | ------------------------------------- | --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- | -------------- | ------------------- |
+| #5080 | editor-nodes-reverse-iteration-order  | already fixed by prior lane | Current plan must not reopen reverse-order semantics; it depends on the existing lazy query owner.                                                                                                         | `.tmp/slate-v2/packages/slate/test/query-contract.ts`; coverage matrix row already present. | unchanged      | unchanged           |
+| #5684 | editor-nodes-traversal-ambiguity      | Related                     | Vague `SlateEditor.nodes` match issue; this API cleanup may improve ergonomics but cannot claim the unknown repro.                                                                                         | ask-for-repro if issue is revisited                                                         | unchanged      | related matrix only |
+| #5028 | editor-nodes-pass-filtering           | Related                     | `pass` already exists; this plan keeps it and does not create a new pass claim.                                                                                                                            | source pointers in `interfaces/editor.ts` and `interfaces/node.ts`                          | unchanged      | related matrix only |
+| #3885 | docs-api-confusion-and-example-gaps   | Not claimed                 | Renaming `match` to `entries` and examples using `find`/`some` improves local example clarity, but the issue asks docs to explain selection-relative `Editor.nodes`; closure needs an explicit docs route. | docs/example cleanup only if Ralph includes it                                              | unchanged      | related matrix only |
+| #4041 | legacy-browser-and-compatibility-debt | Not claimed                 | Generator transpilation for IE11 is stale environment debt, not current v2 API law.                                                                                                                        | none                                                                                        | unchanged      | none                |
 
 PR description status: unchanged. This plan changes no fixed issue claims,
 accepted release-gate claims, or maintainer-facing PR narrative yet; the
@@ -287,13 +287,13 @@ not claimed.
 
 ## 13. Legacy Regression Proof Matrix
 
-| Contract | Current evidence | Required Ralph proof |
-| --- | --- | --- |
-| Lazy all-match traversal | `editor/nodes.ts:6`; `NodeApi.nodes` at `interfaces/node.ts:677` | `state.nodes.entries` returns the same sequence as current `state.nodes.match`. |
-| First-match laziness | legacy generator destructuring; current examples regress via `Array.from` | visit-count test proves `find` stops after first match. |
-| Boolean active checks | examples use materialized first match | `some` returns true/false without full materialization. |
-| Reverse ordering | #5080 fixed in existing query contract | rename/alias must not regress reverse-order test. |
-| `pass` pruning | current options include `pass` | `entries` / `find` / `some` all honor `pass`. |
+| Contract                 | Current evidence                                                          | Required Ralph proof                                                            |
+| ------------------------ | ------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| Lazy all-match traversal | `editor/nodes.ts:6`; `NodeApi.nodes` at `interfaces/node.ts:677`          | `state.nodes.entries` returns the same sequence as current `state.nodes.match`. |
+| First-match laziness     | legacy generator destructuring; current examples regress via `Array.from` | visit-count test proves `find` stops after first match.                         |
+| Boolean active checks    | examples use materialized first match                                     | `some` returns true/false without full materialization.                         |
+| Reverse ordering         | #5080 fixed in existing query contract                                    | rename/alias must not regress reverse-order test.                               |
+| `pass` pruning           | current options include `pass`                                            | `entries` / `find` / `some` all honor `pass`.                                   |
 
 ## 14. Browser Stress / Parity Strategy
 
@@ -303,14 +303,14 @@ interactive selection assertions.
 
 ## 15. Applicable Implementation-Skill Review Matrix
 
-| Lens | Status | Reason | Finding | Plan delta |
-| --- | --- | --- | --- | --- |
-| `vercel-react-best-practices` | applied | Read selectors and toolbar active checks are React-adjacent hot paths. | Avoid allocating arrays during render-adjacent selectors. | Add `some`/`find`; examples stop using `Array.from`. |
-| `performance-oracle` | applied | Node queries can scan large documents or large selections. | Keep generator; add early-exit helpers; benchmark first/last/no match. | Benchmark gate required. |
-| `performance` | skipped for now | No production p95/RUM claim. | Use only if benchmarks expose repeated-query cohorts. | none |
-| `tdd` | applied | Public API change and performance footgun. | Add public contract tests before implementation. | Red tests first. |
-| `build-web-apps:shadcn` | skipped | No UI component surface. | Example code cleanup only. | none |
-| `react-useeffect` | skipped | No effect/subscription change. | none | none |
+| Lens                          | Status          | Reason                                                                 | Finding                                                                | Plan delta                                           |
+| ----------------------------- | --------------- | ---------------------------------------------------------------------- | ---------------------------------------------------------------------- | ---------------------------------------------------- |
+| `vercel-react-best-practices` | applied         | Read selectors and toolbar active checks are React-adjacent hot paths. | Avoid allocating arrays during render-adjacent selectors.              | Add `some`/`find`; examples stop using `Array.from`. |
+| `performance-oracle`          | applied         | Node queries can scan large documents or large selections.             | Keep generator; add early-exit helpers; benchmark first/last/no match. | Benchmark gate required.                             |
+| `performance`                 | skipped for now | No production p95/RUM claim.                                           | Use only if benchmarks expose repeated-query cohorts.                  | none                                                 |
+| `tdd`                         | applied         | Public API change and performance footgun.                             | Add public contract tests before implementation.                       | Red tests first.                                     |
+| `build-web-apps:shadcn`       | skipped         | No UI component surface.                                               | Example code cleanup only.                                             | none                                                 |
+| `react-useeffect`             | skipped         | No effect/subscription change.                                         | none                                                                   | none                                                 |
 
 ## 16. High-Risk Deliberate Mode
 
@@ -347,25 +347,25 @@ for one cycle and still add `find` / `some`. Do not drop the early-exit helpers.
 
 ## 18. Slate Maintainer Objection Ledger
 
-| Change | Likely objection | Steelman antithesis | Why still keep | Migration answer | Regression proof | Verdict |
-| --- | --- | --- | --- | --- | --- | --- |
-| `state.nodes.match` -> `state.nodes.entries` | "Why rename a working API?" | Current name is already close enough and avoids churn. | `match({ match })` is awkward public API and teaches bad examples; `entries` names the result. | Hard cut before release; one-cycle deprecated alias only if release owner proves the draft API already shipped. | public-surface and query-contract parity. | keep |
-| Add `find` | "Users can destructure the iterator." | Advanced users can write `for...of`; extra API grows surface. | Current examples already show users reaching for `Array.from`; first-match is common and generic. | Replace `Array.from(...)[0]` with `find`. | early-exit visit-count test. | keep |
-| Add `some` | "Boolean helper is redundant with `find`." | `!!find(...)` is enough. | Active checks are common; `some` communicates no node allocation or node use. | Replace `!!Array.from(...)[0]` with `some`. | early-exit visit-count test. | keep |
-| Reject `every` for now | "All-selected checks are common; JavaScript has `every`." | A symmetric collection API is attractive and could avoid arrays. | Slate's `match` option already filters yielded entries, so `every({ match })` is not clean without another candidate predicate. | Plate/product helpers can compose `entries` or negative `some` until a better raw API is proven. | candidate audit plus no public type surface for `every`. | keep rejected |
-| Do not restore `Editor.nodes` public route | "Legacy Slate snippets were simpler." | Static route has known DX and lets destructuring stay lazy. | v2 read/update lifecycle is accepted architecture; two read routes confuse extension boundaries. | Use `editor.read((state) => state.nodes.entries/find/some(...))`. | public API docs and examples. | keep |
+| Change                                       | Likely objection                                          | Steelman antithesis                                              | Why still keep                                                                                                                  | Migration answer                                                                                                | Regression proof                                         | Verdict       |
+| -------------------------------------------- | --------------------------------------------------------- | ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- | ------------- |
+| `state.nodes.match` -> `state.nodes.entries` | "Why rename a working API?"                               | Current name is already close enough and avoids churn.           | `match({ match })` is awkward public API and teaches bad examples; `entries` names the result.                                  | Hard cut before release; one-cycle deprecated alias only if release owner proves the draft API already shipped. | public-surface and query-contract parity.                | keep          |
+| Add `find`                                   | "Users can destructure the iterator."                     | Advanced users can write `for...of`; extra API grows surface.    | Current examples already show users reaching for `Array.from`; first-match is common and generic.                               | Replace `Array.from(...)[0]` with `find`.                                                                       | early-exit visit-count test.                             | keep          |
+| Add `some`                                   | "Boolean helper is redundant with `find`."                | `!!find(...)` is enough.                                         | Active checks are common; `some` communicates no node allocation or node use.                                                   | Replace `!!Array.from(...)[0]` with `some`.                                                                     | early-exit visit-count test.                             | keep          |
+| Reject `every` for now                       | "All-selected checks are common; JavaScript has `every`." | A symmetric collection API is attractive and could avoid arrays. | Slate's `match` option already filters yielded entries, so `every({ match })` is not clean without another candidate predicate. | Plate/product helpers can compose `entries` or negative `some` until a better raw API is proven.                | candidate audit plus no public type surface for `every`. | keep rejected |
+| Do not restore `Editor.nodes` public route   | "Legacy Slate snippets were simpler."                     | Static route has known DX and lets destructuring stay lazy.      | v2 read/update lifecycle is accepted architecture; two read routes confuse extension boundaries.                                | Use `editor.read((state) => state.nodes.entries/find/some(...))`.                                               | public API docs and examples.                            | keep          |
 
 ## 19. Pass Schedule And Pass-State Ledger
 
-| Pass | Status | Evidence added | Plan delta | Open issues | Next owner |
-| --- | --- | --- | --- | --- | --- |
-| current-state read and initial score | complete | Read live `../slate-v2` query source, examples, query tests, legacy Slate, ProseMirror, Lexical, Tiptap, cached issue rows; ran focused query-contract test. | Drafted target `entries` / `find` / `some`; rejected current `Array.from` shape. | none | Related issue cache validation |
-| related issue cache validation | complete | Reused `gitcrawl-live-open-ledger`, `gitcrawl-v2-sync-ledger`, `issue-coverage-matrix`, `fork-issue-dossier`, and PR reference rows for #5080/#5684/#5028/#3885/#4041. | Kept #5080 unchanged as already fixed; #5684 repro-first; #5028 related; #3885 not claimed; #4041 stale/not claimed. | none | Intent/boundary hardening |
-| intent/boundary and decision brief hardening | complete | Checked local package changelog, package metadata, and built dist exposure. | Accepted hard cut by default; alias only if release owner proves shipped API. | none | Performance and benchmark pass |
-| performance and benchmark pass | complete | Ran `bun ./scripts/benchmarks/core/current/query-ref-observation.mjs` in `../slate-v2`; current all-match query-read overhead recorded as `nodesReadAfterWriteMs mean 20.28ms`, `+5.72ms` over write-only in that lane. | Added benchmark thresholds and early-exit proof requirements. | none | Objection/high-risk pass |
-| objection/high-risk pass | complete | Re-scored maintainer objections after alias policy and issue cache validation. | Accepted `entries` rename, `find`, `some`, and no static `Editor.nodes` restoration. | none | DX-extension audit |
-| DX-extension audit | complete | Re-read ecosystem helper pressure from Lexical, ProseMirror, and Tiptap. | Rejected/deferred `every`, `closest`, selector APIs, child/product helpers, count, arrays, and type indexes. | none | Closure score |
-| closure score | complete | Re-read plan gates and current verification. | Raised score to `0.94`; ready for user review and later Ralph execution. | none | User review |
+| Pass                                         | Status   | Evidence added                                                                                                                                                                                                            | Plan delta                                                                                                           | Open issues | Next owner                     |
+| -------------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- | ----------- | ------------------------------ |
+| current-state read and initial score         | complete | Read live `.tmp/slate-v2` query source, examples, query tests, legacy Slate, ProseMirror, Lexical, Tiptap, cached issue rows; ran focused query-contract test.                                                            | Drafted target `entries` / `find` / `some`; rejected current `Array.from` shape.                                     | none        | Related issue cache validation |
+| related issue cache validation               | complete | Reused `gitcrawl-live-open-ledger`, `gitcrawl-v2-sync-ledger`, `issue-coverage-matrix`, `fork-issue-dossier`, and PR reference rows for #5080/#5684/#5028/#3885/#4041.                                                    | Kept #5080 unchanged as already fixed; #5684 repro-first; #5028 related; #3885 not claimed; #4041 stale/not claimed. | none        | Intent/boundary hardening      |
+| intent/boundary and decision brief hardening | complete | Checked local package changelog, package metadata, and built dist exposure.                                                                                                                                               | Accepted hard cut by default; alias only if release owner proves shipped API.                                        | none        | Performance and benchmark pass |
+| performance and benchmark pass               | complete | Ran `bun ./scripts/benchmarks/core/current/query-ref-observation.mjs` in `.tmp/slate-v2`; current all-match query-read overhead recorded as `nodesReadAfterWriteMs mean 20.28ms`, `+5.72ms` over write-only in that lane. | Added benchmark thresholds and early-exit proof requirements.                                                        | none        | Objection/high-risk pass       |
+| objection/high-risk pass                     | complete | Re-scored maintainer objections after alias policy and issue cache validation.                                                                                                                                            | Accepted `entries` rename, `find`, `some`, and no static `Editor.nodes` restoration.                                 | none        | DX-extension audit             |
+| DX-extension audit                           | complete | Re-read ecosystem helper pressure from Lexical, ProseMirror, and Tiptap.                                                                                                                                                  | Rejected/deferred `every`, `closest`, selector APIs, child/product helpers, count, arrays, and type indexes.         | none        | Closure score                  |
+| closure score                                | complete | Re-read plan gates and current verification.                                                                                                                                                                              | Raised score to `0.94`; ready for user review and later Ralph execution.                                             | none        | User review                    |
 
 ## 20. Plan Deltas From Review
 
@@ -375,7 +375,7 @@ Added:
 - Draft `find` and `some` helpers.
 - DX candidate audit for extra helpers from Lexical, ProseMirror, and Tiptap.
 - Research decision comparing legacy Slate, ProseMirror, Lexical, and Tiptap.
-- Focused `../slate-v2` verification row for current query contract.
+- Focused `.tmp/slate-v2` verification row for current query contract.
 
 Dropped:
 
@@ -517,7 +517,7 @@ Status: complete.
 
 Execution date: 2026-05-14.
 
-Implemented in `../slate-v2`:
+Implemented in `.tmp/slate-v2`:
 
 - Added `state.nodes.entries(options)` as the lazy all-match query API.
 - Added `state.nodes.find(options)` and `state.nodes.some(options)` as
@@ -525,14 +525,14 @@ Implemented in `../slate-v2`:
 - Cut the public `state.nodes.match(options)` draft API from the state/tx node
   surface.
 - Updated first-party examples and DOM internals away from `Array.from(
-  state.nodes.match(...))` first-match patterns.
+state.nodes.match(...))` first-match patterns.
 - Extended `query-ref-observation.mjs` with first-match array, `find`, `some`,
   last-match, and no-match lanes.
 
 Proof:
 
 ```bash
-# cwd: ../slate-v2
+# cwd: .tmp/slate-v2
 bun test ./packages/slate/test/query-contract.ts
 # result: 80 pass, 0 fail
 
@@ -574,7 +574,7 @@ Reference docs:
 
 Residual risk:
 
-- `../slate-v2` had unrelated dirty example/runtime files before this execution
+- `.tmp/slate-v2` had unrelated dirty example/runtime files before this execution
   (`site/examples/ts/embeds.tsx`, `site/examples/ts/images.tsx`,
   `site/examples/ts/paste-html.tsx`, `site/examples/ts/rendering-strategy-runtime.tsx`,
   and related example registry/test files). They were not reverted or claimed

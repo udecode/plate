@@ -24,7 +24,7 @@ Actual: the second typed update does not autoscroll.
 
 ## Investigation
 
-- Relevant source owner: `../slate-v2/packages/slate-react/src/components/editable.tsx`.
+- Relevant source owner: `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`.
 - `defaultScrollSelectionIntoView` temporarily assigns
   `leafEl.getBoundingClientRect` so `scroll-into-view-if-needed` measures the
   focus point.
@@ -38,11 +38,11 @@ Actual: the second typed update does not autoscroll.
 ## Plan
 
 - [x] Add a focused regression test proving the default scroll helper preserves the
-  leaf element measurement function across repeated calls.
+      leaf element measurement function across repeated calls.
 - [x] Fix cleanup to restore the previous element measurement behavior instead of
-  poisoning the element.
+      poisoning the element.
 - [x] Verify with focused slate-react tests, typecheck, lint, and Browser route
-  coverage on the reported route.
+      coverage on the reported route.
 
 ## Result
 

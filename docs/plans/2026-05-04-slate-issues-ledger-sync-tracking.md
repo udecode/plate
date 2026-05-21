@@ -19,22 +19,22 @@ Make `docs/slate-issues/open-issues-ledger.md` track v2 sync progress at the iss
 
 ## Progress
 
-| Step | Status | Notes |
-| --- | --- | --- |
-| Inspect issue ledger and clusters | complete | `open-issues-ledger.md` has `682` issue rows and `378` raw primary clusters. |
-| Add ledger sync tracking | complete | Added sync vocabulary, macro theme rollup, raw cluster rollup, and per-issue sync columns. |
-| Wire references | complete | Updated `slate-ralplan.mdc`, the PR reference, and the issue coverage matrix to point back to the corpus owner. |
-| Verify row counts and completion hook | complete | `682` issue rows, `9` macro rows, and `378` raw primary cluster rows verified. |
+| Step                                  | Status   | Notes                                                                                                           |
+| ------------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------- |
+| Inspect issue ledger and clusters     | complete | `open-issues-ledger.md` has `682` issue rows and `378` raw primary clusters.                                    |
+| Add ledger sync tracking              | complete | Added sync vocabulary, macro theme rollup, raw cluster rollup, and per-issue sync columns.                      |
+| Wire references                       | complete | Updated `slate-ralplan.mdc`, the PR reference, and the issue coverage matrix to point back to the corpus owner. |
+| Verify row counts and completion hook | complete | `682` issue rows, `9` macro rows, and `378` raw primary cluster rows verified.                                  |
 
 ## Verification
 
-| Check | Result | Notes |
-| --- | --- | --- |
-| `pnpm install` | pass | Regenerated `.agents/skills/slate-ralplan/SKILL.md`. |
-| Ledger count script | pass | `682` issue rows have sync columns; `9` macro rows and `378` raw cluster rows exist. |
-| Reference grep | pass | Rule, generated skill, PR reference, coverage matrix, and open issues ledger all point at the new sync owner. |
-| `bun run completion-check` | pass | Completion hook reads this pass as done. |
-| `pnpm lint:fix` | fail | Existing benchmark lint debt in `benchmarks/editor/**`; no fixes applied. |
+| Check                      | Result | Notes                                                                                                         |
+| -------------------------- | ------ | ------------------------------------------------------------------------------------------------------------- |
+| `pnpm install`             | pass   | Regenerated `.agents/skills/slate-ralplan/SKILL.md`.                                                          |
+| Ledger count script        | pass   | `682` issue rows have sync columns; `9` macro rows and `378` raw cluster rows exist.                          |
+| Reference grep             | pass   | Rule, generated skill, PR reference, coverage matrix, and open issues ledger all point at the new sync owner. |
+| `bun run completion-check` | pass   | Completion hook reads this pass as done.                                                                      |
+| `pnpm lint:fix`            | fail   | Existing benchmark lint debt in `benchmarks/editor/**`; no fixes applied.                                     |
 
 ## Full V2 Rewrite Issue Sync Pass
 
@@ -43,7 +43,7 @@ Status: `complete`
 The follow-up scan expands the ledger beyond the editor initialization/value
 slice. The rule for this pass is intentionally strict:
 
-- exact `fixes-claimed` only when current `../slate-v2` source has a named
+- exact `fixes-claimed` only when current `.tmp/slate-v2` source has a named
   contract, browser test, or benchmark that covers the original issue behavior;
 - `improves-claimed` when v2 materially improves the failure class but does not
   prove the original repro end to end;
@@ -52,11 +52,11 @@ slice. The rule for this pass is intentionally strict:
 
 Evidence owners reviewed:
 
-- `../slate-v2/packages/slate-react/test/provider-hooks-contract.tsx`
-- `../slate-v2/packages/slate-dom/test/bridge.ts`
-- `../slate-v2/packages/slate-browser/test/browser/zero-width.browser.test.ts`
-- `../slate-v2/scripts/benchmarks/core/current/transaction-execution.mjs`
-- `../slate-v2/scripts/benchmarks/browser/react/rerender-breadth.tsx`
+- `.tmp/slate-v2/packages/slate-react/test/provider-hooks-contract.tsx`
+- `.tmp/slate-v2/packages/slate-dom/test/bridge.ts`
+- `.tmp/slate-v2/packages/slate-browser/test/browser/zero-width.browser.test.ts`
+- `.tmp/slate-v2/scripts/benchmarks/core/current/transaction-execution.mjs`
+- `.tmp/slate-v2/scripts/benchmarks/browser/react/rerender-breadth.tsx`
 - `docs/plans/2026-04-02-slate-dom-v2-bridge-proof-ralph.md`
 - `docs/plans/2026-04-03-slate-dom-v2-zero-width-selection-proof-plan.md`
 - `docs/plans/2026-04-03-slate-react-v2-projection-proof-plan.md`
@@ -65,17 +65,17 @@ Evidence owners reviewed:
 
 Initial decisions:
 
-| Issue | Decision | Reason |
-| --- | --- | --- |
-| `#5709` | `fixes-claimed` | Current provider hook contract proves consumers see a replaced provider editor. |
-| `#6038` | `improves-claimed` | Transaction/applyOperations benchmark exists and checks mixed structural snapshots; no accepted perf threshold row yet. |
-| `#3656` | `improves-claimed` | Rerender breadth benchmark proves sibling leaves and parent block stay at `0` rerenders. |
-| `#4141` | `improves-claimed` | Rerender breadth benchmark proves ancestor chain and sibling branch stay at `0` rerenders. |
-| `#5131` | `not-claimed` | `useSlate()`/`useEditor()` remains broad by contract; local selectors are the v2 answer. |
-| `#5947`, `#5938`, `#4789` | `improves-claimed` | DOM bridge/path lookup/outside-boundary proof covers the failure class, but not every exact browser repro. |
-| `#5760` | `improves-claimed` | Zero-width bridge proof normalizes DOM offsets both directions; no raw iOS device closure claim. |
-| `#4483`, `#4477`, `#5987`, `#4392`, `#3382`, `#3352` | `improves-claimed` | Projection/annotation/store proof covers local overlay and cross-node projection pressure; individual product/API requests are not auto-closed. |
-| `#5945`, `#3430`, `#1971`, `#2597` | `not-claimed` | Adjacent paste/zero-width/runtime work exists, but the exact large plaintext paste, many-inline normalization, and sentinel replacement claims are not proven. |
+| Issue                                                | Decision           | Reason                                                                                                                                                         |
+| ---------------------------------------------------- | ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `#5709`                                              | `fixes-claimed`    | Current provider hook contract proves consumers see a replaced provider editor.                                                                                |
+| `#6038`                                              | `improves-claimed` | Transaction/applyOperations benchmark exists and checks mixed structural snapshots; no accepted perf threshold row yet.                                        |
+| `#3656`                                              | `improves-claimed` | Rerender breadth benchmark proves sibling leaves and parent block stay at `0` rerenders.                                                                       |
+| `#4141`                                              | `improves-claimed` | Rerender breadth benchmark proves ancestor chain and sibling branch stay at `0` rerenders.                                                                     |
+| `#5131`                                              | `not-claimed`      | `useSlate()`/`useEditor()` remains broad by contract; local selectors are the v2 answer.                                                                       |
+| `#5947`, `#5938`, `#4789`                            | `improves-claimed` | DOM bridge/path lookup/outside-boundary proof covers the failure class, but not every exact browser repro.                                                     |
+| `#5760`                                              | `improves-claimed` | Zero-width bridge proof normalizes DOM offsets both directions; no raw iOS device closure claim.                                                               |
+| `#4483`, `#4477`, `#5987`, `#4392`, `#3382`, `#3352` | `improves-claimed` | Projection/annotation/store proof covers local overlay and cross-node projection pressure; individual product/API requests are not auto-closed.                |
+| `#5945`, `#3430`, `#1971`, `#2597`                   | `not-claimed`      | Adjacent paste/zero-width/runtime work exists, but the exact large plaintext paste, many-inline normalization, and sentinel replacement claims are not proven. |
 
 Completed updates:
 

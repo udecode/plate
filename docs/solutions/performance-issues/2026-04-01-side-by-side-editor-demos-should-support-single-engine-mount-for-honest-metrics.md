@@ -36,7 +36,7 @@ per-engine measurements.
 - The docs page looked like a comparison harness, but it mounted two huge
   editors at once.
 - Temporary automation against the page showed the Slate column in `Plate +
-  Slate` mode reporting a visible slowdown in one run:
+Slate` mode reporting a visible slowdown in one run:
   - last keypress: `10 ms`
   - average of last 10 keypresses: `21 ms`
   - last long animation frame: `73 ms`
@@ -50,7 +50,7 @@ Treating the side-by-side view as both demo and benchmark surface was the
 mistake. The numbers looked comparable, but the page itself was part of the
 overhead.
 
-Copying the local `../slate-v2` transform-benchmark controls into the docs page
+Copying the local `.tmp/slate-v2` transform-benchmark controls into the docs page
 would have made this worse. That work belongs in a dedicated benchmark harness,
 not in a public example page.
 

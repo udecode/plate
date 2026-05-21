@@ -562,7 +562,7 @@ the start of the lane.
   blank-line repro; prior Playwright-style model/selection proof was too weak.
 - hypothesis: the first missing release invariant is rendered DOM shape after
   destructive leaf-boundary deletion, not another event timing patch.
-- decision: start with a focused RED browser row in `../slate-v2` before core
+- decision: start with a focused RED browser row in `.tmp/slate-v2` before core
   cleanup.
 - owner classification: Batch 0, RED reproduction lock.
 - changed files: `.tmp/<session-id>/completion-check.md`,
@@ -579,7 +579,7 @@ the start of the lane.
 - commands:
   `PLAYWRIGHT_BASE_URL=http://localhost:3100 bunx playwright test ./playwright/integration/examples/richtext.test.ts --project=chromium --grep "rendered DOM shape" --workers=1 --retries=0`.
 - artifacts:
-  `../slate-v2/playwright/integration/examples/richtext.test.ts`.
+  `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`.
 - evidence: the new row fails with `domTextMatchesModel: false`,
   `hasFakeBlankLines: true`, and `unexpectedZeroWidthBreakCount: 2`; the first
   block model text is `This is editable rich text, much ` while DOM `innerText`
@@ -593,10 +593,10 @@ the start of the lane.
   contract before renderer fallback patches.
 - owner classification: Batch 1, core leaf lifecycle contract.
 - changed files:
-  `../slate-v2/playwright/integration/examples/richtext.test.ts`.
+  `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`.
 - rejected tactics: do not special-case richtext or hide the `<br>` in React
   first; prove/remediate the committed leaf shape in core.
-- next action: add `../slate-v2/packages/slate/test/leaf-lifecycle-contract.ts`
+- next action: add `.tmp/slate-v2/packages/slate/test/leaf-lifecycle-contract.ts`
   and make it fail on removable empty marked/code leaves after destructive
   deletes.
 
@@ -616,11 +616,11 @@ the start of the lane.
   - `bun run lint:fix`
   - `bun run lint`
 - artifacts:
-  - `../slate-v2/packages/slate/src/core/leaf-lifecycle.ts`
-  - `../slate-v2/packages/slate/src/core/index.ts`
-  - `../slate-v2/packages/slate/src/transforms-text/delete-text.ts`
-  - `../slate-v2/packages/slate/test/leaf-lifecycle-contract.ts`
-  - `../slate-v2/playwright/integration/examples/richtext.test.ts`
+  - `.tmp/slate-v2/packages/slate/src/core/leaf-lifecycle.ts`
+  - `.tmp/slate-v2/packages/slate/src/core/index.ts`
+  - `.tmp/slate-v2/packages/slate/src/transforms-text/delete-text.ts`
+  - `.tmp/slate-v2/packages/slate/test/leaf-lifecycle-contract.ts`
+  - `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
 - evidence: the focused core test initially failed with trailing empty text
   children `["", ""]`; after cleanup, the core contract and the browser DOM
   shape regression both pass.
@@ -634,7 +634,7 @@ the start of the lane.
 - rejected tactics: do not mark the plan done; do not hide zero-width `<br>` in
   React as the primary fix.
 - next action: add
-  `../slate-v2/packages/slate-react/test/rendered-dom-shape-contract.tsx`.
+  `.tmp/slate-v2/packages/slate-react/test/rendered-dom-shape-contract.tsx`.
 
 ### 2026-04-25: Batch 2 Selection Rebase Contract Green
 
@@ -643,7 +643,7 @@ the start of the lane.
 - commands:
   `bun test ./packages/slate/test/selection-rebase-contract.ts --bail 1`.
 - artifacts:
-  `../slate-v2/packages/slate/test/selection-rebase-contract.ts`.
+  `.tmp/slate-v2/packages/slate/test/selection-rebase-contract.ts`.
 - evidence: backward delete from the removable empty code leaf rebases to the
   end of the previous surviving text leaf and removes invalid empty suffix
   leaves.
@@ -653,7 +653,7 @@ the start of the lane.
 - decision: keep course to Batch 3.
 - owner classification: Batch 3, React rendered DOM shape contract.
 - changed files:
-  `../slate-v2/packages/slate/test/selection-rebase-contract.ts`.
+  `.tmp/slate-v2/packages/slate/test/selection-rebase-contract.ts`.
 - rejected tactics: do not overfit selection to a spacer that cleanup also
   deletes.
 - next action: add the rendered DOM shape React contract.
@@ -678,8 +678,8 @@ the start of the lane.
   - `bun run lint:fix`
   - `bun run lint`
 - artifacts:
-  - `../slate-v2/packages/slate-react/test/rendered-dom-shape-contract.tsx`
-  - `../slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
+  - `.tmp/slate-v2/packages/slate-react/test/rendered-dom-shape-contract.tsx`
+  - `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
 - evidence: the new React contract failed red with two
   `data-slate-zero-width="n"` nodes containing `<br>` in a non-empty block;
   after the render policy change, non-empty blocks have no unexpected
@@ -697,8 +697,8 @@ the start of the lane.
   after adding assertion helpers, then the focused richtext Playwright grep.
 - owner classification: Batch 4, slate-browser DOM shape assertions.
 - changed files:
-  - `../slate-v2/packages/slate-react/test/rendered-dom-shape-contract.tsx`
-  - `../slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
+  - `.tmp/slate-v2/packages/slate-react/test/rendered-dom-shape-contract.tsx`
+  - `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
 - rejected tactics: do not claim full closure from the React fallback; do not
   loosen `ZeroWidthString` itself because empty-block line breaks are still
   valid.
@@ -728,9 +728,9 @@ the start of the lane.
   - `bun test ./packages/slate/test/leaf-lifecycle-contract.ts ./packages/slate/test/selection-rebase-contract.ts ./packages/slate/test/transaction-target-runtime-contract.ts ./packages/slate/test/commit-metadata-contract.ts --bail 1`
   - `PLAYWRIGHT_BASE_URL=http://localhost:3100 bunx playwright test ./playwright/integration/examples/richtext.test.ts --project=chromium --grep "leaf|zero-width|DOM shape|Backspace|word-delete" --workers=1 --retries=0`
 - artifacts:
-  - `../slate-v2/packages/slate-browser/src/playwright/index.ts`
-  - `../slate-v2/packages/slate-browser/test/core/scenario.test.ts`
-  - `../slate-v2/playwright/integration/examples/richtext.test.ts`
+  - `.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts`
+  - `.tmp/slate-v2/packages/slate-browser/test/core/scenario.test.ts`
+  - `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
 - evidence: `slate-browser` core tests now serialize
   `assertRenderedDOMShape` for replay; the harness can assert rendered block
   text, unexpected zero-width breaks, zero-width counts, line-box bounds, and
@@ -748,9 +748,9 @@ the start of the lane.
   - `bun run --cwd packages/slate-browser test:core --bail 1`
 - owner classification: Batch 5, destructive leaf-boundary gauntlets.
 - changed files:
-  - `../slate-v2/packages/slate-browser/src/playwright/index.ts`
-  - `../slate-v2/packages/slate-browser/test/core/scenario.test.ts`
-  - `../slate-v2/playwright/integration/examples/richtext.test.ts`
+  - `.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts`
+  - `.tmp/slate-v2/packages/slate-browser/test/core/scenario.test.ts`
+  - `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
 - rejected tactics: do not keep custom DOM-shape page scripts in example tests;
   do not make line-box count a universal exact assertion.
 - do-not-do list: do not jump to release-proof docs before generated gauntlets
@@ -783,12 +783,12 @@ the start of the lane.
   - `bun run lint`
   - `PLAYWRIGHT_BASE_URL=http://localhost:3100 bunx playwright test ./playwright/integration/examples/richtext.test.ts ./playwright/integration/examples/highlighted-text.test.ts ./playwright/integration/examples/inlines.test.ts --project=chromium --project=firefox --project=webkit --project=mobile --grep "destructive|leaf|zero-width|DOM shape|Backspace|Delete|word-delete|generated inline cut|generated mixed" --workers=4 --retries=0`
 - artifacts:
-  - `../slate-v2/packages/slate-browser/src/playwright/index.ts`
-  - `../slate-v2/packages/slate-browser/test/core/scenario.test.ts`
-  - `../slate-v2/packages/slate/src/core/leaf-lifecycle.ts`
-  - `../slate-v2/packages/slate/test/selection-rebase-contract.ts`
-  - `../slate-v2/playwright/integration/examples/richtext.test.ts`
-  - `../slate-v2/playwright/integration/examples/inlines.test.ts`
+  - `.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts`
+  - `.tmp/slate-v2/packages/slate-browser/test/core/scenario.test.ts`
+  - `.tmp/slate-v2/packages/slate/src/core/leaf-lifecycle.ts`
+  - `.tmp/slate-v2/packages/slate/test/selection-rebase-contract.ts`
+  - `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
+  - `.tmp/slate-v2/playwright/integration/examples/inlines.test.ts`
 - evidence: the final broad destructive/leaf grep passed 64 rows across
   Chromium, Firefox, WebKit, and mobile viewport; core rebase tests now cover
   forward delete of a suffix leaf with a next paragraph and keep selection in
@@ -805,12 +805,12 @@ the start of the lane.
   core/browser gates that correspond to any accepted parity rows.
 - owner classification: Batch 6, legacy parity rows.
 - changed files:
-  - `../slate-v2/packages/slate-browser/src/playwright/index.ts`
-  - `../slate-v2/packages/slate-browser/test/core/scenario.test.ts`
-  - `../slate-v2/packages/slate/src/core/leaf-lifecycle.ts`
-  - `../slate-v2/packages/slate/test/selection-rebase-contract.ts`
-  - `../slate-v2/playwright/integration/examples/richtext.test.ts`
-  - `../slate-v2/playwright/integration/examples/inlines.test.ts`
+  - `.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts`
+  - `.tmp/slate-v2/packages/slate-browser/test/core/scenario.test.ts`
+  - `.tmp/slate-v2/packages/slate/src/core/leaf-lifecycle.ts`
+  - `.tmp/slate-v2/packages/slate/test/selection-rebase-contract.ts`
+  - `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
+  - `.tmp/slate-v2/playwright/integration/examples/inlines.test.ts`
 - rejected tactics: do not mark `Delete before trailing punctuation` as flaky;
   it exposed a real same-block rebase invariant and got a core RED before the
   patch.
@@ -888,11 +888,11 @@ the start of the lane.
   - `bun run lint`
   - `SLATE_BROWSER_SOAK_BASE_URL=http://localhost:3100 SLATE_BROWSER_SOAK_ITERATIONS=1 bun ./scripts/proof/persistent-browser-soak.mjs`
 - artifacts:
-  - `../slate-v2/packages/slate-browser/src/core/release-proof.ts`
-  - `../slate-v2/packages/slate-browser/test/core/release-proof.test.ts`
-  - `../slate-v2/package.json`
-  - `../slate-v2/scripts/proof/persistent-browser-soak.mjs`
-  - `../slate-v2/packages/slate/src/core/leaf-lifecycle.ts`
+  - `.tmp/slate-v2/packages/slate-browser/src/core/release-proof.ts`
+  - `.tmp/slate-v2/packages/slate-browser/test/core/release-proof.test.ts`
+  - `.tmp/slate-v2/package.json`
+  - `.tmp/slate-v2/scripts/proof/persistent-browser-soak.mjs`
+  - `.tmp/slate-v2/packages/slate/src/core/leaf-lifecycle.ts`
 - evidence: `bun test:release-proof` passes; touched package
   build/typecheck/lint passes; one-iteration persistent soak passes and now
   asserts no unexpected zero-width line breaks in the destructive editing
@@ -907,11 +907,11 @@ the start of the lane.
   - `bun completion-check`
 - owner classification: closure gates and completion sync.
 - changed files:
-  - `../slate-v2/packages/slate-browser/src/core/release-proof.ts`
-  - `../slate-v2/packages/slate-browser/test/core/release-proof.test.ts`
-  - `../slate-v2/package.json`
-  - `../slate-v2/scripts/proof/persistent-browser-soak.mjs`
-  - `../slate-v2/packages/slate/src/core/leaf-lifecycle.ts`
+  - `.tmp/slate-v2/packages/slate-browser/src/core/release-proof.ts`
+  - `.tmp/slate-v2/packages/slate-browser/test/core/release-proof.test.ts`
+  - `.tmp/slate-v2/package.json`
+  - `.tmp/slate-v2/scripts/proof/persistent-browser-soak.mjs`
+  - `.tmp/slate-v2/packages/slate/src/core/leaf-lifecycle.ts`
 - rejected tactics: do not weaken the escape-hatch inventory to allow
   core-owned cleanup to call public primitives directly; use the central
   transform owner instead.
@@ -929,7 +929,7 @@ the start of the lane.
 - commands:
   - `bun check:full`
 - artifacts:
-  - `../slate-v2/test-results/release-proof/persistent-browser-soak.json`
+  - `.tmp/slate-v2/test-results/release-proof/persistent-browser-soak.json`
 - evidence: `bun check:full` passed, including lint, package/site/root
   typecheck, default unit tests, Vitest, `bun test:release-proof`, scoped mobile
   proof, 5-iteration persistent-profile soak, and `bun test:integration-local`
@@ -949,11 +949,11 @@ the start of the lane.
   - `docs/solutions/logic-errors/2026-04-25-slate-v2-destructive-delete-must-clean-empty-leaves-before-render.md`
   - `.tmp/<session-id>/completion-check.md`
   - `.tmp/continue.md`
-  - `../slate-v2/packages/slate/src/core/leaf-lifecycle.ts`
-  - `../slate-v2/packages/slate-browser/src/core/release-proof.ts`
-  - `../slate-v2/packages/slate-browser/test/core/release-proof.test.ts`
-  - `../slate-v2/package.json`
-  - `../slate-v2/scripts/proof/persistent-browser-soak.mjs`
+  - `.tmp/slate-v2/packages/slate/src/core/leaf-lifecycle.ts`
+  - `.tmp/slate-v2/packages/slate-browser/src/core/release-proof.ts`
+  - `.tmp/slate-v2/packages/slate-browser/test/core/release-proof.test.ts`
+  - `.tmp/slate-v2/package.json`
+  - `.tmp/slate-v2/scripts/proof/persistent-browser-soak.mjs`
 - rejected tactics: do not keep looping on this lane after `bun check:full`
   passes; future raw-device proof belongs to the dedicated mobile lane.
 - do-not-do list: do not claim raw native mobile proof from this closure.

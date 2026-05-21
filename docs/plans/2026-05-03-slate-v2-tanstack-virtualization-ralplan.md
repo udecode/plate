@@ -1,7 +1,7 @@
 ---
 status: done
 owner: slate-v2-tanstack-virtualization-ralplan
-source_repo: ../slate-v2
+source_repo: .tmp/slate-v2
 created: 2026-05-03
 ---
 
@@ -26,7 +26,7 @@ composition, native selections, Slate fragments, voids, and collaboration.
 
 Status: complete for the requested implementation slice.
 
-Implemented in `../slate-v2`:
+Implemented in `.tmp/slate-v2`:
 
 - Added `@tanstack/react-virtual` as a `slate-react` runtime dependency.
 - Replaced the experimental virtualized fixed-segment shell path with a
@@ -120,49 +120,49 @@ Unresolved user-decision points:
 
 ## Source Grounding
 
-Live `../slate-v2` facts:
+Live `.tmp/slate-v2` facts:
 
 - `Editable` already documents safe staged rendering as the default and
   describes virtualized mode as experimental with missing native find and
   screen-reader coverage until mount.
-  Source: `../slate-v2/docs/libraries/slate-react/editable.md:211-268`.
+  Source: `.tmp/slate-v2/docs/libraries/slate-react/editable.md:211-268`.
 - `RenderingStrategyOptions` already includes `'virtualized'`, but the option
   object shares shell-oriented `segmentSize` instead of viewport measurement.
   Source:
-  `../slate-v2/packages/slate-react/src/rendering-strategy/create-segment-plan.ts:3-18`.
+  `.tmp/slate-v2/packages/slate-react/src/rendering-strategy/create-segment-plan.ts:3-18`.
 - Current virtualized planning is fixed segment math over top-level runtime ids,
   not viewport measurement.
   Source:
-  `../slate-v2/packages/slate-react/src/rendering-strategy/create-segment-plan.ts:29-73`
+  `.tmp/slate-v2/packages/slate-react/src/rendering-strategy/create-segment-plan.ts:29-73`
   and
-  `../slate-v2/packages/slate-react/src/editable/root-selector-sources.ts:228-242`.
+  `.tmp/slate-v2/packages/slate-react/src/editable/root-selector-sources.ts:228-242`.
 - Current `EditableDOMRoot` runtime strategy prop accepts only `'staged' |
-  'shell'`, so virtualized mode is passed through root runtime as shell-shaped
+'shell'`, so virtualized mode is passed through root runtime as shell-shaped
   policy.
   Source:
-  `../slate-v2/packages/slate-react/src/components/editable.tsx:83-90`
+  `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx:83-90`
   and
-  `../slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:1557-1563`.
+  `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:1557-1563`.
 - Current virtualized tests already prove viewport DOM coverage boundaries,
   materializing selected segments, broad model-backed selection, and metrics.
   Source:
-  `../slate-v2/packages/slate-react/test/rendering-strategy-and-scroll.tsx:171-340`.
+  `.tmp/slate-v2/packages/slate-react/test/rendering-strategy-and-scroll.tsx:171-340`.
 - `DOMCoverageBoundary` already has `state: 'virtualized'`,
   `reason: 'viewport-virtualization'`, materialization, indexed boundary lookup,
   and boundary-aware point/range APIs.
   Source:
-  `../slate-v2/packages/slate-dom/src/plugin/dom-coverage.ts:26-39`,
-  `../slate-v2/packages/slate-dom/src/plugin/dom-coverage.ts:539-589`,
-  `../slate-v2/packages/slate-dom/src/plugin/dom-coverage.ts:592-619`,
+  `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-coverage.ts:26-39`,
+  `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-coverage.ts:539-589`,
+  `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-coverage.ts:592-619`,
   and
-  `../slate-v2/packages/slate-dom/src/plugin/dom-coverage.ts:639-676`.
+  `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-coverage.ts:639-676`.
 - `EditableRenderingStrategyMetrics` already includes cohort, mounted/pending
   counts, DOM node count, editable descendant count, and viewport virtualization
   boundary count.
-  Source: `../slate-v2/packages/slate-react/src/components/editable.tsx:103-175`.
+  Source: `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx:103-175`.
 - No active `@tanstack/react-virtual`, `@tanstack/virtual-core`,
   `useVirtualizer`, or `useWindowVirtualizer` hit was found in
-  `../slate-v2/package.json`, `packages`, `site`, `docs`, or `bun.lock` during
+  `.tmp/slate-v2/package.json`, `packages`, `site`, `docs`, or `bun.lock` during
   this pass.
 
 External evidence:
@@ -196,13 +196,13 @@ Top drivers:
 
 Viable options:
 
-| Option | Verdict | Reason |
-| --- | --- | --- |
-| Keep homegrown fixed segment virtualization | reject | It is not viewport virtualization; it cannot use measured block height or scroll range. |
-| Use TanStack Virtual as an internal range/measurement engine | choose | Best leverage: proven library for visible range, stable keys, measurement, overscan, and scroll-to-index. |
-| Expose TanStack's options directly on `Editable` | reject | Leaks a list library into Slate editor API and pushes native behavior policy onto users. |
-| Make virtualized mode default for `auto` | reject | Native find, a11y, mobile, IME, selection, and copy/paste are not release-grade for default editing. |
-| Use TanStack to replace DOM coverage | reject | TanStack knows viewport geometry, not Slate model points or clipboard semantics. |
+| Option                                                       | Verdict | Reason                                                                                                    |
+| ------------------------------------------------------------ | ------- | --------------------------------------------------------------------------------------------------------- |
+| Keep homegrown fixed segment virtualization                  | reject  | It is not viewport virtualization; it cannot use measured block height or scroll range.                   |
+| Use TanStack Virtual as an internal range/measurement engine | choose  | Best leverage: proven library for visible range, stable keys, measurement, overscan, and scroll-to-index. |
+| Expose TanStack's options directly on `Editable`             | reject  | Leaks a list library into Slate editor API and pushes native behavior policy onto users.                  |
+| Make virtualized mode default for `auto`                     | reject  | Native find, a11y, mobile, IME, selection, and copy/paste are not release-grade for default editing.      |
+| Use TanStack to replace DOM coverage                         | reject  | TanStack knows viewport geometry, not Slate model points or clipboard semantics.                          |
 
 Chosen option:
 
@@ -231,7 +231,7 @@ Status: complete for the 2026-05-03 Ralph activation.
 
 Evidence used:
 
-- live `../slate-v2` rendering strategy, DOM coverage, metrics, and tests listed
+- live `.tmp/slate-v2` rendering strategy, DOM coverage, metrics, and tests listed
   in Source Grounding;
 - TanStack Virtual required and optional primitives summarized in the research
   note;
@@ -275,33 +275,33 @@ Revise only the experimental virtualized object shape:
 
 ```ts
 type RenderingStrategyOptions =
-  | 'auto'
-  | 'full'
-  | 'staged'
-  | 'shell'
-  | 'virtualized'
+  | "auto"
+  | "full"
+  | "staged"
+  | "shell"
+  | "virtualized"
   | {
-      overscan?: number
-      previewChars?: number
-      segmentSize?: number
-      threshold?: number
-      type: 'shell'
+      overscan?: number;
+      previewChars?: number;
+      segmentSize?: number;
+      threshold?: number;
+      type: "shell";
     }
   | {
-      estimatedBlockSize?: number
-      overscan?: number
-      previewChars?: number
-      threshold?: number
-      type: 'virtualized'
-    }
+      estimatedBlockSize?: number;
+      overscan?: number;
+      previewChars?: number;
+      threshold?: number;
+      type: "virtualized";
+    };
 ```
 
 Before:
 
 - virtualized object uses the shell `segmentSize` shape.
   Source:
-  `../slate-v2/packages/slate-react/src/rendering-strategy/create-segment-plan.ts:10-18`
-  and `../slate-v2/docs/libraries/slate-react/editable.md:238-247`.
+  `.tmp/slate-v2/packages/slate-react/src/rendering-strategy/create-segment-plan.ts:10-18`
+  and `.tmp/slate-v2/docs/libraries/slate-react/editable.md:238-247`.
 
 After:
 
@@ -346,12 +346,15 @@ Required adapter shape:
 
 ```ts
 type VirtualizedRootPlan = {
-  activeTopLevelIndexes: readonly number[]
-  mountedTopLevelRuntimeIds: ReadonlySet<RuntimeId>
-  mountedTopLevelRanges: readonly MountedTopLevelRange[]
-  missingRanges: readonly MountedTopLevelRange[]
-  scrollToTopLevelIndex(index: number, align?: 'start' | 'center' | 'end' | 'auto'): void
-}
+  activeTopLevelIndexes: readonly number[];
+  mountedTopLevelRuntimeIds: ReadonlySet<RuntimeId>;
+  mountedTopLevelRanges: readonly MountedTopLevelRange[];
+  missingRanges: readonly MountedTopLevelRange[];
+  scrollToTopLevelIndex(
+    index: number,
+    align?: "start" | "center" | "end" | "auto",
+  ): void;
+};
 ```
 
 Internal rules:
@@ -407,21 +410,21 @@ Collab requirements:
 
 ## Legacy Regression Proof Matrix
 
-| Proof | Required behavior |
-| --- | --- |
-| Unit: virtualizer adapter uses runtime-id keys | reorder/split/merge does not recycle wrong DOM |
-| Unit: range coalescing | missing adjacent indexes register one boundary |
-| Unit: retained indexes | caret, selection anchor/focus, composition target stay mounted |
-| Unit: scrollToIndex materialization | programmatic selection can scroll and mount target |
-| Browser: click/type in far virtualized block | target mounts before caret entry |
-| Browser: keyboard navigation across range edge | no raw DOM lookup throw |
-| Browser: IME at range edge | no text loss, no materialization during active composition |
-| Browser: select-all copy | model payload includes virtualized ranges by policy |
-| Browser: paste over broad model-backed range | no stale DOM fallback |
-| Browser: find before mount | documented not-native-until-mounted |
-| Browser: find after mount | native find sees mounted text |
-| Browser: mobile touch near edge | no missing target crash |
-| Stress: 25k and 100k blocks | DOM, heap, INP, scroll jank, and typing metrics beat staged/shell where virtualized is intended |
+| Proof                                          | Required behavior                                                                               |
+| ---------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| Unit: virtualizer adapter uses runtime-id keys | reorder/split/merge does not recycle wrong DOM                                                  |
+| Unit: range coalescing                         | missing adjacent indexes register one boundary                                                  |
+| Unit: retained indexes                         | caret, selection anchor/focus, composition target stay mounted                                  |
+| Unit: scrollToIndex materialization            | programmatic selection can scroll and mount target                                              |
+| Browser: click/type in far virtualized block   | target mounts before caret entry                                                                |
+| Browser: keyboard navigation across range edge | no raw DOM lookup throw                                                                         |
+| Browser: IME at range edge                     | no text loss, no materialization during active composition                                      |
+| Browser: select-all copy                       | model payload includes virtualized ranges by policy                                             |
+| Browser: paste over broad model-backed range   | no stale DOM fallback                                                                           |
+| Browser: find before mount                     | documented not-native-until-mounted                                                             |
+| Browser: find after mount                      | native find sees mounted text                                                                   |
+| Browser: mobile touch near edge                | no missing target crash                                                                         |
+| Stress: 25k and 100k blocks                    | DOM, heap, INP, scroll jank, and typing metrics beat staged/shell where virtualized is intended |
 
 ## Browser Stress / Parity Strategy
 
@@ -449,15 +452,15 @@ Metrics:
 
 ## Applicable Implementation-Skill Review Matrix
 
-| Lens | Applicability | Findings | Plan delta |
-| --- | --- | --- | --- |
-| `vercel-react-best-practices` | applied | Use `client-event-listeners`, `rerender-defer-reads`, `rerender-derived-state`, `rerender-use-ref-transient-values`, `js-set-map-lookups`, and `rendering-content-visibility` only where DOM-present. | Add root-level virtualizer and no repeated scroll subscriptions. |
-| `performance-oracle` | applied | 25k/100k path needs bounded memory, indexed lookups, and no document scans during typing. | Require runtime-id keys, coalesced ranges, and range-indexed coverage. |
-| `performance` | applied | GitHub pattern demands cohorting, repeated-unit budgets, INP percentiles, memory tags, and degradation contract. | Virtualized mode is stress/pathological only with dashboards. |
-| `tanstack-virtual` | applied | Use `count`, `getScrollElement`, `estimateSize`, `overscan`, `getItemKey`, `rangeExtractor`, `measureElement`, `scrollToIndex`. | Use TanStack as range engine, not editor policy. |
-| `tdd` | applied | Behavior must be proven via public `Editable` and browser contracts. | Add red package and browser rows before implementation. |
-| `react-useeffect` | pending | Effects and measurement refs need a separate pass. | Next pass must review effect ownership. |
-| `build-web-apps:shadcn` | skipped | No UI chrome or component styling target. | none |
+| Lens                          | Applicability | Findings                                                                                                                                                                                              | Plan delta                                                             |
+| ----------------------------- | ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| `vercel-react-best-practices` | applied       | Use `client-event-listeners`, `rerender-defer-reads`, `rerender-derived-state`, `rerender-use-ref-transient-values`, `js-set-map-lookups`, and `rendering-content-visibility` only where DOM-present. | Add root-level virtualizer and no repeated scroll subscriptions.       |
+| `performance-oracle`          | applied       | 25k/100k path needs bounded memory, indexed lookups, and no document scans during typing.                                                                                                             | Require runtime-id keys, coalesced ranges, and range-indexed coverage. |
+| `performance`                 | applied       | GitHub pattern demands cohorting, repeated-unit budgets, INP percentiles, memory tags, and degradation contract.                                                                                      | Virtualized mode is stress/pathological only with dashboards.          |
+| `tanstack-virtual`            | applied       | Use `count`, `getScrollElement`, `estimateSize`, `overscan`, `getItemKey`, `rangeExtractor`, `measureElement`, `scrollToIndex`.                                                                       | Use TanStack as range engine, not editor policy.                       |
+| `tdd`                         | applied       | Behavior must be proven via public `Editable` and browser contracts.                                                                                                                                  | Add red package and browser rows before implementation.                |
+| `react-useeffect`             | pending       | Effects and measurement refs need a separate pass.                                                                                                                                                    | Next pass must review effect ownership.                                |
+| `build-web-apps:shadcn`       | skipped       | No UI chrome or component styling target.                                                                                                                                                             | none                                                                   |
 
 ## High-Risk Deliberate Pre-Mortem
 
@@ -528,7 +531,7 @@ Rollback answer:
 - Rejected alternative: default virtualized at threshold. Weaker because it
   hides native behavior degradation behind `auto`.
 - Migration answer: users opt in explicitly with `renderingStrategy={{ type:
-  'virtualized' }}`.
+'virtualized' }}`.
 - Docs/example answer: show virtualized as pathological-document mode only.
 - Regression proof: browser behavior matrix and RUM tags must distinguish
   staged/shell/virtualized.
@@ -551,7 +554,7 @@ Rollback answer:
 
 ### Phase 0: Dependency And Current-State Probe
 
-- Confirm exact installed package in `../slate-v2`.
+- Confirm exact installed package in `.tmp/slate-v2`.
 - If absent, add `@tanstack/react-virtual` to `packages/slate-react`
   dependencies and root lockfile.
 - Run a bundle/default-path smoke. If default path cost is unacceptable, switch
@@ -617,7 +620,7 @@ Rollback answer:
 ## Fast Driver Gates
 
 ```txt
-rg -n "@tanstack/react-virtual|@tanstack/virtual-core|useVirtualizer|useWindowVirtualizer" ../slate-v2
+rg -n "@tanstack/react-virtual|@tanstack/virtual-core|useVirtualizer|useWindowVirtualizer" .tmp/slate-v2
 bun test ./packages/slate-react/test/rendering-strategy-and-scroll.tsx
 bun test ./packages/slate-dom/test/dom-coverage.ts ./packages/slate-dom/test/clipboard-boundary.ts
 bun --filter slate-react typecheck
@@ -638,14 +641,14 @@ bun check
 
 ## Confidence Scorecard
 
-| Dimension | Score | Evidence |
-| --- | ---: | --- |
-| React 19.2 runtime performance | 0.84 | Current source has staged/shell/virtualized metrics and runtime boundaries; TanStack integration still needs effect/subscription proof. |
-| Slate-close unopinionated DX | 0.90 | Plan keeps `renderingStrategy`, hides TanStack internals, rejects public scroll-owner props in v1, and keeps `estimatedBlockSize` numeric first. |
-| Plate and slate-yjs migration-backbone shape | 0.87 | Plan keeps mount state local and model/operation semantics unchanged; needs stronger collab proof rows. |
-| Regression-proof testing strategy | 0.87 | Matrix names unit/browser/stress rows and adds scroll-owner fallback proof; exact browser file additions still need closure pass. |
-| Research evidence completeness | 0.86 | GitHub article, TanStack docs, live source, and compiled research page exist; Lexical/ProseMirror/Tiptap virtualization silence still needs explicit pass. |
-| shadcn-style composability and hook/component minimalism | 0.89 | Internal adapter, no UI chrome, no TanStack prop passthrough, no public scroll hook, and no sizing callback in the first shape; effect review pending. |
+| Dimension                                                | Score | Evidence                                                                                                                                                   |
+| -------------------------------------------------------- | ----: | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| React 19.2 runtime performance                           |  0.84 | Current source has staged/shell/virtualized metrics and runtime boundaries; TanStack integration still needs effect/subscription proof.                    |
+| Slate-close unopinionated DX                             |  0.90 | Plan keeps `renderingStrategy`, hides TanStack internals, rejects public scroll-owner props in v1, and keeps `estimatedBlockSize` numeric first.           |
+| Plate and slate-yjs migration-backbone shape             |  0.87 | Plan keeps mount state local and model/operation semantics unchanged; needs stronger collab proof rows.                                                    |
+| Regression-proof testing strategy                        |  0.87 | Matrix names unit/browser/stress rows and adds scroll-owner fallback proof; exact browser file additions still need closure pass.                          |
+| Research evidence completeness                           |  0.86 | GitHub article, TanStack docs, live source, and compiled research page exist; Lexical/ProseMirror/Tiptap virtualization silence still needs explicit pass. |
+| shadcn-style composability and hook/component minimalism |  0.89 | Internal adapter, no UI chrome, no TanStack prop passthrough, no public scroll hook, and no sizing callback in the first shape; effect review pending.     |
 
 Weighted total: 0.87.
 
@@ -653,16 +656,16 @@ Status: not ready. Current-state and intent/decision passes are complete.
 
 ## Pass Schedule And State
 
-| Pass | Status | Evidence added | Plan delta | Open issues | Next owner |
-| --- | --- | --- | --- | --- | --- |
-| Current-state read and initial score | complete | Live source, existing Phase 6 plan, TanStack docs, GitHub article summary. | Accepted TanStack as internal range engine only. | Dependency install status needs re-check before implementation. | Intent/decision pass |
-| Intent/boundary and decision brief | complete | Scroll-owner boundary, public sizing boundary, dependency fallback boundary. | No public `getScrollElement` in v1; numeric `estimatedBlockSize`; staged fallback when scroll owner cannot be proven; `react-virtual` preferred with `virtual-core` fallback. | Research evidence still needs ecosystem refresh. | Research and ecosystem refresh |
-| Research and ecosystem refresh | superseded | Implementation used TanStack as explicit viewport engine and kept Slate policy ownership. | No default virtualization; no raw TanStack API passthrough. | Stress/browser parity remains release hardening. | Future release pass |
-| Performance/DX/regression pressure passes | complete for implementation | Unit metrics, browser bounded-DOM example, package build, and `bun check` passed. | Added package dependency and full example. | 25k/100k stress not run. | Future release pass |
-| Maintainer objection ledger | complete for implementation | Dependency is scoped to `slate-react`; default mode unchanged; docs call out degradation. | Keep. | none for this slice. | Future release pass |
-| High-risk deliberate pass | complete for implementation | Browser caught stale virtual item memoization; fixed by recomputing virtualizer items every render. | Do not memoize `virtualizer.getVirtualItems()` snapshots. | broader IME/mobile matrix remains. | Future release pass |
-| Revision pass | complete | Plan updated with implementation proof. | status done. | none for this slice. | Future release pass |
-| Closure score | complete for implementation | `bun check` plus focused browser proof passed. | status done. | release-hardening stress gates remain optional next work. | none |
+| Pass                                      | Status                      | Evidence added                                                                                      | Plan delta                                                                                                                                                                    | Open issues                                                     | Next owner                     |
+| ----------------------------------------- | --------------------------- | --------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- | ------------------------------ |
+| Current-state read and initial score      | complete                    | Live source, existing Phase 6 plan, TanStack docs, GitHub article summary.                          | Accepted TanStack as internal range engine only.                                                                                                                              | Dependency install status needs re-check before implementation. | Intent/decision pass           |
+| Intent/boundary and decision brief        | complete                    | Scroll-owner boundary, public sizing boundary, dependency fallback boundary.                        | No public `getScrollElement` in v1; numeric `estimatedBlockSize`; staged fallback when scroll owner cannot be proven; `react-virtual` preferred with `virtual-core` fallback. | Research evidence still needs ecosystem refresh.                | Research and ecosystem refresh |
+| Research and ecosystem refresh            | superseded                  | Implementation used TanStack as explicit viewport engine and kept Slate policy ownership.           | No default virtualization; no raw TanStack API passthrough.                                                                                                                   | Stress/browser parity remains release hardening.                | Future release pass            |
+| Performance/DX/regression pressure passes | complete for implementation | Unit metrics, browser bounded-DOM example, package build, and `bun check` passed.                   | Added package dependency and full example.                                                                                                                                    | 25k/100k stress not run.                                        | Future release pass            |
+| Maintainer objection ledger               | complete for implementation | Dependency is scoped to `slate-react`; default mode unchanged; docs call out degradation.           | Keep.                                                                                                                                                                         | none for this slice.                                            | Future release pass            |
+| High-risk deliberate pass                 | complete for implementation | Browser caught stale virtual item memoization; fixed by recomputing virtualizer items every render. | Do not memoize `virtualizer.getVirtualItems()` snapshots.                                                                                                                     | broader IME/mobile matrix remains.                              | Future release pass            |
+| Revision pass                             | complete                    | Plan updated with implementation proof.                                                             | status done.                                                                                                                                                                  | none for this slice.                                            | Future release pass            |
+| Closure score                             | complete for implementation | `bun check` plus focused browser proof passed.                                                      | status done.                                                                                                                                                                  | release-hardening stress gates remain optional next work.       | none                           |
 
 ## Plan Deltas From Review
 
@@ -679,7 +682,7 @@ Status: not ready. Current-state and intent/decision passes are complete.
 
 ## Open Questions / What Would Change The Decision
 
-- If `@tanstack/react-virtual` is not actually installed in `../slate-v2`, add it
+- If `@tanstack/react-virtual` is not actually installed in `.tmp/slate-v2`, add it
   deliberately during implementation or use `@tanstack/virtual-core` after
   bundle proof.
 - If absolute-positioned editable rows fail selection/IME/browser proof, use

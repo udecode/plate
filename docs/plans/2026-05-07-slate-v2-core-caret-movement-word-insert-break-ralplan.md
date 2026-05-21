@@ -47,16 +47,16 @@ Desired outcome:
 
 In scope:
 
-- `../slate-v2/packages/slate/src/editor/insert-break.ts`
-- `../slate-v2/packages/slate/src/transforms-selection/move.ts`
-- `../slate-v2/packages/slate/src/editor/positions.ts`
-- `../slate-v2/packages/slate/src/editor/after.ts`
-- `../slate-v2/packages/slate/src/editor/before.ts`
-- `../slate-v2/packages/slate/test/snapshot-contract.ts`
-- `../slate-v2/packages/slate/test/query-contract.ts`
-- `../slate-v2/packages/slate/test/transforms/move/both/unit-word*.tsx`
-- `../slate-v2/packages/slate-react/src/editable/caret-engine.ts`
-- `../slate-v2/playwright/integration/examples/richtext.test.ts`
+- `.tmp/slate-v2/packages/slate/src/editor/insert-break.ts`
+- `.tmp/slate-v2/packages/slate/src/transforms-selection/move.ts`
+- `.tmp/slate-v2/packages/slate/src/editor/positions.ts`
+- `.tmp/slate-v2/packages/slate/src/editor/after.ts`
+- `.tmp/slate-v2/packages/slate/src/editor/before.ts`
+- `.tmp/slate-v2/packages/slate/test/snapshot-contract.ts`
+- `.tmp/slate-v2/packages/slate/test/query-contract.ts`
+- `.tmp/slate-v2/packages/slate/test/transforms/move/both/unit-word*.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/editable/caret-engine.ts`
+- `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
 
 Non-goals:
 
@@ -71,7 +71,7 @@ Non-goals:
 
 Decision boundaries:
 
-- Ralph may patch `../slate-v2` code and tests.
+- Ralph may patch `.tmp/slate-v2` code and tests.
 - Ralph may claim `Fixes #3964` only after a package test proves Enter at the
   end of marked text creates the new block and moves selection there.
 - Ralph may claim `Fixes #3973` only after a package test proves
@@ -103,27 +103,30 @@ Top drivers:
 - `#3973`: `Transforms.move(..., { unit: 'word' })` fails when a document starts
   with multiple text leaves and no leading spaces.
 - Current `Editor.insertBreak` delegates to `splitNodes({ always: true })` at
-  `../slate-v2/packages/slate/src/editor/insert-break.ts:9`.
+  `.tmp/slate-v2/packages/slate/src/editor/insert-break.ts:9`.
 - Current `selection.move` lowers to `Editor.before` / `Editor.after` at
-  `../slate-v2/packages/slate/src/transforms-selection/move.ts:34`.
+  `.tmp/slate-v2/packages/slate/src/transforms-selection/move.ts:34`.
 - Current word positions concatenate block segments and map logical offsets back
-  to points at `../slate-v2/packages/slate/src/editor/positions.ts:581`.
+  to points at `.tmp/slate-v2/packages/slate/src/editor/positions.ts:581`.
 
 Viable options:
 
 1. Patch React keydown/DOM repair.
+
    - Pro: might fix the visible browser symptom.
    - Con: package-level `Editor.insertBreak` and `selection.move` would still be
      wrong.
    - Verdict: reject as owner.
 
 2. Add a public point-normalization hook.
+
    - Pro: app authors could patch local movement.
    - Con: turns a broken default into an extension burden and reopens
      selection interception chaos.
    - Verdict: reject for this lane.
 
 3. Fix core logical projection and selection publication.
+
    - Pro: one package-level contract covers commands, React, history, and DOM
      export.
    - Con: requires careful tests around leaf boundaries and marks.
@@ -151,14 +154,14 @@ Consequences:
 
 ## 4. Confidence Scorecard
 
-| Dimension | Score | Evidence |
-| --- | ---: | --- |
-| Slate-close unopinionated DX | 0.94 | No new public API; fixes existing `Editor.insertBreak`, `Editor.after`, `Editor.before`, and `selection.move`. |
-| Regression-proof testing strategy | 0.93 | Issue candidate map marks `#3964` and `#3973` `ready-now`; plan requires red package tests before patching. |
-| Browser/runtime realism | 0.88 | Browser word movement already has a DOM/model sync row, but Firefox/mobile are explicitly non-claims. |
-| Ecosystem evidence | 0.90 | Lexical, ProseMirror, Tiptap, and VS Code were checked for movement/split strategy. |
-| Minimality | 0.94 | Rejects normalizePoint, punctuation policy, range-remove, fragment insert, reverse traversal, and replace-node expansion. |
-| Execution readiness | 0.94 | Live source owners and target tests are named. |
+| Dimension                         | Score | Evidence                                                                                                                  |
+| --------------------------------- | ----: | ------------------------------------------------------------------------------------------------------------------------- |
+| Slate-close unopinionated DX      |  0.94 | No new public API; fixes existing `Editor.insertBreak`, `Editor.after`, `Editor.before`, and `selection.move`.            |
+| Regression-proof testing strategy |  0.93 | Issue candidate map marks `#3964` and `#3973` `ready-now`; plan requires red package tests before patching.               |
+| Browser/runtime realism           |  0.88 | Browser word movement already has a DOM/model sync row, but Firefox/mobile are explicitly non-claims.                     |
+| Ecosystem evidence                |  0.90 | Lexical, ProseMirror, Tiptap, and VS Code were checked for movement/split strategy.                                       |
+| Minimality                        |  0.94 | Rejects normalizePoint, punctuation policy, range-remove, fragment insert, reverse traversal, and replace-node expansion. |
+| Execution readiness               |  0.94 | Live source owners and target tests are named.                                                                            |
 
 Total: `0.92`.
 
@@ -167,28 +170,28 @@ Total: `0.92`.
 Current Slate v2 owner map:
 
 - `Editor.insertBreak` is a thin command wrapper around `splitNodes({ always:
-  true })` at `../slate-v2/packages/slate/src/editor/insert-break.ts:9`.
+true })` at `.tmp/slate-v2/packages/slate/src/editor/insert-break.ts:9`.
 - `selection.move` resolves target points through `Editor.before` /
   `Editor.after` at
-  `../slate-v2/packages/slate/src/transforms-selection/move.ts:34`.
+  `.tmp/slate-v2/packages/slate/src/transforms-selection/move.ts:34`.
 - `Editor.after` and `Editor.before` iterate `Editor.positions` and skip
-  non-selectable elements at `../slate-v2/packages/slate/src/editor/after.ts:14`
-  and `../slate-v2/packages/slate/src/editor/before.ts:14`.
+  non-selectable elements at `.tmp/slate-v2/packages/slate/src/editor/after.ts:14`
+  and `.tmp/slate-v2/packages/slate/src/editor/before.ts:14`.
 - Word positions group text by block, concatenate segment text, and map logical
   offsets back to points at
-  `../slate-v2/packages/slate/src/editor/positions.ts:577`.
+  `.tmp/slate-v2/packages/slate/src/editor/positions.ts:577`.
 - Existing package proof covers simple `insertBreak` selection at
-  `../slate-v2/packages/slate/test/snapshot-contract.ts:1151`.
+  `.tmp/slate-v2/packages/slate/test/snapshot-contract.ts:1151`.
 - Existing word-position proof covers inline fragmentation, not sibling text
   leaves at the start of a word, at
-  `../slate-v2/packages/slate/test/interfaces/Editor/positions/all/unit-word-inline-fragmentation.tsx:8`.
+  `.tmp/slate-v2/packages/slate/test/interfaces/Editor/positions/all/unit-word-inline-fragmentation.tsx:8`.
 - Existing transform fixture covers normal word movement, not the `#3973`
   initial multi-leaf repro, at
-  `../slate-v2/packages/slate/test/transforms/move/both/unit-word.tsx:7`.
+  `.tmp/slate-v2/packages/slate/test/transforms/move/both/unit-word.tsx:7`.
 - React word movement routes to `tx.selection.move({ unit: 'word' })` at
-  `../slate-v2/packages/slate-react/src/editable/caret-engine.ts:138`.
+  `.tmp/slate-v2/packages/slate-react/src/editable/caret-engine.ts:138`.
 - Browser proof for word movement currently skips Firefox/mobile at
-  `../slate-v2/playwright/integration/examples/richtext.test.ts:2861`.
+  `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:2861`.
 
 Gap:
 
@@ -203,7 +206,7 @@ Live gitcrawl status:
 - `gitcrawl doctor --json` is usable but GitHub API sync is unavailable because
   no token is present.
 - `gitcrawl threads --numbers 3964,3973,3891,5080,5412,5129,3962,4618,1654
-  --include-closed --json ianstormtaylor/slate` grounded the candidate list.
+--include-closed --json ianstormtaylor/slate` grounded the candidate list.
 - `gitcrawl neighbors --number 3964` links `#3499`, `#4357`, `#4195`, and
   `#3841`.
 - `gitcrawl neighbors --number 3973` links `#3841`, `#5629`, `#4648`, and
@@ -211,40 +214,40 @@ Live gitcrawl status:
 
 Target rows:
 
-| Issue | Decision | Reason |
-| --- | --- | --- |
-| `#3964` | target | Exact ready-now package repro for marked `insertBreak` caret placement. |
-| `#3973` | target | Exact ready-now package repro for word movement across initial sibling leaves. |
+| Issue   | Decision | Reason                                                                         |
+| ------- | -------- | ------------------------------------------------------------------------------ |
+| `#3964` | target   | Exact ready-now package repro for marked `insertBreak` caret placement.        |
+| `#3973` | target   | Exact ready-now package repro for word movement across initial sibling leaves. |
 
 Related rows:
 
-| Issue | Decision | Reason |
-| --- | --- | --- |
-| `#3499` | related | Mark + Enter + undo pressure; may be improved by `#3964`, exact undo claim needs history proof. |
-| `#4357` | related | Same mark-end Enter symptom as `#3964`; can become fixed if the same package proof covers it. |
-| `#4195` | related | Same inconsistent return-key caret family; can become fixed if the same repro collapses to `#3964`. |
-| `#3841` | related | Word movement inside custom `insertBreak`, but exact thread is Firefox-specific. |
-| `#5629` | related | Word navigation pressure, likely punctuation/DOM path; keep separate unless core word projection fails the same way. |
-| `#4648` | not claimed | Punctuation definition request, not the same as multi-leaf projection. |
-| `#4618` | not claimed | Public `normalizePoint` hook remains rejected in this lane. |
+| Issue   | Decision    | Reason                                                                                                               |
+| ------- | ----------- | -------------------------------------------------------------------------------------------------------------------- |
+| `#3499` | related     | Mark + Enter + undo pressure; may be improved by `#3964`, exact undo claim needs history proof.                      |
+| `#4357` | related     | Same mark-end Enter symptom as `#3964`; can become fixed if the same package proof covers it.                        |
+| `#4195` | related     | Same inconsistent return-key caret family; can become fixed if the same repro collapses to `#3964`.                  |
+| `#3841` | related     | Word movement inside custom `insertBreak`, but exact thread is Firefox-specific.                                     |
+| `#5629` | related     | Word navigation pressure, likely punctuation/DOM path; keep separate unless core word projection fails the same way. |
+| `#4648` | not claimed | Punctuation definition request, not the same as multi-leaf projection.                                               |
+| `#4618` | not claimed | Public `normalizePoint` hook remains rejected in this lane.                                                          |
 
 Excluded ready rows:
 
-| Issue | Reason |
-| --- | --- |
-| `#3891` | Remove-range helper API needs separate design. |
-| `#5412` | `insertFragment({ at })` regression is a fragment insertion lane. |
-| `#5080` | Reverse `Editor.nodes` traversal is a query API lane. |
+| Issue   | Reason                                                                |
+| ------- | --------------------------------------------------------------------- |
+| `#3891` | Remove-range helper API needs separate design.                        |
+| `#5412` | `insertFragment({ at })` regression is a fragment insertion lane.     |
+| `#5080` | Reverse `Editor.nodes` traversal is a query API lane.                 |
 | `#5129` | Replace-node convenience transform is API design, not caret movement. |
 
 ## 7. Ecosystem Strategy Synthesis
 
-| System | Evidence | Mechanism | Slate target | Verdict |
-| --- | --- | --- | --- | --- |
-| Lexical | `../lexical/packages/lexical-selection/src/range-selection.ts:503`; `../lexical/packages/lexical-selection/src/__tests__/unit/LexicalSelection.test.tsx:2234` | Word movement delegates to selection modification; paragraph insertion is tested across multiple text nodes. | Keep model movement centralized and add fragmented-text insertion proof. | steal tests, not DOM dependency |
-| ProseMirror | `../prosemirror-commands/src/commands.ts:355`; `../prosemirror-commands/test/test-commands.ts:332` | `splitBlock` maps transaction position and tests split selection shape. | Keep split selection publication transaction-owned. | agree |
-| Tiptap | `../tiptap/packages/core/src/commands/splitBlock.ts:33` | Wraps ProseMirror split behavior with optional mark preservation. | Do not expose product-level `keepMarks`; fix raw selection first. | partial |
-| VS Code | `../vscode/src/vs/editor/common/cursor/cursorWordOperations.ts:211` | Word movement has explicit classifier policy. | Consider a later punctuation policy for `#5629`/`#4648`; do not block `#3973` on it. | defer |
+| System      | Evidence                                                                                                                                                      | Mechanism                                                                                                    | Slate target                                                                         | Verdict                         |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------ | ------------------------------- |
+| Lexical     | `../lexical/packages/lexical-selection/src/range-selection.ts:503`; `../lexical/packages/lexical-selection/src/__tests__/unit/LexicalSelection.test.tsx:2234` | Word movement delegates to selection modification; paragraph insertion is tested across multiple text nodes. | Keep model movement centralized and add fragmented-text insertion proof.             | steal tests, not DOM dependency |
+| ProseMirror | `../prosemirror-commands/src/commands.ts:355`; `../prosemirror-commands/test/test-commands.ts:332`                                                            | `splitBlock` maps transaction position and tests split selection shape.                                      | Keep split selection publication transaction-owned.                                  | agree                           |
+| Tiptap      | `../tiptap/packages/core/src/commands/splitBlock.ts:33`                                                                                                       | Wraps ProseMirror split behavior with optional mark preservation.                                            | Do not expose product-level `keepMarks`; fix raw selection first.                    | partial                         |
+| VS Code     | `../vscode/src/vs/editor/common/cursor/cursorWordOperations.ts:211`                                                                                           | Word movement has explicit classifier policy.                                                                | Consider a later punctuation policy for `#5629`/`#4648`; do not block `#3973` on it. | defer                           |
 
 ## 8. Ralph Execution Plan
 
@@ -301,7 +304,7 @@ Phase 5: ledgers and PR reference.
 Focused package proof:
 
 ```bash
-cd ../slate-v2
+cd .tmp/slate-v2
 bun test ./packages/slate/test/snapshot-contract.ts ./packages/slate/test/query-contract.ts ./packages/slate/test/transforms/move/both/unit-word.tsx ./packages/slate/test/transforms/move/both/unit-word-reverse.tsx
 bun --filter slate typecheck
 ```
@@ -309,7 +312,7 @@ bun --filter slate typecheck
 If React/DOM changed:
 
 ```bash
-cd ../slate-v2
+cd .tmp/slate-v2
 bun --filter slate-react test:vitest -- caret-engine editing-kernel
 bunx playwright test ./playwright/integration/examples/richtext.test.ts --project=chromium --project=webkit --grep "word movement|insertBreak|selection synchronized" --workers=2 --retries=0
 ```
@@ -317,7 +320,7 @@ bunx playwright test ./playwright/integration/examples/richtext.test.ts --projec
 Closeout:
 
 ```bash
-cd ../slate-v2
+cd .tmp/slate-v2
 bun lint:fix
 cd ../plate-2
 bun run completion-check
@@ -325,13 +328,13 @@ bun run completion-check
 
 ## 10. Maintainer Objections
 
-| Objection | Answer |
-| --- | --- |
+| Objection                                                | Answer                                                                                                                             |
+| -------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
 | "This is a browser bug; let native selection handle it." | No. The public `Editor.insertBreak` and `selection.move` contracts must be correct without React. Browser proof mirrors the model. |
-| "Just expose `normalizePoint`." | Too early. That makes apps patch a broken default and would become another fragile selection interception API. |
-| "Word boundary behavior is subjective." | True for punctuation. Not true for a single word split across sibling leaves. `#3973` is projection, not policy. |
-| "Tiptap exposes `keepMarks`; should Slate add it?" | No for raw core. The default split selection must be correct first; product mark behavior belongs in extension policy if needed. |
-| "Why not include #3891/#5412/#5080/#5129 now?" | Because they are different owners. Mixing them would hide the caret bug under API sprawl. |
+| "Just expose `normalizePoint`."                          | Too early. That makes apps patch a broken default and would become another fragile selection interception API.                     |
+| "Word boundary behavior is subjective."                  | True for punctuation. Not true for a single word split across sibling leaves. `#3973` is projection, not policy.                   |
+| "Tiptap exposes `keepMarks`; should Slate add it?"       | No for raw core. The default split selection must be correct first; product mark behavior belongs in extension policy if needed.   |
+| "Why not include #3891/#5412/#5080/#5129 now?"           | Because they are different owners. Mixing them would hide the caret bug under API sprawl.                                          |
 
 ## 11. Plan Deltas
 
@@ -369,10 +372,10 @@ PR auto-close count increases by 3.
 
 Execution proof:
 
-- `../slate-v2/packages/slate/test/snapshot-contract.ts`: `insertBreak after
-  marked text moves selection into the new block`.
-- `../slate-v2/packages/slate/test/transaction-contract.ts`: `moves word
-  selection across initial sibling text leaves`.
+- `.tmp/slate-v2/packages/slate/test/snapshot-contract.ts`: `insertBreak after
+marked text moves selection into the new block`.
+- `.tmp/slate-v2/packages/slate/test/transaction-contract.ts`: `moves word
+selection across initial sibling text leaves`.
 - `bun test ./packages/slate/test/snapshot-contract.ts ./packages/slate/test/transaction-contract.ts`
   passed with 222 tests.
 - `bun --filter slate typecheck` passed.

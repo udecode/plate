@@ -12,7 +12,8 @@ symptoms:
 root_cause: inadequate_documentation
 resolution_type: documentation_update
 severity: high
-tags: [slate-v2, dom-selection, selectionchange, performance, react-runtime, yjs]
+tags:
+  [slate-v2, dom-selection, selectionchange, performance, react-runtime, yjs]
 ---
 
 # DOM selection bridges must stay cheap on selectionchange
@@ -56,15 +57,15 @@ Keep the bridge private and make the hot path primitive:
 
 The execution plan records the specific source owners:
 
-- `../slate-v2/packages/slate-react/src/editable/runtime-selection-engine.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-selection-engine.ts`
   owns native `selectionchange` throttling.
-- `../slate-v2/packages/slate-react/src/editable/selection-runtime.ts` and
-  `../slate-v2/packages/slate-react/src/hooks/use-editor-selector.tsx` own
+- `.tmp/slate-v2/packages/slate-react/src/editable/selection-runtime.ts` and
+  `.tmp/slate-v2/packages/slate-react/src/hooks/use-editor-selector.tsx` own
   selection fanout filters.
-- `../slate-v2/packages/slate-react/src/editable/selection-controller.ts` owns
+- `.tmp/slate-v2/packages/slate-react/src/editable/selection-controller.ts` owns
   fast DOM selection range creation, fail-closed import, model export, and
   scroll timing.
-- `../slate-v2/packages/slate-react/src/editable/runtime-root-engine.ts` owns
+- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-root-engine.ts` owns
   React listener/effect wiring.
 
 ## Why This Works

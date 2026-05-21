@@ -9,12 +9,12 @@ status: active
 ## Purpose
 
 Canonical execution plan for migrating the draft `slate-v2` rewrite into the
-fresh `../slate-v2` clone without reopening broad accidental drift.
+fresh `.tmp/slate-v2` clone without reopening broad accidental drift.
 
 This plan treats:
 
-- `../slate-v2` as the live target
-- `../slate-v2-draft` as the evidence/value bank
+- `.tmp/slate-v2` as the live target
+- `.tmp/slate-v2-draft` as the evidence/value bank
 - `docs/slate-v2/**` as the final-state spec stack
 - `docs/slate-v2-draft/**` as the archive lane
 
@@ -97,7 +97,7 @@ Rationale:
 
 For each package:
 
-1. diff the package file set between `../slate-v2` and `../slate-v2-draft`
+1. diff the package file set between `.tmp/slate-v2` and `.tmp/slate-v2-draft`
 2. recover same-path package source and exported contracts first
 3. recover or adopt tests only after the package source is honest
 4. recover or adopt examples/benchmarks only when their owning package contract
@@ -147,37 +147,37 @@ fresh clone and establish the final-state spec stack.
 
 Root/toolchain files:
 
-- `../slate-v2/.gitignore`
-- `../slate-v2/.npmrc`
-- `../slate-v2/.yarnrc.yml`
-- `../slate-v2/package.json`
-- `../slate-v2/pnpm-workspace.yaml`
-- `../slate-v2/turbo.json`
-- `../slate-v2/tsconfig.json`
-- `../slate-v2/biome.jsonc`
-- `../slate-v2/eslint.config.mjs`
-- `../slate-v2/config/babel/register.cjs`
-- `../slate-v2/config/rollup/rollup.config.js`
-- `../slate-v2/.github/workflows/ci.yml`
-- `../slate-v2/.github/workflows/comment.yml`
-- `../slate-v2/.github/workflows/release.yml`
-- `../slate-v2/README.md`
-- `../slate-v2/Readme.md`
-- `../slate-v2/docs/general/contributing.md`
+- `.tmp/slate-v2/.gitignore`
+- `.tmp/slate-v2/.npmrc`
+- `.tmp/slate-v2/.yarnrc.yml`
+- `.tmp/slate-v2/package.json`
+- `.tmp/slate-v2/pnpm-workspace.yaml`
+- `.tmp/slate-v2/turbo.json`
+- `.tmp/slate-v2/tsconfig.json`
+- `.tmp/slate-v2/biome.jsonc`
+- `.tmp/slate-v2/eslint.config.mjs`
+- `.tmp/slate-v2/config/babel/register.cjs`
+- `.tmp/slate-v2/config/rollup/rollup.config.js`
+- `.tmp/slate-v2/.github/workflows/ci.yml`
+- `.tmp/slate-v2/.github/workflows/comment.yml`
+- `.tmp/slate-v2/.github/workflows/release.yml`
+- `.tmp/slate-v2/README.md`
+- `.tmp/slate-v2/Readme.md`
+- `.tmp/slate-v2/docs/general/contributing.md`
 
 Site/config files required by the root graph:
 
-- `../slate-v2/site/next.config.js`
-- `../slate-v2/site/next-env.d.ts`
-- `../slate-v2/site/pages/api/index.ts`
+- `.tmp/slate-v2/site/next.config.js`
+- `.tmp/slate-v2/site/next-env.d.ts`
+- `.tmp/slate-v2/site/pages/api/index.ts`
 
 Package manifest/script layer:
 
-- `../slate-v2/packages/slate/package.json`
-- `../slate-v2/packages/slate-history/package.json`
-- `../slate-v2/packages/slate-hyperscript/package.json`
-- `../slate-v2/packages/slate-dom/package.json`
-- `../slate-v2/packages/slate-react/package.json`
+- `.tmp/slate-v2/packages/slate/package.json`
+- `.tmp/slate-v2/packages/slate-history/package.json`
+- `.tmp/slate-v2/packages/slate-hyperscript/package.json`
+- `.tmp/slate-v2/packages/slate-dom/package.json`
+- `.tmp/slate-v2/packages/slate-react/package.json`
 
 Repo docs reset:
 
@@ -232,28 +232,28 @@ Land the React 19.2 and compatibility baseline before any engine rewrite.
 
 Root/site compatibility surfaces:
 
-- `../slate-v2/package.json`
-- `../slate-v2/site/**/*`
+- `.tmp/slate-v2/package.json`
+- `.tmp/slate-v2/site/**/*`
 
 Primary package surfaces:
 
-- `../slate-v2/packages/slate-react/package.json`
-- `../slate-v2/packages/slate-react/src/**/*`
-- `../slate-v2/packages/slate-react/test/**/*`
-- `../slate-v2/packages/slate-dom/package.json`
-- `../slate-v2/packages/slate-dom/src/**/*`
-- `../slate-v2/packages/slate-dom/test/**/*`
+- `.tmp/slate-v2/packages/slate-react/package.json`
+- `.tmp/slate-v2/packages/slate-react/src/**/*`
+- `.tmp/slate-v2/packages/slate-react/test/**/*`
+- `.tmp/slate-v2/packages/slate-dom/package.json`
+- `.tmp/slate-v2/packages/slate-dom/src/**/*`
+- `.tmp/slate-v2/packages/slate-dom/test/**/*`
 
 Optional early-adopt lane:
 
-- `../slate-v2/packages/slate-browser/**/*`
-  from `../slate-v2-draft/packages/slate-browser/**/*`
+- `.tmp/slate-v2/packages/slate-browser/**/*`
+  from `.tmp/slate-v2-draft/packages/slate-browser/**/*`
 
 Forced spillover only if needed by compatibility:
 
-- `../slate-v2/packages/slate/package.json`
-- `../slate-v2/packages/slate-history/package.json`
-- `../slate-v2/packages/slate-hyperscript/package.json`
+- `.tmp/slate-v2/packages/slate/package.json`
+- `.tmp/slate-v2/packages/slate-history/package.json`
+- `.tmp/slate-v2/packages/slate-hyperscript/package.json`
 
 ### Rules
 
@@ -294,9 +294,9 @@ packages.
 
 ### Scope
 
-- `../slate-v2/packages/slate/src/**/*`
-- `../slate-v2/packages/slate/test/**/*`
-- `../slate-v2/packages/slate/type-tests/custom-types/**/*`
+- `.tmp/slate-v2/packages/slate/src/**/*`
+- `.tmp/slate-v2/packages/slate/test/**/*`
+- `.tmp/slate-v2/packages/slate/type-tests/custom-types/**/*`
 - `docs/slate-v2/ledgers/slate-editor-api.md`
 - `docs/slate-v2/ledgers/slate-interfaces-api.md`
 - `docs/slate-v2/ledgers/slate-transforms-api.md`
@@ -329,12 +329,12 @@ or React runtime.
 
 ### Scope
 
-- `../slate-v2/packages/slate-history/src/**/*`
-- `../slate-v2/packages/slate-history/test/**/*`
-- `../slate-v2/packages/slate-history/package.json`
-- `../slate-v2/packages/slate-hyperscript/src/**/*`
-- `../slate-v2/packages/slate-hyperscript/test/**/*`
-- `../slate-v2/packages/slate-hyperscript/package.json`
+- `.tmp/slate-v2/packages/slate-history/src/**/*`
+- `.tmp/slate-v2/packages/slate-history/test/**/*`
+- `.tmp/slate-v2/packages/slate-history/package.json`
+- `.tmp/slate-v2/packages/slate-hyperscript/src/**/*`
+- `.tmp/slate-v2/packages/slate-hyperscript/test/**/*`
+- `.tmp/slate-v2/packages/slate-hyperscript/package.json`
 - `docs/slate-v2/ledgers/slate-history-api.md`
 
 ### Package Order
@@ -360,13 +360,13 @@ Recover the DOM bridge as the runtime owner between core Slate and React.
 
 ### Scope
 
-- `../slate-v2/packages/slate-dom/src/**/*`
-- `../slate-v2/packages/slate-dom/test/**/*`
-- `../slate-v2/packages/slate-dom/package.json`
+- `.tmp/slate-v2/packages/slate-dom/src/**/*`
+- `.tmp/slate-v2/packages/slate-dom/test/**/*`
+- `.tmp/slate-v2/packages/slate-dom/package.json`
 - `docs/slate-v2/ledgers/slate-react-api.md`
 - DOM-related examples and proof rows under:
-  - `../slate-v2/site/examples/**/*`
-  - `../slate-v2/site/pages/examples/**/*`
+  - `.tmp/slate-v2/site/examples/**/*`
+  - `.tmp/slate-v2/site/pages/examples/**/*`
 
 ### Rules
 
@@ -394,12 +394,12 @@ Recover the React runtime last, once core and DOM ownership are already settled.
 
 ### Scope
 
-- `../slate-v2/packages/slate-react/src/**/*`
-- `../slate-v2/packages/slate-react/test/**/*`
-- `../slate-v2/packages/slate-react/package.json`
-- `../slate-v2/site/components/**/*`
-- `../slate-v2/site/examples/**/*`
-- `../slate-v2/site/pages/examples/**/*`
+- `.tmp/slate-v2/packages/slate-react/src/**/*`
+- `.tmp/slate-v2/packages/slate-react/test/**/*`
+- `.tmp/slate-v2/packages/slate-react/package.json`
+- `.tmp/slate-v2/site/components/**/*`
+- `.tmp/slate-v2/site/examples/**/*`
+- `.tmp/slate-v2/site/pages/examples/**/*`
 - browser/input proof surfaces and matching docs ledgers
 
 ### Rules
@@ -430,9 +430,9 @@ already exist.
 
 ### Scope
 
-- `../slate-v2-draft/site/examples/**/*`
-- `../slate-v2-draft/site/components/**/*`
-- `../slate-v2-draft/site/pages/examples/**/*`
+- `.tmp/slate-v2-draft/site/examples/**/*`
+- `.tmp/slate-v2-draft/site/components/**/*`
+- `.tmp/slate-v2-draft/site/pages/examples/**/*`
 - benchmark surfaces under the draft site and package tests
 - any remaining `slate-browser` proof/test files not already landed
 

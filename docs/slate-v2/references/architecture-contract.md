@@ -33,15 +33,15 @@ The current public runtime shape is:
 
 ```ts
 editor.read(() => {
-  editor.getSelection()
-  editor.getChildren()
-})
+  editor.getSelection();
+  editor.getChildren();
+});
 
 editor.update(() => {
-  editor.unwrapNodes({ match: isList })
-  editor.setNodes({ type: 'list-item' })
-  editor.wrapNodes({ type: 'bulleted-list', children: [] })
-})
+  editor.unwrapNodes({ match: isList });
+  editor.setNodes({ type: "list-item" });
+  editor.wrapNodes({ type: "bulleted-list", children: [] });
+});
 ```
 
 The current rules:
@@ -247,18 +247,20 @@ runtime.
 The public shape is group-first:
 
 ```ts
-editor.extend(defineEditorExtension({
-  name: 'feature',
-  tx: {
-    feature(tx) {
-      return {
-        run() {
-          tx.nodes.set({ feature: true })
-        },
-      }
+editor.extend(
+  defineEditorExtension({
+    name: "feature",
+    tx: {
+      feature(tx) {
+        return {
+          run() {
+            tx.nodes.set({ feature: true });
+          },
+        };
+      },
     },
-  },
-}))
+  }),
+);
 ```
 
 That is cleaner than “save old method, wrap it, hope you understood the timing.”
@@ -459,15 +461,15 @@ The public surface stays small:
 
 ```ts
 editor.read(() => {
-  editor.getSelection()
-  editor.getChildren()
-})
+  editor.getSelection();
+  editor.getChildren();
+});
 
 editor.update(() => {
-  editor.insertNodes(node)
-  editor.setNodes({ color: 'orange' }, { at: [0] })
-  editor.moveNodes({ at: [3], to: [1] })
-})
+  editor.insertNodes(node);
+  editor.setNodes({ color: "orange" }, { at: [0] });
+  editor.moveNodes({ at: [3], to: [1] });
+});
 ```
 
 Rules:
@@ -499,18 +501,20 @@ Plugins should add named extension groups, not replace mutable methods.
 Use this:
 
 ```ts
-editor.extend(defineEditorExtension({
-  name: 'todo',
-  tx: {
-    todo(tx) {
-      return {
-        toggle() {
-          tx.nodes.set({ type: 'todo', checked: true })
-        },
-      }
+editor.extend(
+  defineEditorExtension({
+    name: "todo",
+    tx: {
+      todo(tx) {
+        return {
+          toggle() {
+            tx.nodes.set({ type: "todo", checked: true });
+          },
+        };
+      },
     },
-  },
-}))
+  }),
+);
 ```
 
 That is vastly easier to reason about:
@@ -540,9 +544,9 @@ If a plugin needs to mutate selected content, it should use primitives inside
 
 ```ts
 editor.update(() => {
-  editor.insertNodes(node)
-  editor.setNodes({ color: 'orange' })
-})
+  editor.insertNodes(node);
+  editor.setNodes({ color: "orange" });
+});
 ```
 
 That is cleaner than accessor tricks on mutable fields.
@@ -802,7 +806,7 @@ This spec is constrained by:
 - [roadmap-from-issues.md](/Users/zbeyens/git/plate-2/docs/slate-issues/roadmap-from-issues.md)
 - [test-candidate-map.md](/Users/zbeyens/git/plate-2/docs/slate-issues/test-candidate-map.md)
 - [benchmark-candidate-map.md](/Users/zbeyens/git/plate-2/docs/slate-issues/benchmark-candidate-map.md)
-- current Slate package layout in `../slate-v2/packages/*`
+- current Slate package layout in `.tmp/slate-v2/packages/*`
 
 ## Locked Constraints
 
@@ -909,8 +913,8 @@ Recommended write path:
 
 ```ts
 editor.update(() => {
-  editor.setNodes({ type: 'heading-one' })
-})
+  editor.setNodes({ type: "heading-one" });
+});
 ```
 
 Why:

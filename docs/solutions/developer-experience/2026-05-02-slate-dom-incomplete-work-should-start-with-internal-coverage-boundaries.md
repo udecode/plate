@@ -27,7 +27,7 @@ browser find, and stale DOM behavior need a lower-level runtime contract.
 
 ## Symptoms
 
-- A model point inside hidden content still reaches `editor.dom.toDOMPoint(...)`
+- A model point inside hidden content still reaches `editor.dom.assertDOMPoint(...)`
   and throws because the Slate node has no mapped DOM node.
 - Nested hidden children and hidden first/last root nodes are separate proof
   cases; covering only top-level large-document islands does not prove either.
@@ -64,13 +64,13 @@ DOMCoverage.registerBoundary(editor, {
 Add boundary-aware lookup before changing public rendering APIs:
 
 ```ts
-DOMCoverage.toDOMPointOrBoundary(editor, hiddenPoint)
+DOMCoverage.resolveDOMPointOrBoundary(editor, hiddenPoint)
 ```
 
 The first tracer should prove:
 
-- normal `editor.dom.toDOMPoint(hiddenPoint)` still fails for missing DOM;
-- `DOMCoverage.toDOMPointOrBoundary(...)` returns the boundary instead of
+- normal `editor.dom.assertDOMPoint(hiddenPoint)` still fails for missing DOM;
+- `DOMCoverage.resolveDOMPointOrBoundary(...)` returns the boundary instead of
   calling normal DOM lookup;
 - first and last root self-boundaries cover their own descendants only;
 - no stable `slots.Boundary`, `slots.SelfBoundary`, `HiddenRange`, or

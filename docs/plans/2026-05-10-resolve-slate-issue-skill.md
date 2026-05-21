@@ -38,7 +38,7 @@ Non-goals:
 - Start every run from `gh issue view ... --comments --json ...`.
 - Treat issue body, comments, attached media, and commit/branch metadata as
   source of truth.
-- If the issue names an origin commit, compare against current `../slate-v2`;
+- If the issue names an origin commit, compare against current `.tmp/slate-v2`;
   the issue may already be fixed by later commits.
 - If current Slate v2 already passes the repro, do not patch code. Record
   `already-accounted` with evidence and comment that current v2 matches the

@@ -32,14 +32,14 @@ Accepted implementation target:
 
 ```ts
 type ReplaceChildrenOperation<V extends Value = Value> = {
-  type: 'replace_children'
-  path: Path
-  index: number
-  children: DescendantIn<V>[]
-  newChildren: DescendantIn<V>[]
-  selection: Range | null
-  newSelection: Range | null
-}
+  type: "replace_children";
+  path: Path;
+  index: number;
+  children: DescendantIn<V>[];
+  newChildren: DescendantIn<V>[];
+  selection: Range | null;
+  newSelection: Range | null;
+};
 ```
 
 This is the next implementation substrate for:
@@ -123,13 +123,13 @@ Top drivers:
 
 Viable options:
 
-| Option | Verdict | Why |
-| --- | --- | --- |
-| Keep current `remove_node` loop | reject | It emits one `remove_node` per removed child and each op goes through child-array replacement, selection/path transforms, dirty classification, and snapshot/commit work. |
-| Use root-level `replace_fragment` for cut/delete | transitional only | It gives one op but stores full old/new child arrays for small edits in huge docs. That is the wrong payload shape for #5992. |
-| Add `delete_fragment` | reject | Delete is just replacement with `newChildren: []`; a delete-specific op duplicates transform/inverse logic. |
-| Add/generalize to `replace_children` | choose after hardening | It is Slate-shaped, range-scoped, inverse-friendly, paste-compatible, and closest to ProseMirror's replace-step lesson without copying integer positions. |
-| Add a mutable root child splice outside operations | reject | It hides the real change from history/collaboration and recreates snapshot bypass risk. |
+| Option                                             | Verdict                | Why                                                                                                                                                                       |
+| -------------------------------------------------- | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Keep current `remove_node` loop                    | reject                 | It emits one `remove_node` per removed child and each op goes through child-array replacement, selection/path transforms, dirty classification, and snapshot/commit work. |
+| Use root-level `replace_fragment` for cut/delete   | transitional only      | It gives one op but stores full old/new child arrays for small edits in huge docs. That is the wrong payload shape for #5992.                                             |
+| Add `delete_fragment`                              | reject                 | Delete is just replacement with `newChildren: []`; a delete-specific op duplicates transform/inverse logic.                                                               |
+| Add/generalize to `replace_children`               | choose after hardening | It is Slate-shaped, range-scoped, inverse-friendly, paste-compatible, and closest to ProseMirror's replace-step lesson without copying integer positions.                 |
+| Add a mutable root child splice outside operations | reject                 | It hides the real change from history/collaboration and recreates snapshot bypass risk.                                                                                   |
 
 Chosen candidate:
 
@@ -153,14 +153,14 @@ Follow-ups:
 
 ## 4. Final Confidence Score
 
-| Dimension | Score | Evidence |
-| --- | ---: | --- |
-| React 19.2 runtime performance | 0.91 | React is not the #5992 bottleneck. The plan keeps this as a core model operation change and uses browser proof only for regression rows. |
-| Slate-close unopinionated DX | 0.94 | Apps still call `editor.update`; `replace_children` names the Slate JSON parent-child array change instead of a paste event. |
-| Plate and slate-yjs migration backbone | 0.90 | Plate sees no product API. yjs can consume a child splice directly or lower it inside one remote transaction. |
-| Regression-proof testing strategy | 0.94 | The proof matrix now covers op apply/inverse, path/point/range refs, history, collab replay, benchmark, and browser cut/undo rows. |
-| Research evidence completeness | 0.93 | Gitcrawl, live ledgers, live `../slate-v2` source, and compiled Lexical/ProseMirror/Tiptap research all point at a range operation, not clipboard or virtualization. |
-| shadcn-style composability/minimalism | 0.90 | No UI/product API surface. Keep it core-only. |
+| Dimension                              | Score | Evidence                                                                                                                                                               |
+| -------------------------------------- | ----: | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| React 19.2 runtime performance         |  0.91 | React is not the #5992 bottleneck. The plan keeps this as a core model operation change and uses browser proof only for regression rows.                               |
+| Slate-close unopinionated DX           |  0.94 | Apps still call `editor.update`; `replace_children` names the Slate JSON parent-child array change instead of a paste event.                                           |
+| Plate and slate-yjs migration backbone |  0.90 | Plate sees no product API. yjs can consume a child splice directly or lower it inside one remote transaction.                                                          |
+| Regression-proof testing strategy      |  0.94 | The proof matrix now covers op apply/inverse, path/point/range refs, history, collab replay, benchmark, and browser cut/undo rows.                                     |
+| Research evidence completeness         |  0.93 | Gitcrawl, live ledgers, live `.tmp/slate-v2` source, and compiled Lexical/ProseMirror/Tiptap research all point at a range operation, not clipboard or virtualization. |
+| shadcn-style composability/minimalism  |  0.90 | No UI/product API surface. Keep it core-only.                                                                                                                          |
 
 Total: `0.92`.
 
@@ -182,59 +182,59 @@ Current #5992 proof:
 
 Current copy/fragment extraction:
 
-- `../slate-v2/packages/slate/src/interfaces/node.ts:285` defines the whole
+- `.tmp/slate-v2/packages/slate/src/interfaces/node.ts:285` defines the whole
   top-level child fragment fast path.
-- `../slate-v2/packages/slate/src/interfaces/node.ts:466` calls that fast path
+- `.tmp/slate-v2/packages/slate/src/interfaces/node.ts:466` calls that fast path
   before falling back to the old range slicer.
 
 Current delete path:
 
-- `../slate-v2/packages/slate/src/transforms-text/delete-text.ts:1613` detects
+- `.tmp/slate-v2/packages/slate/src/transforms-text/delete-text.ts:1613` detects
   exact whole top-level block ranges.
-- `../slate-v2/packages/slate/src/transforms-text/delete-text.ts:1659` deletes
+- `.tmp/slate-v2/packages/slate/src/transforms-text/delete-text.ts:1659` deletes
   that range by looping from `endIndex` to `startIndex`.
-- `../slate-v2/packages/slate/src/transforms-text/delete-text.ts:1678` emits a
+- `.tmp/slate-v2/packages/slate/src/transforms-text/delete-text.ts:1678` emits a
   separate `remove_node` for every removed top-level child.
-- `../slate-v2/packages/slate/src/transforms-text/delete-text.ts:1709` routes
+- `.tmp/slate-v2/packages/slate/src/transforms-text/delete-text.ts:1709` routes
   matching ranges into that fast path.
 
 Current operation mechanics:
 
-- `../slate-v2/packages/slate/src/interfaces/operation.ts:103` defines
+- `.tmp/slate-v2/packages/slate/src/interfaces/operation.ts:103` defines
   `replace_fragment` with full `children` and `newChildren` arrays.
-- `../slate-v2/packages/slate/src/interfaces/operation.ts:310` inverts
+- `.tmp/slate-v2/packages/slate/src/interfaces/operation.ts:310` inverts
   `replace_fragment` by swapping those full arrays.
-- `../slate-v2/packages/slate/src/interfaces/transforms/general.ts:237` applies
+- `.tmp/slate-v2/packages/slate/src/interfaces/transforms/general.ts:237` applies
   `remove_node` by replacing the parent child array once per node.
-- `../slate-v2/packages/slate/src/interfaces/transforms/general.ts:319`
+- `.tmp/slate-v2/packages/slate/src/interfaces/transforms/general.ts:319`
   applies `replace_fragment` by replacing all children at `op.path`.
-- `../slate-v2/packages/slate/src/core/public-state.ts:2013` classifies any
+- `.tmp/slate-v2/packages/slate/src/core/public-state.ts:2013` classifies any
   `replace_fragment` commit as `replace`.
 
 Current benchmark:
 
-- `../slate-v2/scripts/benchmarks/core/current/clipboard-large-payload.mjs:475`
+- `.tmp/slate-v2/scripts/benchmarks/core/current/clipboard-large-payload.mjs:475`
   measures cut as copy plus delete.
-- `../slate-v2/scripts/benchmarks/core/current/clipboard-large-payload.mjs:502`
+- `.tmp/slate-v2/scripts/benchmarks/core/current/clipboard-large-payload.mjs:502`
   measures prepared edit-only cut.
-- `../slate-v2/scripts/benchmarks/core/current/clipboard-large-payload.mjs:597`
+- `.tmp/slate-v2/scripts/benchmarks/core/current/clipboard-large-payload.mjs:597`
   records #5992 as the 50,000-block two-node cut pressure row.
 
 Current tests:
 
-- `../slate-v2/packages/slate/test/delete-contract.ts:13` locks bounded
+- `.tmp/slate-v2/packages/slate/test/delete-contract.ts:13` locks bounded
   operation count for selected top-level block deletion.
-- `../slate-v2/packages/slate/test/clipboard-contract.ts:86` locks whole
+- `.tmp/slate-v2/packages/slate/test/clipboard-contract.ts:86` locks whole
   top-level fragment extraction from a large surrounding document.
 
 ## 6. Ecosystem Strategy Synthesis
 
-| System | Source | Mechanism | Avoids | Steal | Reject | Slate target | Verdict |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| Lexical | `docs/research/sources/editor-architecture/lexical-read-update-extension-runtime.md` | `editor.update`, dirty leaves/elements, lifecycle tags | global recompute after local edits | dirty runtime buckets and update tags for commit consumers | class nodes and `$` helper API | one child-range op plus dirty parent/range metadata | partial |
-| ProseMirror | `docs/research/sources/editor-architecture/prosemirror-transaction-view-dom-runtime.md` | transactions accumulate steps and map selections | post-hoc selection repair and per-node mutation loops | replace-step discipline and mapped selection | integer position model and schema-first identity | `replace_children` with path/index/range transform semantics | agree |
-| Tiptap | `docs/research/sources/editor-architecture/tiptap-extension-command-react-dx.md` | command/chain sugar over one transaction | fragmented product commands | extension DX stays above transaction engine | command chain as required Slate API | keep `editor.update`; product sugar can lower to one op | partial |
-| Slate v2 current | live source above | `replace_fragment` proof plus `remove_node` delete loop | proves one-op replacement can work | reuse proof surface and tests | paste-shaped op name and full-array payload for small range | generalized `replace_children` | revise |
+| System           | Source                                                                                  | Mechanism                                               | Avoids                                                | Steal                                                      | Reject                                                      | Slate target                                                 | Verdict |
+| ---------------- | --------------------------------------------------------------------------------------- | ------------------------------------------------------- | ----------------------------------------------------- | ---------------------------------------------------------- | ----------------------------------------------------------- | ------------------------------------------------------------ | ------- |
+| Lexical          | `docs/research/sources/editor-architecture/lexical-read-update-extension-runtime.md`    | `editor.update`, dirty leaves/elements, lifecycle tags  | global recompute after local edits                    | dirty runtime buckets and update tags for commit consumers | class nodes and `$` helper API                              | one child-range op plus dirty parent/range metadata          | partial |
+| ProseMirror      | `docs/research/sources/editor-architecture/prosemirror-transaction-view-dom-runtime.md` | transactions accumulate steps and map selections        | post-hoc selection repair and per-node mutation loops | replace-step discipline and mapped selection               | integer position model and schema-first identity            | `replace_children` with path/index/range transform semantics | agree   |
+| Tiptap           | `docs/research/sources/editor-architecture/tiptap-extension-command-react-dx.md`        | command/chain sugar over one transaction                | fragmented product commands                           | extension DX stays above transaction engine                | command chain as required Slate API                         | keep `editor.update`; product sugar can lower to one op      | partial |
+| Slate v2 current | live source above                                                                       | `replace_fragment` proof plus `remove_node` delete loop | proves one-op replacement can work                    | reuse proof surface and tests                              | paste-shaped op name and full-array payload for small range | generalized `replace_children`                               | revise  |
 
 Strategy:
 
@@ -253,22 +253,22 @@ Operation target:
 
 ```ts
 type ReplaceChildrenOperation<V extends Value = Value> = {
-  type: 'replace_children'
-  path: Path
-  index: number
-  children: DescendantIn<V>[]
-  newChildren: DescendantIn<V>[]
-  selection: Range | null
-  newSelection: Range | null
-}
+  type: "replace_children";
+  path: Path;
+  index: number;
+  children: DescendantIn<V>[];
+  newChildren: DescendantIn<V>[];
+  selection: Range | null;
+  newSelection: Range | null;
+};
 ```
 
 Transaction usage stays:
 
 ```ts
 editor.update((tx) => {
-  tx.text.delete({ at: selection })
-})
+  tx.text.delete({ at: selection });
+});
 ```
 
 Internal lowering:
@@ -363,27 +363,27 @@ ClawSweeper:
 
 Current claim map after the bounded ClawSweeper pass:
 
-| Issue | Cluster | Claim | Why | Proof route | Live ledger sync | PR line |
-| --- | --- | --- | --- | --- | --- | --- |
-| #5992 | large-document-edit-performance | Improves | Current benchmark improved from the old multi-second owner, but 50,000-block cut is still `621.26ms` / `511.47ms`. | benchmark | `open-issues-ledger.md` says `improves-claimed` | keep related matrix until target passes |
-| #5945 | large-document-edit-performance | Improves | Paste path is relevant but already handled by the previous plan. | benchmark + browser row | already synced | unchanged |
-| #4056 | large-document-edit-performance | Improves | Populated paste/copy is relevant but already handled by the previous plan. | benchmark | already synced | unchanged |
-| #6038 | transactionality-and-batch-engine | Improves | Range replacement advances batch-aware core execution but does not prove the issue's broader repeated-update benchmark threshold. | transaction benchmark + new op benchmark | already matrixed | related matrix only |
-| #2288 | operation-granularity-and-range-steps | Related / improves after implementation | This is the strongest architecture support: it explicitly asks for range-capable operations because `selectAll` + delete explodes into many ops. | op contract tests + benchmark | matrixed + dossiered | related matrix only |
-| #1770 | collaboration-op-metadata-and-transaction-boundaries | Related | A range op reduces operation overhead, but it does not solve general operation-composition utilities. | collab replay/lowering | matrixed + dossiered | related matrix only |
-| #2500 | select-all-delete-and-structural-reset | Related | `replace_children` gives the right whole-child delete primitive, but exact list-heavy rich-text browser closure is separate. | structural delete/browser row | matrixed + dossiered | related matrix only |
-| #2195 | performance-normalization-and-dirty-paths | Related | Dirty-path cost must not move the #5992 win into normalization scans. | dirty path benchmark/assertion | matrixed + dossiered | related matrix only |
-| #2405 | performance-normalization-and-dirty-paths | Related | Command-scoped normalization pressure is represented by dirty-window metadata, not fixed by this op alone. | normalization scope proof | matrixed + dossiered | related matrix only |
-| #2355 | selection-normalization-and-commit-boundaries | Related | Old selection-normalization pressure becomes newSelection/ref-mapping proof, not a new public normalizer. | selection ref tests | matrixed + dossiered | related matrix only |
-| #5811 | normalization-and-custom-schema-conflicts | Related | Range replace must not reintroduce broad normalization loops; exact custom wrap/unwrap loop is not claimed. | normalization regression | ledger already synced | related matrix only |
-| #3534 | history-and-undo-selection-state | Related | Undo selection state must be proven for the new inverse; exact historical repro stays separate. | history inverse test | already matrixed | related matrix only |
-| #3551 | history-and-undo-selection-state | Related | Move-node undo is not touched, but this op must not weaken history transform invariants. | history/collab tests | already matrixed | related matrix only |
-| #3857 | clipboard-structural-cut-delete | Improves | Existing block-void cut proof remains relevant; #5992 closure must not regress selected block cut. | existing clipboard contract + browser row | already matrixed | unchanged |
-| #3801 | clipboard-structural-cut-delete | Improves | Existing list-cut proof remains relevant; exact richtext browser closure is still not claimed. | existing clipboard contract + browser row | already matrixed | unchanged |
-| #4104 | inline-void-and-void-selection | Related | Inline-void copy/cut is DOM/void selection pressure, not solved by child-range delete. Keep it as a regression row if cut code moves. | inline-void cut proof | matrixed + dossiered | related matrix only |
-| #4857 | clipboard-fragment-trust-boundary | Improves | Foreign HTML select-all paste remains clipboard import pressure, not #5992 closure. | existing clipboard boundary proof | already matrixed | unchanged |
-| #5089 | clipboard-fragment-insertion-shape | Related | Multi-block paste shape may benefit from `replace_children`, but exact middle-paragraph paste semantics are separate. | paste shape tests | matrixed + dossiered | related matrix only |
-| #5630 | select-all-paste-delete-void-tail | Related | Select-all paste/delete around block voids is delete-range pressure, but exact unhang/void-tail repro needs its own browser proof. | select-all paste/delete browser row | matrixed + dossiered | related matrix only |
+| Issue | Cluster                                              | Claim                                   | Why                                                                                                                                              | Proof route                               | Live ledger sync                                | PR line                                 |
+| ----- | ---------------------------------------------------- | --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------- | ----------------------------------------------- | --------------------------------------- |
+| #5992 | large-document-edit-performance                      | Improves                                | Current benchmark improved from the old multi-second owner, but 50,000-block cut is still `621.26ms` / `511.47ms`.                               | benchmark                                 | `open-issues-ledger.md` says `improves-claimed` | keep related matrix until target passes |
+| #5945 | large-document-edit-performance                      | Improves                                | Paste path is relevant but already handled by the previous plan.                                                                                 | benchmark + browser row                   | already synced                                  | unchanged                               |
+| #4056 | large-document-edit-performance                      | Improves                                | Populated paste/copy is relevant but already handled by the previous plan.                                                                       | benchmark                                 | already synced                                  | unchanged                               |
+| #6038 | transactionality-and-batch-engine                    | Improves                                | Range replacement advances batch-aware core execution but does not prove the issue's broader repeated-update benchmark threshold.                | transaction benchmark + new op benchmark  | already matrixed                                | related matrix only                     |
+| #2288 | operation-granularity-and-range-steps                | Related / improves after implementation | This is the strongest architecture support: it explicitly asks for range-capable operations because `selectAll` + delete explodes into many ops. | op contract tests + benchmark             | matrixed + dossiered                            | related matrix only                     |
+| #1770 | collaboration-op-metadata-and-transaction-boundaries | Related                                 | A range op reduces operation overhead, but it does not solve general operation-composition utilities.                                            | collab replay/lowering                    | matrixed + dossiered                            | related matrix only                     |
+| #2500 | select-all-delete-and-structural-reset               | Related                                 | `replace_children` gives the right whole-child delete primitive, but exact list-heavy rich-text browser closure is separate.                     | structural delete/browser row             | matrixed + dossiered                            | related matrix only                     |
+| #2195 | performance-normalization-and-dirty-paths            | Related                                 | Dirty-path cost must not move the #5992 win into normalization scans.                                                                            | dirty path benchmark/assertion            | matrixed + dossiered                            | related matrix only                     |
+| #2405 | performance-normalization-and-dirty-paths            | Related                                 | Command-scoped normalization pressure is represented by dirty-window metadata, not fixed by this op alone.                                       | normalization scope proof                 | matrixed + dossiered                            | related matrix only                     |
+| #2355 | selection-normalization-and-commit-boundaries        | Related                                 | Old selection-normalization pressure becomes newSelection/ref-mapping proof, not a new public normalizer.                                        | selection ref tests                       | matrixed + dossiered                            | related matrix only                     |
+| #5811 | normalization-and-custom-schema-conflicts            | Related                                 | Range replace must not reintroduce broad normalization loops; exact custom wrap/unwrap loop is not claimed.                                      | normalization regression                  | ledger already synced                           | related matrix only                     |
+| #3534 | history-and-undo-selection-state                     | Related                                 | Undo selection state must be proven for the new inverse; exact historical repro stays separate.                                                  | history inverse test                      | already matrixed                                | related matrix only                     |
+| #3551 | history-and-undo-selection-state                     | Related                                 | Move-node undo is not touched, but this op must not weaken history transform invariants.                                                         | history/collab tests                      | already matrixed                                | related matrix only                     |
+| #3857 | clipboard-structural-cut-delete                      | Improves                                | Existing block-void cut proof remains relevant; #5992 closure must not regress selected block cut.                                               | existing clipboard contract + browser row | already matrixed                                | unchanged                               |
+| #3801 | clipboard-structural-cut-delete                      | Improves                                | Existing list-cut proof remains relevant; exact richtext browser closure is still not claimed.                                                   | existing clipboard contract + browser row | already matrixed                                | unchanged                               |
+| #4104 | inline-void-and-void-selection                       | Related                                 | Inline-void copy/cut is DOM/void selection pressure, not solved by child-range delete. Keep it as a regression row if cut code moves.            | inline-void cut proof                     | matrixed + dossiered                            | related matrix only                     |
+| #4857 | clipboard-fragment-trust-boundary                    | Improves                                | Foreign HTML select-all paste remains clipboard import pressure, not #5992 closure.                                                              | existing clipboard boundary proof         | already matrixed                                | unchanged                               |
+| #5089 | clipboard-fragment-insertion-shape                   | Related                                 | Multi-block paste shape may benefit from `replace_children`, but exact middle-paragraph paste semantics are separate.                            | paste shape tests                         | matrixed + dossiered                            | related matrix only                     |
+| #5630 | select-all-paste-delete-void-tail                    | Related                                 | Select-all paste/delete around block voids is delete-range pressure, but exact unhang/void-tail repro needs its own browser proof.               | select-all paste/delete browser row       | matrixed + dossiered                            | related matrix only                     |
 
 PR description:
 
@@ -394,19 +394,19 @@ PR description:
 
 ## 13. Legacy Regression Proof Matrix
 
-| Behavior | Required proof |
-| --- | --- |
-| Deleting one selected top-level block | one operation plus correct selection |
-| Deleting two selected top-level blocks in 50,000-block document | accepted latency target, one logical replace, correct children |
-| Cutting selected top-level blocks | copied fragment correct, deleted model correct, one history item |
-| Delete at document start/end | selection lands at valid neighbor or editor start/end |
-| Delete full document | preserves required default document policy or explicit replace behavior |
-| Delete nested list range | existing list deletion tests remain green or explicitly fall back |
-| Delete inline/void range | existing inline/void behavior remains green |
-| Undo/redo | inverse restores removed children and selection |
-| Path refs / point refs / range refs | refs inside removed range null; refs after range shift by delta |
-| Collaboration replay | local and remote replay converge |
-| Dirty paths/runtime ids | parent and affected top-level range invalidate, not whole document unless needed |
+| Behavior                                                        | Required proof                                                                   |
+| --------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| Deleting one selected top-level block                           | one operation plus correct selection                                             |
+| Deleting two selected top-level blocks in 50,000-block document | accepted latency target, one logical replace, correct children                   |
+| Cutting selected top-level blocks                               | copied fragment correct, deleted model correct, one history item                 |
+| Delete at document start/end                                    | selection lands at valid neighbor or editor start/end                            |
+| Delete full document                                            | preserves required default document policy or explicit replace behavior          |
+| Delete nested list range                                        | existing list deletion tests remain green or explicitly fall back                |
+| Delete inline/void range                                        | existing inline/void behavior remains green                                      |
+| Undo/redo                                                       | inverse restores removed children and selection                                  |
+| Path refs / point refs / range refs                             | refs inside removed range null; refs after range shift by delta                  |
+| Collaboration replay                                            | local and remote replay converge                                                 |
+| Dirty paths/runtime ids                                         | parent and affected top-level range invalidate, not whole document unless needed |
 
 ## 14. Browser Stress / Parity Strategy
 
@@ -436,14 +436,14 @@ Accepted #5992 threshold:
 
 ## 15. Applicable Implementation-Skill Review Matrix
 
-| Lens | Applicability | Result |
-| --- | --- | --- |
-| `performance` | applied | Need benchmark target, cohort, and issue-size #5992 gate. |
-| `performance-oracle` | applied through plan requirements | Operation payload size, path transforms, snapshot/index cost, and allocation behavior are explicit gates. |
-| `tdd` | applied through execution plan | Implementation starts with a failing op contract and benchmark target before changing delete lowering. |
-| `vercel-react-best-practices` | skipped for current pass | No React surface yet; re-enable if commit dirtiness changes React subscriptions. |
-| `build-web-apps:shadcn` | skipped | No UI. |
-| `react-useeffect` | skipped | No effects. |
+| Lens                          | Applicability                     | Result                                                                                                    |
+| ----------------------------- | --------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `performance`                 | applied                           | Need benchmark target, cohort, and issue-size #5992 gate.                                                 |
+| `performance-oracle`          | applied through plan requirements | Operation payload size, path transforms, snapshot/index cost, and allocation behavior are explicit gates. |
+| `tdd`                         | applied through execution plan    | Implementation starts with a failing op contract and benchmark target before changing delete lowering.    |
+| `vercel-react-best-practices` | skipped for current pass          | No React surface yet; re-enable if commit dirtiness changes React subscriptions.                          |
+| `build-web-apps:shadcn`       | skipped                           | No UI.                                                                                                    |
+| `react-useeffect`             | skipped                           | No effects.                                                                                               |
 
 ## 16. High-Risk Deliberate-Mode Pre-Mortem
 
@@ -490,21 +490,21 @@ Rejected:
 
 ## 18. Slate Maintainer Objection Ledger
 
-| Change | Likely objection | Steelman antithesis | Tradeoff | Answer | Evidence | Rejected alternative | Migration answer | Proof | Verdict |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Add/generalize `replace_children` operation | "Slate ops are supposed to be small and primitive." | Many small ops are easier to transform and reason about. | Adds one richer structural op. | The issue is exactly that primitive loops become pathological at scale; ProseMirror-style range replacement is the right primitive for composite child changes. | #5992 benchmark, #2288, and current `remove_node` loop. | keep `remove_node` loop | transforms still expose `tx.text.delete`; app code unchanged | op transform/inverse/history/collab tests | keep |
-| Replace or demote `replace_fragment` | "You just added it; why churn?" | Keeping a working op avoids churn. | Rename/generalization touches tests and docs. | The proof was right but the name/payload are too paste-shaped for delete/cut. Better to hard-cut before public freeze. | operation source and #5992 payload concern. | root-level `replace_fragment` | no app API migration if operation stays internal/advanced | operation surface tests | keep |
-| Do not call it `splice_children` | "Splice is the exact array primitive." | Implementation vocabulary can be precise. | `replace_children` is less JS-array-specific. | Slate operation names describe model actions (`insert_node`, `remove_node`, `set_node`, `split_node`, `merge_node`), not raw JS APIs. `replace_children` is clearer for undo/collab payloads. | existing Slate op naming and `tx.value.replace` naming. | `splice_children` | no app API migration | type/API review | keep |
+| Change                                      | Likely objection                                    | Steelman antithesis                                      | Tradeoff                                      | Answer                                                                                                                                                                                        | Evidence                                                | Rejected alternative          | Migration answer                                             | Proof                                     | Verdict |
+| ------------------------------------------- | --------------------------------------------------- | -------------------------------------------------------- | --------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- | ----------------------------- | ------------------------------------------------------------ | ----------------------------------------- | ------- |
+| Add/generalize `replace_children` operation | "Slate ops are supposed to be small and primitive." | Many small ops are easier to transform and reason about. | Adds one richer structural op.                | The issue is exactly that primitive loops become pathological at scale; ProseMirror-style range replacement is the right primitive for composite child changes.                               | #5992 benchmark, #2288, and current `remove_node` loop. | keep `remove_node` loop       | transforms still expose `tx.text.delete`; app code unchanged | op transform/inverse/history/collab tests | keep    |
+| Replace or demote `replace_fragment`        | "You just added it; why churn?"                     | Keeping a working op avoids churn.                       | Rename/generalization touches tests and docs. | The proof was right but the name/payload are too paste-shaped for delete/cut. Better to hard-cut before public freeze.                                                                        | operation source and #5992 payload concern.             | root-level `replace_fragment` | no app API migration if operation stays internal/advanced    | operation surface tests                   | keep    |
+| Do not call it `splice_children`            | "Splice is the exact array primitive."              | Implementation vocabulary can be precise.                | `replace_children` is less JS-array-specific. | Slate operation names describe model actions (`insert_node`, `remove_node`, `set_node`, `split_node`, `merge_node`), not raw JS APIs. `replace_children` is clearer for undo/collab payloads. | existing Slate op naming and `tx.value.replace` naming. | `splice_children`             | no app API migration                                         | type/API review                           | keep    |
 
 ## 19. Pass Schedule And Pass-State Ledger
 
-| Pass | Status | Evidence added | Plan delta | Open issues | Next owner |
-| --- | --- | --- | --- | --- | --- |
-| Current-state read and initial score | complete | live source for `Node.fragment`, delete loop, operations, benchmark; previous paste completion state | selected #5992 range-replace owner | closed by later passes | related-issue-and-ecosystem-hardening |
-| Related issue and ecosystem hardening | complete | gitcrawl threads/neighbors; live ledgers; #2288/#1770/#2500/#2195/#2405/#2355 and cut/paste neighbors | expanded issue map and non-claim decisions | none for planning | closure-score |
-| Decision brief pressure pass | complete | maintainer objection rows accepted | accepted `replace_children`, rejected `splice_children` and final `replace_fragment` | none for planning | closure-score |
-| High-risk deliberate pass | complete | pre-mortem plus proof matrix | yjs/collab and benchmark gates explicit | none for planning | closure-score |
-| Closure score | complete | score `0.92` | plan ready for `ralph` execution | implementation still unstarted | ralph |
+| Pass                                  | Status   | Evidence added                                                                                        | Plan delta                                                                           | Open issues                    | Next owner                            |
+| ------------------------------------- | -------- | ----------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ | ------------------------------ | ------------------------------------- |
+| Current-state read and initial score  | complete | live source for `Node.fragment`, delete loop, operations, benchmark; previous paste completion state  | selected #5992 range-replace owner                                                   | closed by later passes         | related-issue-and-ecosystem-hardening |
+| Related issue and ecosystem hardening | complete | gitcrawl threads/neighbors; live ledgers; #2288/#1770/#2500/#2195/#2405/#2355 and cut/paste neighbors | expanded issue map and non-claim decisions                                           | none for planning              | closure-score                         |
+| Decision brief pressure pass          | complete | maintainer objection rows accepted                                                                    | accepted `replace_children`, rejected `splice_children` and final `replace_fragment` | none for planning              | closure-score                         |
+| High-risk deliberate pass             | complete | pre-mortem plus proof matrix                                                                          | yjs/collab and benchmark gates explicit                                              | none for planning              | closure-score                         |
+| Closure score                         | complete | score `0.92`                                                                                          | plan ready for `ralph` execution                                                     | implementation still unstarted | ralph                                 |
 
 ## 20. Plan Deltas From This Review
 

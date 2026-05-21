@@ -27,14 +27,14 @@ Legacy pressure:
 
 Current live owners:
 
-- `../slate-v2/packages/slate-dom/src/index.ts`
-- `../slate-v2/packages/slate-dom/src/plugin/dom-editor.ts`
-- `../slate-v2/packages/slate-dom/src/plugin/with-dom.ts`
-- `../slate-v2/packages/slate-dom/src/utils/**`
-- `../slate-v2/packages/slate-dom/test/bridge.ts`
-- `../slate-v2/packages/slate-dom/test/bridge.test.ts`
-- `../slate-v2/packages/slate-dom/test/clipboard-boundary.ts`
-- `../slate-v2/packages/slate-dom/test/clipboard-boundary.test.ts`
+- `.tmp/slate-v2/packages/slate-dom/src/index.ts`
+- `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts`
+- `.tmp/slate-v2/packages/slate-dom/src/plugin/with-dom.ts`
+- `.tmp/slate-v2/packages/slate-dom/src/utils/**`
+- `.tmp/slate-v2/packages/slate-dom/test/bridge.ts`
+- `.tmp/slate-v2/packages/slate-dom/test/bridge.test.ts`
+- `.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts`
+- `.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.test.ts`
 
 ## `keep-now`
 
@@ -45,8 +45,8 @@ Current live owners:
 
 Immediate current proof owners to restore or keep alive:
 
-- `../slate-v2/packages/slate-dom/test/bridge.ts`
-- `../slate-v2/packages/slate-dom/test/clipboard-boundary.ts`
+- `.tmp/slate-v2/packages/slate-dom/test/bridge.ts`
+- `.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts`
 
 Current read:
 

@@ -92,16 +92,16 @@ Keep the public shape:
 
 ```ts
 editor.read(() => {
-  editor.getSelection()
-  editor.getChildren()
-  editor.getMarks()
-})
+  editor.getSelection();
+  editor.getChildren();
+  editor.getMarks();
+});
 
 editor.update(() => {
-  editor.unwrapNodes({ match: isList })
-  editor.setNodes({ type: 'list-item' })
-  editor.wrapNodes({ type: 'bulleted-list', children: [] })
-})
+  editor.unwrapNodes({ match: isList });
+  editor.setNodes({ type: "list-item" });
+  editor.wrapNodes({ type: "bulleted-list", children: [] });
+});
 ```
 
 Keep primitive editor methods flexible:
@@ -197,16 +197,16 @@ Required frame shape:
 
 ```ts
 type EditableEventFrame = {
-  id: number
-  active: boolean
-  eventFamily: EditableEventFamily
-  focusOwner: EditableFocusOwner
-  inputIntent: InputIntent | null
-  modelSelectionBefore: Selection | null
-  selectionSource: EditableSelectionSource
-  startedAt: number
-  targetOwner: EditableTargetOwner
-}
+  id: number;
+  active: boolean;
+  eventFamily: EditableEventFamily;
+  focusOwner: EditableFocusOwner;
+  inputIntent: InputIntent | null;
+  modelSelectionBefore: Selection | null;
+  selectionSource: EditableSelectionSource;
+  startedAt: number;
+  targetOwner: EditableTargetOwner;
+};
 ```
 
 Rules:
@@ -478,11 +478,11 @@ Purpose:
 
 Files:
 
-- `../slate-v2/packages/slate/test/read-update-contract.ts`
-- `../slate-v2/packages/slate/test/primitive-method-runtime-contract.ts`
-- `../slate-v2/packages/slate/test/transaction-target-runtime-contract.ts`
-- `../slate-v2/packages/slate/test/commit-metadata-contract.ts`
-- `../slate-v2/packages/slate/test/bookmark-contract.ts`
+- `.tmp/slate-v2/packages/slate/test/read-update-contract.ts`
+- `.tmp/slate-v2/packages/slate/test/primitive-method-runtime-contract.ts`
+- `.tmp/slate-v2/packages/slate/test/transaction-target-runtime-contract.ts`
+- `.tmp/slate-v2/packages/slate/test/commit-metadata-contract.ts`
+- `.tmp/slate-v2/packages/slate/test/bookmark-contract.ts`
 
 ### Layer 2: React Runtime Contracts
 
@@ -496,12 +496,12 @@ Purpose:
 
 Files:
 
-- `../slate-v2/packages/slate-react/test/selection-conformance-kernel-contract.ts`
-- `../slate-v2/packages/slate-react/test/caret-repair-contract.ts`
-- `../slate-v2/packages/slate-react/test/target-runtime-contract.tsx`
-- `../slate-v2/packages/slate-react/test/dom-text-sync-contract.ts`
-- `../slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx`
-- `../slate-v2/packages/slate-react/test/large-doc-and-scroll.tsx`
+- `.tmp/slate-v2/packages/slate-react/test/selection-conformance-kernel-contract.ts`
+- `.tmp/slate-v2/packages/slate-react/test/caret-repair-contract.ts`
+- `.tmp/slate-v2/packages/slate-react/test/target-runtime-contract.tsx`
+- `.tmp/slate-v2/packages/slate-react/test/dom-text-sync-contract.ts`
+- `.tmp/slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx`
+- `.tmp/slate-v2/packages/slate-react/test/large-doc-and-scroll.tsx`
 
 ### Layer 3: Browser Gauntlets
 
@@ -513,8 +513,8 @@ Purpose:
 
 Files:
 
-- `../slate-v2/packages/slate-browser/src/playwright/**`
-- `../slate-v2/playwright/integration/examples/**`
+- `.tmp/slate-v2/packages/slate-browser/src/playwright/**`
+- `.tmp/slate-v2/playwright/integration/examples/**`
 
 Every row asserts:
 
@@ -2229,7 +2229,7 @@ Next execution owner:
 - Remaining Batch A, Tracer 1
 - add the warm no-refresh richtext row first:
   `select word -> toolbar bold on -> toolbar bold off -> ArrowLeft/Right ->
-  repeat without reload -> follow-up type`
+repeat without reload -> follow-up type`
 - prove it records event frame ids, repair ids, selectionchange origin, model
   selection, DOM selection, focus owner, and follow-up typing
 - if it passes, strengthen it with jitter/repeat until it can catch stale repair
@@ -2290,7 +2290,7 @@ Actions:
 - added the richtext warm no-refresh row in
   `/Users/zbeyens/git/slate-v2/playwright/integration/examples/richtext.test.ts`
   for `select editable -> toolbar bold on -> bold off -> ArrowRight ->
-  ArrowLeft -> ArrowRight -> type`
+ArrowLeft -> ArrowRight -> type`
 - asserted selected text after toolbar toggles instead of stale exact text-node
   paths, because bold toggling splits `editable` into `[0,1]`
 - asserted model selection, DOM selection, visible DOM text, DOM caret, focus

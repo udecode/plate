@@ -37,31 +37,31 @@ implementation files were edited by this Slate Ralplan pass.
 
 ## Live Source Evidence
 
-- Current public export: `../slate-v2/packages/slate-react/src/index.ts:91`
+- Current public export: `.tmp/slate-v2/packages/slate-react/src/index.ts:91`
   exports `useElement` and `useElementIf` from `./hooks/use-element`.
 - Current implementation:
-  `../slate-v2/packages/slate-react/src/hooks/use-element.ts:10` throws outside
+  `.tmp/slate-v2/packages/slate-react/src/hooks/use-element.ts:10` throws outside
   render-element context, while `:25` returns `useContext(ElementContext)` and
   may be `null`.
 - Current only source call site:
-  `../slate-v2/packages/slate-react/src/hooks/use-element-selected.ts:8` imports
+  `.tmp/slate-v2/packages/slate-react/src/hooks/use-element-selected.ts:8` imports
   `useElementIf`; `:10-15` uses it only to support either context element or an
   explicit path.
 - Current examples use the real public hook, not `useElementIf`:
-  `../slate-v2/site/examples/ts/huge-document.tsx:220`,
-  `../slate-v2/site/examples/ts/inlines.tsx:280`,
-  `../slate-v2/site/examples/ts/paste-html.tsx:193`, and
-  `../slate-v2/site/examples/ts/mentions.tsx:254` use
+  `.tmp/slate-v2/site/examples/ts/huge-document.tsx:220`,
+  `.tmp/slate-v2/site/examples/ts/inlines.tsx:280`,
+  `.tmp/slate-v2/site/examples/ts/paste-html.tsx:193`, and
+  `.tmp/slate-v2/site/examples/ts/mentions.tsx:254` use
   `useElementSelected`.
 - Current selector backbone:
-  `../slate-v2/packages/slate-react/src/hooks/use-node-selector.tsx:110-116`
+  `.tmp/slate-v2/packages/slate-react/src/hooks/use-node-selector.tsx:110-116`
   exposes selector-first `useNodeSelector`, and `:129-144` exposes
   `useTextSelector`.
 - Current state selector:
-  `../slate-v2/packages/slate-react/src/hooks/use-editor-selector.tsx:153-187`
+  `.tmp/slate-v2/packages/slate-react/src/hooks/use-editor-selector.tsx:153-187`
   exposes `useEditorState(selector, options)`.
 - Current proof for the adjacent issue lane:
-  `../slate-v2/packages/slate-react/test/use-element-selected.test.tsx:30-230`
+  `.tmp/slate-v2/packages/slate-react/test/use-element-selected.test.tsx:30-230`
   proves `useElementSelected` behavior and selected self-removal safety.
 - Current issue accounting:
   `docs/slate-v2/ledgers/issue-coverage-matrix.md:73` and `:200` already claim
@@ -152,19 +152,19 @@ instead, but that is the weaker call.
 
 ## Ecosystem Strategy Synthesis
 
-| System | Source | Mechanism | Slate target | Verdict |
-| --- | --- | --- | --- | --- |
-| React | hook model and Vercel React rules applied in this pass | hooks should expose stable intent and avoid extra subscriptions/nullable branches in hot render surfaces | strict context hook plus selector hooks; no nullable public context escape hatch | agree |
-| Tiptap | `docs/research/sources/editor-architecture/tiptap-extension-command-react-dx.md:71-90` | product DX gives composable React helpers, but selector hooks carry rerender pressure | keep purpose-built hooks and selector hooks; do not expose accidental context plumbing | partial |
-| Slate v2 compiled verdict | `docs/research/decisions/slate-v2-architecture-verdict-after-human-stress-sweep.md:101-108` | public selector hooks stay model-truth-only; runtime-specific shortcuts stay internal | cut public `useElementIf`; keep internal optional read only if needed | agree |
+| System                    | Source                                                                                      | Mechanism                                                                                                | Slate target                                                                           | Verdict |
+| ------------------------- | ------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- | ------- |
+| React                     | hook model and Vercel React rules applied in this pass                                      | hooks should expose stable intent and avoid extra subscriptions/nullable branches in hot render surfaces | strict context hook plus selector hooks; no nullable public context escape hatch       | agree   |
+| Tiptap                    | `docs/research/sources/editor-architecture/tiptap-extension-command-react-dx.md:71-90`      | product DX gives composable React helpers, but selector hooks carry rerender pressure                    | keep purpose-built hooks and selector hooks; do not expose accidental context plumbing | partial |
+| Slate v2 compiled verdict | `docs/research/decisions/slate-v2-architecture-verdict-after-human-stress-sweep.md:101-108` | public selector hooks stay model-truth-only; runtime-specific shortcuts stay internal                    | cut public `useElementIf`; keep internal optional read only if needed                  | agree   |
 
 ## Issue Accounting
 
 No fixed issue claim changes.
 
-| Issue | Cluster | Claim | Why | Proof route | V2 sync ledger | PR line |
-| --- | --- | --- | --- | --- | --- | --- |
-| #6053 | singleton-react-runtime | Preserved fixed claim | `useElementSelected()` self-removal proof is the issue-facing hook behavior; `useElementIf` is only an internal support detail. | `../slate-v2/packages/slate-react/test/use-element-selected.test.tsx`; `docs/slate-v2/ledgers/issue-coverage-matrix.md:73` and `:200` | unchanged: `docs/slate-issues/gitcrawl-v2-sync-ledger.md:18` remains `fixes-claimed` | unchanged: `Fixes #6053` stays about `useElementSelected`, not `useElementIf` |
+| Issue | Cluster                 | Claim                 | Why                                                                                                                             | Proof route                                                                                                                             | V2 sync ledger                                                                       | PR line                                                                       |
+| ----- | ----------------------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------- |
+| #6053 | singleton-react-runtime | Preserved fixed claim | `useElementSelected()` self-removal proof is the issue-facing hook behavior; `useElementIf` is only an internal support detail. | `.tmp/slate-v2/packages/slate-react/test/use-element-selected.test.tsx`; `docs/slate-v2/ledgers/issue-coverage-matrix.md:73` and `:200` | unchanged: `docs/slate-issues/gitcrawl-v2-sync-ledger.md:18` remains `fixes-claimed` | unchanged: `Fixes #6053` stays about `useElementSelected`, not `useElementIf` |
 
 ClawSweeper status: skipped. Existing ledgers already cover the only touched
 issue-facing surface, `useElementSelected` / `#6053`; this plan makes no new
@@ -199,23 +199,23 @@ already names `useElementSelected(path?)` and does not mention `useElementIf`.
 
 Blast radius:
 
-- package export: `../slate-v2/packages/slate-react/src/index.ts`
-- hook file: `../slate-v2/packages/slate-react/src/hooks/use-element.ts`
-- internal user: `../slate-v2/packages/slate-react/src/hooks/use-element-selected.ts`
-- proof: `../slate-v2/packages/slate-react/test/use-element-selected.test.tsx`
+- package export: `.tmp/slate-v2/packages/slate-react/src/index.ts`
+- hook file: `.tmp/slate-v2/packages/slate-react/src/hooks/use-element.ts`
+- internal user: `.tmp/slate-v2/packages/slate-react/src/hooks/use-element-selected.ts`
+- proof: `.tmp/slate-v2/packages/slate-react/test/use-element-selected.test.tsx`
 - docs/examples: only if a search finds public docs/examples mentioning
   `useElementIf`
 
 ## Slate Maintainer Objection Ledger
 
-| Change | Likely objection | Steelman antithesis | Tradeoff tension | Rejected alternative | Migration answer | Proof required | Verdict |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| Cut public `useElementIf` | "This was just added upstream; why break users?" | A nullable context hook is convenient for custom wrapper components that may mount inside or outside `renderElement`. | Hard cut breaks imports; users must choose a stricter shape. | Deprecation alias, because it keeps the weird name in docs and autocomplete. | `useElement()` inside render-element; `useElementSelected(path?)` for selected state; selector hooks or explicit props outside context. | `rg useElementIf`; `use-element-selected` tests; `slate-react` typecheck; package export/docs scan. | keep |
+| Change                    | Likely objection                                 | Steelman antithesis                                                                                                   | Tradeoff tension                                             | Rejected alternative                                                         | Migration answer                                                                                                                        | Proof required                                                                                      | Verdict |
+| ------------------------- | ------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ | ---------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- | ------- |
+| Cut public `useElementIf` | "This was just added upstream; why break users?" | A nullable context hook is convenient for custom wrapper components that may mount inside or outside `renderElement`. | Hard cut breaks imports; users must choose a stricter shape. | Deprecation alias, because it keeps the weird name in docs and autocomplete. | `useElement()` inside render-element; `useElementSelected(path?)` for selected state; selector hooks or explicit props outside context. | `rg useElementIf`; `use-element-selected` tests; `slate-react` typecheck; package export/docs scan. | keep    |
 
 ## Implementation Phases For Ralph
 
 1. Remove `useElementIf` from
-   `../slate-v2/packages/slate-react/src/index.ts`.
+   `.tmp/slate-v2/packages/slate-react/src/index.ts`.
 2. Keep optional element context internal:
    - either inline `useContext(ElementContext)` in `useElementSelected`, or
    - rename the non-exported helper to `useOptionalElementContext`.
@@ -244,23 +244,23 @@ node tooling/scripts/completion-check.mjs
 
 ## Scorecard
 
-| Dimension | Score | Evidence |
-| --- | ---: | --- |
-| React 19.2 runtime performance | 0.93 | public nullable context hook cut; selector hooks remain the narrow subscription path |
-| Slate-close unopinionated DX | 0.95 | `useElement()` remains strict and literal; `useElementSelected(path?)` owns the selected-state case |
-| Plate and slate-yjs migration-backbone shape | 0.90 | no Plate product API added; no collab/data-model surface touched |
-| Regression-proof testing strategy | 0.92 | `useElementSelected` proof already covers the behavior; implementation gates preserve it |
-| Research evidence completeness | 0.92 | live source plus compiled selector-hook verdict and Tiptap React DX comparison |
-| shadcn-style composability and hook minimalism | 0.96 | removes one public accidental hook; keeps purpose-built composable hooks |
+| Dimension                                      | Score | Evidence                                                                                            |
+| ---------------------------------------------- | ----: | --------------------------------------------------------------------------------------------------- |
+| React 19.2 runtime performance                 |  0.93 | public nullable context hook cut; selector hooks remain the narrow subscription path                |
+| Slate-close unopinionated DX                   |  0.95 | `useElement()` remains strict and literal; `useElementSelected(path?)` owns the selected-state case |
+| Plate and slate-yjs migration-backbone shape   |  0.90 | no Plate product API added; no collab/data-model surface touched                                    |
+| Regression-proof testing strategy              |  0.92 | `useElementSelected` proof already covers the behavior; implementation gates preserve it            |
+| Research evidence completeness                 |  0.92 | live source plus compiled selector-hook verdict and Tiptap React DX comparison                      |
+| shadcn-style composability and hook minimalism |  0.96 | removes one public accidental hook; keeps purpose-built composable hooks                            |
 
 Total: `0.93`.
 
 ## Pass-State Ledger
 
-| Pass | Status | Evidence added | Plan delta | Open issues | Next owner |
-| --- | --- | --- | --- | --- | --- |
-| Focused public hook hard-cut review | complete | live `useElementIf` export/implementation/call-site scan, selector-hook source scan, #6053 ledger scan, `slate-react` typecheck | accepted hard cut, no alias, internal optional helper only | none for planning; implementation still belongs to `ralph` | user review, then `ralph` |
-| Ralph hard-cut execution | complete | removed public export; renamed internal helper to `useOptionalElementContext`; removed current docs mention; grep returned no current source/doc/dist matches; focused tests, typecheck, build, and lint passed | accepted hard cut executed; `#6053` accounting unchanged | none | none |
+| Pass                                | Status   | Evidence added                                                                                                                                                                                                  | Plan delta                                                 | Open issues                                                | Next owner                |
+| ----------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- | ---------------------------------------------------------- | ------------------------- |
+| Focused public hook hard-cut review | complete | live `useElementIf` export/implementation/call-site scan, selector-hook source scan, #6053 ledger scan, `slate-react` typecheck                                                                                 | accepted hard cut, no alias, internal optional helper only | none for planning; implementation still belongs to `ralph` | user review, then `ralph` |
+| Ralph hard-cut execution            | complete | removed public export; renamed internal helper to `useOptionalElementContext`; removed current docs mention; grep returned no current source/doc/dist matches; focused tests, typecheck, build, and lint passed | accepted hard cut executed; `#6053` accounting unchanged   | none                                                       | none                      |
 
 ## Completion Gates
 

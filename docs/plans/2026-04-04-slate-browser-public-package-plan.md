@@ -8,12 +8,12 @@ status: completed
 
 ## Goal
 
-Move `slate-browser` out of `support/` and into `../slate-v2/packages/` as a real
+Move `slate-browser` out of `support/` and into `.tmp/slate-v2/packages/` as a real
 workspace package with a public package shape.
 
 ## Repo Facts
 
-- `../slate-v2` only treats `packages/*` as workspace packages
+- `.tmp/slate-v2` only treats `packages/*` as workspace packages
 - root `build:rollup` manually enumerates each public package in
   `config/rollup/rollup.config.js`
 - `support/slate-browser` exists today as a nested npm island because it was
@@ -48,7 +48,7 @@ workspace package with a public package shape.
 
 ### 2026-04-04
 
-- copied the current implementation into `../slate-v2/packages/slate-browser`
+- copied the current implementation into `.tmp/slate-v2/packages/slate-browser`
 - added package metadata, build config, and package-local tests there
 - split the public API into:
   - top-level pure/browser exports

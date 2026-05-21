@@ -121,7 +121,7 @@ driver.
 
 - None. External research is unnecessary here because the authoritative
   evidence is the local draft corpus plus the sibling `../slate`,
-  `../slate-v2`, and `../slate-v2-draft` repos.
+  `.tmp/slate-v2`, and `.tmp/slate-v2-draft` repos.
 
 ## Key Technical Decisions
 
@@ -175,7 +175,7 @@ driver.
 
 ### Resolved During Planning
 
-- **Should implementation-source parity be the main driver for `packages/slate/src/**`?**
+- **Should implementation-source parity be the main driver for `packages/slate/src/**`?\*\*
   No. Test-backed contract parity is the driver.
 
 - **Should draft implementation shape be imported wholesale?**
@@ -240,6 +240,7 @@ Rule:
 **Dependencies:** None
 
 **Files:**
+
 - Modify: `docs/slate-v2/master-roadmap.md`
 - Modify: `docs/slate-v2/release-readiness-decision.md`
 - Modify: `docs/slate-v2/true-slate-rc-proof-ledger.md`
@@ -249,6 +250,7 @@ Rule:
 - Modify: `docs/slate-v2/references/live-shape-register.md`
 
 **Approach:**
+
 - Replace “classification before rewrite” wording with “classification before unjustified rewrite.”
 - Make “tests/contracts first, implementation second” the explicit rule for
   engine package work.
@@ -258,10 +260,12 @@ Rule:
   historical artifacts.
 
 **Patterns to follow:**
+
 - The draft exact ledgers’ explicit status vocabulary
 - The draft example parity matrix’s source/proof/open distinction
 
 **Verification:**
+
 - Live docs all describe the same decision order and no longer imply rewrite
   avoidance is a virtue by itself.
 
@@ -274,6 +278,7 @@ Rule:
 **Dependencies:** Unit 1
 
 **Files:**
+
 - Create: `docs/slate-v2/ledgers/slate-legacy-draft-contract-corpus.md`
 - Create: `docs/slate-v2/ledgers/slate-history-legacy-draft-contract-corpus.md`
 - Create: `docs/slate-v2/ledgers/slate-hyperscript-legacy-draft-contract-corpus.md`
@@ -283,6 +288,7 @@ Rule:
 - Modify: `docs/slate-v2/ledgers/example-parity-matrix.md`
 
 **Approach:**
+
 - For each package, merge:
   - legacy exact ledger rows
   - draft contract-owner rows
@@ -301,10 +307,12 @@ Rule:
   masquerade as product parity.
 
 **Patterns to follow:**
+
 - `docs/slate-v2-draft/ledgers/legacy-slate-test-files.md`
 - `docs/slate-v2-draft/ledgers/example-parity-matrix.md`
 
 **Verification:**
+
 - Every package has one merged corpus doc, and no future package work can
   claim parity without referencing its corpus row statuses.
 
@@ -317,22 +325,24 @@ Rule:
 **Dependencies:** Unit 2
 
 **Files:**
-- Modify: `../slate-v2/packages/slate/src/interfaces/editor.ts`
-- Modify: `../slate-v2/packages/slate/src/interfaces/node.ts`
-- Modify: `../slate-v2/packages/slate/src/interfaces/path.ts`
-- Modify: `../slate-v2/packages/slate/src/interfaces/path-ref.ts`
-- Modify: `../slate-v2/packages/slate/src/interfaces/point.ts`
-- Modify: `../slate-v2/packages/slate/src/interfaces/point-ref.ts`
-- Modify: `../slate-v2/packages/slate/src/interfaces/range.ts`
-- Modify: `../slate-v2/packages/slate/src/interfaces/range-ref.ts`
-- Create: `../slate-v2/packages/slate/test/query-contract.ts`
-- Create: `../slate-v2/packages/slate/test/legacy-editor-nodes-fixtures.ts`
-- Create: `../slate-v2/packages/slate/test/legacy-interfaces-fixtures.ts`
+
+- Modify: `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`
+- Modify: `.tmp/slate-v2/packages/slate/src/interfaces/node.ts`
+- Modify: `.tmp/slate-v2/packages/slate/src/interfaces/path.ts`
+- Modify: `.tmp/slate-v2/packages/slate/src/interfaces/path-ref.ts`
+- Modify: `.tmp/slate-v2/packages/slate/src/interfaces/point.ts`
+- Modify: `.tmp/slate-v2/packages/slate/src/interfaces/point-ref.ts`
+- Modify: `.tmp/slate-v2/packages/slate/src/interfaces/range.ts`
+- Modify: `.tmp/slate-v2/packages/slate/src/interfaces/range-ref.ts`
+- Create: `.tmp/slate-v2/packages/slate/test/query-contract.ts`
+- Create: `.tmp/slate-v2/packages/slate/test/legacy-editor-nodes-fixtures.ts`
+- Create: `.tmp/slate-v2/packages/slate/test/legacy-interfaces-fixtures.ts`
 - Modify: `docs/slate-v2/ledgers/slate-editor-api.md`
 - Modify: `docs/slate-v2/ledgers/slate-interfaces-api.md`
-- Modify: `../slate-v2/docs/api/nodes/editor.md`
+- Modify: `.tmp/slate-v2/docs/api/nodes/editor.md`
 
 **Approach:**
+
 - Start from kept `both` and `legacy-only keep-now` rows in the merged corpus.
 - Pull or preserve characterization rows first so current regressions go red
   before implementation changes.
@@ -344,11 +354,13 @@ Rule:
 **Execution note:** Characterization-first. Preserve or import failing contract rows before changing implementation.
 
 **Patterns to follow:**
-- `../slate-v2/packages/slate/test/query-contract.ts`
-- `../slate-v2/packages/slate/test/legacy-editor-nodes-fixtures.ts`
-- `../slate-v2/packages/slate/test/legacy-interfaces-fixtures.ts`
+
+- `.tmp/slate-v2/packages/slate/test/query-contract.ts`
+- `.tmp/slate-v2/packages/slate/test/legacy-editor-nodes-fixtures.ts`
+- `.tmp/slate-v2/packages/slate/test/legacy-interfaces-fixtures.ts`
 
 **Test scenarios:**
+
 - Happy path: legacy `Editor.before`, `Editor.after`, `Editor.next`,
   `Editor.previous`, `Editor.nodes`, `Editor.levels`, and `positions` rows
   still pass with the current public API names.
@@ -361,14 +373,17 @@ Rule:
   agree for every changed row family.
 
 **Verification:**
+
 - `slate` query/interface/ref rows marked `keep-now` are green and synced in
   code, tests, docs, and ledgers.
 
 Current progress:
+
 - restored and green:
-  - `../slate-v2/packages/slate/test/query-contract.ts`
-  - `../slate-v2/packages/slate/test/legacy-editor-nodes-fixtures.ts`
-  - `../slate-v2/packages/slate/test/legacy-interfaces-fixtures.ts`
+
+  - `.tmp/slate-v2/packages/slate/test/query-contract.ts`
+  - `.tmp/slate-v2/packages/slate/test/legacy-editor-nodes-fixtures.ts`
+  - `.tmp/slate-v2/packages/slate/test/legacy-interfaces-fixtures.ts`
 
 - [ ] **Unit 4: Recover `slate` Transform, Operation, Snapshot, and Transaction Surfaces from the Corpus**
 
@@ -379,25 +394,27 @@ Current progress:
 **Dependencies:** Unit 2
 
 **Files:**
-- Modify: `../slate-v2/packages/slate/src/interfaces/transforms/general.ts`
-- Modify: `../slate-v2/packages/slate/src/interfaces/transforms/node.ts`
-- Modify: `../slate-v2/packages/slate/src/interfaces/transforms/selection.ts`
-- Modify: `../slate-v2/packages/slate/src/interfaces/transforms/text.ts`
-- Modify: `../slate-v2/packages/slate/src/transforms-node/insert-nodes.ts`
-- Modify: `../slate-v2/packages/slate/src/transforms-node/set-nodes.ts`
-- Modify: `../slate-v2/packages/slate/src/transforms-node/split-nodes.ts`
-- Modify: `../slate-v2/packages/slate/src/transforms-text/delete-text.ts`
-- Modify: `../slate-v2/packages/slate/src/transforms-text/insert-fragment.ts`
-- Modify: `../slate-v2/packages/slate/src/core/apply.ts`
-- Modify: `../slate-v2/packages/slate/src/create-editor.ts`
-- Create: `../slate-v2/packages/slate/test/operations-contract.ts`
-- Create: `../slate-v2/packages/slate/test/snapshot-contract.ts`
-- Modify: `../slate-v2/packages/slate/test/accessor-transaction.test.ts`
-- Create: `../slate-v2/packages/slate/test/legacy-transforms-fixtures.ts`
+
+- Modify: `.tmp/slate-v2/packages/slate/src/interfaces/transforms/general.ts`
+- Modify: `.tmp/slate-v2/packages/slate/src/interfaces/transforms/node.ts`
+- Modify: `.tmp/slate-v2/packages/slate/src/interfaces/transforms/selection.ts`
+- Modify: `.tmp/slate-v2/packages/slate/src/interfaces/transforms/text.ts`
+- Modify: `.tmp/slate-v2/packages/slate/src/transforms-node/insert-nodes.ts`
+- Modify: `.tmp/slate-v2/packages/slate/src/transforms-node/set-nodes.ts`
+- Modify: `.tmp/slate-v2/packages/slate/src/transforms-node/split-nodes.ts`
+- Modify: `.tmp/slate-v2/packages/slate/src/transforms-text/delete-text.ts`
+- Modify: `.tmp/slate-v2/packages/slate/src/transforms-text/insert-fragment.ts`
+- Modify: `.tmp/slate-v2/packages/slate/src/core/apply.ts`
+- Modify: `.tmp/slate-v2/packages/slate/src/create-editor.ts`
+- Create: `.tmp/slate-v2/packages/slate/test/operations-contract.ts`
+- Create: `.tmp/slate-v2/packages/slate/test/snapshot-contract.ts`
+- Modify: `.tmp/slate-v2/packages/slate/test/accessor-transaction.test.ts`
+- Create: `.tmp/slate-v2/packages/slate/test/legacy-transforms-fixtures.ts`
 - Modify: `docs/slate-v2/ledgers/slate-transforms-api.md`
-- Modify: `../slate-v2/docs/api/transforms.md`
+- Modify: `.tmp/slate-v2/docs/api/transforms.md`
 
 **Approach:**
+
 - Use merged-corpus row status, not source similarity, to choose work.
 - Import or preserve legacy and draft transform/transaction rows as RED first.
 - Treat current engine internals as disposable if they block kept row coverage.
@@ -408,12 +425,14 @@ Current progress:
 **Execution note:** Test-first for feature-bearing rows; characterization-first for legacy transforms already represented in same-path fixtures.
 
 **Patterns to follow:**
-- `../slate-v2/packages/slate/test/legacy-transforms-fixtures.ts`
-- `../slate-v2/packages/slate/test/operations-contract.ts`
-- `../slate-v2/packages/slate/test/snapshot-contract.ts`
-- `../slate-v2/packages/slate/test/accessor-transaction.test.ts`
+
+- `.tmp/slate-v2/packages/slate/test/legacy-transforms-fixtures.ts`
+- `.tmp/slate-v2/packages/slate/test/operations-contract.ts`
+- `.tmp/slate-v2/packages/slate/test/snapshot-contract.ts`
+- `.tmp/slate-v2/packages/slate/test/accessor-transaction.test.ts`
 
 **Test scenarios:**
+
 - Happy path: kept legacy transform rows for `move`, `delete`, `select`,
   `setPoint`, `setSelection`, `insertNodes`, `setNodes`, `splitNodes`, and
   `insertFragment` stay green.
@@ -428,6 +447,7 @@ Current progress:
   and corpus/ledger status stay aligned for every changed family.
 
 **Verification:**
+
 - `slate` transform/operation/snapshot rows marked `keep-now` are green, and
   the implementation no longer depends on current underpowered helpers.
 
@@ -440,19 +460,21 @@ Current progress:
 **Dependencies:** Units 2, 3, 4
 
 **Files:**
-- Modify: `../slate-v2/packages/slate-history/src/index.ts`
-- Modify: `../slate-v2/packages/slate-history/src/history.ts`
-- Modify: `../slate-v2/packages/slate-history/src/history-editor.ts`
-- Modify: `../slate-v2/packages/slate-history/src/with-history.ts`
-- Modify: `../slate-v2/packages/slate-history/test/index.spec.ts`
-- Create: `../slate-v2/packages/slate-history/test/history-contract.ts`
-- Modify: `../slate-v2/packages/slate-hyperscript/src/index.ts`
-- Modify: `../slate-v2/packages/slate-hyperscript/src/hyperscript.ts`
-- Modify: `../slate-v2/packages/slate-hyperscript/src/creators.ts`
-- Modify: `../slate-v2/packages/slate-hyperscript/test/index.spec.ts`
+
+- Modify: `.tmp/slate-v2/packages/slate-history/src/index.ts`
+- Modify: `.tmp/slate-v2/packages/slate-history/src/history.ts`
+- Modify: `.tmp/slate-v2/packages/slate-history/src/history-editor.ts`
+- Modify: `.tmp/slate-v2/packages/slate-history/src/with-history.ts`
+- Modify: `.tmp/slate-v2/packages/slate-history/test/index.spec.ts`
+- Create: `.tmp/slate-v2/packages/slate-history/test/history-contract.ts`
+- Modify: `.tmp/slate-v2/packages/slate-hyperscript/src/index.ts`
+- Modify: `.tmp/slate-v2/packages/slate-hyperscript/src/hyperscript.ts`
+- Modify: `.tmp/slate-v2/packages/slate-hyperscript/src/creators.ts`
+- Modify: `.tmp/slate-v2/packages/slate-hyperscript/test/index.spec.ts`
 - Modify: `docs/slate-v2/ledgers/slate-history-api.md`
 
 **Approach:**
+
 - Build support-package work from `both`, `legacy-only keep-now`, and
   `draft-only keep-now` rows in their corpora.
 - For `slate-history`, keep legacy undo/redo semantics where they still belong,
@@ -464,10 +486,12 @@ Current progress:
 **Execution note:** Import characterization coverage before changing support-package source; do not patch support packages around unresolved `slate` drift.
 
 **Patterns to follow:**
-- `../slate-v2/packages/slate-history/test/index.spec.ts`
-- `../slate-v2/packages/slate-hyperscript/test/index.spec.ts`
+
+- `.tmp/slate-v2/packages/slate-history/test/index.spec.ts`
+- `.tmp/slate-v2/packages/slate-hyperscript/test/index.spec.ts`
 
 **Test scenarios:**
+
 - Happy path: legacy history rows for undo/redo, `History.isHistory`, and kept
   cursor/selection restore behavior pass.
 - Happy path: draft history rows around transaction-owned batches and undo unit
@@ -478,6 +502,7 @@ Current progress:
   keep matching the kept legacy and draft fixture rows.
 
 **Verification:**
+
 - Support packages no longer rely on stale assumptions about `slate` internals,
   and their kept rows are green under the merged corpus.
 
@@ -490,52 +515,54 @@ Current progress:
 **Dependencies:** Units 2, 3, 4, 5
 
 **Files:**
-- Modify: `../slate-v2/packages/slate-dom/src/index.ts`
-- Modify: `../slate-v2/packages/slate-dom/src/plugin/dom-editor.ts`
-- Modify: `../slate-v2/packages/slate-dom/src/plugin/with-dom.ts`
-- Create: `../slate-v2/packages/slate-dom/test/bridge.ts`
-- Create: `../slate-v2/packages/slate-dom/test/clipboard-boundary.ts`
-- Modify: `../slate-v2/packages/slate-react/src/index.ts`
-- Modify: `../slate-v2/packages/slate-react/src/plugin/react-editor.ts`
-- Modify: `../slate-v2/packages/slate-react/src/plugin/with-react.ts`
-- Modify: `../slate-v2/packages/slate-react/src/components/editable.tsx`
-- Modify: `../slate-v2/packages/slate-react/test/bun/editable.spec.tsx`
-- Modify: `../slate-v2/packages/slate-react/test/react-editor.test.tsx`
-- Modify: `../slate-v2/packages/slate-react/test/use-selected.test.tsx`
-- Modify: `../slate-v2/site/examples/ts/check-lists.tsx`
-- Modify: `../slate-v2/site/examples/ts/code-highlighting.tsx`
-- Modify: `../slate-v2/site/examples/ts/custom-placeholder.tsx`
-- Modify: `../slate-v2/site/examples/ts/editable-voids.tsx`
-- Modify: `../slate-v2/site/examples/ts/images.tsx`
-- Modify: `../slate-v2/site/examples/ts/markdown-preview.tsx`
-- Modify: `../slate-v2/site/examples/ts/markdown-shortcuts.tsx`
-- Modify: `../slate-v2/site/examples/ts/paste-html.tsx`
-- Modify: `../slate-v2/site/examples/ts/plaintext.tsx`
-- Modify: `../slate-v2/site/examples/ts/read-only.tsx`
-- Modify: `../slate-v2/site/examples/ts/richtext.tsx`
-- Modify: `../slate-v2/site/examples/ts/scroll-into-view.tsx`
-- Modify: `../slate-v2/site/examples/ts/shadow-dom.tsx`
-- Modify: `../slate-v2/site/examples/ts/styling.tsx`
-- Modify: `../slate-v2/site/examples/ts/tables.tsx`
-- Modify: `../slate-v2/playwright/integration/examples/check-lists.test.ts`
-- Modify: `../slate-v2/playwright/integration/examples/code-highlighting.test.ts`
-- Modify: `../slate-v2/playwright/integration/examples/custom-placeholder.test.ts`
-- Modify: `../slate-v2/playwright/integration/examples/editable-voids.test.ts`
-- Modify: `../slate-v2/playwright/integration/examples/images.test.ts`
-- Modify: `../slate-v2/playwright/integration/examples/markdown-preview.test.ts`
-- Modify: `../slate-v2/playwright/integration/examples/markdown-shortcuts.test.ts`
-- Modify: `../slate-v2/playwright/integration/examples/paste-html.test.ts`
-- Modify: `../slate-v2/playwright/integration/examples/plaintext.test.ts`
-- Modify: `../slate-v2/playwright/integration/examples/read-only.test.ts`
-- Modify: `../slate-v2/playwright/integration/examples/richtext.test.ts`
-- Modify: `../slate-v2/playwright/integration/examples/select.test.ts`
-- Modify: `../slate-v2/playwright/integration/examples/shadow-dom.test.ts`
-- Modify: `../slate-v2/playwright/integration/examples/styling.test.ts`
-- Modify: `../slate-v2/playwright/integration/examples/tables.test.ts`
+
+- Modify: `.tmp/slate-v2/packages/slate-dom/src/index.ts`
+- Modify: `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts`
+- Modify: `.tmp/slate-v2/packages/slate-dom/src/plugin/with-dom.ts`
+- Create: `.tmp/slate-v2/packages/slate-dom/test/bridge.ts`
+- Create: `.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts`
+- Modify: `.tmp/slate-v2/packages/slate-react/src/index.ts`
+- Modify: `.tmp/slate-v2/packages/slate-react/src/plugin/react-editor.ts`
+- Modify: `.tmp/slate-v2/packages/slate-react/src/plugin/with-react.ts`
+- Modify: `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
+- Modify: `.tmp/slate-v2/packages/slate-react/test/bun/editable.spec.tsx`
+- Modify: `.tmp/slate-v2/packages/slate-react/test/react-editor.test.tsx`
+- Modify: `.tmp/slate-v2/packages/slate-react/test/use-selected.test.tsx`
+- Modify: `.tmp/slate-v2/site/examples/ts/check-lists.tsx`
+- Modify: `.tmp/slate-v2/site/examples/ts/code-highlighting.tsx`
+- Modify: `.tmp/slate-v2/site/examples/ts/custom-placeholder.tsx`
+- Modify: `.tmp/slate-v2/site/examples/ts/editable-voids.tsx`
+- Modify: `.tmp/slate-v2/site/examples/ts/images.tsx`
+- Modify: `.tmp/slate-v2/site/examples/ts/markdown-preview.tsx`
+- Modify: `.tmp/slate-v2/site/examples/ts/markdown-shortcuts.tsx`
+- Modify: `.tmp/slate-v2/site/examples/ts/paste-html.tsx`
+- Modify: `.tmp/slate-v2/site/examples/ts/plaintext.tsx`
+- Modify: `.tmp/slate-v2/site/examples/ts/read-only.tsx`
+- Modify: `.tmp/slate-v2/site/examples/ts/richtext.tsx`
+- Modify: `.tmp/slate-v2/site/examples/ts/scroll-into-view.tsx`
+- Modify: `.tmp/slate-v2/site/examples/ts/shadow-dom.tsx`
+- Modify: `.tmp/slate-v2/site/examples/ts/styling.tsx`
+- Modify: `.tmp/slate-v2/site/examples/ts/tables.tsx`
+- Modify: `.tmp/slate-v2/playwright/integration/examples/check-lists.test.ts`
+- Modify: `.tmp/slate-v2/playwright/integration/examples/code-highlighting.test.ts`
+- Modify: `.tmp/slate-v2/playwright/integration/examples/custom-placeholder.test.ts`
+- Modify: `.tmp/slate-v2/playwright/integration/examples/editable-voids.test.ts`
+- Modify: `.tmp/slate-v2/playwright/integration/examples/images.test.ts`
+- Modify: `.tmp/slate-v2/playwright/integration/examples/markdown-preview.test.ts`
+- Modify: `.tmp/slate-v2/playwright/integration/examples/markdown-shortcuts.test.ts`
+- Modify: `.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts`
+- Modify: `.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts`
+- Modify: `.tmp/slate-v2/playwright/integration/examples/read-only.test.ts`
+- Modify: `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
+- Modify: `.tmp/slate-v2/playwright/integration/examples/select.test.ts`
+- Modify: `.tmp/slate-v2/playwright/integration/examples/shadow-dom.test.ts`
+- Modify: `.tmp/slate-v2/playwright/integration/examples/styling.test.ts`
+- Modify: `.tmp/slate-v2/playwright/integration/examples/tables.test.ts`
 - Modify: `docs/slate-v2/ledgers/example-parity-matrix.md`
 - Modify: `docs/slate-v2/ledgers/slate-react-api.md`
 
 **Approach:**
+
 - Keep same-path/source-close pressure high for examples and user-facing docs.
 - Use the merged corpus to classify each example row as:
   `recovered`, `mixed`, `extended`, `explicit-cut`, or `open`.
@@ -547,10 +574,12 @@ Current progress:
 **Execution note:** Characterization-first for examples and browser rows; same-path source recovery first, then browser proof, then docs/ledger sync.
 
 **Patterns to follow:**
+
 - `docs/slate-v2-draft/ledgers/example-parity-matrix.md`
 - current same-path example and Playwright file layout
 
 **Test scenarios:**
+
 - Happy path: same-path legacy examples and Playwright rows classified
   `keep-now` behave like legacy on the recovered current runtime.
 - Edge case: rewritten examples with draft-only intended behavior are labeled
@@ -561,6 +590,7 @@ Current progress:
   example matrix status all agree for each recovered family.
 
 **Verification:**
+
 - The example/browser lane becomes a real parity lane instead of a mixture of
   current-only green tests and vague source drift.
 
@@ -573,6 +603,7 @@ Current progress:
 **Dependencies:** Units 1 through 6
 
 **Files:**
+
 - Modify: `docs/slate-v2/master-roadmap.md`
 - Modify: `docs/slate-v2/release-readiness-decision.md`
 - Modify: `docs/slate-v2/true-slate-rc-proof-ledger.md`
@@ -581,6 +612,7 @@ Current progress:
 - Modify: `docs/slate-v2/overview.md`
 
 **Approach:**
+
 - Update the active claim only from completed merged-corpus rows.
 - Remove any remaining stale wording that overstates parity from helper
   presence, source similarity, or narrow browser proof.
@@ -588,9 +620,11 @@ Current progress:
   improvements.”
 
 **Patterns to follow:**
+
 - The strict owner separation in the current control docs
 
 **Verification:**
+
 - Roadmap, readiness, proof ledger, file ledger, and maintainer drift register
   all describe the same kept/cut/deferred truth.
 
@@ -617,13 +651,13 @@ Current progress:
 
 ## Risks & Dependencies
 
-| Risk | Mitigation |
-|------|------------|
+| Risk                                                            | Mitigation                                                                     |
+| --------------------------------------------------------------- | ------------------------------------------------------------------------------ |
 | The merged corpus becomes a dumping ground and stalls execution | Keep one corpus file per package, row statuses tight, and package order strict |
-| Draft-only rows silently widen the public claim | Require explicit `draft-only keep-now` classification before any code import |
-| Rewrite aversion leaves broken current internals in place | Make rewrites the default for `keep-now` rows that current code cannot satisfy |
-| Browser/example green rows are used to fake core closure again | Keep core contract tests and browser/example proof as separate required lanes |
-| Harness churn is mistaken for behavior parity | Separate harness-only rows from behavior rows in the corpus and ledgers |
+| Draft-only rows silently widen the public claim                 | Require explicit `draft-only keep-now` classification before any code import   |
+| Rewrite aversion leaves broken current internals in place       | Make rewrites the default for `keep-now` rows that current code cannot satisfy |
+| Browser/example green rows are used to fake core closure again  | Keep core contract tests and browser/example proof as separate required lanes  |
+| Harness churn is mistaken for behavior parity                   | Separate harness-only rows from behavior rows in the corpus and ledgers        |
 
 ## Documentation / Operational Notes
 

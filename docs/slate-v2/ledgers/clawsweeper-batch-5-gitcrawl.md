@@ -17,13 +17,13 @@ old issues are neighbors, not duplicates. `#3478` is external store / controlled
 updates, `#3497` is focus loss after unrelated parent state updates, and `#4001`
 is placeholder plus keyboard/composition DOM desync.
 
-| Issue | Decision         | Bucket           | Confidence | PR-description text                             |
-| ----- | ---------------- | ---------------- | ---------- | ----------------------------------------------- |
-| #6051 | cluster-synced   | v2-input-runtime | high       | none; detailed ledger only                      |
-| #6053 | fixes-claimed    | v2-react-runtime | high       | none; detailed ledger only                      |
-| #3478 | cluster-synced   | v2-react-runtime | high       | none; already represented by React runtime plan |
-| #4001 | cluster-synced   | v2-input-runtime | high       | none; already represented by input runtime plan |
-| #3497 | cluster-synced   | v2-react-runtime | high       | none; already represented by React runtime plan |
+| Issue | Decision       | Bucket           | Confidence | PR-description text                             |
+| ----- | -------------- | ---------------- | ---------- | ----------------------------------------------- |
+| #6051 | cluster-synced | v2-input-runtime | high       | none; detailed ledger only                      |
+| #6053 | fixes-claimed  | v2-react-runtime | high       | none; detailed ledger only                      |
+| #3478 | cluster-synced | v2-react-runtime | high       | none; already represented by React runtime plan |
+| #4001 | cluster-synced | v2-input-runtime | high       | none; already represented by input runtime plan |
+| #3497 | cluster-synced | v2-react-runtime | high       | none; already represented by React runtime plan |
 
 ## #6051 On Firefox For Android With The Samsung Keyboard, Slate Fails To Insert Some Characters
 
@@ -47,9 +47,9 @@ Evidence:
 - duplicate proof: no exact duplicate found. The closest family is Android /
   Firefox / IME DOM point import, but Samsung Keyboard plus null parent DOM
   containers is a distinct live repro.
-- current v2 proof: `../slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts`,
-  `../slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts`,
-  and `../slate-v2/packages/slate-dom/src/plugin/dom-editor.ts` show this is
+- current v2 proof: `.tmp/slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts`,
+  `.tmp/slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts`,
+  and `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts` show this is
   routed through the v2 input/composition/DOM point bridge. No real Firefox
   Android Samsung Keyboard device proof exists here.
 
@@ -80,7 +80,7 @@ Evidence:
 - duplicate proof: no exact duplicate found. Neighbors are stale path, DOM point,
   collaboration, and selection validity issues, but not the same
   `useSelected` self-removal lifecycle.
-- current v2 proof: `../slate-v2/packages/slate-react/test/use-element-selected.test.tsx`
+- current v2 proof: `.tmp/slate-v2/packages/slate-react/test/use-element-selected.test.tsx`
   covers selected self-removal with clean unmount, explicit stale watched-path
   false behavior, and the existing path-shift case. The hook still guards
   `Editor.hasPath(editor, selectedPath)` before calling `Editor.range`.
@@ -117,7 +117,7 @@ Evidence:
   neighborhood, different failure mode.
 - current v2 proof: `useSlateEditor({ initialValue })`, selector hooks, and the
   snapshot-driven provider tests in
-  `../slate-v2/packages/slate-react/test/provider-hooks-contract.tsx` move the
+  `.tmp/slate-v2/packages/slate-react/test/provider-hooks-contract.tsx` move the
   center of gravity away from controlled-value external-store feedback loops.
   No Redux repro was run here.
 
@@ -153,8 +153,8 @@ Evidence:
   failures, but not the same as external-store `#3478`.
 - current v2 proof: placeholder visibility and composition are first-class root
   sources / runtime paths in
-  `../slate-v2/packages/slate-react/src/editable/root-selector-sources.ts`,
-  `../slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts`,
+  `.tmp/slate-v2/packages/slate-react/src/editable/root-selector-sources.ts`,
+  `.tmp/slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts`,
   and composition tests. No German keyboard browser repro was run here.
 
 Decision:
@@ -187,8 +187,8 @@ Evidence:
   as duplicate; this row specifically covers parent-state focus churn.
 - current v2 proof: focus state, provider editor replacement, selection
   reconciliation, and selector-first render paths are represented by
-  `../slate-v2/packages/slate-react/src/components/slate.tsx`,
-  `../slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`, and
+  `.tmp/slate-v2/packages/slate-react/src/components/slate.tsx`,
+  `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`, and
   provider hook tests. No exact sandbox repro was run here.
 
 Decision:

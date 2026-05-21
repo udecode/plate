@@ -4,7 +4,7 @@ Status: complete
 
 ## Goal
 
-Identify `../slate-v2` Playwright integration rows that are redundant, low-value,
+Identify `.tmp/slate-v2` Playwright integration rows that are redundant, low-value,
 or better covered by generated stress / package contracts, so
 `bun test:integration-local` can shrink without gutting browser-regression
 coverage.
@@ -38,20 +38,21 @@ coverage.
 - Biggest immediate waste: `playwright/stress/**` was included in
   `test:integration-local`, even though `test:stress` and
   `test:stress:replay` already own that lane.
-- Updated `../slate-v2/package.json` so `test:integration` and
+- Updated `.tmp/slate-v2/package.json` so `test:integration` and
   `test:integration-local` run `playwright/integration` only.
 - `bunx playwright test playwright/integration --list` after cleanup: 588 rows,
   28 files, 147 rows per project.
 - `bun check` passes after the script change.
 - Fail-fast browser sweep after fixing current reds:
   `PLAYWRIGHT_RETRIES=0 bunx playwright test playwright/integration
-  --max-failures=1 --reporter=line` passes 588/588 across Chromium, Firefox,
+--max-failures=1 --reporter=line` passes 588/588 across Chromium, Firefox,
   mobile, and WebKit.
-- Final fast gate: `bun check` passes in `../slate-v2`.
+- Final fast gate: `bun check` passes in `.tmp/slate-v2`.
 
 ## Safe Cuts Found
 
 1. Exclude `playwright/stress/**` from `test:integration*`.
+
    - Already applied.
    - Removes 88 listed rows from integration-local: 84 generated stress rows
      plus 4 skipped replay rows.
@@ -60,6 +61,7 @@ coverage.
 
 2. Delete route-smoke rows that are strictly weaker than existing rows in the
    same file or generated stress:
+
    - `playwright/integration/examples/richtext.test.ts`
      - `renders rich text`
      - `inserts text through browser input`
@@ -75,6 +77,7 @@ coverage.
 
 3. Delete Playwright rows that are already better covered by package-level
    app-owned customization tests:
+
    - `playwright/integration/examples/markdown-preview.test.ts`
      - `checks for markdown`
      - stronger owner:
@@ -129,7 +132,7 @@ Run policy:
 Current red cluster:
 
 - Command: `PLAYWRIGHT_RETRIES=0 bunx playwright test playwright/integration
-  --max-failures=1 --reporter=line`
+--max-failures=1 --reporter=line`
 - First failure: `playwright/integration/examples/inlines.test.ts` /
   `wraps typed URL text as a link command` on Chromium.
 - Root cause: the example put URL wrapping in `onDOMBeforeInput`, while the
@@ -144,8 +147,8 @@ Current red cluster:
   Patch: export the input-rule types and forward `inputRules` through the
   public `Editable` wrapper.
 - Focused verification: `PLAYWRIGHT_RETRIES=0 bunx playwright test
-  playwright/integration/examples/inlines.test.ts -g "wraps typed URL text as a
-  link command" --reporter=line` passes on Chromium, Firefox, mobile, and
+playwright/integration/examples/inlines.test.ts -g "wraps typed URL text as a
+link command" --reporter=line` passes on Chromium, Firefox, mobile, and
   WebKit.
 
 Second red cluster:
@@ -159,7 +162,7 @@ Second red cluster:
 - Patch: move markdown text shortcut conversion to `Editable inputRules`; keep
   `onDOMBeforeInput` only for the Android pending-diff microtask.
 - Focused verification: `PLAYWRIGHT_RETRIES=0 bunx playwright test
-  playwright/integration/examples/markdown-shortcuts.test.ts --reporter=line`
+playwright/integration/examples/markdown-shortcuts.test.ts --reporter=line`
   passes 16/16 across Chromium, Firefox, mobile, and WebKit.
 
 Third red cluster:
@@ -168,15 +171,15 @@ Third red cluster:
 - First failure:
   `playwright/integration/examples/persistent-annotation-anchors.test.ts` /
   `keeps the annotation anchor attached across fragment insert, text insert,
-  and clear` on Chromium.
+and clear` on Chromium.
 - Root cause: the example's "Insert fragment before anchor" button used raw
   `tx.nodes.insert(...)` at a text point even though the contract expects Slate
   fragment insertion semantics, where the trailing inserted block merges with
   the current text block.
 - Patch: select the insertion point and call `tx.fragment.insert(...)`.
 - Focused verification: `PLAYWRIGHT_RETRIES=0 bunx playwright test
-  playwright/integration/examples/persistent-annotation-anchors.test.ts
-  --reporter=line` passes 4/4 across Chromium, Firefox, mobile, and WebKit.
+playwright/integration/examples/persistent-annotation-anchors.test.ts
+--reporter=line` passes 4/4 across Chromium, Firefox, mobile, and WebKit.
 
 Fourth red cluster:
 
@@ -195,6 +198,6 @@ Fourth red cluster:
   import DOM selection before fallback, and make the custom rich HTML paste
   handler call `tx.fragment.insert(...)` with the deserialized paragraph.
 - Focused verification: `PLAYWRIGHT_RETRIES=0 bunx playwright test
-  playwright/integration/examples/large-document-runtime.test.ts -g "preserves
-  .*paste" --reporter=line` passes 12/12 across Chromium, Firefox, mobile, and
+playwright/integration/examples/large-document-runtime.test.ts -g "preserves
+.*paste" --reporter=line` passes 12/12 across Chromium, Firefox, mobile, and
   WebKit.

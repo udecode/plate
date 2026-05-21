@@ -37,7 +37,7 @@ Evidence:
 - duplicate/stale/invalid proof: none.
 - live GitHub checked: yes, open.
 - current v2 proof:
-  `../slate-v2/scripts/benchmarks/core/current/transaction-execution.mjs`;
+  `.tmp/slate-v2/scripts/benchmarks/core/current/transaction-execution.mjs`;
   `docs/slate-v2/slate-tranche-3-execution.md`;
   `docs/slate-v2/ledgers/issue-coverage-matrix.md`.
 
@@ -72,8 +72,8 @@ Evidence:
   boundary bridge cluster.
 - duplicate/stale/invalid proof: none.
 - live GitHub checked: yes, open, `bug` label.
-- current v2 proof: `../slate-v2/packages/slate-dom/test/bridge.ts`;
-  `../slate-v2/packages/slate-dom/test/dom-coverage.ts`;
+- current v2 proof: `.tmp/slate-v2/packages/slate-dom/test/bridge.ts`;
+  `.tmp/slate-v2/packages/slate-dom/test/dom-coverage.ts`;
   `docs/plans/2026-05-04-slate-v2-full-issue-ledger-architecture-ralplan.md`;
   `docs/plans/2026-05-04-slate-v2-full-issue-ledger-architecture-ralplan-issue-matrix.md`.
 
@@ -178,7 +178,7 @@ Evidence:
 - live GitHub checked: yes, open, `improvement` label.
 - current v2 proof: `docs/slate-v2/ledgers/issue-coverage-matrix.md`;
   `docs/slate-v2/references/pr-description.md`;
-  `../slate-v2/packages/slate/test/state-tx-public-api-contract.ts`.
+  `.tmp/slate-v2/packages/slate/test/state-tx-public-api-contract.ts`.
 
 Decision:
 Keep the exact `Fixes #6013` claim. Slate v2 makes editor initialization own the

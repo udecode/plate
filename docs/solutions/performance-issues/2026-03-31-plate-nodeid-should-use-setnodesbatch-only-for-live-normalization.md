@@ -43,7 +43,7 @@ honest.
   `transformInitialValue`, but the live `nodeId.normalize()` transform still
   paid the per-node `setNodes` cost.
 - The new `setNodesBatch` API lived in Plate's local `packages/slate`, not only
-  in the separate `../slate-v2` prototype repo, so the adoption work could happen
+  in the separate `.tmp/slate-v2` prototype repo, so the adoption work could happen
   immediately.
 - Plate's local Slate wrapper does not expose Slate's private dirty-path weak
   maps, so a direct copy of the upstream prototype would have been half true and
@@ -115,10 +115,10 @@ production-safe without lying about access to Slate internals.
 The local micro-benchmark kept the real performance win on a flat huge-document
 shape:
 
-| Blocks | `setNodes` | `setNodesBatch` | Speedup |
-| ------ | ---------- | --------------- | ------- |
-| `1000` | `18.56 ms` | `2.63 ms`       | `7.05x` |
-| `5000` | `118.54 ms`| `4.92 ms`       | `24.10x` |
+| Blocks | `setNodes`  | `setNodesBatch` | Speedup  |
+| ------ | ----------- | --------------- | -------- |
+| `1000` | `18.56 ms`  | `2.63 ms`       | `7.05x`  |
+| `5000` | `118.54 ms` | `4.92 ms`       | `24.10x` |
 
 ## Prevention
 

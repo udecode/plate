@@ -133,12 +133,12 @@ Top drivers:
 
 Viable options:
 
-| Option | Pros | Cons | Verdict |
-| --- | --- | --- | --- |
-| Keep `e.setFragmentData` / `e.insertData` instance methods | Closest to legacy Slate; smallest patch | Reopens editor-object method growth and hides DOM capability ownership | reject |
-| Keep flat `DOMEditor.setFragmentData(editor, data)` but remove instance methods | Better boundary; smaller API churn | Name still sounds like editor state mutation and carries legacy vocabulary | revise |
-| Use DOM clipboard namespace/helper: `DOMEditor.clipboard.writeFragment(editor, data, options)` and `DOMEditor.clipboard.insertData(editor, data)` | Names host side-effect, keeps editor instance clean, groups transport APIs | Slightly more API shape than legacy; tests/examples need edits | keep |
-| Make clipboard helpers package-private only | Cleanest raw public API | Weak for custom `Editable` integrations and tests; likely pushes users to copy internals | reject for now |
+| Option                                                                                                                                            | Pros                                                                       | Cons                                                                                     | Verdict        |
+| ------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- | -------------- |
+| Keep `e.setFragmentData` / `e.insertData` instance methods                                                                                        | Closest to legacy Slate; smallest patch                                    | Reopens editor-object method growth and hides DOM capability ownership                   | reject         |
+| Keep flat `DOMEditor.setFragmentData(editor, data)` but remove instance methods                                                                   | Better boundary; smaller API churn                                         | Name still sounds like editor state mutation and carries legacy vocabulary               | revise         |
+| Use DOM clipboard namespace/helper: `DOMEditor.clipboard.writeFragment(editor, data, options)` and `DOMEditor.clipboard.insertData(editor, data)` | Names host side-effect, keeps editor instance clean, groups transport APIs | Slightly more API shape than legacy; tests/examples need edits                           | keep           |
+| Make clipboard helpers package-private only                                                                                                       | Cleanest raw public API                                                    | Weak for custom `Editable` integrations and tests; likely pushes users to copy internals | reject for now |
 
 Chosen option:
 
@@ -165,14 +165,14 @@ Follow-ups:
 
 ## 4. Confidence Scorecard
 
-| Dimension | Score | Evidence |
-| --- | ---: | --- |
-| React 19.2 runtime performance | 0.93 | Ledger accepts the staged cleanup: event-scoped writes first, hot observer reads second, temporary ref/bridge allowances last. The high-risk proof names render/hot-path guards instead of broad React rerender assertions. |
-| Slate-close unopinionated DX | 0.92 | `DOMEditor.clipboard.*` / `ReactEditor.clipboard.*` is locked. App authors keep `read` / `update`; custom bridge authors get one DOM namespace; no `editor.clipboard` and no legacy aliases. |
-| Plate/slate-yjs migration backbone | 0.93 | Plugin layers can wrap clipboard helpers without monkey-patching. Model mutation stays in tx and the proof plan requires deterministic operation replay after paste/cut. |
-| Regression-proof testing strategy | 0.93 | High-risk proof now names exact package, React, browser, stress, and guard targets: `state-tx-public-api-contract.ts`, `clipboard-contract.ts`, `clipboard-boundary.ts`, React surface contracts, highlighted-text/paste-html/inlines browser rows, and generated stress families. |
-| Research evidence completeness | 0.92 | Existing compiled research covers Lexical read/update, ProseMirror transaction/DOM authority, Tiptap extension DX, and prior clipboard boundary ownership. No fresh raw ingest needed for this narrow pass. |
-| shadcn-style composability / minimal props | 0.91 | Grouped clipboard helpers are minimal and composable. The plan rejects flat editor command growth, keeps product APIs above raw Slate, and names React helper surfaces without adding render props. |
+| Dimension                                  | Score | Evidence                                                                                                                                                                                                                                                                           |
+| ------------------------------------------ | ----: | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| React 19.2 runtime performance             |  0.93 | Ledger accepts the staged cleanup: event-scoped writes first, hot observer reads second, temporary ref/bridge allowances last. The high-risk proof names render/hot-path guards instead of broad React rerender assertions.                                                        |
+| Slate-close unopinionated DX               |  0.92 | `DOMEditor.clipboard.*` / `ReactEditor.clipboard.*` is locked. App authors keep `read` / `update`; custom bridge authors get one DOM namespace; no `editor.clipboard` and no legacy aliases.                                                                                       |
+| Plate/slate-yjs migration backbone         |  0.93 | Plugin layers can wrap clipboard helpers without monkey-patching. Model mutation stays in tx and the proof plan requires deterministic operation replay after paste/cut.                                                                                                           |
+| Regression-proof testing strategy          |  0.93 | High-risk proof now names exact package, React, browser, stress, and guard targets: `state-tx-public-api-contract.ts`, `clipboard-contract.ts`, `clipboard-boundary.ts`, React surface contracts, highlighted-text/paste-html/inlines browser rows, and generated stress families. |
+| Research evidence completeness             |  0.92 | Existing compiled research covers Lexical read/update, ProseMirror transaction/DOM authority, Tiptap extension DX, and prior clipboard boundary ownership. No fresh raw ingest needed for this narrow pass.                                                                        |
+| shadcn-style composability / minimal props |  0.91 | Grouped clipboard helpers are minimal and composable. The plan rejects flat editor command growth, keeps product APIs above raw Slate, and names React helper surfaces without adding render props.                                                                                |
 
 Weighted total: `0.93`.
 
@@ -332,19 +332,19 @@ Core editor:
 
 ```ts
 editor.read((state) => {
-  const fragment = state.fragment.get()
-})
+  const fragment = state.fragment.get();
+});
 
 editor.update((tx) => {
-  tx.fragment.insert(fragment)
-})
+  tx.fragment.insert(fragment);
+});
 ```
 
 State fragment API:
 
 ```ts
-state.fragment.get()
-state.fragment.get({ at: range })
+state.fragment.get();
+state.fragment.get({ at: range });
 ```
 
 Transaction fragment API:
@@ -360,40 +360,40 @@ DOM clipboard API:
 ```ts
 DOMEditor.clipboard.writeFragment(editor, data, {
   formatKey,
-  origin: 'copy',
-})
+  origin: "copy",
+});
 
-DOMEditor.clipboard.insertData(editor, data)
-DOMEditor.clipboard.insertFragmentData(editor, data)
-DOMEditor.clipboard.insertTextData(editor, data)
+DOMEditor.clipboard.insertData(editor, data);
+DOMEditor.clipboard.insertFragmentData(editor, data);
+DOMEditor.clipboard.insertTextData(editor, data);
 ```
 
 React bridge API:
 
 ```ts
-ReactEditor.clipboard.writeFragment(editor, data, { origin: 'copy' })
-ReactEditor.clipboard.insertData(editor, data)
+ReactEditor.clipboard.writeFragment(editor, data, { origin: "copy" });
+ReactEditor.clipboard.insertData(editor, data);
 ```
 
 Cut:
 
 ```ts
-editor.setFragmentData(data)
-editor.insertData(data)
-editor.insertFragmentData(data)
-editor.insertTextData(data)
+editor.setFragmentData(data);
+editor.insertData(data);
+editor.insertFragmentData(data);
+editor.insertTextData(data);
 ```
 
 Avoid:
 
 ```ts
-Editor.getFragment(editor)
+Editor.getFragment(editor);
 ```
 
 in package runtime code when the equivalent is:
 
 ```ts
-editor.read((state) => state.fragment.get())
+editor.read((state) => state.fragment.get());
 ```
 
 ## 7. Internal Runtime Target
@@ -402,9 +402,9 @@ editor.read((state) => state.fragment.get())
 
 ```ts
 export const withDOM = (editor, options) => {
-  installDOMRuntime(editor, { clipboardFormatKey })
-  return editor as T & DOMEditorBrand
-}
+  installDOMRuntime(editor, { clipboardFormatKey });
+  return editor as T & DOMEditorBrand;
+};
 ```
 
 The runtime owns:
@@ -450,8 +450,8 @@ editor instance methods:
 
 ```ts
 ReactEditor.clipboard.writeFragment(editor, clipboardData, {
-  origin: 'copy',
-})
+  origin: "copy",
+});
 ```
 
 The key DX rule:
@@ -476,8 +476,8 @@ Plate can build product APIs over:
 
 ```ts
 editor.update((tx) => {
-  tx.fragment.insert(fragment)
-})
+  tx.fragment.insert(fragment);
+});
 ```
 
 and optional product commands without polluting raw Slate core.
@@ -502,17 +502,17 @@ Proof required before closure:
 
 ## 11. Legacy Regression Proof Matrix
 
-| Regression family | Required proof |
-| --- | --- |
-| copy selected text | model fragment, MIME payload, HTML attribute, plain text |
-| cut selected text | write clipboard, delete expanded selection, follow-up typing |
-| drag selected void | select void, write fragment, drop inserts deterministic model |
-| custom clipboard format key | custom MIME used, default MIME absent |
-| HTML-only fallback | `data-slate-fragment` from HTML still inserts |
-| plain text fallback | multiline text splits and inserts correctly |
-| void boundary copy | start/end void spacer does not create visible spacer layout |
-| decorated leaves | render-only wrappers stripped from copied HTML |
-| IME/composition adjacency | clipboard helpers do not import repair-induced selection |
+| Regression family           | Required proof                                                |
+| --------------------------- | ------------------------------------------------------------- |
+| copy selected text          | model fragment, MIME payload, HTML attribute, plain text      |
+| cut selected text           | write clipboard, delete expanded selection, follow-up typing  |
+| drag selected void          | select void, write fragment, drop inserts deterministic model |
+| custom clipboard format key | custom MIME used, default MIME absent                         |
+| HTML-only fallback          | `data-slate-fragment` from HTML still inserts                 |
+| plain text fallback         | multiline text splits and inserts correctly                   |
+| void boundary copy          | start/end void spacer does not create visible spacer layout   |
+| decorated leaves            | render-only wrappers stripped from copied HTML                |
+| IME/composition adjacency   | clipboard helpers do not import repair-induced selection      |
 
 ## 12. Browser Stress / Parity Strategy
 
@@ -537,13 +537,13 @@ Do not put full stress in `bun check`.
 
 ## 13. Applicable Implementation-Skill Review Matrix
 
-| Lens | Applicability | Finding | Plan delta |
-| --- | --- | --- | --- |
-| Vercel React best practices | applied | Avoid broad React rerenders; clipboard helpers should run in event handlers and keep transient DataTransfer out of render state. | React event paths call namespace helpers; no React state added. |
-| performance-oracle | applied | Repeated full static reads and clone/serialization must stay event-scoped; static snapshot reads in render/projection paths need separate review. | Add static-read classification and keep clipboard serialization event-only. |
-| tdd | applied | This is public API + behavior. Tests should prove behavior through DOMEditor/ReactEditor public helpers and browser contracts, not grep-only implementation assertions. | Red tests: no instance methods; clipboard behavior still works. |
-| shadcn | skipped | No UI chrome/component styling in this lane. | No change. |
-| react-useeffect | skipped | No effect lifecycle change in this lane. | No change. |
+| Lens                        | Applicability | Finding                                                                                                                                                                 | Plan delta                                                                  |
+| --------------------------- | ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| Vercel React best practices | applied       | Avoid broad React rerenders; clipboard helpers should run in event handlers and keep transient DataTransfer out of render state.                                        | React event paths call namespace helpers; no React state added.             |
+| performance-oracle          | applied       | Repeated full static reads and clone/serialization must stay event-scoped; static snapshot reads in render/projection paths need separate review.                       | Add static-read classification and keep clipboard serialization event-only. |
+| tdd                         | applied       | This is public API + behavior. Tests should prove behavior through DOMEditor/ReactEditor public helpers and browser contracts, not grep-only implementation assertions. | Red tests: no instance methods; clipboard behavior still works.             |
+| shadcn                      | skipped       | No UI chrome/component styling in this lane.                                                                                                                            | No change.                                                                  |
+| react-useeffect             | skipped       | No effect lifecycle change in this lane.                                                                                                                                | No change.                                                                  |
 
 ## 14. High-Risk Deliberate Mode
 
@@ -576,31 +576,31 @@ Pre-mortem:
 
 Expanded proof plan:
 
-| Risk | Proof owner | Exact target |
-| --- | --- | --- |
-| `state.fragment.get` reads the wrong range or stale selection | core unit | Extend `/Users/zbeyens/git/slate-v2/packages/slate/test/state-tx-public-api-contract.ts` with `state.fragment.get()` and `state.fragment.get({ at })`; migrate selected-fragment assertions in `/Users/zbeyens/git/slate-v2/packages/slate/test/clipboard-contract.ts` away from `Editor.getFragment(editor)`. |
-| tx fragment reads drift from write-time draft state | core unit | Extend `/Users/zbeyens/git/slate-v2/packages/slate/test/state-tx-public-api-contract.ts` with `tx.fragment.get()` before and after `tx.fragment.insert(...)` inside one `editor.update`. |
-| copied payload loses Slate MIME, HTML, or plain text | DOM unit | Extend `/Users/zbeyens/git/slate-v2/packages/slate-dom/test/clipboard-boundary.ts` and `.test.ts` with `DOMEditor.clipboard.writeFragment writes Slate MIME, HTML data-slate-fragment, and plain text`. |
-| HTML-only and plain-text fallback regress | DOM unit | Keep and migrate `/Users/zbeyens/git/slate-v2/packages/slate-dom/test/clipboard-boundary.ts`; add `DOMEditor.clipboard.insertData handles Slate MIME, HTML-only fallback, and plain text fallback`. |
-| editor instance methods sneak back | public surface guard | Extend `/Users/zbeyens/git/slate-v2/packages/slate/test/public-surface-contract.ts` or add a `slate-dom` surface contract proving `setFragmentData`, `insertData`, `insertFragmentData`, and `insertTextData` are absent from editor instances and `DOMEditor` instance types. |
-| React bridge diverges from DOM bridge | React unit | Extend `/Users/zbeyens/git/slate-v2/packages/slate-react/test/react-editor-contract.tsx` with `ReactEditor.clipboard mirrors DOMEditor.clipboard`. |
-| React copy/cut/drag handlers bypass namespace or mutate outside tx | React integration | Add or extend `/Users/zbeyens/git/slate-v2/packages/slate-react/test/clipboard-input-strategy-contract.test.tsx`; assert copy writes payload, cut deletes through tx, drag writes fragment, and follow-up typing preserves selection. |
-| static `Editor.*` creeps back into hot runtime paths | guard | Extend `/Users/zbeyens/git/slate-v2/packages/slate/test/escape-hatch-inventory-contract.ts` and `/Users/zbeyens/git/slate-v2/packages/slate-react/test/surface-contract.tsx`; encode allowed categories for refs, host bridge mapping, trace/debug reads, and package-local runtime facades only. |
-| decorated leaves copy render wrappers instead of model fragment | browser | Keep `/Users/zbeyens/git/slate-v2/playwright/integration/examples/highlighted-text.test.ts` rows `copies decorated text as fragment semantics instead of leaking highlight wrappers` and `cuts decorated text as fragment semantics and deletes the selection`. |
-| paste/drop transport regresses | browser | Keep `/Users/zbeyens/git/slate-v2/playwright/integration/examples/paste-html.test.ts` rows `paste-html-generated-clipboard-gauntlet` and `paste-html-generated-drop-data-gauntlet`. |
-| inline boundary cut/paste typing regresses | browser | Keep `/Users/zbeyens/git/slate-v2/playwright/integration/examples/inlines.test.ts` row `inlines-generated-cut-typing-gauntlet`. |
-| generated stress misses clipboard/void classes | stress | Extend `/Users/zbeyens/git/slate-v2/playwright/stress/generated-editing.test.ts` with families `clipboard-fragment-round-trip`, `cut-follow-up-typing`, `void-copy-drag-drop`, and keep existing `paste-normalize-undo` / `paste-html-image-void`. |
-| collaboration replay differs after clipboard mutation | core/collab unit | Extend `/Users/zbeyens/git/slate-v2/packages/slate/test/collab-history-runtime-contract.ts` or `/Users/zbeyens/git/slate-v2/packages/slate/test/transaction-contract.ts` with operation replay after paste/cut insertion. |
+| Risk                                                               | Proof owner          | Exact target                                                                                                                                                                                                                                                                                                   |
+| ------------------------------------------------------------------ | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `state.fragment.get` reads the wrong range or stale selection      | core unit            | Extend `/Users/zbeyens/git/slate-v2/packages/slate/test/state-tx-public-api-contract.ts` with `state.fragment.get()` and `state.fragment.get({ at })`; migrate selected-fragment assertions in `/Users/zbeyens/git/slate-v2/packages/slate/test/clipboard-contract.ts` away from `Editor.getFragment(editor)`. |
+| tx fragment reads drift from write-time draft state                | core unit            | Extend `/Users/zbeyens/git/slate-v2/packages/slate/test/state-tx-public-api-contract.ts` with `tx.fragment.get()` before and after `tx.fragment.insert(...)` inside one `editor.update`.                                                                                                                       |
+| copied payload loses Slate MIME, HTML, or plain text               | DOM unit             | Extend `/Users/zbeyens/git/slate-v2/packages/slate-dom/test/clipboard-boundary.ts` and `.test.ts` with `DOMEditor.clipboard.writeFragment writes Slate MIME, HTML data-slate-fragment, and plain text`.                                                                                                        |
+| HTML-only and plain-text fallback regress                          | DOM unit             | Keep and migrate `/Users/zbeyens/git/slate-v2/packages/slate-dom/test/clipboard-boundary.ts`; add `DOMEditor.clipboard.insertData handles Slate MIME, HTML-only fallback, and plain text fallback`.                                                                                                            |
+| editor instance methods sneak back                                 | public surface guard | Extend `/Users/zbeyens/git/slate-v2/packages/slate/test/public-surface-contract.ts` or add a `slate-dom` surface contract proving `setFragmentData`, `insertData`, `insertFragmentData`, and `insertTextData` are absent from editor instances and `DOMEditor` instance types.                                 |
+| React bridge diverges from DOM bridge                              | React unit           | Extend `/Users/zbeyens/git/slate-v2/packages/slate-react/test/react-editor-contract.tsx` with `ReactEditor.clipboard mirrors DOMEditor.clipboard`.                                                                                                                                                             |
+| React copy/cut/drag handlers bypass namespace or mutate outside tx | React integration    | Add or extend `/Users/zbeyens/git/slate-v2/packages/slate-react/test/clipboard-input-strategy-contract.test.tsx`; assert copy writes payload, cut deletes through tx, drag writes fragment, and follow-up typing preserves selection.                                                                          |
+| static `Editor.*` creeps back into hot runtime paths               | guard                | Extend `/Users/zbeyens/git/slate-v2/packages/slate/test/escape-hatch-inventory-contract.ts` and `/Users/zbeyens/git/slate-v2/packages/slate-react/test/surface-contract.tsx`; encode allowed categories for refs, host bridge mapping, trace/debug reads, and package-local runtime facades only.              |
+| decorated leaves copy render wrappers instead of model fragment    | browser              | Keep `/Users/zbeyens/git/slate-v2/playwright/integration/examples/highlighted-text.test.ts` rows `copies decorated text as fragment semantics instead of leaking highlight wrappers` and `cuts decorated text as fragment semantics and deletes the selection`.                                                |
+| paste/drop transport regresses                                     | browser              | Keep `/Users/zbeyens/git/slate-v2/playwright/integration/examples/paste-html.test.ts` rows `paste-html-generated-clipboard-gauntlet` and `paste-html-generated-drop-data-gauntlet`.                                                                                                                            |
+| inline boundary cut/paste typing regresses                         | browser              | Keep `/Users/zbeyens/git/slate-v2/playwright/integration/examples/inlines.test.ts` row `inlines-generated-cut-typing-gauntlet`.                                                                                                                                                                                |
+| generated stress misses clipboard/void classes                     | stress               | Extend `/Users/zbeyens/git/slate-v2/playwright/stress/generated-editing.test.ts` with families `clipboard-fragment-round-trip`, `cut-follow-up-typing`, `void-copy-drag-drop`, and keep existing `paste-normalize-undo` / `paste-html-image-void`.                                                             |
+| collaboration replay differs after clipboard mutation              | core/collab unit     | Extend `/Users/zbeyens/git/slate-v2/packages/slate/test/collab-history-runtime-contract.ts` or `/Users/zbeyens/git/slate-v2/packages/slate/test/transaction-contract.ts` with operation replay after paste/cut insertion.                                                                                      |
 
 Static `Editor.*` implementation buckets:
 
-| Bucket | Rule |
-| --- | --- |
-| Cut first | `Editor.getFragment` in DOM clipboard serialization; DOM instance clipboard methods; static write calls in clipboard/cut paths when a tx method exists. |
-| Migrate next | `Editor.insertText`, `deleteFragment`, `deleteBackward`, `deleteForward`, `insertBreak`, `insertSoftBreak`, and `replace` in React mutation/input paths. |
-| Source-selector/live-state | `Editor.getSnapshot`, `getOperations`, `getChildren`, `getLastCommit`, runtime-id reads, projection-store, widget-store, root-selector, and browser-handle reads. |
-| State query groups | `Editor.range`, `point`, `before`, `after`, `above`, `void`, `hasPath`, `levels`, `isVoid`, `isInline`, and `isBlock` when the caller is doing normal model reads. |
-| Temporary internal allowances | `rangeRef`, `pointRef`, `pathRef`, pure `Editor.isEditor`, trace/debug reads, and host bridge mapping calls until dedicated runtime facades exist. |
+| Bucket                        | Rule                                                                                                                                                               |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Cut first                     | `Editor.getFragment` in DOM clipboard serialization; DOM instance clipboard methods; static write calls in clipboard/cut paths when a tx method exists.            |
+| Migrate next                  | `Editor.insertText`, `deleteFragment`, `deleteBackward`, `deleteForward`, `insertBreak`, `insertSoftBreak`, and `replace` in React mutation/input paths.           |
+| Source-selector/live-state    | `Editor.getSnapshot`, `getOperations`, `getChildren`, `getLastCommit`, runtime-id reads, projection-store, widget-store, root-selector, and browser-handle reads.  |
+| State query groups            | `Editor.range`, `point`, `before`, `after`, `above`, `void`, `hasPath`, `levels`, `isVoid`, `isInline`, and `isBlock` when the caller is doing normal model reads. |
+| Temporary internal allowances | `rangeRef`, `pointRef`, `pathRef`, pure `Editor.isEditor`, trace/debug reads, and host bridge mapping calls until dedicated runtime facades exist.                 |
 
 Commands:
 
@@ -1013,16 +1013,16 @@ Verdict: keep.
 
 ## 19. Pass Schedule And Pass-State Ledger
 
-| Pass | Status | Evidence added | Plan delta | Open issues | Next owner |
-| --- | --- | --- | --- | --- | --- |
-| current-state read and initial score | complete | live source lines for `withDOM`, `DOMEditor`, `EditorStateView`, clipboard tests, research pages | new plan created, score `0.78` | static `Editor.*` inventory incomplete | intent-boundary pass |
-| intent/boundary and decision brief | complete | `ReactEditor` aliases `DOMEditor`; current `setFragmentData`/`insertData` calls are first-party clipboard integration points | locked `DOMEditor.clipboard.*` + mirrored `ReactEditor.clipboard.*`; no user question needed; score raised to `0.82` | exact static `Editor.*` allowlist still open | research/live-source refresh |
-| research and live-source refresh | complete | Lexical/ProseMirror/Tiptap compiled research, prior clipboard ownership plan, live static `Editor.*` inventory across `slate-dom` and `slate-react` | added research/live-source result, static usage buckets, score raised to `0.85` | exact allowlist still open; pressure pass must decide priority and split | performance/DX/migration/regression/simplicity pressure pass |
-| performance/DX/migration/regression/simplicity pressure passes | complete | React hot-path priority, DX boundary, migration/collab split, red-first proof order, simplicity cuts | added priority order, temporary allowance categories, rejected alternatives, score raised to `0.88` | maintainer ledger had to decide whether static `Editor.*` cleanup was keep/revise | Slate maintainer objection ledger |
-| Slate maintainer objection ledger | complete | accepted rows for editor-instance clipboard cut, `state.fragment.get`, prioritized static `Editor.*` cleanup, and temporary runtime allowances | row 3 moved to `keep`; row 4 added so refs/host bridge mapping are explicit allowances, not hidden debt; score raised to `0.90` | closed by high-risk pass | high-risk-deliberate-pass |
-| high-risk deliberate pass | complete | exact proof targets for core state/tx, DOM clipboard, React bridge, static guard, browser rows, generated stress families, and collab replay | expanded high-risk section from generic proof categories to named files, test rows, static buckets, commands, rollback answer, and keep verdict; score raised to `0.92` | closed by revision pass | revision pass |
-| revision pass | complete | contradiction sweep over scorecard, public namespace decision, open questions, final gates, and continuation state | removed stale "would change decision" alternatives, added revision result, clarified closure as separate pass, score raised to `0.93` | final closure pass still pending | closure score and gates |
-| closure score and gates | complete | final score/gate sweep over threshold, pass ledger, locked API, high-risk proof, open questions, and checkpoint state | plan status set to `done`; completion state can pass; implementation remains a later lane | none | user review |
+| Pass                                                           | Status   | Evidence added                                                                                                                                      | Plan delta                                                                                                                                                              | Open issues                                                                       | Next owner                                                   |
+| -------------------------------------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| current-state read and initial score                           | complete | live source lines for `withDOM`, `DOMEditor`, `EditorStateView`, clipboard tests, research pages                                                    | new plan created, score `0.78`                                                                                                                                          | static `Editor.*` inventory incomplete                                            | intent-boundary pass                                         |
+| intent/boundary and decision brief                             | complete | `ReactEditor` aliases `DOMEditor`; current `setFragmentData`/`insertData` calls are first-party clipboard integration points                        | locked `DOMEditor.clipboard.*` + mirrored `ReactEditor.clipboard.*`; no user question needed; score raised to `0.82`                                                    | exact static `Editor.*` allowlist still open                                      | research/live-source refresh                                 |
+| research and live-source refresh                               | complete | Lexical/ProseMirror/Tiptap compiled research, prior clipboard ownership plan, live static `Editor.*` inventory across `slate-dom` and `slate-react` | added research/live-source result, static usage buckets, score raised to `0.85`                                                                                         | exact allowlist still open; pressure pass must decide priority and split          | performance/DX/migration/regression/simplicity pressure pass |
+| performance/DX/migration/regression/simplicity pressure passes | complete | React hot-path priority, DX boundary, migration/collab split, red-first proof order, simplicity cuts                                                | added priority order, temporary allowance categories, rejected alternatives, score raised to `0.88`                                                                     | maintainer ledger had to decide whether static `Editor.*` cleanup was keep/revise | Slate maintainer objection ledger                            |
+| Slate maintainer objection ledger                              | complete | accepted rows for editor-instance clipboard cut, `state.fragment.get`, prioritized static `Editor.*` cleanup, and temporary runtime allowances      | row 3 moved to `keep`; row 4 added so refs/host bridge mapping are explicit allowances, not hidden debt; score raised to `0.90`                                         | closed by high-risk pass                                                          | high-risk-deliberate-pass                                    |
+| high-risk deliberate pass                                      | complete | exact proof targets for core state/tx, DOM clipboard, React bridge, static guard, browser rows, generated stress families, and collab replay        | expanded high-risk section from generic proof categories to named files, test rows, static buckets, commands, rollback answer, and keep verdict; score raised to `0.92` | closed by revision pass                                                           | revision pass                                                |
+| revision pass                                                  | complete | contradiction sweep over scorecard, public namespace decision, open questions, final gates, and continuation state                                  | removed stale "would change decision" alternatives, added revision result, clarified closure as separate pass, score raised to `0.93`                                   | final closure pass still pending                                                  | closure score and gates                                      |
+| closure score and gates                                        | complete | final score/gate sweep over threshold, pass ledger, locked API, high-risk proof, open questions, and checkpoint state                               | plan status set to `done`; completion state can pass; implementation remains a later lane                                                                               | none                                                                              | user review                                                  |
 
 ## 20. Plan Deltas From Review
 
@@ -1097,7 +1097,7 @@ Closure pass verified:
 Implementation activation:
 
 - 2026-04-29T20:48:32Z: `ralph` started implementation in sibling
-  `../slate-v2`.
+  `.tmp/slate-v2`.
 - Phase 1 complete: added `state.fragment.get(...)` and
   `tx.fragment.get(...)`, migrated selected-fragment clipboard contract reads,
   and verified with focused package tests plus `bun --filter slate typecheck`.

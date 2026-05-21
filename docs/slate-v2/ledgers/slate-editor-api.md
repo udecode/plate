@@ -29,12 +29,12 @@ status: active
   - `before`
   - `after`
   - `positions`
-  showed those files are already source-close enough that they were not the
-  best first code spend
+    showed those files are already source-close enough that they were not the
+    best first code spend
 - direct query owner proof is now live and green in:
-  - `../slate-v2/packages/slate/test/query-contract.ts`
+  - `.tmp/slate-v2/packages/slate/test/query-contract.ts`
 - direct `Editor.nodes/**` oracle proof is now live and green in:
-  - `../slate-v2/packages/slate/test/legacy-editor-nodes-fixtures.ts`
+  - `.tmp/slate-v2/packages/slate/test/legacy-editor-nodes-fixtures.ts`
 - package-local closeout is green on:
   - `bun test ./packages/slate/test`
   - `bunx turbo build --filter=./packages/slate`
@@ -120,13 +120,13 @@ status: active
 - internal hot-path source reads now also route more explicitly:
   - `delete-text.ts`
   - `get-default-insert-location.ts`
-  now use `Editor.getChildren(editor)` instead of reading `editor.children`
-  directly for live draft state
+    now use `Editor.getChildren(editor)` instead of reading `editor.children`
+    directly for live draft state
 - current non-legacy contract wrappers now follow that same direction:
   - `normalization-contract.ts`
   - `extension-contract.ts`
-  use `Editor.getChildren(editor)` for live draft reads in app-owned
-  normalization examples
+    use `Editor.getChildren(editor)` for live draft reads in app-owned
+    normalization examples
 - `insertText` now avoids direct `editor.selection` source reads in its
   null-selection guard by using an explicit public-selection helper instead
 - `slate-react` provider callbacks now read through `Editor.getChildren`,

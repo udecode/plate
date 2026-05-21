@@ -17,6 +17,7 @@ tags: [slate-v2, lexical-harvest, serialization, json, testing]
 # Lexical serialization harvest rows need public value roundtrip tests
 
 ## Problem
+
 Lexical serialization unit tests can look portable because they use JSON
 round-tripping, but the fixture mostly asserts Lexical's editor-state schema.
 For Slate v2, the useful invariant is narrower: raw document values must be
@@ -40,23 +41,26 @@ JSON-portable through the public state API.
 Add a compact public API test that serializes only Slate document values:
 
 ```ts
-const serialized = JSON.stringify(value)
-const parsed = JSON.parse(serialized) as Descendant[]
-const editor = createEditor({ initialValue: parsed })
-const exported = editor.read((state) => state.value.get())
+const serialized = JSON.stringify(value);
+const parsed = JSON.parse(serialized) as Descendant[];
+const editor = createEditor({ initialValue: parsed });
+const exported = editor.read((state) => state.value.get());
 const rehydrated = createEditor({
   initialValue: JSON.parse(JSON.stringify(exported)) as Descendant[],
-})
+});
 
-assert.deepEqual(exported, value)
-assert.deepEqual(rehydrated.read((state) => state.value.get()), value)
+assert.deepEqual(exported, value);
+assert.deepEqual(
+  rehydrated.read((state) => state.value.get()),
+  value,
+);
 ```
 
 Keep runtime indexes and framework metadata out of the raw value assertion:
 
 ```ts
-assert.equal(JSON.stringify(exported).includes('pathToId'), false)
-assert.equal(JSON.stringify(exported).includes('idToPath'), false)
+assert.equal(JSON.stringify(exported).includes("pathToId"), false);
+assert.equal(JSON.stringify(exported).includes("idToPath"), false);
 ```
 
 ## Why This Works
@@ -78,4 +82,4 @@ without pretending Slate should serialize like Lexical.
 ## Related Issues
 
 - `../lexical/packages/lexical/src/__tests__/unit/LexicalSerialization.test.ts`
-- `../slate-v2/packages/slate/test/state-tx-public-api-contract.ts`
+- `.tmp/slate-v2/packages/slate/test/state-tx-public-api-contract.ts`

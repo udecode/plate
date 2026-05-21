@@ -17,13 +17,13 @@ Target direction:
 const editor = useSlateEditor({
   initialValue,
   withEditor: withHistory,
-})
+});
 
 return (
   <Slate editor={editor} decorationSources={[codeHighlightingSource]}>
     <Editable />
   </Slate>
-)
+);
 ```
 
 Hard revision from the API bake-off:
@@ -41,7 +41,7 @@ Low-level non-React target:
 const editor = createEditor<CustomValue>({
   initialValue,
   initialSelection: null,
-})
+});
 ```
 
 This steals the right idea from Lexical, Tiptap, and ProseMirror: initial
@@ -211,7 +211,7 @@ Options:
    - Verdict: keep as low-level substrate.
 3. Add `useSlateEditor({ initialValue, withEditor })`.
    - Pro: best React DX, close to Tiptap's hook ergonomics while preserving
-    Slate `with*` composition.
+     Slate `with*` composition.
    - Con: new hook needs careful name/type design because `useEditor` already
      means context in Slate.
    - Verdict: leading public React API.
@@ -260,14 +260,14 @@ Core:
 
 ```ts
 type CreateEditorOptions<V extends Value = Value> = {
-  initialSelection?: Selection
-  initialValue?: V
-}
+  initialSelection?: Selection;
+  initialValue?: V;
+};
 
 createEditor<CustomValue>({
   initialValue,
   initialSelection: null,
-})
+});
 ```
 
 React:
@@ -276,21 +276,21 @@ React:
 type SlateEditorComposer<
   V extends Value,
   E extends ReactEditor<V> = ReactEditor<V>,
-> = (editor: ReactEditor<V>) => E
+> = (editor: ReactEditor<V>) => E;
 
 type UseSlateEditorOptions<
   V extends Value,
   E extends ReactEditor<V> = ReactEditor<V>,
 > = {
-  withEditor?: SlateEditorComposer<V, E>
-  initialSelection?: Selection
-  initialValue?: V
-}
+  withEditor?: SlateEditorComposer<V, E>;
+  initialSelection?: Selection;
+  initialValue?: V;
+};
 
 const editor = useSlateEditor({
   initialValue,
   withEditor: withHistory,
-})
+});
 ```
 
 Support composer typing target:
@@ -310,13 +310,13 @@ Docs examples should show:
 const editor = useSlateEditor({
   initialValue,
   withEditor: withHistory,
-})
+});
 
 return (
   <Slate editor={editor}>
     <Editable />
   </Slate>
-)
+);
 ```
 
 Multiple editor wrappers stay explicit composition:
@@ -324,8 +324,8 @@ Multiple editor wrappers stay explicit composition:
 ```tsx
 const editor = useSlateEditor({
   initialValue,
-  withEditor: editor => withFoo(withHistory(editor)),
-})
+  withEditor: (editor) => withFoo(withHistory(editor)),
+});
 ```
 
 If multiple composition becomes common, add a tiny `composeEditors`
@@ -338,8 +338,8 @@ editor.update((tx) => {
   tx.value.replace({
     children: nextValue,
     selection: null,
-  })
-})
+  });
+});
 ```
 
 That is not initialization. It is explicit document replacement.
@@ -388,8 +388,8 @@ Do not overclaim:
   - either reject `[]` with a better error and docs;
   - or normalize to schema/default-root shape if the core can do that without
     product assumptions.
-  Current recommendation: reject `[]` for raw Slate unless a schema/default
-  element exists.
+    Current recommendation: reject `[]` for raw Slate unless a schema/default
+    element exists.
 
 ## React Runtime Target
 
@@ -554,7 +554,7 @@ Change: Reject `withEditors` / composer arrays.
 - Answer: TypeScript proof matters more. The array shape failed to preserve
   `HistoryEditor` without tuple machinery, while `withEditor: withHistory` passed
   once `withHistory` used `ValueOf<T>`.
-- Evidence: in-memory TypeScript bake-off against live `../slate-v2` paths:
+- Evidence: in-memory TypeScript bake-off against live `.tmp/slate-v2` paths:
   current `withHistory` chain fails; `ValueOf<T>` `withHistory` plus
   `withEditor: withHistory` passes; variadic composer arrays still fail.
 - Rejected alternative: variadic tuple array plus `as const`. Too much ceremony
@@ -642,25 +642,25 @@ Phase 5: browser proof.
 
 ## Pass-State Ledger
 
-| Pass | Status | Evidence Added | Delta | Open |
-| --- | --- | --- | --- | --- |
-| current-state read | complete | live code-highlighting, Slate provider, projection store, createEditor | identified provider-late initialization bug | none |
-| ecosystem comparison | complete | local Lexical, Tiptap, ProseMirror source | chose editor/state creation over provider render | none |
-| issue mining | complete | `#5488`, `#5710`, `#4564`, `#3465`, `#5351` | added issue-solve targets | none |
-| API bake-off | complete | in-memory TypeScript proof against live `../slate-v2` package paths | rejected `withEditors` / composer arrays, accepted `withEditor`, added `withHistory` typing prerequisite | none |
-| closure score | complete | revised public API target, objection ledger, phases, and scorecard | plan reaches `0.93` | none |
-| Ralph execution | complete | `createEditor` options, `useSlateEditor`, `withHistory` generic preservation, provider cleanup, example migration, focused tests, browser proof | active plan executed in `../slate-v2`; dynamic import errors surfaced; production `Editor.isEditor` chunk-order crash fixed | user review |
+| Pass                 | Status   | Evidence Added                                                                                                                                  | Delta                                                                                                                         | Open        |
+| -------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | ----------- |
+| current-state read   | complete | live code-highlighting, Slate provider, projection store, createEditor                                                                          | identified provider-late initialization bug                                                                                   | none        |
+| ecosystem comparison | complete | local Lexical, Tiptap, ProseMirror source                                                                                                       | chose editor/state creation over provider render                                                                              | none        |
+| issue mining         | complete | `#5488`, `#5710`, `#4564`, `#3465`, `#5351`                                                                                                     | added issue-solve targets                                                                                                     | none        |
+| API bake-off         | complete | in-memory TypeScript proof against live `.tmp/slate-v2` package paths                                                                           | rejected `withEditors` / composer arrays, accepted `withEditor`, added `withHistory` typing prerequisite                      | none        |
+| closure score        | complete | revised public API target, objection ledger, phases, and scorecard                                                                              | plan reaches `0.93`                                                                                                           | none        |
+| Ralph execution      | complete | `createEditor` options, `useSlateEditor`, `withHistory` generic preservation, provider cleanup, example migration, focused tests, browser proof | active plan executed in `.tmp/slate-v2`; dynamic import errors surfaced; production `Editor.isEditor` chunk-order crash fixed | user review |
 
 ## Scorecard
 
-| Dimension | Score | Evidence |
-| --- | ---: | --- |
-| React runtime performance | 0.94 | provider render mutation cut, projection immediate build, construction-time initialization |
-| Slate-close DX | 0.93 | `initialValue`, `withEditor`, existing `withReact` / `withHistory` composition |
-| Plate/slate-yjs backbone | 0.90 | replacement transactions stay explicit; no controlled React value API |
-| Regression-proof testing | 0.92 | type tests, initial snapshot tests, replacement selection tests, issue-targeted browser/examples |
-| Research evidence | 0.92 | local Lexical/Tiptap/ProseMirror source read plus live Slate v2 TypeScript bake-off |
-| composability/minimalism | 0.95 | single hook, singular composition callback, no array/plugin DSL |
+| Dimension                 | Score | Evidence                                                                                         |
+| ------------------------- | ----: | ------------------------------------------------------------------------------------------------ |
+| React runtime performance |  0.94 | provider render mutation cut, projection immediate build, construction-time initialization       |
+| Slate-close DX            |  0.93 | `initialValue`, `withEditor`, existing `withReact` / `withHistory` composition                   |
+| Plate/slate-yjs backbone  |  0.90 | replacement transactions stay explicit; no controlled React value API                            |
+| Regression-proof testing  |  0.92 | type tests, initial snapshot tests, replacement selection tests, issue-targeted browser/examples |
+| Research evidence         |  0.92 | local Lexical/Tiptap/ProseMirror source read plus live Slate v2 TypeScript bake-off              |
+| composability/minimalism  |  0.95 | single hook, singular composition callback, no array/plugin DSL                                  |
 
 Total: `0.93`.
 

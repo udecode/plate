@@ -109,14 +109,14 @@ Consequences:
 
 Live owners:
 
-- `../slate-v2/packages/slate-history/src/with-history.ts`
-- `../slate-v2/packages/slate-history/test/history-contract.ts`
-- `../slate-v2/packages/slate-history/test/integrity-contract.ts`
-- `../slate-v2/packages/slate/src/core/apply.ts`
-- `../slate-v2/packages/slate/src/core/public-state.ts`
-- `../slate-v2/packages/slate/src/editor/bookmark.ts`
-- `../slate-v2/packages/slate/test/collab-history-runtime-contract.ts`
-- `../slate-v2/packages/slate/test/selection-rebase-contract.ts`
+- `.tmp/slate-v2/packages/slate-history/src/with-history.ts`
+- `.tmp/slate-v2/packages/slate-history/test/history-contract.ts`
+- `.tmp/slate-v2/packages/slate-history/test/integrity-contract.ts`
+- `.tmp/slate-v2/packages/slate/src/core/apply.ts`
+- `.tmp/slate-v2/packages/slate/src/core/public-state.ts`
+- `.tmp/slate-v2/packages/slate/src/editor/bookmark.ts`
+- `.tmp/slate-v2/packages/slate/test/collab-history-runtime-contract.ts`
+- `.tmp/slate-v2/packages/slate/test/selection-rebase-contract.ts`
 
 Current implementation facts:
 
@@ -317,16 +317,16 @@ Remaining cluster backlog:
 
 ## Regression Proof Matrix
 
-| Contract | Required proof |
-| --- | --- |
-| #3534 multi-block edit undo | package test in `slate-history` or `slate` that reproduces selected multi-block edit, undo, exact selection restore |
-| #4559 deleteFragment undo | package test that selects/deletes a fragment, undoes, and asserts restored fragment selection |
-| #3551 move_nodes undo | package test that moves nodes via public transform/update, undoes, and asserts exact original tree plus selection |
+| Contract                          | Required proof                                                                                                           |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| #3534 multi-block edit undo       | package test in `slate-history` or `slate` that reproduces selected multi-block edit, undo, exact selection restore      |
+| #4559 deleteFragment undo         | package test that selects/deletes a fragment, undoes, and asserts restored fragment selection                            |
+| #3551 move_nodes undo             | package test that moves nodes via public transform/update, undoes, and asserts exact original tree plus selection        |
 | incomplete `set_selection` replay | operation/history test proving replay either resolves against live selection or rejects safely before history corruption |
-| selection-only commits | existing proof stays green: selection-only commits are not saved to history |
-| collaboration import | existing proof stays green: remote imports can skip local history |
-| replace_children undo | existing proof stays green: range delete stores one undoable batch and restores selection |
-| refs/bookmarks | existing bookmark and selection-rebase tests stay green |
+| selection-only commits            | existing proof stays green: selection-only commits are not saved to history                                              |
+| collaboration import              | existing proof stays green: remote imports can skip local history                                                        |
+| replace_children undo             | existing proof stays green: range delete stores one undoable batch and restores selection                                |
+| refs/bookmarks                    | existing bookmark and selection-rebase tests stay green                                                                  |
 
 Fast local verification target for execution:
 
@@ -357,16 +357,16 @@ If a browser row is needed later:
 
 ## Applicable Implementation-Skill Matrix
 
-| Skill | Status | Reason |
-| --- | --- | --- |
-| `clawsweeper` | applied | clusters 6 and 27 plus #4559/#1770/#2288/#3741/#3752 reviewed and synced into fork dossier, coverage matrix, and PR count |
-| `tdd` | required next | execution must start with red package tests |
-| `performance` | applied as non-claim boundary | #3752 is classified as memory benchmark pressure, not correctness closure |
-| `performance-oracle` | skipped until execution | apply if implementation changes operation count, stack retention, or ref transforms |
-| `vercel-react-best-practices` | skipped | no React render surface in first slice |
-| `react-useeffect` | skipped | no React effect surface |
-| `shadcn` | skipped | no UI surface |
-| `high-risk-deliberate-pass` | applied | risk matrix blocks public/API changes and exact issue claims until red/green proof lands |
+| Skill                         | Status                        | Reason                                                                                                                    |
+| ----------------------------- | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `clawsweeper`                 | applied                       | clusters 6 and 27 plus #4559/#1770/#2288/#3741/#3752 reviewed and synced into fork dossier, coverage matrix, and PR count |
+| `tdd`                         | required next                 | execution must start with red package tests                                                                               |
+| `performance`                 | applied as non-claim boundary | #3752 is classified as memory benchmark pressure, not correctness closure                                                 |
+| `performance-oracle`          | skipped until execution       | apply if implementation changes operation count, stack retention, or ref transforms                                       |
+| `vercel-react-best-practices` | skipped                       | no React render surface in first slice                                                                                    |
+| `react-useeffect`             | skipped                       | no React effect surface                                                                                                   |
+| `shadcn`                      | skipped                       | no UI surface                                                                                                             |
+| `high-risk-deliberate-pass`   | applied                       | risk matrix blocks public/API changes and exact issue claims until red/green proof lands                                  |
 
 ## High-Risk Pre-Mortem
 
@@ -398,13 +398,13 @@ Mitigation:
 
 ## Maintainer Objection Ledger
 
-| Objection | Answer | Status |
-| --- | --- | --- |
-| "History is already closed in the roadmap." | Support-package closure is not exact issue closure. The issue matrix still marks #3534/#3551/#4559 as related. | accepted |
-| "This is old Slate issue debt." | Old does not mean stale when the same transaction/history class remains central to v2 and can be tested locally. | accepted |
-| "Why not Android next?" | Android exact closure needs raw-device proof. This core lane is runnable now and strengthens collaboration/history. | accepted |
+| Objection                                     | Answer                                                                                                                  | Status   |
+| --------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- | -------- |
+| "History is already closed in the roadmap."   | Support-package closure is not exact issue closure. The issue matrix still marks #3534/#3551/#4559 as related.          | accepted |
+| "This is old Slate issue debt."               | Old does not mean stale when the same transaction/history class remains central to v2 and can be tested locally.        | accepted |
+| "Why not Android next?"                       | Android exact closure needs raw-device proof. This core lane is runnable now and strengthens collaboration/history.     | accepted |
 | "Selection bookmarks are a ProseMirror idea." | The mechanism is useful; the public position model is not. Slate can keep JSON paths and internal op-rebased bookmarks. | accepted |
-| "Do not add new public history API." | Agreed. First slice is internal proof only. | accepted |
+| "Do not add new public history API."          | Agreed. First slice is internal proof only.                                                                             | accepted |
 
 ## Pass Schedule
 
@@ -423,14 +423,14 @@ Mitigation:
 
 ## Pass-State Ledger
 
-| Pass | Status | Evidence added | Plan delta | Open issues | Next owner |
-| --- | --- | --- | --- | --- | --- |
-| current-state read and initial score | complete | recent completion files, full issue ledger plan, gitcrawl clusters 6/27, live `with-history`, core transaction, bookmark, and history tests | selected `v2-core-engine-history-selection-undo` as next plan | none for planning | ralph |
-| related issue discovery | complete | refreshed gitcrawl threads for #3534/#3551/#3705/#3756/#3921/#4559/#1770/#2288/#3741/#3752 plus neighbors for #3534/#3705 | #3705/#3756/#3921/#3741/#3752 added to coverage matrix accounting | none for planning | ralph |
-| issue-ledger pass | complete | coverage matrix, fork dossier, PR count, and full issue-ledger execution row synced | fixed claims unchanged; improved/related/not-claimed count moves to `99` | no new closure claims | ralph |
-| research/source refresh | complete | live Slate v2 history/core/bookmark/collab files refreshed; local Lexical/ProseMirror/Tiptap source mechanisms checked | plan now uses source-backed tags/bookmarks/selection mapping/command-chain decisions | none for planning | ralph |
-| high-risk deliberate pass | complete | premortem and exact-claim gates require red/green issue proof before promotion | implementation must start with package tests, not API changes | none for planning | ralph |
-| closure score | complete | scorecard raised above gate with no dimension below `0.85` | plan is ready for execution, not issue closure | execution proof still needed | ralph |
+| Pass                                 | Status   | Evidence added                                                                                                                              | Plan delta                                                                           | Open issues                  | Next owner |
+| ------------------------------------ | -------- | ------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ | ---------------------------- | ---------- |
+| current-state read and initial score | complete | recent completion files, full issue ledger plan, gitcrawl clusters 6/27, live `with-history`, core transaction, bookmark, and history tests | selected `v2-core-engine-history-selection-undo` as next plan                        | none for planning            | ralph      |
+| related issue discovery              | complete | refreshed gitcrawl threads for #3534/#3551/#3705/#3756/#3921/#4559/#1770/#2288/#3741/#3752 plus neighbors for #3534/#3705                   | #3705/#3756/#3921/#3741/#3752 added to coverage matrix accounting                    | none for planning            | ralph      |
+| issue-ledger pass                    | complete | coverage matrix, fork dossier, PR count, and full issue-ledger execution row synced                                                         | fixed claims unchanged; improved/related/not-claimed count moves to `99`             | no new closure claims        | ralph      |
+| research/source refresh              | complete | live Slate v2 history/core/bookmark/collab files refreshed; local Lexical/ProseMirror/Tiptap source mechanisms checked                      | plan now uses source-backed tags/bookmarks/selection mapping/command-chain decisions | none for planning            | ralph      |
+| high-risk deliberate pass            | complete | premortem and exact-claim gates require red/green issue proof before promotion                                                              | implementation must start with package tests, not API changes                        | none for planning            | ralph      |
+| closure score                        | complete | scorecard raised above gate with no dimension below `0.85`                                                                                  | plan is ready for execution, not issue closure                                       | execution proof still needed | ralph      |
 
 ## Plan Deltas From This Pass
 
@@ -513,14 +513,14 @@ when operation inverse or range delete code changes.
 
 ## Confidence Scorecard
 
-| Dimension | Score | Evidence |
-| --- | ---: | --- |
-| React 19.2 runtime performance | 0.92 | no React hot path planned; commits already carry dirty runtime ids in `public-state.ts`; React consumption is a negative constraint only |
-| Slate-close unopinionated DX | 0.92 | no new public API; keeps `editor.update`, metadata, tags, and `HistoryEditor` |
-| Plate and slate-yjs migration backbone | 0.93 | commit metadata, remote history skip, runtime-id locality, and collaboration tests are current source owners |
-| Regression-proof testing strategy | 0.94 | exact issue-shaped package tests are named before any fix; fixed claims stay blocked until red/green proof lands |
-| Research evidence completeness | 0.92 | live Slate v2 source plus local Lexical/ProseMirror/Tiptap mechanisms were refreshed for this pass |
-| shadcn-style composability and hook minimalism | 0.91 | React/UI not in scope; plan avoids new hooks/components and keeps extension ergonomics out of the engine proof |
+| Dimension                                      | Score | Evidence                                                                                                                                 |
+| ---------------------------------------------- | ----: | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| React 19.2 runtime performance                 |  0.92 | no React hot path planned; commits already carry dirty runtime ids in `public-state.ts`; React consumption is a negative constraint only |
+| Slate-close unopinionated DX                   |  0.92 | no new public API; keeps `editor.update`, metadata, tags, and `HistoryEditor`                                                            |
+| Plate and slate-yjs migration backbone         |  0.93 | commit metadata, remote history skip, runtime-id locality, and collaboration tests are current source owners                             |
+| Regression-proof testing strategy              |  0.94 | exact issue-shaped package tests are named before any fix; fixed claims stay blocked until red/green proof lands                         |
+| Research evidence completeness                 |  0.92 | live Slate v2 source plus local Lexical/ProseMirror/Tiptap mechanisms were refreshed for this pass                                       |
+| shadcn-style composability and hook minimalism |  0.91 | React/UI not in scope; plan avoids new hooks/components and keeps extension ergonomics out of the engine proof                           |
 
 Weighted score: `0.93`.
 
@@ -531,7 +531,7 @@ issue-fix claim and adds no public API.
 
 Status: execution slice complete.
 
-- Added issue-shaped package proof in `../slate-v2/packages/slate-history/test/history-contract.ts`.
+- Added issue-shaped package proof in `.tmp/slate-v2/packages/slate-history/test/history-contract.ts`.
 - Promoted #3534, #3551, and #4559 to exact `Fixes` claims.
 - Promoted #3705 and #3921 to `Improves` claims for the model-level partial
   `set_selection` guard.
@@ -543,11 +543,11 @@ Status: execution slice complete.
 Verification:
 
 ```bash
-cd ../slate-v2 && bun test ./packages/slate-history/test/history-contract.ts ./packages/slate-history/test/integrity-contract.ts
-cd ../slate-v2 && bun test ./packages/slate/test/collab-history-runtime-contract.ts ./packages/slate/test/selection-rebase-contract.ts
-cd ../slate-v2 && bun --filter slate-history typecheck
-cd ../slate-v2 && bun --filter slate typecheck
-cd ../slate-v2 && bun lint:fix
+cd .tmp/slate-v2 && bun test ./packages/slate-history/test/history-contract.ts ./packages/slate-history/test/integrity-contract.ts
+cd .tmp/slate-v2 && bun test ./packages/slate/test/collab-history-runtime-contract.ts ./packages/slate/test/selection-rebase-contract.ts
+cd .tmp/slate-v2 && bun --filter slate-history typecheck
+cd .tmp/slate-v2 && bun --filter slate typecheck
+cd .tmp/slate-v2 && bun lint:fix
 ```
 
 All gates passed after lint. The execution checkpoint is

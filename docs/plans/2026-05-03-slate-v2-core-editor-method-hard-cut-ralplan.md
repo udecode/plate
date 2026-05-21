@@ -11,12 +11,12 @@ move normal writes to `tx.*`, and internalize runtime-policy leftovers.
 The live source already has the right substrate:
 
 - `BaseEditor` is small: `read`, `subscribe`, `update`, `extend`
-  (`../slate-v2/packages/slate/src/interfaces/editor.ts:480-490`).
+  (`.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:480-490`).
 - `EditorCoreStateView` and `EditorCoreUpdateTransaction` already expose grouped
-  state/tx APIs (`../slate-v2/packages/slate/src/interfaces/editor.ts:445-475`).
+  state/tx APIs (`.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:445-475`).
 - `EditorStaticApi` still exposes 99 methods and mixes reads, writes, runtime
   internals, extension registration, and legacy helper policy
-  (`../slate-v2/packages/slate/src/interfaces/editor.ts:1113-1704`).
+  (`.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:1113-1704`).
 
 Blunt take: keeping all 99 public static methods is architectural debt. It keeps
 old Slate familiar, but it also preserves the exact object-shaped junk drawer
@@ -145,23 +145,23 @@ Follow-ups:
 
 Current score: `0.93`.
 
-| Dimension | Score | Evidence |
-| --- | ---: | --- |
-| React 19.2 runtime performance | 0.86 | Method census shows docs/site source are already on `editor.read/update`; hot render paths should not depend on public static methods. Generated bundles were excluded from the census. |
-| Slate-close unopinionated DX | 0.91 | Live `BaseEditor` is only `read`, `subscribe`, `update`, `extend`; docs/examples already teach `state/tx`; `state.nodes.void` stays Slate-familiar. |
-| Plate and slate-yjs migration backbone | 0.87 | Live extension namespaces, `tx.operations.replay`, commit metadata, bookmarks, runtime ids, and `slate/internal` imports cover the backbone without a public command namespace. |
-| Regression-proof testing strategy | 0.85 | Existing public-surface, state/tx, write-boundary, extension, bookmark, command/internal, and migration contracts are identified; final implementation still needs red contract edits per batch. |
-| Research evidence completeness | 0.90 | Live source/test census now backs the Lexical read/update, ProseMirror transaction ownership, and Tiptap-extension-DX comparison. |
-| shadcn-style composability/minimalism | 0.88 | Public API becomes small instance lifecycle plus grouped state/tx APIs; product commands stay above raw Slate. |
+| Dimension                              | Score | Evidence                                                                                                                                                                                         |
+| -------------------------------------- | ----: | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| React 19.2 runtime performance         |  0.86 | Method census shows docs/site source are already on `editor.read/update`; hot render paths should not depend on public static methods. Generated bundles were excluded from the census.          |
+| Slate-close unopinionated DX           |  0.91 | Live `BaseEditor` is only `read`, `subscribe`, `update`, `extend`; docs/examples already teach `state/tx`; `state.nodes.void` stays Slate-familiar.                                              |
+| Plate and slate-yjs migration backbone |  0.87 | Live extension namespaces, `tx.operations.replay`, commit metadata, bookmarks, runtime ids, and `slate/internal` imports cover the backbone without a public command namespace.                  |
+| Regression-proof testing strategy      |  0.85 | Existing public-surface, state/tx, write-boundary, extension, bookmark, command/internal, and migration contracts are identified; final implementation still needs red contract edits per batch. |
+| Research evidence completeness         |  0.90 | Live source/test census now backs the Lexical read/update, ProseMirror transaction ownership, and Tiptap-extension-DX comparison.                                                                |
+| shadcn-style composability/minimalism  |  0.88 | Public API becomes small instance lifecycle plus grouped state/tx APIs; product commands stay above raw Slate.                                                                                   |
 
 Completion gates met:
 
-- public root export hard cut is implemented in `../slate-v2`
+- public root export hard cut is implemented in `.tmp/slate-v2`
 - public type wildcard for the editor table is removed
 - `state.schema.isElementReadOnly` is renamed to `state.schema.isReadOnly`
 - current internal `Editor.*` remains behind internal entrypoints only
 - focused public-surface/state-tx/write-boundary/schema contracts are green
-- `bun check` is green in `../slate-v2`
+- `bun check` is green in `.tmp/slate-v2`
 
 ## 2026-05-03 method census and objection closure pass
 
@@ -169,16 +169,16 @@ Status: `complete`.
 
 Live source read:
 
-- `../slate-v2/packages/slate/src/interfaces/editor.ts` still contains
+- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts` still contains
   `EditorStaticApi`, `InternalEditor`, and `export { InternalEditor as Editor }`.
-- `../slate-v2/packages/slate/src/internal/index.ts` exports internal
+- `.tmp/slate-v2/packages/slate/src/internal/index.ts` exports internal
   `Editor`.
-- `../slate-v2/packages/slate/test/public-surface-contract.ts` already asserts
+- `.tmp/slate-v2/packages/slate/test/public-surface-contract.ts` already asserts
   the primary public package surface does not expose `Editor`, transform
   namespaces, command registry helpers, or broad editor instance methods.
-- `../slate-v2/packages/slate/test/state-tx-public-api-contract.ts` already
+- `.tmp/slate-v2/packages/slate/test/state-tx-public-api-contract.ts` already
   proves grouped `state` and `tx` reads/writes.
-- `../slate-v2/packages/slate/test/write-boundary-contract.ts` already proves
+- `.tmp/slate-v2/packages/slate/test/write-boundary-contract.ts` already proves
   normal writes go through `editor.update` and `tx`.
 
 Census command shape:
@@ -202,29 +202,29 @@ Result:
 
 Top current `Editor.*` pressure:
 
-| Method | Count | Meaning |
-| --- | ---: | --- |
-| `replace` | 488 | Mostly test fixture seeding; belongs behind internal/test helpers and `tx.value.replace`. |
-| `getSnapshot` | 396 | Mostly tests/snapshot contracts; public docs/examples should keep using `state.runtime.snapshot` only when a full snapshot is intentional. |
-| `getChildren` | 84 | Mostly tests/internal; public read path is `state.value.get()`. |
-| `after` | 70 | query tests/internal; public read path is `state.points.after`. |
-| `string` | 65 | query tests/internal; public read path is `state.text.string`. |
-| `isBlock` | 58 | query tests/internal; public read path is `state.schema.isBlock`. |
-| `registerCommand` | 18 | tests only; confirms command helpers are internal contract/test substrate, not public authoring API. |
-| `pathRef` / `pointRef` / `rangeRef` | 36 combined | runtime/browser internals plus ref tests; supports internalizing ref sets while keeping bookmark/runtime-id public anchor story. |
+| Method                              |       Count | Meaning                                                                                                                                    |
+| ----------------------------------- | ----------: | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `replace`                           |         488 | Mostly test fixture seeding; belongs behind internal/test helpers and `tx.value.replace`.                                                  |
+| `getSnapshot`                       |         396 | Mostly tests/snapshot contracts; public docs/examples should keep using `state.runtime.snapshot` only when a full snapshot is intentional. |
+| `getChildren`                       |          84 | Mostly tests/internal; public read path is `state.value.get()`.                                                                            |
+| `after`                             |          70 | query tests/internal; public read path is `state.points.after`.                                                                            |
+| `string`                            |          65 | query tests/internal; public read path is `state.text.string`.                                                                             |
+| `isBlock`                           |          58 | query tests/internal; public read path is `state.schema.isBlock`.                                                                          |
+| `registerCommand`                   |          18 | tests only; confirms command helpers are internal contract/test substrate, not public authoring API.                                       |
+| `pathRef` / `pointRef` / `rangeRef` | 36 combined | runtime/browser internals plus ref tests; supports internalizing ref sets while keeping bookmark/runtime-id public anchor story.           |
 
 Sensitive-method census:
 
-| Method/family | Count | Public docs/site | Runtime | Tests | Decision |
-| --- | ---: | ---: | ---: | ---: | --- |
-| `elementReadOnly` / `isElementReadOnly` | 6 | 0 | 6 | 0 | cut/rename out of public API; runtime becomes `isReadOnly` policy. |
-| `shouldMergeNodesRemovePrevNode` | 1 | 0 | 1 | 0 | internal merge policy only. |
-| ref creation/sets | 44 | 0 | 37 | 7 | internal runtime/test surface; public durable anchors are bookmarks/runtime ids. |
-| normalizing toggles | 7 | 0 | 7 | 0 | internal only; public control is `tx.withoutNormalizing`. |
-| command registration/definition | 19 | 0 | 0 | 19 | internal/test only; no public command catalog in raw Slate. |
-| extension registry/capability/normalizer/commit listeners | 22 | 0 | 1 | 21 | internal extension runtime only. |
-| `replace` / `reset` | 489 | 0 | 3 | 486 | `replace` remains internal/test; `reset` dies. |
-| static `read` / `update` | 2 | 0 | 0 | 2 | cut static wrappers; instance methods stay. |
+| Method/family                                             | Count | Public docs/site | Runtime | Tests | Decision                                                                         |
+| --------------------------------------------------------- | ----: | ---------------: | ------: | ----: | -------------------------------------------------------------------------------- |
+| `elementReadOnly` / `isElementReadOnly`                   |     6 |                0 |       6 |     0 | cut/rename out of public API; runtime becomes `isReadOnly` policy.               |
+| `shouldMergeNodesRemovePrevNode`                          |     1 |                0 |       1 |     0 | internal merge policy only.                                                      |
+| ref creation/sets                                         |    44 |                0 |      37 |     7 | internal runtime/test surface; public durable anchors are bookmarks/runtime ids. |
+| normalizing toggles                                       |     7 |                0 |       7 |     0 | internal only; public control is `tx.withoutNormalizing`.                        |
+| command registration/definition                           |    19 |                0 |       0 |    19 | internal/test only; no public command catalog in raw Slate.                      |
+| extension registry/capability/normalizer/commit listeners |    22 |                0 |       1 |    21 | internal extension runtime only.                                                 |
+| `replace` / `reset`                                       |   489 |                0 |       3 |   486 | `replace` remains internal/test; `reset` dies.                                   |
+| static `read` / `update`                                  |     2 |                0 |       0 |     2 | cut static wrappers; instance methods stay.                                      |
 
 Conclusion:
 
@@ -242,31 +242,31 @@ Status: `complete`.
 
 Live source changes:
 
-- `../slate-v2/packages/slate/src/index.ts` no longer exports `./core`,
+- `.tmp/slate-v2/packages/slate/src/index.ts` no longer exports `./core`,
   `./editor`, `./transforms-node`, `./transforms-selection`, or
   `./transforms-text`.
-- `../slate-v2/packages/slate/src/index.ts` now explicitly exports the intended
+- `.tmp/slate-v2/packages/slate/src/index.ts` now explicitly exports the intended
   public root: `createEditor`, `defineEditorExtension`, `elementProperty`,
   `isEditor`, pure data namespaces, public editor lifecycle/state/tx types, and
   transform option types.
-- `../slate-v2/packages/slate/src/index.ts` no longer wildcard-exports
+- `.tmp/slate-v2/packages/slate/src/index.ts` no longer wildcard-exports
   `./interfaces`, so `EditorStaticApi` and `EditorElementReadOnlyOptions` do
   not leak through the primary package.
-- `../slate-v2/packages/slate/src/interfaces/editor.ts`,
-  `../slate-v2/packages/slate/src/create-editor.ts`, and
-  `../slate-v2/packages/slate/src/core/public-state.ts` expose the public
+- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`,
+  `.tmp/slate-v2/packages/slate/src/create-editor.ts`, and
+  `.tmp/slate-v2/packages/slate/src/core/public-state.ts` expose the public
   read-only schema predicate as `isReadOnly`.
-- `../slate-v2/site/examples/ts/dom-coverage-boundaries.tsx` no longer imports
+- `.tmp/slate-v2/site/examples/ts/dom-coverage-boundaries.tsx` no longer imports
   internal `Editor` for a public example snapshot read.
-- `../slate-v2/scripts/benchmarks/core/current/*.mjs` import internal `Editor`
+- `.tmp/slate-v2/scripts/benchmarks/core/current/*.mjs` import internal `Editor`
   from the internal entrypoint instead of the primary package.
 
 Regression coverage:
 
-- `../slate-v2/packages/slate/test/public-surface-contract.ts` now asserts the
+- `.tmp/slate-v2/packages/slate/test/public-surface-contract.ts` now asserts the
   intended small public root, rejects raw editor/core/transform helper exports,
   and rejects wildcard-exporting the internal editor type table.
-- `../slate-v2/packages/slate/test/schema-contract.ts` now proves
+- `.tmp/slate-v2/packages/slate/test/schema-contract.ts` now proves
   `state.schema.isReadOnly(...)`.
 
 Verification:
@@ -297,16 +297,16 @@ Target public shape:
 
 ```ts
 editor.read((state) => {
-  state.selection.get()
-  state.nodes.above()
-  state.schema.isVoid(element)
-})
+  state.selection.get();
+  state.nodes.above();
+  state.schema.isVoid(element);
+});
 
 editor.update((tx) => {
-  tx.nodes.set({ type: 'heading' })
-  tx.selection.collapse({ edge: 'end' })
-  tx.value.replace({ children, selection: null })
-})
+  tx.nodes.set({ type: "heading" });
+  tx.selection.collapse({ edge: "end" });
+  tx.value.replace({ children, selection: null });
+});
 ```
 
 Keep:
@@ -335,7 +335,7 @@ Cut from public author API:
 Current source:
 
 - `BaseEditor.read`, `subscribe`, `update`, `extend`
-  (`../slate-v2/packages/slate/src/interfaces/editor.ts:480-490`).
+  (`.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:480-490`).
 
 Decision:
 
@@ -382,18 +382,18 @@ Target shape:
 
 ```ts
 editor.read((state) => {
-  state.nodes.above()
-  state.points.after(at)
-  state.ranges.get(at)
-  state.fragment.get({ at })
-  state.text.string(at)
-  state.value.operations()
-  state.value.lastCommit()
-  state.runtime.idAt(path)
-  state.runtime.pathOf(runtimeId)
-  state.runtime.snapshot()
-  state.schema.isVoid(element)
-})
+  state.nodes.above();
+  state.points.after(at);
+  state.ranges.get(at);
+  state.fragment.get({ at });
+  state.text.string(at);
+  state.value.operations();
+  state.value.lastCommit();
+  state.runtime.idAt(path);
+  state.runtime.pathOf(runtimeId);
+  state.runtime.snapshot();
+  state.schema.isVoid(element);
+});
 ```
 
 Resolved revisions:
@@ -425,16 +425,16 @@ Target shape:
 
 ```ts
 editor.update((tx) => {
-  tx.marks.add('bold', true)
-  tx.text.insert('hello')
-  tx.fragment.insert(fragment)
-  tx.break.insert()
-  tx.selection.set(target)
-  tx.nodes.insert(node)
-  tx.value.replace({ children, marks: null, selection: null })
-  tx.normalize()
-  tx.withoutNormalizing(() => {})
-})
+  tx.marks.add("bold", true);
+  tx.text.insert("hello");
+  tx.fragment.insert(fragment);
+  tx.break.insert();
+  tx.selection.set(target);
+  tx.nodes.insert(node);
+  tx.value.replace({ children, marks: null, selection: null });
+  tx.normalize();
+  tx.withoutNormalizing(() => {});
+});
 ```
 
 Hard cuts:
@@ -443,7 +443,7 @@ Hard cuts:
   `tx.nodes.insert(nodes, options)`.
 - Drop `tx.nodes.insertMany` unless a later proof shows it has a distinct
   semantic. Current live `insert` and `insertMany` both accept `T | T[]`
-  (`../slate-v2/packages/slate/src/interfaces/editor.ts:213-220`), so keeping
+  (`.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:213-220`), so keeping
   both is just API noise.
 - Drop `reset`; use `tx.value.replace`.
 - Drop public `withoutNormalizing(editor, fn)`; keep only inside `tx`.
@@ -504,10 +504,9 @@ Replacement:
 ```ts
 editor.read((state) => {
   state.nodes.above({
-    match: (node) =>
-      Element.isElement(node) && state.schema.isReadOnly(node),
-  })
-})
+    match: (node) => Element.isElement(node) && state.schema.isReadOnly(node),
+  });
+});
 ```
 
 Reason:
@@ -520,34 +519,34 @@ Reason:
 
 Every current static method is accounted for below.
 
-| Decision | Methods |
-| --- | --- |
-| keep instance, cut static wrapper | `read`, `update`, `subscribe`, `extend` |
-| keep named export, cut static wrapper | `isEditor`, `defineEditorExtension` |
-| move to `state.nodes` | `above`, `first`, `getChildren`, `hasBlocks`, `hasInlines`, `hasPath`, `hasTexts`, `isEmpty`, `last`, `leaf`, `levels`, `next`, `parent`, `path`, `positions`, `previous`, `void` |
-| move to `state.points` | `after`, `before`, `point`, `isEdge`, `isEnd`, `isStart` |
-| move to `state.ranges` | `bookmark`, `edges`, `range`, `projectRange`, `unhangRange` |
-| move to `state.fragment` | `fragment`, `getFragment` |
-| move to `state.text` | `string` |
-| move to `state.value` | `getOperations`, `getLastCommit` |
-| move to `state.runtime` | `getPathByRuntimeId`, `getRuntimeId`, `getSelection`, `getSnapshot` |
-| move to `state.schema` | `isBlock`, `isElementReadOnly` -> `isReadOnly`, `isInline`, `isSelectable`, `isVoid` |
-| move to `tx.marks` | `addMark`, `removeMark`, `toggleMark` |
-| move to `tx.text` | `delete`, `deleteBackward`, `deleteForward`, `insertText` |
-| move to `tx.fragment` | `deleteFragment`, `insertFragment` |
-| move to `tx.break` | `insertBreak`, `insertSoftBreak` |
-| move to `tx.selection` | `collapse`, `deselect`, `move`, `select`, `setPoint`, `setSelection` |
-| move to `tx.nodes` | `insertNode`, `insertNodes`, `liftNodes`, `mergeNodes`, `moveNodes`, `removeNodes`, `setNodes`, `splitNodes`, `unsetNodes`, `unwrapNodes`, `wrapNodes` |
-| move to `tx.value` | `replace`, `reset` |
-| move to `tx` control | `normalize`, `withoutNormalizing` |
-| internal runtime | `getOperationDirtiness`, `getDirtyPaths`, `getExtensionRegistry`, `pathRef`, `pathRefs`, `pointRef`, `pointRefs`, `rangeRef`, `rangeRefs`, `defineCommand`, `registerCommand`, `registerCapability`, `registerNormalizer`, `registerCommitListener`, `subscribeSource`, `isNormalizing`, `setNormalizing`, `shouldMergeNodesRemovePrevNode` |
-| cut | `elementReadOnly` |
+| Decision                              | Methods                                                                                                                                                                                                                                                                                                                                     |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| keep instance, cut static wrapper     | `read`, `update`, `subscribe`, `extend`                                                                                                                                                                                                                                                                                                     |
+| keep named export, cut static wrapper | `isEditor`, `defineEditorExtension`                                                                                                                                                                                                                                                                                                         |
+| move to `state.nodes`                 | `above`, `first`, `getChildren`, `hasBlocks`, `hasInlines`, `hasPath`, `hasTexts`, `isEmpty`, `last`, `leaf`, `levels`, `next`, `parent`, `path`, `positions`, `previous`, `void`                                                                                                                                                           |
+| move to `state.points`                | `after`, `before`, `point`, `isEdge`, `isEnd`, `isStart`                                                                                                                                                                                                                                                                                    |
+| move to `state.ranges`                | `bookmark`, `edges`, `range`, `projectRange`, `unhangRange`                                                                                                                                                                                                                                                                                 |
+| move to `state.fragment`              | `fragment`, `getFragment`                                                                                                                                                                                                                                                                                                                   |
+| move to `state.text`                  | `string`                                                                                                                                                                                                                                                                                                                                    |
+| move to `state.value`                 | `getOperations`, `getLastCommit`                                                                                                                                                                                                                                                                                                            |
+| move to `state.runtime`               | `getPathByRuntimeId`, `getRuntimeId`, `getSelection`, `getSnapshot`                                                                                                                                                                                                                                                                         |
+| move to `state.schema`                | `isBlock`, `isElementReadOnly` -> `isReadOnly`, `isInline`, `isSelectable`, `isVoid`                                                                                                                                                                                                                                                        |
+| move to `tx.marks`                    | `addMark`, `removeMark`, `toggleMark`                                                                                                                                                                                                                                                                                                       |
+| move to `tx.text`                     | `delete`, `deleteBackward`, `deleteForward`, `insertText`                                                                                                                                                                                                                                                                                   |
+| move to `tx.fragment`                 | `deleteFragment`, `insertFragment`                                                                                                                                                                                                                                                                                                          |
+| move to `tx.break`                    | `insertBreak`, `insertSoftBreak`                                                                                                                                                                                                                                                                                                            |
+| move to `tx.selection`                | `collapse`, `deselect`, `move`, `select`, `setPoint`, `setSelection`                                                                                                                                                                                                                                                                        |
+| move to `tx.nodes`                    | `insertNode`, `insertNodes`, `liftNodes`, `mergeNodes`, `moveNodes`, `removeNodes`, `setNodes`, `splitNodes`, `unsetNodes`, `unwrapNodes`, `wrapNodes`                                                                                                                                                                                      |
+| move to `tx.value`                    | `replace`, `reset`                                                                                                                                                                                                                                                                                                                          |
+| move to `tx` control                  | `normalize`, `withoutNormalizing`                                                                                                                                                                                                                                                                                                           |
+| internal runtime                      | `getOperationDirtiness`, `getDirtyPaths`, `getExtensionRegistry`, `pathRef`, `pathRefs`, `pointRef`, `pointRefs`, `rangeRef`, `rangeRefs`, `defineCommand`, `registerCommand`, `registerCapability`, `registerNormalizer`, `registerCommitListener`, `subscribeSource`, `isNormalizing`, `setNormalizing`, `shouldMergeNodesRemovePrevNode` |
+| cut                                   | `elementReadOnly`                                                                                                                                                                                                                                                                                                                           |
 
 ## Internal runtime target
 
 Keep `EditorTransformApi` internal. Its comment already says normal public
 writes go through `editor.update((tx) => ...)`
-(`../slate-v2/packages/slate/src/interfaces/editor.ts:493-497`).
+(`.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:493-497`).
 
 Hard rule:
 
@@ -614,18 +613,18 @@ The plan must prove:
 
 ## Legacy regression proof matrix
 
-| Risk | Required proof |
-| --- | --- |
-| static API leaks after cut | public export contract rejects `EditorStaticApi` value exports |
-| docs keep teaching old API | docs grep for `Editor.` write helpers is empty outside migration/internal notes |
-| examples regress | site examples compile and browser smoke through `editor.read/update` |
-| transforms lose behavior | unit tests for mark/text/fragment/selection/node transforms through `tx.*` |
-| replace/reset break fixtures | public fixtures use `tx.value.replace`; internal fixtures use test helper |
-| schema predicates drift | tests for `schema.isVoid`, `schema.isInline`, `schema.isSelectable`, `schema.isReadOnly` |
-| merge policy hidden break | merge-nodes tests cover previous-node removal without public helper |
-| refs cut breaks anchors | bookmark/runtime-id tests cover durable anchors through operations |
-| collab replay breaks | replay operations through `tx.operations.replay` with commit metadata |
-| extension migration fails | extension namespace tests for `state.<name>` and `tx.<name>` |
+| Risk                         | Required proof                                                                           |
+| ---------------------------- | ---------------------------------------------------------------------------------------- |
+| static API leaks after cut   | public export contract rejects `EditorStaticApi` value exports                           |
+| docs keep teaching old API   | docs grep for `Editor.` write helpers is empty outside migration/internal notes          |
+| examples regress             | site examples compile and browser smoke through `editor.read/update`                     |
+| transforms lose behavior     | unit tests for mark/text/fragment/selection/node transforms through `tx.*`               |
+| replace/reset break fixtures | public fixtures use `tx.value.replace`; internal fixtures use test helper                |
+| schema predicates drift      | tests for `schema.isVoid`, `schema.isInline`, `schema.isSelectable`, `schema.isReadOnly` |
+| merge policy hidden break    | merge-nodes tests cover previous-node removal without public helper                      |
+| refs cut breaks anchors      | bookmark/runtime-id tests cover durable anchors through operations                       |
+| collab replay breaks         | replay operations through `tx.operations.replay` with commit metadata                    |
+| extension migration fails    | extension namespace tests for `state.<name>` and `tx.<name>`                             |
 
 ## Browser stress / parity strategy
 
@@ -645,14 +644,14 @@ Required browser families:
 
 ## Applicable implementation-skill review matrix
 
-| Lens | Status | Finding | Plan delta |
-| --- | --- | --- | --- |
-| `vercel-react-best-practices` | applied | Avoid broad render-time reads and repeated subscriptions. | React fallout section requires selector-backed reads. |
-| `performance-oracle` | applied | Public APIs should not force O(n) or full-snapshot paths into hot render loops. | Internalize dirty/runtime helpers; use commit metadata. |
-| `performance` | applied | Repeated-unit budgets and INP rows are needed before closure. | Score stays pending; proof matrix names repeated-unit risk. |
-| `tdd` | applied | Behavior proof should go through public API, not removed helper existence tests. | Proof matrix uses tx/state behavior contracts. |
-| `build-web-apps:shadcn` | skipped | No UI/component API is being designed in this pass. | No change. |
-| `react-useeffect` | skipped | No effect implementation shape is being changed yet. | Revisit during React selector implementation. |
+| Lens                          | Status  | Finding                                                                          | Plan delta                                                  |
+| ----------------------------- | ------- | -------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| `vercel-react-best-practices` | applied | Avoid broad render-time reads and repeated subscriptions.                        | React fallout section requires selector-backed reads.       |
+| `performance-oracle`          | applied | Public APIs should not force O(n) or full-snapshot paths into hot render loops.  | Internalize dirty/runtime helpers; use commit metadata.     |
+| `performance`                 | applied | Repeated-unit budgets and INP rows are needed before closure.                    | Score stays pending; proof matrix names repeated-unit risk. |
+| `tdd`                         | applied | Behavior proof should go through public API, not removed helper existence tests. | Proof matrix uses tx/state behavior contracts.              |
+| `build-web-apps:shadcn`       | skipped | No UI/component API is being designed in this pass.                              | No change.                                                  |
+| `react-useeffect`             | skipped | No effect implementation shape is being changed yet.                             | Revisit during React selector implementation.               |
 
 ## High-risk deliberate-mode pre-mortem
 
@@ -854,16 +853,16 @@ Rejected:
 
 ## Pass schedule and pass-state ledger
 
-| Pass | Status | Evidence added | Plan delta | Open issues | Next owner |
-| --- | --- | --- | --- | --- | --- |
-| Current-state read and initial score | complete | live `../slate-v2` editor interfaces, public-state runtime, extension runtime; compiled research; local Lexical/ProseMirror/Tiptap greps | initial hard-cut matrix for all 99 methods | need import census and detailed ledger closure | slate-ralplan |
-| Intent/boundary and decision brief | complete | user request + live source mismatch | intent/non-goals/decision boundaries added | none after method-census pass | slate-ralplan |
-| Research/live-source refresh | complete for pass 1 | research pages and local source greps | Lexical/PM/Tiptap evidence recorded | no research page update needed yet | slate-ralplan |
-| Performance/DX/migration/regression pressure | complete for planning | 1590-file source/docs/example census; 2284 `Editor.*` hits bucketed by docs/site/runtime/test | confirms public teaching surface is already `state/tx`; static namespace is internal/test debt | implementation still needs batch red contracts | slate-ralplan |
-| Maintainer objection ledger | complete for planning | public `Editor` value, command helpers, ref sets, read-only predicate rows closed | no row remains `revise` | closure score still below threshold | slate-ralplan |
-| High-risk deliberate pass | complete for planning | pre-mortem plus concrete batch gates | implementation must stay batched | closure pass must decide readiness | slate-ralplan |
-| Method census and objection closure | complete | live counts for `Editor.*`, sensitive method families, existing public-surface/state-tx/write-boundary tests | public `Editor` value cut decided; `state.nodes.void` kept; `editor.extend` kept | no user decision open | slate-ralplan |
-| Closure score and implementation readiness | pending | none | none | score below threshold; final handoff not written | slate-ralplan |
+| Pass                                         | Status                | Evidence added                                                                                                                             | Plan delta                                                                                     | Open issues                                      | Next owner    |
+| -------------------------------------------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------- | ------------------------------------------------ | ------------- |
+| Current-state read and initial score         | complete              | live `.tmp/slate-v2` editor interfaces, public-state runtime, extension runtime; compiled research; local Lexical/ProseMirror/Tiptap greps | initial hard-cut matrix for all 99 methods                                                     | need import census and detailed ledger closure   | slate-ralplan |
+| Intent/boundary and decision brief           | complete              | user request + live source mismatch                                                                                                        | intent/non-goals/decision boundaries added                                                     | none after method-census pass                    | slate-ralplan |
+| Research/live-source refresh                 | complete for pass 1   | research pages and local source greps                                                                                                      | Lexical/PM/Tiptap evidence recorded                                                            | no research page update needed yet               | slate-ralplan |
+| Performance/DX/migration/regression pressure | complete for planning | 1590-file source/docs/example census; 2284 `Editor.*` hits bucketed by docs/site/runtime/test                                              | confirms public teaching surface is already `state/tx`; static namespace is internal/test debt | implementation still needs batch red contracts   | slate-ralplan |
+| Maintainer objection ledger                  | complete for planning | public `Editor` value, command helpers, ref sets, read-only predicate rows closed                                                          | no row remains `revise`                                                                        | closure score still below threshold              | slate-ralplan |
+| High-risk deliberate pass                    | complete for planning | pre-mortem plus concrete batch gates                                                                                                       | implementation must stay batched                                                               | closure pass must decide readiness               | slate-ralplan |
+| Method census and objection closure          | complete              | live counts for `Editor.*`, sensitive method families, existing public-surface/state-tx/write-boundary tests                               | public `Editor` value cut decided; `state.nodes.void` kept; `editor.extend` kept               | no user decision open                            | slate-ralplan |
+| Closure score and implementation readiness   | pending               | none                                                                                                                                       | none                                                                                           | score below threshold; final handoff not written | slate-ralplan |
 
 ## Plan deltas from review
 
@@ -965,9 +964,9 @@ Status: next.
 
 ## Fast driver gates
 
-- `rg -n "Editor\\." ../slate-v2/docs ../slate-v2/site ../slate-v2/packages`
+- `rg -n "Editor\\." .tmp/slate-v2/docs .tmp/slate-v2/site .tmp/slate-v2/packages`
   must only show internal/test-allowed rows after docs migration.
-- `bun check` in `../slate-v2` before closure.
+- `bun check` in `.tmp/slate-v2` before closure.
 - focused browser tests for read-only/void/selection/paste if those methods move
   in the implementation batch.
 - export-surface contract must fail if `EditorStaticApi` leaks again.
@@ -1012,38 +1011,38 @@ Fresh live-source read:
 
 - Public `slate` root exports `createEditor`, top-level `isEditor`, type-only
   `Editor`, and type-only state/tx groups; it does not export a public
-  `Editor` value (`../slate-v2/packages/slate/src/index.ts:1-90`).
+  `Editor` value (`.tmp/slate-v2/packages/slate/src/index.ts:1-90`).
 - `BaseEditor` is already the right small instance spine:
   `read`, `subscribe`, `update`, `extend`
-  (`../slate-v2/packages/slate/src/interfaces/editor.ts:480-490`).
+  (`.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:480-490`).
 - `EditorCoreStateView` and `EditorCoreUpdateTransaction` are already the
   public read/write grouping target
-  (`../slate-v2/packages/slate/src/interfaces/editor.ts:445-475`).
+  (`.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:445-475`).
 - `EditorTransformApi` is documented as internal runtime transform API; normal
   writes belong in `editor.update((tx) => ...)`
-  (`../slate-v2/packages/slate/src/interfaces/editor.ts:493-608`).
+  (`.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:493-608`).
 - `EditorStaticApi` still contains the old mixed namespace for internal/tests:
   reads, writes, runtime metadata, refs, extension plumbing, lifecycle wrappers,
   `replace`, `reset`, `elementReadOnly`, and
   `shouldMergeNodesRemovePrevNode`
-  (`../slate-v2/packages/slate/src/interfaces/editor.ts:1113-1704`).
+  (`.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:1113-1704`).
 - `InternalEditor` implements those wrappers and still exports them as
   `Editor` from `interfaces/editor`; this remains internal/friend surface, not
-  public root API (`../slate-v2/packages/slate/src/interfaces/editor.ts:1720-2190`).
+  public root API (`.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:1720-2190`).
 - Public-surface contract already bans root helper exports, public `Editor`
   value, transform namespaces, instance `replace` / `reset`, direct instance
   read aliases, and public docs/examples teaching internal `Editor` snapshot/ref
-  helpers (`../slate-v2/packages/slate/test/public-surface-contract.ts:70-420`).
+  helpers (`.tmp/slate-v2/packages/slate/test/public-surface-contract.ts:70-420`).
 - `DOMEditor` / `ReactEditor` values are not normal public root APIs:
   `slate-dom` exports `DOMEditor` as a type and exposes `withDOM`; `slate-react`
   exports `ReactEditor` as a type and `withReact`
-  (`../slate-v2/packages/slate-dom/src/index.ts:1-7`,
-  `../slate-v2/packages/slate-react/src/index.ts:106-108`).
+  (`.tmp/slate-v2/packages/slate-dom/src/index.ts:1-7`,
+  `.tmp/slate-v2/packages/slate-react/src/index.ts:106-108`).
 - The DOM adapter already has the better public shape available as
   `editor.dom.*`, but its capability is still implemented by delegating through
   the internal static `DOMEditor.*` table
-  (`../slate-v2/packages/slate-dom/src/plugin/dom-editor.ts:57-119`,
-  `../slate-v2/packages/slate-dom/src/plugin/dom-editor.ts:1398-1464`).
+  (`.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts:57-119`,
+  `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts:1398-1464`).
 - Lexical exposes `LexicalEditor.update` as the only safe mutation callback and
   `setEditorState` as an explicit whole-state setter; it does not expose a
   Slate-style `Editor.replace(editor, ...)` namespace
@@ -1154,7 +1153,7 @@ Proof gates for execution:
 - Focused tests cover whole-document replace through `tx.value.replace`.
 - Browser smoke covers iframe, mentions void navigation, selection, paste, and
   DOM mapping after the runtime shortcuts move.
-- `bun check` passes in `../slate-v2`.
+- `bun check` passes in `.tmp/slate-v2`.
 
 Decision status:
 
@@ -1194,32 +1193,32 @@ Scope executed:
 
 Files changed:
 
-- `../slate-v2/packages/slate-dom/test/public-surface-contract.ts`
-- `../slate-v2/packages/slate-dom/test/public-surface-contract.test.ts`
-- `../slate-v2/packages/slate-react/test/surface-contract.tsx`
-- `../slate-v2/packages/slate-react/src/components/slate.tsx`
-- `../slate-v2/packages/slate-react/src/editable/browser-handle.ts`
-- `../slate-v2/packages/slate-react/src/editable/editing-kernel.ts`
-- `../slate-v2/packages/slate-react/src/editable/runtime-kernel-trace.ts`
-- `../slate-v2/packages/slate-react/src/editable/runtime-selection-engine.ts`
-- `../slate-v2/packages/slate/src/transforms-text/insert-text.ts`
-- `../slate-v2/packages/slate/src/transforms-text/insert-fragment.ts`
-- `../slate-v2/packages/slate/src/transforms-node/merge-nodes.ts`
-- `../slate-v2/packages/slate/src/editor/insert-text.ts`
-- `../slate-v2/packages/slate/src/editor/normalize.ts`
-- `../slate-v2/packages/slate/src/editor/without-normalizing.ts`
-- `../slate-v2/packages/slate/test/support/snapshot.ts`
-- `../slate-v2/packages/slate/test/test-helper-boundary-contract.ts`
-- `../slate-v2/packages/slate/test/state-tx-public-api-contract.ts`
-- `../slate-v2/packages/slate/test/read-update-contract.ts`
+- `.tmp/slate-v2/packages/slate-dom/test/public-surface-contract.ts`
+- `.tmp/slate-v2/packages/slate-dom/test/public-surface-contract.test.ts`
+- `.tmp/slate-v2/packages/slate-react/test/surface-contract.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/components/slate.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/editable/browser-handle.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/editing-kernel.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-kernel-trace.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-selection-engine.ts`
+- `.tmp/slate-v2/packages/slate/src/transforms-text/insert-text.ts`
+- `.tmp/slate-v2/packages/slate/src/transforms-text/insert-fragment.ts`
+- `.tmp/slate-v2/packages/slate/src/transforms-node/merge-nodes.ts`
+- `.tmp/slate-v2/packages/slate/src/editor/insert-text.ts`
+- `.tmp/slate-v2/packages/slate/src/editor/normalize.ts`
+- `.tmp/slate-v2/packages/slate/src/editor/without-normalizing.ts`
+- `.tmp/slate-v2/packages/slate/test/support/snapshot.ts`
+- `.tmp/slate-v2/packages/slate/test/test-helper-boundary-contract.ts`
+- `.tmp/slate-v2/packages/slate/test/state-tx-public-api-contract.ts`
+- `.tmp/slate-v2/packages/slate/test/read-update-contract.ts`
 
 Source inventory after execution:
 
 ```txt
 rg "\\bEditor\\.(read|update|subscribe|extend|replace|reset|getOperations|elementReadOnly|shouldMergeNodesRemovePrevNode|setNormalizing|isNormalizing)\\("
-  ../slate-v2/packages/slate/src
-  ../slate-v2/packages/slate-dom/src
-  ../slate-v2/packages/slate-react/src
+  .tmp/slate-v2/packages/slate/src
+  .tmp/slate-v2/packages/slate-dom/src
+  .tmp/slate-v2/packages/slate-react/src
 
 0 matches
 ```

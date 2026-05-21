@@ -25,7 +25,7 @@ runtime owners:
   `udecode/slate#5`, `#8`, `#15`
 
 No `Fixes` claim is allowed until the original repro is red against local
-`../slate-v2`, green against the live reference or a written expected model, and
+`.tmp/slate-v2`, green against the live reference or a written expected model, and
 then green after the implementation change. Rows that were already green stay
 `already-accounted`.
 
@@ -37,26 +37,26 @@ Live issue intake used GitHub CLI:
 gh issue list -R udecode/slate --state open --limit 1000 --json number,title,body,labels,url,updatedAt,createdAt,author
 ```
 
-Current local source owners checked in `../slate-v2`:
+Current local source owners checked in `.tmp/slate-v2`:
 
 - example server command exists as `bun serve`, serving `site` on port `3100`
-  from `../slate-v2/package.json`
+  from `.tmp/slate-v2/package.json`
 - history snapshots are owned by
-  `../slate-v2/packages/slate-history/src/with-history.ts`
+  `.tmp/slate-v2/packages/slate-history/src/with-history.ts`
 - beforeinput text replacement routes through
-  `../slate-v2/packages/slate-react/src/editable/editing-kernel.ts` and
-  `../slate-v2/packages/slate-react/src/editable/mutation-controller.ts`
+  `.tmp/slate-v2/packages/slate-react/src/editable/editing-kernel.ts` and
+  `.tmp/slate-v2/packages/slate-react/src/editable/mutation-controller.ts`
 - undo hotkeys route through
-  `../slate-v2/packages/slate-react/src/editable/keyboard-input-strategy.ts`
+  `.tmp/slate-v2/packages/slate-react/src/editable/keyboard-input-strategy.ts`
 - selection import/export is owned by
-  `../slate-v2/packages/slate-react/src/editable/selection-controller.ts`
+  `.tmp/slate-v2/packages/slate-react/src/editable/selection-controller.ts`
 - composition events are owned by
-  `../slate-v2/packages/slate-react/src/editable/runtime-composition-events.ts`
-  and `../slate-v2/packages/slate-react/src/editable/composition-state.ts`
+  `.tmp/slate-v2/packages/slate-react/src/editable/runtime-composition-events.ts`
+  and `.tmp/slate-v2/packages/slate-react/src/editable/composition-state.ts`
 - target bridge is owned by
-  `../slate-v2/packages/slate-react/src/editable/runtime-target-bridge.ts`
+  `.tmp/slate-v2/packages/slate-react/src/editable/runtime-target-bridge.ts`
 - clipboard export/import is owned by
-  `../slate-v2/packages/slate-dom/src/plugin/dom-clipboard-runtime.ts`
+  `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-clipboard-runtime.ts`
 - existing Playwright rows cover pieces of iframe, mentions, images,
   editable-voids, paste-html, richtext, and plaintext, but not the full issue
   repro set below
@@ -80,7 +80,7 @@ In scope:
 - `udecode/slate#5` through `#15`, all currently open as of the `gh` read
 - local reproduction against `http://localhost:3100`
 - live reference comparison against `https://www.slatejs.org`
-- `../slate-v2` runtime, history, clipboard, selection, composition, and example
+- `.tmp/slate-v2` runtime, history, clipboard, selection, composition, and example
   tests once execution starts
 
 Non-goals:
@@ -132,19 +132,19 @@ Rejected:
 
 ## Open Issue Matrix
 
-| Issue | Title | Bucket | First repro route | Current owner guess | Claim state |
-| --- | --- | --- | --- | --- | --- |
-| `udecode/slate#5` | Images `Cmd+A` selects image voids instead of text | `v2-dom-selection` | `/examples/images`, click text, `Cmd+A` | select-all keyboard path and void selection rendering | `fixes-claimed` |
-| `udecode/slate#6` | Uncommitted Chinese IME composition moves caret | `v2-input-runtime` | manual Chrome/dev-browser IME on plaintext, richtext, images, editable-voids, inlines, mentions, tables | composition state, selection source, DOM repair | `already-accounted` for Chromium CDP cancellation proof; no manual Chinese IME `Fixes` claim |
-| `udecode/slate#7` | Image node copy has no visible external paste | `v2-clipboard-serialization` | `/examples/images`, copy visual void, paste into external target | DOM clipboard export for block voids | `fixes-claimed` |
-| `udecode/slate#8` | Editable void undo clears native input only | `v2-react-runtime` | `/examples/editable-voids`, insert void, type in native input, `Cmd+Z` | internal-control target ownership and history routing | `fixes-claimed` |
-| `udecode/slate#9` | `Cmd+Z` after typing moves caret to line start | `v2-dom-selection` | plaintext, richtext, images, editable-voids | history selection restore and DOM export | `already-accounted` |
-| `udecode/slate#10` | Selected mention copy/paste or cut crashes | `v2-clipboard-serialization` | `/examples/mentions`, select `@R2-D2`, `Cmd+C/V` and `Cmd+X` | inline void clipboard clone/export and cut path | `already-accounted` |
-| `udecode/slate#11` | Undo after full `Cmd+A` replacement loses doc | `v2-core-engine` | mentions, inlines, tables, select all, type `Z`, `Cmd+Z` | history snapshot around whole-document replacement | `improves-claimed` |
-| `udecode/slate#12` | Partial selection replacement undo restores only part | `v2-core-engine` | plaintext, inlines, styling, code-highlighting | expanded selection replace and history batch | `already-accounted` |
-| `udecode/slate#13` | Paste rendered HTML crash/wrong structure | `v2-clipboard-serialization` | reconstruct from attached video, then paste-html route | HTML clipboard import and schema fallback | `already-accounted` |
-| `udecode/slate#14` | English replacement over formatted word crashes | `v2-input-runtime` | `/examples/hovering-toolbar`, double-click `bold`, type `plain` | beforeinput replacement over marks and history repair | `fixes-claimed` |
-| `udecode/slate#15` | Iframe toolbar button does not format selection | `v2-dom-selection` | `/examples/iframe`, select iframe text, click parent toolbar `B` | cross-window selection target bridge | `already-accounted` |
+| Issue              | Title                                                 | Bucket                       | First repro route                                                                                       | Current owner guess                                   | Claim state                                                                                  |
+| ------------------ | ----------------------------------------------------- | ---------------------------- | ------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| `udecode/slate#5`  | Images `Cmd+A` selects image voids instead of text    | `v2-dom-selection`           | `/examples/images`, click text, `Cmd+A`                                                                 | select-all keyboard path and void selection rendering | `fixes-claimed`                                                                              |
+| `udecode/slate#6`  | Uncommitted Chinese IME composition moves caret       | `v2-input-runtime`           | manual Chrome/dev-browser IME on plaintext, richtext, images, editable-voids, inlines, mentions, tables | composition state, selection source, DOM repair       | `already-accounted` for Chromium CDP cancellation proof; no manual Chinese IME `Fixes` claim |
+| `udecode/slate#7`  | Image node copy has no visible external paste         | `v2-clipboard-serialization` | `/examples/images`, copy visual void, paste into external target                                        | DOM clipboard export for block voids                  | `fixes-claimed`                                                                              |
+| `udecode/slate#8`  | Editable void undo clears native input only           | `v2-react-runtime`           | `/examples/editable-voids`, insert void, type in native input, `Cmd+Z`                                  | internal-control target ownership and history routing | `fixes-claimed`                                                                              |
+| `udecode/slate#9`  | `Cmd+Z` after typing moves caret to line start        | `v2-dom-selection`           | plaintext, richtext, images, editable-voids                                                             | history selection restore and DOM export              | `already-accounted`                                                                          |
+| `udecode/slate#10` | Selected mention copy/paste or cut crashes            | `v2-clipboard-serialization` | `/examples/mentions`, select `@R2-D2`, `Cmd+C/V` and `Cmd+X`                                            | inline void clipboard clone/export and cut path       | `already-accounted`                                                                          |
+| `udecode/slate#11` | Undo after full `Cmd+A` replacement loses doc         | `v2-core-engine`             | mentions, inlines, tables, select all, type `Z`, `Cmd+Z`                                                | history snapshot around whole-document replacement    | `improves-claimed`                                                                           |
+| `udecode/slate#12` | Partial selection replacement undo restores only part | `v2-core-engine`             | plaintext, inlines, styling, code-highlighting                                                          | expanded selection replace and history batch          | `already-accounted`                                                                          |
+| `udecode/slate#13` | Paste rendered HTML crash/wrong structure             | `v2-clipboard-serialization` | reconstruct from attached video, then paste-html route                                                  | HTML clipboard import and schema fallback             | `already-accounted`                                                                          |
+| `udecode/slate#14` | English replacement over formatted word crashes       | `v2-input-runtime`           | `/examples/hovering-toolbar`, double-click `bold`, type `plain`                                         | beforeinput replacement over marks and history repair | `fixes-claimed`                                                                              |
+| `udecode/slate#15` | Iframe toolbar button does not format selection       | `v2-dom-selection`           | `/examples/iframe`, select iframe text, click parent toolbar `B`                                        | cross-window selection target bridge                  | `already-accounted`                                                                          |
 
 ## Execution Plan
 
@@ -322,7 +322,7 @@ Only after phases 1-4 are green:
 - update `docs/slate-v2/ledgers/issue-coverage-matrix.md` only with issues that
   have exact repro proof
 - update `docs/slate-v2/references/pr-description.md` if a PR claim changes
-- run the relevant `../slate-v2` focused checks
+- run the relevant `.tmp/slate-v2` focused checks
 - run `bun run completion-check` in `plate-2` only for planning state
 
 ## Phase 1 Execution Evidence
@@ -550,11 +550,11 @@ Code owner changes:
 Proof rows added or confirmed:
 
 - `playwright/integration/examples/images.test.ts`: `selects image editor text
-  content from text focus with keyboard select all`.
+content from text focus with keyboard select all`.
 - `playwright/integration/examples/editable-voids.test.ts`: `undo from a new
-  editable void input removes the inserted void block`.
+editable void input removes the inserted void block`.
 - `playwright/integration/examples/iframe.test.ts`: `applies parent toolbar
-  formatting to selected iframe text`.
+formatting to selected iframe text`.
 - `packages/slate-react/test/editing-kernel-contract.ts`: beforeinput history
   remains model-owned for internal controls.
 
@@ -610,28 +610,28 @@ Claim safety:
 No upstream PR-facing issue claim changes. Fork-local accounting is synced in
 `docs/slate-v2/ledgers/fork-issue-dossier.md`.
 
-| Issue | Current status | Why |
-| --- | --- | --- |
-| `udecode/slate#5` | `fixes-claimed` | Broad editor text select-all no longer shows direct selected-image chrome; local red -> fixed -> green proof exists. |
-| `udecode/slate#6` | `already-accounted` | Current Chromium CDP cancellation proof keeps the model text, selection, and next typed character anchored at the original caret. Manual Chinese IME closure remains unclaimed. |
-| `udecode/slate#7` | `fixes-claimed` | Selected image void copy was red locally because external `text/html` lacked `<img>`; the block-void clipboard fix now has package and Chromium proof. |
-| `udecode/slate#8` | `fixes-claimed` | Internal-control `beforeinput historyUndo` now applies Slate history before native input undo; local red -> fixed -> green proof exists. |
-| `udecode/slate#9` | `already-accounted` | Plaintext middle-line typing undo row is green and restores the caret at the edit point. Broader cross-example scope remains unclaimed. |
-| `udecode/slate#10` | `already-accounted` | Exact selected mention copy/paste and cut browser rows are green; prior inline-void clipboard export work owns the crash class. |
-| `udecode/slate#11` | `improves-claimed` | Mentions select-all replacement undo and package history batch are green; avoid PR-facing `Fixes` until a clean pre-fix red artifact is preserved. |
-| `udecode/slate#12` | `already-accounted` | Plaintext partial-selection replacement undo row is green and restores the original selected text/range. Multi-example scope remains unclaimed. |
-| `udecode/slate#13` | `already-accounted` | The attached video was translated into a self-copy rendered-content paste-html browser row; current code preserves block structure and has no runtime error. |
-| `udecode/slate#14` | `fixes-claimed` | Hovering-toolbar English replacement over selected formatted text reproduced the crash locally, then passed after the insert target fix. |
-| `udecode/slate#15` | `already-accounted` | Exact iframe parent toolbar row is green on current code; no runtime change or fix claim needed. |
+| Issue              | Current status      | Why                                                                                                                                                                             |
+| ------------------ | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `udecode/slate#5`  | `fixes-claimed`     | Broad editor text select-all no longer shows direct selected-image chrome; local red -> fixed -> green proof exists.                                                            |
+| `udecode/slate#6`  | `already-accounted` | Current Chromium CDP cancellation proof keeps the model text, selection, and next typed character anchored at the original caret. Manual Chinese IME closure remains unclaimed. |
+| `udecode/slate#7`  | `fixes-claimed`     | Selected image void copy was red locally because external `text/html` lacked `<img>`; the block-void clipboard fix now has package and Chromium proof.                          |
+| `udecode/slate#8`  | `fixes-claimed`     | Internal-control `beforeinput historyUndo` now applies Slate history before native input undo; local red -> fixed -> green proof exists.                                        |
+| `udecode/slate#9`  | `already-accounted` | Plaintext middle-line typing undo row is green and restores the caret at the edit point. Broader cross-example scope remains unclaimed.                                         |
+| `udecode/slate#10` | `already-accounted` | Exact selected mention copy/paste and cut browser rows are green; prior inline-void clipboard export work owns the crash class.                                                 |
+| `udecode/slate#11` | `improves-claimed`  | Mentions select-all replacement undo and package history batch are green; avoid PR-facing `Fixes` until a clean pre-fix red artifact is preserved.                              |
+| `udecode/slate#12` | `already-accounted` | Plaintext partial-selection replacement undo row is green and restores the original selected text/range. Multi-example scope remains unclaimed.                                 |
+| `udecode/slate#13` | `already-accounted` | The attached video was translated into a self-copy rendered-content paste-html browser row; current code preserves block structure and has no runtime error.                    |
+| `udecode/slate#14` | `fixes-claimed`     | Hovering-toolbar English replacement over selected formatted text reproduced the crash locally, then passed after the insert target fix.                                        |
+| `udecode/slate#15` | `already-accounted` | Exact iframe parent toolbar row is green on current code; no runtime change or fix claim needed.                                                                                |
 
 ## Maintainer Objection Ledger
 
-| Objection | Answer |
-| --- | --- |
-| "These are example bugs, not Slate bugs." | The repeated cross-example failures point at runtime owners: history, selection, clipboard, composition, and target ownership. Example patches are only acceptable if one repro is truly example-local. |
+| Objection                                           | Answer                                                                                                                                                                                                                                |
+| --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| "These are example bugs, not Slate bugs."           | The repeated cross-example failures point at runtime owners: history, selection, clipboard, composition, and target ownership. Example patches are only acceptable if one repro is truly example-local.                               |
 | "Live reference behavior is legacy; v2 can differ." | It can differ only with an explicit raw Slate contract. Undo correctness, non-crashing clipboard operations, stable IME caret ownership, and toolbar commands applying to the active editor target are not optional product opinions. |
-| "Do not close fork issues from local tests." | Correct. Claim sync waits for exact original repro proof and keeps `needs-repro` until then. |
-| "External clipboard and IME are hard to automate." | Then they need manual/dev-browser evidence. Package tests can support but not replace browser proof. |
+| "Do not close fork issues from local tests."        | Correct. Claim sync waits for exact original repro proof and keeps `needs-repro` until then.                                                                                                                                          |
+| "External clipboard and IME are hard to automate."  | Then they need manual/dev-browser evidence. Package tests can support but not replace browser proof.                                                                                                                                  |
 
 ## Applied Skill Notes
 
@@ -654,14 +654,14 @@ No upstream PR-facing issue claim changes. Fork-local accounting is synced in
 
 Current Ralplan score: `0.93`.
 
-| Criterion | Score | Reason |
-| --- | ---: | --- |
-| Intent and boundary | 0.90 | The issue set, non-goals, and claim rules stayed explicit through execution. |
-| Live issue intake | 0.90 | `gh` confirmed all current open issues. |
-| Current source grounding | 0.90 | Runtime owners and exact test rows are mapped for all four phases. |
-| Reproduction proof | 0.90 | All runnable issue rows are green; manual Chinese IME exact closure remains intentionally unclaimed. |
-| Architecture direction | 0.92 | Failing rows were repaired at history, clipboard, beforeinput/history ownership, and direct-selection rendering owners. |
-| Claim safety | 0.96 | Fork-local fixes are separated from upstream PR claims; green-only rows stay already-accounted. |
+| Criterion                | Score | Reason                                                                                                                  |
+| ------------------------ | ----: | ----------------------------------------------------------------------------------------------------------------------- |
+| Intent and boundary      |  0.90 | The issue set, non-goals, and claim rules stayed explicit through execution.                                            |
+| Live issue intake        |  0.90 | `gh` confirmed all current open issues.                                                                                 |
+| Current source grounding |  0.90 | Runtime owners and exact test rows are mapped for all four phases.                                                      |
+| Reproduction proof       |  0.90 | All runnable issue rows are green; manual Chinese IME exact closure remains intentionally unclaimed.                    |
+| Architecture direction   |  0.92 | Failing rows were repaired at history, clipboard, beforeinput/history ownership, and direct-selection rendering owners. |
+| Claim safety             |  0.96 | Fork-local fixes are separated from upstream PR claims; green-only rows stay already-accounted.                         |
 
 Gate: `done`. Phases 1-4 are complete, fork issue dossier is synced, and
 upstream PR-facing issue coverage remains unchanged because these are

@@ -28,7 +28,7 @@ hard-cut lane:
 - Changed files: `.tmp/<session-id>/completion-check.md`, `.tmp/continue.md`,
   `docs/plans/2026-04-27-slate-v2-selector-and-live-read-runtime-hard-cut-plan.md`.
 - Rejected tactics: no code-first refactor before a selector contract.
-- Next action: in `../slate-v2`, add selector contracts proving public
+- Next action: in `.tmp/slate-v2`, add selector contracts proving public
   `useTextSelector` reports text changes while mounted render subscriptions
   can skip directly synced text-only commits.
 
@@ -78,18 +78,18 @@ hard-cut lane:
   - `.tmp/<session-id>/completion-check.md`
   - `.tmp/continue.md`
   - `docs/plans/2026-04-27-slate-v2-selector-and-live-read-runtime-hard-cut-plan.md`
-  - `../slate-v2/packages/slate-react/src/hooks/use-node-selector.tsx`
-  - `../slate-v2/packages/slate-react/src/components/editable-text.tsx`
-  - `../slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
-  - `../slate-v2/packages/slate-react/src/editable/runtime-live-state.ts`
-  - `../slate-v2/packages/slate-react/src/editable/runtime-selection-state.ts`
-  - `../slate-v2/packages/slate-react/src/editable/runtime-mutation-state.ts`
-  - `../slate-v2/packages/slate-react/src/**` callers migrated to runtime
+  - `.tmp/slate-v2/packages/slate-react/src/hooks/use-node-selector.tsx`
+  - `.tmp/slate-v2/packages/slate-react/src/components/editable-text.tsx`
+  - `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
+  - `.tmp/slate-v2/packages/slate-react/src/editable/runtime-live-state.ts`
+  - `.tmp/slate-v2/packages/slate-react/src/editable/runtime-selection-state.ts`
+  - `.tmp/slate-v2/packages/slate-react/src/editable/runtime-mutation-state.ts`
+  - `.tmp/slate-v2/packages/slate-react/src/**` callers migrated to runtime
     facades.
-  - `../slate-v2/packages/slate-react/test/provider-hooks-contract.tsx`
-  - `../slate-v2/packages/slate-react/test/surface-contract.tsx`
-  - `../slate-v2/packages/slate-react/test/runtime-live-state-contract.ts`
-  - `../slate-v2/packages/slate-react/test/runtime-live-state-contract.test.ts`
+  - `.tmp/slate-v2/packages/slate-react/test/provider-hooks-contract.tsx`
+  - `.tmp/slate-v2/packages/slate-react/test/surface-contract.tsx`
+  - `.tmp/slate-v2/packages/slate-react/test/runtime-live-state-contract.ts`
+  - `.tmp/slate-v2/packages/slate-react/test/runtime-live-state-contract.test.ts`
 - Rejected tactics:
   - No public stale-data selector option.
   - No broad `forceRender()` fallback.
@@ -197,8 +197,8 @@ or a lower-level internal helper:
 ```ts
 useRuntimeNodeSelector(selector, equalityFn, {
   runtimeId,
-  updatePolicy: 'model-truth' | 'skip-synced-text-render',
-})
+  updatePolicy: "model-truth" | "skip-synced-text-render",
+});
 ```
 
 The exact naming can change during implementation, but the boundary cannot:
@@ -334,17 +334,17 @@ enforce:
 
 Keep direct core live reads only where the file is itself a runtime owner:
 
-| Area | Current problem | Target |
-| --- | --- | --- |
-| public hooks | `use-node-selector.tsx` imports core live node | route through runtime facade |
-| mounted components | text blocks import core live node | route through render/runtime facade |
-| `Editable` | imports live selection and target runtime setter | route through selection/mutation runtime |
-| keyboard/input strategies | import live selection | route through selection runtime |
-| browser handle | imports live selection | route through selection runtime |
-| Android manager | imports live selection and marks setter | route through selection/mutation runtime |
-| selection reconciler | imports live node/text/selection | keep as runtime owner or depend on facade |
-| DOM repair queue | imports live text/selection | keep as runtime owner or depend on facade |
-| clipboard strategy | imports live node/selection | route through clipboard/runtime facade |
+| Area                      | Current problem                                  | Target                                    |
+| ------------------------- | ------------------------------------------------ | ----------------------------------------- |
+| public hooks              | `use-node-selector.tsx` imports core live node   | route through runtime facade              |
+| mounted components        | text blocks import core live node                | route through render/runtime facade       |
+| `Editable`                | imports live selection and target runtime setter | route through selection/mutation runtime  |
+| keyboard/input strategies | import live selection                            | route through selection runtime           |
+| browser handle            | imports live selection                           | route through selection runtime           |
+| Android manager           | imports live selection and marks setter          | route through selection/mutation runtime  |
+| selection reconciler      | imports live node/text/selection                 | keep as runtime owner or depend on facade |
+| DOM repair queue          | imports live text/selection                      | keep as runtime owner or depend on facade |
+| clipboard strategy        | imports live node/selection                      | route through clipboard/runtime facade    |
 
 ### Execution Slices
 
@@ -368,10 +368,10 @@ core internals out of components and hooks.
 Create `editable/runtime-live-state.ts` with wrappers like:
 
 ```ts
-readRuntimeNode(editor, path)
-readRuntimeText(editor, path)
-readRuntimeSelection(editor)
-readRuntimeNodeById(editor, runtimeId)
+readRuntimeNode(editor, path);
+readRuntimeText(editor, path);
+readRuntimeSelection(editor);
+readRuntimeNodeById(editor, runtimeId);
 ```
 
 Rules:

@@ -21,7 +21,7 @@ Do not replace the Slate tree with VS Code's piece tree. Do not copy Lexical cla
 
 Intent: decide what else deserves a real Slate v2 rewrite after the annotation/channel work.
 
-Outcome: a ranked rewrite map with steal, reject, and defer decisions grounded in live `../slate-v2`, `../lexical`, `../prosemirror`, `../tiptap`, and `../vscode`.
+Outcome: a ranked rewrite map with steal, reject, and defer decisions grounded in live `.tmp/slate-v2`, `../lexical`, `../prosemirror`, `../tiptap`, and `../vscode`.
 
 In scope:
 
@@ -47,38 +47,38 @@ Weakest assumption tested: "commands should become public because Tiptap DX is g
 
 ## Pass ledger
 
-| Pass | Status | Result |
-| --- | --- | --- |
-| Current-state read | complete | Live Slate v2 already has read/update, commits/tags, extension namespaces, internal command registry, selector gating, projection channels, and browser contracts. |
-| Intent/boundary | complete | The plan is a ranked queue. First executable lane is extension registration runtime. Raw Slate public mutation stays `editor.update`. |
-| Research refresh | complete | Local Lexical, ProseMirror, Tiptap, and VS Code sources were read and cited. No contradiction found. |
-| Steelman | complete | Public commands, piece-tree core rewrite, schema-first copy paths, and framework-ish naming were rejected. Extension registration/runtime and typed metadata stayed. |
-| High-risk deliberate | complete | Public API, collaboration/history, browser input, and package-boundary risks have proof gates and rollback strategy. |
-| Revision | complete | Execution order changed: extension registration runtime first, update metadata second, input kernel third. |
-| Closure score | complete | Score is `0.93`; no dimension below `0.88`. |
+| Pass                 | Status   | Result                                                                                                                                                               |
+| -------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Current-state read   | complete | Live Slate v2 already has read/update, commits/tags, extension namespaces, internal command registry, selector gating, projection channels, and browser contracts.   |
+| Intent/boundary      | complete | The plan is a ranked queue. First executable lane is extension registration runtime. Raw Slate public mutation stays `editor.update`.                                |
+| Research refresh     | complete | Local Lexical, ProseMirror, Tiptap, and VS Code sources were read and cited. No contradiction found.                                                                 |
+| Steelman             | complete | Public commands, piece-tree core rewrite, schema-first copy paths, and framework-ish naming were rejected. Extension registration/runtime and typed metadata stayed. |
+| High-risk deliberate | complete | Public API, collaboration/history, browser input, and package-boundary risks have proof gates and rollback strategy.                                                 |
+| Revision             | complete | Execution order changed: extension registration runtime first, update metadata second, input kernel third.                                                           |
+| Closure score        | complete | Score is `0.93`; no dimension below `0.88`.                                                                                                                          |
 
 ## Current Slate v2 evidence
 
 Already done in live source:
 
-- `editor.read` / `editor.update` exists and forbids starting an update inside a read outside an active transaction: `../slate-v2/packages/slate/src/core/public-state.ts:972-1008`.
-- Canonical update tags already include history, paste, collaboration, DOM selection, scroll, focus, and composition tags: `../slate-v2/packages/slate/src/interfaces/editor.ts:126-140`.
-- One update produces one commit with operations, dirty paths/runtime ids, selection before/after, tags, and operation classes: `../slate-v2/packages/slate/src/interfaces/editor.ts:814-839`; `../slate-v2/packages/slate/test/commit-metadata-contract.ts:17-127`.
-- The transaction snapshot owns children, marks, operations, tags, previous snapshot, command context, and selection: `../slate-v2/packages/slate/src/core/public-state.ts:1773-1830`.
-- Extension namespaces exist for `state`, `tx`, and `editor`, with dependencies and rollback: `../slate-v2/packages/slate/src/interfaces/editor.ts:720-780`; `../slate-v2/packages/slate/src/core/editor-extension.ts:67-255`.
-- Raw Slate extension command slots are explicitly rejected by type contract: `../slate-v2/packages/slate/test/generic-extension-namespace-contract.ts:130-139`.
-- Internal command registry exists with priority and deterministic order, but it is deliberately not public: `../slate-v2/packages/slate/src/core/command-registry.ts:26-109`; `../slate-v2/packages/slate/test/public-surface-contract.ts:205-208`.
-- `EditorElementSpec` exists, but it is small: `inline`, `void`, `readOnly`, `selectable`, `markableVoid`, and `match`: `../slate-v2/packages/slate/src/interfaces/editor.ts:319-357`.
-- `slate-react` provider composes annotation stores and decoration sources into the projection channel: `../slate-v2/packages/slate-react/src/components/slate.tsx:38-50`; `../slate-v2/packages/slate-react/src/components/slate.tsx:151-160`.
-- React selectors already gate updates by commit operations and runtime ids: `../slate-v2/packages/slate-react/src/hooks/use-editor-selector.tsx:51-144`; `../slate-v2/packages/slate-react/src/hooks/use-node-selector.tsx:41-105`; `../slate-v2/packages/slate-react/src/hooks/use-decoration-selector.tsx:42-79`.
-- Browser contracts already cover annotations, widgets, external decorations, large-document projection, paste, IME, tables, voids, and render budgets: `../slate-v2/packages/slate-browser/src/core/first-party-browser-contracts.ts:24-198`.
+- `editor.read` / `editor.update` exists and forbids starting an update inside a read outside an active transaction: `.tmp/slate-v2/packages/slate/src/core/public-state.ts:972-1008`.
+- Canonical update tags already include history, paste, collaboration, DOM selection, scroll, focus, and composition tags: `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:126-140`.
+- One update produces one commit with operations, dirty paths/runtime ids, selection before/after, tags, and operation classes: `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:814-839`; `.tmp/slate-v2/packages/slate/test/commit-metadata-contract.ts:17-127`.
+- The transaction snapshot owns children, marks, operations, tags, previous snapshot, command context, and selection: `.tmp/slate-v2/packages/slate/src/core/public-state.ts:1773-1830`.
+- Extension namespaces exist for `state`, `tx`, and `editor`, with dependencies and rollback: `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:720-780`; `.tmp/slate-v2/packages/slate/src/core/editor-extension.ts:67-255`.
+- Raw Slate extension command slots are explicitly rejected by type contract: `.tmp/slate-v2/packages/slate/test/generic-extension-namespace-contract.ts:130-139`.
+- Internal command registry exists with priority and deterministic order, but it is deliberately not public: `.tmp/slate-v2/packages/slate/src/core/command-registry.ts:26-109`; `.tmp/slate-v2/packages/slate/test/public-surface-contract.ts:205-208`.
+- `EditorElementSpec` exists, but it is small: `inline`, `void`, `readOnly`, `selectable`, `markableVoid`, and `match`: `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:319-357`.
+- `slate-react` provider composes annotation stores and decoration sources into the projection channel: `.tmp/slate-v2/packages/slate-react/src/components/slate.tsx:38-50`; `.tmp/slate-v2/packages/slate-react/src/components/slate.tsx:151-160`.
+- React selectors already gate updates by commit operations and runtime ids: `.tmp/slate-v2/packages/slate-react/src/hooks/use-editor-selector.tsx:51-144`; `.tmp/slate-v2/packages/slate-react/src/hooks/use-node-selector.tsx:41-105`; `.tmp/slate-v2/packages/slate-react/src/hooks/use-decoration-selector.tsx:42-79`.
+- Browser contracts already cover annotations, widgets, external decorations, large-document projection, paste, IME, tables, voids, and render budgets: `.tmp/slate-v2/packages/slate-browser/src/core/first-party-browser-contracts.ts:24-198`.
 
 Still weak:
 
-- History does not yet use canonical tags as first-class policy. It mostly batches operations by local heuristics: `../slate-v2/packages/slate-history/src/with-history.ts:86-135`; `../slate-v2/packages/slate-history/src/with-history.ts:180-208`.
-- Extension registration has install, dependencies, cleanup, and namespaces, but no explicit `options`, extension runtime output, extension-local state, registration phases, peer dependencies, conflicts, or cleanup signal: `../slate-v2/packages/slate/src/core/editor-extension.ts:19-255`.
-- The input pipeline is strong but sprawling. `runtime-before-input-events` mixes policy, browser repairs, app hooks, selection import, model-owned operations, and repair requests in one long path: `../slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts:99-247`.
-- Selection ownership exists, but policy is still distributed across controller, reconciler, input state, and browser quirks: `../slate-v2/packages/slate-react/src/editable/selection-controller.ts:60-104`; `../slate-v2/packages/slate-react/src/editable/selection-controller.ts:189-250`.
+- History does not yet use canonical tags as first-class policy. It mostly batches operations by local heuristics: `.tmp/slate-v2/packages/slate-history/src/with-history.ts:86-135`; `.tmp/slate-v2/packages/slate-history/src/with-history.ts:180-208`.
+- Extension registration has install, dependencies, cleanup, and namespaces, but no explicit `options`, extension runtime output, extension-local state, registration phases, peer dependencies, conflicts, or cleanup signal: `.tmp/slate-v2/packages/slate/src/core/editor-extension.ts:19-255`.
+- The input pipeline is strong but sprawling. `runtime-before-input-events` mixes policy, browser repairs, app hooks, selection import, model-owned operations, and repair requests in one long path: `.tmp/slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts:99-247`.
+- Selection ownership exists, but policy is still distributed across controller, reconciler, input state, and browser quirks: `.tmp/slate-v2/packages/slate-react/src/editable/selection-controller.ts:60-104`; `.tmp/slate-v2/packages/slate-react/src/editable/selection-controller.ts:189-250`.
 - `EditorElementSpec` cannot yet express atom/isolating behavior, keyboard-selectability, extension-owned element properties, or edit-boundary policy. Those concerns leak into browser/input code.
 
 ## External evidence
@@ -138,38 +138,38 @@ Target direction:
 
 ```ts
 const tables = defineEditorExtension({
-  name: 'tables',
-  dependencies: ['blocks'],
+  name: "tables",
+  dependencies: ["blocks"],
   options: {
-    navigation: 'cell-boundary',
+    navigation: "cell-boundary",
   },
   register(context) {
-    const selectionMode = context.runtimeState<'cell' | 'text'>('text')
+    const selectionMode = context.runtimeState<"cell" | "text">("text");
 
     return {
       capabilities: {
-        keyboardBoundary: { kind: 'table-cell' },
+        keyboardBoundary: { kind: "table-cell" },
       },
       state: {
         table(state) {
           return {
             currentCell: () => state.selection.get(),
-          }
+          };
         },
       },
       tx: {
         table(tx) {
           return {
-            insertRow: () => tx.nodes.insert({ type: 'tr', children: [] }),
-          }
+            insertRow: () => tx.nodes.insert({ type: "tr", children: [] }),
+          };
         },
       },
       onCommit(commit) {
-        if (commit.selectionChanged) selectionMode.set('cell')
+        if (commit.selectionChanged) selectionMode.set("cell");
       },
-    }
+    };
   },
-})
+});
 ```
 
 The exact syntax is not final. The direction is: registration output wraps the existing `state` / `tx` / `editor` namespace model. It does not introduce `commands` on raw Slate extensions.
@@ -179,21 +179,21 @@ Before:
 ```ts
 editor.extend(
   defineEditorExtension({
-    name: 'tables',
-    dependencies: ['blocks'],
+    name: "tables",
+    dependencies: ["blocks"],
     state: {
       table(state) {
-        return { currentCell: () => state.selection.get() }
+        return { currentCell: () => state.selection.get() };
       },
     },
     tx: {
       table(tx) {
-        return { insertRow: () => tx.nodes.insert(row()) }
+        return { insertRow: () => tx.nodes.insert(row()) };
       },
     },
     commitListeners: [syncTableState],
-  })
-)
+  }),
+);
 ```
 
 After:
@@ -201,11 +201,11 @@ After:
 ```ts
 editor.extend(
   defineEditorExtension({
-    name: 'tables',
-    dependencies: ['blocks'],
-    options: { navigation: 'cell-boundary' },
+    name: "tables",
+    dependencies: ["blocks"],
+    options: { navigation: "cell-boundary" },
     register(context) {
-      const mode = context.runtimeState<'cell' | 'text'>('text')
+      const mode = context.runtimeState<"cell" | "text">("text");
 
       return {
         state: {
@@ -215,12 +215,12 @@ editor.extend(
           table: (tx) => ({ insertRow: () => tx.nodes.insert(row()) }),
         },
         onCommit(commit) {
-          if (commit.selectionChanged) mode.set('cell')
+          if (commit.selectionChanged) mode.set("cell");
         },
-      }
+      };
     },
-  })
-)
+  }),
+);
 ```
 
 Why this wins: current namespaces stay intact, while options, registration-owned state, cleanup, conflicts, and typed runtime output become first-class.
@@ -255,17 +255,17 @@ Target direction:
 
 ```ts
 const insertText = defineInternalEditorCommand<{
-  inputType?: string
-  text: string
-}>('insert_text')
+  inputType?: string;
+  text: string;
+}>("insert_text");
 
 registerInputPolicy(editor, insertText, {
-  priority: 'model',
+  priority: "model",
   handle(ctx, next) {
-    if (ctx.event?.isComposing) return { handled: false }
-    return next()
+    if (ctx.event?.isComposing) return { handled: false };
+    return next();
   },
-})
+});
 ```
 
 This should feed commit metadata, not become the public userland mutation API.
@@ -280,10 +280,22 @@ Proof:
 Before:
 
 ```ts
-const decision = prepareEditableBeforeInputKernel({ editor, event, inputController })
-selection.flushSelectionChange()
-const beforeInputDecision = getNativeBeforeInputDecision({ editor, event, selection })
-const request = applyModelOwnedBeforeInputOperation({ editor, inputType, selection })
+const decision = prepareEditableBeforeInputKernel({
+  editor,
+  event,
+  inputController,
+});
+selection.flushSelectionChange();
+const beforeInputDecision = getNativeBeforeInputDecision({
+  editor,
+  event,
+  selection,
+});
+const request = applyModelOwnedBeforeInputOperation({
+  editor,
+  inputType,
+  selection,
+});
 ```
 
 After:
@@ -293,7 +305,7 @@ inputRuntime.dispatch(beforeInputCommand, {
   event,
   inputType,
   target: selectionPolicy.resolve(event),
-})
+});
 ```
 
 The implementation still ends in `editor.update`; the rewrite is about one typed policy path, not public user commands.
@@ -320,17 +332,17 @@ Target direction:
 ```ts
 editor.update(
   (tx) => {
-    tx.text.insert('!')
+    tx.text.insert("!");
   },
   {
-    tag: ['paste'],
+    tag: ["paste"],
     metadata: {
-      history: { mode: 'push' },
-      origin: { kind: 'clipboard' },
-      selection: { dom: 'export-model', scroll: false },
+      history: { mode: "push" },
+      origin: { kind: "clipboard" },
+      selection: { dom: "export-model", scroll: false },
     },
-  }
-)
+  },
+);
 ```
 
 `tag` remains the cheap broad signal. `metadata` becomes the typed durable policy channel for history, collab, browser selection, and docs/devtools.
@@ -340,10 +352,10 @@ Before:
 ```ts
 editor.update(
   (tx) => {
-    tx.operations.replay(remoteOps, { tag: 'remote-import' })
+    tx.operations.replay(remoteOps, { tag: "remote-import" });
   },
-  { tag: 'collaboration' }
-)
+  { tag: "collaboration" },
+);
 ```
 
 After:
@@ -351,17 +363,17 @@ After:
 ```ts
 editor.update(
   (tx) => {
-    tx.operations.replay(remoteOps)
+    tx.operations.replay(remoteOps);
   },
   {
-    tag: ['collaboration'],
+    tag: ["collaboration"],
     metadata: {
-      collab: { origin: 'remote', saveToHistory: false },
-      history: { mode: 'skip' },
-      selection: { dom: 'preserve' },
+      collab: { origin: "remote", saveToHistory: false },
+      history: { mode: "skip" },
+      selection: { dom: "preserve" },
     },
-  }
-)
+  },
+);
 ```
 
 Why this wins: tags stay lightweight, but history/collab/browser selection stop guessing policy from operation shape.
@@ -395,14 +407,14 @@ Target direction:
 
 ```ts
 editor.schema.define({
-  type: 'table-cell',
+  type: "table-cell",
   isolating: true,
   selectable: false,
   properties: {
     colSpan: property.number({ default: 1 }),
     rowSpan: property.number({ default: 1 }),
   },
-})
+});
 ```
 
 Keep it optional. Raw Slate must still accept plain JSON nodes.
@@ -559,14 +571,14 @@ Do not start with input pipeline cleanup. It has higher browser blast radius and
 
 ## Maintainer objection ledger
 
-| Objection | Answer | Verdict |
-| --- | --- | --- |
-| "This turns Slate into Tiptap." | Only if raw Slate exposes product command catalogs. The plan keeps `editor.update` as the public mutation API and keeps commands internal or first-party policy. | keep |
-| "Extension lifecycle is too much framework." | Agreed on the naming risk. Call it extension registration/runtime, not lifecycle. Current namespaces are good but underpowered; options/output/cleanup/conflict state are substrate, not product UX. Keep the API small and typed. | keep |
-| "History should not need a metadata system." | Operation shape cannot distinguish paste, collaboration, history replay, composition, skip-collab, or explicit group splits reliably. Tags already prove the need; typed metadata closes it. | keep |
-| "Input rewrite risks breaking browser behavior." | Correct. It must happen behind existing browser contracts, one phase at a time, with trace output. That is why input is third, after extension registration and update metadata. | keep |
-| "VS Code piece tree is faster." | For linear text, yes. For Slate's nested rich tree, it is the wrong core model. Steal edit validation and overlay indexing only. | drop core rewrite |
-| "Commands should be public for DX." | Public commands are Plate's job. Raw Slate can expose primitive namespaced `state`/`tx` groups and optional later sugar. | keep |
+| Objection                                        | Answer                                                                                                                                                                                                                             | Verdict           |
+| ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------- |
+| "This turns Slate into Tiptap."                  | Only if raw Slate exposes product command catalogs. The plan keeps `editor.update` as the public mutation API and keeps commands internal or first-party policy.                                                                   | keep              |
+| "Extension lifecycle is too much framework."     | Agreed on the naming risk. Call it extension registration/runtime, not lifecycle. Current namespaces are good but underpowered; options/output/cleanup/conflict state are substrate, not product UX. Keep the API small and typed. | keep              |
+| "History should not need a metadata system."     | Operation shape cannot distinguish paste, collaboration, history replay, composition, skip-collab, or explicit group splits reliably. Tags already prove the need; typed metadata closes it.                                       | keep              |
+| "Input rewrite risks breaking browser behavior." | Correct. It must happen behind existing browser contracts, one phase at a time, with trace output. That is why input is third, after extension registration and update metadata.                                                   | keep              |
+| "VS Code piece tree is faster."                  | For linear text, yes. For Slate's nested rich tree, it is the wrong core model. Steal edit validation and overlay indexing only.                                                                                                   | drop core rewrite |
+| "Commands should be public for DX."              | Public commands are Plate's job. Raw Slate can expose primitive namespaced `state`/`tx` groups and optional later sugar.                                                                                                           | keep              |
 
 ## High-risk deliberate plan
 
@@ -593,14 +605,14 @@ Rollback/remediation:
 
 ## Proof matrix
 
-| Lane | Required proof |
-| --- | --- |
+| Lane                           | Required proof                                                                                                                                                |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Extension registration runtime | type inference, dependency order, missing peer, conflict, rollback cleanup, cleanup-signal behavior, extension-local state cleanup, no public `commands` slot |
-| Update metadata/history/collab | `history-push`, `history-merge`, `historic`, `skip-collab`, remote import, rebased commit, selection bookmark restore, composition grouping |
-| Internal command/input policy | priority ordering, deterministic same-priority order, implicit update context, beforeinput/keydown/paste/composition dispatch, public registry still hidden |
-| Element interaction spec | atom, isolating, selectable, keyboard selectable, editable island, read-only, attribute default/equality behavior |
-| Browser input cleanup | browser contracts for tables, voids, paste, IME, annotations, large-document projection, render budgets |
-| React runtime | selector no-tearing, runtime-id invalidation, projection-channel invalidation, external decoration refresh without root rerender |
+| Update metadata/history/collab | `history-push`, `history-merge`, `historic`, `skip-collab`, remote import, rebased commit, selection bookmark restore, composition grouping                   |
+| Internal command/input policy  | priority ordering, deterministic same-priority order, implicit update context, beforeinput/keydown/paste/composition dispatch, public registry still hidden   |
+| Element interaction spec       | atom, isolating, selectable, keyboard selectable, editable island, read-only, attribute default/equality behavior                                             |
+| Browser input cleanup          | browser contracts for tables, voids, paste, IME, annotations, large-document projection, render budgets                                                       |
+| React runtime                  | selector no-tearing, runtime-id invalidation, projection-channel invalidation, external decoration refresh without root rerender                              |
 
 ## Implementation-skill review notes
 
@@ -611,14 +623,14 @@ Rollback/remediation:
 
 ## Final score
 
-| Dimension | Score | Evidence |
-| --- | ---: | --- |
-| React runtime performance | 0.92 | Selector/runtime-id gating, projection stores, render-profiler contracts, and hot-path rules are named. |
-| Slate-close unopinionated DX | 0.95 | Public writes stay `editor.update`; JSON nodes stay core; public command slots stay rejected; extension registration wraps current namespaces. |
-| Plate and slate-yjs migration backbone | 0.92 | First lane targets extension registration/runtime; update metadata covers history/collab; raw Slate avoids current adapter compatibility promises. |
-| Regression-proof testing | 0.92 | Proof matrix names unit/type/browser contracts for each lane, including first-party browser operation families. |
-| Research evidence completeness | 0.94 | Local Lexical, ProseMirror, Tiptap, VS Code, and live Slate v2 source evidence are cited. |
-| shadcn-style composability | 0.91 | Plan keeps composable hooks/selectors and extension packaging without product UI APIs. |
+| Dimension                              | Score | Evidence                                                                                                                                           |
+| -------------------------------------- | ----: | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| React runtime performance              |  0.92 | Selector/runtime-id gating, projection stores, render-profiler contracts, and hot-path rules are named.                                            |
+| Slate-close unopinionated DX           |  0.95 | Public writes stay `editor.update`; JSON nodes stay core; public command slots stay rejected; extension registration wraps current namespaces.     |
+| Plate and slate-yjs migration backbone |  0.92 | First lane targets extension registration/runtime; update metadata covers history/collab; raw Slate avoids current adapter compatibility promises. |
+| Regression-proof testing               |  0.92 | Proof matrix names unit/type/browser contracts for each lane, including first-party browser operation families.                                    |
+| Research evidence completeness         |  0.94 | Local Lexical, ProseMirror, Tiptap, VS Code, and live Slate v2 source evidence are cited.                                                          |
+| shadcn-style composability             |  0.91 | Plan keeps composable hooks/selectors and extension packaging without product UI APIs.                                                             |
 
 Weighted score: 0.93.
 
@@ -629,27 +641,27 @@ Completion threshold is met. The plan is ready for user review and a later `ralp
 Run `ralph` next if the user wants execution:
 
 - execution starts with extension registration runtime
-- keep implementation in `../slate-v2`
+- keep implementation in `.tmp/slate-v2`
 - do not implement product commands in raw Slate
 - add vertical contracts per slice before refactoring broader runtime code
 
 ## Ralph execution ledger
 
-| Time | Pass | Status | Evidence | Next action |
-| --- | --- | --- | --- | --- |
-| 2026-04-30T18:00:00Z | ralph-execution-prompt | in_progress | `.tmp/<session-id>/completion-check.md` moved to `pending`; `.tmp/continue.md` refreshed for the accepted execution lane. Live files re-read: `packages/slate/src/interfaces/editor.ts`, `packages/slate/src/core/editor-extension.ts`, `packages/slate/src/core/extension-registry.ts`, and extension namespace contracts in the implementation workspace. | Start the first extension registration runtime slice with focused contracts, then patch implementation additively. |
-| 2026-04-30T19:00:00Z | extension-registration-runtime | complete | Implemented additive `register(context)` output, `options`, `peerDependencies`, `conflicts`, cleanup signal, extension-local `runtimeState`, runtime rejection of raw extension `commands`, focused runtime contracts, generic extension command-slot type rejection, and docs example in the Slate v2 implementation workspace. Gates: `bun test ./packages/slate/test/extension-methods-contract.ts ./packages/slate/test/public-surface-contract.ts`; `bun test ./packages/slate/test/extension-namespace-contract.ts ./packages/slate/test/extension-namespaces-contract.ts ./packages/slate/test/extension-methods-contract.ts`; `bun --filter slate typecheck`; Biome check on touched Slate files. Residual: `bunx tsc --project packages/slate/test/tsconfig.generic-types.json --noEmit` still fails in unrelated generic editor/value/operation files, not the new extension namespace contract. | Next accepted-plan owner is update metadata plus history/collab policy. |
-| 2026-04-30T19:10:00Z | update-metadata-history-collab | in_progress | User corrected that `ralph` must keep the whole accepted implementation plan open. `.tmp/<session-id>/completion-check.md` reopened to `pending`; `.tmp/continue.md` now names all remaining owners and keeps the full plan as the completion target. | Start typed update metadata/history/collab slice with focused contracts against current live files. |
-| 2026-04-30T19:35:00Z | update-metadata-history-collab | complete | Implemented typed `EditorUpdateOptions.metadata`, frozen commit metadata, history push/merge/skip policy, remote collab skip-history policy, and docs for update metadata. Gates: `bun test ./packages/slate/test/commit-metadata-contract.ts ./packages/slate/test/collab-history-runtime-contract.ts ./packages/slate-history/test/history-contract.ts ./packages/slate/test/public-surface-contract.ts`; `bun --filter slate typecheck`; `bun --filter slate-history typecheck`; `bunx biome check ...`; `bun test ./packages/slate-history/test`; `bun test ./packages/slate-history/test/integrity-contract.ts`; `bun test ./packages/slate/test/read-update-contract.ts ./packages/slate/test/transaction-contract.ts ./packages/slate/test/state-tx-public-api-contract.ts`; `git diff --check ...`. | Next accepted-plan owner is typed internal command/input policy. |
-| 2026-04-30T19:40:00Z | typed-internal-command-input-policy | in_progress | Completion state advanced to the third owner while keeping the full implementation plan pending. | Read current command registry and input policy code; start with focused typed-command contracts. |
-| 2026-04-30T20:00:00Z | typed-internal-command-input-policy | in_progress | Implemented typed internal command definitions for the core command registry, with deterministic priority-order proof and public-surface proof that command helpers stay hidden from raw Slate public exports. Gates: `bun test ./packages/slate/test/transaction-contract.ts ./packages/slate/test/public-surface-contract.ts`; `bun --filter slate typecheck`; `bunx biome check packages/slate/src/interfaces/editor.ts packages/slate/src/core/command-registry.ts packages/slate/src/internal/index.ts packages/slate/test/transaction-contract.ts packages/slate/test/public-surface-contract.ts`. | Continue same owner: connect browser/input policy to typed command definitions or record why the editable command union remains the input-side policy shape for this pass. |
-| 2026-04-30T20:15:00Z | typed-internal-command-input-policy | complete | Added typed editable command definitions, command-definition traces, beforeinput/keydown command-definition proof, and kept core command helpers hidden from raw public exports. Gates: `bun test ./packages/slate-react/test/editing-kernel-contract.ts ./packages/slate-react/test/editing-epoch-kernel-contract.ts ./packages/slate/test/transaction-contract.ts ./packages/slate/test/public-surface-contract.ts`; `bun --filter slate typecheck`; `bun --filter slate-react typecheck`; `bunx biome check ...`. | Next accepted-plan owner is element spec behavior and extension-owned element properties. |
-| 2026-04-30T20:20:00Z | element-spec-behavior-extension-properties | in_progress | Completion state advanced to the fourth owner while keeping the whole implementation plan pending. Solution notes checked: explicit contract files must be path-run, and browser-proof gates stay required before broad migration claims. | Read live element spec/schema files and start with focused element spec/property contracts. |
-| 2026-04-30T20:45:00Z | element-spec-behavior-extension-properties | complete | Implemented additive atom/isolating/keyboard-selectable/editable-island schema policy, `elementProperty` descriptors, default/equality reads without JSON mutation, matched-spec property overlays, reserved property rejection, and docs. Gates: `bun test ./packages/slate/test/schema-contract.ts ./packages/slate/test/query-contract.ts ./packages/slate/test/migration-backbone-contract.ts ./packages/slate/test/public-surface-contract.ts`; `bun --filter slate typecheck`; `bunx biome check ...`; `git diff --check ...`. | Next accepted-plan owner is browser input pipeline cleanup. |
-| 2026-04-30T20:45:00Z | browser-input-pipeline-cleanup | in_progress | Completion state advanced to the final implementation owner while keeping the whole implementation plan pending. | Read live Slate React input pipeline and existing input/kernel contracts; start with the smallest cleanup backed by focused proof. |
-| 2026-04-30T21:00:00Z | browser-input-pipeline-cleanup | complete | Removed duplicate beforeinput command parsing by threading the typed kernel command into model-owned beforeinput execution and the React fallback path. Gates: `bun test ./packages/slate-react/test/model-input-strategy-contract.ts ./packages/slate-react/test/editing-kernel-contract.ts ./packages/slate-react/test/editing-epoch-kernel-contract.ts`; `bun --filter slate-react typecheck`; `bunx biome check ...`; `bun --filter slate-browser test:proof`; `bun --filter slate-browser test:selection`; `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun run playwright playwright/integration/examples/richtext.test.ts --project=chromium -g "keeps model and DOM coherent after persistent native word-delete"`. | Run diff review, then verification sweep before setting completion done. |
-| 2026-04-30T21:00:00Z | diff-review-pass | in_progress | Whole accepted implementation lane is ready for changed-file review. | Review changed files for concrete regressions and either fix them or proceed to verification sweep. |
-| 2026-04-30T23:13:40Z | diff-review-pass | complete | Changed-file review found and fixed one concrete browser-input regression risk: prepared beforeinput commands must not freeze stale delete selection before DOM selection import. Delete commands now refresh against the synced selection, while typed insert commands still win over stale raw event data. Gates: `bun test ./packages/slate-react/test/model-input-strategy-contract.ts ./packages/slate-react/test/editing-kernel-contract.ts ./packages/slate-react/test/editing-epoch-kernel-contract.ts`; `bun --filter slate-react typecheck`; `bunx biome check packages/slate-react/src/editable/model-input-strategy.ts packages/slate-react/src/editable/runtime-before-input-events.ts packages/slate-react/test/model-input-strategy-contract.ts packages/slate-react/test/editing-kernel-contract.ts packages/slate-react/test/editing-epoch-kernel-contract.ts`. | Run verification sweep before setting completion done. |
-| 2026-04-30T23:13:40Z | verification-sweep-pass | in_progress | Completion state advanced to final whole-plan proof. | Run the final proof bundle across Slate core, history/collab, Slate React, browser proof, typecheck, Biome, diff whitespace, and completion-check. |
-| 2026-04-30T23:16:12Z | verification-sweep-pass | complete | Final proof passed: Slate core/history/collab contracts (`408 pass, 0 fail`); Slate React annotation/projection/input contracts (`43 pass, 0 fail`); `bun --filter slate typecheck`; `bun --filter slate-history typecheck`; `bun --filter slate-react typecheck`; changed-file Biome check; `git diff --check` in `../slate-v2`; `git diff --check` for plan/state files in this repo; `bun --filter slate-browser test:proof` (`23 pass, 0 fail`); `bun --filter slate-browser test:selection` (`1 file passed, 2 tests`); focused Chromium Playwright row `keeps model and DOM coherent after persistent native word-delete` (`1 passed`). | Set `.tmp/<session-id>/completion-check.md` to `done`; run completion-check. |
-| 2026-04-30T23:18:38Z | ce-compound | complete | Captured the reusable diff-review lesson in `docs/solutions/ui-bugs/2026-04-30-slate-react-beforeinput-delete-commands-must-refresh-synced-selection.md`. Biome ignores `docs/solutions/**/*.md`; `git diff --check` and `bun run completion-check` passed after the write. | Whole accepted plan remains done. |
+| Time                 | Pass                                       | Status      | Evidence                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | Next action                                                                                                                                                                |
+| -------------------- | ------------------------------------------ | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-04-30T18:00:00Z | ralph-execution-prompt                     | in_progress | `.tmp/<session-id>/completion-check.md` moved to `pending`; `.tmp/continue.md` refreshed for the accepted execution lane. Live files re-read: `packages/slate/src/interfaces/editor.ts`, `packages/slate/src/core/editor-extension.ts`, `packages/slate/src/core/extension-registry.ts`, and extension namespace contracts in the implementation workspace.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | Start the first extension registration runtime slice with focused contracts, then patch implementation additively.                                                         |
+| 2026-04-30T19:00:00Z | extension-registration-runtime             | complete    | Implemented additive `register(context)` output, `options`, `peerDependencies`, `conflicts`, cleanup signal, extension-local `runtimeState`, runtime rejection of raw extension `commands`, focused runtime contracts, generic extension command-slot type rejection, and docs example in the Slate v2 implementation workspace. Gates: `bun test ./packages/slate/test/extension-methods-contract.ts ./packages/slate/test/public-surface-contract.ts`; `bun test ./packages/slate/test/extension-namespace-contract.ts ./packages/slate/test/extension-namespaces-contract.ts ./packages/slate/test/extension-methods-contract.ts`; `bun --filter slate typecheck`; Biome check on touched Slate files. Residual: `bunx tsc --project packages/slate/test/tsconfig.generic-types.json --noEmit` still fails in unrelated generic editor/value/operation files, not the new extension namespace contract. | Next accepted-plan owner is update metadata plus history/collab policy.                                                                                                    |
+| 2026-04-30T19:10:00Z | update-metadata-history-collab             | in_progress | User corrected that `ralph` must keep the whole accepted implementation plan open. `.tmp/<session-id>/completion-check.md` reopened to `pending`; `.tmp/continue.md` now names all remaining owners and keeps the full plan as the completion target.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | Start typed update metadata/history/collab slice with focused contracts against current live files.                                                                        |
+| 2026-04-30T19:35:00Z | update-metadata-history-collab             | complete    | Implemented typed `EditorUpdateOptions.metadata`, frozen commit metadata, history push/merge/skip policy, remote collab skip-history policy, and docs for update metadata. Gates: `bun test ./packages/slate/test/commit-metadata-contract.ts ./packages/slate/test/collab-history-runtime-contract.ts ./packages/slate-history/test/history-contract.ts ./packages/slate/test/public-surface-contract.ts`; `bun --filter slate typecheck`; `bun --filter slate-history typecheck`; `bunx biome check ...`; `bun test ./packages/slate-history/test`; `bun test ./packages/slate-history/test/integrity-contract.ts`; `bun test ./packages/slate/test/read-update-contract.ts ./packages/slate/test/transaction-contract.ts ./packages/slate/test/state-tx-public-api-contract.ts`; `git diff --check ...`.                                                                                                | Next accepted-plan owner is typed internal command/input policy.                                                                                                           |
+| 2026-04-30T19:40:00Z | typed-internal-command-input-policy        | in_progress | Completion state advanced to the third owner while keeping the full implementation plan pending.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | Read current command registry and input policy code; start with focused typed-command contracts.                                                                           |
+| 2026-04-30T20:00:00Z | typed-internal-command-input-policy        | in_progress | Implemented typed internal command definitions for the core command registry, with deterministic priority-order proof and public-surface proof that command helpers stay hidden from raw Slate public exports. Gates: `bun test ./packages/slate/test/transaction-contract.ts ./packages/slate/test/public-surface-contract.ts`; `bun --filter slate typecheck`; `bunx biome check packages/slate/src/interfaces/editor.ts packages/slate/src/core/command-registry.ts packages/slate/src/internal/index.ts packages/slate/test/transaction-contract.ts packages/slate/test/public-surface-contract.ts`.                                                                                                                                                                                                                                                                                                   | Continue same owner: connect browser/input policy to typed command definitions or record why the editable command union remains the input-side policy shape for this pass. |
+| 2026-04-30T20:15:00Z | typed-internal-command-input-policy        | complete    | Added typed editable command definitions, command-definition traces, beforeinput/keydown command-definition proof, and kept core command helpers hidden from raw public exports. Gates: `bun test ./packages/slate-react/test/editing-kernel-contract.ts ./packages/slate-react/test/editing-epoch-kernel-contract.ts ./packages/slate/test/transaction-contract.ts ./packages/slate/test/public-surface-contract.ts`; `bun --filter slate typecheck`; `bun --filter slate-react typecheck`; `bunx biome check ...`.                                                                                                                                                                                                                                                                                                                                                                                       | Next accepted-plan owner is element spec behavior and extension-owned element properties.                                                                                  |
+| 2026-04-30T20:20:00Z | element-spec-behavior-extension-properties | in_progress | Completion state advanced to the fourth owner while keeping the whole implementation plan pending. Solution notes checked: explicit contract files must be path-run, and browser-proof gates stay required before broad migration claims.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Read live element spec/schema files and start with focused element spec/property contracts.                                                                                |
+| 2026-04-30T20:45:00Z | element-spec-behavior-extension-properties | complete    | Implemented additive atom/isolating/keyboard-selectable/editable-island schema policy, `elementProperty` descriptors, default/equality reads without JSON mutation, matched-spec property overlays, reserved property rejection, and docs. Gates: `bun test ./packages/slate/test/schema-contract.ts ./packages/slate/test/query-contract.ts ./packages/slate/test/migration-backbone-contract.ts ./packages/slate/test/public-surface-contract.ts`; `bun --filter slate typecheck`; `bunx biome check ...`; `git diff --check ...`.                                                                                                                                                                                                                                                                                                                                                                       | Next accepted-plan owner is browser input pipeline cleanup.                                                                                                                |
+| 2026-04-30T20:45:00Z | browser-input-pipeline-cleanup             | in_progress | Completion state advanced to the final implementation owner while keeping the whole implementation plan pending.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | Read live Slate React input pipeline and existing input/kernel contracts; start with the smallest cleanup backed by focused proof.                                         |
+| 2026-04-30T21:00:00Z | browser-input-pipeline-cleanup             | complete    | Removed duplicate beforeinput command parsing by threading the typed kernel command into model-owned beforeinput execution and the React fallback path. Gates: `bun test ./packages/slate-react/test/model-input-strategy-contract.ts ./packages/slate-react/test/editing-kernel-contract.ts ./packages/slate-react/test/editing-epoch-kernel-contract.ts`; `bun --filter slate-react typecheck`; `bunx biome check ...`; `bun --filter slate-browser test:proof`; `bun --filter slate-browser test:selection`; `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun run playwright playwright/integration/examples/richtext.test.ts --project=chromium -g "keeps model and DOM coherent after persistent native word-delete"`.                                                                                                                                                                                  | Run diff review, then verification sweep before setting completion done.                                                                                                   |
+| 2026-04-30T21:00:00Z | diff-review-pass                           | in_progress | Whole accepted implementation lane is ready for changed-file review.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | Review changed files for concrete regressions and either fix them or proceed to verification sweep.                                                                        |
+| 2026-04-30T23:13:40Z | diff-review-pass                           | complete    | Changed-file review found and fixed one concrete browser-input regression risk: prepared beforeinput commands must not freeze stale delete selection before DOM selection import. Delete commands now refresh against the synced selection, while typed insert commands still win over stale raw event data. Gates: `bun test ./packages/slate-react/test/model-input-strategy-contract.ts ./packages/slate-react/test/editing-kernel-contract.ts ./packages/slate-react/test/editing-epoch-kernel-contract.ts`; `bun --filter slate-react typecheck`; `bunx biome check packages/slate-react/src/editable/model-input-strategy.ts packages/slate-react/src/editable/runtime-before-input-events.ts packages/slate-react/test/model-input-strategy-contract.ts packages/slate-react/test/editing-kernel-contract.ts packages/slate-react/test/editing-epoch-kernel-contract.ts`.                           | Run verification sweep before setting completion done.                                                                                                                     |
+| 2026-04-30T23:13:40Z | verification-sweep-pass                    | in_progress | Completion state advanced to final whole-plan proof.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | Run the final proof bundle across Slate core, history/collab, Slate React, browser proof, typecheck, Biome, diff whitespace, and completion-check.                         |
+| 2026-04-30T23:16:12Z | verification-sweep-pass                    | complete    | Final proof passed: Slate core/history/collab contracts (`408 pass, 0 fail`); Slate React annotation/projection/input contracts (`43 pass, 0 fail`); `bun --filter slate typecheck`; `bun --filter slate-history typecheck`; `bun --filter slate-react typecheck`; changed-file Biome check; `git diff --check` in `.tmp/slate-v2`; `git diff --check` for plan/state files in this repo; `bun --filter slate-browser test:proof` (`23 pass, 0 fail`); `bun --filter slate-browser test:selection` (`1 file passed, 2 tests`); focused Chromium Playwright row `keeps model and DOM coherent after persistent native word-delete` (`1 passed`).                                                                                                                                                                                                                                                            | Set `.tmp/<session-id>/completion-check.md` to `done`; run completion-check.                                                                                               |
+| 2026-04-30T23:18:38Z | ce-compound                                | complete    | Captured the reusable diff-review lesson in `docs/solutions/ui-bugs/2026-04-30-slate-react-beforeinput-delete-commands-must-refresh-synced-selection.md`. Biome ignores `docs/solutions/**/*.md`; `git diff --check` and `bun run completion-check` passed after the write.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | Whole accepted plan remains done.                                                                                                                                          |

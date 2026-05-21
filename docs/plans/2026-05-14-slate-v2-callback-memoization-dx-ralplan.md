@@ -4,7 +4,7 @@ Date: 2026-05-14
 Status: executed
 Score: 1.00
 Owner: Slate Ralplan planning only
-Execution owner: ralph in `../slate-v2`
+Execution owner: ralph in `.tmp/slate-v2`
 
 ## Verdict
 
@@ -52,14 +52,14 @@ Target context:
 
 ```ts
 type EditableDOMBeforeInputContext = {
-  command: EditableInputCommand | null
-  data: unknown
-  editor: ReactEditor
-  inputType: string
-  intent: EditableInputIntent | null
-  native: boolean
-  selection: Range | null
-}
+  command: EditableInputCommand | null;
+  data: unknown;
+  editor: ReactEditor;
+  inputType: string;
+  intent: EditableInputIntent | null;
+  native: boolean;
+  selection: Range | null;
+};
 ```
 
 ### 2. Semantic editable command handler
@@ -118,18 +118,18 @@ Target:
 ```tsx
 <Editable
   onCommand={(command, { editor }) => {
-    if (command.kind !== 'format') {
-      return
+    if (command.kind !== "format") {
+      return;
     }
 
     switch (command.format) {
-      case 'bold':
-      case 'italic':
-      case 'underline':
+      case "bold":
+      case "italic":
+      case "underline":
         editor.update((tx) => {
-          tx.marks.toggle(command.format)
-        })
-        return true
+          tx.marks.toggle(command.format);
+        });
+        return true;
     }
   }}
 />
@@ -369,12 +369,12 @@ Revise:
   `.tmp/019e1fc0-dba0-7de1-9236-b484a144cda6/completion-check.md`.
 - Active continuation prompt:
   `.tmp/019e1fc0-dba0-7de1-9236-b484a144cda6/continue.md`.
-- Current owner: `../slate-v2/packages/slate-react`.
+- Current owner: `.tmp/slate-v2/packages/slate-react`.
 - Current next pass: completion verification.
 - Execution result: semantic `onCommand`, raw `onDOMBeforeInput`
   context, stable native input handler reads, hovering-toolbar cleanup, docs,
   changeset, unit/package/browser proof, and `bun check` landed in
-  `../slate-v2`.
+  `.tmp/slate-v2`.
 
 ### Phase 1: Contract Tests First
 
@@ -421,7 +421,7 @@ Revise:
 
 ### Phase 5: Verification
 
-Run from `../slate-v2`:
+Run from `.tmp/slate-v2`:
 
 - focused red/green type test for new handler types
 - focused `slate-react` editing-kernel/runtime tests

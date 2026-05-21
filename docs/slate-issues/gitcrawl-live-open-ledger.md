@@ -661,5 +661,5 @@ Rows: 630 open issues. Open PRs are tracked by gitcrawl but excluded from this i
   input/Windows IME closure still requires matching raw-device or browser proof.
 - 2026-05-08 `#6053` React hook self-removal lane: exact
   `useElementSelected` self-removal and stale watched-path proof now exists in
-  `../slate-v2/packages/slate-react/test/use-element-selected.test.tsx`; v2
+  `.tmp/slate-v2/packages/slate-react/test/use-element-selected.test.tsx`; v2
   claim is `Fixes #6053`.

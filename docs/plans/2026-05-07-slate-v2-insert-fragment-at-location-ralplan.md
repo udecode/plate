@@ -34,8 +34,8 @@ Desired outcome:
 
 In scope:
 
-- `../slate-v2/packages/slate/src/transforms-text/insert-fragment.ts`;
-- package tests under `../slate-v2/packages/slate/test/`;
+- `.tmp/slate-v2/packages/slate/src/transforms-text/insert-fragment.ts`;
+- package tests under `.tmp/slate-v2/packages/slate/test/`;
 - issue ledger, fork dossier, and PR reference accounting.
 
 Non-goals:
@@ -92,19 +92,19 @@ empty-node caret placement.
 
 Current source:
 
-- `../slate-v2/packages/slate/src/transforms-text/insert-fragment.ts` owns
+- `.tmp/slate-v2/packages/slate/src/transforms-text/insert-fragment.ts` owns
   `insertFragment`.
 - `applyInsertFragment` resolves `options.at` through
   `tx.resolveTarget({ at: options.at })`.
-- `../slate-v2/packages/slate/src/core/public-state.ts` returns explicit
+- `.tmp/slate-v2/packages/slate/src/core/public-state.ts` returns explicit
   `options.at` unchanged from `resolveTarget`.
 - `insert-fragment.ts` has several fast replacement paths before the legacy
   split/insert path, then only performs final `transforms.select(end)` when
   `!options.at`.
-- `../slate-v2/packages/slate/test/primitive-method-runtime-contract.ts` covers
+- `.tmp/slate-v2/packages/slate/test/primitive-method-runtime-contract.ts` covers
   omitted transaction targets for `tx.fragment.insert`, not the explicit `at`
   issue.
-- `../slate-v2/packages/slate/test/clipboard-contract.ts` covers many fragment
+- `.tmp/slate-v2/packages/slate/test/clipboard-contract.ts` covers many fragment
   replacement shapes, including target-block preservation, but not `#5412`.
 
 Live current shape exists. This is not a fake migration from old Slate; it is a
@@ -149,14 +149,14 @@ Live gitcrawl ledger:
 
 ## 6. Confidence Score
 
-| Dimension | Score | Evidence |
-| --- | ---: | --- |
-| React 19.2 runtime performance | 0.90 | React is out of scope unless browser paste proof becomes necessary. |
-| Slate-close unopinionated DX | 0.94 | Existing `insertFragment` option behavior is the public contract; no new API is proposed. |
-| Plate/slate-yjs migration backbone | 0.90 | Operation and transaction proof stay core-owned; no Plate adapter required. |
-| Regression-proof testing strategy | 0.95 | `#5412` and `#5429` are `ready-now`; package tests can assert model children and selection. |
-| Research evidence completeness | 0.91 | Current issue dossiers, candidate maps, and live v2 source were read. External systems are not needed for this local regression. |
-| shadcn-style composability | 0.90 | Not a UI lane; minimal public options avoid component/API sprawl. |
+| Dimension                          | Score | Evidence                                                                                                                         |
+| ---------------------------------- | ----: | -------------------------------------------------------------------------------------------------------------------------------- |
+| React 19.2 runtime performance     |  0.90 | React is out of scope unless browser paste proof becomes necessary.                                                              |
+| Slate-close unopinionated DX       |  0.94 | Existing `insertFragment` option behavior is the public contract; no new API is proposed.                                        |
+| Plate/slate-yjs migration backbone |  0.90 | Operation and transaction proof stay core-owned; no Plate adapter required.                                                      |
+| Regression-proof testing strategy  |  0.95 | `#5412` and `#5429` are `ready-now`; package tests can assert model children and selection.                                      |
+| Research evidence completeness     |  0.91 | Current issue dossiers, candidate maps, and live v2 source were read. External systems are not needed for this local regression. |
+| shadcn-style composability         |  0.90 | Not a UI lane; minimal public options avoid component/API sprawl.                                                                |
 
 Total: 0.92.
 
@@ -204,14 +204,14 @@ proof before any fixed browser claim.
 
 ## 10. Pass State Ledger
 
-| Pass | Status | Evidence added | Plan delta | Next owner |
-| --- | --- | --- | --- | --- |
-| current-state read | complete | Read issue maps, dossiers, coverage rows, PR reference, `insert-fragment.ts`, `public-state.ts`, and current tests. | Selected `#5412`/`#5429`. | Ralph TDD |
-| related issue discovery | complete | Reviewed `#5089`, `#4542`, `#5151`, `#3557`, `#3155`, `#5080`, `#3891`, `#5129`. | Kept non-targets bounded. | Ralph TDD |
-| closure score | complete | Score `0.92`, no dimension below `0.90`. | Ready for execution. | Ralph |
-| Ralph execution start | complete | `.tmp/completion-checks/slate-v2-insert-fragment-at-location-execution.md`; `.tmp/continue.md`. | Activated TDD pass for `#5412` and `#5429`. | Package tests |
-| TDD proof | complete | `../slate-v2/packages/slate/test/clipboard-contract.ts` adds exact package proof for explicit `insertFragment({ at })` and empty-block caret placement. | Current source already satisfies both issue-shaped contracts; no production patch needed. | Verification sweep |
-| Verification sweep | complete | `bun test ./packages/slate/test/clipboard-contract.ts -t "insertFragment"`; `bun test ./packages/slate/test/primitive-method-runtime-contract.ts -t "insertFragment"`; `bun --filter slate typecheck`; `bun lint:fix`; `bun run completion-check`. | `#5412` and `#5429` moved to `Fixes`; non-target rows remain bounded. | Next `slate-ralplan` bucket selection |
+| Pass                    | Status   | Evidence added                                                                                                                                                                                                                                     | Plan delta                                                                                | Next owner                            |
+| ----------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- | ------------------------------------- |
+| current-state read      | complete | Read issue maps, dossiers, coverage rows, PR reference, `insert-fragment.ts`, `public-state.ts`, and current tests.                                                                                                                                | Selected `#5412`/`#5429`.                                                                 | Ralph TDD                             |
+| related issue discovery | complete | Reviewed `#5089`, `#4542`, `#5151`, `#3557`, `#3155`, `#5080`, `#3891`, `#5129`.                                                                                                                                                                   | Kept non-targets bounded.                                                                 | Ralph TDD                             |
+| closure score           | complete | Score `0.92`, no dimension below `0.90`.                                                                                                                                                                                                           | Ready for execution.                                                                      | Ralph                                 |
+| Ralph execution start   | complete | `.tmp/completion-checks/slate-v2-insert-fragment-at-location-execution.md`; `.tmp/continue.md`.                                                                                                                                                    | Activated TDD pass for `#5412` and `#5429`.                                               | Package tests                         |
+| TDD proof               | complete | `.tmp/slate-v2/packages/slate/test/clipboard-contract.ts` adds exact package proof for explicit `insertFragment({ at })` and empty-block caret placement.                                                                                          | Current source already satisfies both issue-shaped contracts; no production patch needed. | Verification sweep                    |
+| Verification sweep      | complete | `bun test ./packages/slate/test/clipboard-contract.ts -t "insertFragment"`; `bun test ./packages/slate/test/primitive-method-runtime-contract.ts -t "insertFragment"`; `bun --filter slate typecheck`; `bun lint:fix`; `bun run completion-check`. | `#5412` and `#5429` moved to `Fixes`; non-target rows remain bounded.                     | Next `slate-ralplan` bucket selection |
 
 ## 11. Final Completion Gates
 

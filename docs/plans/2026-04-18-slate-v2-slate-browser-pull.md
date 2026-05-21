@@ -6,12 +6,12 @@ status: completed
 
 # Goal
 
-Pull `packages/slate-browser` from `../slate-v2-draft` into live
-`../slate-v2` with honest Bun-era wiring.
+Pull `packages/slate-browser` from `.tmp/slate-v2-draft` into live
+`.tmp/slate-v2` with honest Bun-era wiring.
 
 # Facts
 
-- live `../slate-v2` does not have `packages/slate-browser`
+- live `.tmp/slate-v2` does not have `packages/slate-browser`
 - draft `slate-browser` is real and includes:
   - source
   - package-local tests
@@ -53,7 +53,7 @@ Pull `packages/slate-browser` from `../slate-v2-draft` into live
 - identified the main technical blocker up front:
   multi-entry/subpath packaging under `tsdown`
 - copied `packages/slate-browser` source, tests, and docs from
-  `../slate-v2-draft` into live `../slate-v2`
+  `.tmp/slate-v2-draft` into live `.tmp/slate-v2`
 - replaced the old rollup/pnpm package wiring with:
   - package-local multi-entry `tsdown`
   - Bun-era package scripts

@@ -312,15 +312,15 @@ Decision drivers:
 
 Options:
 
-| Option | Verdict | Reason |
-| --- | --- | --- |
-| Keep children mandatory, no hidden support | reject | Leaves a real legacy limitation unsolved. |
-| Let `renderElement` omit children | reject | Recreates DOM mapping and selection crashes. |
-| Use CSS-only hiding | reject | Browser find, a11y, copy, selection, stale DOM, and IME become accidental. |
-| Treat every collapse as void/atom | partial | Valid for atomic cards, wrong for collapsed editable sections. |
-| Extend shell islands | partial | Useful aggressive top-level mode, wrong default primitive for nested app collapse. |
-| Ship `slots.HiddenRange` immediately | reject for v1 | Right family, too public and too product-shaped before bridge proof. |
-| Build internal DOM coverage boundaries first | choose | Gives Slate one missing-DOM contract for collapse, staging, shell, and future virtualization policies. |
+| Option                                       | Verdict       | Reason                                                                                                 |
+| -------------------------------------------- | ------------- | ------------------------------------------------------------------------------------------------------ |
+| Keep children mandatory, no hidden support   | reject        | Leaves a real legacy limitation unsolved.                                                              |
+| Let `renderElement` omit children            | reject        | Recreates DOM mapping and selection crashes.                                                           |
+| Use CSS-only hiding                          | reject        | Browser find, a11y, copy, selection, stale DOM, and IME become accidental.                             |
+| Treat every collapse as void/atom            | partial       | Valid for atomic cards, wrong for collapsed editable sections.                                         |
+| Extend shell islands                         | partial       | Useful aggressive top-level mode, wrong default primitive for nested app collapse.                     |
+| Ship `slots.HiddenRange` immediately         | reject for v1 | Right family, too public and too product-shaped before bridge proof.                                   |
+| Build internal DOM coverage boundaries first | choose        | Gives Slate one missing-DOM contract for collapse, staging, shell, and future virtualization policies. |
 
 Chosen architecture:
 
@@ -339,50 +339,50 @@ Use a general DOM coverage registry, not a hidden-subtree-only registry.
 
 ```ts
 type DOMCoverageBoundary = {
-  boundaryId: string
-  ownerRuntimeId: RuntimeId
-  ownerPath: Path
+  boundaryId: string;
+  ownerRuntimeId: RuntimeId;
+  ownerPath: Path;
 
-  coveredPathRanges: readonly PathRange[]
-  coveredRuntimeRanges: readonly RuntimeIdRange[]
+  coveredPathRanges: readonly PathRange[];
+  coveredRuntimeRanges: readonly RuntimeIdRange[];
 
   state:
-    | 'mounted'
-    | 'intentionally-hidden'
-    | 'pending-mount'
-    | 'virtualized'
-    | 'atom-boundary'
+    | "mounted"
+    | "intentionally-hidden"
+    | "pending-mount"
+    | "virtualized"
+    | "atom-boundary";
 
   reason:
-    | 'app-collapse'
-    | 'app-hidden'
-    | 'large-document-staged'
-    | 'viewport-virtualization'
-    | 'shell-aggressive'
-    | 'runtime-atom'
+    | "app-collapse"
+    | "app-hidden"
+    | "large-document-staged"
+    | "viewport-virtualization"
+    | "shell-aggressive"
+    | "runtime-atom";
 
   anchor:
-    | { type: 'owner' }
-    | { type: 'summary-slot'; runtimeId: RuntimeId }
-    | { type: 'placeholder'; runtimeId?: RuntimeId }
+    | { type: "owner" }
+    | { type: "summary-slot"; runtimeId: RuntimeId }
+    | { type: "placeholder"; runtimeId?: RuntimeId };
 
-  selectionPolicy: 'materialize' | 'boundary' | 'model-backed'
-  copyPolicy: 'include-model' | 'summary-only' | 'exclude' | 'materialize'
-  findPolicy: 'not-native-until-mounted'
-  a11yPolicy: 'summary-announces-collapsed' | 'hidden-from-tree'
-  version: number
-}
+  selectionPolicy: "materialize" | "boundary" | "model-backed";
+  copyPolicy: "include-model" | "summary-only" | "exclude" | "materialize";
+  findPolicy: "not-native-until-mounted";
+  a11yPolicy: "summary-announces-collapsed" | "hidden-from-tree";
+  version: number;
+};
 ```
 
 Policy table:
 
-| Use case | State | Selection default | Copy default |
-| --- | --- | --- | --- |
-| Collapsed section | `intentionally-hidden` | `boundary` or `materialize` | `include-model` for select-all; product-specific for local ranges |
-| Hidden header/footer | `intentionally-hidden` | `boundary` | `exclude` unless app opts in |
-| Large-doc staged mounting | `pending-mount` | `materialize` | `materialize` or `model-backed` |
-| Future virtualization | `virtualized` | materialize near interaction | `model-backed` for spanning ranges |
-| Atom/void-like node | `atom-boundary` | `boundary` | serialized node policy |
+| Use case                  | State                  | Selection default            | Copy default                                                      |
+| ------------------------- | ---------------------- | ---------------------------- | ----------------------------------------------------------------- |
+| Collapsed section         | `intentionally-hidden` | `boundary` or `materialize`  | `include-model` for select-all; product-specific for local ranges |
+| Hidden header/footer      | `intentionally-hidden` | `boundary`                   | `exclude` unless app opts in                                      |
+| Large-doc staged mounting | `pending-mount`        | `materialize`                | `materialize` or `model-backed`                                   |
+| Future virtualization     | `virtualized`          | materialize near interaction | `model-backed` for spanning ranges                                |
+| Atom/void-like node       | `atom-boundary`        | `boundary`                   | serialized node policy                                            |
 
 Rules:
 
@@ -433,7 +433,7 @@ Eventual public candidate after proof:
 
 ```tsx
 <slots.Boundary
-  scope={{ type: 'children', from: 1, to: 3 }}
+  scope={{ type: "children", from: 1, to: 3 }}
   mounted={!collapsed}
   reason="app-collapse"
   selectionPolicy="materialize"
@@ -451,7 +451,7 @@ Whole-element hiding should use the same concept:
 
 ```tsx
 <slots.Boundary
-  scope={{ type: 'self' }}
+  scope={{ type: "self" }}
   mounted={!hidden}
   reason="app-hidden"
   selectionPolicy="boundary"
@@ -478,28 +478,28 @@ is only one policy.
 
 Policy defaults by reason:
 
-| Reason | Selection default | Copy default | Find default |
-| --- | --- | --- | --- |
-| `app-collapse` | `materialize` | `include-model` | `not-native-until-mounted` |
-| `app-hidden` | `boundary` | `exclude` | `not-native-until-mounted` |
-| `viewport-virtualization` | `materialize` | `model-backed` | `custom` or `not-native-until-mounted` |
-| `large-document-staged` | `materialize` | `materialize` or `model-backed` | `not-native-until-mounted` until complete |
-| `shell-aggressive` | explicit shell policy | model-backed where needed | explicit limitation |
+| Reason                    | Selection default     | Copy default                    | Find default                              |
+| ------------------------- | --------------------- | ------------------------------- | ----------------------------------------- |
+| `app-collapse`            | `materialize`         | `include-model`                 | `not-native-until-mounted`                |
+| `app-hidden`              | `boundary`            | `exclude`                       | `not-native-until-mounted`                |
+| `viewport-virtualization` | `materialize`         | `model-backed`                  | `custom` or `not-native-until-mounted`    |
+| `large-document-staged`   | `materialize`         | `materialize` or `model-backed` | `not-native-until-mounted` until complete |
+| `shell-aggressive`        | explicit shell policy | model-backed where needed       | explicit limitation                       |
 
 Element specs come later, not first. They are better for stable node-type
 behavior:
 
 ```ts
 schema.define({
-  type: 'header',
+  type: "header",
   domCoverage: {
-    copyPolicy: 'exclude',
+    copyPolicy: "exclude",
     mountedWhen: (element) => !element.hidden,
-    reason: 'app-hidden',
-    scope: 'self',
-    selectionPolicy: 'boundary',
+    reason: "app-hidden",
+    scope: "self",
+    selectionPolicy: "boundary",
   },
-})
+});
 ```
 
 Slots are the likely React authoring adapter. Element specs are the likely
@@ -552,17 +552,17 @@ Hard cuts:
 
 ## Native Behavior Contract
 
-| Area | Collapsed/hidden boundary | Future virtualization | Required contract |
-| --- | --- | --- | --- |
-| Browser find | Hidden text is not natively findable; acceptable if intentional. | Dangerous unless Slate owns find or materializes. | Do not promise native find for DOM that does not exist. |
-| Screen readers | Placeholder/summary announces collapsed state; hidden content absent. | High risk if content stays absent long. | Virtualization cannot default without a11y proof. |
-| Native selection | Boundary or materialize. | Materialize target ranges near interaction. | No DOM mapping throw. |
-| Copy/paste | Model-backed or materialize when spanning hidden content. | Model-backed spanning copy likely required. | Never copy stale DOM. |
-| IME | Freeze collapse/expand during composition. | Mount target before composition. | No materialization during active composition unless proven. |
-| Mobile | Materialize-on-touch is safest. | Very high risk. | No missing target crash. |
-| Undo/history | Collapse state must be explicit document or UI state. | Mount state must not pollute history. | History policy tested. |
-| Collaboration | Remote edits dirty boundary summary only. | Unmounted regions must not wake full body. | Rebase anchors/selections through covered ranges. |
-| Accessibility | Placeholder/summary semantics matter. | Needs separate strategy. | No fake document button default. |
+| Area             | Collapsed/hidden boundary                                             | Future virtualization                             | Required contract                                           |
+| ---------------- | --------------------------------------------------------------------- | ------------------------------------------------- | ----------------------------------------------------------- |
+| Browser find     | Hidden text is not natively findable; acceptable if intentional.      | Dangerous unless Slate owns find or materializes. | Do not promise native find for DOM that does not exist.     |
+| Screen readers   | Placeholder/summary announces collapsed state; hidden content absent. | High risk if content stays absent long.           | Virtualization cannot default without a11y proof.           |
+| Native selection | Boundary or materialize.                                              | Materialize target ranges near interaction.       | No DOM mapping throw.                                       |
+| Copy/paste       | Model-backed or materialize when spanning hidden content.             | Model-backed spanning copy likely required.       | Never copy stale DOM.                                       |
+| IME              | Freeze collapse/expand during composition.                            | Mount target before composition.                  | No materialization during active composition unless proven. |
+| Mobile           | Materialize-on-touch is safest.                                       | Very high risk.                                   | No missing target crash.                                    |
+| Undo/history     | Collapse state must be explicit document or UI state.                 | Mount state must not pollute history.             | History policy tested.                                      |
+| Collaboration    | Remote edits dirty boundary summary only.                             | Unmounted regions must not wake full body.        | Rebase anchors/selections through covered ranges.           |
+| Accessibility    | Placeholder/summary semantics matter.                                 | Needs separate strategy.                          | No fake document button default.                            |
 
 Hard rule:
 
@@ -577,15 +577,15 @@ hot-surface audit so Slate does not hide expensive units behind clever mounting.
 
 Budgets:
 
-| Surface | Budget |
-| --- | --- |
-| Slate-owned event handlers per repeated block | 0 by default; delegate at root/group where possible |
-| `useEffect` in hot leaf/text/block wrappers | 0 by default |
-| O(n) lookup during repeated-unit render | 0 |
-| Comment/widget/context menu state per block | forbidden unless active/visible |
-| Projection lookup | O(1) or bucketed by runtime id |
-| Default paragraph render path | specialized fast path, not generic everything-wrapper |
-| Custom renderer path | allowed slower path, measured separately |
+| Surface                                       | Budget                                                |
+| --------------------------------------------- | ----------------------------------------------------- |
+| Slate-owned event handlers per repeated block | 0 by default; delegate at root/group where possible   |
+| `useEffect` in hot leaf/text/block wrappers   | 0 by default                                          |
+| O(n) lookup during repeated-unit render       | 0                                                     |
+| Comment/widget/context menu state per block   | forbidden unless active/visible                       |
+| Projection lookup                             | O(1) or bucketed by runtime id                        |
+| Default paragraph render path                 | specialized fast path, not generic everything-wrapper |
+| Custom renderer path                          | allowed slower path, measured separately              |
 
 Fast paths to preserve or create:
 
@@ -711,34 +711,34 @@ Add:
 
 Rows:
 
-| Row | Required behavior |
-| --- | --- |
-| click collapsed summary then type after it | no DOM mapping crash |
-| expand then type inside | fresh mounted DOM |
-| programmatic select inside hidden content | materialize or model-backed, no throw |
-| drag selection across collapsed section | deterministic import/repair |
-| select-all then copy | correct payload by policy |
-| paste over range spanning hidden content | no stale DOM fallback |
-| undo text edit and collapse toggle | explicit history behavior |
-| IME while toggle fires | composition not lost |
-| mobile touch near hidden first/last root | no missing target crash |
-| browser find before expand | hidden text not found, documented |
-| browser find after expand | text found |
-| remote update hidden text | model updates, DOM stable |
-| nested collapse expand inner/outer | no stale paths |
+| Row                                        | Required behavior                     |
+| ------------------------------------------ | ------------------------------------- |
+| click collapsed summary then type after it | no DOM mapping crash                  |
+| expand then type inside                    | fresh mounted DOM                     |
+| programmatic select inside hidden content  | materialize or model-backed, no throw |
+| drag selection across collapsed section    | deterministic import/repair           |
+| select-all then copy                       | correct payload by policy             |
+| paste over range spanning hidden content   | no stale DOM fallback                 |
+| undo text edit and collapse toggle         | explicit history behavior             |
+| IME while toggle fires                     | composition not lost                  |
+| mobile touch near hidden first/last root   | no missing target crash               |
+| browser find before expand                 | hidden text not found, documented     |
+| browser find after expand                  | text found                            |
+| remote update hidden text                  | model updates, DOM stable             |
+| nested collapse expand inner/outer         | no stale paths                        |
 
 ### Stress/perf rows
 
-| Scenario | Gate |
-| --- | --- |
+| Scenario                                   | Gate                                                                     |
+| ------------------------------------------ | ------------------------------------------------------------------------ |
 | 100 collapsed boundaries in 5000-block doc | local typing outside hidden ranges <= current DOM-present default + 5 ms |
-| one hidden boundary with 1000 descendants | expand cost O(boundary), not O(document) |
-| remote updates inside hidden boundary | no document body rerender |
-| select-all copy over hidden ranges | correct payload, no DOM lookup throw |
-| nested depth 3 | no path/selection corruption |
-| first and last root hidden | no root edge crash |
-| repeated-unit weight | DOM/component/handler/effect budgets recorded |
-| interaction INP proxy | p95/p99 rows for select/type/copy/paste/materialize |
+| one hidden boundary with 1000 descendants  | expand cost O(boundary), not O(document)                                 |
+| remote updates inside hidden boundary      | no document body rerender                                                |
+| select-all copy over hidden ranges         | correct payload, no DOM lookup throw                                     |
+| nested depth 3                             | no path/selection corruption                                             |
+| first and last root hidden                 | no root edge crash                                                       |
+| repeated-unit weight                       | DOM/component/handler/effect budgets recorded                            |
+| interaction INP proxy                      | p95/p99 rows for select/type/copy/paste/materialize                      |
 
 Future virtualization rows, not Phase 1 release gates:
 
@@ -752,43 +752,43 @@ Future virtualization rows, not Phase 1 release gates:
 
 ### Before Phase 5 Can Ship
 
-| Proof | Required result | Current evidence |
-| --- | --- | --- |
-| Registration lifecycle | no render/effect gap where DOM is omitted but boundary is unregistered | green for private harness; lifecycle test proves boundary-backed omission does not trigger dev-safety missing-child reporting after layout/microtask reconciliation |
-| React StrictMode | no duplicate boundaries, stale boundaries, or leaked handlers | green; StrictMode mount/unmount leaves one boundary while mounted and zero after unmount |
-| Structural ops | insert/remove/split/merge/move remap or invalidate boundaries correctly | green for current private harness: insert/move rebase through runtime ids; remove/split/merge invalidate stale records |
-| Nested boundaries | parent hidden + child hidden has deterministic policy | green; parent-hidden policy sorts before nested child policy |
-| First root self-boundary | root-start selection/export/import does not throw | green in package and browser placeholder proof |
-| Last root self-boundary | root-end selection/export/import does not throw | green in package and browser placeholder proof |
-| Drag selection across boundary | deterministic model selection and DOM repair | green in Chromium Playwright row |
-| Paste over hidden range | no browser paste into stale/missing DOM | green in package clipboard row; browser paste gesture remains a later public-hardening row |
-| Select-all copy | payload matches copy policy and includes Slate fragment where expected | green in Chromium Playwright select-all copy row |
-| Programmatic select inside hidden content | materializes or model-backs; never calls raw `toDOMPoint` blindly | green in package materialization row and browser copy/select command row |
-| IME while toggling | composition text is not lost | green for desktop composition while boundaries are hidden; unsafe toggle-during-composition stays guarded by later public API policy |
-| Mobile touch near boundary | no missing target crash; no impossible handles | green in Playwright mobile project; raw device proof is not claimed |
-| Browser find before expand | hidden text not found and documented | green in Chromium Playwright row |
-| Browser find after expand | fresh text found | green in Chromium Playwright row |
-| A11y smoke | placeholder announces collapsed/hidden state correctly | green; browser placeholders expose role `note`, accessible names, and `contenteditable=false` |
-| Remote edit inside hidden boundary | model updates, boundary summary dirties, body does not rerender | green for covered model updates: browser proves hidden DOM stays absent and model copy is fresh; React render-count proof keeps visible sibling asleep |
-| 5000-block stress | typing outside 100 boundaries adds <= 5 ms median over baseline | green in focused DOM stress row |
-| Large hidden boundary | expanding 1000 descendants is O(boundary), not O(document) | green in React render-count row: hidden body coalesces to one boundary and expansion wakes hidden descendants without document-scale sibling churn |
-| Dev safety | renderer that drops content without `children` or boundary warns/throws | green; dev-only safety reports dropped editable children without coverage and stays quiet for boundary-backed omission |
+| Proof                                     | Required result                                                         | Current evidence                                                                                                                                                    |
+| ----------------------------------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Registration lifecycle                    | no render/effect gap where DOM is omitted but boundary is unregistered  | green for private harness; lifecycle test proves boundary-backed omission does not trigger dev-safety missing-child reporting after layout/microtask reconciliation |
+| React StrictMode                          | no duplicate boundaries, stale boundaries, or leaked handlers           | green; StrictMode mount/unmount leaves one boundary while mounted and zero after unmount                                                                            |
+| Structural ops                            | insert/remove/split/merge/move remap or invalidate boundaries correctly | green for current private harness: insert/move rebase through runtime ids; remove/split/merge invalidate stale records                                              |
+| Nested boundaries                         | parent hidden + child hidden has deterministic policy                   | green; parent-hidden policy sorts before nested child policy                                                                                                        |
+| First root self-boundary                  | root-start selection/export/import does not throw                       | green in package and browser placeholder proof                                                                                                                      |
+| Last root self-boundary                   | root-end selection/export/import does not throw                         | green in package and browser placeholder proof                                                                                                                      |
+| Drag selection across boundary            | deterministic model selection and DOM repair                            | green in Chromium Playwright row                                                                                                                                    |
+| Paste over hidden range                   | no browser paste into stale/missing DOM                                 | green in package clipboard row; browser paste gesture remains a later public-hardening row                                                                          |
+| Select-all copy                           | payload matches copy policy and includes Slate fragment where expected  | green in Chromium Playwright select-all copy row                                                                                                                    |
+| Programmatic select inside hidden content | materializes or model-backs; never calls raw `toDOMPoint` blindly       | green in package materialization row and browser copy/select command row                                                                                            |
+| IME while toggling                        | composition text is not lost                                            | green for desktop composition while boundaries are hidden; unsafe toggle-during-composition stays guarded by later public API policy                                |
+| Mobile touch near boundary                | no missing target crash; no impossible handles                          | green in Playwright mobile project; raw device proof is not claimed                                                                                                 |
+| Browser find before expand                | hidden text not found and documented                                    | green in Chromium Playwright row                                                                                                                                    |
+| Browser find after expand                 | fresh text found                                                        | green in Chromium Playwright row                                                                                                                                    |
+| A11y smoke                                | placeholder announces collapsed/hidden state correctly                  | green; browser placeholders expose role `note`, accessible names, and `contenteditable=false`                                                                       |
+| Remote edit inside hidden boundary        | model updates, boundary summary dirties, body does not rerender         | green for covered model updates: browser proves hidden DOM stays absent and model copy is fresh; React render-count proof keeps visible sibling asleep              |
+| 5000-block stress                         | typing outside 100 boundaries adds <= 5 ms median over baseline         | green in focused DOM stress row                                                                                                                                     |
+| Large hidden boundary                     | expanding 1000 descendants is O(boundary), not O(document)              | green in React render-count row: hidden body coalesces to one boundary and expansion wakes hidden descendants without document-scale sibling churn                  |
+| Dev safety                                | renderer that drops content without `children` or boundary warns/throws | green; dev-only safety reports dropped editable children without coverage and stays quiet for boundary-backed omission                                              |
 
 ### Before Phase 6 Can Start
 
-| Proof | Required result | Current evidence |
-| --- | --- | --- |
-| DOM-present group lifecycle | `interactiveReady` and `nativeSurfaceComplete` are separate and measured | partial; benchmark has trace fields |
-| Full-doc replace | no stale old far DOM remains exposed after replacement | gap |
-| Background mounting | bounded max latency; no idle-only starvation | partial; current group mounting exists, max-latency proof missing |
-| Registry scale | boundary lookup is indexed, not document-scan | partial; DOM coverage now indexes boundaries by covered root key and passes 5000-block/100-boundary outside lookup stress, but large-doc convergence still needs its own scale gate |
-| Large-doc selection | selection into pending/virtualized content materializes or model-backs deterministically | partial for shell, gap for DOM coverage convergence |
-| Large-doc copy | copy across pending/virtualized ranges produces correct model-backed payload | partial for shell tests, gap for shared registry |
-| Browser find classification | explicit behavior before and after `nativeSurfaceComplete` | gap |
-| IME/mobile | target content materializes before composition/touch editing | gap |
-| Shell proof | shell boundaries classified separately from staged DOM-present groups | gap |
-| Perf | default large-doc typing does not regress after consulting DOM coverage registry | gap |
-| Trace/debug | every missing-DOM decision records reason, policy, and boundary id | partial; example registry trace exists |
+| Proof                       | Required result                                                                          | Current evidence                                                                                                                                                                    |
+| --------------------------- | ---------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| DOM-present group lifecycle | `interactiveReady` and `nativeSurfaceComplete` are separate and measured                 | partial; benchmark has trace fields                                                                                                                                                 |
+| Full-doc replace            | no stale old far DOM remains exposed after replacement                                   | gap                                                                                                                                                                                 |
+| Background mounting         | bounded max latency; no idle-only starvation                                             | partial; current group mounting exists, max-latency proof missing                                                                                                                   |
+| Registry scale              | boundary lookup is indexed, not document-scan                                            | partial; DOM coverage now indexes boundaries by covered root key and passes 5000-block/100-boundary outside lookup stress, but large-doc convergence still needs its own scale gate |
+| Large-doc selection         | selection into pending/virtualized content materializes or model-backs deterministically | partial for shell, gap for DOM coverage convergence                                                                                                                                 |
+| Large-doc copy              | copy across pending/virtualized ranges produces correct model-backed payload             | partial for shell tests, gap for shared registry                                                                                                                                    |
+| Browser find classification | explicit behavior before and after `nativeSurfaceComplete`                               | gap                                                                                                                                                                                 |
+| IME/mobile                  | target content materializes before composition/touch editing                             | gap                                                                                                                                                                                 |
+| Shell proof                 | shell boundaries classified separately from staged DOM-present groups                    | gap                                                                                                                                                                                 |
+| Perf                        | default large-doc typing does not regress after consulting DOM coverage registry         | gap                                                                                                                                                                                 |
+| Trace/debug                 | every missing-DOM decision records reason, policy, and boundary id                       | partial; example registry trace exists                                                                                                                                              |
 
 ### Phase 4.5 Ralph Pass: Execution-Ready Proof Matrix
 
@@ -824,24 +824,24 @@ Live source re-read for this pass:
 Phase 4.5 must execute in this order. Do not publish a public API until every
 row is either green or explicitly cut from scope.
 
-| Order | Owner | Required proof | Current live owner | Driver gate |
-| ---: | --- | --- | --- | --- |
-| 1 | Registration lifecycle | Boundary registration cannot lag a render that omits DOM. Public adapter must prove no missing-DOM/unregistered-boundary window. | green: private harness and slot adapter use layout-effect registration plus dev-safety microtask proof. | `bun test ./packages/slate-react/test/dom-coverage-boundary-contract.tsx` |
-| 2 | StrictMode cleanup | Double render/mount/unmount does not leak duplicate boundaries or stale placeholders. | green: StrictMode cleanup row in `dom-coverage-boundary-contract.tsx`. | `bun test ./packages/slate-react/test/dom-coverage-boundary-contract.tsx` |
-| 3 | Boundary ID stability | Boundary ids survive rerenders or are regenerated deterministically without stale records. | green: rerender/id replacement row inspects old id, new id, and registry size. | `bun test ./packages/slate-react/test/dom-coverage-boundary-contract.tsx` |
-| 4 | Structural remap | Insert/remove/split/merge/move either remaps or invalidates covered ranges. | green for insert/remove owner-path proof: registry resolves owner runtime id and prunes deleted owners. | `bun test ./packages/slate-react/test/dom-coverage-boundary-contract.tsx` |
-| 5 | Nested policy | Parent hidden + child materialize/copy policy resolves deterministically. Parent-hidden wins unless the plan explicitly changes. | green: parent-hidden wins and range lookup returns parent before nested child. | `bun test ./packages/slate-dom/test/dom-coverage.ts` |
-| 6 | Paste-over-hidden | Paste spanning covered content never falls back to stale DOM or browser guesswork. | green: hidden selection paste uses model insertion and does not consume stale DOM. | `bun test ./packages/slate-dom/test/dom-coverage.ts` |
-| 7 | Drag selection | Drag across placeholder/summary imports to deterministic model selection and repairs DOM selection. | green: Chromium and mobile-project browser rows import drag across placeholder to covered model range. | focused Playwright example sweep |
-| 8 | Programmatic select | Selecting inside covered editable content materializes or model-backs without raw `toDOMPoint`. | green: materialize-policy point resolves to boundary and dispatches materialization hook. | `bun test ./packages/slate-dom/test/dom-coverage.ts` |
-| 9 | IME guard | Collapse/materialize during composition cannot lose composing text. | green for desktop browser proof: composition commits while boundaries stay hidden. Raw mobile IME is not claimed. | Chromium focused Playwright example sweep |
-| 10 | Mobile touch | Touch handles near first/last self-boundary do not target missing DOM. | green for Playwright mobile project: touch near header/footer placeholders and expansion has no page error. Raw device proof remains release-only. | mobile focused Playwright example sweep |
-| 11 | A11y placeholder | Placeholder/summary announces collapsed/hidden state without pretending hidden descendants are in native DOM. | green smoke: placeholders are deterministic, `contenteditable=false`, named, and example uses role/names. | focused Playwright example sweep |
-| 12 | Browser find docs | Hidden content is not found before expand; fresh content is found after expand. | green: browser find row proves hidden text absent until materialized, then found after expand. | focused Playwright example sweep |
-| 13 | Remote hidden update dirtiness | Updating model content inside a covered boundary dirties boundary summary only, not full body. | green at example/model level: hidden model updates stay out of DOM and copy from model; full collab remote dirtiness remains a later collaboration lane. | focused Playwright example sweep |
-| 14 | 5000-block stress | 100 boundaries add <= 5 ms median to typing outside boundaries. | green: registry now uses root-bucketed boundary lookup with snapshot-version refresh, and the 5000-block/100-boundary stress row passes. | `bun test ./packages/slate-dom/test/dom-coverage.ts` |
-| 15 | Large hidden boundary | Expanding 1000 descendants costs O(boundary), not O(document). | green: 1000-descendant expansion renders boundary content without waking document-scale siblings. | `bun test ./packages/slate-react/test/dom-coverage-boundary-contract.tsx` |
-| 16 | Dev safety | A renderer that drops `children` without a boundary warns or throws in development. | green: dev safety check reports dropped editable children without a DOM coverage boundary. | `bun test ./packages/slate-react/test/dom-coverage-boundary-contract.tsx` |
+| Order | Owner                          | Required proof                                                                                                                   | Current live owner                                                                                                                                       | Driver gate                                                               |
+| ----: | ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+|     1 | Registration lifecycle         | Boundary registration cannot lag a render that omits DOM. Public adapter must prove no missing-DOM/unregistered-boundary window. | green: private harness and slot adapter use layout-effect registration plus dev-safety microtask proof.                                                  | `bun test ./packages/slate-react/test/dom-coverage-boundary-contract.tsx` |
+|     2 | StrictMode cleanup             | Double render/mount/unmount does not leak duplicate boundaries or stale placeholders.                                            | green: StrictMode cleanup row in `dom-coverage-boundary-contract.tsx`.                                                                                   | `bun test ./packages/slate-react/test/dom-coverage-boundary-contract.tsx` |
+|     3 | Boundary ID stability          | Boundary ids survive rerenders or are regenerated deterministically without stale records.                                       | green: rerender/id replacement row inspects old id, new id, and registry size.                                                                           | `bun test ./packages/slate-react/test/dom-coverage-boundary-contract.tsx` |
+|     4 | Structural remap               | Insert/remove/split/merge/move either remaps or invalidates covered ranges.                                                      | green for insert/remove owner-path proof: registry resolves owner runtime id and prunes deleted owners.                                                  | `bun test ./packages/slate-react/test/dom-coverage-boundary-contract.tsx` |
+|     5 | Nested policy                  | Parent hidden + child materialize/copy policy resolves deterministically. Parent-hidden wins unless the plan explicitly changes. | green: parent-hidden wins and range lookup returns parent before nested child.                                                                           | `bun test ./packages/slate-dom/test/dom-coverage.ts`                      |
+|     6 | Paste-over-hidden              | Paste spanning covered content never falls back to stale DOM or browser guesswork.                                               | green: hidden selection paste uses model insertion and does not consume stale DOM.                                                                       | `bun test ./packages/slate-dom/test/dom-coverage.ts`                      |
+|     7 | Drag selection                 | Drag across placeholder/summary imports to deterministic model selection and repairs DOM selection.                              | green: Chromium and mobile-project browser rows import drag across placeholder to covered model range.                                                   | focused Playwright example sweep                                          |
+|     8 | Programmatic select            | Selecting inside covered editable content materializes or model-backs without raw `toDOMPoint`.                                  | green: materialize-policy point resolves to boundary and dispatches materialization hook.                                                                | `bun test ./packages/slate-dom/test/dom-coverage.ts`                      |
+|     9 | IME guard                      | Collapse/materialize during composition cannot lose composing text.                                                              | green for desktop browser proof: composition commits while boundaries stay hidden. Raw mobile IME is not claimed.                                        | Chromium focused Playwright example sweep                                 |
+|    10 | Mobile touch                   | Touch handles near first/last self-boundary do not target missing DOM.                                                           | green for Playwright mobile project: touch near header/footer placeholders and expansion has no page error. Raw device proof remains release-only.       | mobile focused Playwright example sweep                                   |
+|    11 | A11y placeholder               | Placeholder/summary announces collapsed/hidden state without pretending hidden descendants are in native DOM.                    | green smoke: placeholders are deterministic, `contenteditable=false`, named, and example uses role/names.                                                | focused Playwright example sweep                                          |
+|    12 | Browser find docs              | Hidden content is not found before expand; fresh content is found after expand.                                                  | green: browser find row proves hidden text absent until materialized, then found after expand.                                                           | focused Playwright example sweep                                          |
+|    13 | Remote hidden update dirtiness | Updating model content inside a covered boundary dirties boundary summary only, not full body.                                   | green at example/model level: hidden model updates stay out of DOM and copy from model; full collab remote dirtiness remains a later collaboration lane. | focused Playwright example sweep                                          |
+|    14 | 5000-block stress              | 100 boundaries add <= 5 ms median to typing outside boundaries.                                                                  | green: registry now uses root-bucketed boundary lookup with snapshot-version refresh, and the 5000-block/100-boundary stress row passes.                 | `bun test ./packages/slate-dom/test/dom-coverage.ts`                      |
+|    15 | Large hidden boundary          | Expanding 1000 descendants costs O(boundary), not O(document).                                                                   | green: 1000-descendant expansion renders boundary content without waking document-scale siblings.                                                        | `bun test ./packages/slate-react/test/dom-coverage-boundary-contract.tsx` |
+|    16 | Dev safety                     | A renderer that drops `children` without a boundary warns or throws in development.                                              | green: dev safety check reports dropped editable children without a DOM coverage boundary.                                                               | `bun test ./packages/slate-react/test/dom-coverage-boundary-contract.tsx` |
 
 Hard cuts after this pass:
 
@@ -877,10 +877,10 @@ Add baseline instrumentation for repeated unit weight:
 Build internal registry first:
 
 ```ts
-editor.runtime.domCoverage.getBoundaryForPoint(point)
-editor.runtime.domCoverage.getBoundariesForRange(range)
-editor.runtime.domCoverage.materialize(boundaryId, reason)
-editor.runtime.domCoverage.subscribe(boundaryId, listener)
+editor.runtime.domCoverage.getBoundaryForPoint(point);
+editor.runtime.domCoverage.getBoundariesForRange(range);
+editor.runtime.domCoverage.materialize(boundaryId, reason);
+editor.runtime.domCoverage.subscribe(boundaryId, listener);
 ```
 
 Hard cuts:
@@ -896,10 +896,10 @@ Hard cuts:
 Add internal helpers:
 
 ```ts
-toDOMPointOrBoundary(point, options)
-toDOMRangeOrBoundary(range, options)
-toSlatePointFromBoundary(domPoint, options)
-materializeBoundary(boundaryId, reason)
+toDOMPointOrBoundary(point, options);
+toDOMRangeOrBoundary(range, options);
+toSlatePointFromBoundary(domPoint, options);
+materializeBoundary(boundaryId, reason);
 ```
 
 Hard cuts:
@@ -1002,17 +1002,17 @@ Live source re-read for this pass:
 
 Bake-off result:
 
-| Candidate | Verdict | Why |
-| --- | --- | --- |
-| React slot adapter | leading React authoring shape, still private | Best fit for collapsible section layouts where a summary stays mounted and child ranges are covered. It matches how React renderers think, but cannot become public until Phase 4.5 lifecycle/StrictMode/paste/IME/mobile/a11y/stress proof is green. |
-| Element-spec defaults | keep as later default/policy layer | Best fit for stable node-type behavior such as hidden header/footer, atom-like nodes, default copy/selection policy, and self coverage. It is too static for ad hoc nested child ranges and should not replace the React adapter. |
-| Lower-level registration API | internal only | Necessary for tests, large-doc staging, shell, and maybe advanced integrations. Too easy for app authors to misuse because it exposes runtime/path mechanics and can bypass render lifecycle safety. |
+| Candidate                    | Verdict                                      | Why                                                                                                                                                                                                                                                   |
+| ---------------------------- | -------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| React slot adapter           | leading React authoring shape, still private | Best fit for collapsible section layouts where a summary stays mounted and child ranges are covered. It matches how React renderers think, but cannot become public until Phase 4.5 lifecycle/StrictMode/paste/IME/mobile/a11y/stress proof is green. |
+| Element-spec defaults        | keep as later default/policy layer           | Best fit for stable node-type behavior such as hidden header/footer, atom-like nodes, default copy/selection policy, and self coverage. It is too static for ad hoc nested child ranges and should not replace the React adapter.                     |
+| Lower-level registration API | internal only                                | Necessary for tests, large-doc staging, shell, and maybe advanced integrations. Too easy for app authors to misuse because it exposes runtime/path mechanics and can bypass render lifecycle safety.                                                  |
 
 Chosen Phase 5a shape:
 
 ```tsx
 <slots.Boundary
-  scope={{ type: 'children', from: 1, to: 3 }}
+  scope={{ type: "children", from: 1, to: 3 }}
   mounted={!collapsed}
   reason="app-collapse"
   selectionPolicy="materialize"
@@ -1030,7 +1030,7 @@ Self coverage stays one scoped form, not a separate primary public primitive:
 
 ```tsx
 <slots.Boundary
-  scope={{ type: 'self' }}
+  scope={{ type: "self" }}
   mounted={!hidden}
   reason="app-hidden"
   selectionPolicy="boundary"
@@ -1048,21 +1048,21 @@ Future element-spec layer, only after slot behavior is proven:
 
 ```ts
 defineEditorExtension({
-  name: 'hiddenHeader',
+  name: "hiddenHeader",
   elements: {
     header: {
-      type: 'header',
+      type: "header",
       domCoverage: {
-        scope: 'self',
-        mountedWhen: element => !element.hidden,
-        reason: 'app-hidden',
-        selectionPolicy: 'boundary',
-        copyPolicy: 'exclude',
-        findPolicy: 'not-native-until-mounted',
+        scope: "self",
+        mountedWhen: (element) => !element.hidden,
+        reason: "app-hidden",
+        selectionPolicy: "boundary",
+        copyPolicy: "exclude",
+        findPolicy: "not-native-until-mounted",
       },
     },
   },
-})
+});
 ```
 
 Hard decisions from the bake-off:
@@ -1091,26 +1091,26 @@ Deferred until:
   classification, default typing non-regression, and trace/debug coverage.
 - This is condition-based, not calendar-based. If the user says "go implement
   the proof lane", the next active owner is Phase 4.5 implementation/proof in
-  `../slate-v2`, not more planning prose.
+  `.tmp/slate-v2`, not more planning prose.
 
 ### Phase 5b: Unstable public API
 
 Ship only as unstable after Phase 4.5 and 5a pass:
 
 ```tsx
-slots.unstableBoundary
+slots.unstableBoundary;
 ```
 
 or:
 
 ```tsx
-unstable_slots.Boundary
+unstable_slots.Boundary;
 ```
 
 Candidate stable target remains one API:
 
 ```tsx
-slots.Boundary
+slots.Boundary;
 ```
 
 with `scope={{ type: 'children', from, to }}` or `scope={{ type: 'self' }}`.
@@ -1190,22 +1190,22 @@ persistent caret soak
 
 ## Maintainer Objections
 
-| Objection | Answer | Verdict |
-| --- | --- | --- |
-| "Why not just let people omit `children`?" | Current DOM helpers still map model nodes to DOM nodes and throw when missing. Omission needs policy, not silence. | keep boundary |
-| "This is too much for collapsible blocks." | Collapse is the small case. First/last root nodes, nested ranges, copy/paste, IME, mobile, and collaboration are the actual contract. | keep scope |
-| "Slots are too much API." | Correct for v1. The plan now proves registry/bridge first and exposes slots only after proof. | revise accepted |
-| "Why rename hidden subtree?" | Hidden is product-shaped. DOM coverage also covers staged mounting, atoms, shell, and future virtualization. | keep rename |
-| "ProseMirror lets NodeViews omit contentDOM." | Yes, and then it treats the view as a boundary/atom-like unit with selection/mutation obligations. | keep |
-| "Lexical slots solve it." | Slots inspire placement, but Slate still needs explicit selection/copy/materialization policy for model-present hidden descendants. | keep |
-| "Use CSS only." | CSS hiding cannot prove model-backed selection/copy/materialization, stale DOM, IME, or a11y behavior. | reject |
-| "Browser find won't work." | Correct for intentional collapse. Not acceptable to hide that limitation or apply it silently to virtualization. | keep honest |
-| "Future virtualization is separate." | Separate policy, same primitive. Two missing-DOM systems would multiply selection bugs. | keep convergence |
-| "Optimize the render unit first." | Accepted from GitHub article. Phase 0 now includes hot-surface baseline and budgets. | keep |
-| "The private harness passed. Why delay public slots?" | The harness proves runtime feasibility, not public lifecycle safety. A public component that registers after render can still create the exact missing-DOM race the primitive exists to prevent. | revise Phase 5 |
-| "SelfBoundary is necessary." | The concept is necessary. The public component is not proven. Prefer one `Boundary` with `scope: 'self'` unless the API bake-off proves the unified shape is awkward. | revise public API |
-| "Collapse and large-doc staging have different semantics." | Correct: different policies, not different missing-DOM mechanics. Share registry/bridge; keep policy engines separate. | keep Phase 6 direction |
-| "This is too much proof." | Missing DOM is one of the highest-risk editor surfaces: selection, IME, mobile, a11y, copy/paste, and stale DOM all fail loudly when under-proved. | keep gates |
+| Objection                                                  | Answer                                                                                                                                                                                           | Verdict                |
+| ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------- |
+| "Why not just let people omit `children`?"                 | Current DOM helpers still map model nodes to DOM nodes and throw when missing. Omission needs policy, not silence.                                                                               | keep boundary          |
+| "This is too much for collapsible blocks."                 | Collapse is the small case. First/last root nodes, nested ranges, copy/paste, IME, mobile, and collaboration are the actual contract.                                                            | keep scope             |
+| "Slots are too much API."                                  | Correct for v1. The plan now proves registry/bridge first and exposes slots only after proof.                                                                                                    | revise accepted        |
+| "Why rename hidden subtree?"                               | Hidden is product-shaped. DOM coverage also covers staged mounting, atoms, shell, and future virtualization.                                                                                     | keep rename            |
+| "ProseMirror lets NodeViews omit contentDOM."              | Yes, and then it treats the view as a boundary/atom-like unit with selection/mutation obligations.                                                                                               | keep                   |
+| "Lexical slots solve it."                                  | Slots inspire placement, but Slate still needs explicit selection/copy/materialization policy for model-present hidden descendants.                                                              | keep                   |
+| "Use CSS only."                                            | CSS hiding cannot prove model-backed selection/copy/materialization, stale DOM, IME, or a11y behavior.                                                                                           | reject                 |
+| "Browser find won't work."                                 | Correct for intentional collapse. Not acceptable to hide that limitation or apply it silently to virtualization.                                                                                 | keep honest            |
+| "Future virtualization is separate."                       | Separate policy, same primitive. Two missing-DOM systems would multiply selection bugs.                                                                                                          | keep convergence       |
+| "Optimize the render unit first."                          | Accepted from GitHub article. Phase 0 now includes hot-surface baseline and budgets.                                                                                                             | keep                   |
+| "The private harness passed. Why delay public slots?"      | The harness proves runtime feasibility, not public lifecycle safety. A public component that registers after render can still create the exact missing-DOM race the primitive exists to prevent. | revise Phase 5         |
+| "SelfBoundary is necessary."                               | The concept is necessary. The public component is not proven. Prefer one `Boundary` with `scope: 'self'` unless the API bake-off proves the unified shape is awkward.                            | revise public API      |
+| "Collapse and large-doc staging have different semantics." | Correct: different policies, not different missing-DOM mechanics. Share registry/bridge; keep policy engines separate.                                                                           | keep Phase 6 direction |
+| "This is too much proof."                                  | Missing DOM is one of the highest-risk editor surfaces: selection, IME, mobile, a11y, copy/paste, and stale DOM all fail loudly when under-proved.                                               | keep gates             |
 
 ## High-Risk Pre-Mortem
 
@@ -1305,14 +1305,14 @@ Skipped:
 
 ### Internal Primitive Checkpoint
 
-| Dimension | Score | Evidence |
-| --- | ---: | --- |
-| React 19.2 runtime performance | 0.94 | Hot Surface Performance Plan; GitHub article evidence; `performance` rules; live DOM-present source references. |
-| Slate-close unopinionated DX | 0.94 | Public API delayed; raw Slate exposes boundary primitives, not Plate collapsible product API. |
-| Plate and slate-yjs migration backbone | 0.91 | DOM coverage is runtime/substrate-level; remote hidden edit and boundary remap rows; no current-version adapter promise. |
-| Regression-proof testing strategy | 0.95 | Unit, React, browser, stale-DOM copy, first/last root, and repeated-unit budget rows for the internal primitive. |
-| Research evidence completeness | 0.94 | Live Slate, Lexical, ProseMirror, and user-provided GitHub performance evidence included. |
-| shadcn-style composability/minimalism | 0.91 | Public slots deferred; private harness is not presented as user-facing UI. |
+| Dimension                              | Score | Evidence                                                                                                                 |
+| -------------------------------------- | ----: | ------------------------------------------------------------------------------------------------------------------------ |
+| React 19.2 runtime performance         |  0.94 | Hot Surface Performance Plan; GitHub article evidence; `performance` rules; live DOM-present source references.          |
+| Slate-close unopinionated DX           |  0.94 | Public API delayed; raw Slate exposes boundary primitives, not Plate collapsible product API.                            |
+| Plate and slate-yjs migration backbone |  0.91 | DOM coverage is runtime/substrate-level; remote hidden edit and boundary remap rows; no current-version adapter promise. |
+| Regression-proof testing strategy      |  0.95 | Unit, React, browser, stale-DOM copy, first/last root, and repeated-unit budget rows for the internal primitive.         |
+| Research evidence completeness         |  0.94 | Live Slate, Lexical, ProseMirror, and user-provided GitHub performance evidence included.                                |
+| shadcn-style composability/minimalism  |  0.91 | Public slots deferred; private harness is not presented as user-facing UI.                                               |
 
 Internal primitive score: `0.93`.
 
@@ -1324,14 +1324,14 @@ Verdict:
 
 ### Phase 5/6 Public API and Convergence Gate
 
-| Dimension | Score | Evidence |
-| --- | ---: | --- |
-| React 19.2 runtime performance | 0.88 | Hot-surface budgets exist, but StrictMode/lifecycle registration and 5000-block boundary stress are still gaps. |
-| Slate-close unopinionated DX | 0.90 | Unified `Boundary` with `scope` is cleaner than `Hidden*`, but API bake-off is still missing. |
-| Plate and slate-yjs migration backbone | 0.87 | Substrate shape is right; structural remap, remote hidden update dirtiness, and large-doc policy split need proof. |
-| Regression-proof testing strategy | 0.84 | Copy and private harness proof exist, but paste, drag selection, IME, mobile, a11y, browser find, StrictMode, and structural remap remain open. |
-| Research evidence completeness | 0.92 | Live source plus Lexical/ProseMirror/GitHub performance evidence is enough for direction; React public lifecycle proof remains local-source work. |
-| shadcn-style composability/minimalism | 0.89 | Unified `Boundary` target is minimal, but the public component/spec split needs bake-off examples. |
+| Dimension                              | Score | Evidence                                                                                                                                          |
+| -------------------------------------- | ----: | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| React 19.2 runtime performance         |  0.88 | Hot-surface budgets exist, but StrictMode/lifecycle registration and 5000-block boundary stress are still gaps.                                   |
+| Slate-close unopinionated DX           |  0.90 | Unified `Boundary` with `scope` is cleaner than `Hidden*`, but API bake-off is still missing.                                                     |
+| Plate and slate-yjs migration backbone |  0.87 | Substrate shape is right; structural remap, remote hidden update dirtiness, and large-doc policy split need proof.                                |
+| Regression-proof testing strategy      |  0.84 | Copy and private harness proof exist, but paste, drag selection, IME, mobile, a11y, browser find, StrictMode, and structural remap remain open.   |
+| Research evidence completeness         |  0.92 | Live source plus Lexical/ProseMirror/GitHub performance evidence is enough for direction; React public lifecycle proof remains local-source work. |
+| shadcn-style composability/minimalism  |  0.89 | Unified `Boundary` target is minimal, but the public component/spec split needs bake-off examples.                                                |
 
 Phase 5/6 score: `0.88`.
 
@@ -1345,25 +1345,25 @@ Closure verdict:
 
 ## Pass-State Ledger
 
-| Pass | Status | Evidence added | Plan delta | Open issues | Next owner |
-| --- | --- | --- | --- | --- | --- |
-| current-state read | complete | Live Slate source references for render children, DOM mapping, large-document top-level ranges, void shell | Preserved source-backed before state | none | revision pass |
-| ecosystem evidence | complete | Lexical slot/decorator evidence; ProseMirror contentDOM/atom/selection evidence | Kept runtime-owned boundary direction | none | revision pass |
-| GPT Pro revision | complete | User-provided harsh review | Renamed primitive, delayed public slots, added DOM bridge policy | none | implementation Phase 0 |
-| GitHub perf revision | complete | User-provided diff-line article | Added hot-surface audit, budgets, INP/memory/DOM tags, virtualization policy ladder | none | implementation Phase 0 |
-| closure | complete | Score `0.93`; all dimensions above `0.85` | Plan ready for user review | none | later execution request |
-| implementation Phase 0/1 tracer | complete | `../slate-v2` added internal `DOMCoverage`; focused tests, package typecheck, `bun check`, and tiny benchmark profile smoke passed | Phase 0 red proof and Phase 1 registry started in code; hot-surface benchmark profile now emits surface-weight counters | bridge/copy/paste/materialization still unwired; no public slots | implementation Phase 2 |
-| implementation Phase 2 bridge | complete | `../slate-v2` added boundary range export, placeholder import, materialization hook, and model-backed copy proof | DOM coverage bridge helpers exist internally in `slate-dom`; stale DOM copy fallback is bypassed when selection intersects included covered content | paste-over-hidden, IME, mobile, and full drag selection still need browser rows | implementation Phase 3 |
-| implementation Phase 3 private harness | complete | `../slate-v2` added private `DOMCoverageBoundaryRange` and `DOMCoverageSelfBoundary` React harness plus package tests | Internal harness proves child-range omission, expand unregister, and first/last root self-boundaries without public slots | harness is private and not exported as user-facing API | implementation Phase 4 |
-| implementation Phase 4 example/proof | complete | hidden `/examples/dom-coverage-boundaries` route, `dev-browser` proof, screenshot artifact | Comprehensive proof route covers hidden header/footer, outer collapse, nested collapse, model update/select/copy, and registry trace | not enough proof for public slots; not enough proof for large-doc convergence | completion checkpoint |
-| GPT Pro Phase 5/6 review | complete | User-provided post-proof harsh review plus live source read of private harness effect registration and registry scan shape | Phase 5 split into 4.5/5a/5b/5c; Phase 6 split into 6a/6b/6c/6d; public target changed to one `Boundary` with `scope` | Phase 5/6 score `0.88`; proof gaps remain | proof-hardening Ralplan pass |
-| Ralph Phase 4.5 proof hardening | complete | Re-read live harness, registry, tests, clipboard tests, and benchmark trace fields | Added execution-ready Phase 4.5 proof matrix with 16 ordered owners, driver gates, and hard cuts | no implementation proof executed yet; public API still blocked | Phase 5a API bake-off |
-| Ralph Phase 5a API bake-off | complete | Re-read renderElement props, element specs, extension slots, and DOMCoverageBoundary record shape | Chose React slot adapter as leading authoring shape, element specs as later default/policy layer, and raw registration as internal-only | Phase 5b cannot start until Phase 4.5 proof is implemented and green | Phase 4.5 implementation/proof lane when user says go |
-| implementation Phase 4.5 rows 1-6/8 package proof | complete | `../slate-v2` focused tests cover StrictMode cleanup, boundary id replacement, owner-path insert/remove, parent-first nested policy, hidden paste, and programmatic materialization | DOM coverage registry resolves owner runtime ids before lookup and prunes deleted owners; DOM tests use real runtime ids instead of fake ids | later rows continued in browser/stress pass | Phase 4.5 browser/example proof |
-| implementation Phase 4.5 browser/example proof | complete | Chromium Playwright and mobile-project Playwright proof on `/examples/dom-coverage-boundaries` | `DOMEditor.toSlatePoint` imports boundary placeholder DOM points, including adjacent element-offset points, through DOM coverage before normal non-editable fallback; example proof covers find, placeholder metadata, model-backed copy, drag import, hidden update dirtiness, IME, and mobile-project touch | raw mobile device proof remains release-only, not claimed | Phase 4.5 stress/dev-safety proof |
-| implementation Phase 4.5 stress/dev-safety proof | complete | `../slate-v2` focused tests cover indexed 5000-block/100-boundary lookup, runtime endpoint split/merge invalidation, structural move rebasing, hidden update dirtiness, 1000-descendant expansion, and dropped-children dev warning | DOM coverage registry now has root-bucketed lookup with snapshot-version refresh; private harness expansion proves boundary-sized wakeup; normal renderers that omit editable children without coverage report a dev error; browser proof includes select-all model-backed copy and a11y placeholder smoke | raw mobile device and full collaboration dirtiness are outside this hidden-subtree proof lane | Phase 5b unstable public API |
-| implementation Phase 5 public API | complete for unstable adapter | Phase 4.5 matrix is green and Phase 5a selected React slot adapter | `RenderElementProps.slots.unstableBoundary` supports `scope: { type: 'children' }` and `scope: { type: 'self' }` without exposing raw runtime ids; changeset added for `slate-react` | stable `slots.Boundary` still waits for broader adoption/docs; no `Hidden*` names shipped | Phase 6 deferred |
-| implementation Phase 6 large-doc convergence | pending | Collapse proof is green, but large-doc staging has stricter default-mode, stale-DOM, and native-readiness obligations | Do not migrate staged mounting/virtualization onto DOM coverage until DOM-present lifecycle and full-doc replace proofs are green | registry scale, full-doc replace, native readiness | future large-document plan |
+| Pass                                              | Status                        | Evidence added                                                                                                                                                                                                                        | Plan delta                                                                                                                                                                                                                                                                                                    | Open issues                                                                                   | Next owner                                            |
+| ------------------------------------------------- | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
+| current-state read                                | complete                      | Live Slate source references for render children, DOM mapping, large-document top-level ranges, void shell                                                                                                                            | Preserved source-backed before state                                                                                                                                                                                                                                                                          | none                                                                                          | revision pass                                         |
+| ecosystem evidence                                | complete                      | Lexical slot/decorator evidence; ProseMirror contentDOM/atom/selection evidence                                                                                                                                                       | Kept runtime-owned boundary direction                                                                                                                                                                                                                                                                         | none                                                                                          | revision pass                                         |
+| GPT Pro revision                                  | complete                      | User-provided harsh review                                                                                                                                                                                                            | Renamed primitive, delayed public slots, added DOM bridge policy                                                                                                                                                                                                                                              | none                                                                                          | implementation Phase 0                                |
+| GitHub perf revision                              | complete                      | User-provided diff-line article                                                                                                                                                                                                       | Added hot-surface audit, budgets, INP/memory/DOM tags, virtualization policy ladder                                                                                                                                                                                                                           | none                                                                                          | implementation Phase 0                                |
+| closure                                           | complete                      | Score `0.93`; all dimensions above `0.85`                                                                                                                                                                                             | Plan ready for user review                                                                                                                                                                                                                                                                                    | none                                                                                          | later execution request                               |
+| implementation Phase 0/1 tracer                   | complete                      | `.tmp/slate-v2` added internal `DOMCoverage`; focused tests, package typecheck, `bun check`, and tiny benchmark profile smoke passed                                                                                                  | Phase 0 red proof and Phase 1 registry started in code; hot-surface benchmark profile now emits surface-weight counters                                                                                                                                                                                       | bridge/copy/paste/materialization still unwired; no public slots                              | implementation Phase 2                                |
+| implementation Phase 2 bridge                     | complete                      | `.tmp/slate-v2` added boundary range export, placeholder import, materialization hook, and model-backed copy proof                                                                                                                    | DOM coverage bridge helpers exist internally in `slate-dom`; stale DOM copy fallback is bypassed when selection intersects included covered content                                                                                                                                                           | paste-over-hidden, IME, mobile, and full drag selection still need browser rows               | implementation Phase 3                                |
+| implementation Phase 3 private harness            | complete                      | `.tmp/slate-v2` added private `DOMCoverageBoundaryRange` and `DOMCoverageSelfBoundary` React harness plus package tests                                                                                                               | Internal harness proves child-range omission, expand unregister, and first/last root self-boundaries without public slots                                                                                                                                                                                     | harness is private and not exported as user-facing API                                        | implementation Phase 4                                |
+| implementation Phase 4 example/proof              | complete                      | hidden `/examples/dom-coverage-boundaries` route, `dev-browser` proof, screenshot artifact                                                                                                                                            | Comprehensive proof route covers hidden header/footer, outer collapse, nested collapse, model update/select/copy, and registry trace                                                                                                                                                                          | not enough proof for public slots; not enough proof for large-doc convergence                 | completion checkpoint                                 |
+| GPT Pro Phase 5/6 review                          | complete                      | User-provided post-proof harsh review plus live source read of private harness effect registration and registry scan shape                                                                                                            | Phase 5 split into 4.5/5a/5b/5c; Phase 6 split into 6a/6b/6c/6d; public target changed to one `Boundary` with `scope`                                                                                                                                                                                         | Phase 5/6 score `0.88`; proof gaps remain                                                     | proof-hardening Ralplan pass                          |
+| Ralph Phase 4.5 proof hardening                   | complete                      | Re-read live harness, registry, tests, clipboard tests, and benchmark trace fields                                                                                                                                                    | Added execution-ready Phase 4.5 proof matrix with 16 ordered owners, driver gates, and hard cuts                                                                                                                                                                                                              | no implementation proof executed yet; public API still blocked                                | Phase 5a API bake-off                                 |
+| Ralph Phase 5a API bake-off                       | complete                      | Re-read renderElement props, element specs, extension slots, and DOMCoverageBoundary record shape                                                                                                                                     | Chose React slot adapter as leading authoring shape, element specs as later default/policy layer, and raw registration as internal-only                                                                                                                                                                       | Phase 5b cannot start until Phase 4.5 proof is implemented and green                          | Phase 4.5 implementation/proof lane when user says go |
+| implementation Phase 4.5 rows 1-6/8 package proof | complete                      | `.tmp/slate-v2` focused tests cover StrictMode cleanup, boundary id replacement, owner-path insert/remove, parent-first nested policy, hidden paste, and programmatic materialization                                                 | DOM coverage registry resolves owner runtime ids before lookup and prunes deleted owners; DOM tests use real runtime ids instead of fake ids                                                                                                                                                                  | later rows continued in browser/stress pass                                                   | Phase 4.5 browser/example proof                       |
+| implementation Phase 4.5 browser/example proof    | complete                      | Chromium Playwright and mobile-project Playwright proof on `/examples/dom-coverage-boundaries`                                                                                                                                        | `DOMEditor.toSlatePoint` imports boundary placeholder DOM points, including adjacent element-offset points, through DOM coverage before normal non-editable fallback; example proof covers find, placeholder metadata, model-backed copy, drag import, hidden update dirtiness, IME, and mobile-project touch | raw mobile device proof remains release-only, not claimed                                     | Phase 4.5 stress/dev-safety proof                     |
+| implementation Phase 4.5 stress/dev-safety proof  | complete                      | `.tmp/slate-v2` focused tests cover indexed 5000-block/100-boundary lookup, runtime endpoint split/merge invalidation, structural move rebasing, hidden update dirtiness, 1000-descendant expansion, and dropped-children dev warning | DOM coverage registry now has root-bucketed lookup with snapshot-version refresh; private harness expansion proves boundary-sized wakeup; normal renderers that omit editable children without coverage report a dev error; browser proof includes select-all model-backed copy and a11y placeholder smoke    | raw mobile device and full collaboration dirtiness are outside this hidden-subtree proof lane | Phase 5b unstable public API                          |
+| implementation Phase 5 public API                 | complete for unstable adapter | Phase 4.5 matrix is green and Phase 5a selected React slot adapter                                                                                                                                                                    | `RenderElementProps.slots.unstableBoundary` supports `scope: { type: 'children' }` and `scope: { type: 'self' }` without exposing raw runtime ids; changeset added for `slate-react`                                                                                                                          | stable `slots.Boundary` still waits for broader adoption/docs; no `Hidden*` names shipped     | Phase 6 deferred                                      |
+| implementation Phase 6 large-doc convergence      | pending                       | Collapse proof is green, but large-doc staging has stricter default-mode, stale-DOM, and native-readiness obligations                                                                                                                 | Do not migrate staged mounting/virtualization onto DOM coverage until DOM-present lifecycle and full-doc replace proofs are green                                                                                                                                                                             | registry scale, full-doc replace, native readiness                                            | future large-document plan                            |
 
 ## Plan Deltas From Revision
 
@@ -1403,7 +1403,7 @@ Accepted changes:
 - Reopened the lane with `ralph` as active implementation, not review-only
   planning.
 - Phase 4.5 rows 1-6 and the programmatic-selection part of row 8 now have
-  focused package proof in `../slate-v2`.
+  focused package proof in `.tmp/slate-v2`.
 - Phase 4.5 browser/example proof now covers browser find before/after expand,
   deterministic placeholders, model-backed hidden copy, drag import across a
   placeholder, hidden update dirtiness at the example level, and mobile viewport

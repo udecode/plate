@@ -48,10 +48,10 @@ tests. It does not mean blindly port every upstream test.
 
 ## Lane Registry
 
-| Lane | Aliases | Downstream skill | Owner | Output |
-| --- | --- | --- | --- | --- |
-| `slate-v2` | `slate`, `raw-slate` | `.agents/skills/slate-ralplan/SKILL.md` | Raw Slate v2 substrate in `../slate-v2` | `docs/plans/YYYY-MM-DD-slate-v2-<repo>-harvest-test-processing-ralplan.md` |
-| `plate` | `platejs`, `plate-owned` | `.agents/skills/plate-ralplan/SKILL.md` | Plate packages, kits, docs, examples, and product behavior in this repo | `docs/plans/YYYY-MM-DD-plate-<repo>-harvest-test-processing-ralplan.md` |
+| Lane       | Aliases                  | Downstream skill                        | Owner                                                                   | Output                                                                     |
+| ---------- | ------------------------ | --------------------------------------- | ----------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| `slate-v2` | `slate`, `raw-slate`     | `.agents/skills/slate-ralplan/SKILL.md` | Raw Slate v2 substrate in `.tmp/slate-v2`                               | `docs/plans/YYYY-MM-DD-slate-v2-<repo>-harvest-test-processing-ralplan.md` |
+| `plate`    | `platejs`, `plate-owned` | `.agents/skills/plate-ralplan/SKILL.md` | Plate packages, kits, docs, examples, and product behavior in this repo | `docs/plans/YYYY-MM-DD-plate-<repo>-harvest-test-processing-ralplan.md`    |
 
 If the lane is unknown, infer only when the harvest row owner labels make the
 mapping obvious. Otherwise ask for the lane. Do not invent a new owner lane and
@@ -61,7 +61,7 @@ pretend it is covered.
 
 - This is a planning/routing skill. Do not patch implementation code, tests,
   examples, package files, or build config.
-- For `slate-v2`, do not edit `../slate-v2` from this skill.
+- For `slate-v2`, do not edit `.tmp/slate-v2` from this skill.
 - For `plate`, do not edit package, app, docs, or example behavior from this
   skill except the plan and scoped state artifacts.
 - User phrases like "go", "process", "apply", or "all tests" do not override
@@ -102,12 +102,12 @@ pretend it is covered.
 6. `docs/solutions/` entries about editor harvest routing, browser proof, IME,
    selection, placeholders, and Skiller/sync failures.
 7. Current owner evidence:
-   - `slate-v2`: `../slate-v2` tests, examples, package scripts, and relevant
+   - `slate-v2`: `.tmp/slate-v2` tests, examples, package scripts, and relevant
      ledgers.
    - `plate`: current Plate packages, kits, docs, examples, and behavior-law
      docs.
 
-For `slate-v2`, the live `../slate-v2` checkout wins over stale plans. Search
+For `slate-v2`, the live `.tmp/slate-v2` checkout wins over stale plans. Search
 current tests and source before saying a row is covered or missing.
 
 ## Completion State
@@ -161,13 +161,13 @@ proof, or user lane decision is missing and no useful autonomous pass remains.
 
 Score from `0.00` to `1.00`.
 
-| Dimension | Weight |
-| --- | ---: |
-| Harvest source readiness | 0.15 |
-| Lane-filter completeness | 0.25 |
-| Current owner coverage mapping | 0.25 |
-| Actionability of execution queue | 0.20 |
-| License/provenance discipline | 0.15 |
+| Dimension                        | Weight |
+| -------------------------------- | -----: |
+| Harvest source readiness         |   0.15 |
+| Lane-filter completeness         |   0.25 |
+| Current owner coverage mapping   |   0.25 |
+| Actionability of execution queue |   0.20 |
+| License/provenance discipline    |   0.15 |
 
 Score caps:
 
@@ -250,7 +250,7 @@ Completion threshold:
    - React plugin hosts;
    - NodeView/PluginView-style authoring unless reduced to raw substrate.
 9. Search current owner coverage:
-   - for `slate-v2`, search `../slate-v2` by behavior words and adjacent
+   - for `slate-v2`, search `.tmp/slate-v2` by behavior words and adjacent
      concepts, not upstream API names;
    - for `plate`, search packages, kits, docs, examples, and behavior-law docs.
 10. Apply the downstream ralplan:
@@ -279,22 +279,39 @@ lane: `<lane>`
 license_mode: permissive|behavior-only
 
 ## Current Verdict
+
 ## Intent Boundary
+
 ## Harvest Grounding
+
 ## Lane Contract
+
 ## Confidence Score
+
 ## Pass-State Ledger
+
 ## Current Owner Grounding
+
 ## Full Harvest Row Accounting
+
 ## In-Lane Candidate Matrix
+
 ## Split Rows
+
 ## Excluded Or Out-Of-Lane Rows
+
 ## Coverage Dedupe
+
 ## Execution Queue
+
 ## Issue And Claim Accounting
+
 ## Downstream Ralplan Application
+
 ## Ralph Handoff
+
 ## Verification Gates
+
 ## Final Completion Gates
 ```
 
@@ -307,7 +324,7 @@ under `docs/plans/<same-slug>-row-accounting.md` and link it.
 Use this table:
 
 | Row | Source ref | Tag | Behavior invariant | Lane reason | Current coverage | Action | Target | Proof |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| --- | ---------- | --- | ------------------ | ----------- | ---------------- | ------ | ------ | ----- |
 
 Action values:
 
@@ -382,7 +399,7 @@ bun run completion-check
 ```
 
 Slate v2 behavior verification belongs only to later `ralph` execution from
-`../slate-v2`.
+`.tmp/slate-v2`.
 
 ## Final Response
 

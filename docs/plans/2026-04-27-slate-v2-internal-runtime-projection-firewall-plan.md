@@ -173,15 +173,15 @@ Create an internal runtime object before public API work:
 
 ```ts
 interface EditorRuntime {
-  commit: CommitRuntime
-  composition: CompositionRuntime
-  decorations: DecorationRuntime
-  dom: DomRuntime
-  events: EventRuntime
-  mutation: MutationRuntime
-  projection: ProjectionRuntime
-  selection: SelectionRuntime
-  shells: ShellRuntime
+  commit: CommitRuntime;
+  composition: CompositionRuntime;
+  decorations: DecorationRuntime;
+  dom: DomRuntime;
+  events: EventRuntime;
+  mutation: MutationRuntime;
+  projection: ProjectionRuntime;
+  selection: SelectionRuntime;
+  shells: ShellRuntime;
 }
 ```
 
@@ -193,15 +193,15 @@ Turns model updates into cheap facts.
 
 ```ts
 interface CommitFacts {
-  id: number
-  dirtyNodeIds: ReadonlySet<string>
-  dirtyTextIds: ReadonlySet<string>
-  dirtyShellIds: ReadonlySet<string>
-  selectionAfter: Range | null
-  selectionBefore: Range | null
-  selectionImpactIds: ReadonlySet<string>
-  decorationImpactIds: ReadonlySet<string>
-  normalizationImpactIds: ReadonlySet<string>
+  id: number;
+  dirtyNodeIds: ReadonlySet<string>;
+  dirtyTextIds: ReadonlySet<string>;
+  dirtyShellIds: ReadonlySet<string>;
+  selectionAfter: Range | null;
+  selectionBefore: Range | null;
+  selectionImpactIds: ReadonlySet<string>;
+  decorationImpactIds: ReadonlySet<string>;
+  normalizationImpactIds: ReadonlySet<string>;
 }
 ```
 
@@ -281,17 +281,17 @@ Rules from Vercel guidance that directly apply:
 
 These budgets are the bar for the internal runtime.
 
-| Scenario | Budget |
-| --- | --- |
-| Type one character in plain text | touched text/leaf projection only; editor body does not rerender |
-| Delete selected text | affected text/leaf projection only; toolbar can update separately |
-| Arrow across block void | old selected shell and new selected shell update; no full tree rerender |
-| Arrow around inline void | adjacent text and inline atom projection update only |
-| Type in search input | input keeps DOM focus; decoration projection updates separately |
-| IME composition | composition refs update without broad React invalidation |
-| Mouse selection for toolbar | toolbar anchor updates without remounting editor content |
-| Table cell ArrowRight | target cell offset is model-correct and DOM selection agrees |
-| Image selection | hidden anchor never creates visible layout |
+| Scenario                         | Budget                                                                  |
+| -------------------------------- | ----------------------------------------------------------------------- |
+| Type one character in plain text | touched text/leaf projection only; editor body does not rerender        |
+| Delete selected text             | affected text/leaf projection only; toolbar can update separately       |
+| Arrow across block void          | old selected shell and new selected shell update; no full tree rerender |
+| Arrow around inline void         | adjacent text and inline atom projection update only                    |
+| Type in search input             | input keeps DOM focus; decoration projection updates separately         |
+| IME composition                  | composition refs update without broad React invalidation                |
+| Mouse selection for toolbar      | toolbar anchor updates without remounting editor content                |
+| Table cell ArrowRight            | target cell offset is model-correct and DOM selection agrees            |
+| Image selection                  | hidden anchor never creates visible layout                              |
 
 Render counts must be measured, not guessed.
 
@@ -373,18 +373,18 @@ Do not put the full generated browser matrix into default `bun check`.
 
 ### Current Ownership Map
 
-| Responsibility | Current owner | Current problem | Target owner |
-| --- | --- | --- | --- |
-| DOM selection import/export | `packages/slate-react/src/components/editable.tsx`, `editable/input-controller.ts`, `editable/selection-reconciler.ts` | `EditableDOMRoot` wires native listeners, model preference, import/export, shell-backed state, and trace recording in one component. | Internal `SelectionRuntime` called by `EditableDOMRoot`. |
-| Mutation and DOM repair | `editable.tsx`, `editable/dom-repair-queue.ts`, input strategies | Repair queue is created in React render scope and request plumbing is scattered across beforeinput/input/keyboard/paste/drop handlers. | Internal `MutationRuntime` plus `DomRepairRuntime`. |
-| Composition and IME state | `editable.tsx`, `editable/composition-state.ts`, Android input manager hooks | Composition state still forces React state through `setIsComposing`; high-frequency facts should mostly stay in refs/runtime. | Internal `CompositionRuntime`; React exposes stable projection facts only. |
-| Native event ownership | `editable.tsx`, `editable/editing-kernel.ts`, input-router hooks | Kernel decisions are useful, but `EditableDOMRoot` still orchestrates every event family directly. | Internal `EventRuntime` with per-family handlers. |
-| Shell DOM attrs and refs | `slate-element.tsx`, `slate-text.tsx`, `slate-leaf.tsx`, `slate-spacer.tsx`, `void-element.tsx`, `use-slate-node-ref.tsx` | Primitive components own browser-critical attrs directly; `VoidElement` still requires app authors to pass spacer children. | Internal `ShellRuntime`; primitives render runtime-owned attrs/content slots. |
-| Void spacer placement | `void-element.tsx`, `slate-spacer.tsx`, app `renderElement` functions | Better than raw `{children}`, still too footgunny because app-visible void content and hidden spacer are coupled by component convention. | `ShellRuntime` owns hidden anchor/spacer; app renderers provide visible content only. |
-| Decoration projection | `projection-store.ts`, `use-slate-projections.tsx`, `EditableText` | Projection store is a good internal shape, but dirtiness is source-level and recomputes snapshots by runtime id after full source refresh. | `ProjectionRuntime` consuming commit facts and source-specific invalidation. |
-| Annotation projection | `annotation-store.ts` | Good separate store; resolves bookmarks and projects by runtime id, but still separate from commit facts. | `AnnotationRuntime` layered onto `ProjectionRuntime`. |
-| Floating widgets | `widget-store.ts` | Good external-store shape; selection/node/annotation anchors are explicit. Node dirtiness is currently broad via `isSlateSourceDirty('node')`. | `WidgetRuntime` using selection/runtime-id impact facts. |
-| Render breadth proof | `render-profiler.ts`, `slate-browser/playwright` helpers | New proof spine exists; selected runtime ids are measurable. | Keep in `slate-browser` as proof infrastructure; do not expose as app API. |
+| Responsibility              | Current owner                                                                                                             | Current problem                                                                                                                                | Target owner                                                                          |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| DOM selection import/export | `packages/slate-react/src/components/editable.tsx`, `editable/input-controller.ts`, `editable/selection-reconciler.ts`    | `EditableDOMRoot` wires native listeners, model preference, import/export, shell-backed state, and trace recording in one component.           | Internal `SelectionRuntime` called by `EditableDOMRoot`.                              |
+| Mutation and DOM repair     | `editable.tsx`, `editable/dom-repair-queue.ts`, input strategies                                                          | Repair queue is created in React render scope and request plumbing is scattered across beforeinput/input/keyboard/paste/drop handlers.         | Internal `MutationRuntime` plus `DomRepairRuntime`.                                   |
+| Composition and IME state   | `editable.tsx`, `editable/composition-state.ts`, Android input manager hooks                                              | Composition state still forces React state through `setIsComposing`; high-frequency facts should mostly stay in refs/runtime.                  | Internal `CompositionRuntime`; React exposes stable projection facts only.            |
+| Native event ownership      | `editable.tsx`, `editable/editing-kernel.ts`, input-router hooks                                                          | Kernel decisions are useful, but `EditableDOMRoot` still orchestrates every event family directly.                                             | Internal `EventRuntime` with per-family handlers.                                     |
+| Shell DOM attrs and refs    | `slate-element.tsx`, `slate-text.tsx`, `slate-leaf.tsx`, `slate-spacer.tsx`, `void-element.tsx`, `use-slate-node-ref.tsx` | Primitive components own browser-critical attrs directly; `VoidElement` still requires app authors to pass spacer children.                    | Internal `ShellRuntime`; primitives render runtime-owned attrs/content slots.         |
+| Void spacer placement       | `void-element.tsx`, `slate-spacer.tsx`, app `renderElement` functions                                                     | Better than raw `{children}`, still too footgunny because app-visible void content and hidden spacer are coupled by component convention.      | `ShellRuntime` owns hidden anchor/spacer; app renderers provide visible content only. |
+| Decoration projection       | `projection-store.ts`, `use-slate-projections.tsx`, `EditableText`                                                        | Projection store is a good internal shape, but dirtiness is source-level and recomputes snapshots by runtime id after full source refresh.     | `ProjectionRuntime` consuming commit facts and source-specific invalidation.          |
+| Annotation projection       | `annotation-store.ts`                                                                                                     | Good separate store; resolves bookmarks and projects by runtime id, but still separate from commit facts.                                      | `AnnotationRuntime` layered onto `ProjectionRuntime`.                                 |
+| Floating widgets            | `widget-store.ts`                                                                                                         | Good external-store shape; selection/node/annotation anchors are explicit. Node dirtiness is currently broad via `isSlateSourceDirty('node')`. | `WidgetRuntime` using selection/runtime-id impact facts.                              |
+| Render breadth proof        | `render-profiler.ts`, `slate-browser/playwright` helpers                                                                  | New proof spine exists; selected runtime ids are measurable.                                                                                   | Keep in `slate-browser` as proof infrastructure; do not expose as app API.            |
 
 ### Phase 1 First Code Target
 
@@ -808,30 +808,30 @@ rg -n "editor\\.apply|Editor\\.apply|setChildren|getLiveNode|getLiveSelection|ge
 
 Classify every surfaced API into one bucket:
 
-| Bucket | Meaning | Examples |
-| --- | --- | --- |
-| Normal public | Human and app-author API | `editor.update`, transforms, snapshots, transactions |
-| Explicit replay/import | Low-level operation ingestion | `applyOperations` or a renamed replay writer |
-| Advanced runtime | Runtime-owned escape hatch, not app DX | live node/text/selection reads if they survive |
-| Internal only | Package-private implementation detail | direct live reads used by DOM/runtime code |
-| Delete | Unpublished wrong shape | compatibility aliases, fallback renderer props |
+| Bucket                 | Meaning                                | Examples                                             |
+| ---------------------- | -------------------------------------- | ---------------------------------------------------- |
+| Normal public          | Human and app-author API               | `editor.update`, transforms, snapshots, transactions |
+| Explicit replay/import | Low-level operation ingestion          | `applyOperations` or a renamed replay writer         |
+| Advanced runtime       | Runtime-owned escape hatch, not app DX | live node/text/selection reads if they survive       |
+| Internal only          | Package-private implementation detail  | direct live reads used by DOM/runtime code           |
+| Delete                 | Unpublished wrong shape                | compatibility aliases, fallback renderer props       |
 
 Current inventory after the 2026-04-27 activation pass:
 
-| Surface | Current fact | Bucket | Next move |
-| --- | --- | --- | --- |
-| `editor.update(...)` and transforms | Existing write-boundary contract routes ordinary edits through `editor.update`. | Normal public | Keep as the app-author write path. |
-| `editor.withTransaction((tx) => ...)` / `tx.apply(op)` | Transaction surface exists and `tx.apply(op)` is already the intended transaction-owned single-op primitive. | Normal public inside transaction | Keep, then migrate any direct single-op tests/callers that should be transaction-owned. |
-| `editor.applyOperations(...)` / `Editor.applyOperations(...)` | Existing contracts prove it imports operations and publishes one commit. | Explicit replay/import | Keep as the public replay/import writer unless a better final name wins before publish. |
-| instance `editor.apply(op)` | Cut from `BaseEditor`, `createEditor`, instance runtime shape, tests, and editor detection. Operation fixtures use `applyOperations(...)`; transaction tests use `transaction.apply(...)`. | Deleted from normal public | Keep deleted. Continue with `getLive*` fencing. |
-| `Editor.apply(editor, op)` | Cut from `EditorInterface`; operations docs now teach `applyOperations`. Snapshot tests still use instance `editor.apply`, not the static helper. | Deleted | Keep deleted. Do not reintroduce a static single-op helper. |
-| `setChildren` / `Editor.setChildren` | Cut from `BaseEditor`, `EditorInterface`, `createEditor`, docs, tests, and the root package barrel. Raw child replacement is fenced behind `slate/internal` as `setEditorChildren` for Slate-owned package setup only. | Deleted from normal public; internal-only fixture/runtime tool | Keep root deleted. Continue with instance `editor.apply(op)` and `getLive*` fencing. |
-| `replace` / `reset` | Snapshot-level writers exist beside `setChildren`. | Normal or explicit snapshot writer | Keep only if documented as full snapshot replacement, not child-list mutation. |
-| `getChildren`, `getSelection`, `getSnapshot`, `getOperations` | These are the already-cut field replacements and current normal read APIs. | Normal public | Keep and teach first. |
-| `getLiveNode`, `getLiveText`, `getLiveSelection` | `BaseEditor`, `EditorInterface`, surface tests, docs, React/DOM runtime, and core helpers still expose/use them. | Advanced runtime or internal only | Fence from ordinary app/docs; keep internal runtime use where snapshot reads are stale. |
-| core `editor.onChange` | `apply-onChange` contract already proves no instance `onChange` key. | Already deleted | Keep deleted. |
-| React `<Slate onChange>` / `onValueChange` | React docs still describe callback API and an alias. | React adapter output | Pick one final callback story before publish; remove alias if the duplicate is only compatibility. |
-| compatibility and legacy inventories | `escape-hatch-inventory-contract` already tracks stale `editor.apply`/field/API pressure, but many rows are still compatibility or historical buckets. | Burn-down guard | Tighten after item 4 final public surface lands. |
+| Surface                                                       | Current fact                                                                                                                                                                                                           | Bucket                                                         | Next move                                                                                          |
+| ------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| `editor.update(...)` and transforms                           | Existing write-boundary contract routes ordinary edits through `editor.update`.                                                                                                                                        | Normal public                                                  | Keep as the app-author write path.                                                                 |
+| `editor.withTransaction((tx) => ...)` / `tx.apply(op)`        | Transaction surface exists and `tx.apply(op)` is already the intended transaction-owned single-op primitive.                                                                                                           | Normal public inside transaction                               | Keep, then migrate any direct single-op tests/callers that should be transaction-owned.            |
+| `editor.applyOperations(...)` / `Editor.applyOperations(...)` | Existing contracts prove it imports operations and publishes one commit.                                                                                                                                               | Explicit replay/import                                         | Keep as the public replay/import writer unless a better final name wins before publish.            |
+| instance `editor.apply(op)`                                   | Cut from `BaseEditor`, `createEditor`, instance runtime shape, tests, and editor detection. Operation fixtures use `applyOperations(...)`; transaction tests use `transaction.apply(...)`.                             | Deleted from normal public                                     | Keep deleted. Continue with `getLive*` fencing.                                                    |
+| `Editor.apply(editor, op)`                                    | Cut from `EditorInterface`; operations docs now teach `applyOperations`. Snapshot tests still use instance `editor.apply`, not the static helper.                                                                      | Deleted                                                        | Keep deleted. Do not reintroduce a static single-op helper.                                        |
+| `setChildren` / `Editor.setChildren`                          | Cut from `BaseEditor`, `EditorInterface`, `createEditor`, docs, tests, and the root package barrel. Raw child replacement is fenced behind `slate/internal` as `setEditorChildren` for Slate-owned package setup only. | Deleted from normal public; internal-only fixture/runtime tool | Keep root deleted. Continue with instance `editor.apply(op)` and `getLive*` fencing.               |
+| `replace` / `reset`                                           | Snapshot-level writers exist beside `setChildren`.                                                                                                                                                                     | Normal or explicit snapshot writer                             | Keep only if documented as full snapshot replacement, not child-list mutation.                     |
+| `getChildren`, `getSelection`, `getSnapshot`, `getOperations` | These are the already-cut field replacements and current normal read APIs.                                                                                                                                             | Normal public                                                  | Keep and teach first.                                                                              |
+| `getLiveNode`, `getLiveText`, `getLiveSelection`              | `BaseEditor`, `EditorInterface`, surface tests, docs, React/DOM runtime, and core helpers still expose/use them.                                                                                                       | Advanced runtime or internal only                              | Fence from ordinary app/docs; keep internal runtime use where snapshot reads are stale.            |
+| core `editor.onChange`                                        | `apply-onChange` contract already proves no instance `onChange` key.                                                                                                                                                   | Already deleted                                                | Keep deleted.                                                                                      |
+| React `<Slate onChange>` / `onValueChange`                    | React docs still describe callback API and an alias.                                                                                                                                                                   | React adapter output                                           | Pick one final callback story before publish; remove alias if the duplicate is only compatibility. |
+| compatibility and legacy inventories                          | `escape-hatch-inventory-contract` already tracks stale `editor.apply`/field/API pressure, but many rows are still compatibility or historical buckets.                                                                 | Burn-down guard                                                | Tighten after item 4 final public surface lands.                                                   |
 
 Acceptance:
 
@@ -1009,15 +1009,15 @@ Owner: `packages/slate-browser` plus Playwright stress routes.
 
 Map reported regressions to generated contract families:
 
-| Family | Routes | Contract |
-| --- | --- | --- |
-| inline-void-boundary-navigation | `mentions` | arrow from left/right, delete, select across atom, model/DOM agreement |
-| block-void-navigation | `images`, `embeds` | enter/exit void, vertical/horizontal arrows, delete/backspace, layout shell integrity |
-| table-cell-boundary-navigation | `tables` | ArrowRight/Left/Up/Down across cells lands at expected offset |
-| external-decoration-refresh | `search-highlighting`, `external-decoration-sources` | focus owner preserved, decoration output updated, render budget respected |
-| mouse-selection-toolbar | `hovering-toolbar` | native mouse drag keeps DOM selection, model selection, toolbar visibility |
-| paste-normalize-undo | `richtext`, `plaintext`, `forced-layout` | paste, normalize, undo, redo, replay artifact |
-| selection-repair-ime | focused IME/mobile routes | composition state, DOM repair, selection export/import ownership |
+| Family                          | Routes                                               | Contract                                                                              |
+| ------------------------------- | ---------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| inline-void-boundary-navigation | `mentions`                                           | arrow from left/right, delete, select across atom, model/DOM agreement                |
+| block-void-navigation           | `images`, `embeds`                                   | enter/exit void, vertical/horizontal arrows, delete/backspace, layout shell integrity |
+| table-cell-boundary-navigation  | `tables`                                             | ArrowRight/Left/Up/Down across cells lands at expected offset                         |
+| external-decoration-refresh     | `search-highlighting`, `external-decoration-sources` | focus owner preserved, decoration output updated, render budget respected             |
+| mouse-selection-toolbar         | `hovering-toolbar`                                   | native mouse drag keeps DOM selection, model selection, toolbar visibility            |
+| paste-normalize-undo            | `richtext`, `plaintext`, `forced-layout`             | paste, normalize, undo, redo, replay artifact                                         |
+| selection-repair-ime            | focused IME/mobile routes                            | composition state, DOM repair, selection export/import ownership                      |
 
 The placeholder family stays a low-priority canary unless it reappears as part
 of a broader empty-block or composition contract.
@@ -1141,7 +1141,7 @@ Actions taken:
 - Generated `.tmp/continue.md` from the active items 4-6 plan.
 - Set `.tmp/<session-id>/completion-check.md` to `pending` for the new lane.
 - Read the completed void/atom lane state before activating the next owner.
-- Ran the item 4A public-surface inventory commands against `../slate-v2`.
+- Ran the item 4A public-surface inventory commands against `.tmp/slate-v2`.
 - Added the current public-surface inventory table above.
 
 Commands run:
@@ -1652,7 +1652,7 @@ Rejected tactics:
 
 Next action:
 
-- Inspect existing `../slate-v2` Playwright/stress and `slate-browser` helpers,
+- Inspect existing `.tmp/slate-v2` Playwright/stress and `slate-browser` helpers,
   then add the first focused canary/instrumentation slice for image void layout
   and keyboard navigation.
 
@@ -1664,7 +1664,7 @@ Owner classification: browser proof infrastructure and server freshness.
 
 Actions taken:
 
-- Read existing `../slate-v2` Playwright integration examples and stress
+- Read existing `.tmp/slate-v2` Playwright integration examples and stress
   helpers.
 - Ran focused canaries for embeds, hovering toolbar, images, mentions,
   search-highlighting, and tables.
@@ -1716,16 +1716,16 @@ Owner classification: `slate-react` render projection instrumentation plus
 
 Files changed:
 
-- `../slate-v2/packages/slate-react/src/render-profiler.ts`
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
-- `../slate-v2/packages/slate-react/src/components/slate-element.tsx`
-- `../slate-v2/packages/slate-react/src/components/slate-leaf.tsx`
-- `../slate-v2/packages/slate-react/src/components/slate-spacer.tsx`
-- `../slate-v2/packages/slate-react/src/components/slate-text.tsx`
-- `../slate-v2/packages/slate-react/src/components/void-element.tsx`
-- `../slate-v2/packages/slate-react/test/render-profiler-contract.test.tsx`
-- `../slate-v2/packages/slate-browser/src/playwright/index.ts`
-- `../slate-v2/playwright/integration/examples/search-highlighting.test.ts`
+- `.tmp/slate-v2/packages/slate-react/src/render-profiler.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/components/slate-element.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/components/slate-leaf.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/components/slate-spacer.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/components/slate-text.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/components/void-element.tsx`
+- `.tmp/slate-v2/packages/slate-react/test/render-profiler-contract.test.tsx`
+- `.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts`
+- `.tmp/slate-v2/playwright/integration/examples/search-highlighting.test.ts`
 
 Actions taken:
 
@@ -1797,7 +1797,7 @@ Owner classification: image void browser navigation proof.
 
 Files changed:
 
-- `../slate-v2/playwright/integration/examples/images.test.ts`
+- `.tmp/slate-v2/playwright/integration/examples/images.test.ts`
 
 Actions taken:
 
@@ -1855,10 +1855,10 @@ canaries.
 
 Files changed:
 
-- `../slate-v2/playwright/integration/examples/embeds.test.ts`
-- `../slate-v2/playwright/integration/examples/hovering-toolbar.test.ts`
-- `../slate-v2/playwright/integration/examples/mentions.test.ts`
-- `../slate-v2/playwright/integration/examples/tables.test.ts`
+- `.tmp/slate-v2/playwright/integration/examples/embeds.test.ts`
+- `.tmp/slate-v2/playwright/integration/examples/hovering-toolbar.test.ts`
+- `.tmp/slate-v2/playwright/integration/examples/mentions.test.ts`
+- `.tmp/slate-v2/playwright/integration/examples/tables.test.ts`
 
 Actions taken:
 
@@ -1936,12 +1936,12 @@ Owner classification: browser proof metadata and React DOM binding.
 
 Files changed:
 
-- `../slate-v2/packages/slate-react/src/hooks/use-slate-node-ref.tsx`
-- `../slate-v2/packages/slate-browser/src/playwright/index.ts`
-- `../slate-v2/playwright/integration/examples/embeds.test.ts`
-- `../slate-v2/playwright/integration/examples/images.test.ts`
-- `../slate-v2/playwright/integration/examples/mentions.test.ts`
-- `../slate-v2/playwright/integration/examples/tables.test.ts`
+- `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-node-ref.tsx`
+- `.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts`
+- `.tmp/slate-v2/playwright/integration/examples/embeds.test.ts`
+- `.tmp/slate-v2/playwright/integration/examples/images.test.ts`
+- `.tmp/slate-v2/playwright/integration/examples/mentions.test.ts`
+- `.tmp/slate-v2/playwright/integration/examples/tables.test.ts`
 
 Actions taken:
 
@@ -2010,12 +2010,12 @@ Owner classification: shell DOM ownership.
 
 Files changed:
 
-- `../slate-v2/packages/slate-react/src/shell-runtime.ts`
-- `../slate-v2/packages/slate-react/src/components/slate-element.tsx`
-- `../slate-v2/packages/slate-react/src/components/slate-leaf.tsx`
-- `../slate-v2/packages/slate-react/src/components/slate-spacer.tsx`
-- `../slate-v2/packages/slate-react/src/components/slate-text.tsx`
-- `../slate-v2/packages/slate-react/test/shell-runtime-contract.test.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/shell-runtime.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/slate-element.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/components/slate-leaf.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/components/slate-spacer.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/components/slate-text.tsx`
+- `.tmp/slate-v2/packages/slate-react/test/shell-runtime-contract.test.tsx`
 
 Actions taken:
 
@@ -2104,16 +2104,16 @@ Current-state correction:
 
 Files changed:
 
-- `../slate-v2/packages/slate-react/src/shell-runtime.ts`
-- `../slate-v2/packages/slate-react/src/components/void-element.tsx`
-- `../slate-v2/packages/slate-react/test/shell-runtime-contract.test.tsx`
-- `../slate-v2/packages/slate-react/test/primitives-contract.tsx`
-- `../slate-v2/packages/slate-react/test/render-profiler-contract.test.tsx`
-- `../slate-v2/site/examples/ts/images.tsx`
-- `../slate-v2/site/examples/ts/embeds.tsx`
-- `../slate-v2/site/examples/ts/paste-html.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/shell-runtime.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/void-element.tsx`
+- `.tmp/slate-v2/packages/slate-react/test/shell-runtime-contract.test.tsx`
+- `.tmp/slate-v2/packages/slate-react/test/primitives-contract.tsx`
+- `.tmp/slate-v2/packages/slate-react/test/render-profiler-contract.test.tsx`
+- `.tmp/slate-v2/site/examples/ts/images.tsx`
+- `.tmp/slate-v2/site/examples/ts/embeds.tsx`
+- `.tmp/slate-v2/site/examples/ts/paste-html.tsx`
 - `docs/solutions/developer-experience/2026-04-27-slate-react-void-renderers-should-not-own-hidden-spacer-children.md`
-- `../slate-v2/playwright/integration/examples/images.test.ts`
+- `.tmp/slate-v2/playwright/integration/examples/images.test.ts`
 
 Actions taken:
 
@@ -2184,15 +2184,15 @@ Owner classification: selection projection and editable-root render budget.
 
 Files changed:
 
-- `../slate-v2/packages/slate-react/src/editable/caret-engine.ts`
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
-- `../slate-v2/packages/slate-react/src/hooks/use-slate-selector.tsx`
-- `../slate-v2/packages/slate-react/dist/index.js`
-- `../slate-v2/playwright/integration/examples/images.test.ts`
-- `../slate-v2/playwright/integration/examples/embeds.test.ts`
-- `../slate-v2/playwright/integration/examples/mentions.test.ts`
-- `../slate-v2/playwright/integration/examples/tables.test.ts`
-- `../slate-v2/playwright/integration/examples/hovering-toolbar.test.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/caret-engine.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-selector.tsx`
+- `.tmp/slate-v2/packages/slate-react/dist/index.js`
+- `.tmp/slate-v2/playwright/integration/examples/images.test.ts`
+- `.tmp/slate-v2/playwright/integration/examples/embeds.test.ts`
+- `.tmp/slate-v2/playwright/integration/examples/mentions.test.ts`
+- `.tmp/slate-v2/playwright/integration/examples/tables.test.ts`
+- `.tmp/slate-v2/playwright/integration/examples/hovering-toolbar.test.ts`
 
 Actions taken:
 
@@ -2276,13 +2276,13 @@ filtering.
 
 Files changed:
 
-- `../slate-v2/packages/slate/src/interfaces/editor.ts`
-- `../slate-v2/packages/slate/src/core/public-state.ts`
-- `../slate-v2/packages/slate/test/snapshot-contract.ts`
-- `../slate-v2/packages/slate-react/src/components/slate.tsx`
-- `../slate-v2/packages/slate-react/src/hooks/use-selected.ts`
-- `../slate-v2/packages/slate-react/src/hooks/use-slate-selector.tsx`
-- `../slate-v2/packages/slate-react/test/provider-hooks-contract.tsx`
+- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`
+- `.tmp/slate-v2/packages/slate/src/core/public-state.ts`
+- `.tmp/slate-v2/packages/slate/test/snapshot-contract.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/slate.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/hooks/use-selected.ts`
+- `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-selector.tsx`
+- `.tmp/slate-v2/packages/slate-react/test/provider-hooks-contract.tsx`
 
 Actions taken:
 
@@ -2363,12 +2363,12 @@ fanout cut.
 
 Files changed:
 
-- `../slate-v2/packages/slate/src/interfaces/editor.ts`
-- `../slate-v2/packages/slate/src/core/public-state.ts`
-- `../slate-v2/packages/slate/test/snapshot-contract.ts`
-- `../slate-v2/packages/slate-react/src/hooks/use-slate-projections.tsx`
-- `../slate-v2/packages/slate-react/src/projection-store.ts`
-- `../slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx`
+- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`
+- `.tmp/slate-v2/packages/slate/src/core/public-state.ts`
+- `.tmp/slate-v2/packages/slate/test/snapshot-contract.ts`
+- `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-projections.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/projection-store.ts`
+- `.tmp/slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx`
 
 Actions taken:
 
@@ -2449,9 +2449,9 @@ Owner classification: Phase 3 source recompute filtering.
 
 Files changed:
 
-- `../slate-v2/packages/slate-react/src/projection-store.ts`
-- `../slate-v2/packages/slate-react/src/index.ts`
-- `../slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/projection-store.ts`
+- `.tmp/slate-v2/packages/slate-react/src/index.ts`
+- `.tmp/slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx`
 
 Actions taken:
 
@@ -2522,8 +2522,8 @@ Owner classification: Phase 3 real source adoption and browser proof.
 
 Files changed:
 
-- `../slate-v2/site/examples/ts/search-highlighting.tsx`
-- `../slate-v2/site/examples/ts/code-highlighting.tsx`
+- `.tmp/slate-v2/site/examples/ts/search-highlighting.tsx`
+- `.tmp/slate-v2/site/examples/ts/code-highlighting.tsx`
 
 Actions taken:
 
@@ -2583,14 +2583,14 @@ Owner classification: Phase 3 selector API shape and commit-fact filtering.
 
 Files changed:
 
-- `../slate-v2/packages/slate/src/interfaces/editor.ts`
-- `../slate-v2/packages/slate/src/core/public-state.ts`
-- `../slate-v2/packages/slate/test/snapshot-contract.ts`
-- `../slate-v2/packages/slate-react/src/hooks/use-node-selector.tsx`
-- `../slate-v2/packages/slate-react/src/hooks/use-decoration-selector.tsx`
-- `../slate-v2/packages/slate-react/src/index.ts`
-- `../slate-v2/packages/slate-react/test/provider-hooks-contract.tsx`
-- `../slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx`
+- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`
+- `.tmp/slate-v2/packages/slate/src/core/public-state.ts`
+- `.tmp/slate-v2/packages/slate/test/snapshot-contract.ts`
+- `.tmp/slate-v2/packages/slate-react/src/hooks/use-node-selector.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/hooks/use-decoration-selector.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/index.ts`
+- `.tmp/slate-v2/packages/slate-react/test/provider-hooks-contract.tsx`
+- `.tmp/slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx`
 
 Actions taken:
 
@@ -2668,8 +2668,8 @@ Owner classification: Phase 3 internal hot-path selector adoption.
 
 Files changed:
 
-- `../slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
 - `docs/solutions/ui-bugs/2026-04-27-slate-react-selection-export-listeners-must-skip-dom-owned-selection.md`
 
 Actions taken:
@@ -2759,7 +2759,7 @@ Owner classification: Phase 3 internal hot-path selector adoption.
 
 Files changed:
 
-- `../slate-v2/packages/slate-react/src/components/editable-text.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable-text.tsx`
 
 Actions taken:
 
@@ -2827,11 +2827,11 @@ Owner classification: Phase 3 projection-store invalidation narrowing.
 
 Files changed:
 
-- `../slate-v2/packages/slate-react/src/projection-store.ts`
-- `../slate-v2/packages/slate-react/src/hooks/use-slate-projections.tsx`
-- `../slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx`
-- `../slate-v2/site/examples/ts/search-highlighting.tsx`
-- `../slate-v2/site/examples/ts/external-decoration-sources.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/projection-store.ts`
+- `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-projections.tsx`
+- `.tmp/slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx`
+- `.tmp/slate-v2/site/examples/ts/search-highlighting.tsx`
+- `.tmp/slate-v2/site/examples/ts/external-decoration-sources.tsx`
 
 Actions taken:
 
@@ -2898,9 +2898,9 @@ Owner classification: Phase 5 internal selection runtime extraction.
 
 Files changed:
 
-- `../slate-v2/packages/slate-react/src/editable/selection-runtime.ts`
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
-- `../slate-v2/packages/slate-react/test/selection-runtime-contract.test.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/selection-runtime.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/test/selection-runtime-contract.test.ts`
 
 Actions taken:
 
@@ -2967,17 +2967,17 @@ Owner classification: hard-cut shell cleanup, runtime-owned void structure.
 
 Files changed:
 
-- `../slate-v2/packages/slate-react/src/context.tsx`
-- `../slate-v2/packages/slate-react/src/components/void-element.tsx`
-- `../slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
-- `../slate-v2/packages/slate-react/src/shell-runtime.ts`
-- `../slate-v2/packages/slate-react/test/surface-contract.tsx`
-- `../slate-v2/packages/slate-react/test/primitives-contract.tsx`
-- `../slate-v2/packages/slate-react/test/shell-runtime-contract.test.tsx`
-- `../slate-v2/packages/slate-react/test/render-profiler-contract.test.tsx`
-- `../slate-v2/site/examples/ts/images.tsx`
-- `../slate-v2/site/examples/ts/embeds.tsx`
-- `../slate-v2/site/examples/ts/paste-html.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/context.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/components/void-element.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/shell-runtime.ts`
+- `.tmp/slate-v2/packages/slate-react/test/surface-contract.tsx`
+- `.tmp/slate-v2/packages/slate-react/test/primitives-contract.tsx`
+- `.tmp/slate-v2/packages/slate-react/test/shell-runtime-contract.test.tsx`
+- `.tmp/slate-v2/packages/slate-react/test/render-profiler-contract.test.tsx`
+- `.tmp/slate-v2/site/examples/ts/images.tsx`
+- `.tmp/slate-v2/site/examples/ts/embeds.tsx`
+- `.tmp/slate-v2/site/examples/ts/paste-html.tsx`
 
 Actions taken:
 
@@ -3058,14 +3058,14 @@ structure.
 
 Files changed:
 
-- `../slate-v2/packages/slate-react/src/context.tsx`
-- `../slate-v2/packages/slate-react/src/components/inline-void-element.tsx`
-- `../slate-v2/packages/slate-react/src/components/slate-element.tsx`
-- `../slate-v2/packages/slate-react/src/components/void-element.tsx`
-- `../slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
-- `../slate-v2/packages/slate-react/src/index.ts`
-- `../slate-v2/packages/slate-react/test/surface-contract.tsx`
-- `../slate-v2/site/examples/ts/mentions.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/context.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/components/inline-void-element.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/components/slate-element.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/components/void-element.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/index.ts`
+- `.tmp/slate-v2/packages/slate-react/test/surface-contract.tsx`
+- `.tmp/slate-v2/site/examples/ts/mentions.tsx`
 - `docs/solutions/developer-experience/2026-04-27-slate-react-void-renderers-should-not-own-hidden-spacer-children.md`
 
 Actions taken:

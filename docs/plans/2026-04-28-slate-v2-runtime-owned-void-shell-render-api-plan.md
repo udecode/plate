@@ -80,14 +80,14 @@ renderVoid({ element, selected, focused, actions }) {
 ```ts
 type RenderVoidProps<TElement extends Element = Element> = {
   actions: {
-    focus: () => void
-    remove: () => void
-    select: () => void
-  }
-  element: TElement
-  focused: boolean
-  selected: boolean
-}
+    focus: () => void;
+    remove: () => void;
+    select: () => void;
+  };
+  element: TElement;
+  focused: boolean;
+  selected: boolean;
+};
 ```
 
 No `attributes`.
@@ -107,10 +107,10 @@ render/runtime kinds:
 
 ```ts
 type VoidRenderKind =
-  | 'block'
-  | 'inline'
-  | 'markable-inline'
-  | 'editable-island'
+  | "block"
+  | "inline"
+  | "markable-inline"
+  | "editable-island";
 ```
 
 Expose it as editor/runtime configuration, not as Plate-style node specs:
@@ -118,17 +118,17 @@ Expose it as editor/runtime configuration, not as Plate-style node specs:
 ```ts
 editor.voidKind = (element) => {
   switch (element.type) {
-    case 'image':
-    case 'video':
-      return 'block'
-    case 'mention':
-      return 'markable-inline'
-    case 'editable-void':
-      return 'editable-island'
+    case "image":
+    case "video":
+      return "block";
+    case "mention":
+      return "markable-inline";
+    case "editable-void":
+      return "editable-island";
     default:
-      return null
+      return null;
   }
-}
+};
 ```
 
 Default behavior:
@@ -309,23 +309,23 @@ Acceptance:
 
 Likely Slate v2 files:
 
-- `../slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
-- `../slate-v2/packages/slate-react/src/components/void-element.tsx`
-- `../slate-v2/packages/slate-react/src/components/inline-void-element.tsx`
-- `../slate-v2/packages/slate-react/src/components/slate-element.tsx`
-- `../slate-v2/packages/slate-react/src/components/slate-spacer.tsx`
-- `../slate-v2/packages/slate-react/src/index.ts`
-- `../slate-v2/packages/slate-react/test/surface-contract.tsx`
-- `../slate-v2/packages/slate-react/test/rendered-dom-shape-contract.tsx`
-- `../slate-v2/packages/slate-react/test/primitives-contract.tsx`
-- `../slate-v2/playwright/stress/generated-editing.test.ts`
-- `../slate-v2/packages/slate-browser/src/**`
-- `../slate-v2/site/examples/ts/images.tsx`
-- `../slate-v2/site/examples/ts/embeds.tsx`
-- `../slate-v2/site/examples/ts/mentions.tsx`
-- `../slate-v2/site/examples/ts/editable-voids.tsx`
-- `../slate-v2/site/examples/ts/paste-html.tsx`
-- `../slate-v2/site/examples/ts/large-document-runtime.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/components/void-element.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/components/inline-void-element.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/components/slate-element.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/components/slate-spacer.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/index.ts`
+- `.tmp/slate-v2/packages/slate-react/test/surface-contract.tsx`
+- `.tmp/slate-v2/packages/slate-react/test/rendered-dom-shape-contract.tsx`
+- `.tmp/slate-v2/packages/slate-react/test/primitives-contract.tsx`
+- `.tmp/slate-v2/playwright/stress/generated-editing.test.ts`
+- `.tmp/slate-v2/packages/slate-browser/src/**`
+- `.tmp/slate-v2/site/examples/ts/images.tsx`
+- `.tmp/slate-v2/site/examples/ts/embeds.tsx`
+- `.tmp/slate-v2/site/examples/ts/mentions.tsx`
+- `.tmp/slate-v2/site/examples/ts/editable-voids.tsx`
+- `.tmp/slate-v2/site/examples/ts/paste-html.tsx`
+- `.tmp/slate-v2/site/examples/ts/large-document-runtime.tsx`
 
 ## Static Guards
 
@@ -443,23 +443,23 @@ Evidence:
 
 Changed files:
 
-- `../slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
-- `../slate-v2/packages/slate-react/src/components/slate-void-shell.tsx`
-- `../slate-v2/packages/slate-react/src/components/void-element.tsx`
-- `../slate-v2/packages/slate-react/src/components/inline-void-element.tsx`
-- `../slate-v2/packages/slate-react/src/context.tsx`
-- `../slate-v2/packages/slate-react/src/index.ts`
-- `../slate-v2/packages/slate-react/test/surface-contract.tsx`
-- `../slate-v2/packages/slate-react/test/primitives-contract.tsx`
-- `../slate-v2/packages/slate-react/test/render-profiler-contract.test.tsx`
-- `../slate-v2/packages/slate-react/test/rendered-dom-shape-contract.test.tsx`
-- `../slate-v2/site/examples/ts/custom-types.d.ts`
-- `../slate-v2/site/examples/ts/images.tsx`
-- `../slate-v2/site/examples/ts/embeds.tsx`
-- `../slate-v2/site/examples/ts/mentions.tsx`
-- `../slate-v2/site/examples/ts/paste-html.tsx`
-- `../slate-v2/site/examples/ts/editable-voids.tsx`
-- `../slate-v2/site/examples/ts/large-document-runtime.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/components/slate-void-shell.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/components/void-element.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/components/inline-void-element.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/context.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/index.ts`
+- `.tmp/slate-v2/packages/slate-react/test/surface-contract.tsx`
+- `.tmp/slate-v2/packages/slate-react/test/primitives-contract.tsx`
+- `.tmp/slate-v2/packages/slate-react/test/render-profiler-contract.test.tsx`
+- `.tmp/slate-v2/packages/slate-react/test/rendered-dom-shape-contract.test.tsx`
+- `.tmp/slate-v2/site/examples/ts/custom-types.d.ts`
+- `.tmp/slate-v2/site/examples/ts/images.tsx`
+- `.tmp/slate-v2/site/examples/ts/embeds.tsx`
+- `.tmp/slate-v2/site/examples/ts/mentions.tsx`
+- `.tmp/slate-v2/site/examples/ts/paste-html.tsx`
+- `.tmp/slate-v2/site/examples/ts/editable-voids.tsx`
+- `.tmp/slate-v2/site/examples/ts/large-document-runtime.tsx`
 
 Decision:
 
@@ -524,18 +524,18 @@ Evidence:
 
 Changed files:
 
-- `../slate-v2/packages/slate-react/src/components/slate-void-shell.tsx`
-- `../slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
-- `../slate-v2/packages/slate-react/src/editable/input-controller.ts`
-- `../slate-v2/packages/slate-react/src/editable/runtime-focus-mouse-events.ts`
-- `../slate-v2/packages/slate-react/src/editable/runtime-event-engine.ts`
-- `../slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`
-- `../slate-v2/packages/slate-browser/src/playwright/index.ts`
-- `../slate-v2/playwright/stress/generated-editing.test.ts`
-- `../slate-v2/playwright/stress/replay.test.ts`
-- `../slate-v2/playwright/stress/stress-utils.ts`
-- `../slate-v2/playwright/integration/examples/embeds.test.ts`
-- `../slate-v2/site/examples/ts/large-document-runtime.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/components/slate-void-shell.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/editable/input-controller.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-focus-mouse-events.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-event-engine.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`
+- `.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts`
+- `.tmp/slate-v2/playwright/stress/generated-editing.test.ts`
+- `.tmp/slate-v2/playwright/stress/replay.test.ts`
+- `.tmp/slate-v2/playwright/stress/stress-utils.ts`
+- `.tmp/slate-v2/playwright/integration/examples/embeds.test.ts`
+- `.tmp/slate-v2/site/examples/ts/large-document-runtime.tsx`
 - `.tmp/<session-id>/completion-check.md`
 - `docs/plans/2026-04-28-slate-v2-runtime-owned-void-shell-render-api-plan.md`
 

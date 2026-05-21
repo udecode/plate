@@ -118,8 +118,8 @@ blocker. These waves now belong to the stronger post-closeout perf claim.
 Perf truth note:
 
 - benchmark command names referenced later in this roadmap are still target
-  owners unless they exist in `../slate-v2/package.json` and
-  `../slate-v2/scripts/benchmarks/**`
+  owners unless they exist in `.tmp/slate-v2/package.json` and
+  `.tmp/slate-v2/scripts/benchmarks/**`
 - do not read those names as current proof ownership
 - current repo truth now has the kept overlay/example benchmark owners for
   tranche-5 / tranche-6 closure:
@@ -209,7 +209,7 @@ They may **not** share ownership semantics.
 9. Overlapping payloads must remain representable. No flatten-to-one-winner leaf
    hack.
 10. Comments / cursors / review threads do not get forced through decoration-only
-   semantics.
+    semantics.
 11. Any RC claim must be backed by benchmark and browser proof on the final
     lanes, not just local contract tests.
 12. There is no public bookmark registry unless a real external use case proves
@@ -544,13 +544,13 @@ type OverlayKernel = {
 type DecorationSourceAdapter =
   | {
       id: string;
-      kind: 'derived';
+      kind: "derived";
       derive(snapshot: EditorSnapshot): readonly Decoration[];
       invalidate?: DecorationInvalidationPolicy;
     }
   | {
       id: string;
-      kind: 'external';
+      kind: "external";
       getSnapshot(): readonly Decoration[];
       subscribe(listener: () => void): () => void;
     };
@@ -558,8 +558,8 @@ type DecorationSourceAdapter =
 type DecorationRefresh = {
   sourceId: string;
   generation: number;
-  scope: 'all' | 'paths' | 'runtimeIds' | 'selection';
-  mode?: 'sync' | 'deferred';
+  scope: "all" | "paths" | "runtimeIds" | "selection";
+  mode?: "sync" | "deferred";
   paths?: Path[];
   runtimeIds?: RuntimeId[];
 };
@@ -571,7 +571,7 @@ type Annotation = {
   data?: unknown;
 };
 
-type AnnotationAnchor = { type: 'bookmark'; bookmark: Bookmark };
+type AnnotationAnchor = { type: "bookmark"; bookmark: Bookmark };
 
 type AnnotationStoreSnapshot = {
   byId: ReadonlyMap<string, Annotation>;
@@ -584,15 +584,15 @@ type AnnotationStoreAdapter = {
 };
 
 type WidgetAnchor =
-  | { type: 'annotation'; annotationId: string }
-  | { type: 'node'; runtimeId: RuntimeId }
-  | { type: 'selection' };
+  | { type: "annotation"; annotationId: string }
+  | { type: "node"; runtimeId: RuntimeId }
+  | { type: "selection" };
 
 type WidgetPlacement = {
   widgetId: string;
   anchor: WidgetAnchor;
   rects: readonly DOMRect[];
-  strategy: 'inline' | 'floating' | 'block';
+  strategy: "inline" | "floating" | "block";
 };
 ```
 
@@ -782,7 +782,7 @@ Do not do giant blind rewrites and “see what breaks”.
 The site example program is part of the architecture, not demo fluff.
 
 Every lane below should end with one example that is canonical for the final
- public story:
+public story:
 
 ### Canonical examples
 
@@ -1173,7 +1173,7 @@ Exit:
   - inline overlay state
   - floating widget UI
   - sidebar/panel state
-  from one canonical store with no duplicated registration state
+    from one canonical store with no duplicated registration state
 - completed as a proof-and-example hardening wave, not a first implementation wave
 
 ## Wave 5. DOM bridge and clipboard hardening

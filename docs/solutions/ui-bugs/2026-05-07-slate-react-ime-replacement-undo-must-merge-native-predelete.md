@@ -44,7 +44,7 @@ selection deleted the selected model text at `compositionstart`, then the Chrome
 Track only the trusted native replacement path:
 
 ```ts
-const EDITOR_TO_COMPOSITION_PREDELETE = new WeakSet<Editor>()
+const EDITOR_TO_COMPOSITION_PREDELETE = new WeakSet<Editor>();
 ```
 
 When `compositionstart` sees an expanded selection on a trusted native event,
@@ -55,14 +55,14 @@ insert with history merge metadata:
 ```ts
 editor.update(
   (tx) => {
-    tx.text.insert(text)
+    tx.text.insert(text);
   },
-  { metadata: { history: { mode: 'merge' } } }
-)
+  { metadata: { history: { mode: "merge" } } },
+);
 ```
 
 The regression row lives in
-`../slate-v2/playwright/integration/examples/rendering-strategy-runtime.test.ts`
+`.tmp/slate-v2/playwright/integration/examples/rendering-strategy-runtime.test.ts`
 as `restores expanded selection after undoing IME replacement`. It uses
 Chromium CDP IME composition over a backward DOM selection and asserts text plus
 selection after undo.

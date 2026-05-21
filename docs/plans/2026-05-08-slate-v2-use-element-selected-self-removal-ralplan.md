@@ -37,9 +37,9 @@ failure class is proved.
 
 In scope:
 
-- `../slate-v2/packages/slate-react/src/hooks/use-element-selected.ts`
-- `../slate-v2/packages/slate-react/test/use-element-selected.test.tsx`
-- `../slate-v2/packages/slate-react/test/surface-contract.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/hooks/use-element-selected.ts`
+- `.tmp/slate-v2/packages/slate-react/test/use-element-selected.test.tsx`
+- `.tmp/slate-v2/packages/slate-react/test/surface-contract.tsx`
 - issue ledger accounting for `#6053`
 - related stale path and React selector issue classification
 
@@ -53,7 +53,7 @@ Non-goals:
 
 Decision boundaries: this plan may choose test placement, issue classification,
 and the narrow hook guard shape. It may not change public React hook names or
-claim upstream issue closure without passing `../slate-v2` verification.
+claim upstream issue closure without passing `.tmp/slate-v2` verification.
 
 Unresolved user-decision points: none. This is a narrow correctness/proof lane,
 not a product/API policy fork.
@@ -79,12 +79,12 @@ Top drivers:
 
 Viable options:
 
-| Option | Pros | Cons | Verdict |
-| --- | --- | --- | --- |
-| Add focused self-removal test first; patch only if red | Honest, cheap, preserves current architecture if enough | Needs careful test harness to keep the stale selector path alive | chosen |
-| Add try/catch around `Editor.range` immediately | Mirrors issue author's local workaround | Hides root-cause boundaries and can mask unrelated tree bugs | rejected |
-| Rebuild hook around element refs only | Could avoid stale path reads | Overkill for a top-level hook issue and risks wider React churn | rejected |
-| Treat as already fixed from `Editor.hasPath` guard | Fast | Missing exact lifecycle proof; not maintainable | rejected |
+| Option                                                 | Pros                                                    | Cons                                                             | Verdict  |
+| ------------------------------------------------------ | ------------------------------------------------------- | ---------------------------------------------------------------- | -------- |
+| Add focused self-removal test first; patch only if red | Honest, cheap, preserves current architecture if enough | Needs careful test harness to keep the stale selector path alive | chosen   |
+| Add try/catch around `Editor.range` immediately        | Mirrors issue author's local workaround                 | Hides root-cause boundaries and can mask unrelated tree bugs     | rejected |
+| Rebuild hook around element refs only                  | Could avoid stale path reads                            | Overkill for a top-level hook issue and risks wider React churn  | rejected |
+| Treat as already fixed from `Editor.hasPath` guard     | Fast                                                    | Missing exact lifecycle proof; not maintainable                  | rejected |
 
 Chosen option: test the self-removal lifecycle first. If current code passes,
 the implementation lane is test plus ledger upgrade consideration. If it fails,
@@ -110,7 +110,7 @@ The `ralph` slice is accepted only when all of these are true:
   lifecycle. Promote to Playwright only if the package test cannot model the
   lifecycle because the failure depends on browser DOM selection scheduling.
 - `Fixes #6053` is allowed only after the exact self-removal test passes in
-  `../slate-v2`; otherwise the claim stays `Improves #6053`.
+  `.tmp/slate-v2`; otherwise the claim stays `Improves #6053`.
 
 Rejected boundaries:
 
@@ -137,50 +137,50 @@ Issue evidence:
 
 Live code evidence:
 
-- `../slate-v2/packages/slate-react/src/hooks/use-element-selected.ts:17` builds
+- `.tmp/slate-v2/packages/slate-react/src/hooks/use-element-selected.ts:17` builds
   the selector.
-- `../slate-v2/packages/slate-react/src/hooks/use-element-selected.ts:19`
+- `.tmp/slate-v2/packages/slate-react/src/hooks/use-element-selected.ts:19`
   reads runtime selection.
-- `../slate-v2/packages/slate-react/src/hooks/use-element-selected.ts:22`
+- `.tmp/slate-v2/packages/slate-react/src/hooks/use-element-selected.ts:22`
   resolves `path ?? contextPath ?? ReactEditor.findPath(...)`.
-- `../slate-v2/packages/slate-react/src/hooks/use-element-selected.ts:27`
+- `.tmp/slate-v2/packages/slate-react/src/hooks/use-element-selected.ts:27`
   returns false when `Editor.hasPath(editor, selectedPath)` fails.
-- `../slate-v2/packages/slate-react/src/hooks/use-element-selected.ts:29`
+- `.tmp/slate-v2/packages/slate-react/src/hooks/use-element-selected.ts:29`
   only calls `Editor.range` after that guard.
 
 Existing test evidence:
 
-- `../slate-v2/packages/slate-react/test/use-element-selected.test.tsx:108`
+- `.tmp/slate-v2/packages/slate-react/test/use-element-selected.test.tsx:108`
   proves `useElementSelected` remains true when a selected element path shifts
   after an insertion.
-- `../slate-v2/packages/slate-react/test/surface-contract.tsx:408` repeats the
+- `.tmp/slate-v2/packages/slate-react/test/surface-contract.tsx:408` repeats the
   path-shift contract at the public surface level.
 - No current test found for `useElementSelected` when the selected or watched
   element removes itself and the stale path no longer exists.
 
 Live source refresh, pass 5:
 
-- `../slate-v2/packages/slate-react/src/hooks/use-element-selected.ts:22-30`
+- `.tmp/slate-v2/packages/slate-react/src/hooks/use-element-selected.ts:22-30`
   resolves `path ?? contextPath ?? ReactEditor.findPath(...)`, returns `false`
   for a missing selected path, and calls `Editor.range` only after
   `Editor.hasPath`.
-- `../slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:810-819`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:810-819`
   wraps custom rendered elements in runtime id, path, and element providers.
   That makes the stale-self-removal lifecycle a React provider/selector test,
   not a DOM bridge test by default.
-- `../slate-v2/packages/slate-react/src/hooks/use-editor-selector.tsx:130-138`
+- `.tmp/slate-v2/packages/slate-react/src/hooks/use-editor-selector.tsx:130-138`
   subscribes in a layout effect, runs an immediate update, and returns the
-  unsubscribe. `../slate-v2/packages/slate-react/src/hooks/use-editor-selector.tsx:195-252`
+  unsubscribe. `.tmp/slate-v2/packages/slate-react/src/hooks/use-editor-selector.tsx:195-252`
   defers selected element updates through a microtask fanout, while
-  `../slate-v2/packages/slate-react/src/hooks/use-editor-selector.tsx:311-323`
+  `.tmp/slate-v2/packages/slate-react/src/hooks/use-editor-selector.tsx:311-323`
   removes runtime-id listeners on unmount.
-- `../slate-v2/packages/slate-react/src/hooks/use-generic-selector.tsx:60-81`
+- `.tmp/slate-v2/packages/slate-react/src/hooks/use-generic-selector.tsx:60-81`
   records subscription callback errors and forces a re-render, so a stale
   selector crash should surface in a package-level React test.
-- `../slate-v2/packages/slate-react/test/use-element-selected.test.tsx:67-127`
+- `.tmp/slate-v2/packages/slate-react/test/use-element-selected.test.tsx:67-127`
   already covers selected true/false transitions and selected path shifts.
   It is the right home for the missing self-removal regression test.
-- `../slate-v2/packages/slate-react/test/surface-contract.tsx:408-489` keeps the
+- `.tmp/slate-v2/packages/slate-react/test/surface-contract.tsx:408-489` keeps the
   public path-shift contract. Do not duplicate the self-removal case there
   unless the narrow hook test exposes a public-surface contract gap.
 
@@ -198,16 +198,16 @@ Pass status: complete; issue-ledger sync was confirmed in pass 11.
 
 Selected issue:
 
-| Issue | Status | Bucket | Confidence | Decision |
-| --- | --- | --- | --- | --- |
-| `#6053` | fixes-claimed | `v2-react-runtime` | high | Exact selected self-removal and explicit stale watched-path proof now exists in `../slate-v2/packages/slate-react/test/use-element-selected.test.tsx`. |
+| Issue   | Status        | Bucket             | Confidence | Decision                                                                                                                                                 |
+| ------- | ------------- | ------------------ | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `#6053` | fixes-claimed | `v2-react-runtime` | high       | Exact selected self-removal and explicit stale watched-path proof now exists in `.tmp/slate-v2/packages/slate-react/test/use-element-selected.test.tsx`. |
 
 Adjacent candidates intentionally not selected:
 
-| Issue | Reason |
-| --- | --- |
-| `#6051` | Already routed by the Mobile/IME macro; exact closure needs Android Firefox plus Samsung Keyboard proof. |
-| `#4268` | Clipboard/paste issue. Valid future candidate, but broader paste architecture already has plans and this lane has a cheaper exact test gap. |
+| Issue   | Reason                                                                                                                                          |
+| ------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `#6051` | Already routed by the Mobile/IME macro; exact closure needs Android Firefox plus Samsung Keyboard proof.                                        |
+| `#4268` | Clipboard/paste issue. Valid future candidate, but broader paste architecture already has plans and this lane has a cheaper exact test gap.     |
 | `#4466` | Chinese word movement issue. Valid future candidate, but likely browser/platform word-boundary proof, not the next cheap React-runtime closure. |
 
 Related neighbor groups from gitcrawl:
@@ -223,30 +223,30 @@ self-removal hook lane.
 
 Classification split:
 
-| Issue | Lane decision | Bucket | Reason |
-| --- | --- | --- | --- |
-| `#6053` | current lane, improves only | `v2-react-runtime` | Exact repro is hook self-removal after selected state changes. |
-| `#5938` | related | `v2-react-runtime` | Same stale path/fresh render-map pressure around `findPath`, but the repro is `onChange` path lookup after document manipulation, not hook self-removal. |
-| `#5131` | not claimed | `v2-react-runtime` | Broad `useSlate` rerender behavior stays broad by contract; this lane is a narrow selected-element hook. |
-| `#4680` | related / already triaged | `v2-react-runtime` | Editor identity pressure is owned by the provider-replacement lane, with `#5709` as the exact fixed claim. |
-| `#5181` | related | `v2-react-runtime` | Stale editor/onChange callback pressure, but not selected-element path invalidation. |
-| `#5709` | already fixed elsewhere | `v2-react-runtime` | Provider hook consumers receiving a replacement editor is already the exact React identity claim. |
-| `#3858` | related | `v2-core-engine` / `v2-react-runtime` | Stale descendant path after external value reset; broader controlled-value/state reset pressure, not self-removal hook proof. |
-| `#5771` | related | `v2-core-engine` | Collaboration selection/anchor operation pressure; remote structural churn can invalidate paths but exact repro is collaboration QPS. |
-| `#4984` | fixed elsewhere | `v2-dom-selection` | Nested-editor DOM point crossing has exact browser proof in the DOM selection lane. |
-| `#4643` | related | `v2-dom-selection` | Invalid selection fail-closed pressure; no hook self-removal repro. |
-| `#4842` | related | `v2-dom-selection` | Nested-editor offset pressure; represented by bridge policy. |
-| `#4323` | related | `v2-dom-selection` / `v2-input-runtime` | DOM point import failure after external value/state changes; not a `useElementSelected` closure. |
-| `#1769` | related | `v2-dom-selection` | Non-editable block focus ownership, not hook self-removal. |
-| `#3585` | related | `v2-dom-selection` | Click selection timing race; no selected-element stale path proof. |
-| `#3412` | related | `v2-dom-selection` | Focus-out selection retention policy; not this hook issue. |
-| `#3921` | related / improves elsewhere | `v2-core-engine` | History/refocus selection state has model-level proof elsewhere. |
-| `#4317` | related | `v2-react-runtime` | Selection event churn from render callback identity; not selected-element stale path. |
-| `#4031` | related, false neighbor for this lane | `v2-input-runtime` | Empty-editor Japanese IME/placeholder crash is Mobile/IME runtime. |
-| `#5034` | related, false neighbor for this lane | `v2-input-runtime` | Android readOnly selection loss is Mobile/IME/runtime policy. |
-| `#4111` | triage-closed | `skip-stale` | IE11/polyfill support is stale unless reproduced on supported targets. |
-| `#5402` | not claimed | `skip-maintainer-noise` | Unused variable cleanup does not affect the hook issue. |
-| `#5075` | not claimed | `v2-api-dx` | TypeScript formatting-key ergonomics are unrelated to selection hook path invalidation. |
+| Issue   | Lane decision                         | Bucket                                  | Reason                                                                                                                                                   |
+| ------- | ------------------------------------- | --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `#6053` | current lane, improves only           | `v2-react-runtime`                      | Exact repro is hook self-removal after selected state changes.                                                                                           |
+| `#5938` | related                               | `v2-react-runtime`                      | Same stale path/fresh render-map pressure around `findPath`, but the repro is `onChange` path lookup after document manipulation, not hook self-removal. |
+| `#5131` | not claimed                           | `v2-react-runtime`                      | Broad `useSlate` rerender behavior stays broad by contract; this lane is a narrow selected-element hook.                                                 |
+| `#4680` | related / already triaged             | `v2-react-runtime`                      | Editor identity pressure is owned by the provider-replacement lane, with `#5709` as the exact fixed claim.                                               |
+| `#5181` | related                               | `v2-react-runtime`                      | Stale editor/onChange callback pressure, but not selected-element path invalidation.                                                                     |
+| `#5709` | already fixed elsewhere               | `v2-react-runtime`                      | Provider hook consumers receiving a replacement editor is already the exact React identity claim.                                                        |
+| `#3858` | related                               | `v2-core-engine` / `v2-react-runtime`   | Stale descendant path after external value reset; broader controlled-value/state reset pressure, not self-removal hook proof.                            |
+| `#5771` | related                               | `v2-core-engine`                        | Collaboration selection/anchor operation pressure; remote structural churn can invalidate paths but exact repro is collaboration QPS.                    |
+| `#4984` | fixed elsewhere                       | `v2-dom-selection`                      | Nested-editor DOM point crossing has exact browser proof in the DOM selection lane.                                                                      |
+| `#4643` | related                               | `v2-dom-selection`                      | Invalid selection fail-closed pressure; no hook self-removal repro.                                                                                      |
+| `#4842` | related                               | `v2-dom-selection`                      | Nested-editor offset pressure; represented by bridge policy.                                                                                             |
+| `#4323` | related                               | `v2-dom-selection` / `v2-input-runtime` | DOM point import failure after external value/state changes; not a `useElementSelected` closure.                                                         |
+| `#1769` | related                               | `v2-dom-selection`                      | Non-editable block focus ownership, not hook self-removal.                                                                                               |
+| `#3585` | related                               | `v2-dom-selection`                      | Click selection timing race; no selected-element stale path proof.                                                                                       |
+| `#3412` | related                               | `v2-dom-selection`                      | Focus-out selection retention policy; not this hook issue.                                                                                               |
+| `#3921` | related / improves elsewhere          | `v2-core-engine`                        | History/refocus selection state has model-level proof elsewhere.                                                                                         |
+| `#4317` | related                               | `v2-react-runtime`                      | Selection event churn from render callback identity; not selected-element stale path.                                                                    |
+| `#4031` | related, false neighbor for this lane | `v2-input-runtime`                      | Empty-editor Japanese IME/placeholder crash is Mobile/IME runtime.                                                                                       |
+| `#5034` | related, false neighbor for this lane | `v2-input-runtime`                      | Android readOnly selection loss is Mobile/IME/runtime policy.                                                                                            |
+| `#4111` | triage-closed                         | `skip-stale`                            | IE11/polyfill support is stale unless reproduced on supported targets.                                                                                   |
+| `#5402` | not claimed                           | `skip-maintainer-noise`                 | Unused variable cleanup does not affect the hook issue.                                                                                                  |
+| `#5075` | not claimed                           | `v2-api-dx`                             | TypeScript formatting-key ergonomics are unrelated to selection hook path invalidation.                                                                  |
 
 Issue-ledger pass result: complete for the `#6053` neighbor set. Missing
 explicit matrix rows were added for stale path, React identity, DOM/focus,
@@ -270,14 +270,14 @@ Fixed issue claim introduced: `Fixes #6053`.
 
 ## Confidence Scorecard
 
-| Dimension | Weight | Score | Evidence |
-| --- | ---: | ---: | --- |
-| React 19.2 runtime performance | 0.20 | 0.88 | Current hook uses scoped `shouldUpdate`, deferred selector fanout, and runtime-id unsubscription; maintainer and high-risk passes reject broad invalidation. |
-| Slate-close unopinionated DX | 0.20 | 0.91 | `useElementSelected(path?: Path)` remains a boolean hook with no app-visible error policy or product props; renderer authors should not need try/catch. |
-| Plate and slate-yjs migration backbone | 0.15 | 0.86 | Plate can wrap the raw hook; explicit stale-path behavior represents local and remote deletion without adding Plate or yjs fixtures to raw Slate. |
-| Regression-proof testing strategy | 0.20 | 0.91 | Proof is split into implicit self-removal and explicit stale-path contracts, with expanded high-risk proof gates and issue-claim controls. |
-| Research evidence completeness | 0.15 | 0.93 | gitcrawl, live source, selector/provider tests, architecture-contract evidence, and maintainer objections are current; external editor research is intentionally skipped. |
-| shadcn-style composability and hook minimalism | 0.10 | 0.91 | Small hook contract stays composable, renderer-local, and free of policy props. |
+| Dimension                                      | Weight | Score | Evidence                                                                                                                                                                  |
+| ---------------------------------------------- | -----: | ----: | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| React 19.2 runtime performance                 |   0.20 |  0.88 | Current hook uses scoped `shouldUpdate`, deferred selector fanout, and runtime-id unsubscription; maintainer and high-risk passes reject broad invalidation.              |
+| Slate-close unopinionated DX                   |   0.20 |  0.91 | `useElementSelected(path?: Path)` remains a boolean hook with no app-visible error policy or product props; renderer authors should not need try/catch.                   |
+| Plate and slate-yjs migration backbone         |   0.15 |  0.86 | Plate can wrap the raw hook; explicit stale-path behavior represents local and remote deletion without adding Plate or yjs fixtures to raw Slate.                         |
+| Regression-proof testing strategy              |   0.20 |  0.91 | Proof is split into implicit self-removal and explicit stale-path contracts, with expanded high-risk proof gates and issue-claim controls.                                |
+| Research evidence completeness                 |   0.15 |  0.93 | gitcrawl, live source, selector/provider tests, architecture-contract evidence, and maintainer objections are current; external editor research is intentionally skipped. |
+| shadcn-style composability and hook minimalism |   0.10 |  0.91 | Small hook contract stays composable, renderer-local, and free of policy props.                                                                                           |
 
 Total: `0.92`.
 
@@ -312,7 +312,7 @@ Target behavior:
 Renderer authors should be able to use:
 
 ```tsx
-const selected = useElementSelected()
+const selected = useElementSelected();
 ```
 
 inside an element renderer without defensive try/catch. If their element is
@@ -376,30 +376,30 @@ React skill notes:
 
 ## Regression Proof Matrix
 
-| Proof | Owner | Required before done |
-| --- | --- | --- |
-| Unit: selected path shifts after insertion | already present | yes, keep green |
-| Unit: watched element removes itself while hook is subscribed | missing | yes |
-| Unit: explicit stale watched path returns false before `Editor.range` | missing | yes |
-| Surface: public renderElement hook usage stays stable | partial | yes if exact unit is not enough |
-| Typecheck: public hook signature unchanged | slate-react | yes |
+| Proof                                                                 | Owner           | Required before done            |
+| --------------------------------------------------------------------- | --------------- | ------------------------------- |
+| Unit: selected path shifts after insertion                            | already present | yes, keep green                 |
+| Unit: watched element removes itself while hook is subscribed         | missing         | yes                             |
+| Unit: explicit stale watched path returns false before `Editor.range` | missing         | yes                             |
+| Surface: public renderElement hook usage stays stable                 | partial         | yes if exact unit is not enough |
+| Typecheck: public hook signature unchanged                            | slate-react     | yes                             |
 
 ## Browser Stress Strategy
 
 This is primarily a React package unit lane. Browser proof is optional unless
 the focused test needs real DOM selection scheduling to reproduce the stale
 path. If package tests cannot model the failure, promote to a focused
-Playwright row in `../slate-v2`.
+Playwright row in `.tmp/slate-v2`.
 
 ## Implementation-Skill Review Matrix
 
-| Skill | Status | Reason |
-| --- | --- | --- |
-| Vercel React | applied | Keep selector updates scoped; broad editor-wide invalidation is rejected. |
-| performance-oracle | skipped for now | No hot-path rewrite yet; revisit if selector policy changes. |
-| tdd | applied | Implementation used vertical proof-first tests, not a bulk imagined matrix. |
-| shadcn | skipped | No component API or styling surface. |
-| react-useeffect | applied | The repro can use an app-owned effect, but the hook itself must remain a pure selector. |
+| Skill              | Status          | Reason                                                                                  |
+| ------------------ | --------------- | --------------------------------------------------------------------------------------- |
+| Vercel React       | applied         | Keep selector updates scoped; broad editor-wide invalidation is rejected.               |
+| performance-oracle | skipped for now | No hot-path rewrite yet; revisit if selector policy changes.                            |
+| tdd                | applied         | Implementation used vertical proof-first tests, not a bulk imagined matrix.             |
+| shadcn             | skipped         | No component API or styling surface.                                                    |
+| react-useeffect    | applied         | The repro can use an app-owned effect, but the hook itself must remain a pure selector. |
 
 ## High-Risk Premortem
 
@@ -412,33 +412,33 @@ renderer authors and could hide real tree corruption.
 
 Blast radius:
 
-| Area | Scope |
-| --- | --- |
-| Packages/files | `../slate-v2/packages/slate-react/src/hooks/use-element-selected.ts`, `../slate-v2/packages/slate-react/test/use-element-selected.test.tsx`, optional `surface-contract.tsx` only if the narrow test exposes a public-surface gap |
-| Users/consumers | renderer authors using `useElementSelected()` or `useElementSelected(path)`; Plate wrappers; downstream selection UI |
-| Behavior affected | stale watched paths, self-removal during selected render lifecycle, selector fanout, invalid path handling before `Editor.range` |
-| Docs/examples/tests | issue coverage matrix, fork dossier, PR reference only if the claim upgrades; hook tests are required |
-| Release/claim risk | `Improves #6053` may become `Fixes #6053` only after exact proof and focused `../slate-v2` verification |
+| Area                | Scope                                                                                                                                                                                                                                 |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Packages/files      | `.tmp/slate-v2/packages/slate-react/src/hooks/use-element-selected.ts`, `.tmp/slate-v2/packages/slate-react/test/use-element-selected.test.tsx`, optional `surface-contract.tsx` only if the narrow test exposes a public-surface gap |
+| Users/consumers     | renderer authors using `useElementSelected()` or `useElementSelected(path)`; Plate wrappers; downstream selection UI                                                                                                                  |
+| Behavior affected   | stale watched paths, self-removal during selected render lifecycle, selector fanout, invalid path handling before `Editor.range`                                                                                                      |
+| Docs/examples/tests | issue coverage matrix, fork dossier, PR reference only if the claim upgrades; hook tests are required                                                                                                                                 |
+| Release/claim risk  | `Improves #6053` may become `Fixes #6053` only after exact proof and focused `.tmp/slate-v2` verification                                                                                                                             |
 
 Three-scenario pre-mortem:
 
-| Scenario | Failure mode | Consequence | Guardrail |
-| --- | --- | --- | --- |
-| Test passes for the wrong reason | Self-removal test only proves unmount cleanup, not stale selector path behavior | `Fixes #6053` gets overclaimed | Test must observe no descendant-path throw while selected state causes removal; explicit stale `path` test stays separate |
-| Dirty fix hides invariants | Broad `try/catch` around `Editor.range` swallows real tree corruption | Broken paths become silent false negatives | Catch is forbidden unless an exact red test proves `Editor.hasPath` cannot cover the failure |
-| Performance regresses | Fix wakes every mounted element on structural edits | Large-doc locality regresses | Keep runtime-id scoped selector fanout; path-shift test must stay green; no global invalidation |
+| Scenario                         | Failure mode                                                                    | Consequence                                | Guardrail                                                                                                                 |
+| -------------------------------- | ------------------------------------------------------------------------------- | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------- |
+| Test passes for the wrong reason | Self-removal test only proves unmount cleanup, not stale selector path behavior | `Fixes #6053` gets overclaimed             | Test must observe no descendant-path throw while selected state causes removal; explicit stale `path` test stays separate |
+| Dirty fix hides invariants       | Broad `try/catch` around `Editor.range` swallows real tree corruption           | Broken paths become silent false negatives | Catch is forbidden unless an exact red test proves `Editor.hasPath` cannot cover the failure                              |
+| Performance regresses            | Fix wakes every mounted element on structural edits                             | Large-doc locality regresses               | Keep runtime-id scoped selector fanout; path-shift test must stay green; no global invalidation                           |
 
 Expanded proof plan:
 
-| Proof lane | Required proof |
-| --- | --- |
-| Unit | `useElementSelected()` self-removal test in `use-element-selected.test.tsx`; explicit `useElementSelected(path)` removed-path test; existing path-shift test remains green |
-| Integration/surface | `surface-contract.tsx -t "useElementSelected"` only if the narrow hook test exposes a public-surface gap; otherwise keep surface proof to existing path-shift coverage |
-| Browser | Not required by default. Promote to a focused Playwright row only if package tests cannot model the stale hook lifecycle |
-| Migration/adoption | No Plate or slate-yjs adapter work. Plate wrappers remain thin; remote deletion pressure is represented by explicit stale-path false behavior |
-| Docs/example | No user docs change unless the public hook contract needs explicit stale-path docs after implementation |
-| Performance | No benchmark required unless implementation changes selector fanout or adds broad invalidation |
-| Claim/release | `Fixes #6053` is allowed after exact tests plus focused Slate v2 commands pass |
+| Proof lane          | Required proof                                                                                                                                                             |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Unit                | `useElementSelected()` self-removal test in `use-element-selected.test.tsx`; explicit `useElementSelected(path)` removed-path test; existing path-shift test remains green |
+| Integration/surface | `surface-contract.tsx -t "useElementSelected"` only if the narrow hook test exposes a public-surface gap; otherwise keep surface proof to existing path-shift coverage     |
+| Browser             | Not required by default. Promote to a focused Playwright row only if package tests cannot model the stale hook lifecycle                                                   |
+| Migration/adoption  | No Plate or slate-yjs adapter work. Plate wrappers remain thin; remote deletion pressure is represented by explicit stale-path false behavior                              |
+| Docs/example        | No user docs change unless the public hook contract needs explicit stale-path docs after implementation                                                                    |
+| Performance         | No benchmark required unless implementation changes selector fanout or adds broad invalidation                                                                             |
+| Claim/release       | `Fixes #6053` is allowed after exact tests plus focused Slate v2 commands pass                                                                                             |
 
 Rollback/remediation answer:
 
@@ -468,7 +468,7 @@ Mitigation:
 
 - write the self-removal test before patching;
 - assert no console/error throw if the test harness can observe it;
-- keep exact issue claim gated by the focused test and `../slate-v2` commands;
+- keep exact issue claim gated by the focused test and `.tmp/slate-v2` commands;
 - preserve existing path-shift tests.
 
 Ecosystem maintainer pass decision: skipped. No Lexical, ProseMirror, Tiptap, or
@@ -481,15 +481,15 @@ proof.
 
 Pass status: complete.
 
-| Decision | Strongest fair objection | Steelman antithesis | Tradeoff tension | Chosen answer | Proof required | Verdict |
-| --- | --- | --- | --- | --- | --- | --- |
-| Support app-owned self-removal without throwing | "If app code removes the element from inside its own selected render lifecycle, that is app misuse. Slate should not normalize every weird app effect." | A strict editor could say renderers must be pure and external mutation belongs in commands, not effects. | Supporting this pattern makes the hook responsible for disappearing nodes during a live subscription. | Keep the hook fail-closed because a public boolean selection hook should not become an exception boundary when the watched node disappears. The hook stays pure; only the test uses an app-owned effect to model the report. | Package test where `useElementSelected()` observes selected state and app code removes that same element, with no descendant-path throw. | keep |
-| Avoid broad `try/catch` around `Editor.range` | "The issue author says try/catch fixes it. Why not use the smallest patch?" | Try/catch is locally cheap and robust against unexpected stale paths. | Guard-only code must prove every relevant stale path is checked before range reads. | Keep guard-first policy. Broad catch hides broken tree invariants and can mask real selection bugs. Use catch only if a red self-removal test proves `Editor.hasPath` cannot cover the failure. | Red/proof test first; if red, patch the exact path resolution/range guard. | keep |
-| Treat current `Editor.hasPath` as not enough for closure | "The live hook already checks `Editor.hasPath`; calling this pending is bureaucracy." | Existing code likely already improves the stale range-read class. | Planning stays pending until exact test exists, even if implementation might pass today. | Keep `Improves #6053`, not `Fixes #6053`, until the delete-self lifecycle is proved. Existing path-shift tests do not model disappearance. | `../slate-v2/packages/slate-react/test/use-element-selected.test.tsx` self-removal test passes. | keep |
-| Define removed explicit `path` as `false` | "An explicit path is caller-owned. If callers pass stale paths, throwing may be useful feedback." | Throwing could reveal stale app state earlier. | Returning `false` makes stale explicit paths quieter. | Keep `false` because the hook asks "is this path selected?", and a path that no longer exists is not selected. This is still narrow: it does not bless stale writes or stale transforms. | Separate explicit-path test where the hook remains mounted and the watched path is removed before `Editor.range`. | keep |
-| Reject broad selector fanout | "If stale subscriptions are the issue, notify everyone on structural edits and be done." | Global fanout is safer and easier to reason about in small docs. | Scoped fanout needs precise change metadata and tests. | Keep scoped selector fanout. The live selector subscribes by runtime id, defers updates, and unsubscribes on unmount; broad invalidation would regress the known locality goal. | Existing path-shift test stays green; self-removal fix does not add editor-wide invalidation. | keep |
-| Keep browser proof optional | "The original issue happened in real React/browser rendering, so unit tests are not enough." | Browser proof catches DOM scheduling and selection timing that package tests can miss. | Requiring browser proof for every hook lifecycle slows issue closure and muddies owner boundaries. | Keep package-level proof first because the failure is hook/provider/selector path validity. Escalate to Playwright only if the package test cannot reproduce the lifecycle. | Package test models stale lifecycle or explicit note promotes to focused browser row. | keep |
-| Keep issue claim conservative | "Users care whether #6053 is fixed, not whether the plan says improves." | If the exact repro passes, promoting the claim is valuable. | Premature `Fixes #6053` damages trust if the original lifecycle remains uncovered. | Keep `improves-claimed` until exact proof exists; promote only after focused `../slate-v2` verification. | Exact self-removal test plus focused Slate v2 commands. | keep |
+| Decision                                                 | Strongest fair objection                                                                                                                                | Steelman antithesis                                                                                      | Tradeoff tension                                                                                      | Chosen answer                                                                                                                                                                                                                | Proof required                                                                                                                           | Verdict |
+| -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| Support app-owned self-removal without throwing          | "If app code removes the element from inside its own selected render lifecycle, that is app misuse. Slate should not normalize every weird app effect." | A strict editor could say renderers must be pure and external mutation belongs in commands, not effects. | Supporting this pattern makes the hook responsible for disappearing nodes during a live subscription. | Keep the hook fail-closed because a public boolean selection hook should not become an exception boundary when the watched node disappears. The hook stays pure; only the test uses an app-owned effect to model the report. | Package test where `useElementSelected()` observes selected state and app code removes that same element, with no descendant-path throw. | keep    |
+| Avoid broad `try/catch` around `Editor.range`            | "The issue author says try/catch fixes it. Why not use the smallest patch?"                                                                             | Try/catch is locally cheap and robust against unexpected stale paths.                                    | Guard-only code must prove every relevant stale path is checked before range reads.                   | Keep guard-first policy. Broad catch hides broken tree invariants and can mask real selection bugs. Use catch only if a red self-removal test proves `Editor.hasPath` cannot cover the failure.                              | Red/proof test first; if red, patch the exact path resolution/range guard.                                                               | keep    |
+| Treat current `Editor.hasPath` as not enough for closure | "The live hook already checks `Editor.hasPath`; calling this pending is bureaucracy."                                                                   | Existing code likely already improves the stale range-read class.                                        | Planning stays pending until exact test exists, even if implementation might pass today.              | Keep `Improves #6053`, not `Fixes #6053`, until the delete-self lifecycle is proved. Existing path-shift tests do not model disappearance.                                                                                   | `.tmp/slate-v2/packages/slate-react/test/use-element-selected.test.tsx` self-removal test passes.                                        | keep    |
+| Define removed explicit `path` as `false`                | "An explicit path is caller-owned. If callers pass stale paths, throwing may be useful feedback."                                                       | Throwing could reveal stale app state earlier.                                                           | Returning `false` makes stale explicit paths quieter.                                                 | Keep `false` because the hook asks "is this path selected?", and a path that no longer exists is not selected. This is still narrow: it does not bless stale writes or stale transforms.                                     | Separate explicit-path test where the hook remains mounted and the watched path is removed before `Editor.range`.                        | keep    |
+| Reject broad selector fanout                             | "If stale subscriptions are the issue, notify everyone on structural edits and be done."                                                                | Global fanout is safer and easier to reason about in small docs.                                         | Scoped fanout needs precise change metadata and tests.                                                | Keep scoped selector fanout. The live selector subscribes by runtime id, defers updates, and unsubscribes on unmount; broad invalidation would regress the known locality goal.                                              | Existing path-shift test stays green; self-removal fix does not add editor-wide invalidation.                                            | keep    |
+| Keep browser proof optional                              | "The original issue happened in real React/browser rendering, so unit tests are not enough."                                                            | Browser proof catches DOM scheduling and selection timing that package tests can miss.                   | Requiring browser proof for every hook lifecycle slows issue closure and muddies owner boundaries.    | Keep package-level proof first because the failure is hook/provider/selector path validity. Escalate to Playwright only if the package test cannot reproduce the lifecycle.                                                  | Package test models stale lifecycle or explicit note promotes to focused browser row.                                                    | keep    |
+| Keep issue claim conservative                            | "Users care whether #6053 is fixed, not whether the plan says improves."                                                                                | If the exact repro passes, promoting the claim is valuable.                                              | Premature `Fixes #6053` damages trust if the original lifecycle remains uncovered.                    | Keep `improves-claimed` until exact proof exists; promote only after focused `.tmp/slate-v2` verification.                                                                                                                   | Exact self-removal test plus focused Slate v2 commands.                                                                                  | keep    |
 
 Accepted revisions from the objection pass:
 
@@ -502,25 +502,25 @@ Accepted revisions from the objection pass:
 
 ## Pass Schedule
 
-| Pass | Status | Evidence added | Plan delta | Open issues | Next owner |
-| --- | --- | --- | --- | --- | --- |
-| 1. Current-state read and next issue selection | complete | gitcrawl doctor, thread reads, exact search, neighbor search, live hook source, existing tests | selected `#6053`; added coverage matrix row and sync notes | implementation proof complete | related issue discovery pass |
-| 2. Related issue discovery | complete | gitcrawl thread reads, exact search, neighbor search, local ledger rows, dossier/matrix ownership reads | no exact duplicate; split neighbors into current lane, related, fixed elsewhere, Mobile/IME false neighbors, stale/noise, and non-claim rows | resolved in pass 3 | issue-ledger pass |
-| 3. Issue-ledger pass | complete | explicit matrix rows for `#3858`, `#4081`, `#4323`, `#4680`, `#5181`, `#5771`, `#1769`, `#3585`, `#3412`, `#4317`, `#4031`, `#5034`, `#4111`, `#5402`, and `#5075`; dossier sections for missing reviewed neighbors | neighbor accounting complete for this lane; claim promotion deferred until exact proof | implementation proof complete | intent and decision brief hardening |
-| 4. Intent and decision brief hardening | complete | hardened acceptance criteria; unresolved user-decision points set to none; package-vs-browser proof boundary | `ralph` slice has exact pass/fail criteria and rejected boundaries | implementation proof complete | research and live-source refresh |
-| 5. Research and live-source refresh | complete | live `useElementSelected`, `useEditorSelector`, `useGenericSelector`, provider, and existing hook tests re-read | external evidence skipped as non-portable for this hook lifecycle; package-level React test remains the right proof | implementation proof complete | React, DX, migration, regression pressure |
-| 6. React, DX, migration, regression pressure | complete | architecture-contract selector guidance, perf-loop generic dirtiness warning, live hook public export, existing hook tests | split implicit self-removal and explicit stale-path proof; keep API unchanged; applied React/TDD/effect guidance | resolved in pass 7 | maintainer objection pass |
-| 7. Maintainer objection pass | complete | steelman rows for app-owned self-removal, try/catch, existing guard, explicit stale path, selector fanout, browser proof, and issue claim honesty | hardened proof requirements and kept all major decisions | resolved in pass 8 | high-risk deliberate pass |
-| 8. High-risk deliberate pass | complete | high-risk trigger, blast radius, three-scenario pre-mortem, expanded proof plan, rollback/remediation answer | kept plan; tightened proof/claim/performance guardrails | resolved in pass 10 | revision pass |
-| 9. Ecosystem maintainer pass | skipped | no external editor evidence used; pass 5 rejected Lexical/ProseMirror/Tiptap as non-portable for this hook/provider lifecycle | no ecosystem synthesis needed | none | revision pass |
-| 10. Revision pass | complete | full-plan consistency read; stale implementation gates moved out of ralplan closure | no contradictions left between plan closure and implementation proof | none | issue sync accounting pass |
-| 11. Issue sync accounting pass | complete | live ledger, coverage matrix, fork dossier, and PR reference checked for `#6053` | `#6053` promoted to `Fixes` after exact proof | none | closure score and final gates |
-| 12. Closure score and final gates | complete | score `0.92`; all scheduled passes complete or explicitly skipped; completion state set to done | ralplan and ralph implementation are complete | none | none |
+| Pass                                           | Status   | Evidence added                                                                                                                                                                                                      | Plan delta                                                                                                                                   | Open issues                   | Next owner                                |
+| ---------------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- | ----------------------------------------- |
+| 1. Current-state read and next issue selection | complete | gitcrawl doctor, thread reads, exact search, neighbor search, live hook source, existing tests                                                                                                                      | selected `#6053`; added coverage matrix row and sync notes                                                                                   | implementation proof complete | related issue discovery pass              |
+| 2. Related issue discovery                     | complete | gitcrawl thread reads, exact search, neighbor search, local ledger rows, dossier/matrix ownership reads                                                                                                             | no exact duplicate; split neighbors into current lane, related, fixed elsewhere, Mobile/IME false neighbors, stale/noise, and non-claim rows | resolved in pass 3            | issue-ledger pass                         |
+| 3. Issue-ledger pass                           | complete | explicit matrix rows for `#3858`, `#4081`, `#4323`, `#4680`, `#5181`, `#5771`, `#1769`, `#3585`, `#3412`, `#4317`, `#4031`, `#5034`, `#4111`, `#5402`, and `#5075`; dossier sections for missing reviewed neighbors | neighbor accounting complete for this lane; claim promotion deferred until exact proof                                                       | implementation proof complete | intent and decision brief hardening       |
+| 4. Intent and decision brief hardening         | complete | hardened acceptance criteria; unresolved user-decision points set to none; package-vs-browser proof boundary                                                                                                        | `ralph` slice has exact pass/fail criteria and rejected boundaries                                                                           | implementation proof complete | research and live-source refresh          |
+| 5. Research and live-source refresh            | complete | live `useElementSelected`, `useEditorSelector`, `useGenericSelector`, provider, and existing hook tests re-read                                                                                                     | external evidence skipped as non-portable for this hook lifecycle; package-level React test remains the right proof                          | implementation proof complete | React, DX, migration, regression pressure |
+| 6. React, DX, migration, regression pressure   | complete | architecture-contract selector guidance, perf-loop generic dirtiness warning, live hook public export, existing hook tests                                                                                          | split implicit self-removal and explicit stale-path proof; keep API unchanged; applied React/TDD/effect guidance                             | resolved in pass 7            | maintainer objection pass                 |
+| 7. Maintainer objection pass                   | complete | steelman rows for app-owned self-removal, try/catch, existing guard, explicit stale path, selector fanout, browser proof, and issue claim honesty                                                                   | hardened proof requirements and kept all major decisions                                                                                     | resolved in pass 8            | high-risk deliberate pass                 |
+| 8. High-risk deliberate pass                   | complete | high-risk trigger, blast radius, three-scenario pre-mortem, expanded proof plan, rollback/remediation answer                                                                                                        | kept plan; tightened proof/claim/performance guardrails                                                                                      | resolved in pass 10           | revision pass                             |
+| 9. Ecosystem maintainer pass                   | skipped  | no external editor evidence used; pass 5 rejected Lexical/ProseMirror/Tiptap as non-portable for this hook/provider lifecycle                                                                                       | no ecosystem synthesis needed                                                                                                                | none                          | revision pass                             |
+| 10. Revision pass                              | complete | full-plan consistency read; stale implementation gates moved out of ralplan closure                                                                                                                                 | no contradictions left between plan closure and implementation proof                                                                         | none                          | issue sync accounting pass                |
+| 11. Issue sync accounting pass                 | complete | live ledger, coverage matrix, fork dossier, and PR reference checked for `#6053`                                                                                                                                    | `#6053` promoted to `Fixes` after exact proof                                                                                                | none                          | closure score and final gates             |
+| 12. Closure score and final gates              | complete | score `0.92`; all scheduled passes complete or explicitly skipped; completion state set to done                                                                                                                     | ralplan and ralph implementation are complete                                                                                                | none                          | none                                      |
 
 ## Plan Deltas From This Pass
 
 - Activated `ralph` execution: completion state is pending again, the current
-  owner is `../slate-v2/packages/slate-react/test/use-element-selected.test.tsx`,
+  owner is `.tmp/slate-v2/packages/slate-react/test/use-element-selected.test.tsx`,
   and `.tmp/continue.md` is an execution prompt.
 - Selected `#6053` as the next runnable issue lane.
 - Promoted `#6053` to `fixes-claimed` after exact package proof.
@@ -535,7 +535,7 @@ Accepted revisions from the objection pass:
   failure.
 - Refreshed live Slate v2 hook, selector, provider, and test owners. The
   implementation slice added the self-removal and explicit stale-path tests in
-  `../slate-v2/packages/slate-react/test/use-element-selected.test.tsx` without
+  `.tmp/slate-v2/packages/slate-react/test/use-element-selected.test.tsx` without
   changing hook source.
 - Completed React/DX/migration/regression pressure. The `ralph` slice split
   implicit self-removal and explicit stale-path coverage into separate tests.
@@ -569,7 +569,7 @@ Completed by `ralph` after this Slate Ralplan pass:
    selection state changes.
 2. If the test fails, patch only the selector path lookup/range guard.
 3. Preserve existing path-shift and surface-contract tests.
-4. Run focused `../slate-v2` package tests.
+4. Run focused `.tmp/slate-v2` package tests.
 5. Upgrade issue ledger status only if the exact repro-shaped test passes.
 
 ## Fast Driver Gates
@@ -609,5 +609,5 @@ bun check
 - exact self-removal test exists and passes;
 - explicit stale `path` test exists and passes;
 - existing path-shift tests stay green;
-- focused `../slate-v2` commands pass;
+- focused `.tmp/slate-v2` commands pass;
 - `#6053` upgraded from `Improves` to `Fixes`.

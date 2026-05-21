@@ -57,7 +57,7 @@ In scope:
 
 Non-goals:
 
-- no `../slate-v2` implementation edits
+- no `.tmp/slate-v2` implementation edits
 - no upstream GitHub comments, labels, or closures
 - no manual one-by-one pass across all `630` live issues
 - no new issue fix claims without exact repro proof
@@ -67,18 +67,18 @@ API behavior cannot.
 
 ## Evidence Snapshot
 
-| Artifact | Current fact | Decision |
-| --- | --- | --- |
-| `docs/slate-issues/gitcrawl-live-open-ledger.md` | `630` live issue rows; frontmatter source `.tmp/gitcrawl/2026-05-04T145301Z-threads.json`; text says live gitcrawl fields only. | Keep generated/live-only. Do not add manual classifications here. |
-| `docs/slate-issues/open-issues-ledger.md` | Frozen `2026-04-02` research corpus with `682` issues and existing sync vocabulary. | Keep as historical seed and frozen corpus record. Do not pretend it is current live sync. |
-| `docs/slate-issues/issue-clusters.md` | `9` macro themes; `378` raw primary clusters; top themes are selection/DOM, mobile/IME, React runtime, and performance. | Keep as macro taxonomy source. |
-| `docs/slate-issues/gitcrawl-clusters.md` | `617` gitcrawl clusters for `659` open threads; only `28` clusters have more than one member. | Keep as archive-neighbor discovery, not architecture taxonomy. |
-| `docs/slate-issues/package-impact-matrix.md` | `407` runtime-boundary rows, `113` core engine rows, `162` maintainer-noise rows. | Keep as package ownership pressure map. |
-| `docs/slate-issues/requirements-from-issues.md` | R1-R13 requirements derive from the issue corpus. | Keep as requirements synthesis. |
-| `docs/slate-v2/ledgers/issue-coverage-matrix.md` | `25` current `Fixes #...` lines and `189` related issue rows. | Owns exact PR-slice claims. |
-| `docs/slate-v2/references/pr-description.md` | `31` current `Fixes #...` lines. | Must derive from the coverage matrix or be reconciled. |
-| `docs/slate-v2/ledgers/fork-issue-dossier.md` | `214` issue sections. | Owns long-form local issue reasoning. |
-| `gitcrawl doctor --json` | `version: 0.2.1`; `cluster_count: 617`; `open_thread_count: 659`; `github_token_present: false`; `last_sync_at: 2026-05-04T14:58:11.123944Z`. | Archive reads are available; live sync is token-blocked in this shell. |
+| Artifact                                         | Current fact                                                                                                                                  | Decision                                                                                  |
+| ------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| `docs/slate-issues/gitcrawl-live-open-ledger.md` | `630` live issue rows; frontmatter source `.tmp/gitcrawl/2026-05-04T145301Z-threads.json`; text says live gitcrawl fields only.               | Keep generated/live-only. Do not add manual classifications here.                         |
+| `docs/slate-issues/open-issues-ledger.md`        | Frozen `2026-04-02` research corpus with `682` issues and existing sync vocabulary.                                                           | Keep as historical seed and frozen corpus record. Do not pretend it is current live sync. |
+| `docs/slate-issues/issue-clusters.md`            | `9` macro themes; `378` raw primary clusters; top themes are selection/DOM, mobile/IME, React runtime, and performance.                       | Keep as macro taxonomy source.                                                            |
+| `docs/slate-issues/gitcrawl-clusters.md`         | `617` gitcrawl clusters for `659` open threads; only `28` clusters have more than one member.                                                 | Keep as archive-neighbor discovery, not architecture taxonomy.                            |
+| `docs/slate-issues/package-impact-matrix.md`     | `407` runtime-boundary rows, `113` core engine rows, `162` maintainer-noise rows.                                                             | Keep as package ownership pressure map.                                                   |
+| `docs/slate-issues/requirements-from-issues.md`  | R1-R13 requirements derive from the issue corpus.                                                                                             | Keep as requirements synthesis.                                                           |
+| `docs/slate-v2/ledgers/issue-coverage-matrix.md` | `25` current `Fixes #...` lines and `189` related issue rows.                                                                                 | Owns exact PR-slice claims.                                                               |
+| `docs/slate-v2/references/pr-description.md`     | `31` current `Fixes #...` lines.                                                                                                              | Must derive from the coverage matrix or be reconciled.                                    |
+| `docs/slate-v2/ledgers/fork-issue-dossier.md`    | `214` issue sections.                                                                                                                         | Owns long-form local issue reasoning.                                                     |
+| `gitcrawl doctor --json`                         | `version: 0.2.1`; `cluster_count: 617`; `open_thread_count: 659`; `github_token_present: false`; `last_sync_at: 2026-05-04T14:58:11.123944Z`. | Archive reads are available; live sync is token-blocked in this shell.                    |
 
 ## Hard Findings
 
@@ -158,17 +158,17 @@ ledger when available, and records only the current v2 sync state.
 
 ## Target Ledger Architecture
 
-| File | Owner role | Write policy |
-| --- | --- | --- |
-| `docs/slate-issues/gitcrawl-live-open-ledger.md` | Generated live open issue rows from gitcrawl. | Generated/live-only. No manual classifications. |
-| `docs/slate-issues/gitcrawl-clusters.md` | Gitcrawl neighbor and duplicate discovery summary. | Refresh from gitcrawl; short human notes are acceptable only if clearly separated. |
-| `docs/slate-issues/gitcrawl-v2-sync-ledger.md` | Current manual v2 issue sync overlay for live issues. | Manual or generated-from-overlay source. This is the new sync owner. |
-| `docs/slate-issues/open-issues-ledger.md` | Frozen `682`-issue research corpus and historical classification seed. | Preserve; update only with clear historical notes, not current live sync. |
-| `docs/slate-issues/issue-clusters.md` | Macro-theme taxonomy. | Update only when taxonomy changes. |
-| `docs/slate-issues/requirements-from-issues.md` | Requirement synthesis from the corpus. | Update when architecture requirements change. |
-| `docs/slate-v2/ledgers/issue-coverage-matrix.md` | Exact fixed claims and related PR-slice issue rows. | Source of truth for PR claim counts. |
-| `docs/slate-v2/ledgers/fork-issue-dossier.md` | Long-form local issue reasoning. | Append issue sections during ClawSweeper passes. |
-| `docs/slate-v2/references/pr-description.md` | Maintainer-facing summary. | Derive fixed and related counts from ledgers. |
+| File                                             | Owner role                                                             | Write policy                                                                       |
+| ------------------------------------------------ | ---------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| `docs/slate-issues/gitcrawl-live-open-ledger.md` | Generated live open issue rows from gitcrawl.                          | Generated/live-only. No manual classifications.                                    |
+| `docs/slate-issues/gitcrawl-clusters.md`         | Gitcrawl neighbor and duplicate discovery summary.                     | Refresh from gitcrawl; short human notes are acceptable only if clearly separated. |
+| `docs/slate-issues/gitcrawl-v2-sync-ledger.md`   | Current manual v2 issue sync overlay for live issues.                  | Manual or generated-from-overlay source. This is the new sync owner.               |
+| `docs/slate-issues/open-issues-ledger.md`        | Frozen `682`-issue research corpus and historical classification seed. | Preserve; update only with clear historical notes, not current live sync.          |
+| `docs/slate-issues/issue-clusters.md`            | Macro-theme taxonomy.                                                  | Update only when taxonomy changes.                                                 |
+| `docs/slate-issues/requirements-from-issues.md`  | Requirement synthesis from the corpus.                                 | Update when architecture requirements change.                                      |
+| `docs/slate-v2/ledgers/issue-coverage-matrix.md` | Exact fixed claims and related PR-slice issue rows.                    | Source of truth for PR claim counts.                                               |
+| `docs/slate-v2/ledgers/fork-issue-dossier.md`    | Long-form local issue reasoning.                                       | Append issue sections during ClawSweeper passes.                                   |
+| `docs/slate-v2/references/pr-description.md`     | Maintainer-facing summary.                                             | Derive fixed and related counts from ledgers.                                      |
 
 ## Proposed Overlay Shape
 
@@ -191,7 +191,7 @@ classification. Regenerate or check this file against
 gitcrawl-live-open-ledger.md before claim updates.
 
 | Issue | Gitcrawl cluster | Macro theme | Action bucket | V2 sync status | Claim | Proof owner | Last reviewed | Notes |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| ----- | ---------------- | ----------- | ------------- | -------------- | ----- | ----------- | ------------- | ----- |
 ```
 
 Required statuses stay the existing vocabulary:
@@ -282,15 +282,15 @@ Then wire it into the planning closeout path before `bun run completion-check`.
 
 Current mismatch:
 
-| Surface | Fixed claims |
-| --- | ---: |
-| `issue-coverage-matrix.md` | 25 |
-| `pr-description.md` | 31 |
+| Surface                    | Fixed claims |
+| -------------------------- | -----------: |
+| `issue-coverage-matrix.md` |           25 |
+| `pr-description.md`        |           31 |
 
 PR-only claims:
 
-| Issue | Required action |
-| --- | --- |
+| Issue   | Required action                                                                 |
+| ------- | ------------------------------------------------------------------------------- |
 | `#5233` | Add proof-backed `Fixes` row to coverage matrix or demote/remove from PR prose. |
 | `#3486` | Add proof-backed `Fixes` row to coverage matrix or demote/remove from PR prose. |
 | `#4569` | Add proof-backed `Fixes` row to coverage matrix or demote/remove from PR prose. |
@@ -427,15 +427,15 @@ bun run completion-check
 
 ## Scorecard
 
-| Dimension | Score | Why |
-| --- | ---: | --- |
-| Intent and boundary clarity | `0.90` | The target ownership split is now explicit. |
-| Current repo evidence | `0.86` | Counts and file roles were checked from disk plus local gitcrawl doctor. |
-| Issue-ledger correctness | `0.78` | The plan identifies the right architecture, but the overlay and checker do not exist yet. |
-| PR claim safety | `0.70` | Fixed claim drift is real and unresolved. |
-| Maintenance quality | `0.82` | The checker and overlay shape are the right fix, but rules still need edits. |
-| Slate v2 implementation safety | `0.88` | No runtime code changes are proposed in this planning pass. |
-| Closure readiness | `0.76` | More autonomous work remains. |
+| Dimension                      |  Score | Why                                                                                       |
+| ------------------------------ | -----: | ----------------------------------------------------------------------------------------- |
+| Intent and boundary clarity    | `0.90` | The target ownership split is now explicit.                                               |
+| Current repo evidence          | `0.86` | Counts and file roles were checked from disk plus local gitcrawl doctor.                  |
+| Issue-ledger correctness       | `0.78` | The plan identifies the right architecture, but the overlay and checker do not exist yet. |
+| PR claim safety                | `0.70` | Fixed claim drift is real and unresolved.                                                 |
+| Maintenance quality            | `0.82` | The checker and overlay shape are the right fix, but rules still need edits.              |
+| Slate v2 implementation safety | `0.88` | No runtime code changes are proposed in this planning pass.                               |
+| Closure readiness              | `0.76` | More autonomous work remains.                                                             |
 
 Overall: `0.94`, `ready-for-ralph-execution`.
 
@@ -501,13 +501,13 @@ Result:
 
 ## Pass Schedule
 
-| Pass | Status | Target |
-| --- | --- | --- |
-| Pass 1 | complete | Inventory current owners, count drift, and rule conflict. |
-| Pass 2 | complete | Repair rule ownership language and regenerate skills. |
-| Pass 3 | complete | Create current sync overlay. |
-| Pass 4 | complete | Add ledger drift checker. |
-| Pass 5 | complete | Repair PR claim count drift. |
+| Pass   | Status   | Target                                                        |
+| ------ | -------- | ------------------------------------------------------------- |
+| Pass 1 | complete | Inventory current owners, count drift, and rule conflict.     |
+| Pass 2 | complete | Repair rule ownership language and regenerate skills.         |
+| Pass 3 | complete | Create current sync overlay.                                  |
+| Pass 4 | complete | Add ledger drift checker.                                     |
+| Pass 5 | complete | Repair PR claim count drift.                                  |
 | Pass 6 | complete | Re-score execution only if checker plus completion gate pass. |
 
 ## Current Next Owner
@@ -526,7 +526,7 @@ This Slate Ralplan is complete because:
 - the drift checker contract is specified
 - the PR fixed-claim mismatch is enumerated issue by issue
 - the next `ralph` slices are ordered with gates
-- no `../slate-v2` runtime implementation work is hidden inside the plan
+- no `.tmp/slate-v2` runtime implementation work is hidden inside the plan
 
 ## Execution Completion Criteria
 

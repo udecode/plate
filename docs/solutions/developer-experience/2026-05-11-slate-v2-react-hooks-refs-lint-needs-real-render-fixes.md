@@ -56,7 +56,7 @@ one-shot constructor escape hatch.
 ## Solution
 
 Keep the recommended React Hooks preset and disable only the currently noisy
-compiler mutation rule in `../slate-v2/eslint.config.mjs`:
+compiler mutation rule in `.tmp/slate-v2/eslint.config.mjs`:
 
 ```js
 rules: {
@@ -69,9 +69,9 @@ For actual render-time ref access, replace React refs with stable hook-owned
 cells created by lazy state initializers:
 
 ```tsx
-const [cell] = useState(() => createGenericSelectorCell(equalityFn))
+const [cell] = useState(() => createGenericSelectorCell(equalityFn));
 
-cell.equalityFn = equalityFn
+cell.equalityFn = equalityFn;
 ```
 
 Use that pattern for selector/external-store internals where the current value
@@ -80,7 +80,7 @@ must be visible to same-render reads without touching `ref.current`.
 Use lazy state for one-shot mutable constructors:
 
 ```tsx
-const [controllerState] = useState(createEditableInputControllerState)
+const [controllerState] = useState(createEditableInputControllerState);
 ```
 
 Keep `useMemo` for values that are genuinely derived from dependencies, and use
@@ -93,25 +93,26 @@ const inputController = useMemo(
       preferModelSelectionForInputRef,
       state: controllerState,
     }),
-  [controllerState, preferModelSelectionForInputRef]
-)
+  [controllerState, preferModelSelectionForInputRef],
+);
 ```
 
 For stores that read app-owned lists, keep a stable source callback and refresh
 after input changes:
 
 ```tsx
-const [widgetsCell] = useState(() => ({ current: widgets }))
+const [widgetsCell] = useState(() => ({ current: widgets }));
 
 const store = useMemo(
-  () => createSlateWidgetStore(editor, () => widgetsCell.current, annotationStore),
-  [annotationStore, editor, widgetsCell]
-)
+  () =>
+    createSlateWidgetStore(editor, () => widgetsCell.current, annotationStore),
+  [annotationStore, editor, widgetsCell],
+);
 
 useEffect(() => {
-  widgetsCell.current = widgets
-  store.refresh()
-}, [store, widgets, widgetsCell])
+  widgetsCell.current = widgets;
+  store.refresh();
+}, [store, widgets, widgetsCell]);
 ```
 
 For effect-only cleanup refs, update refs inside an effect instead of render, or

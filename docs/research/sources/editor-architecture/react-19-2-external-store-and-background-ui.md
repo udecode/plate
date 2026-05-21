@@ -8,10 +8,10 @@ source_refs:
   - https://react.dev/reference/react/useTransition
   - https://react.dev/reference/react/useDeferredValue
   - https://react.dev/reference/react/Activity
-  - ../slate-v2/packages/slate-react/src/hooks/use-slate-selector.tsx
-  - ../slate-v2/packages/slate-react/src/hooks/use-slate-annotations.tsx
-  - ../slate-v2/packages/slate-react/src/hooks/use-slate-widgets.tsx
-  - ../slate-v2/docs/walkthroughs/09-performance.md
+  - .tmp/slate-v2/packages/slate-react/src/hooks/use-slate-selector.tsx
+  - .tmp/slate-v2/packages/slate-react/src/hooks/use-slate-annotations.tsx
+  - .tmp/slate-v2/packages/slate-react/src/hooks/use-slate-widgets.tsx
+  - .tmp/slate-v2/docs/walkthroughs/09-performance.md
 updated: 2026-04-28
 related:
   - docs/research/systems/editor-architecture-landscape.md

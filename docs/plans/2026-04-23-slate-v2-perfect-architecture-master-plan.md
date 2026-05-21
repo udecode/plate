@@ -136,12 +136,12 @@ Allowed internally:
 
 ```ts
 editor.read(() => {
-  editor.getSelection()
-  editor.getChildren()
-  editor.getMarks()
-  editor.getOperations()
-  editor.getLastCommit()
-})
+  editor.getSelection();
+  editor.getChildren();
+  editor.getMarks();
+  editor.getOperations();
+  editor.getLastCommit();
+});
 ```
 
 Rules:
@@ -156,8 +156,8 @@ Rules:
 
 ```ts
 editor.update(() => {
-  editor.setNodes({ type: 'heading-one' })
-})
+  editor.setNodes({ type: "heading-one" });
+});
 ```
 
 Rules:
@@ -220,7 +220,7 @@ Hard rule:
 Defer, but only as sugar:
 
 ```ts
-editor.chain().setNodes(props).wrapNodes(wrapper).run()
+editor.chain().setNodes(props).wrapNodes(wrapper).run();
 ```
 
 Rules:
@@ -254,17 +254,17 @@ Public shape:
 
 ```ts
 editor.extend({
-  name: 'todo',
+  name: "todo",
   methods: {
     toggleTodo() {
       this.update(() => {
-        this.setNodes({ type: 'todo', checked: true })
-      })
+        this.setNodes({ type: "todo", checked: true });
+      });
     },
   },
   normalizers: [],
   commands: [],
-})
+});
 ```
 
 Rules:
@@ -397,19 +397,19 @@ Allowed:
 - `docs/research/**`
 - `docs/slate-v2/**`
 - `.tmp/<session-id>/completion-check.md`
-- `../slate-v2/packages/slate/**`
-- `../slate-v2/packages/slate-dom/**`
-- `../slate-v2/packages/slate-react/**`
-- `../slate-v2/packages/slate-browser/**`
-- `../slate-v2/site/examples/ts/**`
-- `../slate-v2/playwright/integration/examples/**`
-- `../slate-v2/scripts/benchmarks/**`
-- `../slate-v2/package.json`
+- `.tmp/slate-v2/packages/slate/**`
+- `.tmp/slate-v2/packages/slate-dom/**`
+- `.tmp/slate-v2/packages/slate-react/**`
+- `.tmp/slate-v2/packages/slate-browser/**`
+- `.tmp/slate-v2/site/examples/ts/**`
+- `.tmp/slate-v2/playwright/integration/examples/**`
+- `.tmp/slate-v2/scripts/benchmarks/**`
+- `.tmp/slate-v2/package.json`
 
 Do not touch:
 
-- `../slate-v2/packages/slate-hyperscript/**`
-- `../slate-v2/packages/slate-history/**` unless a focused failing proof proves
+- `.tmp/slate-v2/packages/slate-hyperscript/**`
+- `.tmp/slate-v2/packages/slate-history/**` unless a focused failing proof proves
   history ownership
 
 ## Execution Batches
@@ -426,15 +426,15 @@ Implement:
 
 Files:
 
-- `../slate-v2/packages/slate/src/interfaces/editor.ts`
-- `../slate-v2/packages/slate/src/create-editor.ts`
-- `../slate-v2/packages/slate/src/core/public-state.ts`
+- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`
+- `.tmp/slate-v2/packages/slate/src/create-editor.ts`
+- `.tmp/slate-v2/packages/slate/src/core/public-state.ts`
 
 Tests:
 
-- `../slate-v2/packages/slate/test/read-update-contract.ts`
-- `../slate-v2/packages/slate/test/transaction-contract.ts`
-- `../slate-v2/packages/slate/test/commit-metadata-contract.ts`
+- `.tmp/slate-v2/packages/slate/test/read-update-contract.ts`
+- `.tmp/slate-v2/packages/slate/test/transaction-contract.ts`
+- `.tmp/slate-v2/packages/slate/test/commit-metadata-contract.ts`
 
 ### Batch 2: Browser Proof Substrate
 
@@ -456,9 +456,9 @@ Implement:
 
 Files:
 
-- `../slate-v2/packages/slate-browser/src/playwright/**`
-- `../slate-v2/playwright/integration/examples/**`
-- affected `../slate-v2/packages/slate-react/test/**` fixtures
+- `.tmp/slate-v2/packages/slate-browser/src/playwright/**`
+- `.tmp/slate-v2/playwright/integration/examples/**`
+- affected `.tmp/slate-v2/packages/slate-react/test/**` fixtures
 
 Tests:
 
@@ -475,16 +475,16 @@ Implement:
 
 Files:
 
-- `../slate-v2/packages/slate/src/editor/**`
-- `../slate-v2/packages/slate/src/transforms-node/**`
-- `../slate-v2/packages/slate/src/transforms-text/**`
-- `../slate-v2/packages/slate/src/transforms-selection/**`
+- `.tmp/slate-v2/packages/slate/src/editor/**`
+- `.tmp/slate-v2/packages/slate/src/transforms-node/**`
+- `.tmp/slate-v2/packages/slate/src/transforms-text/**`
+- `.tmp/slate-v2/packages/slate/src/transforms-selection/**`
 
 Tests:
 
-- `../slate-v2/packages/slate/test/primitive-method-runtime-contract.ts`
-- `../slate-v2/packages/slate/test/editor-methods-contract.ts`
-- `../slate-v2/packages/slate/test/transaction-target-runtime-contract.ts`
+- `.tmp/slate-v2/packages/slate/test/primitive-method-runtime-contract.ts`
+- `.tmp/slate-v2/packages/slate/test/editor-methods-contract.ts`
+- `.tmp/slate-v2/packages/slate/test/transaction-target-runtime-contract.ts`
 
 ### Batch 4: Commit, Bookmark, History, and Collaboration Runtime
 
@@ -505,16 +505,16 @@ Implement:
 
 Files:
 
-- `../slate-v2/packages/slate/src/interfaces/editor.ts`
-- `../slate-v2/packages/slate/src/core/public-state.ts`
-- `../slate-v2/packages/slate-history/**` only if a focused proof proves
+- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`
+- `.tmp/slate-v2/packages/slate/src/core/public-state.ts`
+- `.tmp/slate-v2/packages/slate-history/**` only if a focused proof proves
   ownership
 
 Tests:
 
-- `../slate-v2/packages/slate/test/commit-metadata-contract.ts`
-- `../slate-v2/packages/slate/test/bookmark-contract.ts`
-- `../slate-v2/packages/slate/test/collab-history-runtime-contract.ts`
+- `.tmp/slate-v2/packages/slate/test/commit-metadata-contract.ts`
+- `.tmp/slate-v2/packages/slate/test/bookmark-contract.ts`
+- `.tmp/slate-v2/packages/slate/test/collab-history-runtime-contract.ts`
 
 ### Batch 5: Public Hard Cuts
 
@@ -526,8 +526,8 @@ Implement:
 
 Tests:
 
-- `../slate-v2/packages/slate/test/public-field-hard-cut-contract.ts`
-- `../slate-v2/packages/slate/test/write-boundary-contract.ts`
+- `.tmp/slate-v2/packages/slate/test/public-field-hard-cut-contract.ts`
+- `.tmp/slate-v2/packages/slate/test/write-boundary-contract.ts`
 
 ### Batch 6: Extension Runtime
 
@@ -540,7 +540,7 @@ Implement:
 
 Tests:
 
-- `../slate-v2/packages/slate/test/extension-methods-contract.ts`
+- `.tmp/slate-v2/packages/slate/test/extension-methods-contract.ts`
 
 ### Batch 7: React Runtime Alignment
 
@@ -554,10 +554,10 @@ Implement:
 
 Tests:
 
-- `../slate-v2/packages/slate-react/test/target-runtime-contract.ts`
-- `../slate-v2/packages/slate-react/test/dom-text-sync-contract.ts`
-- `../slate-v2/packages/slate-react/test/large-doc-and-scroll.tsx`
-- `../slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx`
+- `.tmp/slate-v2/packages/slate-react/test/target-runtime-contract.ts`
+- `.tmp/slate-v2/packages/slate-react/test/dom-text-sync-contract.ts`
+- `.tmp/slate-v2/packages/slate-react/test/large-doc-and-scroll.tsx`
+- `.tmp/slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx`
 
 ### Batch 8: Browser Closure
 
@@ -569,8 +569,8 @@ Implement:
 
 Tests:
 
-- `../slate-v2/playwright/integration/examples/**`
-- `../slate-v2/packages/slate-browser/src/playwright/**`
+- `.tmp/slate-v2/playwright/integration/examples/**`
+- `.tmp/slate-v2/packages/slate-browser/src/playwright/**`
 
 ### Batch 9: Perf Closure
 
@@ -662,9 +662,9 @@ Actions:
 - resumed execution and restored `.tmp/<session-id>/completion-check.md` from `blocked` to
   `pending`
 - added first Batch 1 contract file:
-  `../slate-v2/packages/slate/test/read-update-contract.ts`
+  `.tmp/slate-v2/packages/slate/test/read-update-contract.ts`
 - added dedicated commit metadata contract file:
-  `../slate-v2/packages/slate/test/commit-metadata-contract.ts`
+  `.tmp/slate-v2/packages/slate/test/commit-metadata-contract.ts`
 - pinned `read` / `update` on the public surface contract
 - implemented:
   - instance `editor.read(fn)`
@@ -761,7 +761,7 @@ Actions:
   - not every `createEditor()` React test is a liar, but bare core editors in
     React event-contract rows are still a real fixture smell
 - added `selection.selectDOM(...)` to
-  `../slate-v2/packages/slate-browser/src/playwright/index.ts`
+  `.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts`
 - migrated the high-signal richtext stale-target toolbar rows to substrate APIs:
   - `editor.selection.select(...)`
   - `editor.selection.selectDOM(...)`
@@ -889,7 +889,7 @@ Status: in progress.
 Actions:
 
 - promoted two genuinely shared browser-proof primitives into
-  `../slate-v2/packages/slate-browser/src/playwright/index.ts`:
+  `.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts`:
   - `selection.location()`
   - `assert.domCaret(...)`
 - migrated more `richtext.test.ts` harness-owned rows off local helper soup and
@@ -1002,8 +1002,8 @@ Actions:
   - `expectDOMCaretAtTextEnd(...)`
   - `expectVisualCaretAtEndOfFirstBlock(...)`
   - `expectDOMCaretAfterInsertedTextBeforeSuffix(...)`
-  those still encode screenshot-adjacent browser geometry checks, not generic
-  harness truth
+    those still encode screenshot-adjacent browser geometry checks, not generic
+    harness truth
 
 Evidence:
 
@@ -1116,8 +1116,8 @@ Owner classification:
   - visual-caret geometry assertions
   - `getBrowserUndoHotkey(...)`
   - `selectEndOfFirstBlockWithDOMSelection(...)`
-  these are intentionally narrow browser-path utilities, not the main substrate
-  debt anymore
+    these are intentionally narrow browser-path utilities, not the main substrate
+    debt anymore
 - Batch 2’s next owner is no longer richtext helper soup first; it moves to the
   deliberate `packages/slate-react/test/**` fixture-owner sweep
 
@@ -1161,7 +1161,7 @@ Status: in progress.
 Actions:
 
 - classified the first concrete liar cluster in
-  `../slate-v2/packages/slate-react/test/large-doc-and-scroll.tsx`
+  `.tmp/slate-v2/packages/slate-react/test/large-doc-and-scroll.tsx`
 - identified the owner:
   - large-document shell mouse/keyboard/select-all rows are DOM/event contracts
   - those rows were still mounted with bare `createEditor()` even though the
@@ -1250,8 +1250,8 @@ Actions:
 - classified the remaining bare `createEditor()` rows in that file as
   render-shape or DOM-sync capability rows, not DOM/event liar rows
 - inspected duplicated ReactEditor focus contract files:
-  - `../slate-v2/packages/slate-react/test/react-editor-contract.tsx`
-  - `../slate-v2/packages/slate-react/test/react-editor.test.tsx`
+  - `.tmp/slate-v2/packages/slate-react/test/react-editor-contract.tsx`
+  - `.tmp/slate-v2/packages/slate-react/test/react-editor.test.tsx`
 - kept the canonical contract file and deleted the duplicate legacy-shaped test
   file
 - preserved the stable DOM-selection assertion from the duplicate in the
@@ -1346,12 +1346,12 @@ Status: in progress.
 
 Actions:
 
-- inspected `../slate-v2/packages/slate-react/test/bun/editable.spec.tsx`
+- inspected `.tmp/slate-v2/packages/slate-react/test/bun/editable.spec.tsx`
   against the canonical contract files
 - classified its callback rows as duplicates of
-  `../slate-v2/packages/slate-react/test/editable-behavior.tsx`
+  `.tmp/slate-v2/packages/slate-react/test/editable-behavior.tsx`
 - classified its NODE_TO_KEY and translate rows as duplicates of
-  `../slate-v2/packages/slate-react/test/surface-contract.tsx`
+  `.tmp/slate-v2/packages/slate-react/test/surface-contract.tsx`
 - deleted the stale `test/bun/editable.spec.tsx` file
 
 Evidence:
@@ -1429,7 +1429,7 @@ Status: in progress.
 
 Actions:
 
-- inspected the remaining `../slate-v2/packages/slate-react/test/bun/**`
+- inspected the remaining `.tmp/slate-v2/packages/slate-react/test/bun/**`
   hook specs against `provider-hooks-contract.tsx`
 - classified `use-slate-selector.spec.tsx` as duplicated by
   `provider-hooks-contract.tsx`
@@ -1972,7 +1972,7 @@ Actions:
 - updated the history integrity contract to expect insert-text history metadata
   with `selectionChanged: true`
 - added the missing Batch 4 driver contract:
-  `../slate-v2/packages/slate/test/collab-history-runtime-contract.ts`
+  `.tmp/slate-v2/packages/slate/test/collab-history-runtime-contract.ts`
 - proved one committed update is observed consistently by:
   - snapshot subscribers
   - extension commit listeners
@@ -2087,8 +2087,8 @@ Status: complete for the current public hard-cut owner.
 Actions:
 
 - added Batch 5 driver contracts:
-  - `../slate-v2/packages/slate/test/public-field-hard-cut-contract.ts`
-  - `../slate-v2/packages/slate/test/write-boundary-contract.ts`
+  - `.tmp/slate-v2/packages/slate/test/public-field-hard-cut-contract.ts`
+  - `.tmp/slate-v2/packages/slate/test/write-boundary-contract.ts`
 - made public editor state mirrors read-only at runtime:
   - `editor.children`
   - `editor.selection`
@@ -2225,7 +2225,7 @@ Status: complete for the current extension-runtime owner.
 Actions:
 
 - added the Batch 6 driver contract:
-  - `../slate-v2/packages/slate/test/extension-methods-contract.ts`
+  - `.tmp/slate-v2/packages/slate/test/extension-methods-contract.ts`
 - added declarative extension runtime APIs:
   - `defineEditorExtension(...)`
   - instance `editor.extend(...)`
@@ -2347,7 +2347,7 @@ Status: complete for the current React target-runtime owner.
 Actions:
 
 - added the Batch 7 target-runtime contract:
-  - `../slate-v2/packages/slate-react/test/target-runtime-contract.tsx`
+  - `.tmp/slate-v2/packages/slate-react/test/target-runtime-contract.tsx`
 - proved that implicit React editor commands import the current DOM selection
   before resolving their model target
 - proved the stale-selection bug class directly:

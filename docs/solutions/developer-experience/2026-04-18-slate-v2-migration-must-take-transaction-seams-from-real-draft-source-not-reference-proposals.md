@@ -30,7 +30,7 @@ That is how planning turns into fan fiction.
 ## Symptoms
 
 - The plan said the next draft-backed seam was `Editor.withBatch(...)`.
-- The real draft in `../slate-v2-draft/packages/slate/**` only had:
+- The real draft in `.tmp/slate-v2-draft/packages/slate/**` only had:
   - `getChildren`
   - `setChildren`
   - `Editor.withTransaction(...)`
@@ -52,7 +52,7 @@ That is how planning turns into fan fiction.
 ## Solution
 
 1. Re-ground the wave against the real draft source in
-   `../slate-v2-draft/packages/slate/**`.
+   `.tmp/slate-v2-draft/packages/slate/**`.
 2. Rewrite the next wave around the seams the draft actually owns:
    - `getChildren`
    - `setChildren`
@@ -84,7 +84,7 @@ remain.
 
 ## Prevention
 
-- For `slate-v2` migration work, verify the seam in `../slate-v2-draft` before
+- For `slate-v2` migration work, verify the seam in `.tmp/slate-v2-draft` before
   naming it in a plan. Do not promote `docs/slate-v2-draft/references/**` to
   implementation truth.
 - If a current fixture suite explodes on import/pragma noise, fix that same-path

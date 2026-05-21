@@ -57,26 +57,26 @@ The cleanup is intentionally narrow:
   rendered content.
 
 The regression row lives in
-`../slate-v2/playwright/integration/examples/highlighted-text.test.ts`:
+`.tmp/slate-v2/playwright/integration/examples/highlighted-text.test.ts`:
 
 ```ts
 await editor.selection.selectDOM({
   anchor: { path: [0, 0], offset: 2 },
   focus: { path: [0, 0], offset: 6 },
-})
+});
 
 await commitDOMComposition(editor, {
-  committedText: 'すし',
-  steps: ['す', 'すし'],
-})
+  committedText: "すし",
+  steps: ["す", "すし"],
+});
 
-await editor.assert.text('alすしbeta')
+await editor.assert.text("alすしbeta");
 await editor.assert.domSelection({
-  anchorNodeText: 'lすし',
+  anchorNodeText: "lすし",
   anchorOffset: 3,
-  focusNodeText: 'lすし',
+  focusNodeText: "lすし",
   focusOffset: 3,
-})
+});
 ```
 
 ## Why This Works

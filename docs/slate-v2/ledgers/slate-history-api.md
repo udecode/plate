@@ -36,9 +36,9 @@ packages/slate-history/test/undo/insert_text/non-contiguous.tsx	explicit-skip	no
 ## Current Read
 
 - direct kept-row history proof is now live in:
-  - `../slate-v2/packages/slate-history/test/history-contract.ts`
+  - `.tmp/slate-v2/packages/slate-history/test/history-contract.ts`
 - direct integrity proof is now live in:
-  - `../slate-v2/packages/slate-history/test/integrity-contract.ts`
+  - `.tmp/slate-v2/packages/slate-history/test/integrity-contract.ts`
 - that owner now proves:
   - `History.isHistory(...)` lifecycle truth
   - plain insert-text undo

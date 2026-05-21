@@ -28,18 +28,18 @@ Slate v2 should make the public lifecycle:
 
 ```ts
 editor.read((state) => {
-  state.selection.get()
-})
+  state.selection.get();
+});
 
 editor.update((tx) => {
   tx.value.replace({
     children,
     marks: null,
     selection: null,
-  })
-  tx.selection.get()
-  tx.nodes.set(props, { at: target })
-})
+  });
+  tx.selection.get();
+  tx.nodes.set(props, { at: target });
+});
 ```
 
 Use `state` for read-only work and `tx` for update work.
@@ -69,34 +69,34 @@ editor object:
 
 ```ts
 defineEditorExtension({
-  key: 'table',
+  key: "table",
   state: {
     table(state) {
       return {
         currentCell() {},
-      }
+      };
     },
   },
   tx: {
     table(tx) {
       return {
         insertRow() {},
-      }
+      };
     },
   },
-})
+});
 ```
 
 Usage:
 
 ```ts
 editor.read((state) => {
-  state.table.currentCell()
-})
+  state.table.currentCell();
+});
 
 editor.update((tx) => {
-  tx.table.insertRow()
-})
+  tx.table.insertRow();
+});
 ```
 
 This keeps raw Slate unopinionated while giving Plate and plugins a clean,
@@ -104,7 +104,7 @@ discoverable extension namespace.
 
 ## 2026-04-28 Live-Source Refresh
 
-Live `../slate-v2` now has the state/tx substrate:
+Live `.tmp/slate-v2` now has the state/tx substrate:
 
 - `editor.read((state) => ...)` and `editor.update((tx) => ...)` are implemented
   and tested.
@@ -143,7 +143,7 @@ This is a plan/execution gap, not a research contradiction.
 ## 2026-04-29 Editor Namespace Hard-Cut Refresh
 
 The public `Editor` value is still a live source mismatch with this decision.
-Live `../slate-v2` still exports `EditorInterface` and `export const Editor`,
+Live `.tmp/slate-v2` still exports `EditorInterface` and `export const Editor`,
 and that namespace mixes editor-state reads, writes, extension registration,
 replacement helpers, and setup helpers.
 
@@ -173,24 +173,24 @@ tests shorter would preserve the wrong app-author API.
 Schema predicates should not stay as top-level editor clutter:
 
 ```ts
-editor.isInline(element)
-editor.isVoid(element)
-editor.markableVoid(element)
-editor.isSelectable(element)
+editor.isInline(element);
+editor.isVoid(element);
+editor.markableVoid(element);
+editor.isSelectable(element);
 ```
 
 The final public shape should be:
 
 ```ts
-editor.schema.isInline(element)
+editor.schema.isInline(element);
 
 editor.read((state) => {
-  state.schema.isVoid(element)
-})
+  state.schema.isVoid(element);
+});
 
 editor.update((tx) => {
-  tx.schema.isSelectable(element)
-})
+  tx.schema.isSelectable(element);
+});
 ```
 
 Most authors should configure these through element specs instead of manual
@@ -198,11 +198,11 @@ predicate overrides:
 
 ```ts
 defineElement({
-  type: 'mention',
+  type: "mention",
   inline: true,
-  void: 'markable-inline',
+  void: "markable-inline",
   selectable: true,
-})
+});
 ```
 
 ## Evidence

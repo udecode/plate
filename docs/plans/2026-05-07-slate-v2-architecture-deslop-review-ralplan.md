@@ -110,12 +110,12 @@ Top drivers:
 
 Viable options:
 
-| Option | Verdict | Why |
-| --- | --- | --- |
-| Whole rewrite again | reject | It would discard a now-good public lifecycle and re-open solved API/runtime decisions. |
-| Keep architecture with no cleanup | reject | Internal helper usage in tests and docs can still blur the public story. |
-| Add raw Slate command/chain sugar | reject | Tiptap-style sugar belongs in product layers such as Plate, not raw Slate core. |
-| Keep architecture and run bounded deslop slices | choose | It preserves the proven substrate and targets only remaining ambiguity. |
+| Option                                          | Verdict | Why                                                                                    |
+| ----------------------------------------------- | ------- | -------------------------------------------------------------------------------------- |
+| Whole rewrite again                             | reject  | It would discard a now-good public lifecycle and re-open solved API/runtime decisions. |
+| Keep architecture with no cleanup               | reject  | Internal helper usage in tests and docs can still blur the public story.               |
+| Add raw Slate command/chain sugar               | reject  | Tiptap-style sugar belongs in product layers such as Plate, not raw Slate core.        |
+| Keep architecture and run bounded deslop slices | choose  | It preserves the proven substrate and targets only remaining ambiguity.                |
 
 Chosen option:
 
@@ -134,14 +134,14 @@ Consequences:
 
 ## 4. Confidence Scorecard
 
-| Dimension | Weight | Score | Evidence |
-| --- | ---: | ---: | --- |
-| React 19.2 runtime performance | 0.20 | 0.94 | React is kept as projection, while `useEditableRootRuntime` owns stable runtime refs and engines in `/Users/zbeyens/git/slate-v2/packages/slate-react/src/editable/runtime-root-engine.ts:106`, `:188`, `:199`, `:246`, and `:283`. Large-surface render budgets exist in `/Users/zbeyens/git/slate-v2/playwright/stress/generated-editing.test.ts:221`, `:947`, and `:1020`. |
-| Slate-close unopinionated DX | 0.20 | 0.93 | The public editor instance is locked to `extend`, `read`, `subscribe`, and `update` in `/Users/zbeyens/git/slate-v2/packages/slate/test/public-surface-contract.ts:132`; root exports keep `Editor` type-only in `/Users/zbeyens/git/slate-v2/packages/slate/src/index.ts:6`. |
-| Plate and slate-yjs migration-backbone shape | 0.15 | 0.94 | Extension namespaces are typed as `state` and `tx` groups in `/Users/zbeyens/git/slate-v2/packages/slate/src/interfaces/editor.ts:433`, `:441`, and `:477`; current Plate/Tiptap command sugar is deliberately rejected as raw Slate law. |
-| Regression-proof testing strategy | 0.20 | 0.93 | Public-surface guards, render-void contracts, runtime owner audits, generated stress rows, and Mobile/IME proof rows now exist. Exact device claims remain non-claims without matching artifacts. |
-| Research evidence completeness | 0.15 | 0.94 | Fresh local source checks covered Lexical dirty/composition/update logic, ProseMirror transaction/replace-range strategy, and Tiptap extension/command DX. |
-| shadcn-style composability and hook/component minimalism | 0.10 | 0.93 | `renderVoid` receives content-only props and runtime owns hidden DOM at `/Users/zbeyens/git/slate-v2/packages/slate-react/test/surface-contract.tsx:437` and `:485`; public hooks expose selector-style APIs from `/Users/zbeyens/git/slate-v2/packages/slate-react/src/index.ts:77`. |
+| Dimension                                                | Weight | Score | Evidence                                                                                                                                                                                                                                                                                                                                                                      |
+| -------------------------------------------------------- | -----: | ----: | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| React 19.2 runtime performance                           |   0.20 |  0.94 | React is kept as projection, while `useEditableRootRuntime` owns stable runtime refs and engines in `/Users/zbeyens/git/slate-v2/packages/slate-react/src/editable/runtime-root-engine.ts:106`, `:188`, `:199`, `:246`, and `:283`. Large-surface render budgets exist in `/Users/zbeyens/git/slate-v2/playwright/stress/generated-editing.test.ts:221`, `:947`, and `:1020`. |
+| Slate-close unopinionated DX                             |   0.20 |  0.93 | The public editor instance is locked to `extend`, `read`, `subscribe`, and `update` in `/Users/zbeyens/git/slate-v2/packages/slate/test/public-surface-contract.ts:132`; root exports keep `Editor` type-only in `/Users/zbeyens/git/slate-v2/packages/slate/src/index.ts:6`.                                                                                                 |
+| Plate and slate-yjs migration-backbone shape             |   0.15 |  0.94 | Extension namespaces are typed as `state` and `tx` groups in `/Users/zbeyens/git/slate-v2/packages/slate/src/interfaces/editor.ts:433`, `:441`, and `:477`; current Plate/Tiptap command sugar is deliberately rejected as raw Slate law.                                                                                                                                     |
+| Regression-proof testing strategy                        |   0.20 |  0.93 | Public-surface guards, render-void contracts, runtime owner audits, generated stress rows, and Mobile/IME proof rows now exist. Exact device claims remain non-claims without matching artifacts.                                                                                                                                                                             |
+| Research evidence completeness                           |   0.15 |  0.94 | Fresh local source checks covered Lexical dirty/composition/update logic, ProseMirror transaction/replace-range strategy, and Tiptap extension/command DX.                                                                                                                                                                                                                    |
+| shadcn-style composability and hook/component minimalism |   0.10 |  0.93 | `renderVoid` receives content-only props and runtime owns hidden DOM at `/Users/zbeyens/git/slate-v2/packages/slate-react/test/surface-contract.tsx:437` and `:485`; public hooks expose selector-style APIs from `/Users/zbeyens/git/slate-v2/packages/slate-react/src/index.ts:77`.                                                                                         |
 
 Weighted total: `0.94`.
 
@@ -168,13 +168,13 @@ Cut from normal public API:
 
 ## 6. Ecosystem Strategy Synthesis
 
-| System | Source | Mechanism | Avoids | Steal | Reject | Slate target | Verdict |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| Lexical | `/Users/zbeyens/git/lexical/packages/lexical/src/LexicalUpdates.ts:243` and `:965` | read/update discipline, dirty leaves/elements, composition key, transform loop | whole-tree work and composition corruption | dirty runtime buckets, update tags, composition-specific proof | class node model and `$function` public style | Slate runtime dirty ids plus `read` / `update` lifecycle | agree |
-| Lexical events | `/Users/zbeyens/git/lexical/packages/lexical/src/LexicalEvents.ts:161` and `:179` | root event table plus `beforeinput` when available | scattered browser policy | centralized input ownership and composition-aware event routing | copying Lexical command registry as raw public API | Slate root runtime and event engines | partial |
-| ProseMirror | `/Users/zbeyens/git/prosemirror/state/src/transaction.ts:26` and `:67` | transaction carries doc changes, selection mapping, and metadata | stale selection after edits | tx-local selection/read authority and metadata | integer position model | Slate path/range tx with commit metadata | agree |
-| ProseMirror replace | `/Users/zbeyens/git/prosemirror/transform/src/replace.ts:334` | fit slices by target depth and schema constraints | broad post-hoc normalization after paste/replace | bulk fragment fitting strategy for large paste/replace | full schema-first identity | Slate fragment insertion fast paths with explicit proof | partial |
-| Tiptap | `/Users/zbeyens/git/tiptap/packages/core/src/Extension.ts:23` and `/Users/zbeyens/git/tiptap/packages/extension-code-block/src/code-block.ts:187` | extension configs expose command DX over ProseMirror | raw engine complexity in app code | composable extension ergonomics for Plate | raw Slate `editor.commands` / `chain().focus().run()` | Plate owns product command sugar over Slate state/tx | diverge |
+| System              | Source                                                                                                                                            | Mechanism                                                                      | Avoids                                           | Steal                                                           | Reject                                                | Slate target                                             | Verdict |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ | ------------------------------------------------ | --------------------------------------------------------------- | ----------------------------------------------------- | -------------------------------------------------------- | ------- |
+| Lexical             | `/Users/zbeyens/git/lexical/packages/lexical/src/LexicalUpdates.ts:243` and `:965`                                                                | read/update discipline, dirty leaves/elements, composition key, transform loop | whole-tree work and composition corruption       | dirty runtime buckets, update tags, composition-specific proof  | class node model and `$function` public style         | Slate runtime dirty ids plus `read` / `update` lifecycle | agree   |
+| Lexical events      | `/Users/zbeyens/git/lexical/packages/lexical/src/LexicalEvents.ts:161` and `:179`                                                                 | root event table plus `beforeinput` when available                             | scattered browser policy                         | centralized input ownership and composition-aware event routing | copying Lexical command registry as raw public API    | Slate root runtime and event engines                     | partial |
+| ProseMirror         | `/Users/zbeyens/git/prosemirror/state/src/transaction.ts:26` and `:67`                                                                            | transaction carries doc changes, selection mapping, and metadata               | stale selection after edits                      | tx-local selection/read authority and metadata                  | integer position model                                | Slate path/range tx with commit metadata                 | agree   |
+| ProseMirror replace | `/Users/zbeyens/git/prosemirror/transform/src/replace.ts:334`                                                                                     | fit slices by target depth and schema constraints                              | broad post-hoc normalization after paste/replace | bulk fragment fitting strategy for large paste/replace          | full schema-first identity                            | Slate fragment insertion fast paths with explicit proof  | partial |
+| Tiptap              | `/Users/zbeyens/git/tiptap/packages/core/src/Extension.ts:23` and `/Users/zbeyens/git/tiptap/packages/extension-code-block/src/code-block.ts:187` | extension configs expose command DX over ProseMirror                           | raw engine complexity in app code                | composable extension ergonomics for Plate                       | raw Slate `editor.commands` / `chain().focus().run()` | Plate owns product command sugar over Slate state/tx     | diverge |
 
 Strategy:
 
@@ -270,9 +270,9 @@ owners remain:
 
 Issue matrix:
 
-| Issue | Cluster | Claim | Why | Proof route | Live ledger sync | PR line |
-| --- | --- | --- | --- | --- | --- | --- |
-| none | architecture review | Not claimed | No behavior changed in this pass. | no-code review | unchanged | unchanged |
+| Issue | Cluster             | Claim       | Why                               | Proof route    | Live ledger sync | PR line   |
+| ----- | ------------------- | ----------- | --------------------------------- | -------------- | ---------------- | --------- |
+| none  | architecture review | Not claimed | No behavior changed in this pass. | no-code review | unchanged        | unchanged |
 
 Reference sync:
 
@@ -287,13 +287,13 @@ Reference sync:
 
 ## 13. Legacy Regression Proof Matrix
 
-| Surface | Current proof | Deslop stance |
-| --- | --- | --- |
-| Public core API | `/Users/zbeyens/git/slate-v2/packages/slate/test/public-surface-contract.ts:132` and `:337` | Keep; add only if a new public surface appears. |
-| State/tx writes | `/Users/zbeyens/git/slate-v2/packages/slate/src/interfaces/editor.ts:461` | Keep; do not add parallel public writers. |
-| Void/render DX | `/Users/zbeyens/git/slate-v2/packages/slate-react/test/surface-contract.tsx:437` and `:485` | Keep; no public spacer. |
-| Input/IME runtime | `/Users/zbeyens/git/slate-v2/packages/slate-react/src/editable/runtime-root-engine.ts:199` and Mobile/IME browser rows | Keep; exact device claims need device proof. |
-| Large rendering | `/Users/zbeyens/git/slate-v2/packages/slate-react/test/rendering-strategy-and-scroll.tsx:386` and generated stress budgets | Keep; budgets can be made more release-grade later. |
+| Surface           | Current proof                                                                                                              | Deslop stance                                       |
+| ----------------- | -------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------- |
+| Public core API   | `/Users/zbeyens/git/slate-v2/packages/slate/test/public-surface-contract.ts:132` and `:337`                                | Keep; add only if a new public surface appears.     |
+| State/tx writes   | `/Users/zbeyens/git/slate-v2/packages/slate/src/interfaces/editor.ts:461`                                                  | Keep; do not add parallel public writers.           |
+| Void/render DX    | `/Users/zbeyens/git/slate-v2/packages/slate-react/test/surface-contract.tsx:437` and `:485`                                | Keep; no public spacer.                             |
+| Input/IME runtime | `/Users/zbeyens/git/slate-v2/packages/slate-react/src/editable/runtime-root-engine.ts:199` and Mobile/IME browser rows     | Keep; exact device claims need device proof.        |
+| Large rendering   | `/Users/zbeyens/git/slate-v2/packages/slate-react/test/rendering-strategy-and-scroll.tsx:386` and generated stress budgets | Keep; budgets can be made more release-grade later. |
 
 ## 14. Browser Stress / Parity Strategy
 
@@ -310,14 +310,14 @@ They are behavior locks.
 
 ## 15. Applicable Implementation-Skill Review Matrix
 
-| Lens | Applicability | Findings | Plan delta |
-| --- | --- | --- | --- |
-| Vercel React best practices | applied | React remains projection; runtime subscriptions are selector/source oriented. | No rewrite; split only proven owner leaks. |
-| performance-oracle | applied | Dirty runtime ids, large-doc budgets, and staged/virtualized proof exist. | Add release-grade p95/p99 budgets later, not a rewrite. |
-| performance | applied | Large repeated editor surfaces are in scope. | Keep cohort metrics; no broad perf claim without budget proof. |
-| tdd | applied | Behavior locks exist for public API, render, runtime, Mobile/IME. | Deslop slices need focused regression proof before cleanup. |
-| build-web-apps:shadcn | skipped | No UI app surface changed in this review. | No delta. |
-| react-useeffect | applied | Runtime effects synchronize DOM/browser systems. | No effect rewrite without concrete leak. |
+| Lens                        | Applicability | Findings                                                                      | Plan delta                                                     |
+| --------------------------- | ------------- | ----------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| Vercel React best practices | applied       | React remains projection; runtime subscriptions are selector/source oriented. | No rewrite; split only proven owner leaks.                     |
+| performance-oracle          | applied       | Dirty runtime ids, large-doc budgets, and staged/virtualized proof exist.     | Add release-grade p95/p99 budgets later, not a rewrite.        |
+| performance                 | applied       | Large repeated editor surfaces are in scope.                                  | Keep cohort metrics; no broad perf claim without budget proof. |
+| tdd                         | applied       | Behavior locks exist for public API, render, runtime, Mobile/IME.             | Deslop slices need focused regression proof before cleanup.    |
+| build-web-apps:shadcn       | skipped       | No UI app surface changed in this review.                                     | No delta.                                                      |
+| react-useeffect             | applied       | Runtime effects synchronize DOM/browser systems.                              | No effect rewrite without concrete leak.                       |
 
 ## 16. High-Risk Deliberate-Mode Pre-Mortem
 
@@ -365,21 +365,21 @@ Rejected alternatives:
 
 ## 18. Slate Maintainer Objection Ledger
 
-| Change / stance | Likely objection | Answer | Verdict |
-| --- | --- | --- | --- |
-| Keep `slate/internal` static `Editor` table | "This is legacy API hiding under a new path." | It is explicitly internal and not exported from root; tests and internals still need a helper table. Public guards reject root export. | keep |
-| No whole rewrite | "The runtime is still big." | Size is not the failure criterion. Owner leakage, subscription fanout, or behavior regressions are. Existing runtime owner tests and browser rows are more valuable than churn. | keep |
-| No command/chain sugar | "Tiptap DX is nicer." | Product sugar belongs in Plate. Raw Slate needs primitive, unopinionated state/tx. | keep |
-| Bounded test deslop | "Tests using internal helpers look messy." | Internal tests may be messy when proving internals. Public API tests and docs should be stricter. | keep |
+| Change / stance                             | Likely objection                              | Answer                                                                                                                                                                          | Verdict |
+| ------------------------------------------- | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| Keep `slate/internal` static `Editor` table | "This is legacy API hiding under a new path." | It is explicitly internal and not exported from root; tests and internals still need a helper table. Public guards reject root export.                                          | keep    |
+| No whole rewrite                            | "The runtime is still big."                   | Size is not the failure criterion. Owner leakage, subscription fanout, or behavior regressions are. Existing runtime owner tests and browser rows are more valuable than churn. | keep    |
+| No command/chain sugar                      | "Tiptap DX is nicer."                         | Product sugar belongs in Plate. Raw Slate needs primitive, unopinionated state/tx.                                                                                              | keep    |
+| Bounded test deslop                         | "Tests using internal helpers look messy."    | Internal tests may be messy when proving internals. Public API tests and docs should be stricter.                                                                               | keep    |
 
 ## 19. Pass Schedule And Pass-State Ledger
 
-| Pass | Status | Evidence added | Plan delta | Open issues | Next owner |
-| --- | --- | --- | --- | --- | --- |
-| 1. Current-state read | complete | live public API, render DX, runtime owner graph, prior closed plans | created this plan | none | pass 2 |
-| 2. Ecosystem research refresh | complete | Lexical, ProseMirror, Tiptap local source checks | added strategy table | none | pass 3 |
-| 3. Deslop pressure | complete | public/internal helper grep, docs/test surface grep | chose bounded cleanup over rewrite | no code edits in this skill | pass 4 |
-| 4. Risk and closure score | complete | scorecard, issue no-claim accounting, maintainer objections | set score `0.94` and closed review | none | user review / later Ralph if desired |
+| Pass                          | Status   | Evidence added                                                      | Plan delta                         | Open issues                 | Next owner                           |
+| ----------------------------- | -------- | ------------------------------------------------------------------- | ---------------------------------- | --------------------------- | ------------------------------------ |
+| 1. Current-state read         | complete | live public API, render DX, runtime owner graph, prior closed plans | created this plan                  | none                        | pass 2                               |
+| 2. Ecosystem research refresh | complete | Lexical, ProseMirror, Tiptap local source checks                    | added strategy table               | none                        | pass 3                               |
+| 3. Deslop pressure            | complete | public/internal helper grep, docs/test surface grep                 | chose bounded cleanup over rewrite | no code edits in this skill | pass 4                               |
+| 4. Risk and closure score     | complete | scorecard, issue no-claim accounting, maintainer objections         | set score `0.94` and closed review | none                        | user review / later Ralph if desired |
 
 ## 20. Plan Deltas From Review
 
@@ -454,17 +454,17 @@ Accepted decisions:
 
 ## 25. Final Completion Gates
 
-| Gate | Result |
-| --- | --- |
-| score at least `0.92` | pass: `0.94` |
-| no dimension below `0.85` | pass |
-| live source cited for current shape | pass |
-| ecosystem synthesis complete | pass |
-| issue ledger accounting explicit | pass: no claims changed |
-| high-risk deliberate mode complete | pass |
-| deslop scope bounded | pass |
-| no implementation edits from Ralplan | pass |
-| final user-review handoff available | pass |
+| Gate                                 | Result                  |
+| ------------------------------------ | ----------------------- |
+| score at least `0.92`                | pass: `0.94`            |
+| no dimension below `0.85`            | pass                    |
+| live source cited for current shape  | pass                    |
+| ecosystem synthesis complete         | pass                    |
+| issue ledger accounting explicit     | pass: no claims changed |
+| high-risk deliberate mode complete   | pass                    |
+| deslop scope bounded                 | pass                    |
+| no implementation edits from Ralplan | pass                    |
+| final user-review handoff available  | pass                    |
 
 Completion verdict: `done`.
 
@@ -504,19 +504,19 @@ Unknowns / open questions:
 
 Likely touchpoints:
 
-- `../slate-v2/docs`;
-- `../slate-v2/site/examples`;
+- `.tmp/slate-v2/docs`;
+- `.tmp/slate-v2/site/examples`;
 - source-only grep results excluding generated site output.
 
 Execution ledger:
 
-| Time | Pass | Owner | Evidence | Result | Next |
-| --- | --- | --- | --- | --- | --- |
-| 2026-05-08T00:15:49+08:00 | deslop-pass | public docs/examples | completion state reset to pending; `.tmp/continue.md` refreshed | started | grep source docs/examples and patch only real public-teaching drift |
-| 2026-05-08T00:21:19+08:00 | deslop-pass | public docs/examples | removed `slate/internal` from `../slate-v2/site/examples/ts/forced-layout.tsx`; replaced stale `Editor.children` prose in `../slate-v2/docs/libraries/slate-react/annotations.md`; source grep clean; `bun typecheck:site`, public-surface contract, `bun check`, and focused forced-layout Playwright stress row passed | phase 1 complete | phase 2 test-helper audit |
-| 2026-05-08T00:22:15+08:00 | deslop-pass | package tests | completion state moved to phase 2 | in progress | grep package tests for public-vs-internal helper ambiguity |
-| 2026-05-08T00:29:59+08:00 | deslop-pass | package tests | moved public read/update and generic API tests off `slate/internal`; focused public/helper tests passed | phase 2 complete | phase 3 internal helper naming audit |
-| 2026-05-08T00:29:59+08:00 | deslop-pass | internal helper naming | verified source uses `InternalEditor` internally and root `slate` exports `Editor` type-only; `slate/internal` keeps the compatibility alias | phase 3 complete, no code edit | phase 4 runtime owner audit |
-| 2026-05-08T00:29:59+08:00 | deslop-pass | runtime owner audit | no failing runtime proof named an owner leak; existing kernel authority inventory remains the owner lock | phase 4 skipped by plan condition | phase 5 performance budget audit |
-| 2026-05-08T00:29:59+08:00 | deslop-pass | performance budgets | repeated-surface render budgets already exist in `../slate-v2/playwright/stress/generated-editing.test.ts`; no extra budget edit needed for this cleanup slice | phase 5 complete, no code edit | release discipline and closeout |
-| 2026-05-08T00:29:59+08:00 | debug + verification-sweep-pass | closeout | removed stale `editor.operations` from `../slate-v2/packages/slate-dom/test/bridge.ts`; refreshed classified escape-hatch counts; `bun test:release-discipline`, `bun lint:fix`, `bun check`, and focused forced-layout Playwright row passed in `../slate-v2` | execution done | completion state done |
+| Time                      | Pass                            | Owner                  | Evidence                                                                                                                                                                                                                                                                                                                     | Result                            | Next                                                                |
+| ------------------------- | ------------------------------- | ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------- | ------------------------------------------------------------------- |
+| 2026-05-08T00:15:49+08:00 | deslop-pass                     | public docs/examples   | completion state reset to pending; `.tmp/continue.md` refreshed                                                                                                                                                                                                                                                              | started                           | grep source docs/examples and patch only real public-teaching drift |
+| 2026-05-08T00:21:19+08:00 | deslop-pass                     | public docs/examples   | removed `slate/internal` from `.tmp/slate-v2/site/examples/ts/forced-layout.tsx`; replaced stale `Editor.children` prose in `.tmp/slate-v2/docs/libraries/slate-react/annotations.md`; source grep clean; `bun typecheck:site`, public-surface contract, `bun check`, and focused forced-layout Playwright stress row passed | phase 1 complete                  | phase 2 test-helper audit                                           |
+| 2026-05-08T00:22:15+08:00 | deslop-pass                     | package tests          | completion state moved to phase 2                                                                                                                                                                                                                                                                                            | in progress                       | grep package tests for public-vs-internal helper ambiguity          |
+| 2026-05-08T00:29:59+08:00 | deslop-pass                     | package tests          | moved public read/update and generic API tests off `slate/internal`; focused public/helper tests passed                                                                                                                                                                                                                      | phase 2 complete                  | phase 3 internal helper naming audit                                |
+| 2026-05-08T00:29:59+08:00 | deslop-pass                     | internal helper naming | verified source uses `InternalEditor` internally and root `slate` exports `Editor` type-only; `slate/internal` keeps the compatibility alias                                                                                                                                                                                 | phase 3 complete, no code edit    | phase 4 runtime owner audit                                         |
+| 2026-05-08T00:29:59+08:00 | deslop-pass                     | runtime owner audit    | no failing runtime proof named an owner leak; existing kernel authority inventory remains the owner lock                                                                                                                                                                                                                     | phase 4 skipped by plan condition | phase 5 performance budget audit                                    |
+| 2026-05-08T00:29:59+08:00 | deslop-pass                     | performance budgets    | repeated-surface render budgets already exist in `.tmp/slate-v2/playwright/stress/generated-editing.test.ts`; no extra budget edit needed for this cleanup slice                                                                                                                                                             | phase 5 complete, no code edit    | release discipline and closeout                                     |
+| 2026-05-08T00:29:59+08:00 | debug + verification-sweep-pass | closeout               | removed stale `editor.operations` from `.tmp/slate-v2/packages/slate-dom/test/bridge.ts`; refreshed classified escape-hatch counts; `bun test:release-discipline`, `bun lint:fix`, `bun check`, and focused forced-layout Playwright row passed in `.tmp/slate-v2`                                                           | execution done                    | completion state done                                               |

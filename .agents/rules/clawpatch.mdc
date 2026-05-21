@@ -1,0 +1,360 @@
+---
+description: Operate Clawpatch for semantic feature mapping, automated review, explicit finding fixes, revalidation, reports, and state recovery.
+argument-hint: '[init | map | review | rereview-all | report | fix <finding-id> | revalidate <finding-id> | status]'
+---
+
+# Clawpatch
+
+Use this skill when the user asks for Clawpatch, `.clawpatch`, automated code
+review, finding reports, `clawpatch review`, `clawpatch fix`, revalidation, or a
+forced re-review of existing Clawpatch feature records.
+
+## Source Of Truth
+
+- Docs: `https://clawpatch.ai/`
+- GitHub docs: `https://github.com/openclaw/clawpatch`
+- In this repo pair, the active Slate v2 Clawpatch project usually lives at
+  `.tmp/slate-v2`, not `/Users/zbeyens/git/slate-v2`.
+- Clawpatch state is local runtime state. Keep `.clawpatch/` out of git unless
+  the user explicitly asks to preserve it as an artifact.
+
+Before making claims, inspect the actual target directory:
+
+```bash
+pwd
+test -f .clawpatch/config.json && clawpatch status --json
+find .clawpatch/features -maxdepth 1 -type f 2>/dev/null | wc -l
+find .clawpatch/reports -maxdepth 1 -type f 2>/dev/null | sort | tail -5
+```
+
+If the expected feature count or config is missing, stop and report the wrong
+checkout or missing state. Do not initialize over a missing project by reflex.
+
+You can also run from another cwd with global flags:
+
+```bash
+clawpatch --root .tmp/slate-v2 status --json
+clawpatch --root .tmp/slate-v2 report --status open --json
+```
+
+## What Clawpatch Does
+
+Clawpatch maps a repo into semantic feature records, reviews those bounded
+feature contexts with a provider, persists findings, applies explicit
+one-finding fixes, runs configured validation commands, and records audit state.
+
+State layout:
+
+- `.clawpatch/config.json`: settings, provider, commands, review limits, git
+  safety flags.
+- `.clawpatch/project.json`: detected project metadata when present.
+- `.clawpatch/features/*.json`: feature records, status, finding ids,
+  `analysisHistory`.
+- `.clawpatch/findings/*.json`: finding records and triage status.
+- `.clawpatch/patches/*.json`: fix attempts and validation results.
+- `.clawpatch/runs/*.json`: command runs, claimed features, errors.
+- `.clawpatch/reports/*.md`: generated Markdown reports.
+- `.clawpatch/locks/`: transient feature locks; should clear after runs.
+
+Feature status is not the same as finding status. A feature can be `reviewed`,
+`needs-fix`, or `fixed`; a finding can be `open`, `fixed`, `wont-fix`,
+`false-positive`, or `uncertain`.
+
+## Command Reference
+
+Core commands:
+
+- `clawpatch init`: initialize `.clawpatch/`.
+- `clawpatch map`: build semantic feature records.
+- `clawpatch status`: summarize project state.
+- `clawpatch review`: review queued or selected features.
+- `clawpatch report`: render finding reports.
+- `clawpatch show --finding <id>`: inspect one finding.
+- `clawpatch next`: pick the next finding, defaulting to `open`.
+- `clawpatch triage`: change a finding status with a note.
+- `clawpatch fix`: apply one explicit fix attempt.
+- `clawpatch revalidate`: re-check finding validity after changes.
+- `clawpatch doctor`: check local setup.
+- `clawpatch clean-locks`: clear stale feature locks.
+
+Useful global flags:
+
+- `--root <path>`: operate on a target repo from another cwd.
+- `--state-dir <path>`: use a non-default state directory.
+- `--config <path>`: use a specific config file.
+- `--json`: machine-readable output.
+- `--debug`: extra diagnostics.
+- `--no-input`: avoid interactive prompts.
+
+## Install And Doctor
+
+Baseline requirements from the Clawpatch docs:
+
+- Node.js 22+
+- Git 2.x
+- local Codex CLI for the default provider
+
+Install:
+
+```bash
+npm install -g clawpatch
+# or
+pnpm add -g clawpatch
+```
+
+Probe before real work:
+
+```bash
+clawpatch --version
+codex --version
+clawpatch doctor
+```
+
+## Initialize And Map
+
+Use this only when the target repo truly has no Clawpatch state.
+
+```bash
+clawpatch init
+clawpatch map
+clawpatch status --json
+```
+
+`clawpatch init` creates `.clawpatch/config.json`. The default config excludes
+large/generated folders and `.clawpatch/**`, uses the local Codex provider, and
+sets `git.requireCleanWorktreeForFix: true`.
+
+Do not run `clawpatch init` in `plate-2` when the target is `.tmp/slate-v2`.
+Run commands from the actual target root.
+
+## Review
+
+Plain review:
+
+```bash
+clawpatch review --json
+```
+
+Batch review:
+
+```bash
+clawpatch review --limit 10 --json
+```
+
+Specific feature:
+
+```bash
+clawpatch review --feature <featureId> --json
+```
+
+Dry-run queue check:
+
+```bash
+clawpatch review --dry-run --json
+```
+
+Hard rule: `clawpatch review --json` reviews the eligible queue, not
+necessarily every feature record on disk. `reviewed: 0` can be correct when
+`clawpatch review --dry-run --json` says `wouldReview: 0`, even if
+`clawpatch status --json` reports many feature records.
+
+## Force Re-Review All Features
+
+When the user asks to re-review all known features, do not use plain
+`clawpatch review`. Force each feature explicitly.
+
+```bash
+mkdir -p .clawpatch/runs/forced-rereview-$(date -u +%Y%m%dT%H%M%SZ)
+jq -r '.featureId' .clawpatch/features/*.json | sort > .clawpatch/runs/forced-rereview/features.txt
+
+while IFS= read -r feature_id; do
+  clawpatch review --feature "$feature_id" --json
+done < .clawpatch/runs/forced-rereview/features.txt
+```
+
+For long runs, record each result to JSONL so interruption is recoverable:
+
+```bash
+run_dir=".clawpatch/runs/forced-rereview-$(date -u +%Y%m%dT%H%M%SZ)"
+mkdir -p "$run_dir"
+jq -r '.featureId' .clawpatch/features/*.json | sort > "$run_dir/features.txt"
+
+while IFS= read -r feature_id; do
+  printf '%s\n' "$feature_id"
+  if output=$(clawpatch review --feature "$feature_id" --json 2>&1); then
+    printf '{"featureId":%s,"ok":true,"output":%s}\n' \
+      "$(jq -Rn --arg v "$feature_id" '$v')" \
+      "$(jq -Rn --arg v "$output" '$v')" >> "$run_dir/review-results.jsonl"
+  else
+    printf '{"featureId":%s,"ok":false,"output":%s}\n' \
+      "$(jq -Rn --arg v "$feature_id" '$v')" \
+      "$(jq -Rn --arg v "$output" '$v')" >> "$run_dir/review-results.jsonl"
+  fi
+done < "$run_dir/features.txt"
+```
+
+Avoid zsh's reserved `status` variable in shell loops. Use names like
+`ok`, `exit_code`, or `feature_status`.
+
+## Report And Triage
+
+Open findings:
+
+```bash
+clawpatch report --status open --json
+clawpatch status --json
+clawpatch next --json
+```
+
+Markdown report:
+
+```bash
+clawpatch report
+```
+
+Filtered reports:
+
+```bash
+clawpatch report --severity high --json
+clawpatch report --feature <featureId> --json
+clawpatch report --category <category> --json
+clawpatch report --triage <triage> --json
+clawpatch report --output .clawpatch/reports/open.md
+```
+
+A report may include old findings with non-open statuses. Do not count the
+whole Markdown report as current work. Use `report --status open --json` and
+`status --json` for the live queue.
+
+False positives should be recorded in Clawpatch, not silently ignored:
+
+```bash
+clawpatch triage --finding <findingId> --status false-positive --note "<evidence>"
+```
+
+Use `wont-fix` only for a deliberate product/architecture decision. Use
+`uncertain` when evidence is insufficient.
+
+## Fix
+
+Fix is explicit and one finding at a time:
+
+```bash
+clawpatch fix --finding <findingId> --json
+```
+
+Default safety blocks fixes on a dirty worktree:
+
+```json
+{
+  "git": {
+    "requireCleanWorktreeForFix": true,
+    "commit": false,
+    "openPr": false
+  }
+}
+```
+
+For a local multi-finding fix batch where Clawpatch dirties the tree with its
+own prior patch, it is acceptable to temporarily set
+`requireCleanWorktreeForFix: false`, run the batch, then restore it to `true`
+before handoff. Record this in the plan.
+
+Never let Clawpatch commit, push, or open PRs in this repo unless the user
+explicitly asks for that behavior.
+
+## Revalidate
+
+Use revalidation after manual fixes, Clawpatch patches, or upstream changes:
+
+```bash
+clawpatch revalidate --finding <findingId> --json
+```
+
+Broader revalidation:
+
+```bash
+clawpatch revalidate --all --status open --json
+clawpatch revalidate --feature <featureId> --json
+clawpatch revalidate --since HEAD~1 --json
+clawpatch revalidate --limit 10 --status open --json
+```
+
+Trust revalidation scope. If source is fixed but the finding remains open
+because exported artifacts are stale, rebuild the relevant package and
+revalidate again.
+
+Example from Slate v2:
+
+```bash
+bun --filter slate-react build
+clawpatch revalidate --finding <findingId> --json
+```
+
+## Locks
+
+`clawpatch status --json` reports `activeLocks` and `lockFiles`. If locks remain
+after a process exits, inspect before cleaning:
+
+```bash
+find .clawpatch/locks -maxdepth 1 -type f -print -exec sed -n '1,120p' {} \;
+ps -p <pid-from-lock> -o pid=,comm= 2>/dev/null || true
+```
+
+If the process is gone and no Clawpatch run is active, clean stale locks:
+
+```bash
+clawpatch clean-locks --json
+```
+
+Do not delete lock files manually unless `clean-locks` is unavailable and the
+process is proven dead.
+
+## Slate V2 Operating Rules
+
+- Default target: `.tmp/slate-v2` from the `plate-2` root when the user says
+  the Slate v2 Clawpatch state moved there.
+- The sibling `/Users/zbeyens/git/slate-v2` path may be stale, partial, or only
+  contain one feature. Verify before using it.
+- Keep `.clawpatch/` ignored. The state can be huge and local.
+- Use `docs/plans/**` plus `.tmp/<session-id>/completion-check.md` for
+  restartable progress when the run spans many commands.
+- `pending` means more autonomous work remains.
+- `done` means the active Clawpatch target is met.
+- `blocked` means the target cannot continue without restored state, missing
+  tooling, or a user decision.
+
+## Verification Closeout
+
+For review-only work:
+
+```bash
+clawpatch status --json
+clawpatch report --status open --json
+node tooling/scripts/completion-check.mjs
+```
+
+For fix work, run the configured Clawpatch validation plus the repo's relevant
+checks. In Slate v2 batches this has usually meant:
+
+```bash
+npm run typecheck
+npm run lint:fix
+npm run lint
+npm run test
+clawpatch status --json
+```
+
+For generated skills in `plate-2`, after editing `.agents/rules/*.mdc` or
+`.agents/AGENTS.md`, run:
+
+```bash
+pnpm install
+```
+
+Then verify the generated skill mirrors the source:
+
+```bash
+test -f .agents/skills/clawpatch/SKILL.md
+rg -n "Force Re-Review All Features|review --dry-run|requireCleanWorktreeForFix|\\.tmp/slate-v2" .agents/rules/clawpatch.mdc .agents/skills/clawpatch/SKILL.md
+```

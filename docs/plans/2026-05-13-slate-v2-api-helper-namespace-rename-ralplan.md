@@ -30,12 +30,12 @@ import {
   type Point,
   type Range,
   type Text,
-} from 'slate'
+} from "slate";
 
-NodeApi.string(node)
-ElementApi.isElement(node)
-PathApi.next(path)
-RangeApi.edges(range)
+NodeApi.string(node);
+ElementApi.isElement(node);
+PathApi.next(path);
+RangeApi.edges(range);
 ```
 
 Do not rename model types just to dodge DOM globals. `type Node`,
@@ -53,14 +53,14 @@ Closure verdict: ready for Ralph execution.
 
 ## Intent Boundary
 
-| Field | Decision |
-| --- | --- |
-| Intent | Remove DOM-global naming collisions and type/value namespace ambiguity from the Slate v2 public helper surface. |
-| Desired outcome | App code can import model types and helper APIs without shadowing browser globals such as `Node`, `Element`, `Text`, and `Range`. |
-| In scope | Public `slate` helper value namespaces, docs/examples/tests import shape, changeset, public surface contracts, issue #5400 accounting after implementation. |
-| Non-goals | Renaming model type aliases, adding public compat aliases, changing editor transaction/state API, changing DOM/React host helper policy. |
-| Decision boundary | Slate Ralplan may decide the target API and proof gates; `ralph` owns source edits later. |
-| User decision needed | None for the target. A later release-policy decision may decide whether this is a major changeset if the package is already published from this branch. |
+| Field                | Decision                                                                                                                                                    |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Intent               | Remove DOM-global naming collisions and type/value namespace ambiguity from the Slate v2 public helper surface.                                             |
+| Desired outcome      | App code can import model types and helper APIs without shadowing browser globals such as `Node`, `Element`, `Text`, and `Range`.                           |
+| In scope             | Public `slate` helper value namespaces, docs/examples/tests import shape, changeset, public surface contracts, issue #5400 accounting after implementation. |
+| Non-goals            | Renaming model type aliases, adding public compat aliases, changing editor transaction/state API, changing DOM/React host helper policy.                    |
+| Decision boundary    | Slate Ralplan may decide the target API and proof gates; `ralph` owns source edits later.                                                                   |
+| User decision needed | None for the target. A later release-policy decision may decide whether this is a major changeset if the package is already published from this branch.     |
 
 Pressure test:
 
@@ -72,19 +72,19 @@ Pressure test:
 
 ## Live Source Evidence
 
-| Surface | Current owner | Current shape | Verdict |
-| --- | --- | --- | --- |
-| Root exports | `../slate-v2/packages/slate/src/index.ts:92-103` | The root re-exports interface modules for `element`, `node`, `path`, `point`, `range`, `text`, refs, `operation`, and `scrubber`. | Current root exposes merged helper values through wildcard exports. |
-| Node | `../slate-v2/packages/slate/src/interfaces/node.ts:18-20`, `:328-330` | `type Node` and `const Node` share the same public identifier. | Rename value to `NodeApi`; keep type `Node`. |
-| Element | `../slate-v2/packages/slate/src/interfaces/element.ts:18`, `:130-132` | `type Element` and `const Element` share the same public identifier. | Rename value to `ElementApi`; keep type `Element`. |
-| Text | `../slate-v2/packages/slate/src/interfaces/text.ts:29`, `:119-121` | `type Text` and `const Text` share the same public identifier. | Rename value to `TextApi`; keep type `Text`. |
-| Path / Range | `../slate-v2/packages/slate/src/interfaces/path.ts:19`, `:184-186`; `../slate-v2/packages/slate/src/interfaces/range.ts:22`, `:115-117` | `Path` and `Range` also merge type/value helper names. | Rename values to `PathApi` and `RangeApi`; keep types. |
-| Location / Span / refs / Scrubber | `../slate-v2/packages/slate/src/interfaces/location.ts:12`, `:42`, `:69`, `:79`; `../slate-v2/packages/slate/src/interfaces/path-ref.ts:9`, `:23`; `../slate-v2/packages/slate/src/interfaces/point-ref.ts:10`, `:24`; `../slate-v2/packages/slate/src/interfaces/range-ref.ts:9`, `:23`; `../slate-v2/packages/slate/src/interfaces/scrubber.ts:1`, `:26` | These also merge public type/interface names with helper/config values. | Rename values to `LocationApi`, `SpanApi`, `PathRefApi`, `PointRefApi`, `RangeRefApi`, and `ScrubberApi`. |
-| Public-surface contract | `../slate-v2/packages/slate/test/public-surface-contract.ts:133-147` | The current contract requires root `Element`, `Node`, `Operation`, `Path`, `Point`, `Range`, `Scrubber`, and `Text` values. | Ralph must flip this to `*Api` values and assert old value names are absent. |
-| Editor value | `../slate-v2/packages/slate/test/public-surface-contract.ts:288-290` | Public root already asserts `'Editor' in Slate` is false. | Do not add `EditorApi` as a root value. |
-| Plate precedent | `../plate/packages/slate/src/interfaces/node.ts:38`, `../plate/packages/slate/src/interfaces/element.ts:20`, `../plate/packages/slate/src/interfaces/path.ts:22` | Plate uses `NodeApi`, `ElementApi`, and `PathApi`. | Steal the naming, not Plate's product layer. |
-| Legacy Slate | `../slate/packages/slate/src/interfaces/node.ts:11`, `:242`; `../slate/packages/slate/src/interfaces/element.ts:21`, `:94` | Legacy Slate uses merged type/value namespaces. | This is familiar, but it carries the exact global-shadowing problem. |
-| Prior v2 research | `docs/research/decisions/slate-v2-state-tx-public-api-and-extension-namespaces.md:147-154` | Prior research said to keep pure data namespaces as `Node`, `Path`, etc. | Revise: keep pure data helpers, but suffix the value objects with `Api`. |
+| Surface                           | Current owner                                                                                                                                                                                                                                                                                                                                                        | Current shape                                                                                                                     | Verdict                                                                                                   |
+| --------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| Root exports                      | `.tmp/slate-v2/packages/slate/src/index.ts:92-103`                                                                                                                                                                                                                                                                                                                   | The root re-exports interface modules for `element`, `node`, `path`, `point`, `range`, `text`, refs, `operation`, and `scrubber`. | Current root exposes merged helper values through wildcard exports.                                       |
+| Node                              | `.tmp/slate-v2/packages/slate/src/interfaces/node.ts:18-20`, `:328-330`                                                                                                                                                                                                                                                                                              | `type Node` and `const Node` share the same public identifier.                                                                    | Rename value to `NodeApi`; keep type `Node`.                                                              |
+| Element                           | `.tmp/slate-v2/packages/slate/src/interfaces/element.ts:18`, `:130-132`                                                                                                                                                                                                                                                                                              | `type Element` and `const Element` share the same public identifier.                                                              | Rename value to `ElementApi`; keep type `Element`.                                                        |
+| Text                              | `.tmp/slate-v2/packages/slate/src/interfaces/text.ts:29`, `:119-121`                                                                                                                                                                                                                                                                                                 | `type Text` and `const Text` share the same public identifier.                                                                    | Rename value to `TextApi`; keep type `Text`.                                                              |
+| Path / Range                      | `.tmp/slate-v2/packages/slate/src/interfaces/path.ts:19`, `:184-186`; `.tmp/slate-v2/packages/slate/src/interfaces/range.ts:22`, `:115-117`                                                                                                                                                                                                                          | `Path` and `Range` also merge type/value helper names.                                                                            | Rename values to `PathApi` and `RangeApi`; keep types.                                                    |
+| Location / Span / refs / Scrubber | `.tmp/slate-v2/packages/slate/src/interfaces/location.ts:12`, `:42`, `:69`, `:79`; `.tmp/slate-v2/packages/slate/src/interfaces/path-ref.ts:9`, `:23`; `.tmp/slate-v2/packages/slate/src/interfaces/point-ref.ts:10`, `:24`; `.tmp/slate-v2/packages/slate/src/interfaces/range-ref.ts:9`, `:23`; `.tmp/slate-v2/packages/slate/src/interfaces/scrubber.ts:1`, `:26` | These also merge public type/interface names with helper/config values.                                                           | Rename values to `LocationApi`, `SpanApi`, `PathRefApi`, `PointRefApi`, `RangeRefApi`, and `ScrubberApi`. |
+| Public-surface contract           | `.tmp/slate-v2/packages/slate/test/public-surface-contract.ts:133-147`                                                                                                                                                                                                                                                                                               | The current contract requires root `Element`, `Node`, `Operation`, `Path`, `Point`, `Range`, `Scrubber`, and `Text` values.       | Ralph must flip this to `*Api` values and assert old value names are absent.                              |
+| Editor value                      | `.tmp/slate-v2/packages/slate/test/public-surface-contract.ts:288-290`                                                                                                                                                                                                                                                                                               | Public root already asserts `'Editor' in Slate` is false.                                                                         | Do not add `EditorApi` as a root value.                                                                   |
+| Plate precedent                   | `../plate/packages/slate/src/interfaces/node.ts:38`, `../plate/packages/slate/src/interfaces/element.ts:20`, `../plate/packages/slate/src/interfaces/path.ts:22`                                                                                                                                                                                                     | Plate uses `NodeApi`, `ElementApi`, and `PathApi`.                                                                                | Steal the naming, not Plate's product layer.                                                              |
+| Legacy Slate                      | `../slate/packages/slate/src/interfaces/node.ts:11`, `:242`; `../slate/packages/slate/src/interfaces/element.ts:21`, `:94`                                                                                                                                                                                                                                           | Legacy Slate uses merged type/value namespaces.                                                                                   | This is familiar, but it carries the exact global-shadowing problem.                                      |
+| Prior v2 research                 | `docs/research/decisions/slate-v2-state-tx-public-api-and-extension-namespaces.md:147-154`                                                                                                                                                                                                                                                                           | Prior research said to keep pure data namespaces as `Node`, `Path`, etc.                                                          | Revise: keep pure data helpers, but suffix the value objects with `Api`.                                  |
 
 ## Issue Ledger Accounting
 
@@ -92,8 +92,8 @@ ClawSweeper status: completed for Ralph execution. The bounded sweep stayed on
 cached local ledgers and the exact #5400 dossier; no broad GitHub issue list
 refresh was needed.
 
-| Issue | Cluster | Claim | Why | Proof route | V2 sync ledger | PR line |
-| --- | --- | --- | --- | --- | --- | --- |
+| Issue | Cluster                                    | Claim             | Why                                                                                                                                                              | Proof route                                                                                      | V2 sync ledger                                | PR line                                                                                                                        |
+| ----- | ------------------------------------------ | ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
 | #5400 | API, Typing, And Extensibility / v2-api-dx | fixed after Ralph | The issue is specifically a `Node` import namespace conflict. Hard-renaming helper values to `NodeApi` removes the collision at the API level, not only in docs. | public-surface contract, docs/examples import census, package typecheck, downstream import smoke | updated to `fixes-claimed` after source proof | `Fixes #5400: Public helper value namespaces use *Api, so importing Slate helpers no longer shadows DOM globals such as Node.` |
 
 Ledger evidence:
@@ -127,13 +127,13 @@ Top drivers:
 
 Viable options:
 
-| Option | Pros | Cons | Verdict |
-| --- | --- | --- | --- |
-| Keep `Node`, `Element`, `Path`, etc. | Legacy Slate familiarity; least churn. | Preserves #5400 and type/value ambiguity. | reject |
-| Add `NodeApi` aliases but keep old values | Easy migration. | Worst of both worlds: two spellings, stale docs, autocomplete noise. | reject |
-| Hard rename helper values to `*Api`; keep model types | Clears collisions, matches Plate, keeps Slate model vocabulary. | Public break; many imports change. | choose |
-| Rename model types too, e.g. `SlateNode` / `SlateElement` | Clears type namespace collisions. | Overcorrects; hurts Slate-close vocabulary and migration. | reject |
-| Add public `EditorApi` value too | Superficially consistent. | Violates the accepted state/tx architecture and revives static editor thinking. | reject |
+| Option                                                    | Pros                                                            | Cons                                                                            | Verdict |
+| --------------------------------------------------------- | --------------------------------------------------------------- | ------------------------------------------------------------------------------- | ------- |
+| Keep `Node`, `Element`, `Path`, etc.                      | Legacy Slate familiarity; least churn.                          | Preserves #5400 and type/value ambiguity.                                       | reject  |
+| Add `NodeApi` aliases but keep old values                 | Easy migration.                                                 | Worst of both worlds: two spellings, stale docs, autocomplete noise.            | reject  |
+| Hard rename helper values to `*Api`; keep model types     | Clears collisions, matches Plate, keeps Slate model vocabulary. | Public break; many imports change.                                              | choose  |
+| Rename model types too, e.g. `SlateNode` / `SlateElement` | Clears type namespace collisions.                               | Overcorrects; hurts Slate-close vocabulary and migration.                       | reject  |
+| Add public `EditorApi` value too                          | Superficially consistent.                                       | Violates the accepted state/tx architecture and revives static editor thinking. | reject  |
 
 Chosen consequence:
 
@@ -149,21 +149,21 @@ Rename every public merged type/value helper object to `*Api`.
 
 Primary public helper values:
 
-| Current value | Target value | Type stays |
-| --- | --- | --- |
-| `Node` | `NodeApi` | `Node` |
-| `Element` | `ElementApi` | `Element` |
-| `Text` | `TextApi` | `Text` |
-| `Path` | `PathApi` | `Path` |
-| `Point` | `PointApi` | `Point` |
-| `Range` | `RangeApi` | `Range` |
-| `Operation` | `OperationApi` | `Operation` |
-| `Location` | `LocationApi` | `Location` |
-| `Span` | `SpanApi` | `Span` |
-| `PathRef` | `PathRefApi` | `PathRef` |
-| `PointRef` | `PointRefApi` | `PointRef` |
-| `RangeRef` | `RangeRefApi` | `RangeRef` |
-| `Scrubber` | `ScrubberApi` | `Scrubber` |
+| Current value | Target value   | Type stays  |
+| ------------- | -------------- | ----------- |
+| `Node`        | `NodeApi`      | `Node`      |
+| `Element`     | `ElementApi`   | `Element`   |
+| `Text`        | `TextApi`      | `Text`      |
+| `Path`        | `PathApi`      | `Path`      |
+| `Point`       | `PointApi`     | `Point`     |
+| `Range`       | `RangeApi`     | `Range`     |
+| `Operation`   | `OperationApi` | `Operation` |
+| `Location`    | `LocationApi`  | `Location`  |
+| `Span`        | `SpanApi`      | `Span`      |
+| `PathRef`     | `PathRefApi`   | `PathRef`   |
+| `PointRef`    | `PointRefApi`  | `PointRef`  |
+| `RangeRef`    | `RangeRefApi`  | `RangeRef`  |
+| `Scrubber`    | `ScrubberApi`  | `Scrubber`  |
 
 Closure decisions for previously open names:
 
@@ -201,7 +201,7 @@ Hard cuts:
 - Type imports remain explicit:
 
 ```ts
-import { NodeApi, type Node } from 'slate'
+import { NodeApi, type Node } from "slate";
 ```
 
 - Docs should explain that `*Api` names are helper namespaces and bare type
@@ -225,37 +225,37 @@ slate-yjs / collaboration:
 
 ## Ecosystem Strategy Synthesis
 
-| System | Source | Mechanism | Avoids | Steal | Reject | Slate target | Verdict |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| Plate | `../plate/packages/slate/src/interfaces/node.ts:38`; `../plate/packages/slate/src/interfaces/element.ts:20`; `../plate/packages/slate/src/interfaces/path.ts:22` | Suffix helper value objects with `Api`; keep model types separate. | DOM-global collisions and merged type/value ambiguity. | `*Api` value naming. | Product-layer command/editor APIs. | Hard rename Slate helper values to `*Api`. | agree |
-| Legacy Slate | `../slate/packages/slate/src/interfaces/node.ts:11`, `:242`; element/range peers | Merged type/value namespace objects. | Familiar docs shape. | Keep model type names. | Merged helper value names in browser-facing imports. | Keep types, rename values. | partial |
-| Slate v2 current plan | `docs/research/decisions/slate-v2-state-tx-public-api-and-extension-namespaces.md:147-154` | Keep pure data namespaces public while cutting `Editor` value. | Static editor sprawl. | Keep pure helper APIs outside editor state. | Bare value names for browser-global collisions. | Pure helpers stay public as `*Api`. | revise |
+| System                | Source                                                                                                                                                           | Mechanism                                                          | Avoids                                                 | Steal                                       | Reject                                               | Slate target                               | Verdict |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ | ------------------------------------------------------ | ------------------------------------------- | ---------------------------------------------------- | ------------------------------------------ | ------- |
+| Plate                 | `../plate/packages/slate/src/interfaces/node.ts:38`; `../plate/packages/slate/src/interfaces/element.ts:20`; `../plate/packages/slate/src/interfaces/path.ts:22` | Suffix helper value objects with `Api`; keep model types separate. | DOM-global collisions and merged type/value ambiguity. | `*Api` value naming.                        | Product-layer command/editor APIs.                   | Hard rename Slate helper values to `*Api`. | agree   |
+| Legacy Slate          | `../slate/packages/slate/src/interfaces/node.ts:11`, `:242`; element/range peers                                                                                 | Merged type/value namespace objects.                               | Familiar docs shape.                                   | Keep model type names.                      | Merged helper value names in browser-facing imports. | Keep types, rename values.                 | partial |
+| Slate v2 current plan | `docs/research/decisions/slate-v2-state-tx-public-api-and-extension-namespaces.md:147-154`                                                                       | Keep pure data namespaces public while cutting `Editor` value.     | Static editor sprawl.                                  | Keep pure helper APIs outside editor state. | Bare value names for browser-global collisions.      | Pure helpers stay public as `*Api`.        | revise  |
 
 ## Regression Proof Matrix
 
-| Contract | Must prove |
-| --- | --- |
-| Root public surface | Root exports `NodeApi`, `ElementApi`, `TextApi`, `PathApi`, `PointApi`, `RangeApi`, `OperationApi`, `LocationApi`, `SpanApi`, ref APIs, and `ScrubberApi`. |
-| Hard cut | Root does not expose old helper value names; contract must reject `Node`, `Element`, `Text`, `Path`, `Point`, `Range`, `Operation`, `Location`, `Span`, `PathRef`, `PointRef`, `RangeRef`, and `Scrubber` as runtime values. |
-| Type compatibility | `import type { Node, Element, Text, Path, Point, Range, Operation } from 'slate'` still works. |
-| Runtime behavior | Helper APIs return the same results after rename. |
-| Docs/examples | Public docs/examples teach `*Api` imports and do not shadow DOM globals. |
-| Downstream smoke | At least one app/example imports `NodeApi` and `type Node` together. |
-| Issue #5400 | A focused source/docs contract proves the namespace conflict is gone. |
+| Contract            | Must prove                                                                                                                                                                                                                   |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Root public surface | Root exports `NodeApi`, `ElementApi`, `TextApi`, `PathApi`, `PointApi`, `RangeApi`, `OperationApi`, `LocationApi`, `SpanApi`, ref APIs, and `ScrubberApi`.                                                                   |
+| Hard cut            | Root does not expose old helper value names; contract must reject `Node`, `Element`, `Text`, `Path`, `Point`, `Range`, `Operation`, `Location`, `Span`, `PathRef`, `PointRef`, `RangeRef`, and `Scrubber` as runtime values. |
+| Type compatibility  | `import type { Node, Element, Text, Path, Point, Range, Operation } from 'slate'` still works.                                                                                                                               |
+| Runtime behavior    | Helper APIs return the same results after rename.                                                                                                                                                                            |
+| Docs/examples       | Public docs/examples teach `*Api` imports and do not shadow DOM globals.                                                                                                                                                     |
+| Downstream smoke    | At least one app/example imports `NodeApi` and `type Node` together.                                                                                                                                                         |
+| Issue #5400         | A focused source/docs contract proves the namespace conflict is gone.                                                                                                                                                        |
 
 ## Applicable Review Matrix
 
-| Lens | Applicability | Finding | Plan delta |
-| --- | --- | --- | --- |
-| `tdd` | applied | This is a public API break with clear observable contracts. | Ralph must start with public-surface contract changes before source migration. |
-| `high-risk-deliberate-pass` | applied | Broad import churn and package API break. | Add pre-mortem and expanded proof plan. |
-| `steelman-pass` | applied | Strong objection is legacy Slate familiarity. | Keep model type names; only helper values get `Api`. |
-| `intent-boundary-pass` | applied | Scope needed to exclude type renames and EditorApi revival. | Boundary recorded above. |
-| `vercel-react-best-practices` | skipped | No React render/subscription behavior changes. | None. |
-| `performance-oracle` | skipped | No runtime algorithm or hot-path behavior change. | None. |
-| `performance` | skipped | No latency, memory, or production perf claim. | None. |
-| `build-web-apps:shadcn` | skipped | No UI chrome/component composition. | None. |
-| `react-useeffect` | skipped | No effects or external system synchronization. | None. |
+| Lens                          | Applicability | Finding                                                     | Plan delta                                                                     |
+| ----------------------------- | ------------- | ----------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| `tdd`                         | applied       | This is a public API break with clear observable contracts. | Ralph must start with public-surface contract changes before source migration. |
+| `high-risk-deliberate-pass`   | applied       | Broad import churn and package API break.                   | Add pre-mortem and expanded proof plan.                                        |
+| `steelman-pass`               | applied       | Strong objection is legacy Slate familiarity.               | Keep model type names; only helper values get `Api`.                           |
+| `intent-boundary-pass`        | applied       | Scope needed to exclude type renames and EditorApi revival. | Boundary recorded above.                                                       |
+| `vercel-react-best-practices` | skipped       | No React render/subscription behavior changes.              | None.                                                                          |
+| `performance-oracle`          | skipped       | No runtime algorithm or hot-path behavior change.           | None.                                                                          |
+| `performance`                 | skipped       | No latency, memory, or production perf claim.               | None.                                                                          |
+| `build-web-apps:shadcn`       | skipped       | No UI chrome/component composition.                         | None.                                                                          |
+| `react-useeffect`             | skipped       | No effects or external system synchronization.              | None.                                                                          |
 
 ## High-Risk Deliberate Mode
 
@@ -263,11 +263,11 @@ Trigger: public package API rename across root imports.
 
 Blast radius:
 
-- `../slate-v2/packages/slate/src/interfaces/**`
-- `../slate-v2/packages/slate/test/**`
-- `../slate-v2/packages/slate-react/**` and `slate-history` imports that read
+- `.tmp/slate-v2/packages/slate/src/interfaces/**`
+- `.tmp/slate-v2/packages/slate/test/**`
+- `.tmp/slate-v2/packages/slate-react/**` and `slate-history` imports that read
   helper values
-- `../slate-v2/docs/**`, `../slate-v2/site/**`
+- `.tmp/slate-v2/docs/**`, `.tmp/slate-v2/site/**`
 - changeset and PR reference
 
 Pre-mortem:
@@ -295,23 +295,23 @@ Rollback/hard-cut answer:
 
 ## Slate Maintainer Objection Ledger
 
-| Change | Likely objection | Steelman antithesis | Tradeoff tension | Answer | Migration answer | Docs/example answer | Regression proof | Verdict |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `Node` value -> `NodeApi` | "This breaks every Slate snippet for a naming preference." | Legacy `Node.string` is compact and familiar. | Migration churn is real. | The collision is not cosmetic in browser code; #5400 already reports it, Plate has proven `NodeApi`, and v2 is already making bigger API cuts. | Codemod value imports and member calls; type imports stay stable. | Teach `import { NodeApi, type Node } from 'slate'`. | public-surface contract plus docs/examples import census. | keep |
-| Keep `type Node` / `type Element` | "If globals are the problem, type names still collide." | Full `SlateNode` / `SlateElement` naming is clearer in DOM-heavy files. | Type rename would be much larger and less Slate-close. | Model types are Slate vocabulary; value helper imports are the painful part. DOM-heavy files can still locally alias types. | No type migration for normal users. | Mention local aliases only for DOM-heavy type files. | type-only import smoke. | keep |
-| No public alias exports | "Aliases would make migration easier." | Dual exports reduce breakage. | Dual names rot docs and autocomplete. | v2 should not publish the footgun it is removing. | Use a codemod and changeset migration note. | No stale alias docs. | root contract rejects old values. | keep |
-| Rename `Scrubber` to `ScrubberApi` | "`Scrubber` is not a model helper or DOM-global collision." | Top-level `setScrubber` / `stringify` functions could be clearer. | `ScrubberApi` is a little mechanical. | The issue is the whole merged type/value public pattern. A single exception keeps the pattern alive for little benefit. | Codemod `Scrubber.` to `ScrubberApi.`. | Error/privacy docs show `ScrubberApi.setScrubber`. | root contract plus scrubber contract. | keep |
+| Change                             | Likely objection                                            | Steelman antithesis                                                     | Tradeoff tension                                       | Answer                                                                                                                                         | Migration answer                                                  | Docs/example answer                                  | Regression proof                                          | Verdict |
+| ---------------------------------- | ----------------------------------------------------------- | ----------------------------------------------------------------------- | ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- | ---------------------------------------------------- | --------------------------------------------------------- | ------- |
+| `Node` value -> `NodeApi`          | "This breaks every Slate snippet for a naming preference."  | Legacy `Node.string` is compact and familiar.                           | Migration churn is real.                               | The collision is not cosmetic in browser code; #5400 already reports it, Plate has proven `NodeApi`, and v2 is already making bigger API cuts. | Codemod value imports and member calls; type imports stay stable. | Teach `import { NodeApi, type Node } from 'slate'`.  | public-surface contract plus docs/examples import census. | keep    |
+| Keep `type Node` / `type Element`  | "If globals are the problem, type names still collide."     | Full `SlateNode` / `SlateElement` naming is clearer in DOM-heavy files. | Type rename would be much larger and less Slate-close. | Model types are Slate vocabulary; value helper imports are the painful part. DOM-heavy files can still locally alias types.                    | No type migration for normal users.                               | Mention local aliases only for DOM-heavy type files. | type-only import smoke.                                   | keep    |
+| No public alias exports            | "Aliases would make migration easier."                      | Dual exports reduce breakage.                                           | Dual names rot docs and autocomplete.                  | v2 should not publish the footgun it is removing.                                                                                              | Use a codemod and changeset migration note.                       | No stale alias docs.                                 | root contract rejects old values.                         | keep    |
+| Rename `Scrubber` to `ScrubberApi` | "`Scrubber` is not a model helper or DOM-global collision." | Top-level `setScrubber` / `stringify` functions could be clearer.       | `ScrubberApi` is a little mechanical.                  | The issue is the whole merged type/value public pattern. A single exception keeps the pattern alive for little benefit.                        | Codemod `Scrubber.` to `ScrubberApi.`.                            | Error/privacy docs show `ScrubberApi.setScrubber`.   | root contract plus scrubber contract.                     | keep    |
 
 ## Scorecard
 
-| Dimension | Score | Evidence |
-| --- | ---: | --- |
-| React 19.2 runtime performance | 0.92 | No runtime/render behavior changes; React lens skipped with reason. |
-| Slate-close unopinionated DX | 0.92 | Keeps Slate model type names, avoids DOM-global helper imports, and rejects aliases. Exact helper set is live-source grounded. |
-| Plate and slate-yjs migration-backbone shape | 0.94 | Plate already uses `*Api`; operation/data shapes stay unchanged for collab; `OperationApi` is import-only churn. |
-| Regression-proof testing strategy | 0.93 | Red public-surface contract, type-only import smoke, helper behavior contracts, docs/site typecheck, downstream package typechecks, and `bun check` are named. |
-| Research evidence completeness | 0.93 | Live source, Plate, legacy Slate, prior v2 research, exact helper export census, and #5400 ledger are recorded. |
-| shadcn-style composability and hook/component minimalism | 0.93 | API is explicit without adding wrappers, options, aliases, or product policy. |
+| Dimension                                                | Score | Evidence                                                                                                                                                       |
+| -------------------------------------------------------- | ----: | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| React 19.2 runtime performance                           |  0.92 | No runtime/render behavior changes; React lens skipped with reason.                                                                                            |
+| Slate-close unopinionated DX                             |  0.92 | Keeps Slate model type names, avoids DOM-global helper imports, and rejects aliases. Exact helper set is live-source grounded.                                 |
+| Plate and slate-yjs migration-backbone shape             |  0.94 | Plate already uses `*Api`; operation/data shapes stay unchanged for collab; `OperationApi` is import-only churn.                                               |
+| Regression-proof testing strategy                        |  0.93 | Red public-surface contract, type-only import smoke, helper behavior contracts, docs/site typecheck, downstream package typechecks, and `bun check` are named. |
+| Research evidence completeness                           |  0.93 | Live source, Plate, legacy Slate, prior v2 research, exact helper export census, and #5400 ledger are recorded.                                                |
+| shadcn-style composability and hook/component minimalism |  0.93 | API is explicit without adding wrappers, options, aliases, or product policy.                                                                                  |
 
 Weighted total: `0.928`.
 
@@ -319,12 +319,12 @@ Status: `done`. The plan is ready for user review and later Ralph execution.
 
 ## Pass-State Ledger
 
-| Pass | Status | Evidence added | Plan delta | Open issues | Next owner |
-| --- | --- | --- | --- | --- | --- |
-| Current-state read and initial score | complete | live Slate v2 interface exports, public-surface contract, Plate `*Api`, legacy Slate, prior v2 research, #5400 ledger | verdict changed from prior "keep pure data namespace names" to "keep pure helpers but suffix value objects with `Api`" | closure pass still needed | slate-ralplan |
-| Closure score and final gates | complete | exact helper export census; `Scrubber`, `Location`, `Span`, and ref decisions; #5400 manual sync row; PR reference open-debt row; replayable Ralph gates | score raised to `0.928`; plan ready for review | none | ralph after user approval |
-| Ralph execution issue sweep | complete | cached #5400 live-ledger row, dossier summary, test-candidate row, and v2 sync ledger row | no issue-list refresh; keep #5400 at `planned-fix` until source proof passes | implementation still needed | ralph |
-| Ralph implementation proof | complete | `NodeApi`/peer source rename, public-surface docs/import census, package typechecks, downstream package typechecks, site typecheck | promoted #5400 to `fixes-claimed`; added changeset | final `bun check` still needed | ralph |
+| Pass                                 | Status   | Evidence added                                                                                                                                           | Plan delta                                                                                                             | Open issues                    | Next owner                |
+| ------------------------------------ | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- | ------------------------------ | ------------------------- |
+| Current-state read and initial score | complete | live Slate v2 interface exports, public-surface contract, Plate `*Api`, legacy Slate, prior v2 research, #5400 ledger                                    | verdict changed from prior "keep pure data namespace names" to "keep pure helpers but suffix value objects with `Api`" | closure pass still needed      | slate-ralplan             |
+| Closure score and final gates        | complete | exact helper export census; `Scrubber`, `Location`, `Span`, and ref decisions; #5400 manual sync row; PR reference open-debt row; replayable Ralph gates | score raised to `0.928`; plan ready for review                                                                         | none                           | ralph after user approval |
+| Ralph execution issue sweep          | complete | cached #5400 live-ledger row, dossier summary, test-candidate row, and v2 sync ledger row                                                                | no issue-list refresh; keep #5400 at `planned-fix` until source proof passes                                           | implementation still needed    | ralph                     |
+| Ralph implementation proof           | complete | `NodeApi`/peer source rename, public-surface docs/import census, package typechecks, downstream package typechecks, site typecheck                       | promoted #5400 to `fixes-claimed`; added changeset                                                                     | final `bun check` still needed | ralph                     |
 
 ## Implementation Phases For Ralph
 

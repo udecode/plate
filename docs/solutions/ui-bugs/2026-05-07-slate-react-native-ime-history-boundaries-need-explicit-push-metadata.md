@@ -27,7 +27,7 @@ text operations until something structural interrupted them.
 ## Symptoms
 
 - First proof run of `undoes delayed Hiragana IME compositions as separate
-  history steps` inserted `すし もじあ`, but one undo returned the editor to the
+history steps` inserted `すし もじあ`, but one undo returned the editor to the
   initial document.
 - Waiting longer than the merge interval in the browser test did not matter,
   because Slate history only saw adjacent text operations.
@@ -50,24 +50,24 @@ Track the last browser-native text input time inside `slate-react` and attach
 after the merge interval.
 
 The policy lives in
-`../slate-v2/packages/slate-react/src/editable/input-history.ts`:
+`.tmp/slate-v2/packages/slate-react/src/editable/input-history.ts`:
 
 ```ts
 export const getNativeTextInputHistoryMetadata = (
-  editor: Editor
+  editor: Editor,
 ): EditorUpdateMetadata | undefined => {
-  const currentTime = now()
-  const previousTime = EDITOR_TO_LAST_NATIVE_TEXT_INPUT_TIME.get(editor)
+  const currentTime = now();
+  const previousTime = EDITOR_TO_LAST_NATIVE_TEXT_INPUT_TIME.get(editor);
 
-  EDITOR_TO_LAST_NATIVE_TEXT_INPUT_TIME.set(editor, currentTime)
+  EDITOR_TO_LAST_NATIVE_TEXT_INPUT_TIME.set(editor, currentTime);
 
   if (
     previousTime !== undefined &&
     currentTime - previousTime > NATIVE_TEXT_INPUT_HISTORY_MERGE_INTERVAL_MS
   ) {
-    return { history: { mode: 'push' } }
+    return { history: { mode: "push" } };
   }
-}
+};
 ```
 
 Apply that metadata when the browser runtime imports native text:

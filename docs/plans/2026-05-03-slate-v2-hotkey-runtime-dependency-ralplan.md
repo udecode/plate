@@ -130,21 +130,25 @@ Top drivers:
 Viable options:
 
 1. Keep `is-hotkey`.
+
    - Pro: no immediate code change.
    - Con: stale runtime dependency, outdated `which`-centric default path, direct example leakage, recurring install/build friction.
    - Verdict: reject.
 
 2. Fork `is-hotkey` as a package.
+
    - Pro: minimal porting.
    - Con: creates package maintenance for a 20 KB utility Slate can own in one file; still starts from dated semantics.
    - Verdict: reject.
 
 3. Replace with `prosemirror-keymap` or Tiptap keymap.
+
    - Pro: maintained editor ecosystem code.
    - Con: wrong abstraction boundary; imports ProseMirror plugin/view/command assumptions into Slate.
    - Verdict: reject.
 
 4. Add `w3c-keyname` and write a Slate wrapper.
+
    - Pro: ProseMirror-tested key naming.
    - Con: still adds dependency for a small current grammar; Slate only needs a subset and Lexical's non-English fallback can be implemented directly.
    - Verdict: keep as fallback if tests uncover hard key-name drift.
@@ -166,7 +170,7 @@ Consequences:
 Stable:
 
 ```ts
-import { Hotkeys } from 'slate-dom'
+import { Hotkeys } from "slate-dom";
 ```
 
 Keep the current `Hotkeys.isBold`, `isItalic`, `isUndo`, `isRedo`, movement, delete, split, and compose helpers.
@@ -174,9 +178,9 @@ Keep the current `Hotkeys.isBold`, `isItalic`, `isUndo`, `isRedo`, movement, del
 Possible public helper only if examples need it:
 
 ```ts
-import { isHotkey } from 'slate-dom'
+import { isHotkey } from "slate-dom";
 
-if (isHotkey('mod+s', event)) {
+if (isHotkey("mod+s", event)) {
   // Save.
 }
 ```
@@ -184,19 +188,19 @@ if (isHotkey('mod+s', event)) {
 Reject `createHotkeyMatcher` as public API. It exposes implementation mechanics and makes the common example read worse:
 
 ```ts
-const isTabHotkey = createHotkeyMatcher('tab')
+const isTabHotkey = createHotkeyMatcher("tab");
 ```
 
 The final public helper should match the useful part of the old `is-hotkey` DX:
 
 ```ts
-isHotkey('tab', event)
+isHotkey("tab", event);
 ```
 
 Reject public curried usage:
 
 ```ts
-const isTabHotkey = isHotkey('tab')
+const isTabHotkey = isHotkey("tab");
 
 if (isTabHotkey(event)) {
   // Tab.
@@ -214,30 +218,30 @@ Do not expose a ProseMirror/Tiptap keymap object in this slice.
 Add a private matcher, likely:
 
 ```ts
-type HotkeySpec = string | readonly string[]
+type HotkeySpec = string | readonly string[];
 
 type HotkeyMatchOptions = {
-  platform?: 'apple' | 'windows' | 'other'
-}
+  platform?: "apple" | "windows" | "other";
+};
 
 type KeyboardEventLike = {
-  key: string
-  code?: string
-  altKey?: boolean
-  ctrlKey?: boolean
-  metaKey?: boolean
-  shiftKey?: boolean
-  getModifierState?: (key: string) => boolean
-}
+  key: string;
+  code?: string;
+  altKey?: boolean;
+  ctrlKey?: boolean;
+  metaKey?: boolean;
+  shiftKey?: boolean;
+  getModifierState?: (key: string) => boolean;
+};
 
-function isHotkey(spec: HotkeySpec, event: KeyboardEventLike): boolean
+function isHotkey(spec: HotkeySpec, event: KeyboardEventLike): boolean;
 function isHotkey(
   spec: HotkeySpec,
   options?: HotkeyMatchOptions,
-  event?: KeyboardEventLike
+  event?: KeyboardEventLike,
 ): boolean {
-  const matcher = getCachedHotkeyMatcher(spec, options)
-  return matcher(event)
+  const matcher = getCachedHotkeyMatcher(spec, options);
+  return matcher(event);
 }
 ```
 
@@ -316,15 +320,15 @@ Proof rows:
 
 ## Applicable Implementation-Skill Review Matrix
 
-| Lens | Applicability | Finding | Plan delta |
-| --- | --- | --- | --- |
-| `slate-ralplan` | applied | This changes a browser-runtime dependency used by Slate's editing kernel. | Decision brief, proof matrix, objection ledger, and scorecard recorded. |
-| `performance` | applied | Repeated keydown matching is hot-path work. GitHub-scale lesson applies: make repeated units cheap before adding architecture. | Precompile specs; no per-event parsing; add micro-benchmark row. |
-| `performance-oracle` | applied | Complexity must be O(number of shortcut variants for that helper), with no document-size coupling. | Keep tiny compiled matcher and no React/render state. |
-| `tdd` | applied | This is behavior replacement under the same API. | Write parity tests before implementation. |
-| `vercel-react-best-practices` | applied | Bundle/runtime shape is in scope, but no React render behavior changes. | Remove stale dependency; no hooks/effects; no extra listeners. |
-| `react-useeffect` | skipped | No effect, subscription, or derived-state work. | No change. |
-| `build-web-apps:shadcn` | skipped | No UI component surface. | No change. |
+| Lens                          | Applicability | Finding                                                                                                                        | Plan delta                                                              |
+| ----------------------------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------- |
+| `slate-ralplan`               | applied       | This changes a browser-runtime dependency used by Slate's editing kernel.                                                      | Decision brief, proof matrix, objection ledger, and scorecard recorded. |
+| `performance`                 | applied       | Repeated keydown matching is hot-path work. GitHub-scale lesson applies: make repeated units cheap before adding architecture. | Precompile specs; no per-event parsing; add micro-benchmark row.        |
+| `performance-oracle`          | applied       | Complexity must be O(number of shortcut variants for that helper), with no document-size coupling.                             | Keep tiny compiled matcher and no React/render state.                   |
+| `tdd`                         | applied       | This is behavior replacement under the same API.                                                                               | Write parity tests before implementation.                               |
+| `vercel-react-best-practices` | applied       | Bundle/runtime shape is in scope, but no React render behavior changes.                                                        | Remove stale dependency; no hooks/effects; no extra listeners.          |
+| `react-useeffect`             | skipped       | No effect, subscription, or derived-state work.                                                                                | No change.                                                              |
+| `build-web-apps:shadcn`       | skipped       | No UI component surface.                                                                                                       | No change.                                                              |
 
 ## High-Risk Deliberate Mode
 
@@ -358,13 +362,13 @@ Rollback answer:
 
 ## Maintainer Objection Ledger
 
-| Change | Objection | Steelman antithesis | Answer | Verdict |
-| --- | --- | --- | --- | --- |
-| Remove `is-hotkey` dependency | "Why touch old working keyboard code?" | Keyboard code is fragile and old deps can be okay if tiny. | This dep has no release since 2020, already caused local parse/install pain, leaks into examples, and uses `which` by default. Slate can own this tiny runtime with tests. | keep |
-| Do not fork `is-hotkey` package | "A fork is safer than rewriting." | A fork preserves behavior with less code churn. | Forking preserves dated semantics and creates package maintenance. The current grammar is tiny enough to reimplement with parity tests and Lexical's stronger layout behavior. | keep |
-| Do not use ProseMirror/Tiptap keymap | "They already solved keymaps." | PM keymap is mature and maintained. | PM solves keymap plugins for PM views. Slate needs a matcher for its editing kernel, not a PM `Plugin`/`EditorView` protocol. | keep |
-| Expose direct-only `isHotkey` instead of `createHotkeyMatcher` | "This expands public API." | Examples need a replacement for direct `is-hotkey` usage. | The helper is justified, but public factory/curried shapes are not. `isHotkey('tab', event)` matches the useful old-library DX; private compiled matchers and an internal cache preserve performance. Lexical supports the naming direction by exposing semantic `is*` helpers, not public matcher factories. | keep |
-| Add non-English fallback | "This may change behavior." | Any behavioral expansion can surprise someone. | Lexical has exact tests for this class. Current Slate changelog already says the hotkeys util was updated for non-Latin keyboards; this plan makes that contract real. | keep |
+| Change                                                         | Objection                              | Steelman antithesis                                        | Answer                                                                                                                                                                                                                                                                                                        | Verdict |
+| -------------------------------------------------------------- | -------------------------------------- | ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| Remove `is-hotkey` dependency                                  | "Why touch old working keyboard code?" | Keyboard code is fragile and old deps can be okay if tiny. | This dep has no release since 2020, already caused local parse/install pain, leaks into examples, and uses `which` by default. Slate can own this tiny runtime with tests.                                                                                                                                    | keep    |
+| Do not fork `is-hotkey` package                                | "A fork is safer than rewriting."      | A fork preserves behavior with less code churn.            | Forking preserves dated semantics and creates package maintenance. The current grammar is tiny enough to reimplement with parity tests and Lexical's stronger layout behavior.                                                                                                                                | keep    |
+| Do not use ProseMirror/Tiptap keymap                           | "They already solved keymaps."         | PM keymap is mature and maintained.                        | PM solves keymap plugins for PM views. Slate needs a matcher for its editing kernel, not a PM `Plugin`/`EditorView` protocol.                                                                                                                                                                                 | keep    |
+| Expose direct-only `isHotkey` instead of `createHotkeyMatcher` | "This expands public API."             | Examples need a replacement for direct `is-hotkey` usage.  | The helper is justified, but public factory/curried shapes are not. `isHotkey('tab', event)` matches the useful old-library DX; private compiled matchers and an internal cache preserve performance. Lexical supports the naming direction by exposing semantic `is*` helpers, not public matcher factories. | keep    |
+| Add non-English fallback                                       | "This may change behavior."            | Any behavioral expansion can surprise someone.             | Lexical has exact tests for this class. Current Slate changelog already says the hotkeys util was updated for non-Latin keyboards; this plan makes that contract real.                                                                                                                                        | keep    |
 
 ## Hard Cuts
 
@@ -445,14 +449,14 @@ Browser proof:
 
 ## Scorecard
 
-| Dimension | Score | Evidence |
-| --- | ---: | --- |
-| React 19.2 runtime performance | 0.93 | No React work; hot path stays compiled and event-only. Evidence: current `create()` compiles once at `/Users/zbeyens/git/slate-v2/packages/slate-dom/src/utils/hotkeys.ts:52-65`; plan keeps that property. |
-| Slate-close unopinionated DX | 0.94 | Keeps `Hotkeys`; no PM/Tiptap keymap API. Evidence: `Hotkeys` object at `/Users/zbeyens/git/slate-v2/packages/slate-dom/src/utils/hotkeys.ts:72-97`. |
-| Plate and slate-yjs migration-backbone shape | 0.90 | No product keymap; deterministic command classification preserved. Evidence: editing kernel command mapping at `/Users/zbeyens/git/slate-v2/packages/slate-react/src/editable/editing-kernel.ts:916-1003`. |
-| Regression-proof testing strategy | 0.94 | Explicit red tests for current behavior, non-English fallback, Dvorak, AltGr, examples, dependency sweep. |
-| Research evidence completeness | 0.94 | Cites live Slate v2, npm metadata, prior local failure, Lexical, ProseMirror keymap, Tiptap, and `is-hotkey` source. |
-| shadcn-style composability and minimalism | 0.92 | No UI/component expansion; possible generic matcher only if examples need it. |
+| Dimension                                    | Score | Evidence                                                                                                                                                                                                    |
+| -------------------------------------------- | ----: | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| React 19.2 runtime performance               |  0.93 | No React work; hot path stays compiled and event-only. Evidence: current `create()` compiles once at `/Users/zbeyens/git/slate-v2/packages/slate-dom/src/utils/hotkeys.ts:52-65`; plan keeps that property. |
+| Slate-close unopinionated DX                 |  0.94 | Keeps `Hotkeys`; no PM/Tiptap keymap API. Evidence: `Hotkeys` object at `/Users/zbeyens/git/slate-v2/packages/slate-dom/src/utils/hotkeys.ts:72-97`.                                                        |
+| Plate and slate-yjs migration-backbone shape |  0.90 | No product keymap; deterministic command classification preserved. Evidence: editing kernel command mapping at `/Users/zbeyens/git/slate-v2/packages/slate-react/src/editable/editing-kernel.ts:916-1003`.  |
+| Regression-proof testing strategy            |  0.94 | Explicit red tests for current behavior, non-English fallback, Dvorak, AltGr, examples, dependency sweep.                                                                                                   |
+| Research evidence completeness               |  0.94 | Cites live Slate v2, npm metadata, prior local failure, Lexical, ProseMirror keymap, Tiptap, and `is-hotkey` source.                                                                                        |
+| shadcn-style composability and minimalism    |  0.92 | No UI/component expansion; possible generic matcher only if examples need it.                                                                                                                               |
 
 Weighted total: 0.932.
 
@@ -474,12 +478,12 @@ Ready threshold is met for a narrow dependency decision. The implementation-time
 
 ## Pass Schedule And State
 
-| Pass | Status | Evidence added | Plan delta | Open issues | Next owner |
-| --- | --- | --- | --- | --- | --- |
-| Current-state and evidence | complete | Live Slate v2 usage, package deps, npm freshness, prior local failure, Lexical/ProseMirror/Tiptap/`is-hotkey` source. | Chose Slate-owned matcher. | Public helper finalized as `isHotkey`. | Implementation |
-| Intent and decision brief | complete | Intent/boundary record and options matrix. | Reject keep/fork/PM/Tiptap. | none | Implementation |
-| Risk and proof pass | complete | High-risk keyboard pre-mortem and regression matrix. | Added Dvorak/non-English/AltGr rows. | none | Implementation |
-| Closure score | complete | Scorecard total 0.915 with no blocker for narrow dependency decision. | Ready for implementation. | none | Implementation |
+| Pass                       | Status   | Evidence added                                                                                                        | Plan delta                           | Open issues                            | Next owner     |
+| -------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------- | ------------------------------------ | -------------------------------------- | -------------- |
+| Current-state and evidence | complete | Live Slate v2 usage, package deps, npm freshness, prior local failure, Lexical/ProseMirror/Tiptap/`is-hotkey` source. | Chose Slate-owned matcher.           | Public helper finalized as `isHotkey`. | Implementation |
+| Intent and decision brief  | complete | Intent/boundary record and options matrix.                                                                            | Reject keep/fork/PM/Tiptap.          | none                                   | Implementation |
+| Risk and proof pass        | complete | High-risk keyboard pre-mortem and regression matrix.                                                                  | Added Dvorak/non-English/AltGr rows. | none                                   | Implementation |
+| Closure score              | complete | Scorecard total 0.915 with no blocker for narrow dependency decision.                                                 | Ready for implementation.            | none                                   | Implementation |
 
 ## Final Handoff Outline
 
@@ -519,7 +523,7 @@ Actions:
 
 Next action:
 
-- Add focused hotkey parity tests in `../slate-v2`, then replace the matcher and remove the dependency.
+- Add focused hotkey parity tests in `.tmp/slate-v2`, then replace the matcher and remove the dependency.
 
 ### 2026-05-03 hotkey hard cut completed
 
@@ -529,8 +533,8 @@ Supporting skills: `hard-cut`, `tdd`, `ce-compound`
 
 Actions:
 
-- Added Slate-owned hotkey matcher tests in `../slate-v2/packages/slate-dom/test/hotkeys.ts`.
-- Added Slate-owned matcher internals in `../slate-v2/packages/slate-dom/src/utils/hotkey-match.ts`.
+- Added Slate-owned hotkey matcher tests in `.tmp/slate-v2/packages/slate-dom/test/hotkeys.ts`.
+- Added Slate-owned matcher internals in `.tmp/slate-v2/packages/slate-dom/src/utils/hotkey-match.ts`.
 - Rewired `Hotkeys` to the Slate-owned matcher while preserving the public `Hotkeys` surface.
 - Migrated active examples and docs from `is-hotkey` to Slate-owned hotkey helpers.
 - Removed `is-hotkey` and `@types/is-hotkey` from active manifests and `bun.lock`.
@@ -563,7 +567,7 @@ Status: complete
 Actions:
 
 - Read `../is-hotkey/test/index.js` after the dependency clone was available.
-- Backfilled valuable public behavior rows into `../slate-v2/packages/slate-dom/test/hotkeys.ts`:
+- Backfilled valuable public behavior rows into `.tmp/slate-v2/packages/slate-dom/test/hotkeys.ts`:
   - aliases for `cmd`, `space`, and `+`;
   - question mark and non-ASCII key matching;
   - multi-hotkey specs;
@@ -572,7 +576,7 @@ Actions:
   - platform-specific `mod`;
   - modifier-only keydown matching;
   - malformed modifier grammar rejection.
-- Updated `../slate-v2/packages/slate-dom/src/utils/hotkey-match.ts` to support modifier-only keydown and clearer invalid modifier errors.
+- Updated `.tmp/slate-v2/packages/slate-dom/src/utils/hotkey-match.ts` to support modifier-only keydown and clearer invalid modifier errors.
 - Updated the solution note with the backfill rule.
 
 Verification:

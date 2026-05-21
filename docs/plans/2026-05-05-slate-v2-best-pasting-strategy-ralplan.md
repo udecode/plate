@@ -129,13 +129,13 @@ Top drivers:
 
 Viable options:
 
-| Option | Verdict | Reason |
-| --- | --- | --- |
-| Keep current loop and micro-optimize | reject | Current 2,000-line plain-text paste is `3545.36ms`; caching inside the loop is not enough. |
-| Convert plain text to a fragment, then use current `insertFragment` | reject as final | A prebuilt-fragment candidate was already slower in the bounded benchmark; current fragment insertion still emits many insertions. |
-| Batch N low-level ops under one normalization pass | transitional only | Better than today, but still leaves collaboration/history/path-transform pressure proportional to pasted lines. |
-| Add a single replace-fragment transaction/op | choose | Matches VS Code one edit per selection, ProseMirror one replace step, and Tiptap `replaceWith`; it is the cleanest long-term engine. |
-| Use virtualization/staged rendering to hide paste cost | reject | Virtualization affects DOM/render cost, not model insertion or normalization cost. |
+| Option                                                              | Verdict           | Reason                                                                                                                               |
+| ------------------------------------------------------------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| Keep current loop and micro-optimize                                | reject            | Current 2,000-line plain-text paste is `3545.36ms`; caching inside the loop is not enough.                                           |
+| Convert plain text to a fragment, then use current `insertFragment` | reject as final   | A prebuilt-fragment candidate was already slower in the bounded benchmark; current fragment insertion still emits many insertions.   |
+| Batch N low-level ops under one normalization pass                  | transitional only | Better than today, but still leaves collaboration/history/path-transform pressure proportional to pasted lines.                      |
+| Add a single replace-fragment transaction/op                        | choose            | Matches VS Code one edit per selection, ProseMirror one replace step, and Tiptap `replaceWith`; it is the cleanest long-term engine. |
+| Use virtualization/staged rendering to hide paste cost              | reject            | Virtualization affects DOM/render cost, not model insertion or normalization cost.                                                   |
 
 Chosen option:
 
@@ -158,14 +158,14 @@ Follow-ups:
 
 ## 4. Confidence Scorecard
 
-| Dimension | Score | Evidence |
-| --- | ---: | --- |
-| React 19.2 runtime performance | 0.91 | React does not own the bottleneck; current path is in Slate DOM/core insertion. Browser contract already names paste-normalize-undo in `../slate-v2/packages/slate-browser/src/core/first-party-browser-contracts.ts:178`. |
-| Slate-close unopinionated DX | 0.93 | Keeps raw Slate free of product HTML policy and keeps low-level clipboard under `editor.dom.clipboard`, matching `docs/slate-v2/references/pr-description.md:231`. |
-| Plate and slate-yjs migration backbone | 0.89 | One logical paste maps better to collaboration/history than N fake typing actions. Replay through the collaboration import path is proven; transport-specific CRDT lowering stays adapter-owned. |
-| Regression-proof testing strategy | 0.94 | Existing unit/browser owners exist: `../slate-v2/packages/slate/test/clipboard-contract.ts:18` and browser paste-normalize-undo at `../slate-v2/packages/slate-browser/src/core/first-party-browser-contracts.ts:178`; new benchmark gates are explicit. |
-| Research evidence completeness | 0.95 | Live source read across Slate v2, Lexical, ProseMirror, Tiptap, and VS Code; mechanisms are synthesized below instead of name-dropped. |
-| shadcn-style composability/minimalism | 0.90 | Public surface stays small; richer provider API is delayed until proof, not shoved into core now. |
+| Dimension                              | Score | Evidence                                                                                                                                                                                                                                                     |
+| -------------------------------------- | ----: | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| React 19.2 runtime performance         |  0.91 | React does not own the bottleneck; current path is in Slate DOM/core insertion. Browser contract already names paste-normalize-undo in `.tmp/slate-v2/packages/slate-browser/src/core/first-party-browser-contracts.ts:178`.                                 |
+| Slate-close unopinionated DX           |  0.93 | Keeps raw Slate free of product HTML policy and keeps low-level clipboard under `editor.dom.clipboard`, matching `docs/slate-v2/references/pr-description.md:231`.                                                                                           |
+| Plate and slate-yjs migration backbone |  0.89 | One logical paste maps better to collaboration/history than N fake typing actions. Replay through the collaboration import path is proven; transport-specific CRDT lowering stays adapter-owned.                                                             |
+| Regression-proof testing strategy      |  0.94 | Existing unit/browser owners exist: `.tmp/slate-v2/packages/slate/test/clipboard-contract.ts:18` and browser paste-normalize-undo at `.tmp/slate-v2/packages/slate-browser/src/core/first-party-browser-contracts.ts:178`; new benchmark gates are explicit. |
+| Research evidence completeness         |  0.95 | Live source read across Slate v2, Lexical, ProseMirror, Tiptap, and VS Code; mechanisms are synthesized below instead of name-dropped.                                                                                                                       |
+| shadcn-style composability/minimalism  |  0.90 | Public surface stays small; richer provider API is delayed until proof, not shoved into core now.                                                                                                                                                            |
 
 Weighted score: `0.923`.
 
@@ -176,67 +176,67 @@ lands.
 
 Current paste dispatch:
 
-- `../slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts:141`
+- `.tmp/slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts:141`
   materializes DOM coverage boundaries with `selectionPolicy === 'materialize'`
   before paste.
-- `../slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts:485`
+- `.tmp/slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts:485`
   owns `applyEditablePaste`.
 - The shell-backed full-document plain-text special case already exists in the
   React clipboard strategy.
 
 Current DOM clipboard import:
 
-- `../slate-v2/packages/slate-dom/src/plugin/dom-clipboard-runtime.ts:228`
+- `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-clipboard-runtime.ts:228`
   runs `dom.clipboard.insertData` handlers first.
-- `../slate-v2/packages/slate-dom/src/plugin/dom-clipboard-runtime.ts:247`
+- `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-clipboard-runtime.ts:247`
   imports trusted Slate fragments.
-- `../slate-v2/packages/slate-dom/src/plugin/dom-clipboard-runtime.ts:269`
+- `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-clipboard-runtime.ts:269`
   is the current plain-text fallback.
-- `../slate-v2/packages/slate-dom/src/plugin/dom-clipboard-runtime.ts:276`
+- `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-clipboard-runtime.ts:276`
   splits text by newline.
-- `../slate-v2/packages/slate-dom/src/plugin/dom-clipboard-runtime.ts:280`
+- `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-clipboard-runtime.ts:280`
   loops every line, splitting nodes and inserting text.
 
 Current core fragment insert:
 
-- `../slate-v2/packages/slate/src/transforms-text/insert-fragment.ts:160`
+- `.tmp/slate-v2/packages/slate/src/transforms-text/insert-fragment.ts:160`
   fits a single empty text-block target without inserting the fragment wrapper.
-- `../slate-v2/packages/slate/src/transforms-text/insert-fragment.ts:208`
+- `.tmp/slate-v2/packages/slate/src/transforms-text/insert-fragment.ts:208`
   fits exact whole-top-level-block selections by replacing the root child slice
   while keeping structural fragments as sibling units.
-- `../slate-v2/packages/slate/src/transforms-text/insert-fragment.ts:261`
+- `.tmp/slate-v2/packages/slate/src/transforms-text/insert-fragment.ts:261`
   fits compatible single text-block targets, including marked text and inline
   children, by replacing the target block children.
-- `../slate-v2/packages/slate/src/transforms-text/insert-fragment.ts:411`
+- `.tmp/slate-v2/packages/slate/src/transforms-text/insert-fragment.ts:411`
   handles full-document fragment replacement through one `replace_fragment`
   operation instead of a snapshot shortcut.
-- `../slate-v2/packages/slate/src/transforms-text/insert-fragment.ts:473`
+- `.tmp/slate-v2/packages/slate/src/transforms-text/insert-fragment.ts:473`
   applies single text-block fitting through one `replace_fragment` at the target
   block path.
-- `../slate-v2/packages/slate/src/transforms-text/insert-fragment.ts:491`
+- `.tmp/slate-v2/packages/slate/src/transforms-text/insert-fragment.ts:491`
   applies exact whole-top-level-block structural fitting through one
   `replace_fragment` at the root path.
-- `../slate-v2/packages/slate/src/transforms-text/insert-fragment.ts:562`
+- `.tmp/slate-v2/packages/slate/src/transforms-text/insert-fragment.ts:562`
   walks fragment nodes into `starts`, `middles`, and `ends`.
-- `../slate-v2/packages/slate/src/transforms-text/insert-fragment.ts:640`,
+- `.tmp/slate-v2/packages/slate/src/transforms-text/insert-fragment.ts:640`,
   `:653`, and `:661` insert those groups with `insertNodes` for shapes that
   still fall back to structural insertion.
 
 Current insertion and normalization pressure:
 
-- `../slate-v2/packages/slate/src/transforms-node/insert-nodes.ts:121` batches
+- `.tmp/slate-v2/packages/slate/src/transforms-node/insert-nodes.ts:121` batches
   dirty-path collection, but it still applies one `insert_node` operation per
   child at `:128`.
-- `../slate-v2/packages/slate/src/editor/normalize.ts:42` skips default text
+- `.tmp/slate-v2/packages/slate/src/editor/normalize.ts:42` skips default text
   normalization only for `insert_text` and `remove_text`; multiline paste creates
   split/insert chains that miss this cheap path.
-- `../slate-v2/packages/slate/src/transforms-text/insert-text.ts:89` still
+- `.tmp/slate-v2/packages/slate/src/transforms-text/insert-text.ts:89` still
   uses `replaceSnapshot` for full-document expanded text replacement; this is
   outside the current paste fragment path.
 
 Current benchmark:
 
-- `../slate-v2/tmp/slate-clipboard-large-payload-benchmark.json` says 2,000
+- `.tmp/slate-v2/tmp/slate-clipboard-large-payload-benchmark.json` says 2,000
   pasted lines average:
   - `plainTextSplitMs`: `0.05ms`
   - `fullSelectionCopyMs`: `5.25ms`
@@ -398,18 +398,23 @@ Future provider shape, unstable only:
 
 ```ts
 type DOMClipboardPasteProvider<V extends Value = Value> = {
-  id: string
-  pasteMimeTypes?: readonly string[]
-  priority?: 'default' | 'app' | 'internal'
-  preparePaste?: (context: DOMClipboardPreparePasteContext<V>) => void | Promise<void>
+  id: string;
+  pasteMimeTypes?: readonly string[];
+  priority?: "default" | "app" | "internal";
+  preparePaste?: (
+    context: DOMClipboardPreparePasteContext<V>,
+  ) => void | Promise<void>;
   providePaste?: (
-    context: DOMClipboardPasteContext<V>
-  ) => DOMClipboardPasteCandidate<V> | null | Promise<DOMClipboardPasteCandidate<V> | null>
+    context: DOMClipboardPasteContext<V>,
+  ) =>
+    | DOMClipboardPasteCandidate<V>
+    | null
+    | Promise<DOMClipboardPasteCandidate<V> | null>;
   resolvePaste?: (
     candidate: DOMClipboardPasteCandidate<V>,
-    context: DOMClipboardPasteContext<V>
-  ) => DOMClipboardPasteCandidate<V> | Promise<DOMClipboardPasteCandidate<V>>
-}
+    context: DOMClipboardPasteContext<V>,
+  ) => DOMClipboardPasteCandidate<V> | Promise<DOMClipboardPasteCandidate<V>>;
+};
 ```
 
 DX rules:
@@ -427,23 +432,23 @@ Add an internal model:
 
 ```ts
 type InsertionSlice<V extends Value = Value> = {
-  fragment: Descendant[]
-  openStart: number
-  openEnd: number
-  source: 'slate-fragment' | 'html' | 'plain-text' | 'file' | 'custom'
-  text?: string
-}
+  fragment: Descendant[];
+  openStart: number;
+  openEnd: number;
+  source: "slate-fragment" | "html" | "plain-text" | "file" | "custom";
+  text?: string;
+};
 ```
 
 Add a paste plan:
 
 ```ts
 type PastePlan<V extends Value = Value> = {
-  at: Range
-  slice: InsertionSlice<V>
-  select: 'end' | 'preserve' | 'range'
-  source: 'paste'
-}
+  at: Range;
+  slice: InsertionSlice<V>;
+  select: "end" | "preserve" | "range";
+  source: "paste";
+};
 ```
 
 Add one bulk model action:
@@ -453,22 +458,22 @@ editor.update((tx) => {
   tx.fragment.replace({
     at: tx.selection.get(),
     slice,
-    source: 'paste',
-  })
-})
+    source: "paste",
+  });
+});
 ```
 
 Internal operation target:
 
 ```ts
 type ReplaceFragmentOperation = {
-  type: 'replace_fragment'
-  at: Range
-  fragment: Descendant[]
-  openStart: number
-  openEnd: number
-  source?: 'paste' | 'drop' | 'insert-content'
-}
+  type: "replace_fragment";
+  at: Range;
+  fragment: Descendant[];
+  openStart: number;
+  openEnd: number;
+  source?: "paste" | "drop" | "insert-content";
+};
 ```
 
 Hard rule:
@@ -569,14 +574,14 @@ Existing source rows:
 
 Target claim map:
 
-| Issue | Current status | Target after execution | Reason |
-| --- | --- | --- | --- |
-| #5945 | Improves | `Fixes #5945` only if 10,000-line browser proof passes | The issue-size package benchmark is green; exact browser repro closure remains open. |
-| #4056 | Improves | `Fixes #4056` only with historical browser/user-path repro | Populated-editor copy/paste issue-size package benchmark is green; exact browser repro closure remains open. |
-| #5992 | Improves | `Fixes #5992` only after remaining model delete/snapshot cost has a target and proof | The issue-size cut benchmark improved by bounding fragment extraction, but the delete lane remains above a clean closure bar. |
-| #2195 | Related perf pressure | Improves if dirty-path text-node tracking drops from the hot path | Dirty tracking is likely part of the paste cost. |
-| #6038 | Related perf pressure | Improves if batch-aware apply engine lands | Bulk replace directly touches this architecture pressure. |
-| #5811 | Related normalization pressure | Related only unless infinite-normalize repro is proven | Paste fitting must not create new normalize loops. |
+| Issue | Current status                 | Target after execution                                                               | Reason                                                                                                                        |
+| ----- | ------------------------------ | ------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
+| #5945 | Improves                       | `Fixes #5945` only if 10,000-line browser proof passes                               | The issue-size package benchmark is green; exact browser repro closure remains open.                                          |
+| #4056 | Improves                       | `Fixes #4056` only with historical browser/user-path repro                           | Populated-editor copy/paste issue-size package benchmark is green; exact browser repro closure remains open.                  |
+| #5992 | Improves                       | `Fixes #5992` only after remaining model delete/snapshot cost has a target and proof | The issue-size cut benchmark improved by bounding fragment extraction, but the delete lane remains above a clean closure bar. |
+| #2195 | Related perf pressure          | Improves if dirty-path text-node tracking drops from the hot path                    | Dirty tracking is likely part of the paste cost.                                                                              |
+| #6038 | Related perf pressure          | Improves if batch-aware apply engine lands                                           | Bulk replace directly touches this architecture pressure.                                                                     |
+| #5811 | Related normalization pressure | Related only unless infinite-normalize repro is proven                               | Paste fitting must not create new normalize loops.                                                                            |
 
 Unchanged fixed/improved clipboard rows:
 
@@ -596,19 +601,19 @@ PR description status:
 
 ## 13. Legacy Regression Proof Matrix
 
-| Behavior | Required proof |
-| --- | --- |
-| Single-line plain text paste | Existing `insertText` fast path remains behavior-equivalent. |
-| Multiline plain text paste | New unit proof inserts lines as the same block structure users get today, with correct final selection. |
-| Full-document replacement | Existing `replaceSnapshot` fast path stays green; shell-backed full-doc text replacement remains explicit. |
-| Slate fragment paste | Fragment payload preserves target-block behavior and whole-list wrappers. |
-| Void/inline void paste | Existing selected inline void copy/paste/cut proof remains green. |
-| Paste over expanded range | Deletes selected content once, inserts canonical slice once, sets selection to insertion end. |
-| Paste into hidden/DOM-incomplete target | DOM coverage materializes or model-backs according to policy before mutation. |
-| Paste while composing | Composition guard blocks dangerous materialization/mutation. |
-| Undo | One paste equals one undo step. |
-| Redo | Redo restores full pasted slice and selection. |
-| Collaboration replay | One logical paste replays deterministically through local and remote updates. |
+| Behavior                                | Required proof                                                                                             |
+| --------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| Single-line plain text paste            | Existing `insertText` fast path remains behavior-equivalent.                                               |
+| Multiline plain text paste              | New unit proof inserts lines as the same block structure users get today, with correct final selection.    |
+| Full-document replacement               | Existing `replaceSnapshot` fast path stays green; shell-backed full-doc text replacement remains explicit. |
+| Slate fragment paste                    | Fragment payload preserves target-block behavior and whole-list wrappers.                                  |
+| Void/inline void paste                  | Existing selected inline void copy/paste/cut proof remains green.                                          |
+| Paste over expanded range               | Deletes selected content once, inserts canonical slice once, sets selection to insertion end.              |
+| Paste into hidden/DOM-incomplete target | DOM coverage materializes or model-backs according to policy before mutation.                              |
+| Paste while composing                   | Composition guard blocks dangerous materialization/mutation.                                               |
+| Undo                                    | One paste equals one undo step.                                                                            |
+| Redo                                    | Redo restores full pasted slice and selection.                                                             |
+| Collaboration replay                    | One logical paste replays deterministically through local and remote updates.                              |
 
 ## 14. Browser Stress And Parity Strategy
 
@@ -644,15 +649,15 @@ Benchmark rows:
 
 ## 15. Applicable Implementation-Skill Review Matrix
 
-| Skill/lens | Status | Plan response |
-| --- | --- | --- |
-| `performance` | applied | Cohorts, repeated unit, operation count, heap, and native behavior gates are explicit. |
-| `performance-oracle` | applied by rule | Hot path is operation/normalization complexity, not splitting. Target is O(inserted nodes) build plus O(boundary) fit, not O(lines * path-transform). |
-| `tdd` | applied | Execution starts with one failing benchmark/unit proof, then implementation, then browser proof. |
-| `high-risk-deliberate-pass` | applied | Operation/collaboration/browser blast radius is named below. |
-| `vercel-react-best-practices` | skipped with reason | React is dispatch/repair owner here; the bottleneck is model insertion. |
-| `shadcn` | skipped with reason | No UI/component API is being designed. |
-| `react-useeffect` | skipped with reason | No new effect or subscription surface. |
+| Skill/lens                    | Status              | Plan response                                                                                                                                          |
+| ----------------------------- | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `performance`                 | applied             | Cohorts, repeated unit, operation count, heap, and native behavior gates are explicit.                                                                 |
+| `performance-oracle`          | applied by rule     | Hot path is operation/normalization complexity, not splitting. Target is O(inserted nodes) build plus O(boundary) fit, not O(lines \* path-transform). |
+| `tdd`                         | applied             | Execution starts with one failing benchmark/unit proof, then implementation, then browser proof.                                                       |
+| `high-risk-deliberate-pass`   | applied             | Operation/collaboration/browser blast radius is named below.                                                                                           |
+| `vercel-react-best-practices` | skipped with reason | React is dispatch/repair owner here; the bottleneck is model insertion.                                                                                |
+| `shadcn`                      | skipped with reason | No UI/component API is being designed.                                                                                                                 |
+| `react-useeffect`             | skipped with reason | No new effect or subscription surface.                                                                                                                 |
 
 ## 16. High-Risk Deliberate Pre-Mortem
 
@@ -715,24 +720,24 @@ Rejected:
 
 ## 18. Maintainer Objection Ledger
 
-| Objection | Answer |
-| --- | --- |
-| "This adds a high-level op, Slate ops should stay primitive." | Paste is one user action. VS Code, ProseMirror, and Tiptap all treat it as one replacement. Primitive-only purity is not worth 30,000 operations. |
-| "Collaboration adapters may not understand `replace_fragment`." | Replay through Slate's collaboration import path is proven. CRDT adapters that cannot represent subtree replacement atomically lower it at their adapter boundary. |
-| "Apps need HTML paste control." | Yes, through providers/capabilities. Raw Slate should not own product HTML policy. |
-| "The current fragment path already uses `replace_fragment` for some shapes." | Correct, and that is the point of this lane: keep expanding the fitted one-op shapes only where behavior is proven. |
-| "Why not use Lexical's raw text nodes?" | Lexical's dirty runtime is useful, but Slate's issue target is huge multiline structural insertion. We need bulk replacement, not another node loop. |
-| "Why mention VS Code for Slate rich text?" | VS Code is not a rich-text model. The lesson is bulk edits, undo grouping, provider cancellation, and fallback, not its text buffer. |
+| Objection                                                                    | Answer                                                                                                                                                             |
+| ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| "This adds a high-level op, Slate ops should stay primitive."                | Paste is one user action. VS Code, ProseMirror, and Tiptap all treat it as one replacement. Primitive-only purity is not worth 30,000 operations.                  |
+| "Collaboration adapters may not understand `replace_fragment`."              | Replay through Slate's collaboration import path is proven. CRDT adapters that cannot represent subtree replacement atomically lower it at their adapter boundary. |
+| "Apps need HTML paste control."                                              | Yes, through providers/capabilities. Raw Slate should not own product HTML policy.                                                                                 |
+| "The current fragment path already uses `replace_fragment` for some shapes." | Correct, and that is the point of this lane: keep expanding the fitted one-op shapes only where behavior is proven.                                                |
+| "Why not use Lexical's raw text nodes?"                                      | Lexical's dirty runtime is useful, but Slate's issue target is huge multiline structural insertion. We need bulk replacement, not another node loop.               |
+| "Why mention VS Code for Slate rich text?"                                   | VS Code is not a rich-text model. The lesson is bulk edits, undo grouping, provider cancellation, and fallback, not its text buffer.                               |
 
 ## 19. Pass Schedule And Pass-State Ledger
 
-| Pass | Status | Evidence added | Plan delta | Open issues | Next owner |
-| --- | --- | --- | --- | --- | --- |
-| Current-state read | complete | Live Slate v2 clipboard/core/benchmark files | Identified insertion/normalization as owner | none | done |
-| Related issue pass | complete | Existing ClawSweeper dossier and coverage matrix rows for #4056/#5945/#5992 | Execution claim rows are synced to `Improves` | exact `Fixes` proof remains separate | done |
-| Ecosystem synthesis | complete | Lexical, ProseMirror, Tiptap, VS Code source reads | Chose bulk replace-fragment path | none | done |
-| Decision/high-risk pass | complete | Operation/collab/browser risk table | Public API delayed; internal engine first | yjs proof during implementation | ralph |
-| Closure score | complete | Scorecard above | Plan ready for execution | none | ralph |
+| Pass                    | Status   | Evidence added                                                              | Plan delta                                    | Open issues                          | Next owner |
+| ----------------------- | -------- | --------------------------------------------------------------------------- | --------------------------------------------- | ------------------------------------ | ---------- |
+| Current-state read      | complete | Live Slate v2 clipboard/core/benchmark files                                | Identified insertion/normalization as owner   | none                                 | done       |
+| Related issue pass      | complete | Existing ClawSweeper dossier and coverage matrix rows for #4056/#5945/#5992 | Execution claim rows are synced to `Improves` | exact `Fixes` proof remains separate | done       |
+| Ecosystem synthesis     | complete | Lexical, ProseMirror, Tiptap, VS Code source reads                          | Chose bulk replace-fragment path              | none                                 | done       |
+| Decision/high-risk pass | complete | Operation/collab/browser risk table                                         | Public API delayed; internal engine first     | yjs proof during implementation      | ralph      |
+| Closure score           | complete | Scorecard above                                                             | Plan ready for execution                      | none                                 | ralph      |
 
 ## 20. Plan Deltas From Review
 
@@ -942,9 +947,9 @@ Status: complete for this plan.
 
 Live Slate v2 source:
 
-- `../slate-v2/packages/slate-dom/src/plugin/dom-editor.ts` exposes
+- `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts` exposes
   `DOMClipboardInsertDataHandler<V> = (editor, data) => boolean | void`.
-- `../slate-v2/packages/slate-dom/src/plugin/dom-clipboard-runtime.ts` runs
+- `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-clipboard-runtime.ts` runs
   `dom.clipboard.insertData` handlers before internal Slate fragment and
   plain-text fallback.
 - Extension capabilities already provide ordered, synchronous app interception
@@ -982,16 +987,21 @@ Accepted future shape, only if the async proof appears:
 
 ```ts
 type DOMClipboardPasteProvider<V extends Value = Value> = {
-  mimeTypes?: readonly string[]
-  prepare?: (context: DOMClipboardPreparePasteContext<V>) => void | Promise<void>
+  mimeTypes?: readonly string[];
+  prepare?: (
+    context: DOMClipboardPreparePasteContext<V>,
+  ) => void | Promise<void>;
   provide?: (
-    context: DOMClipboardPasteContext<V>
-  ) => DOMClipboardPasteCandidate<V> | null | Promise<DOMClipboardPasteCandidate<V> | null>
+    context: DOMClipboardPasteContext<V>,
+  ) =>
+    | DOMClipboardPasteCandidate<V>
+    | null
+    | Promise<DOMClipboardPasteCandidate<V> | null>;
   resolve?: (
     candidate: DOMClipboardPasteCandidate<V>,
-    context: DOMClipboardPasteContext<V>
-  ) => DOMClipboardPasteCandidate<V> | Promise<DOMClipboardPasteCandidate<V>>
-}
+    context: DOMClipboardPasteContext<V>,
+  ) => DOMClipboardPasteCandidate<V> | Promise<DOMClipboardPasteCandidate<V>>;
+};
 ```
 
 Hard cut for the current PR:

@@ -25,13 +25,13 @@ The target public editor is small:
 
 ```ts
 export interface Editor<V extends Value = Value> {
-  read<T>(fn: (state: EditorStateView<V>) => T): T
+  read<T>(fn: (state: EditorStateView<V>) => T): T;
   update(
     fn: (tx: EditorUpdateTransaction<V>) => void,
-    options?: EditorUpdateOptions
-  ): void
-  subscribe(listener: SnapshotListener<V>): () => void
-  extend(extension: EditorExtensionInput<V>): () => void
+    options?: EditorUpdateOptions,
+  ): void;
+  subscribe(listener: SnapshotListener<V>): () => void;
+  extend(extension: EditorExtensionInput<V>): () => void;
 }
 ```
 
@@ -42,7 +42,7 @@ React hooks or `read` / `update`.
 
 Live source:
 
-- `../slate-v2/packages/slate/src/interfaces/editor.ts`
+- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`
   - `BaseEditor` exposes direct reads: `getChildren`, `getFragment`,
     `getLastCommit`, `getOperations`, `getSelection`, `getSnapshot`,
     `getRuntimeId`, and `getPathByRuntimeId`.
@@ -53,10 +53,10 @@ Live source:
     `void`.
   - Those aliases are typed through `OmitFirstArg<typeof Editor.*>`, keeping
     the internal static `Editor` table embedded in the public editor type.
-- `../slate-v2/packages/slate/src/create-editor.ts`
+- `.tmp/slate-v2/packages/slate/src/create-editor.ts`
   - `createEditor()` still attaches every direct query/read alias onto the
     editor object.
-- `../slate-v2/packages/slate/src/core/public-state.ts`
+- `.tmp/slate-v2/packages/slate/src/core/public-state.ts`
   - `state` / `tx` groups already exist, but they are incomplete; they call
     back through direct editor aliases for several reads.
 - Current call-site pressure includes `slate-history`, `slate-dom`, site
@@ -139,60 +139,60 @@ Expand `EditorStateView` until every surviving read has one obvious home:
 
 ```ts
 editor.read((state) => {
-  state.value.get()
-  state.value.snapshot()
-  state.value.operations({ since: 0 })
-  state.value.lastCommit()
+  state.value.get();
+  state.value.snapshot();
+  state.value.operations({ since: 0 });
+  state.value.lastCommit();
 
-  state.selection.get()
-  state.marks.get()
+  state.selection.get();
+  state.marks.get();
 
-  state.nodes.children([])
-  state.nodes.get([0])
-  state.nodes.parent([0, 0])
-  state.nodes.above({ at, match })
-  state.nodes.first(at)
-  state.nodes.last(at)
-  state.nodes.leaf(at)
-  state.nodes.levels({ at })
-  state.nodes.next({ at })
-  state.nodes.previous({ at })
-  state.nodes.match({ at })
-  state.nodes.hasPath(path)
-  state.nodes.isBlock(element)
-  state.nodes.isEmpty(element)
-  state.nodes.hasBlocks(element)
-  state.nodes.hasInlines(element)
-  state.nodes.hasTexts(element)
-  state.nodes.void({ at })
+  state.nodes.children([]);
+  state.nodes.get([0]);
+  state.nodes.parent([0, 0]);
+  state.nodes.above({ at, match });
+  state.nodes.first(at);
+  state.nodes.last(at);
+  state.nodes.leaf(at);
+  state.nodes.levels({ at });
+  state.nodes.next({ at });
+  state.nodes.previous({ at });
+  state.nodes.match({ at });
+  state.nodes.hasPath(path);
+  state.nodes.isBlock(element);
+  state.nodes.isEmpty(element);
+  state.nodes.hasBlocks(element);
+  state.nodes.hasInlines(element);
+  state.nodes.hasTexts(element);
+  state.nodes.void({ at });
 
-  state.points.before(at, options)
-  state.points.after(at, options)
-  state.points.start(at)
-  state.points.end(at)
-  state.points.get(at, options)
-  state.points.isEdge(point, at)
-  state.points.isStart(point, at)
-  state.points.isEnd(point, at)
+  state.points.before(at, options);
+  state.points.after(at, options);
+  state.points.start(at);
+  state.points.end(at);
+  state.points.get(at, options);
+  state.points.isEdge(point, at);
+  state.points.isStart(point, at);
+  state.points.isEnd(point, at);
 
-  state.ranges.get(at)
-  state.ranges.edges(at)
-  state.ranges.unhang(range, options)
-  state.ranges.project(range)
+  state.ranges.get(at);
+  state.ranges.edges(at);
+  state.ranges.unhang(range, options);
+  state.ranges.project(range);
 
-  state.text.string(at, options)
+  state.text.string(at, options);
 
-  state.schema.getElementSpec(type)
-  state.schema.isInline(element)
-  state.schema.isBlock(element)
-  state.schema.isVoid(element)
-  state.schema.isElementReadOnly(element)
-  state.schema.isSelectable(element)
-  state.schema.markableVoid(element)
+  state.schema.getElementSpec(type);
+  state.schema.isInline(element);
+  state.schema.isBlock(element);
+  state.schema.isVoid(element);
+  state.schema.isElementReadOnly(element);
+  state.schema.isSelectable(element);
+  state.schema.markableVoid(element);
 
-  state.runtime.idAt(path)
-  state.runtime.pathOf(runtimeId)
-})
+  state.runtime.idAt(path);
+  state.runtime.pathOf(runtimeId);
+});
 ```
 
 No direct editor instance query is the normal read path.
@@ -203,41 +203,41 @@ No direct editor instance query is the normal read path.
 
 ```ts
 editor.update((tx) => {
-  tx.value.replace(value)
-  tx.operations.replay(ops)
+  tx.value.replace(value);
+  tx.operations.replay(ops);
 
-  tx.nodes.set(props, options)
-  tx.nodes.insert(node, options)
-  tx.nodes.remove(options)
-  tx.nodes.move(options)
-  tx.nodes.wrap(element, options)
-  tx.nodes.unwrap(options)
-  tx.nodes.split(options)
-  tx.nodes.merge(options)
+  tx.nodes.set(props, options);
+  tx.nodes.insert(node, options);
+  tx.nodes.remove(options);
+  tx.nodes.move(options);
+  tx.nodes.wrap(element, options);
+  tx.nodes.unwrap(options);
+  tx.nodes.split(options);
+  tx.nodes.merge(options);
 
-  tx.selection.set(target)
-  tx.selection.clear()
-  tx.selection.move(options)
-  tx.selection.collapse(options)
+  tx.selection.set(target);
+  tx.selection.clear();
+  tx.selection.move(options);
+  tx.selection.collapse(options);
 
-  tx.text.insert(text, options)
-  tx.text.delete(options)
+  tx.text.insert(text, options);
+  tx.text.delete(options);
 
-  tx.marks.add(key, value)
-  tx.marks.remove(key)
-  tx.marks.toggle(key, options)
+  tx.marks.add(key, value);
+  tx.marks.remove(key);
+  tx.marks.toggle(key, options);
 
-  tx.normalize(options)
-  tx.withoutNormalizing(fn)
-})
+  tx.normalize(options);
+  tx.withoutNormalizing(fn);
+});
 ```
 
 If refs remain public, they live in state/tx groups, not on `editor`:
 
 ```ts
 editor.update((tx) => {
-  const ref = tx.refs.path(path, options)
-})
+  const ref = tx.refs.path(path, options);
+});
 ```
 
 If refs are only runtime infrastructure, they move to `slate/internal`.
@@ -253,13 +253,13 @@ const cleanup = editor.extend(
   defineEditorExtension({
     elements: [
       {
-        type: 'image',
-        void: 'block',
+        type: "image",
+        void: "block",
         selectable: true,
       },
     ],
-  })
-)
+  }),
+);
 ```
 
 Read schema facts through `state.schema` / `tx.schema`.
@@ -273,13 +273,13 @@ Introduce an internal runtime object that owns the removed direct methods:
 
 ```ts
 type EditorRuntime<V extends Value = Value> = {
-  state: InternalEditorStateApi<V>
-  queries: InternalEditorQueryApi<V>
-  transforms: EditorTransformRegistry<V>
-  refs: InternalEditorRefApi
-  schema: InternalEditorSchemaApi
-  normalize: InternalEditorNormalizeApi
-}
+  state: InternalEditorStateApi<V>;
+  queries: InternalEditorQueryApi<V>;
+  transforms: EditorTransformRegistry<V>;
+  refs: InternalEditorRefApi;
+  schema: InternalEditorSchemaApi;
+  normalize: InternalEditorNormalizeApi;
+};
 ```
 
 Rules:
@@ -468,14 +468,14 @@ in the normal iteration loop.
 
 ## 8. Risk Register
 
-| Risk | Why It Matters | Plan Response |
-| --- | --- | --- |
-| State/tx groups miss a current query | Removal becomes a DX regression | Phase 2 fills parity before the cut |
-| Internal packages start importing public aliases again | The hard cut rots | Phase 8 grep guards |
-| Extension authors lose override points | Plugins need behavior hooks | Move overrides to explicit extension/runtime registration |
-| Collaboration loses snapshot/commit access | slate-yjs-style substrate needs deterministic commits | `state.value.snapshot()`, `state.value.lastCommit()`, `tx.operations.replay(...)`, `editor.subscribe(...)` |
-| Ref API gets fuzzy | refs are neither pure reads nor normal writes | Decide state/tx/internal in Phase 2 before deleting aliases |
-| Docs keep stale snippets | Users learn the wrong API | Phase 7 plus grep guards |
+| Risk                                                   | Why It Matters                                        | Plan Response                                                                                              |
+| ------------------------------------------------------ | ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| State/tx groups miss a current query                   | Removal becomes a DX regression                       | Phase 2 fills parity before the cut                                                                        |
+| Internal packages start importing public aliases again | The hard cut rots                                     | Phase 8 grep guards                                                                                        |
+| Extension authors lose override points                 | Plugins need behavior hooks                           | Move overrides to explicit extension/runtime registration                                                  |
+| Collaboration loses snapshot/commit access             | slate-yjs-style substrate needs deterministic commits | `state.value.snapshot()`, `state.value.lastCommit()`, `tx.operations.replay(...)`, `editor.subscribe(...)` |
+| Ref API gets fuzzy                                     | refs are neither pure reads nor normal writes         | Decide state/tx/internal in Phase 2 before deleting aliases                                                |
+| Docs keep stale snippets                               | Users learn the wrong API                             | Phase 7 plus grep guards                                                                                   |
 
 ## 9. Done Criteria
 
@@ -489,7 +489,7 @@ in the normal iteration loop.
 - Docs/examples teach one public lifecycle.
 - No compatibility bridge, alias, deprecated shim, or fallback remains.
 - Focused contract tests pass.
-- `bun check` passes in `../slate-v2`.
+- `bun check` passes in `.tmp/slate-v2`.
 
 ## 10. Next Move
 
@@ -502,7 +502,7 @@ No runnable in-scope owner remains for this plan.
 - Set `.tmp/<session-id>/completion-check.md` to `pending`.
 - Regenerated `.tmp/continue.md` for the active execution lane.
 - Started Phase 1: red public-surface and state/tx contracts in
-  `../slate-v2/packages/slate`.
+  `.tmp/slate-v2/packages/slate`.
 
 ### 2026-04-29 Phase 1 Red Contracts
 
@@ -526,7 +526,7 @@ No runnable in-scope owner remains for this plan.
 
 ### 2026-04-29 Public Surface, Docs, And Guard Sweep
 
-- Completed the public runtime hard cut in `../slate-v2`:
+- Completed the public runtime hard cut in `.tmp/slate-v2`:
   - `BaseEditor` public methods are `read`, `update`, `subscribe`, and
     `extend`.
   - `createEditor()` no longer attaches public direct read/query/schema/ref
@@ -546,8 +546,8 @@ No runnable in-scope owner remains for this plan.
   - docs examples use `tx.schema` / `state.*` groups for queries.
 - Verification:
   - `bun test:vitest test/surface-contract.test.tsx` in
-    `../slate-v2/packages/slate-react`: `1 passed`, `9 tests passed`.
-  - `bun check` in `../slate-v2`: lint, package/site/root typecheck,
+    `.tmp/slate-v2/packages/slate-react`: `1 passed`, `9 tests passed`.
+  - `bun check` in `.tmp/slate-v2`: lint, package/site/root typecheck,
     Bun tests, and Vitest all passed.
   - Guard sweep has no banned hits for direct public editor aliases in
     package sources, site examples, or current docs.
@@ -565,7 +565,7 @@ No runnable in-scope owner remains for this plan.
 ### 2026-04-29 Phase 6 Fixture Bridge Cut
 
 - Removed the remaining test-only legacy editor-method bridge in
-  `../slate-v2/packages/slate/test/support/with-test.js`.
+  `.tmp/slate-v2/packages/slate/test/support/with-test.js`.
 - The fixture helper now exposes only the grouped transaction API, current
   `extend(...)`, and runtime registration needed by old internal query
   callbacks. It no longer exposes `getChildren`, `getSelection`,
@@ -577,7 +577,7 @@ No runnable in-scope owner remains for this plan.
   - `tx.nodes.*`, `tx.selection.*`, `tx.withoutNormalizing(...)`, and
     `tx.normalize(...)` for transform intent
   - `editor.extend(...)` for fixture schema setup
-- Verification in `../slate-v2`:
+- Verification in `.tmp/slate-v2`:
   - `bun test packages/slate/test/index.spec.ts`: `964 pass`, `94 skip`.
   - `bun test packages/slate/test/index.spec.ts packages/slate-hyperscript/test/index.spec.ts`: `993 pass`, `94 skip`.
   - `bun test ./packages/slate/test/public-surface-contract.ts ./packages/slate/test/state-tx-public-api-contract.ts`: `168 pass`.
@@ -597,17 +597,17 @@ No runnable in-scope owner remains for this plan.
 ### 2026-04-29 Stale Contract Cleanup
 
 - Removed stale contract files whose purpose was the deleted API:
-  - `../slate-v2/packages/slate/test/surface-contract.ts`
-  - `../slate-v2/packages/slate/test/extension-contract.ts`
+  - `.tmp/slate-v2/packages/slate/test/surface-contract.ts`
+  - `.tmp/slate-v2/packages/slate/test/extension-contract.ts`
 - Migrated kept path-runnable contract files from direct public editor aliases
   to current APIs:
   - reads through `editor.read(...)` or explicit `slate/internal` helpers
   - writes through `editor.update((tx) => ...)`
   - schema setup through `editor.extend(...)`
   - test-only schema setup through
-    `../slate-v2/packages/slate/test/support/schema.ts`
+    `.tmp/slate-v2/packages/slate/test/support/schema.ts`
 - Updated explicit contract inventory counts after the stale API burn-down.
-- Verification in `../slate-v2`:
+- Verification in `.tmp/slate-v2`:
   - `bun test ./packages/slate/test/*contract.ts ./packages/slate-hyperscript/test/smoke-contract.ts`: `591 pass`.
   - `bun test packages/slate/test/index.spec.ts packages/slate-hyperscript/test/index.spec.ts`: `993 pass`, `94 skip`.
   - Direct public editor alias grep over `packages/slate/test` and

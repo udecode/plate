@@ -16,7 +16,7 @@ Sources:
 - GitHub Engineering, "The uphill climb of making diff lines performant",
   pasted by the user on 2026-05-03.
 - TanStack Virtual official docs queried through Context7 on 2026-05-03.
-- Live `../slate-v2` source read on 2026-05-03.
+- Live `.tmp/slate-v2` source read on 2026-05-03.
 
 ## GitHub Diff Lessons
 
@@ -65,7 +65,7 @@ Slate implication:
 
 ## Live Slate v2 Current Shape
 
-Current live `../slate-v2` source has:
+Current live `.tmp/slate-v2` source has:
 
 - `renderingStrategy` public prop with `full`, `staged`, `shell`, and
   `virtualized` effective types;

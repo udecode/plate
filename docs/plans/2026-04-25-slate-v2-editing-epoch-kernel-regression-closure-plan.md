@@ -79,7 +79,7 @@ Known weak points:
 - `beforeinput` can apply model-owned delete and schedule only generic
   `repair-caret`.
 - delete/word-delete repairs do not always force `selectionSource:
-  model-owned` before repair.
+model-owned` before repair.
 - `input` repair is separate from the destructive-operation owner.
 - tests cover many known rows but not enough repeated warm-state native action
   sequences in a persistent browser profile.
@@ -515,7 +515,7 @@ Commands:
 
 ```bash
 rg -n "deleteWordBackward|selectionchange|beforeinput|restore|composition|Chrome|Safari|Firefox" ../slate/packages/slate-react/src
-rg -n "deleteWordBackward|selectionchange|beforeinput|restore|composition|Chrome|Safari|Firefox" ../slate-v2/packages/slate-react/src
+rg -n "deleteWordBackward|selectionchange|beforeinput|restore|composition|Chrome|Safari|Firefox" .tmp/slate-v2/packages/slate-react/src
 ```
 
 ## Batch 7: Cross-Browser And Raw Device Proof

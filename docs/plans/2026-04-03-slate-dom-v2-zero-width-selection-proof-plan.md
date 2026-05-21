@@ -69,7 +69,7 @@ Verify, deslop, re-verify, architect review, cleanup.
   - add `DOMBridge.toDOMPoint(editor, point)`
   - add `DOMBridge.toDOMRange(editor, range)`
   - make zero-width offsets clamp to actual DOM node length
-- landed the reverse bridge seam in `../slate-v2`
+- landed the reverse bridge seam in `.tmp/slate-v2`
 - added bridge tests for:
   - reverse point lookup
   - zero-width range clamping when sentinel text is missing

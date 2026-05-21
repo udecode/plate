@@ -3,7 +3,7 @@
 Date: 2026-05-17
 Status: done
 Owner: Slate Ralplan planning only
-Execution owner: `ralph` in `../slate-v2`
+Execution owner: `ralph` in `.tmp/slate-v2`
 Completion id: `019e1fc0-dba0-7de1-9236-b484a144cda6`
 Score: 0.93, closed for Ralph execution
 
@@ -41,26 +41,26 @@ capabilities: {
 is registry plumbing exposed as product syntax. That is why the example needs:
 
 ```ts
-const iframeEditor = editor as unknown as CustomEditor
+const iframeEditor = editor as unknown as CustomEditor;
 ```
 
 That cast is the DX failure in one line.
 
 ## Current source
 
-| Surface | Current source | Finding |
-| --- | --- | --- |
-| Core extension output | `../slate-v2/packages/slate/src/interfaces/editor.ts:1292-1305`, `:1308-1331` | `EditorExtension` and `register(...)` outputs both expose `capabilities?: Record<string, unknown \| readonly unknown[]>`. |
-| Capability registration | `../slate-v2/packages/slate/src/core/editor-extension.ts:347-405` | Core loops through `slots.capabilities` and registers every named value into the extension registry. |
-| Runtime registry | `../slate-v2/packages/slate/src/core/extension-registry.ts:31-43`, `:169-196` | `capabilities` are stored as `Map<string, unknown[]>`; ordered providers and installed handles share the same generic bucket. |
-| Public `editor.api` | `../slate-v2/packages/slate/src/create-editor.ts:813-865` | `editor.api.<name>` is a proxy over registered capabilities; `editor.getApi(extension)` also resolves from extension capability names. This is the right public place for installed runtime handles. |
-| Public key helper | `../slate-v2/packages/slate-react/src/editable/editable-key-commands.ts:7-23` | `editableKeyCommands(...)` returns a magic-key record: `'slate-react.editable.keyCommand' -> commands`. |
-| Key helper consumption | `../slate-v2/packages/slate-react/src/editable/editable-key-commands.ts:28-35`, `../slate-v2/packages/slate-react/src/editable/keyboard-input-strategy.ts:125-149` | Slate React reads the capability registry and calls each command with `{ editor, event, selection }`. |
-| Public renderer helper | `../slate-v2/packages/slate-react/src/editable/editable-renderers.ts:14-81` | `editableRenderers(...)` has the same public-helper-over-registry shape. |
-| Export surface | `../slate-v2/packages/slate-react/src/index.ts:73-89` | `EDITABLE_KEY_COMMAND_CAPABILITY`, `editableKeyCommands`, `EDITABLE_RENDERERS_CAPABILITY`, and `editableRenderers` are public exports. |
-| Example failure | `../slate-v2/site/examples/ts/iframe.tsx:94-120` | First-party example spreads render/key capability helpers and casts `editor` to `CustomEditor`. |
-| More example failure | `../slate-v2/site/examples/ts/richtext.tsx:293-330` | Richtext repeats the same shape and casts because the handler sees only `ReactEditor`. |
-| Test locking current bad DX | `../slate-v2/packages/slate-react/test/surface-contract.tsx:459-468` | Contract test explicitly expects examples to use `editableKeyCommands` and not raw `onKeyDown`. It locks the wrong public helper, even though the intent is right. |
+| Surface                     | Current source                                                                                                                                                         | Finding                                                                                                                                                                                              |
+| --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Core extension output       | `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:1292-1305`, `:1308-1331`                                                                                        | `EditorExtension` and `register(...)` outputs both expose `capabilities?: Record<string, unknown \| readonly unknown[]>`.                                                                            |
+| Capability registration     | `.tmp/slate-v2/packages/slate/src/core/editor-extension.ts:347-405`                                                                                                    | Core loops through `slots.capabilities` and registers every named value into the extension registry.                                                                                                 |
+| Runtime registry            | `.tmp/slate-v2/packages/slate/src/core/extension-registry.ts:31-43`, `:169-196`                                                                                        | `capabilities` are stored as `Map<string, unknown[]>`; ordered providers and installed handles share the same generic bucket.                                                                        |
+| Public `editor.api`         | `.tmp/slate-v2/packages/slate/src/create-editor.ts:813-865`                                                                                                            | `editor.api.<name>` is a proxy over registered capabilities; `editor.getApi(extension)` also resolves from extension capability names. This is the right public place for installed runtime handles. |
+| Public key helper           | `.tmp/slate-v2/packages/slate-react/src/editable/editable-key-commands.ts:7-23`                                                                                        | `editableKeyCommands(...)` returns a magic-key record: `'slate-react.editable.keyCommand' -> commands`.                                                                                              |
+| Key helper consumption      | `.tmp/slate-v2/packages/slate-react/src/editable/editable-key-commands.ts:28-35`, `.tmp/slate-v2/packages/slate-react/src/editable/keyboard-input-strategy.ts:125-149` | Slate React reads the capability registry and calls each command with `{ editor, event, selection }`.                                                                                                |
+| Public renderer helper      | `.tmp/slate-v2/packages/slate-react/src/editable/editable-renderers.ts:14-81`                                                                                          | `editableRenderers(...)` has the same public-helper-over-registry shape.                                                                                                                             |
+| Export surface              | `.tmp/slate-v2/packages/slate-react/src/index.ts:73-89`                                                                                                                | `EDITABLE_KEY_COMMAND_CAPABILITY`, `editableKeyCommands`, `EDITABLE_RENDERERS_CAPABILITY`, and `editableRenderers` are public exports.                                                               |
+| Example failure             | `.tmp/slate-v2/site/examples/ts/iframe.tsx:94-120`                                                                                                                     | First-party example spreads render/key capability helpers and casts `editor` to `CustomEditor`.                                                                                                      |
+| More example failure        | `.tmp/slate-v2/site/examples/ts/richtext.tsx:293-330`                                                                                                                  | Richtext repeats the same shape and casts because the handler sees only `ReactEditor`.                                                                                                               |
+| Test locking current bad DX | `.tmp/slate-v2/packages/slate-react/test/surface-contract.tsx:459-468`                                                                                                 | Contract test explicitly expects examples to use `editableKeyCommands` and not raw `onKeyDown`. It locks the wrong public helper, even though the intent is right.                                   |
 
 ## Why the current API happened
 
@@ -89,7 +89,7 @@ Target first-party authoring shape:
 ```ts
 const iframe = () =>
   defineEditorExtension<CustomEditor>()({
-    name: 'iframe',
+    name: "iframe",
     editable: {
       renderers: {
         elements: {
@@ -103,19 +103,19 @@ const iframe = () =>
         },
       },
       keymap: {
-        'mod+b': { kind: 'toggle-mark', mark: 'bold' },
-        'mod+i': { kind: 'toggle-mark', mark: 'italic' },
-        'mod+u': { kind: 'toggle-mark', mark: 'underline' },
-        'mod+`': { kind: 'toggle-mark', mark: 'code' },
+        "mod+b": { kind: "toggle-mark", mark: "bold" },
+        "mod+i": { kind: "toggle-mark", mark: "italic" },
+        "mod+u": { kind: "toggle-mark", mark: "underline" },
+        "mod+`": { kind: "toggle-mark", mark: "code" },
       },
       onCommand(command, { editor }) {
-        if (command.kind !== 'toggle-mark') return
+        if (command.kind !== "toggle-mark") return;
 
-        toggleMark(editor, command.mark)
-        return true
+        toggleMark(editor, command.mark);
+        return true;
       },
     },
-  })
+  });
 ```
 
 Target image-style shape:
@@ -123,11 +123,11 @@ Target image-style shape:
 ```ts
 const image = () =>
   defineEditorExtension<CustomEditor>()({
-    name: 'image',
-    elements: [{ type: 'image', void: 'editable-island' }],
+    name: "image",
+    elements: [{ type: "image", void: "editable-island" }],
     editable: {
       keymap: {
-        'mod+a': { kind: 'select-all' },
+        "mod+a": { kind: "select-all" },
       },
       renderers: {
         elements: {
@@ -140,23 +140,23 @@ const image = () =>
     },
     clipboard: {
       insertData(data, { editor, next }) {
-        const text = data.getData('text/plain')
+        const text = data.getData("text/plain");
         const imageFiles = Array.from(data.files ?? []).filter((file) =>
-          file.type.startsWith('image/')
-        )
+          file.type.startsWith("image/"),
+        );
 
         if (imageFiles.length === 0 && !isImageUrl(text)) {
-          return next()
+          return next();
         }
 
         editor.update((tx) => {
           // app-specific insert logic
-        })
+        });
 
-        return true
+        return true;
       },
     },
-  })
+  });
 ```
 
 Raw escape hatch remains available, but it stops being the first-party feature
@@ -184,16 +184,15 @@ export interface EditorExtensionFacets<
 export type EditorExtension<
   TEditor extends BaseEditor<any> = Editor,
   TOptions = unknown,
-> = EditorExtensionCore<TEditor, TOptions> &
-  EditorExtensionFacets<TEditor>
+> = EditorExtensionCore<TEditor, TOptions> & EditorExtensionFacets<TEditor>;
 ```
 
 `slate-react` augments the extension facets:
 
 ```ts
-declare module 'slate' {
+declare module "slate" {
   interface EditorExtensionFacets<TEditor extends BaseEditor<any>> {
-    editable?: EditableExtensionFacet<TEditor>
+    editable?: EditableExtensionFacet<TEditor>;
   }
 }
 ```
@@ -201,9 +200,9 @@ declare module 'slate' {
 `slate-dom` augments the extension facets:
 
 ```ts
-declare module 'slate' {
+declare module "slate" {
   interface EditorExtensionFacets<TEditor extends BaseEditor<any>> {
-    clipboard?: ClipboardExtensionFacet<TEditor>
+    clipboard?: ClipboardExtensionFacet<TEditor>;
   }
 }
 ```
@@ -219,12 +218,12 @@ exposes `editor.api.<name>`, the public authoring word should be `api`, not
 ```ts
 const dom = () =>
   defineEditorExtension({
-    name: 'dom',
+    name: "dom",
     api: {
       clipboard: (context) => createClipboardApi(context),
       dom: (context) => createDomApi(context),
     },
-  })
+  });
 ```
 
 Internal ordered provider lists may still use the registry machinery, but they
@@ -258,27 +257,27 @@ typing.
 
 ## Rejected alternatives
 
-| Option | Decision | Why |
-| --- | --- | --- |
-| Keep `editableKeyCommands` and add `<CustomEditor>` generic | Reject | It fixes the cast but keeps registry syntax and raw event callbacks as the public model. This is a bandage on the wrong API. |
-| Remove extension key handling and use only `<Editable onKeyDown>` | Reject | That regresses composability and recreates the old scattered example glue. Raw props stay escape hatches, not feature packaging. |
-| Put `onKeyDown` directly on core `EditorExtension` | Reject | React event types do not belong in core `slate`. The field must be a `slate-react` facet. |
-| Add only `defineEditableExtension(...)` | Reject as canonical | Better than capability spreads, but it creates another extension definition path and breaks the "one extension owns one feature" story when the same feature also has `elements`, `clipboard`, `state`, or `tx`. It can exist as a convenience later, but not as the primary architecture. |
-| Rename `capabilities` to `api` and call it done | Reject | Some current capability uses are ordered providers, not public installed handles. The fix is to split author-facing facets from internal registry storage. |
+| Option                                                            | Decision            | Why                                                                                                                                                                                                                                                                                        |
+| ----------------------------------------------------------------- | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Keep `editableKeyCommands` and add `<CustomEditor>` generic       | Reject              | It fixes the cast but keeps registry syntax and raw event callbacks as the public model. This is a bandage on the wrong API.                                                                                                                                                               |
+| Remove extension key handling and use only `<Editable onKeyDown>` | Reject              | That regresses composability and recreates the old scattered example glue. Raw props stay escape hatches, not feature packaging.                                                                                                                                                           |
+| Put `onKeyDown` directly on core `EditorExtension`                | Reject              | React event types do not belong in core `slate`. The field must be a `slate-react` facet.                                                                                                                                                                                                  |
+| Add only `defineEditableExtension(...)`                           | Reject as canonical | Better than capability spreads, but it creates another extension definition path and breaks the "one extension owns one feature" story when the same feature also has `elements`, `clipboard`, `state`, or `tx`. It can exist as a convenience later, but not as the primary architecture. |
+| Rename `capabilities` to `api` and call it done                   | Reject              | Some current capability uses are ordered providers, not public installed handles. The fix is to split author-facing facets from internal registry storage.                                                                                                                                 |
 
 ## Maintainer Objection Pass
 
 Pass status: complete.
 
-| Objection | Harsh read | Decision |
-| --- | --- | --- |
-| "`editable` and `clipboard` facets are Plate plugins sneaking into Slate." | Valid fear, wrong conclusion. A facet is not a product plugin if it stays tiny, package-owned, and typed around Slate primitives. Slate already has `elements`, `transforms`, `queries`, `normalizers`, `state`, and `tx`; package facets are the same extension object, not Plate's plugin config system. | Keep facets, but restrict them to package-owned low-level surfaces. No `plugins`, no product rules DSL, no target/priority zoo in raw Slate. |
-| "Core `EditorExtension` should not know React or DOM fields." | Correct. Core must not import React or DOM handler types. | Use declaration-mergeable `EditorExtensionFacets<TEditor>` and let `slate-react` / `slate-dom` augment it. Core stays dependency-free. |
-| "`capabilities` is still public on `EditorExtension`, so the bad DX will survive." | Correct. This is the real gap in the first draft. If public examples can still write capability string maps, authors will copy that. | Revise target: public installed handles use `api`; package provider facets use named slots such as `editable`. Raw `capabilities` becomes internal/advanced, removed from examples/docs, and ideally no longer part of normal public `EditorExtension` object authoring. |
-| "`editable.onKeyDown` just renames `editableKeyCommands`." | Mostly correct if examples use it. The event callback is only acceptable as a last-resort extension hook, not the primary feature API. | Primary path is `editable.keymap` plus `editable.onCommand`. First-party examples should not use `editable.onKeyDown` unless a browser/UI case cannot be modeled as a command. Add a contract test for that. |
-| "Keymap plus `onCommand` is too much ceremony for bold." | It is more code for one hotkey, but it scales better. Hotkey parsing, command classification, and behavior execution are separate concerns. | Keep it. Provide small helpers later only if repeated examples prove boilerplate. Do not return to raw DOM key callbacks for marks. |
-| "This could break the existing #4613 clipboard improve claim." | It must not. `clipboard.insertData` facet authoring is a DX wrapper over the existing insertData handler pipeline, not a new behavior claim. | Preserve #4613 as-is. Ralph must keep existing clipboard tests green and not broaden PR claims. |
-| "Module augmentation can be surprising in TypeScript." | True, but less surprising than two extension constructors plus string-key registries. Imported packages already define their own public types. | Accept. Add negative type tests proving `editable` exists when `slate-react` types are present and does not pollute core-only authoring. |
+| Objection                                                                          | Harsh read                                                                                                                                                                                                                                                                                                 | Decision                                                                                                                                                                                                                                                                 |
+| ---------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| "`editable` and `clipboard` facets are Plate plugins sneaking into Slate."         | Valid fear, wrong conclusion. A facet is not a product plugin if it stays tiny, package-owned, and typed around Slate primitives. Slate already has `elements`, `transforms`, `queries`, `normalizers`, `state`, and `tx`; package facets are the same extension object, not Plate's plugin config system. | Keep facets, but restrict them to package-owned low-level surfaces. No `plugins`, no product rules DSL, no target/priority zoo in raw Slate.                                                                                                                             |
+| "Core `EditorExtension` should not know React or DOM fields."                      | Correct. Core must not import React or DOM handler types.                                                                                                                                                                                                                                                  | Use declaration-mergeable `EditorExtensionFacets<TEditor>` and let `slate-react` / `slate-dom` augment it. Core stays dependency-free.                                                                                                                                   |
+| "`capabilities` is still public on `EditorExtension`, so the bad DX will survive." | Correct. This is the real gap in the first draft. If public examples can still write capability string maps, authors will copy that.                                                                                                                                                                       | Revise target: public installed handles use `api`; package provider facets use named slots such as `editable`. Raw `capabilities` becomes internal/advanced, removed from examples/docs, and ideally no longer part of normal public `EditorExtension` object authoring. |
+| "`editable.onKeyDown` just renames `editableKeyCommands`."                         | Mostly correct if examples use it. The event callback is only acceptable as a last-resort extension hook, not the primary feature API.                                                                                                                                                                     | Primary path is `editable.keymap` plus `editable.onCommand`. First-party examples should not use `editable.onKeyDown` unless a browser/UI case cannot be modeled as a command. Add a contract test for that.                                                             |
+| "Keymap plus `onCommand` is too much ceremony for bold."                           | It is more code for one hotkey, but it scales better. Hotkey parsing, command classification, and behavior execution are separate concerns.                                                                                                                                                                | Keep it. Provide small helpers later only if repeated examples prove boilerplate. Do not return to raw DOM key callbacks for marks.                                                                                                                                      |
+| "This could break the existing #4613 clipboard improve claim."                     | It must not. `clipboard.insertData` facet authoring is a DX wrapper over the existing insertData handler pipeline, not a new behavior claim.                                                                                                                                                               | Preserve #4613 as-is. Ralph must keep existing clipboard tests green and not broaden PR claims.                                                                                                                                                                          |
+| "Module augmentation can be surprising in TypeScript."                             | True, but less surprising than two extension constructors plus string-key registries. Imported packages already define their own public types.                                                                                                                                                             | Accept. Add negative type tests proving `editable` exists when `slate-react` types are present and does not pollute core-only authoring.                                                                                                                                 |
 
 Maintainer verdict:
 
@@ -287,11 +286,11 @@ normal public word. The final target is:
 
 ```ts
 defineEditorExtension<CustomEditor>()({
-  name: 'image',
-  elements: [{ type: 'image', void: 'editable-island' }],
+  name: "image",
+  elements: [{ type: "image", void: "editable-island" }],
   editable: {
     keymap: {
-      'mod+a': { kind: 'select-all' },
+      "mod+a": { kind: "select-all" },
     },
     renderers: {
       voids: {
@@ -304,7 +303,7 @@ defineEditorExtension<CustomEditor>()({
       // feature-owned paste behavior
     },
   },
-})
+});
 ```
 
 Not:
@@ -362,33 +361,33 @@ The key example test should assert the positive shape too:
 
 ```ts
 defineEditorExtension<CustomEditor>()({
-  name: 'typed-hotkeys',
+  name: "typed-hotkeys",
   editable: {
     keymap: {
-      'mod+b': { kind: 'toggle-mark', mark: 'bold' },
+      "mod+b": { kind: "toggle-mark", mark: "bold" },
     },
     onCommand(command, { editor }) {
-      const custom: CustomEditor = editor
+      const custom: CustomEditor = editor;
 
-      if (command.kind === 'toggle-mark') {
-        toggleMark(custom, command.mark)
-        return true
+      if (command.kind === "toggle-mark") {
+        toggleMark(custom, command.mark);
+        return true;
       }
     },
   },
-})
+});
 ```
 
 ## Example rewrite target
 
 Rewrite first-party examples away from public capability helpers:
 
-| Example | Current public DX | Target |
-| --- | --- | --- |
-| `iframe.tsx` | `editableRenderers(...)` + `editableKeyCommands(...)` with `CustomEditor` cast | `editable.renderers` + `editable.keymap` + `editable.onCommand` |
-| `richtext.tsx` | mixed renderers, key commands, HTML paste, custom casts | one `richtext()` extension with `editable.renderers`, `editable.keymap`, `editable.onCommand`, and package facet for clipboard/paste if still needed |
-| `images.tsx` | key command helper + renderer helper + string `clipboard.insertData` capability | `editable.keymap`, `editable.renderers`, and `clipboard.insertData` facet |
-| `code-highlighting.tsx` | key command callback over DOM event | command/keymap facet for semantic code commands; raw `onKeyDown` only where code editor browser behavior truly cannot be modeled |
+| Example                 | Current public DX                                                               | Target                                                                                                                                               |
+| ----------------------- | ------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `iframe.tsx`            | `editableRenderers(...)` + `editableKeyCommands(...)` with `CustomEditor` cast  | `editable.renderers` + `editable.keymap` + `editable.onCommand`                                                                                      |
+| `richtext.tsx`          | mixed renderers, key commands, HTML paste, custom casts                         | one `richtext()` extension with `editable.renderers`, `editable.keymap`, `editable.onCommand`, and package facet for clipboard/paste if still needed |
+| `images.tsx`            | key command helper + renderer helper + string `clipboard.insertData` capability | `editable.keymap`, `editable.renderers`, and `clipboard.insertData` facet                                                                            |
+| `code-highlighting.tsx` | key command callback over DOM event                                             | command/keymap facet for semantic code commands; raw `onKeyDown` only where code editor browser behavior truly cannot be modeled                     |
 
 ## Issue accounting
 
@@ -431,19 +430,19 @@ No fixed issue claim is added by this planning pass.
 
 Issue sync:
 
-| Issue | Current ledger state | Pass decision |
-| --- | --- | --- |
+| Issue                           | Current ledger state                                                                                                                                                                                             | Pass decision                                                                                                                                                                                                                                                 |
+| ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | #3177 render/plugin composition | `docs/slate-issues/gitcrawl-v2-sync-ledger.md:594`, `docs/slate-v2/ledgers/issue-coverage-matrix.md:208`, and `docs/slate-v2/ledgers/fork-issue-dossier.md:6504-6537` already mark it related/planning-reviewed. | Keep related only. This plan strengthens the feature-owned composition direction by replacing public capability helper spreads with typed extension facets, but it still needs source edits, examples, type contracts, and docs before any improve/fix claim. |
-| #5961 onKeyDown render warning | `docs/slate-issues/gitcrawl-v2-sync-ledger.md:39` and `docs/slate-issues/open-issues-ledger.md:496` mark it triage-closed/stale-candidate and require a current repro before v2 priority. | Keep not claimed. Removing public key-command callback DX might reduce raw event misuse, but this plan does not reproduce or fix the reported DevTools render warning. |
-| #4613 extensible insertData | `docs/slate-v2/ledgers/issue-coverage-matrix.md:263` and `docs/slate-v2/ledgers/fork-issue-dossier.md:3953-3982` already carry an improves claim for typed clipboard capability handlers. | Preserve existing improve claim, do not broaden it. The proposed `clipboard.insertData` facet is an authoring-DX refinement over the same capability substrate, not a new clipboard behavior claim. |
+| #5961 onKeyDown render warning  | `docs/slate-issues/gitcrawl-v2-sync-ledger.md:39` and `docs/slate-issues/open-issues-ledger.md:496` mark it triage-closed/stale-candidate and require a current repro before v2 priority.                        | Keep not claimed. Removing public key-command callback DX might reduce raw event misuse, but this plan does not reproduce or fix the reported DevTools render warning.                                                                                        |
+| #4613 extensible insertData     | `docs/slate-v2/ledgers/issue-coverage-matrix.md:263` and `docs/slate-v2/ledgers/fork-issue-dossier.md:3953-3982` already carry an improves claim for typed clipboard capability handlers.                        | Preserve existing improve claim, do not broaden it. The proposed `clipboard.insertData` facet is an authoring-DX refinement over the same capability substrate, not a new clipboard behavior claim.                                                           |
 
 Research sync:
 
-| Evidence | Finding | Pass decision |
-| --- | --- | --- |
-| `docs/plans/2026-05-14-slate-v2-keydown-command-coverage-ralplan.md:153-166` | Prior command review already chose semantic command/keymap registration over scattered raw DOM event parsing, while keeping Slate lower-level than Tiptap. | Reuse. The new plan corrects the public helper shape, not the command direction. |
-| `docs/research/sources/editor-architecture/node-text-mark-render-dx-corpus-ledger.md:176-198` | Tiptap has the strongest extension package DX: commands, shortcuts, input rules, paste rules, render hooks, and schema config live together. | Steal packaging cohesion, not Tiptap's full product layer or React NodeView mechanics. |
-| `docs/plans/2026-05-16-slate-v2-unified-extension-composition-ralplan.md:515-545` | Mounted/browser APIs belong to installed capability handles and should not enter replayable `state` / `tx`. | Keep capability substrate internal; expose authoring through package facets and installed handles. |
+| Evidence                                                                                      | Finding                                                                                                                                                    | Pass decision                                                                                      |
+| --------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| `docs/plans/2026-05-14-slate-v2-keydown-command-coverage-ralplan.md:153-166`                  | Prior command review already chose semantic command/keymap registration over scattered raw DOM event parsing, while keeping Slate lower-level than Tiptap. | Reuse. The new plan corrects the public helper shape, not the command direction.                   |
+| `docs/research/sources/editor-architecture/node-text-mark-render-dx-corpus-ledger.md:176-198` | Tiptap has the strongest extension package DX: commands, shortcuts, input rules, paste rules, render hooks, and schema config live together.               | Steal packaging cohesion, not Tiptap's full product layer or React NodeView mechanics.             |
+| `docs/plans/2026-05-16-slate-v2-unified-extension-composition-ralplan.md:515-545`             | Mounted/browser APIs belong to installed capability handles and should not enter replayable `state` / `tx`.                                                | Keep capability substrate internal; expose authoring through package facets and installed handles. |
 
 Ledger sync performed:
 
@@ -457,7 +456,7 @@ Ledger sync performed:
 
 ## Verification plan
 
-Planning-only current pass did not edit `../slate-v2`.
+Planning-only current pass did not edit `.tmp/slate-v2`.
 
 Ralph execution gates:
 
@@ -485,10 +484,10 @@ Ralph execution gates:
    - no first-party `editable.onKeyDown` unless the example records why command
      modeling cannot express it
 5. Commands:
-   - `cd ../slate-v2 && bun --filter slate-react test:vitest -- surface-contract keyboard-input-strategy-contract generic-react-editor-contract`
-   - `cd ../slate-v2 && bun --filter slate-react typecheck`
-   - `cd ../slate-v2 && bun --filter slate-dom test`
-   - `cd ../slate-v2 && bun check`
+   - `cd .tmp/slate-v2 && bun --filter slate-react test:vitest -- surface-contract keyboard-input-strategy-contract generic-react-editor-contract`
+   - `cd .tmp/slate-v2 && bun --filter slate-react typecheck`
+   - `cd .tmp/slate-v2 && bun --filter slate-dom test`
+   - `cd .tmp/slate-v2 && bun check`
 
 ## Closure Final Gates
 
@@ -500,7 +499,7 @@ Closure assertions:
 - Related issue/research sync is complete.
 - Maintainer objection pass is complete.
 - No pass row remains pending with a runnable planning move.
-- No `../slate-v2` implementation, test, example, package, build, or config file
+- No `.tmp/slate-v2` implementation, test, example, package, build, or config file
   was edited by this Slate Ralplan.
 - No new fixed/improved issue claim was added.
 - #3177 stays related/planning-reviewed.
@@ -529,9 +528,9 @@ Ralph execution summary:
 
 ## Pass state
 
-| Pass | Status | Evidence | Result | Next |
-| --- | --- | --- | --- | --- |
-| Current-state read and verdict | complete | Live source rows above. | `capabilities` is valid internal substrate but bad public authoring DX; replace with typed extension facets. | Related issue/research sync. |
-| Related issue/research sync | complete | `docs/slate-issues/gitcrawl-v2-sync-ledger.md:39`, `:594`; `docs/slate-v2/ledgers/issue-coverage-matrix.md:208`, `:263`; `docs/slate-v2/ledgers/fork-issue-dossier.md:3953-3982`, `:6504-6537`; research rows above. | #3177 stays related, #5961 stays not claimed, #4613 existing improve claim is preserved but not broadened; research supports extension-facet authoring over public registry helper spreads. | Maintainer objection pass. |
-| Maintainer objection pass | complete | Maintainer objection table above. | Facets survive, but generic installed handles should use public `api` authoring and raw `capabilities` should leave normal app/example DX. `editable.onKeyDown` is demoted to last-resort and should not appear in first-party examples without explicit justification. | Closure gates. |
-| Closure gates | complete | Closure final gates section above. | Plan is ready for Ralph execution; completion file may be marked `done`. | none |
+| Pass                           | Status   | Evidence                                                                                                                                                                                                             | Result                                                                                                                                                                                                                                                                  | Next                         |
+| ------------------------------ | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------- |
+| Current-state read and verdict | complete | Live source rows above.                                                                                                                                                                                              | `capabilities` is valid internal substrate but bad public authoring DX; replace with typed extension facets.                                                                                                                                                            | Related issue/research sync. |
+| Related issue/research sync    | complete | `docs/slate-issues/gitcrawl-v2-sync-ledger.md:39`, `:594`; `docs/slate-v2/ledgers/issue-coverage-matrix.md:208`, `:263`; `docs/slate-v2/ledgers/fork-issue-dossier.md:3953-3982`, `:6504-6537`; research rows above. | #3177 stays related, #5961 stays not claimed, #4613 existing improve claim is preserved but not broadened; research supports extension-facet authoring over public registry helper spreads.                                                                             | Maintainer objection pass.   |
+| Maintainer objection pass      | complete | Maintainer objection table above.                                                                                                                                                                                    | Facets survive, but generic installed handles should use public `api` authoring and raw `capabilities` should leave normal app/example DX. `editable.onKeyDown` is demoted to last-resort and should not appear in first-party examples without explicit justification. | Closure gates.               |
+| Closure gates                  | complete | Closure final gates section above.                                                                                                                                                                                   | Plan is ready for Ralph execution; completion file may be marked `done`.                                                                                                                                                                                                | none                         |

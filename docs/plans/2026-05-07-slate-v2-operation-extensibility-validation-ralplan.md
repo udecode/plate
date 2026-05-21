@@ -47,13 +47,13 @@ Desired outcome:
 
 In scope:
 
-- `../slate-v2/packages/slate/src/interfaces/operation.ts`
-- `../slate-v2/packages/slate/src/core/public-state.ts`
-- `../slate-v2/packages/slate/src/core/editor-extension.ts`
-- `../slate-v2/packages/slate/src/core/extension-registry.ts`
-- `../slate-v2/packages/slate/test/interfaces-contract.ts`
-- `../slate-v2/packages/slate/test/generic-operation-contract.ts`
-- `../slate-v2/packages/slate/test/generic-extension-contract.ts`
+- `.tmp/slate-v2/packages/slate/src/interfaces/operation.ts`
+- `.tmp/slate-v2/packages/slate/src/core/public-state.ts`
+- `.tmp/slate-v2/packages/slate/src/core/editor-extension.ts`
+- `.tmp/slate-v2/packages/slate/src/core/extension-registry.ts`
+- `.tmp/slate-v2/packages/slate/test/interfaces-contract.ts`
+- `.tmp/slate-v2/packages/slate/test/generic-operation-contract.ts`
+- `.tmp/slate-v2/packages/slate/test/generic-extension-contract.ts`
 - DOM bridge smoke only if current `slate-dom` still consults editor predicates
   on the exact path.
 
@@ -68,7 +68,7 @@ Non-goals:
 
 Decision boundaries:
 
-- Ralph may add tests and implementation in `../slate-v2`.
+- Ralph may add tests and implementation in `.tmp/slate-v2`.
 - Ralph may update docs/ledgers and PR description claim counts.
 - Ralph may claim `Fixes #5977` only if the original editor-detection failure is
   proven impossible through an issue-shaped test.
@@ -104,12 +104,14 @@ Top drivers:
 Viable options:
 
 1. Accept any object with a `type` string as an operation.
+
    - Pro: fixes the broadest reading of `#5977`.
    - Con: breaks operation integrity; history/collab/ref logic cannot know what
      it means.
    - Verdict: reject.
 
 2. Keep custom operations out of `Operation`, and use commit metadata only.
+
    - Pro: cleanest core.
    - Con: does not help plugins that genuinely need custom document-changing
      operation transport.
@@ -117,6 +119,7 @@ Viable options:
 
 3. Add editor-scoped operation specs for advanced extensions, while keeping
    `Operation.isOperation` built-in-only.
+
    - Pro: keeps default core strict, gives advanced users a typed path, avoids
      global registry collisions.
    - Con: needs careful proof before any full custom apply/replay support.
@@ -149,14 +152,14 @@ Follow-ups:
 
 ## 4. Confidence Scorecard
 
-| Dimension | Score | Evidence |
-| --- | ---: | --- |
-| React 19.2 runtime performance | 0.91 | No React hot path is added; `Operation.isOperation` stays pure and editor-scoped lookup is only for advanced operation validation. |
-| Slate-close unopinionated DX | 0.94 | Keeps data namespaces; uses `state`/`tx` extension groups from `docs/research/decisions/slate-v2-state-tx-public-api-and-extension-namespaces.md:65`. |
-| Plate and slate-yjs migration backbone | 0.92 | Operation integrity remains strict; custom metadata is routed through tags/specs, not arbitrary log pollution. |
-| Regression-proof testing strategy | 0.94 | Plan names red tests for `#5977`, built-in subtype guards, invalid unknown ops, operation middleware, and optional DOM bridge smoke. |
-| Research evidence completeness | 0.93 | Live v2 source, gitcrawl issue reads, Lexical command tags, ProseMirror custom step registration, and Tiptap transaction middleware were checked. |
-| Minimal composability | 0.94 | No global registry and no flat command catalog; extension state/tx groups stay the public package point. |
+| Dimension                              | Score | Evidence                                                                                                                                              |
+| -------------------------------------- | ----: | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| React 19.2 runtime performance         |  0.91 | No React hot path is added; `Operation.isOperation` stays pure and editor-scoped lookup is only for advanced operation validation.                    |
+| Slate-close unopinionated DX           |  0.94 | Keeps data namespaces; uses `state`/`tx` extension groups from `docs/research/decisions/slate-v2-state-tx-public-api-and-extension-namespaces.md:65`. |
+| Plate and slate-yjs migration backbone |  0.92 | Operation integrity remains strict; custom metadata is routed through tags/specs, not arbitrary log pollution.                                        |
+| Regression-proof testing strategy      |  0.94 | Plan names red tests for `#5977`, built-in subtype guards, invalid unknown ops, operation middleware, and optional DOM bridge smoke.                  |
+| Research evidence completeness         |  0.93 | Live v2 source, gitcrawl issue reads, Lexical command tags, ProseMirror custom step registration, and Tiptap transaction middleware were checked.     |
+| Minimal composability                  |  0.94 | No global registry and no flat command catalog; extension state/tx groups stay the public package point.                                              |
 
 Total: `0.93`.
 
@@ -164,16 +167,16 @@ Total: `0.93`.
 
 Current live source:
 
-- `../slate-v2/packages/slate/src/interfaces/operation.ts:147` defines
+- `.tmp/slate-v2/packages/slate/src/interfaces/operation.ts:147` defines
   `Operation` as a built-in union only.
-- `../slate-v2/packages/slate/src/interfaces/operation.ts:200` validates
+- `.tmp/slate-v2/packages/slate/src/interfaces/operation.ts:200` validates
   built-in operation shapes with a switch and rejects unknown types at
-  `../slate-v2/packages/slate/src/interfaces/operation.ts:266`.
-- `../slate-v2/packages/slate/src/editor/is-editor.ts:3` now checks internal
+  `.tmp/slate-v2/packages/slate/src/interfaces/operation.ts:266`.
+- `.tmp/slate-v2/packages/slate/src/editor/is-editor.ts:3` now checks internal
   editor state, not `Operation.isOperationList`.
-- `../slate-v2/packages/slate/src/core/public-state.ts:1367` already routes
+- `.tmp/slate-v2/packages/slate/src/core/public-state.ts:1367` already routes
   operations through extension operation middleware.
-- `../slate-v2/packages/slate/src/core/editor-extension.ts:294` already
+- `.tmp/slate-v2/packages/slate/src/core/editor-extension.ts:294` already
   registers extension operation middleware.
 - `docs/research/decisions/slate-v2-state-tx-public-api-and-extension-namespaces.md:65`
   accepts extension namespaces on `state` and `tx`.
@@ -189,39 +192,39 @@ strict built-in operation contract
 
 ## 6. Ecosystem Strategy Synthesis
 
-| System | Evidence | Mechanism | Slate target | Verdict |
-| --- | --- | --- | --- | --- |
-| Lexical | `../lexical/packages/lexical/src/LexicalCommands.ts:17`; `docs/research/sources/editor-architecture/lexical-read-update-extension-runtime.md:53` | Commands are reference-typed and listeners are partitioned; update tags carry lifecycle metadata. | Use tags/metadata for app-specific events. Do not turn custom operations into app command events. | partial |
-| ProseMirror | `../prosemirror/transform/src/step.ts:11`; `../prosemirror/state/src/transaction.ts:26` | Custom steps require registered classes with apply/invert/map/JSON behavior; transactions carry metadata. | Steal registered custom semantics and transaction metadata, reject class/position model. | agree |
-| Tiptap | `../tiptap/packages/core/src/commands/setMeta.ts:5`; `../tiptap/packages/core/__tests__/dispatchTransaction.spec.ts:7` | Extension hooks wrap transactions and commands can set metadata. | Keep extension operation middleware, but keep raw Slate writes inside `editor.update`. | partial |
-| Slate v2 current | `../slate-v2/packages/slate/src/core/public-state.ts:1367`; `../slate-v2/packages/slate/src/core/editor-extension.ts:294` | Operation middleware already exists. | Use current middleware as the first proof owner; add specs only if necessary. | agree |
+| System           | Evidence                                                                                                                                         | Mechanism                                                                                                 | Slate target                                                                                      | Verdict |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- | ------- |
+| Lexical          | `../lexical/packages/lexical/src/LexicalCommands.ts:17`; `docs/research/sources/editor-architecture/lexical-read-update-extension-runtime.md:53` | Commands are reference-typed and listeners are partitioned; update tags carry lifecycle metadata.         | Use tags/metadata for app-specific events. Do not turn custom operations into app command events. | partial |
+| ProseMirror      | `../prosemirror/transform/src/step.ts:11`; `../prosemirror/state/src/transaction.ts:26`                                                          | Custom steps require registered classes with apply/invert/map/JSON behavior; transactions carry metadata. | Steal registered custom semantics and transaction metadata, reject class/position model.          | agree   |
+| Tiptap           | `../tiptap/packages/core/src/commands/setMeta.ts:5`; `../tiptap/packages/core/__tests__/dispatchTransaction.spec.ts:7`                           | Extension hooks wrap transactions and commands can set metadata.                                          | Keep extension operation middleware, but keep raw Slate writes inside `editor.update`.            | partial |
+| Slate v2 current | `.tmp/slate-v2/packages/slate/src/core/public-state.ts:1367`; `.tmp/slate-v2/packages/slate/src/core/editor-extension.ts:294`                    | Operation middleware already exists.                                                                      | Use current middleware as the first proof owner; add specs only if necessary.                     | agree   |
 
 ## 7. Public API Target
 
 Keep:
 
 ```ts
-Operation.isOperation(value)
-Operation.isOperationList(value)
-Operation.isNodeOperation(value)
-Operation.isTextOperation(value)
-Operation.isSelectionOperation(value)
+Operation.isOperation(value);
+Operation.isOperationList(value);
+Operation.isNodeOperation(value);
+Operation.isTextOperation(value);
+Operation.isSelectionOperation(value);
 ```
 
 Add only if TypeScript proof justifies it:
 
 ```ts
-Operation.isInsertNodeOperation(value)
-Operation.isRemoveNodeOperation(value)
-Operation.isMergeNodeOperation(value)
-Operation.isSplitNodeOperation(value)
-Operation.isMoveNodeOperation(value)
-Operation.isSetNodeOperation(value)
-Operation.isInsertTextOperation(value)
-Operation.isRemoveTextOperation(value)
-Operation.isSetSelectionOperation(value)
-Operation.isReplaceChildrenOperation(value)
-Operation.isReplaceFragmentOperation(value)
+Operation.isInsertNodeOperation(value);
+Operation.isRemoveNodeOperation(value);
+Operation.isMergeNodeOperation(value);
+Operation.isSplitNodeOperation(value);
+Operation.isMoveNodeOperation(value);
+Operation.isSetNodeOperation(value);
+Operation.isInsertTextOperation(value);
+Operation.isRemoveTextOperation(value);
+Operation.isSetSelectionOperation(value);
+Operation.isReplaceChildrenOperation(value);
+Operation.isReplaceFragmentOperation(value);
 ```
 
 Do not add:
@@ -238,20 +241,20 @@ Advanced extension target, only if required by the red proof:
 
 ```ts
 defineEditorExtension({
-  name: 'my-extension',
+  name: "my-extension",
   operations: {
-    'my-extension:mark-imported': {
+    "my-extension:mark-imported": {
       is(value): value is MyOperation {
-        return value?.type === 'my-extension:mark-imported'
+        return value?.type === "my-extension:mark-imported";
       },
-      kind: 'metadata',
+      kind: "metadata",
     },
   },
-})
+});
 
 editor.read((state) => {
-  state.operations.is(value)
-})
+  state.operations.is(value);
+});
 ```
 
 For document-changing custom operations, specs must eventually include:
@@ -340,18 +343,18 @@ ClawSweeper pass:
 
 Issue matrix:
 
-| Issue | Cluster | Claim | Why | Proof route | Ledger sync | PR line |
-| --- | --- | --- | --- | --- | --- | --- |
-| #5977 | custom-operation-validation | Fixes | Editor identity ignores user-attached custom operation lists, DOM `findPath` still resolves, and replay rejects unknown operation records before they enter the operation log. | package unit, DOM bridge smoke | dossier refreshed in execution | fixed line added |
-| #5558 | operation-type-guard-dx | Improves | Concrete built-in operation subtype guards landed with runtime and TypeScript narrowing proof. | typecheck contract | dossier and matrix refreshed in execution | improved line added |
-| #5129 | replace-node-transform | Not claimed | Node replacement API is separate transform/history design pressure. | no proof in this lane | unchanged | none |
-| #5080 | reverse-node-iteration | Not claimed | `Editor.nodes({ reverse: true })` traversal semantics are separate query API behavior. | no proof in this lane | unchanged | none |
-| #5412 | insert-fragment-at | Not claimed | Fragment target placement belongs to transform/clipboard insertion, not operation validation. | no proof in this lane | unchanged | none |
-| #3891 | multi-node-remove-range | Not claimed | Already represented by `replace_children`; public helper API is separate. | existing related row | unchanged | none |
-| #3964 | insertBreak selection | Not claimed | Core caret placement lane, not custom operation validation. | no proof in this lane | unchanged | none |
-| #3973 | word movement | Not claimed | Core movement lane, not custom operation validation. | no proof in this lane | unchanged | none |
-| #6016 | shared initial value | Not claimed | Existing dossier classifies as likely invalid shared-node reuse; not this lane. | no proof in this lane | unchanged | none |
-| #6053 | useSelected stale path | Not claimed | React selector stale path issue, already improved elsewhere. | no proof in this lane | unchanged | none |
+| Issue | Cluster                     | Claim       | Why                                                                                                                                                                            | Proof route                    | Ledger sync                               | PR line             |
+| ----- | --------------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------ | ----------------------------------------- | ------------------- |
+| #5977 | custom-operation-validation | Fixes       | Editor identity ignores user-attached custom operation lists, DOM `findPath` still resolves, and replay rejects unknown operation records before they enter the operation log. | package unit, DOM bridge smoke | dossier refreshed in execution            | fixed line added    |
+| #5558 | operation-type-guard-dx     | Improves    | Concrete built-in operation subtype guards landed with runtime and TypeScript narrowing proof.                                                                                 | typecheck contract             | dossier and matrix refreshed in execution | improved line added |
+| #5129 | replace-node-transform      | Not claimed | Node replacement API is separate transform/history design pressure.                                                                                                            | no proof in this lane          | unchanged                                 | none                |
+| #5080 | reverse-node-iteration      | Not claimed | `Editor.nodes({ reverse: true })` traversal semantics are separate query API behavior.                                                                                         | no proof in this lane          | unchanged                                 | none                |
+| #5412 | insert-fragment-at          | Not claimed | Fragment target placement belongs to transform/clipboard insertion, not operation validation.                                                                                  | no proof in this lane          | unchanged                                 | none                |
+| #3891 | multi-node-remove-range     | Not claimed | Already represented by `replace_children`; public helper API is separate.                                                                                                      | existing related row           | unchanged                                 | none                |
+| #3964 | insertBreak selection       | Not claimed | Core caret placement lane, not custom operation validation.                                                                                                                    | no proof in this lane          | unchanged                                 | none                |
+| #3973 | word movement               | Not claimed | Core movement lane, not custom operation validation.                                                                                                                           | no proof in this lane          | unchanged                                 | none                |
+| #6016 | shared initial value        | Not claimed | Existing dossier classifies as likely invalid shared-node reuse; not this lane.                                                                                                | no proof in this lane          | unchanged                                 | none                |
+| #6053 | useSelected stale path      | Not claimed | React selector stale path issue, already improved elsewhere.                                                                                                                   | no proof in this lane          | unchanged                                 | none                |
 
 Fixed issues:
 
@@ -369,18 +372,18 @@ PR description:
 
 ## 13. Legacy Regression Proof Matrix
 
-| Proof | Required result |
-| --- | --- |
-| `#5977` editor detection | `isEditor` does not validate operation log shape. |
-| Custom unknown op in pure guard | `Operation.isOperation(custom)` returns false with no crash. |
-| Built-in operation list | built-in list remains accepted. |
-| Mixed built-in/custom list | pure built-in list guard rejects it. |
-| `DOMEditor.findPath` smoke if needed | no editor-detection failure caused by custom operation-like history data. |
-| Operation subtype guards | TypeScript narrows each built-in op without casts. |
-| Middleware | extension operation middleware still sees canonical operations. |
-| Replay invalid op | `tx.operations.replay([custom as any])` fails with a clear error unless a spec exists. |
-| Custom metadata spec if added | editor-scoped `state.operations.is(value)` accepts the registered custom metadata shape. |
-| Duplicate spec if added | duplicate operation type registration throws deterministically. |
+| Proof                                | Required result                                                                          |
+| ------------------------------------ | ---------------------------------------------------------------------------------------- |
+| `#5977` editor detection             | `isEditor` does not validate operation log shape.                                        |
+| Custom unknown op in pure guard      | `Operation.isOperation(custom)` returns false with no crash.                             |
+| Built-in operation list              | built-in list remains accepted.                                                          |
+| Mixed built-in/custom list           | pure built-in list guard rejects it.                                                     |
+| `DOMEditor.findPath` smoke if needed | no editor-detection failure caused by custom operation-like history data.                |
+| Operation subtype guards             | TypeScript narrows each built-in op without casts.                                       |
+| Middleware                           | extension operation middleware still sees canonical operations.                          |
+| Replay invalid op                    | `tx.operations.replay([custom as any])` fails with a clear error unless a spec exists.   |
+| Custom metadata spec if added        | editor-scoped `state.operations.is(value)` accepts the registered custom metadata shape. |
+| Duplicate spec if added              | duplicate operation type registration throws deterministically.                          |
 
 ## 14. Browser Stress And Parity Strategy
 
@@ -397,14 +400,14 @@ If browser proof is needed:
 
 ## 15. Applicable Implementation-Skill Review Matrix
 
-| Lens | Status | Reason | Plan delta |
-| --- | --- | --- | --- |
-| `tdd` | applied | Behavior/API regression class with good package seams. | Red tests first for `#5977` and guard typing. |
-| `performance-oracle` | applied | Operation predicates are hot enough to keep pure and O(1). | No document scans or global registries. |
-| `performance` | skipped | No repeated React UI or virtualization claim. | none |
-| `vercel-react-best-practices` | skipped | No React rendering change planned. | none |
-| `react-useeffect` | skipped | No effects planned. | none |
-| `build-web-apps:shadcn` | skipped | No UI surface. | none |
+| Lens                          | Status  | Reason                                                     | Plan delta                                    |
+| ----------------------------- | ------- | ---------------------------------------------------------- | --------------------------------------------- |
+| `tdd`                         | applied | Behavior/API regression class with good package seams.     | Red tests first for `#5977` and guard typing. |
+| `performance-oracle`          | applied | Operation predicates are hot enough to keep pure and O(1). | No document scans or global registries.       |
+| `performance`                 | skipped | No repeated React UI or virtualization claim.              | none                                          |
+| `vercel-react-best-practices` | skipped | No React rendering change planned.                         | none                                          |
+| `react-useeffect`             | skipped | No effects planned.                                        | none                                          |
+| `build-web-apps:shadcn`       | skipped | No UI surface.                                             | none                                          |
 
 ## 16. High-Risk Deliberate-Mode Premortem
 
@@ -424,12 +427,12 @@ exist.
 Risk: Adding eleven specific operation guards bloats the API.
 
 - Guard: add them only if typecheck proof shows they replace real casts or user
-pain; otherwise defer.
+  pain; otherwise defer.
 
 Risk: Claiming `#5977` fixed while only rejecting custom ops.
 
 - Guard: claim exact fix only if the original `isEditor`/`findPath` failure path
-is impossible in v2.
+  is impossible in v2.
 
 ## 17. Hard Cuts And Rejected Alternatives
 
@@ -452,23 +455,23 @@ Rejected alternatives:
 
 ## 18. Maintainer Objection Ledger
 
-| Objection | Answer |
-| --- | --- |
+| Objection                                      | Answer                                                                                                                             |
+| ---------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
 | "Users asked for custom operations, not tags." | If the data does not mutate the Slate document, tags are the correct primitive. Calling metadata an operation is the original bug. |
-| "But ProseMirror supports custom steps." | Yes, with registered apply/invert/map/JSON semantics. That proves arbitrary acceptance is wrong. |
-| "Specific guards are API bloat." | True if added blindly. Only add built-in subtype guards if TypeScript proof shows real narrowing value. |
-| "Why not just fix `isEditor`?" | v2 likely already did. The lane exists to lock that proof and decide whether any public custom-op API is actually warranted. |
-| "Will this help slate-yjs?" | It avoids unregistered operation pollution. Real custom collab ops need specs, not silent acceptance. |
+| "But ProseMirror supports custom steps."       | Yes, with registered apply/invert/map/JSON semantics. That proves arbitrary acceptance is wrong.                                   |
+| "Specific guards are API bloat."               | True if added blindly. Only add built-in subtype guards if TypeScript proof shows real narrowing value.                            |
+| "Why not just fix `isEditor`?"                 | v2 likely already did. The lane exists to lock that proof and decide whether any public custom-op API is actually warranted.       |
+| "Will this help slate-yjs?"                    | It avoids unregistered operation pollution. Real custom collab ops need specs, not silent acceptance.                              |
 
 ## 19. Pass Schedule And State Ledger
 
-| Pass | Status | Evidence added | Plan delta | Open issues | Next owner |
-| --- | --- | --- | --- | --- | --- |
-| Current-state read | complete | live v2 operation, editor detection, extension middleware files | selected operation validation lane | none | done |
-| ClawSweeper related issue pass | complete | gitcrawl doctor, threads, neighbors, search | `#5977` selected, `#5558` related | no live GitHub token, gitcrawl mirror current enough | done |
-| Issue ledger pass | complete | coverage matrix and dossier read/update | `#5977` fixed and `#5558` improved after execution proof | none | done |
-| Research/ecosystem pass | complete | Lexical, ProseMirror, Tiptap local source | reject arbitrary custom ops, steal registered semantics | none | done |
-| Closure score | complete | score `0.93` | plan Ralph-ready | none | Ralph |
+| Pass                           | Status   | Evidence added                                                  | Plan delta                                               | Open issues                                          | Next owner |
+| ------------------------------ | -------- | --------------------------------------------------------------- | -------------------------------------------------------- | ---------------------------------------------------- | ---------- |
+| Current-state read             | complete | live v2 operation, editor detection, extension middleware files | selected operation validation lane                       | none                                                 | done       |
+| ClawSweeper related issue pass | complete | gitcrawl doctor, threads, neighbors, search                     | `#5977` selected, `#5558` related                        | no live GitHub token, gitcrawl mirror current enough | done       |
+| Issue ledger pass              | complete | coverage matrix and dossier read/update                         | `#5977` fixed and `#5558` improved after execution proof | none                                                 | done       |
+| Research/ecosystem pass        | complete | Lexical, ProseMirror, Tiptap local source                       | reject arbitrary custom ops, steal registered semantics  | none                                                 | done       |
+| Closure score                  | complete | score `0.93`                                                    | plan Ralph-ready                                         | none                                                 | Ralph      |
 
 ## 20. Plan Deltas From Review
 
@@ -548,7 +551,7 @@ Do not support custom document mutation in this phase.
 
 ## 23. Fast Driver Gates
 
-Run from `../slate-v2`:
+Run from `.tmp/slate-v2`:
 
 ```bash
 bun test ./packages/slate/test/interfaces-contract.ts ./packages/slate/test/generic-operation-contract.ts ./packages/slate/test/generic-extension-contract.ts
@@ -590,8 +593,8 @@ The execution lane is complete only when:
 
 ## 26. Ralph Execution Ledger
 
-| Pass | Status | Owner | Evidence | Next owner |
-| --- | --- | --- | --- | --- |
-| Ralph activation | started | `../slate-v2/packages/slate` | `.tmp/completion-checks/slate-v2-operation-extensibility-validation-execution.md` created; `.tmp/continue.md` refreshed for this lane. | TDD red proof for `#5977`. |
-| TDD red proof | complete | `../slate-v2/packages/slate`; `../slate-v2/packages/slate-dom` | Focused tests first failed on missing concrete guards and silent unknown replay, then passed after adding guards and fail-closed replay validation. | Verification closeout. |
-| Verification closeout | complete | `../slate-v2/packages/slate`; `../slate-v2/packages/slate-dom`; `docs/slate-v2/**` | Focused package tests, transaction/collab metadata tests, `slate` and `slate-dom` typecheck, `bun lint:fix`, issue matrix, fork dossier, PR reference, changeset, and full execution ledger are synced. | Next `slate-ralplan` bucket selection. |
+| Pass                  | Status   | Owner                                                                                  | Evidence                                                                                                                                                                                                | Next owner                             |
+| --------------------- | -------- | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------- |
+| Ralph activation      | started  | `.tmp/slate-v2/packages/slate`                                                         | `.tmp/completion-checks/slate-v2-operation-extensibility-validation-execution.md` created; `.tmp/continue.md` refreshed for this lane.                                                                  | TDD red proof for `#5977`.             |
+| TDD red proof         | complete | `.tmp/slate-v2/packages/slate`; `.tmp/slate-v2/packages/slate-dom`                     | Focused tests first failed on missing concrete guards and silent unknown replay, then passed after adding guards and fail-closed replay validation.                                                     | Verification closeout.                 |
+| Verification closeout | complete | `.tmp/slate-v2/packages/slate`; `.tmp/slate-v2/packages/slate-dom`; `docs/slate-v2/**` | Focused package tests, transaction/collab metadata tests, `slate` and `slate-dom` typecheck, `bun lint:fix`, issue matrix, fork dossier, PR reference, changeset, and full execution ledger are synced. | Next `slate-ralplan` bucket selection. |

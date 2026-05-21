@@ -504,21 +504,21 @@ Allowed docs:
 
 Allowed code:
 
-- `../slate-v2/packages/slate-react/**`
-- `../slate-v2/packages/slate-dom/**`
-- `../slate-v2/packages/slate-browser/**`
-- `../slate-v2/packages/slate/**` only when a focused failing row proves core
+- `.tmp/slate-v2/packages/slate-react/**`
+- `.tmp/slate-v2/packages/slate-dom/**`
+- `.tmp/slate-v2/packages/slate-browser/**`
+- `.tmp/slate-v2/packages/slate/**` only when a focused failing row proves core
   ownership
-- `../slate-v2/site/examples/ts/**`
-- `../slate-v2/playwright/integration/examples/**`
-- `../slate-v2/scripts/benchmarks/**`
-- `../slate-v2/package.json`
+- `.tmp/slate-v2/site/examples/ts/**`
+- `.tmp/slate-v2/playwright/integration/examples/**`
+- `.tmp/slate-v2/scripts/benchmarks/**`
+- `.tmp/slate-v2/package.json`
 
 Avoid:
 
-- `../slate-v2/packages/slate-history/**` unless a focused failing row proves
+- `.tmp/slate-v2/packages/slate-history/**` unless a focused failing row proves
   history ownership
-- `../slate-v2/packages/slate-hyperscript/**` unless a focused failing row
+- `.tmp/slate-v2/packages/slate-hyperscript/**` unless a focused failing row
   proves hyperscript ownership
 
 ## Memory Rules
@@ -585,7 +585,7 @@ Do-not-do list:
 Actions:
 
 - removed the mobile skip from
-  `../slate-v2/playwright/integration/examples/plaintext.test.ts`
+  `.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts`
 - changed the row from `pressSequentially(...)` to
   `page.keyboard.insertText(...)`
 - added a Slate model assertion through `__slateBrowserHandle.getText()` so the
@@ -614,8 +614,8 @@ Evidence:
 
 Artifacts:
 
-- `../slate-v2/test-results/integration-examples-plain-6a450-ple-inserts-text-when-typed-mobile/trace.zip`
-- `../slate-v2/test-results/integration-examples-plain-6a450-ple-inserts-text-when-typed-mobile/error-context.md`
+- `.tmp/slate-v2/test-results/integration-examples-plain-6a450-ple-inserts-text-when-typed-mobile/trace.zip`
+- `.tmp/slate-v2/test-results/integration-examples-plain-6a450-ple-inserts-text-when-typed-mobile/error-context.md`
 
 Hypothesis tested:
 
@@ -636,7 +636,7 @@ Owner classification:
 
 Files changed:
 
-- `../slate-v2/playwright/integration/examples/plaintext.test.ts`
+- `.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts`
 
 Rejected tactics:
 
@@ -735,9 +735,9 @@ Evidence:
 
 Artifacts:
 
-- `../slate-v2/test-results/integration-examples-richt-f50b0--text-through-browser-input-mobile/trace.zip`
-- `../slate-v2/test-results/integration-examples-richt-f885d-ser-selected-end-of-a-block-mobile/trace.zip`
-- `../slate-v2/test-results/integration-examples-richt-f885d-ser-selected-end-of-a-block-firefox/trace.zip`
+- `.tmp/slate-v2/test-results/integration-examples-richt-f50b0--text-through-browser-input-mobile/trace.zip`
+- `.tmp/slate-v2/test-results/integration-examples-richt-f885d-ser-selected-end-of-a-block-mobile/trace.zip`
+- `.tmp/slate-v2/test-results/integration-examples-richt-f885d-ser-selected-end-of-a-block-firefox/trace.zip`
 
 Hypotheses tested:
 
@@ -766,11 +766,11 @@ Owner classification:
 
 Files changed:
 
-- `../slate-v2/playwright/integration/examples/plaintext.test.ts`
-- `../slate-v2/playwright/integration/examples/richtext.test.ts`
-- `../slate-v2/packages/slate-react/src/components/restore-dom/restore-dom-manager.ts`
-- `../slate-v2/packages/slate-react/src/components/string.tsx`
-- `../slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts`
+- `.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts`
+- `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/restore-dom/restore-dom-manager.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/string.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts`
 
 Rejected tactics:
 
@@ -829,7 +829,7 @@ Do-not-do list:
 Actions:
 
 - removed both mobile skips from
-  `../slate-v2/playwright/integration/examples/mentions.test.ts`
+  `.tmp/slate-v2/playwright/integration/examples/mentions.test.ts`
 - kept Chromium on keyboard `Enter` for insertion
 - used mobile text insertion through `page.keyboard.insertText(...)`
 - used the mobile pointer path by clicking the `Jabba` portal option instead
@@ -857,8 +857,8 @@ Evidence:
 
 Artifacts:
 
-- `../slate-v2/test-results/integration-examples-menti-cf5b5-mple-shows-list-of-mentions-mobile/trace.zip`
-- `../slate-v2/test-results/integration-examples-menti-2ceea-s-example-inserts-from-list-mobile/trace.zip`
+- `.tmp/slate-v2/test-results/integration-examples-menti-cf5b5-mple-shows-list-of-mentions-mobile/trace.zip`
+- `.tmp/slate-v2/test-results/integration-examples-menti-2ceea-s-example-inserts-from-list-mobile/trace.zip`
 
 Hypothesis tested:
 
@@ -880,7 +880,7 @@ Owner classification:
 
 Files changed:
 
-- `../slate-v2/playwright/integration/examples/mentions.test.ts`
+- `.tmp/slate-v2/playwright/integration/examples/mentions.test.ts`
 
 Rejected tactics:
 
@@ -933,7 +933,7 @@ Do-not-do list:
 Actions:
 
 - removed the two non-Chromium/mobile guards from
-  `../slate-v2/playwright/integration/examples/markdown-shortcuts.test.ts`
+  `.tmp/slate-v2/playwright/integration/examples/markdown-shortcuts.test.ts`
 - ran the focused Firefox/WebKit/mobile gate
 - restored the guards after the focused gate proved the rows are not quick
   transport cleanup
@@ -959,12 +959,12 @@ Evidence:
 
 Artifacts:
 
-- `../slate-v2/test-results/integration-examples-markd-37e5d--example-can-add-list-items-firefox/trace.zip`
-- `../slate-v2/test-results/integration-examples-markd-e69cc-s-example-can-add-a-h1-item-firefox/trace.zip`
-- `../slate-v2/test-results/integration-examples-markd-37e5d--example-can-add-list-items-mobile/trace.zip`
-- `../slate-v2/test-results/integration-examples-markd-e69cc-s-example-can-add-a-h1-item-mobile/trace.zip`
-- `../slate-v2/test-results/integration-examples-markd-37e5d--example-can-add-list-items-webkit/trace.zip`
-- `../slate-v2/test-results/integration-examples-markd-e69cc-s-example-can-add-a-h1-item-webkit/trace.zip`
+- `.tmp/slate-v2/test-results/integration-examples-markd-37e5d--example-can-add-list-items-firefox/trace.zip`
+- `.tmp/slate-v2/test-results/integration-examples-markd-e69cc-s-example-can-add-a-h1-item-firefox/trace.zip`
+- `.tmp/slate-v2/test-results/integration-examples-markd-37e5d--example-can-add-list-items-mobile/trace.zip`
+- `.tmp/slate-v2/test-results/integration-examples-markd-e69cc-s-example-can-add-a-h1-item-mobile/trace.zip`
+- `.tmp/slate-v2/test-results/integration-examples-markd-37e5d--example-can-add-list-items-webkit/trace.zip`
+- `.tmp/slate-v2/test-results/integration-examples-markd-e69cc-s-example-can-add-a-h1-item-webkit/trace.zip`
 
 Hypothesis tested:
 
@@ -985,7 +985,7 @@ Owner classification:
 
 Files changed:
 
-- `../slate-v2/playwright/integration/examples/markdown-shortcuts.test.ts`
+- `.tmp/slate-v2/playwright/integration/examples/markdown-shortcuts.test.ts`
 
 Rejected tactics:
 
@@ -1099,9 +1099,9 @@ Owner classification:
 
 Files changed:
 
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
-- `../slate-v2/packages/slate-browser/src/playwright/index.ts`
-- `../slate-v2/playwright/integration/examples/markdown-shortcuts.test.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts`
+- `.tmp/slate-v2/playwright/integration/examples/markdown-shortcuts.test.ts`
 
 Rejected tactics:
 
@@ -1155,7 +1155,7 @@ Do-not-do list:
 Actions:
 
 - removed the WebKit/mobile skips from
-  `../slate-v2/playwright/integration/examples/shadow-dom.test.ts`
+  `.tmp/slate-v2/playwright/integration/examples/shadow-dom.test.ts`
 - kept Chromium/Firefox on the native keyboard path
 - used the mounted editor handle for WebKit/mobile nested shadow proof
 - added nested-shadow model assertions through `__slateBrowserHandle.getText()`
@@ -1218,12 +1218,12 @@ Owner classification:
 
 Files changed:
 
-- `../slate-v2/playwright/integration/examples/shadow-dom.test.ts`
-- `../slate-v2/packages/slate-browser/src/playwright/index.ts`
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
-- `../slate-v2/packages/slate-react/src/components/restore-dom/restore-dom-manager.ts`
-- `../slate-v2/packages/slate-react/src/components/string.tsx`
-- `../slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts`
+- `.tmp/slate-v2/playwright/integration/examples/shadow-dom.test.ts`
+- `.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/components/restore-dom/restore-dom-manager.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/string.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts`
 
 Rejected tactics:
 
@@ -1281,7 +1281,7 @@ Do-not-do list:
 Actions:
 
 - removed all Chromium/mobile guards from
-  `../slate-v2/playwright/integration/examples/highlighted-text.test.ts`
+  `.tmp/slate-v2/playwright/integration/examples/highlighted-text.test.ts`
 - added a `slate-browser` clipboard fallback that dispatches a real `copy`
   event and reads the event `DataTransfer` when `navigator.clipboard.read()`
   is blocked by WebKit/mobile permissions
@@ -1337,8 +1337,8 @@ Owner classification:
 
 Files changed:
 
-- `../slate-v2/packages/slate-browser/src/playwright/index.ts`
-- `../slate-v2/playwright/integration/examples/highlighted-text.test.ts`
+- `.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts`
+- `.tmp/slate-v2/playwright/integration/examples/highlighted-text.test.ts`
 
 Rejected tactics:
 
@@ -1397,9 +1397,9 @@ Do-not-do list:
 Actions:
 
 - removed Chromium-only guards from:
-  - `../slate-v2/playwright/integration/examples/external-decoration-sources.test.ts`
-  - `../slate-v2/playwright/integration/examples/persistent-annotation-anchors.test.ts`
-  - `../slate-v2/playwright/integration/examples/review-comments.test.ts`
+  - `.tmp/slate-v2/playwright/integration/examples/external-decoration-sources.test.ts`
+  - `.tmp/slate-v2/playwright/integration/examples/persistent-annotation-anchors.test.ts`
+  - `.tmp/slate-v2/playwright/integration/examples/review-comments.test.ts`
 - kept the existing semantic assertions intact
 
 Commands:
@@ -1439,9 +1439,9 @@ Owner classification:
 
 Files changed:
 
-- `../slate-v2/playwright/integration/examples/external-decoration-sources.test.ts`
-- `../slate-v2/playwright/integration/examples/persistent-annotation-anchors.test.ts`
-- `../slate-v2/playwright/integration/examples/review-comments.test.ts`
+- `.tmp/slate-v2/playwright/integration/examples/external-decoration-sources.test.ts`
+- `.tmp/slate-v2/playwright/integration/examples/persistent-annotation-anchors.test.ts`
+- `.tmp/slate-v2/playwright/integration/examples/review-comments.test.ts`
 
 Rejected tactics:
 
@@ -1495,8 +1495,8 @@ Do-not-do list:
 Actions:
 
 - removed guards from:
-  - `../slate-v2/playwright/integration/examples/code-highlighting.test.ts`
-  - `../slate-v2/playwright/integration/examples/markdown-preview.test.ts`
+  - `.tmp/slate-v2/playwright/integration/examples/code-highlighting.test.ts`
+  - `.tmp/slate-v2/playwright/integration/examples/markdown-preview.test.ts`
 - rewrote code-highlighting assertions from exact Prism color/text segmentation
   to semantic projection-class checks
 - reduced code samples to one-line fixtures that still prove token projection
@@ -1550,8 +1550,8 @@ Owner classification:
 
 Files changed:
 
-- `../slate-v2/playwright/integration/examples/code-highlighting.test.ts`
-- `../slate-v2/playwright/integration/examples/markdown-preview.test.ts`
+- `.tmp/slate-v2/playwright/integration/examples/code-highlighting.test.ts`
+- `.tmp/slate-v2/playwright/integration/examples/markdown-preview.test.ts`
 
 Rejected tactics:
 
@@ -1605,8 +1605,8 @@ Do-not-do list:
 Actions:
 
 - removed Chromium/mobile guards from:
-  - `../slate-v2/playwright/integration/examples/code-highlighting.test.ts`
-  - `../slate-v2/playwright/integration/examples/markdown-preview.test.ts`
+  - `.tmp/slate-v2/playwright/integration/examples/code-highlighting.test.ts`
+  - `.tmp/slate-v2/playwright/integration/examples/markdown-preview.test.ts`
 - hard-cut code-highlighting exact Prism color/token segmentation assertions
   from release proof
 - replaced code-highlighting with a semantic token projection render proof on
@@ -1653,8 +1653,8 @@ Owner classification:
 
 Files changed:
 
-- `../slate-v2/playwright/integration/examples/code-highlighting.test.ts`
-- `../slate-v2/playwright/integration/examples/markdown-preview.test.ts`
+- `.tmp/slate-v2/playwright/integration/examples/code-highlighting.test.ts`
+- `.tmp/slate-v2/playwright/integration/examples/markdown-preview.test.ts`
 
 Rejected tactics:
 
@@ -1707,10 +1707,10 @@ Do-not-do list:
 
 Actions:
 
-- unskipped `../slate-v2/playwright/integration/examples/inlines.test.ts`
+- unskipped `.tmp/slate-v2/playwright/integration/examples/inlines.test.ts`
   read-only inline arrow row
 - unskipped and narrowed
-  `../slate-v2/playwright/integration/examples/richtext.test.ts` undo row
+  `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts` undo row
 - kept Chromium/WebKit on native keyboard undo
 - used semantic insert/undo handle for Firefox/mobile where native keyboard
   undo either does not undo the inserted text or mobile browser insertion is not
@@ -1758,8 +1758,8 @@ Owner classification:
 
 Files changed:
 
-- `../slate-v2/playwright/integration/examples/inlines.test.ts`
-- `../slate-v2/playwright/integration/examples/richtext.test.ts`
+- `.tmp/slate-v2/playwright/integration/examples/inlines.test.ts`
+- `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
 
 Rejected tactics:
 
@@ -1873,8 +1873,8 @@ Owner classification:
 
 Files changed:
 
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
-- `../slate-v2/playwright/integration/examples/large-document-runtime.test.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/playwright/integration/examples/large-document-runtime.test.ts`
 
 Rejected tactics:
 

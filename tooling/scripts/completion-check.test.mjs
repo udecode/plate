@@ -201,3 +201,34 @@ test('prints the continuation prompt file when pending', async () => {
     assert.match(result.stderr, /not complete: .*\.tmp\/completion-check\.md/);
   });
 });
+
+test('rejects done status when a ralplan lane is still pending', async () => {
+  await withTempWorkspace(async (cwd) => {
+    await writeFile(
+      path.join(cwd, '.tmp/completion-check.md'),
+      [
+        'status: done',
+        'continue_file: .tmp/session-a/continue.md',
+        'current_pass_status: complete',
+        'next_pass: related-issue-discovery',
+        'ralplan_lane_status: pending',
+        '',
+      ].join('\n')
+    );
+
+    const result = await runCompletionCheck({
+      cwd,
+      env: {
+        CODEX_SESSION_ID: '',
+        CODEX_THREAD_ID: '',
+      },
+    });
+
+    assert.equal(result.code, 1);
+    assert.match(result.stderr, /continue: \.tmp\/session-a\/continue\.md/);
+    assert.match(
+      result.stderr,
+      /status done conflicts with ralplan_lane_status: pending/
+    );
+  });
+});

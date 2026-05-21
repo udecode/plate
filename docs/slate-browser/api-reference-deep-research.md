@@ -25,7 +25,7 @@ It is a focused API and test-lane design read:
 
 ## Current Slate Browser Read
 
-Current public `slate-browser` shape in `../slate-v2`:
+Current public `slate-browser` shape in `.tmp/slate-v2`:
 
 - `slate-browser/core`
 - `slate-browser/browser`

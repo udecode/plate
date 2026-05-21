@@ -34,7 +34,7 @@ Evidence:
 - `bun test ./packages/slate-history --bail 1`
 - `bun --cwd packages/slate-react test -- --bail 1`
 - `bun test ./test/bridge.test.ts ./test/clipboard-boundary.test.ts --bail=1`
-  from `../slate-v2/packages/slate-dom`
+  from `.tmp/slate-v2/packages/slate-dom`
 - `bun run lint:fix`
 - `bunx turbo build --filter=./packages/slate --filter=./packages/slate-history --filter=./packages/slate-dom --filter=./packages/slate-react --force`
 - `bunx turbo typecheck --filter=./packages/slate --filter=./packages/slate-history --filter=./packages/slate-dom --filter=./packages/slate-react --force`
@@ -54,8 +54,8 @@ Replace Slate v2 declaration merging with a Plate-aligned generic type system, w
 The target is:
 
 ```ts
-type Value = TElement[]
-type Editor<V extends Value = Value> = EditorBase<V> & RuntimeEditor<V>
+type Value = TElement[];
+type Editor<V extends Value = Value> = EditorBase<V> & RuntimeEditor<V>;
 ```
 
 Everything else derives from `Value`, `TElement`, `TText`, and `Editor<V>`.
@@ -82,19 +82,19 @@ The only allowed improvements over Plate are explicit:
 
 ## Plate Source Of Truth Matrix
 
-| Plate source | Plate generic law | Slate v2 target | Action | Drift allowed |
-| --- | --- | --- | --- | --- |
-| `../plate/packages/slate/src/interfaces/editor/editor-type.ts` | `Editor<V extends Value = Value>`, `EditorBase<V>`, `EditorMethods<V>`, `Value`, `ValueOf<E>`, `EditorSelection` | `../slate-v2/packages/slate/src/interfaces/editor.ts`, `../slate-v2/packages/slate/src/create-editor.ts`, `../slate-v2/packages/slate/src/core/public-state.ts` | Port the `Value`-first editor model. Keep Slate v2 read/update/transaction fields in the runtime portion. | No, except marks improvement. |
-| `../plate/packages/slate/src/interfaces/element.ts` | `TElement`, `Element = TElement`, `ElementIn<V>`, `ElementOf<N>`, `ElementOrTextOf<E>` | `../slate-v2/packages/slate/src/interfaces/element.ts`, `../slate-v2/packages/slate/src/interfaces/node.ts` | Replace `ExtendedType<'Element'>` with direct generic helpers. | No. |
-| `../plate/packages/slate/src/interfaces/text.ts` | `TText`, `Text = TText`, `TextIn<V>`, `TextOf<N>` | `../slate-v2/packages/slate/src/interfaces/text.ts`, `../slate-v2/packages/slate/src/interfaces/editor.ts` | Replace `ExtendedType<'Text'>`; derive marks from `TextOf<E>`. | Yes: improve marks. |
-| `../plate/packages/slate/src/interfaces/node.ts` | `TNode`, `Ancestor`, `Descendant`, `NodeOf<N>`, `AncestorOf<N>`, `DescendantOf<N>`, `NodeProps<N>` | `../slate-v2/packages/slate/src/interfaces/node.ts` | Port helper structure directly. | No. |
-| `../plate/packages/slate/src/interfaces/node-entry.ts` | `NodeEntryOf<E>`, `ElementEntryOf<E>`, `TextEntryOf<E>`, `AncestorEntryOf<E>`, `DescendantEntryOf<E>` | `../slate-v2/packages/slate/src/interfaces/node-entry.ts` or `../slate-v2/packages/slate/src/interfaces/node.ts` | Add if missing; do not scatter entry helpers across editor APIs. | No. |
-| `../plate/packages/slate/src/interfaces/editor/editor-api.ts` | Every editor query/match option is generic on `V extends Value` where node shape matters. | `../slate-v2/packages/slate/src/interfaces/editor.ts`, `../slate-v2/packages/slate/src/editor/*.ts` | Thread `V` through editor options and return types. | No. |
-| `../plate/packages/slate/src/interfaces/editor/editor-transforms.ts` | `EditorTransforms<V>`, transform options generic by `V`, transform node types derived from `ValueOf<E>` | `../slate-v2/packages/slate/src/interfaces/transforms/*.ts`, `../slate-v2/packages/slate/src/transforms-*/*.ts`, `../slate-v2/packages/slate/src/editor/*.ts` | Preserve flexible primitives; do not invent semantic method bloat. | No. |
-| `../plate/packages/slate/src/interfaces/editor/legacy-editor.ts` | Compat bridge for legacy transform shape. | None as primary. Optional internal-only bridge if a migration tracer proves it is needed. | Do not port as public API. | Yes: hard cut public compat. |
-| `../plate/packages/core/src/lib/editor/SlateEditor.ts` | `TSlateEditor<V, P>` layers plugin config generics over Slate editor generics. | `../slate-v2/packages/slate/src/core/editor-extension.ts`, `../slate-v2/packages/slate/src/core/extension-registry.ts` | Use as the extension generic model, not the core node model. | No in spirit; names can fit Slate v2. |
-| `../plate/packages/core/src/lib/editor/withSlate.ts` | `withSlate<V, P>` preserves editor value and plugin generics. | `../slate-v2/packages/slate/src/core/editor-extension.ts`, package consumers | Keep extension runtime generic over `E extends Editor<V>`. | No. |
-| `../plate/packages/core/src/react/editor/PlateEditor.ts` | `TPlateEditor<V, P>` extends Slate editor with React/plugin runtime. | `../slate-v2/packages/slate-react/src/plugin/react-editor.ts`, `../slate-v2/packages/slate-react/src/context.tsx` | Use the layering idea, not Plate plugin runtime implementation. | No in architecture; implementation differs. |
+| Plate source                                                         | Plate generic law                                                                                                | Slate v2 target                                                                                                                                                       | Action                                                                                                    | Drift allowed                               |
+| -------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- | ------------------------------------------- |
+| `../plate/packages/slate/src/interfaces/editor/editor-type.ts`       | `Editor<V extends Value = Value>`, `EditorBase<V>`, `EditorMethods<V>`, `Value`, `ValueOf<E>`, `EditorSelection` | `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`, `.tmp/slate-v2/packages/slate/src/create-editor.ts`, `.tmp/slate-v2/packages/slate/src/core/public-state.ts` | Port the `Value`-first editor model. Keep Slate v2 read/update/transaction fields in the runtime portion. | No, except marks improvement.               |
+| `../plate/packages/slate/src/interfaces/element.ts`                  | `TElement`, `Element = TElement`, `ElementIn<V>`, `ElementOf<N>`, `ElementOrTextOf<E>`                           | `.tmp/slate-v2/packages/slate/src/interfaces/element.ts`, `.tmp/slate-v2/packages/slate/src/interfaces/node.ts`                                                       | Replace `ExtendedType<'Element'>` with direct generic helpers.                                            | No.                                         |
+| `../plate/packages/slate/src/interfaces/text.ts`                     | `TText`, `Text = TText`, `TextIn<V>`, `TextOf<N>`                                                                | `.tmp/slate-v2/packages/slate/src/interfaces/text.ts`, `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`                                                        | Replace `ExtendedType<'Text'>`; derive marks from `TextOf<E>`.                                            | Yes: improve marks.                         |
+| `../plate/packages/slate/src/interfaces/node.ts`                     | `TNode`, `Ancestor`, `Descendant`, `NodeOf<N>`, `AncestorOf<N>`, `DescendantOf<N>`, `NodeProps<N>`               | `.tmp/slate-v2/packages/slate/src/interfaces/node.ts`                                                                                                                 | Port helper structure directly.                                                                           | No.                                         |
+| `../plate/packages/slate/src/interfaces/node-entry.ts`               | `NodeEntryOf<E>`, `ElementEntryOf<E>`, `TextEntryOf<E>`, `AncestorEntryOf<E>`, `DescendantEntryOf<E>`            | `.tmp/slate-v2/packages/slate/src/interfaces/node-entry.ts` or `.tmp/slate-v2/packages/slate/src/interfaces/node.ts`                                                  | Add if missing; do not scatter entry helpers across editor APIs.                                          | No.                                         |
+| `../plate/packages/slate/src/interfaces/editor/editor-api.ts`        | Every editor query/match option is generic on `V extends Value` where node shape matters.                        | `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`, `.tmp/slate-v2/packages/slate/src/editor/*.ts`                                                               | Thread `V` through editor options and return types.                                                       | No.                                         |
+| `../plate/packages/slate/src/interfaces/editor/editor-transforms.ts` | `EditorTransforms<V>`, transform options generic by `V`, transform node types derived from `ValueOf<E>`          | `.tmp/slate-v2/packages/slate/src/interfaces/transforms/*.ts`, `.tmp/slate-v2/packages/slate/src/transforms-*/*.ts`, `.tmp/slate-v2/packages/slate/src/editor/*.ts`   | Preserve flexible primitives; do not invent semantic method bloat.                                        | No.                                         |
+| `../plate/packages/slate/src/interfaces/editor/legacy-editor.ts`     | Compat bridge for legacy transform shape.                                                                        | None as primary. Optional internal-only bridge if a migration tracer proves it is needed.                                                                             | Do not port as public API.                                                                                | Yes: hard cut public compat.                |
+| `../plate/packages/core/src/lib/editor/SlateEditor.ts`               | `TSlateEditor<V, P>` layers plugin config generics over Slate editor generics.                                   | `.tmp/slate-v2/packages/slate/src/core/editor-extension.ts`, `.tmp/slate-v2/packages/slate/src/core/extension-registry.ts`                                            | Use as the extension generic model, not the core node model.                                              | No in spirit; names can fit Slate v2.       |
+| `../plate/packages/core/src/lib/editor/withSlate.ts`                 | `withSlate<V, P>` preserves editor value and plugin generics.                                                    | `.tmp/slate-v2/packages/slate/src/core/editor-extension.ts`, package consumers                                                                                        | Keep extension runtime generic over `E extends Editor<V>`.                                                | No.                                         |
+| `../plate/packages/core/src/react/editor/PlateEditor.ts`             | `TPlateEditor<V, P>` extends Slate editor with React/plugin runtime.                                             | `.tmp/slate-v2/packages/slate-react/src/plugin/react-editor.ts`, `.tmp/slate-v2/packages/slate-react/src/context.tsx`                                                 | Use the layering idea, not Plate plugin runtime implementation.                                           | No in architecture; implementation differs. |
 
 ## Better-Than-Plate Decisions
 
@@ -103,15 +103,15 @@ The only allowed improvements over Plate are explicit:
 Plate:
 
 ```ts
-type EditorMarks = Record<string, any>
+type EditorMarks = Record<string, any>;
 ```
 
 Slate v2 target:
 
 ```ts
-type MarksOfText<T extends TText> = Partial<Omit<T, 'text'>>
-type EditorMarksOf<E extends Editor> = MarksOfText<TextOf<E>>
-type EditorMarks<V extends Value = Value> = MarksOfText<TextIn<V>>
+type MarksOfText<T extends TText> = Partial<Omit<T, "text">>;
+type EditorMarksOf<E extends Editor> = MarksOfText<TextOf<E>>;
+type EditorMarks<V extends Value = Value> = MarksOfText<TextIn<V>>;
 ```
 
 Reason: mark keys should come from the editor's text union, not `any`. This keeps custom mark DX flexible without losing agent/type guidance.
@@ -146,42 +146,42 @@ type EditorSchema<
   TElementUnion extends TElement = TElement,
   TTextUnion extends TText = TText,
 > = {
-  Element: TElementUnion
-  Text: TTextUnion
-}
+  Element: TElementUnion;
+  Text: TTextUnion;
+};
 
-type ValueOfSchema<S extends EditorSchema> = S['Element'][]
+type ValueOfSchema<S extends EditorSchema> = S["Element"][];
 ```
 
 Reason: plugin authors often think in element/text unions; Plate-compatible core still thinks in `Value`.
 
 ## Canonical Generic Vocabulary
 
-| Type | Meaning | Owner file |
-| --- | --- | --- |
-| `TText` | Base text node with `{ text: string }` plus custom properties. | `../slate-v2/packages/slate/src/interfaces/text.ts` |
-| `TElement` | Base element node with `children`. | `../slate-v2/packages/slate/src/interfaces/element.ts` |
-| `Value` | Top-level editor document: `TElement[]`. | `../slate-v2/packages/slate/src/interfaces/editor.ts` or `../slate-v2/packages/slate/src/interfaces/node.ts` |
-| `Text` | Alias of `TText`, not declaration-merged app text. | `../slate-v2/packages/slate/src/interfaces/text.ts` |
-| `Element` | Alias of `TElement`, not declaration-merged app element. | `../slate-v2/packages/slate/src/interfaces/element.ts` |
-| `Descendant` | `TElement | TText`. | `../slate-v2/packages/slate/src/interfaces/node.ts` |
-| `Ancestor` | `Editor | TElement`. | `../slate-v2/packages/slate/src/interfaces/node.ts` |
-| `Node` | `Editor | TElement | TText`. | `../slate-v2/packages/slate/src/interfaces/node.ts` |
-| `TextIn<V>` | Text union inside `V`. | `../slate-v2/packages/slate/src/interfaces/text.ts` |
-| `ElementIn<V>` | Element union inside `V`. | `../slate-v2/packages/slate/src/interfaces/element.ts` |
-| `NodeIn<V>` | Node union inside `V`. | `../slate-v2/packages/slate/src/interfaces/node.ts` |
-| `TextOf<E>` | Text union inside editor/node `E`. | `../slate-v2/packages/slate/src/interfaces/text.ts` |
-| `ElementOf<E>` | Element union inside editor/node `E`. | `../slate-v2/packages/slate/src/interfaces/element.ts` |
-| `NodeOf<E>` | Node union inside editor/node `E`. | `../slate-v2/packages/slate/src/interfaces/node.ts` |
-| `ValueOf<E>` | `E['children']`. | `../slate-v2/packages/slate/src/interfaces/editor.ts` |
-| `EditorMarksOf<E>` | Mark object derived from `TextOf<E>`. | `../slate-v2/packages/slate/src/interfaces/editor.ts` |
-| `Operation<V>` | Operation payloads typed from `NodeIn<V>` / `Range`. | `../slate-v2/packages/slate/src/interfaces/operation.ts` |
-| `Editor<V>` | Public editor type. | `../slate-v2/packages/slate/src/interfaces/editor.ts` |
-| `EditorTransaction<V>` | Write boundary runtime. | `../slate-v2/packages/slate/src/interfaces/editor.ts`, `../slate-v2/packages/slate/src/core/public-state.ts` |
-| `EditorCommit<V>` | Local runtime observation payload. | `../slate-v2/packages/slate/src/interfaces/editor.ts`, `../slate-v2/packages/slate/src/core/public-state.ts` |
-| `HistoryEditor<V>` | History-enhanced editor. | `../slate-v2/packages/slate-history/src/history-editor.ts` |
-| `DOMEditor<V>` | DOM-enhanced editor. | `../slate-v2/packages/slate-dom/src/plugin/dom-editor.ts` |
-| `ReactEditor<V>` | React-enhanced editor. | `../slate-v2/packages/slate-react/src/plugin/react-editor.ts` |
+| Type                   | Meaning                                                        | Owner file                                                                                                       |
+| ---------------------- | -------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- | ----------------------------------------------------- |
+| `TText`                | Base text node with `{ text: string }` plus custom properties. | `.tmp/slate-v2/packages/slate/src/interfaces/text.ts`                                                            |
+| `TElement`             | Base element node with `children`.                             | `.tmp/slate-v2/packages/slate/src/interfaces/element.ts`                                                         |
+| `Value`                | Top-level editor document: `TElement[]`.                       | `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts` or `.tmp/slate-v2/packages/slate/src/interfaces/node.ts` |
+| `Text`                 | Alias of `TText`, not declaration-merged app text.             | `.tmp/slate-v2/packages/slate/src/interfaces/text.ts`                                                            |
+| `Element`              | Alias of `TElement`, not declaration-merged app element.       | `.tmp/slate-v2/packages/slate/src/interfaces/element.ts`                                                         |
+| `Descendant`           | `TElement                                                      | TText`.                                                                                                          | `.tmp/slate-v2/packages/slate/src/interfaces/node.ts` |
+| `Ancestor`             | `Editor                                                        | TElement`.                                                                                                       | `.tmp/slate-v2/packages/slate/src/interfaces/node.ts` |
+| `Node`                 | `Editor                                                        | TElement                                                                                                         | TText`.                                               | `.tmp/slate-v2/packages/slate/src/interfaces/node.ts` |
+| `TextIn<V>`            | Text union inside `V`.                                         | `.tmp/slate-v2/packages/slate/src/interfaces/text.ts`                                                            |
+| `ElementIn<V>`         | Element union inside `V`.                                      | `.tmp/slate-v2/packages/slate/src/interfaces/element.ts`                                                         |
+| `NodeIn<V>`            | Node union inside `V`.                                         | `.tmp/slate-v2/packages/slate/src/interfaces/node.ts`                                                            |
+| `TextOf<E>`            | Text union inside editor/node `E`.                             | `.tmp/slate-v2/packages/slate/src/interfaces/text.ts`                                                            |
+| `ElementOf<E>`         | Element union inside editor/node `E`.                          | `.tmp/slate-v2/packages/slate/src/interfaces/element.ts`                                                         |
+| `NodeOf<E>`            | Node union inside editor/node `E`.                             | `.tmp/slate-v2/packages/slate/src/interfaces/node.ts`                                                            |
+| `ValueOf<E>`           | `E['children']`.                                               | `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`                                                          |
+| `EditorMarksOf<E>`     | Mark object derived from `TextOf<E>`.                          | `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`                                                          |
+| `Operation<V>`         | Operation payloads typed from `NodeIn<V>` / `Range`.           | `.tmp/slate-v2/packages/slate/src/interfaces/operation.ts`                                                       |
+| `Editor<V>`            | Public editor type.                                            | `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`                                                          |
+| `EditorTransaction<V>` | Write boundary runtime.                                        | `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`, `.tmp/slate-v2/packages/slate/src/core/public-state.ts` |
+| `EditorCommit<V>`      | Local runtime observation payload.                             | `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`, `.tmp/slate-v2/packages/slate/src/core/public-state.ts` |
+| `HistoryEditor<V>`     | History-enhanced editor.                                       | `.tmp/slate-v2/packages/slate-history/src/history-editor.ts`                                                     |
+| `DOMEditor<V>`         | DOM-enhanced editor.                                           | `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts`                                                      |
+| `ReactEditor<V>`       | React-enhanced editor.                                         | `.tmp/slate-v2/packages/slate-react/src/plugin/react-editor.ts`                                                  |
 
 ## Slate v2 File Matrix
 
@@ -196,160 +196,160 @@ Legend:
 
 ### `packages/slate`
 
-| File or file group | Class | Required work |
-| --- | --- | --- |
-| `../slate-v2/packages/slate/src/types/custom-types.ts` | G1 | Delete or replace with a non-augmenting generic helper file. Remove `CustomTypes` and `ExtendedType`. |
-| `../slate-v2/packages/slate/src/types/index.ts` | G1 | Stop exporting declaration-merging helpers. Export generic helpers if they live under `types`. |
-| `../slate-v2/packages/slate/src/types/types.ts` | G1 | Audit for old aliases that assume global custom types. |
-| `../slate-v2/packages/slate/src/interfaces/text.ts` | G1 | Replace `ExtendedType<'Text'>` with `TText`, `Text`, `TextIn<V>`, `TextOf<N>`. |
-| `../slate-v2/packages/slate/src/interfaces/element.ts` | G1 | Replace `ExtendedType<'Element'>` with `TElement`, `Element`, `ElementIn<V>`, `ElementOf<N>`, `ElementOrTextOf<E>`. |
-| `../slate-v2/packages/slate/src/interfaces/node.ts` | G1 | Add Plate-compatible `TNode`, `NodeIn<V>`, `NodeOf<N>`, `AncestorOf<N>`, `DescendantOf<N>`, `NodeProps<N>`. |
-| `../slate-v2/packages/slate/src/interfaces/editor.ts` | G1/G2/G3 | Make `Editor<V>`, `BaseEditor<V>`, `Value`, `ValueOf<E>`, `EditorMarks<V>`, `EditorMarksOf<E>`, `EditorSnapshot<V>`, `EditorTransaction<V>`, `EditorCommit<V>`, extension and command types generic. |
-| `../slate-v2/packages/slate/src/interfaces/operation.ts` | G3 | Remove `ExtendedType` from operation subtypes. Add `Operation<V>`, `InsertNodeOperation<V>`, `RemoveNodeOperation<V>`, `SplitNodeOperation<V>`, `MergeNodeOperation<V>`, `SetNodeOperation<V>` with typed node payloads. |
-| `../slate-v2/packages/slate/src/interfaces/range.ts` | G1 | Replace `ExtendedType<'Range'>` with direct `Range`. Do not generic-thread unless range metadata becomes real. |
-| `../slate-v2/packages/slate/src/interfaces/point.ts` | G1 | Replace `ExtendedType<'Point'>` with direct `Point`. |
-| `../slate-v2/packages/slate/src/interfaces/location.ts` | G1 | Verify `Location` uses direct `Path | Point | Range | Span` and no global custom type. |
-| `../slate-v2/packages/slate/src/interfaces/bookmark.ts` | G3 | Make bookmarks explicit about selection/node generics if bookmark stores node snapshots. |
-| `../slate-v2/packages/slate/src/interfaces/path.ts` | G0 | Verify path stays structural, not generic. |
-| `../slate-v2/packages/slate/src/interfaces/path-ref.ts` | G0 | Verify no global custom type. |
-| `../slate-v2/packages/slate/src/interfaces/point-ref.ts` | G0 | Verify no global custom type. |
-| `../slate-v2/packages/slate/src/interfaces/range-ref.ts` | G0 | Verify no global custom type. |
-| `../slate-v2/packages/slate/src/interfaces/scrubber.ts` | G0 | Verify only accepts structural values. |
-| `../slate-v2/packages/slate/src/interfaces/index.ts` | G1/G2/G3 | Re-export the generic vocabulary. Do not re-export `CustomTypes` / `ExtendedType`. |
-| `../slate-v2/packages/slate/src/interfaces/transforms/general.ts` | G2 | Thread `V` through transform options that accept `Node`, `Descendant`, `Element`, `Text`, or match predicates. |
-| `../slate-v2/packages/slate/src/interfaces/transforms/node.ts` | G2 | Thread `V`; `nodes`, `match`, `at`, inserted node payloads derive from `Value`. |
-| `../slate-v2/packages/slate/src/interfaces/transforms/selection.ts` | G2 | Verify direct `Range` / `Point`; no declaration merging. |
-| `../slate-v2/packages/slate/src/interfaces/transforms/text.ts` | G2 | Thread text type through marks and insertion options. |
-| `../slate-v2/packages/slate/src/create-editor.ts` | G1/G3 | `createEditor<V extends Value = Value>(): Editor<V>`. Construct base editor internally; cast only at the boundary. |
-| `../slate-v2/packages/slate/src/index.ts` and `../slate-v2/packages/slate/index.ts` | G1/G2/G3 | Public export audit; no `CustomTypes` primary export. |
-| `../slate-v2/packages/slate/src/core/apply.ts` | G3 | `applyOperation<V>` and operation middleware use `Operation<V>`. |
-| `../slate-v2/packages/slate/src/core/public-state.ts` | G1/G3 | Generic current value, selection, marks, operations, snapshots, transactions, and commits. |
-| `../slate-v2/packages/slate/src/core/command-registry.ts` | G3 | Command context uses `E extends Editor<V>`. |
-| `../slate-v2/packages/slate/src/core/editor-extension.ts` | G3 | Extension methods use `E extends Editor<V>`, not `BaseEditor = Editor` without value. |
-| `../slate-v2/packages/slate/src/core/extension-registry.ts` | G3 | Registry stores typed methods/listeners without erasing `V`. |
-| `../slate-v2/packages/slate/src/core/batch-dirty-paths.ts` | G3 | Dirty paths stay path-based; commit metadata generic only if node payload leaks in. |
-| `../slate-v2/packages/slate/src/core/get-dirty-paths.ts` | G3 | Same as dirty paths. |
-| `../slate-v2/packages/slate/src/core/update-dirty-paths.ts` | G3 | Operation generic input. |
-| `../slate-v2/packages/slate/src/core/get-fragment.ts` | G2/G3 | Fragment return type derives from `ValueOf<E>`. |
-| `../slate-v2/packages/slate/src/core/leaf-lifecycle.ts` | G1/G3 | Empty leaf normalization must use `TextOf<E>` / marks type, not untyped text. |
-| `../slate-v2/packages/slate/src/core/normalize-node.ts` | G2 | Normalize entry and node types derive from `E`. |
-| `../slate-v2/packages/slate/src/core/should-normalize.ts` | G2 | Options generic only if node entry payloads are exposed. |
-| `../slate-v2/packages/slate/src/core/index.ts` | G1/G2/G3 | Re-export audit. |
-| `../slate-v2/packages/slate/src/editor/*.ts` | G2 | Every editor query/mutation must accept `E extends Editor` and derive `ValueOf<E>`, `NodeOf<E>`, `ElementOf<E>`, `TextOf<E>`, `EditorMarksOf<E>`. |
-| `../slate-v2/packages/slate/src/transforms-node/*.ts` | G2 | Preserve flexible primitives; replace static `Node` / `Element` / `Descendant` inputs with derived generic types. |
-| `../slate-v2/packages/slate/src/transforms-selection/*.ts` | G2 | Verify selection transforms do not import global custom types; keep structural points/ranges. |
-| `../slate-v2/packages/slate/src/transforms-text/*.ts` | G2 | `insertText`, `deleteText`, mark behavior derive marks from text type. |
-| `../slate-v2/packages/slate/src/utils/types.ts` | G1/G2 | Central helper type cleanup; remove `ExtendedType` assumptions. |
-| `../slate-v2/packages/slate/src/utils/runtime-ids.ts` | G0/G3 | Keep runtime IDs structural; only generic if public node payloads are exposed. |
-| `../slate-v2/packages/slate/src/utils/get-default-insert-location.ts` | G2 | Insert location uses `E extends Editor`. |
-| `../slate-v2/packages/slate/src/utils/modify.ts` | G2 | Verify point/range only. |
-| `../slate-v2/packages/slate/src/utils/*.ts` | G0 | Verify no hidden `CustomTypes` import or global `Element/Text` assumption. |
-| `../slate-v2/packages/slate/src/range-projection.ts` | G3 | Generic only if projection payloads carry nodes. |
-| `../slate-v2/packages/slate/src/selection-operation.ts` | G3 | Selection op stays structural, but union must compose with `Operation<V>`. |
-| `../slate-v2/packages/slate/src/text-units.ts` | G0 | Text unit logic stays structural. |
-| `../slate-v2/packages/slate/test/**/*.ts` and `../slate-v2/packages/slate/test/**/*.tsx` | G5 | Replace custom-type fixture tests with explicit `createEditor<ExampleValue>()` compile/runtime contracts. Delete `tsconfig.custom-types.json`. |
+| File or file group                                                                           | Class    | Required work                                                                                                                                                                                                            |
+| -------------------------------------------------------------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----- | ----- | -------------------------------- |
+| `.tmp/slate-v2/packages/slate/src/types/custom-types.ts`                                     | G1       | Delete or replace with a non-augmenting generic helper file. Remove `CustomTypes` and `ExtendedType`.                                                                                                                    |
+| `.tmp/slate-v2/packages/slate/src/types/index.ts`                                            | G1       | Stop exporting declaration-merging helpers. Export generic helpers if they live under `types`.                                                                                                                           |
+| `.tmp/slate-v2/packages/slate/src/types/types.ts`                                            | G1       | Audit for old aliases that assume global custom types.                                                                                                                                                                   |
+| `.tmp/slate-v2/packages/slate/src/interfaces/text.ts`                                        | G1       | Replace `ExtendedType<'Text'>` with `TText`, `Text`, `TextIn<V>`, `TextOf<N>`.                                                                                                                                           |
+| `.tmp/slate-v2/packages/slate/src/interfaces/element.ts`                                     | G1       | Replace `ExtendedType<'Element'>` with `TElement`, `Element`, `ElementIn<V>`, `ElementOf<N>`, `ElementOrTextOf<E>`.                                                                                                      |
+| `.tmp/slate-v2/packages/slate/src/interfaces/node.ts`                                        | G1       | Add Plate-compatible `TNode`, `NodeIn<V>`, `NodeOf<N>`, `AncestorOf<N>`, `DescendantOf<N>`, `NodeProps<N>`.                                                                                                              |
+| `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`                                      | G1/G2/G3 | Make `Editor<V>`, `BaseEditor<V>`, `Value`, `ValueOf<E>`, `EditorMarks<V>`, `EditorMarksOf<E>`, `EditorSnapshot<V>`, `EditorTransaction<V>`, `EditorCommit<V>`, extension and command types generic.                     |
+| `.tmp/slate-v2/packages/slate/src/interfaces/operation.ts`                                   | G3       | Remove `ExtendedType` from operation subtypes. Add `Operation<V>`, `InsertNodeOperation<V>`, `RemoveNodeOperation<V>`, `SplitNodeOperation<V>`, `MergeNodeOperation<V>`, `SetNodeOperation<V>` with typed node payloads. |
+| `.tmp/slate-v2/packages/slate/src/interfaces/range.ts`                                       | G1       | Replace `ExtendedType<'Range'>` with direct `Range`. Do not generic-thread unless range metadata becomes real.                                                                                                           |
+| `.tmp/slate-v2/packages/slate/src/interfaces/point.ts`                                       | G1       | Replace `ExtendedType<'Point'>` with direct `Point`.                                                                                                                                                                     |
+| `.tmp/slate-v2/packages/slate/src/interfaces/location.ts`                                    | G1       | Verify `Location` uses direct `Path                                                                                                                                                                                      | Point | Range | Span` and no global custom type. |
+| `.tmp/slate-v2/packages/slate/src/interfaces/bookmark.ts`                                    | G3       | Make bookmarks explicit about selection/node generics if bookmark stores node snapshots.                                                                                                                                 |
+| `.tmp/slate-v2/packages/slate/src/interfaces/path.ts`                                        | G0       | Verify path stays structural, not generic.                                                                                                                                                                               |
+| `.tmp/slate-v2/packages/slate/src/interfaces/path-ref.ts`                                    | G0       | Verify no global custom type.                                                                                                                                                                                            |
+| `.tmp/slate-v2/packages/slate/src/interfaces/point-ref.ts`                                   | G0       | Verify no global custom type.                                                                                                                                                                                            |
+| `.tmp/slate-v2/packages/slate/src/interfaces/range-ref.ts`                                   | G0       | Verify no global custom type.                                                                                                                                                                                            |
+| `.tmp/slate-v2/packages/slate/src/interfaces/scrubber.ts`                                    | G0       | Verify only accepts structural values.                                                                                                                                                                                   |
+| `.tmp/slate-v2/packages/slate/src/interfaces/index.ts`                                       | G1/G2/G3 | Re-export the generic vocabulary. Do not re-export `CustomTypes` / `ExtendedType`.                                                                                                                                       |
+| `.tmp/slate-v2/packages/slate/src/interfaces/transforms/general.ts`                          | G2       | Thread `V` through transform options that accept `Node`, `Descendant`, `Element`, `Text`, or match predicates.                                                                                                           |
+| `.tmp/slate-v2/packages/slate/src/interfaces/transforms/node.ts`                             | G2       | Thread `V`; `nodes`, `match`, `at`, inserted node payloads derive from `Value`.                                                                                                                                          |
+| `.tmp/slate-v2/packages/slate/src/interfaces/transforms/selection.ts`                        | G2       | Verify direct `Range` / `Point`; no declaration merging.                                                                                                                                                                 |
+| `.tmp/slate-v2/packages/slate/src/interfaces/transforms/text.ts`                             | G2       | Thread text type through marks and insertion options.                                                                                                                                                                    |
+| `.tmp/slate-v2/packages/slate/src/create-editor.ts`                                          | G1/G3    | `createEditor<V extends Value = Value>(): Editor<V>`. Construct base editor internally; cast only at the boundary.                                                                                                       |
+| `.tmp/slate-v2/packages/slate/src/index.ts` and `.tmp/slate-v2/packages/slate/index.ts`      | G1/G2/G3 | Public export audit; no `CustomTypes` primary export.                                                                                                                                                                    |
+| `.tmp/slate-v2/packages/slate/src/core/apply.ts`                                             | G3       | `applyOperation<V>` and operation middleware use `Operation<V>`.                                                                                                                                                         |
+| `.tmp/slate-v2/packages/slate/src/core/public-state.ts`                                      | G1/G3    | Generic current value, selection, marks, operations, snapshots, transactions, and commits.                                                                                                                               |
+| `.tmp/slate-v2/packages/slate/src/core/command-registry.ts`                                  | G3       | Command context uses `E extends Editor<V>`.                                                                                                                                                                              |
+| `.tmp/slate-v2/packages/slate/src/core/editor-extension.ts`                                  | G3       | Extension methods use `E extends Editor<V>`, not `BaseEditor = Editor` without value.                                                                                                                                    |
+| `.tmp/slate-v2/packages/slate/src/core/extension-registry.ts`                                | G3       | Registry stores typed methods/listeners without erasing `V`.                                                                                                                                                             |
+| `.tmp/slate-v2/packages/slate/src/core/batch-dirty-paths.ts`                                 | G3       | Dirty paths stay path-based; commit metadata generic only if node payload leaks in.                                                                                                                                      |
+| `.tmp/slate-v2/packages/slate/src/core/get-dirty-paths.ts`                                   | G3       | Same as dirty paths.                                                                                                                                                                                                     |
+| `.tmp/slate-v2/packages/slate/src/core/update-dirty-paths.ts`                                | G3       | Operation generic input.                                                                                                                                                                                                 |
+| `.tmp/slate-v2/packages/slate/src/core/get-fragment.ts`                                      | G2/G3    | Fragment return type derives from `ValueOf<E>`.                                                                                                                                                                          |
+| `.tmp/slate-v2/packages/slate/src/core/leaf-lifecycle.ts`                                    | G1/G3    | Empty leaf normalization must use `TextOf<E>` / marks type, not untyped text.                                                                                                                                            |
+| `.tmp/slate-v2/packages/slate/src/core/normalize-node.ts`                                    | G2       | Normalize entry and node types derive from `E`.                                                                                                                                                                          |
+| `.tmp/slate-v2/packages/slate/src/core/should-normalize.ts`                                  | G2       | Options generic only if node entry payloads are exposed.                                                                                                                                                                 |
+| `.tmp/slate-v2/packages/slate/src/core/index.ts`                                             | G1/G2/G3 | Re-export audit.                                                                                                                                                                                                         |
+| `.tmp/slate-v2/packages/slate/src/editor/*.ts`                                               | G2       | Every editor query/mutation must accept `E extends Editor` and derive `ValueOf<E>`, `NodeOf<E>`, `ElementOf<E>`, `TextOf<E>`, `EditorMarksOf<E>`.                                                                        |
+| `.tmp/slate-v2/packages/slate/src/transforms-node/*.ts`                                      | G2       | Preserve flexible primitives; replace static `Node` / `Element` / `Descendant` inputs with derived generic types.                                                                                                        |
+| `.tmp/slate-v2/packages/slate/src/transforms-selection/*.ts`                                 | G2       | Verify selection transforms do not import global custom types; keep structural points/ranges.                                                                                                                            |
+| `.tmp/slate-v2/packages/slate/src/transforms-text/*.ts`                                      | G2       | `insertText`, `deleteText`, mark behavior derive marks from text type.                                                                                                                                                   |
+| `.tmp/slate-v2/packages/slate/src/utils/types.ts`                                            | G1/G2    | Central helper type cleanup; remove `ExtendedType` assumptions.                                                                                                                                                          |
+| `.tmp/slate-v2/packages/slate/src/utils/runtime-ids.ts`                                      | G0/G3    | Keep runtime IDs structural; only generic if public node payloads are exposed.                                                                                                                                           |
+| `.tmp/slate-v2/packages/slate/src/utils/get-default-insert-location.ts`                      | G2       | Insert location uses `E extends Editor`.                                                                                                                                                                                 |
+| `.tmp/slate-v2/packages/slate/src/utils/modify.ts`                                           | G2       | Verify point/range only.                                                                                                                                                                                                 |
+| `.tmp/slate-v2/packages/slate/src/utils/*.ts`                                                | G0       | Verify no hidden `CustomTypes` import or global `Element/Text` assumption.                                                                                                                                               |
+| `.tmp/slate-v2/packages/slate/src/range-projection.ts`                                       | G3       | Generic only if projection payloads carry nodes.                                                                                                                                                                         |
+| `.tmp/slate-v2/packages/slate/src/selection-operation.ts`                                    | G3       | Selection op stays structural, but union must compose with `Operation<V>`.                                                                                                                                               |
+| `.tmp/slate-v2/packages/slate/src/text-units.ts`                                             | G0       | Text unit logic stays structural.                                                                                                                                                                                        |
+| `.tmp/slate-v2/packages/slate/test/**/*.ts` and `.tmp/slate-v2/packages/slate/test/**/*.tsx` | G5       | Replace custom-type fixture tests with explicit `createEditor<ExampleValue>()` compile/runtime contracts. Delete `tsconfig.custom-types.json`.                                                                           |
 
 ### `packages/slate-dom`
 
-| File or file group | Class | Required work |
-| --- | --- | --- |
-| `../slate-v2/packages/slate-dom/src/custom-types.ts` | G4/G5 | Delete module augmentation. Move DOM-only global declarations to a non-Slate `globals.d.ts` if needed. |
-| `../slate-v2/packages/slate-dom/src/plugin/dom-editor.ts` | G4 | `DOMEditor<V extends Value = Value>` and DOM helpers accept `E extends Editor<V>`. |
-| `../slate-v2/packages/slate-dom/src/plugin/with-dom.ts` | G4/G5 | Replace CustomTypes comments with generic editor examples. Preserve runtime behavior. |
-| `../slate-v2/packages/slate-dom/src/index.ts` and `../slate-v2/packages/slate-dom/index.ts` | G4 | Re-export generic DOM editor types. |
-| `../slate-v2/packages/slate-dom/src/utils/types.ts` | G4 | DOM data attributes and weak-map helpers typed against generic Slate nodes where needed. |
-| `../slate-v2/packages/slate-dom/src/utils/range-list.ts` | G0 | Verify structural ranges only. |
-| `../slate-v2/packages/slate-dom/src/utils/*.ts` | G0/G4 | Only generic-thread files that mention Slate nodes/editor. |
-| `../slate-v2/packages/slate-dom/test/**/*.ts` | G5 | Replace any module augmentation expectations with explicit generic examples. |
+| File or file group                                                                              | Class | Required work                                                                                          |
+| ----------------------------------------------------------------------------------------------- | ----- | ------------------------------------------------------------------------------------------------------ |
+| `.tmp/slate-v2/packages/slate-dom/src/custom-types.ts`                                          | G4/G5 | Delete module augmentation. Move DOM-only global declarations to a non-Slate `globals.d.ts` if needed. |
+| `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts`                                     | G4    | `DOMEditor<V extends Value = Value>` and DOM helpers accept `E extends Editor<V>`.                     |
+| `.tmp/slate-v2/packages/slate-dom/src/plugin/with-dom.ts`                                       | G4/G5 | Replace CustomTypes comments with generic editor examples. Preserve runtime behavior.                  |
+| `.tmp/slate-v2/packages/slate-dom/src/index.ts` and `.tmp/slate-v2/packages/slate-dom/index.ts` | G4    | Re-export generic DOM editor types.                                                                    |
+| `.tmp/slate-v2/packages/slate-dom/src/utils/types.ts`                                           | G4    | DOM data attributes and weak-map helpers typed against generic Slate nodes where needed.               |
+| `.tmp/slate-v2/packages/slate-dom/src/utils/range-list.ts`                                      | G0    | Verify structural ranges only.                                                                         |
+| `.tmp/slate-v2/packages/slate-dom/src/utils/*.ts`                                               | G0/G4 | Only generic-thread files that mention Slate nodes/editor.                                             |
+| `.tmp/slate-v2/packages/slate-dom/test/**/*.ts`                                                 | G5    | Replace any module augmentation expectations with explicit generic examples.                           |
 
 ### `packages/slate-history`
 
-| File or file group | Class | Required work |
-| --- | --- | --- |
-| `../slate-v2/packages/slate-history/src/history.ts` | G3/G4 | `History<V>` stores `Operation<V>[]` / `EditorCommit<V>` as appropriate. |
-| `../slate-v2/packages/slate-history/src/history-editor.ts` | G4 | `HistoryEditor<V extends Value = Value>`. |
-| `../slate-v2/packages/slate-history/src/with-history.ts` | G4/G5 | `withHistory<V, E extends Editor<V>>(editor: E): E & HistoryEditor<V>`. Remove CustomTypes comments. |
-| `../slate-v2/packages/slate-history/src/index.ts` and `../slate-v2/packages/slate-history/index.ts` | G4 | Export generic history types. |
-| `../slate-v2/packages/slate-history/test/**/*.ts` and `../slate-v2/packages/slate-history/test/**/*.tsx` | G5 | Add at least one custom `Value` history compile/runtime contract. |
+| File or file group                                                                                           | Class | Required work                                                                                        |
+| ------------------------------------------------------------------------------------------------------------ | ----- | ---------------------------------------------------------------------------------------------------- |
+| `.tmp/slate-v2/packages/slate-history/src/history.ts`                                                        | G3/G4 | `History<V>` stores `Operation<V>[]` / `EditorCommit<V>` as appropriate.                             |
+| `.tmp/slate-v2/packages/slate-history/src/history-editor.ts`                                                 | G4    | `HistoryEditor<V extends Value = Value>`.                                                            |
+| `.tmp/slate-v2/packages/slate-history/src/with-history.ts`                                                   | G4/G5 | `withHistory<V, E extends Editor<V>>(editor: E): E & HistoryEditor<V>`. Remove CustomTypes comments. |
+| `.tmp/slate-v2/packages/slate-history/src/index.ts` and `.tmp/slate-v2/packages/slate-history/index.ts`      | G4    | Export generic history types.                                                                        |
+| `.tmp/slate-v2/packages/slate-history/test/**/*.ts` and `.tmp/slate-v2/packages/slate-history/test/**/*.tsx` | G5    | Add at least one custom `Value` history compile/runtime contract.                                    |
 
 ### `packages/slate-hyperscript`
 
-| File or file group | Class | Required work |
-| --- | --- | --- |
-| `../slate-v2/packages/slate-hyperscript/src/creators.ts` | G5 | Hyperscript output type parameterizes editor/value where callers specify it. |
-| `../slate-v2/packages/slate-hyperscript/src/hyperscript.ts` | G5 | Allow explicit `Value` for JSX fixture creators; do not rely on module augmentation. |
-| `../slate-v2/packages/slate-hyperscript/src/tokens.ts` | G0/G5 | Verify structural token types. |
-| `../slate-v2/packages/slate-hyperscript/src/index.ts` and `../slate-v2/packages/slate-hyperscript/index.ts` | G5 | Export generic creator signatures. |
-| `../slate-v2/packages/slate-hyperscript/test/**/*.ts`, `../slate-v2/packages/slate-hyperscript/test/**/*.tsx`, `../slate-v2/packages/slate-hyperscript/test/fixtures/**/*.tsx` | G5 | Replace any hidden global custom type dependency with explicit helper value types. |
+| File or file group                                                                                                                                                                   | Class | Required work                                                                        |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----- | ------------------------------------------------------------------------------------ |
+| `.tmp/slate-v2/packages/slate-hyperscript/src/creators.ts`                                                                                                                           | G5    | Hyperscript output type parameterizes editor/value where callers specify it.         |
+| `.tmp/slate-v2/packages/slate-hyperscript/src/hyperscript.ts`                                                                                                                        | G5    | Allow explicit `Value` for JSX fixture creators; do not rely on module augmentation. |
+| `.tmp/slate-v2/packages/slate-hyperscript/src/tokens.ts`                                                                                                                             | G0/G5 | Verify structural token types.                                                       |
+| `.tmp/slate-v2/packages/slate-hyperscript/src/index.ts` and `.tmp/slate-v2/packages/slate-hyperscript/index.ts`                                                                      | G5    | Export generic creator signatures.                                                   |
+| `.tmp/slate-v2/packages/slate-hyperscript/test/**/*.ts`, `.tmp/slate-v2/packages/slate-hyperscript/test/**/*.tsx`, `.tmp/slate-v2/packages/slate-hyperscript/test/fixtures/**/*.tsx` | G5    | Replace any hidden global custom type dependency with explicit helper value types.   |
 
 ### `packages/slate-react`
 
-| File or file group | Class | Required work |
-| --- | --- | --- |
-| `../slate-v2/packages/slate-react/src/custom-types.ts` | G4/G5 | Delete module augmentation. Move React-only ambient declarations elsewhere if truly needed. |
-| `../slate-v2/packages/slate-react/src/plugin/react-editor.ts` | G4 | `ReactEditor<V extends Value = Value>` layered over `DOMEditor<V>` and `Editor<V>`. |
-| `../slate-v2/packages/slate-react/src/plugin/with-react.ts` | G4/G5 | Generic `withReact`; remove CustomTypes comments. |
-| `../slate-v2/packages/slate-react/src/context.tsx` | G4 | Context stores generic editor internally without leaking app-wide module augmentation. |
-| `../slate-v2/packages/slate-react/src/components/slate.tsx` | G4 | `<Slate>` props generic on `V` / `E extends ReactEditor<V>`. |
-| `../slate-v2/packages/slate-react/src/components/editable.tsx` | G4 | Editable props generic over `E`; render props derive `ElementOf<E>` / `TextOf<E>`. |
-| `../slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx` | G4 | Replace local `TElement extends SlateElementNode` workaround with `ElementOf<E>`. |
-| `../slate-v2/packages/slate-react/src/components/slate-element.tsx` | G4 | Element prop generic derives from editor context. |
-| `../slate-v2/packages/slate-react/src/components/editable-element.tsx` | G4 | Same as element rendering. |
-| `../slate-v2/packages/slate-react/src/components/slate-text.tsx` | G4 | Text prop generic derives from `TextOf<E>`. |
-| `../slate-v2/packages/slate-react/src/components/editable-text.tsx` | G4 | Same as text rendering. |
-| `../slate-v2/packages/slate-react/src/components/slate-leaf.tsx` | G4 | Leaf and marks typed from `TextOf<E>`. |
-| `../slate-v2/packages/slate-react/src/components/text-string.tsx` | G0/G4 | Verify text only. |
-| `../slate-v2/packages/slate-react/src/components/zero-width-string.tsx` | G0 | No model generic. |
-| `../slate-v2/packages/slate-react/src/components/slate-placeholder.tsx` | G4 | Placeholder element typed from `ElementOf<E>` if exposed. |
-| `../slate-v2/packages/slate-react/src/components/void-element.tsx` | G4 | Void element typed from `ElementOf<E>`. |
-| `../slate-v2/packages/slate-react/src/components/slate-spacer.tsx` | G0/G4 | Verify node props only if exposed. |
-| `../slate-v2/packages/slate-react/src/components/restore-dom/*.tsx` and `*.ts` | G0/G4 | DOM repair remains structural; generic only if editor typed in public functions. |
-| `../slate-v2/packages/slate-react/src/editable/*.ts` | G4 | Editing kernel and controllers accept `ReactEditor<V>`; no stale custom type import. |
-| `../slate-v2/packages/slate-react/src/dom-text-sync.ts` | G4 | Generic editor where Slate nodes are accepted. |
-| `../slate-v2/packages/slate-react/src/projection-store.ts` | G4 | Projection payloads use `Range`, `TextOf<E>`, `ElementOf<E>` where relevant. |
-| `../slate-v2/packages/slate-react/src/annotation-store.ts` | G4 | Annotation payloads generic over editor value when Slate nodes are exposed. |
-| `../slate-v2/packages/slate-react/src/widget-store.ts` | G4 | Widget anchors generic only if node payloads leak. |
-| `../slate-v2/packages/slate-react/src/projection-context.tsx` | G4 | Context typed from generic projection store. |
-| `../slate-v2/packages/slate-react/src/large-document/*.ts` and `*.tsx` | G4 | Large-doc shell editor/value generics preserved. |
-| `../slate-v2/packages/slate-react/src/hooks/**/*.ts` and `../slate-v2/packages/slate-react/src/hooks/**/*.tsx` if present | G4 | Hook return types derive from generic context. |
-| `../slate-v2/packages/slate-react/src/index.ts` and `../slate-v2/packages/slate-react/index.ts` | G4 | Export generic React types. |
-| `../slate-v2/packages/slate-react/test/**/*.ts` and `../slate-v2/packages/slate-react/test/**/*.tsx` | G5 | Add generic custom value render contract; remove module augmentation use. |
+| File or file group                                                                                                            | Class | Required work                                                                               |
+| ----------------------------------------------------------------------------------------------------------------------------- | ----- | ------------------------------------------------------------------------------------------- |
+| `.tmp/slate-v2/packages/slate-react/src/custom-types.ts`                                                                      | G4/G5 | Delete module augmentation. Move React-only ambient declarations elsewhere if truly needed. |
+| `.tmp/slate-v2/packages/slate-react/src/plugin/react-editor.ts`                                                               | G4    | `ReactEditor<V extends Value = Value>` layered over `DOMEditor<V>` and `Editor<V>`.         |
+| `.tmp/slate-v2/packages/slate-react/src/plugin/with-react.ts`                                                                 | G4/G5 | Generic `withReact`; remove CustomTypes comments.                                           |
+| `.tmp/slate-v2/packages/slate-react/src/context.tsx`                                                                          | G4    | Context stores generic editor internally without leaking app-wide module augmentation.      |
+| `.tmp/slate-v2/packages/slate-react/src/components/slate.tsx`                                                                 | G4    | `<Slate>` props generic on `V` / `E extends ReactEditor<V>`.                                |
+| `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`                                                              | G4    | Editable props generic over `E`; render props derive `ElementOf<E>` / `TextOf<E>`.          |
+| `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`                                                  | G4    | Replace local `TElement extends SlateElementNode` workaround with `ElementOf<E>`.           |
+| `.tmp/slate-v2/packages/slate-react/src/components/slate-element.tsx`                                                         | G4    | Element prop generic derives from editor context.                                           |
+| `.tmp/slate-v2/packages/slate-react/src/components/editable-element.tsx`                                                      | G4    | Same as element rendering.                                                                  |
+| `.tmp/slate-v2/packages/slate-react/src/components/slate-text.tsx`                                                            | G4    | Text prop generic derives from `TextOf<E>`.                                                 |
+| `.tmp/slate-v2/packages/slate-react/src/components/editable-text.tsx`                                                         | G4    | Same as text rendering.                                                                     |
+| `.tmp/slate-v2/packages/slate-react/src/components/slate-leaf.tsx`                                                            | G4    | Leaf and marks typed from `TextOf<E>`.                                                      |
+| `.tmp/slate-v2/packages/slate-react/src/components/text-string.tsx`                                                           | G0/G4 | Verify text only.                                                                           |
+| `.tmp/slate-v2/packages/slate-react/src/components/zero-width-string.tsx`                                                     | G0    | No model generic.                                                                           |
+| `.tmp/slate-v2/packages/slate-react/src/components/slate-placeholder.tsx`                                                     | G4    | Placeholder element typed from `ElementOf<E>` if exposed.                                   |
+| `.tmp/slate-v2/packages/slate-react/src/components/void-element.tsx`                                                          | G4    | Void element typed from `ElementOf<E>`.                                                     |
+| `.tmp/slate-v2/packages/slate-react/src/components/slate-spacer.tsx`                                                          | G0/G4 | Verify node props only if exposed.                                                          |
+| `.tmp/slate-v2/packages/slate-react/src/components/restore-dom/*.tsx` and `*.ts`                                              | G0/G4 | DOM repair remains structural; generic only if editor typed in public functions.            |
+| `.tmp/slate-v2/packages/slate-react/src/editable/*.ts`                                                                        | G4    | Editing kernel and controllers accept `ReactEditor<V>`; no stale custom type import.        |
+| `.tmp/slate-v2/packages/slate-react/src/dom-text-sync.ts`                                                                     | G4    | Generic editor where Slate nodes are accepted.                                              |
+| `.tmp/slate-v2/packages/slate-react/src/projection-store.ts`                                                                  | G4    | Projection payloads use `Range`, `TextOf<E>`, `ElementOf<E>` where relevant.                |
+| `.tmp/slate-v2/packages/slate-react/src/annotation-store.ts`                                                                  | G4    | Annotation payloads generic over editor value when Slate nodes are exposed.                 |
+| `.tmp/slate-v2/packages/slate-react/src/widget-store.ts`                                                                      | G4    | Widget anchors generic only if node payloads leak.                                          |
+| `.tmp/slate-v2/packages/slate-react/src/projection-context.tsx`                                                               | G4    | Context typed from generic projection store.                                                |
+| `.tmp/slate-v2/packages/slate-react/src/large-document/*.ts` and `*.tsx`                                                      | G4    | Large-doc shell editor/value generics preserved.                                            |
+| `.tmp/slate-v2/packages/slate-react/src/hooks/**/*.ts` and `.tmp/slate-v2/packages/slate-react/src/hooks/**/*.tsx` if present | G4    | Hook return types derive from generic context.                                              |
+| `.tmp/slate-v2/packages/slate-react/src/index.ts` and `.tmp/slate-v2/packages/slate-react/index.ts`                           | G4    | Export generic React types.                                                                 |
+| `.tmp/slate-v2/packages/slate-react/test/**/*.ts` and `.tmp/slate-v2/packages/slate-react/test/**/*.tsx`                      | G5    | Add generic custom value render contract; remove module augmentation use.                   |
 
 ### `packages/slate-browser`
 
-| File or file group | Class | Required work |
-| --- | --- | --- |
-| `../slate-v2/packages/slate-browser/src/browser/*.ts` | G5 | Browser snapshots are test protocol types, not Slate model generics. Verify names do not conflict with `EditorSnapshot<V>`. |
-| `../slate-v2/packages/slate-browser/src/playwright/*.ts` | G5 | Test handles remain protocol-level. Add scenarios that prove custom value examples compile/run without `CustomTypes`. |
-| `../slate-v2/packages/slate-browser/test/**/*.ts` | G5 | Add generic app fixture where useful. |
+| File or file group                                         | Class | Required work                                                                                                               |
+| ---------------------------------------------------------- | ----- | --------------------------------------------------------------------------------------------------------------------------- |
+| `.tmp/slate-v2/packages/slate-browser/src/browser/*.ts`    | G5    | Browser snapshots are test protocol types, not Slate model generics. Verify names do not conflict with `EditorSnapshot<V>`. |
+| `.tmp/slate-v2/packages/slate-browser/src/playwright/*.ts` | G5    | Test handles remain protocol-level. Add scenarios that prove custom value examples compile/run without `CustomTypes`.       |
+| `.tmp/slate-v2/packages/slate-browser/test/**/*.ts`        | G5    | Add generic app fixture where useful.                                                                                       |
 
 ### Site, Docs, Examples
 
-| File or file group | Class | Required work |
-| --- | --- | --- |
-| `../slate-v2/site/examples/ts/custom-types.d.ts` | G5 | Delete module augmentation. Replace with exported `ExampleText`, `ExampleElement`, `ExampleValue`, `ExampleEditor` from a normal module. |
-| `../slate-v2/site/examples/ts/code-highlighting.tsx` | G5 | Remove local `declare module 'slate'`; use explicit value/editor types. |
-| `../slate-v2/site/examples/ts/*.tsx` | G5 | Every example imports or declares its own `Value` / editor type when needed. No app-wide custom type pollution. |
-| `../slate-v2/site/components/*.tsx` | G5 | Example loader must not depend on global custom Slate types. |
-| `../slate-v2/site/pages/**/*.tsx` and `../slate-v2/site/pages/**/*.ts` | G5 | Site pages compile against package source aliases after module augmentation is gone. |
-| `../slate-v2/site/next-env.d.ts` | G0/G5 | Verify no Slate declaration merging. |
-| `../slate-v2/docs/concepts/12-typescript.md` | G5 | Rewrite around `Value`, `TElement`, `TText`, `Editor<Value>`. |
-| `../slate-v2/docs/walkthroughs/01-installing-slate.md` | G5 | Replace `declare module 'slate'` with generic editor setup. |
-| `../slate-v2/docs/walkthroughs/*.md` | G5 | Remove `CustomTypes` mental model and `Transforms.*` if generics examples touch mutation. |
-| `../slate-v2/docs/api/nodes/*.md` | G5 | Document `Value`, `TElement`, `TText`, `Editor<V>`, derived helpers. |
-| `../slate-v2/docs/api/operations/*.md` | G5 | Document `Operation<V>` if operation generics land. |
-| `../slate-v2/docs/api/transforms.md` | G5 | Mark `Transforms.*` as non-primary if still exported; show editor primitives in `editor.update`. |
-| `../slate-v2/docs/libraries/slate-dom/**/*.md` | G5 | Replace CustomTypes comments with generic editor examples. |
-| `../slate-v2/docs/libraries/slate-react/**/*.md` | G5 | Replace CustomTypes comments with generic React editor examples. |
-| `../slate-v2/docs/libraries/slate-history/**/*.md` | G5 | Replace CustomTypes comments with generic history editor examples. |
-| `../slate-v2/docs/general/changelog.md` | G5 | Historical mentions can remain only if changelog is intentionally historical; do not use as current guidance. |
+| File or file group                                                         | Class | Required work                                                                                                                            |
+| -------------------------------------------------------------------------- | ----- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `.tmp/slate-v2/site/examples/ts/custom-types.d.ts`                         | G5    | Delete module augmentation. Replace with exported `ExampleText`, `ExampleElement`, `ExampleValue`, `ExampleEditor` from a normal module. |
+| `.tmp/slate-v2/site/examples/ts/code-highlighting.tsx`                     | G5    | Remove local `declare module 'slate'`; use explicit value/editor types.                                                                  |
+| `.tmp/slate-v2/site/examples/ts/*.tsx`                                     | G5    | Every example imports or declares its own `Value` / editor type when needed. No app-wide custom type pollution.                          |
+| `.tmp/slate-v2/site/components/*.tsx`                                      | G5    | Example loader must not depend on global custom Slate types.                                                                             |
+| `.tmp/slate-v2/site/pages/**/*.tsx` and `.tmp/slate-v2/site/pages/**/*.ts` | G5    | Site pages compile against package source aliases after module augmentation is gone.                                                     |
+| `.tmp/slate-v2/site/next-env.d.ts`                                         | G0/G5 | Verify no Slate declaration merging.                                                                                                     |
+| `.tmp/slate-v2/docs/concepts/12-typescript.md`                             | G5    | Rewrite around `Value`, `TElement`, `TText`, `Editor<Value>`.                                                                            |
+| `.tmp/slate-v2/docs/walkthroughs/01-installing-slate.md`                   | G5    | Replace `declare module 'slate'` with generic editor setup.                                                                              |
+| `.tmp/slate-v2/docs/walkthroughs/*.md`                                     | G5    | Remove `CustomTypes` mental model and `Transforms.*` if generics examples touch mutation.                                                |
+| `.tmp/slate-v2/docs/api/nodes/*.md`                                        | G5    | Document `Value`, `TElement`, `TText`, `Editor<V>`, derived helpers.                                                                     |
+| `.tmp/slate-v2/docs/api/operations/*.md`                                   | G5    | Document `Operation<V>` if operation generics land.                                                                                      |
+| `.tmp/slate-v2/docs/api/transforms.md`                                     | G5    | Mark `Transforms.*` as non-primary if still exported; show editor primitives in `editor.update`.                                         |
+| `.tmp/slate-v2/docs/libraries/slate-dom/**/*.md`                           | G5    | Replace CustomTypes comments with generic editor examples.                                                                               |
+| `.tmp/slate-v2/docs/libraries/slate-react/**/*.md`                         | G5    | Replace CustomTypes comments with generic React editor examples.                                                                         |
+| `.tmp/slate-v2/docs/libraries/slate-history/**/*.md`                       | G5    | Replace CustomTypes comments with generic history editor examples.                                                                       |
+| `.tmp/slate-v2/docs/general/changelog.md`                                  | G5    | Historical mentions can remain only if changelog is intentionally historical; do not use as current guidance.                            |
 
 ## Expanded Source File Inventory Command
 
 Before implementation, generate the exact file checklist from disk and paste the result into the execution ledger:
 
 ```bash
-rg --files ../slate-v2/packages/slate ../slate-v2/packages/slate-dom ../slate-v2/packages/slate-history ../slate-v2/packages/slate-hyperscript ../slate-v2/packages/slate-react ../slate-v2/packages/slate-browser ../slate-v2/site ../slate-v2/docs \
+rg --files .tmp/slate-v2/packages/slate .tmp/slate-v2/packages/slate-dom .tmp/slate-v2/packages/slate-history .tmp/slate-v2/packages/slate-hyperscript .tmp/slate-v2/packages/slate-react .tmp/slate-v2/packages/slate-browser .tmp/slate-v2/site .tmp/slate-v2/docs \
   | rg '(\\.ts$|\\.tsx$|\\.d\\.ts$|\\.md$|\\.mdx$)' \
   > .tmp/slate-v2-generics-file-inventory.txt
 ```
@@ -362,26 +362,26 @@ Implementation is not complete until every file in that inventory is classified 
 
 Add compile-only contracts before cutting anything:
 
-- `../slate-v2/packages/slate/test/generic-value-contract.ts`
-- `../slate-v2/packages/slate/test/generic-editor-api-contract.ts`
-- `../slate-v2/packages/slate/test/generic-operation-contract.ts`
-- `../slate-v2/packages/slate-react/test/generic-react-editor-contract.tsx`
-- `../slate-v2/packages/slate-history/test/generic-history-contract.ts`
+- `.tmp/slate-v2/packages/slate/test/generic-value-contract.ts`
+- `.tmp/slate-v2/packages/slate/test/generic-editor-api-contract.ts`
+- `.tmp/slate-v2/packages/slate/test/generic-operation-contract.ts`
+- `.tmp/slate-v2/packages/slate-react/test/generic-react-editor-contract.tsx`
+- `.tmp/slate-v2/packages/slate-history/test/generic-history-contract.ts`
 
 Required contracts:
 
 ```ts
-type Paragraph = { type: 'paragraph'; children: CustomText[] }
-type Quote = { type: 'quote'; children: CustomText[] }
-type CustomText = { text: string; bold?: true; code?: true }
-type CustomValue = (Paragraph | Quote)[]
+type Paragraph = { type: "paragraph"; children: CustomText[] };
+type Quote = { type: "quote"; children: CustomText[] };
+type CustomText = { text: string; bold?: true; code?: true };
+type CustomValue = (Paragraph | Quote)[];
 
-const editor = createEditor<CustomValue>()
+const editor = createEditor<CustomValue>();
 
 editor.update(() => {
-  editor.setNodes({ type: 'quote' })
-  editor.addMark('bold', true)
-})
+  editor.setNodes({ type: "quote" });
+  editor.addMark("bold", true);
+});
 ```
 
 Assertions:
@@ -536,7 +536,7 @@ Work:
 
 ## Required Gates
 
-Run from `../slate-v2`.
+Run from `.tmp/slate-v2`.
 
 ### Hard-Cut Search Gates
 
@@ -632,21 +632,21 @@ This plan is complete when:
 
 - Actions: generated the exact Slate v2 file inventory and added compile-only generic contracts for core value/editor API, operations, history, and React editor typing.
 - Commands:
-  - `rg --files ../slate-v2/packages/slate ../slate-v2/packages/slate-dom ../slate-v2/packages/slate-history ../slate-v2/packages/slate-hyperscript ../slate-v2/packages/slate-react ../slate-v2/packages/slate-browser ../slate-v2/site ../slate-v2/docs | rg '(\\.ts$|\\.tsx$|\\.d\\.ts$|\\.md$|\\.mdx$)' > ../slate-v2/tmp/slate-v2-generics-file-inventory.txt`
+  - `rg --files .tmp/slate-v2/packages/slate .tmp/slate-v2/packages/slate-dom .tmp/slate-v2/packages/slate-history .tmp/slate-v2/packages/slate-hyperscript .tmp/slate-v2/packages/slate-react .tmp/slate-v2/packages/slate-browser .tmp/slate-v2/site .tmp/slate-v2/docs | rg '(\\.ts$|\\.tsx$|\\.d\\.ts$|\\.md$|\\.mdx$)' > .tmp/slate-v2/tmp/slate-v2-generics-file-inventory.txt`
   - `bunx tsc --project tsconfig.generic-types.json --noEmit --pretty false`
   - `bunx tsc --project packages/slate/test/tsconfig.generic-types.json --noEmit --pretty false`
   - `bunx tsc --project packages/slate-history/test/tsconfig.generic-types.json --noEmit --pretty false`
   - `bunx tsc --project packages/slate-react/test/tsconfig.generic-types.json --noEmit --pretty false`
 - Artifacts:
-  - `../slate-v2/tmp/slate-v2-generics-file-inventory.txt` with 1502 files.
-  - `../slate-v2/packages/slate/test/generic-value-contract.ts`
-  - `../slate-v2/packages/slate/test/generic-editor-api-contract.ts`
-  - `../slate-v2/packages/slate/test/generic-operation-contract.ts`
-  - `../slate-v2/packages/slate-history/test/generic-history-contract.ts`
-  - `../slate-v2/packages/slate-react/test/generic-react-editor-contract.tsx`
-  - `../slate-v2/packages/slate/test/tsconfig.generic-types.json`
-  - `../slate-v2/packages/slate-history/test/tsconfig.generic-types.json`
-  - `../slate-v2/packages/slate-react/test/tsconfig.generic-types.json`
+  - `.tmp/slate-v2/tmp/slate-v2-generics-file-inventory.txt` with 1502 files.
+  - `.tmp/slate-v2/packages/slate/test/generic-value-contract.ts`
+  - `.tmp/slate-v2/packages/slate/test/generic-editor-api-contract.ts`
+  - `.tmp/slate-v2/packages/slate/test/generic-operation-contract.ts`
+  - `.tmp/slate-v2/packages/slate-history/test/generic-history-contract.ts`
+  - `.tmp/slate-v2/packages/slate-react/test/generic-react-editor-contract.tsx`
+  - `.tmp/slate-v2/packages/slate/test/tsconfig.generic-types.json`
+  - `.tmp/slate-v2/packages/slate-history/test/tsconfig.generic-types.json`
+  - `.tmp/slate-v2/packages/slate-react/test/tsconfig.generic-types.json`
 - Evidence: the Slate core generic contract is properly RED: missing `Value`, `ValueOf`, `ElementOf`, `TextOf`, `EditorMarksOf`; `createEditor<CustomValue>()` is rejected; `Editor` and `Operation` are not generic.
 - Hypothesis: core must migrate first; history and React type contracts are blocked by both missing generic exports and cross-package source root configuration.
 - Decision: update Batch 0 gates from `bun test` to `tsc` because Bun tests do not typecheck compile-only generic contracts.
@@ -666,8 +666,8 @@ This plan is complete when:
   - `rg -n "CustomTypes|ExtendedType|declare module ['\\\"]slate|declare module \\\"slate\\\"" packages site docs --glob '!**/dist/**' --glob '!**/node_modules/**' --glob '!site/out/**'`
 - Artifacts:
   - green generic type contracts in `packages/slate/test`, `packages/slate-history/test`, and `packages/slate-react/test`
-  - `../slate-v2/packages/slate-react/src/dom-globals.d.ts`
-  - `../slate-v2/packages/slate-dom/src/dom-globals.d.ts`
+  - `.tmp/slate-v2/packages/slate-react/src/dom-globals.d.ts`
+  - `.tmp/slate-v2/packages/slate-dom/src/dom-globals.d.ts`
 - Evidence: focused generic gates pass for core, history, and React; source hard-cut search is clean for `packages/slate/src`, `packages/slate-dom/src`, `packages/slate-react/src`, and `packages/slate-history/src`.
 - Hypothesis: the primary package generic spine is now viable; remaining CustomTypes debt is docs/site/test-fixture public mental model, not core runtime shape.
 - Decision: keep course; continue to Batch 2 public-facing hard cuts instead of widening into package builds before docs/site/test usage stops teaching declaration merging.

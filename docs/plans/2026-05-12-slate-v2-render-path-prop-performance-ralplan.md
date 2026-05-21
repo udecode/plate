@@ -45,29 +45,29 @@ Keep Slate-close DX through lazy current-path APIs:
 
 ## Intent Boundary
 
-| Field | Decision |
-| --- | --- |
-| Intent | Decide whether passing `path` to renderers is performant and whether it should survive Slate v2. |
-| Desired outcome | A later `ralph` pass can remove the hot public path prop without reopening the whole React runtime architecture. |
-| In scope | `slate-react` render props, void render props, element path context, DOM/path metadata, event-time path resolution, examples that close over path, and React/runtime fanout tests. |
-| Non-goals | Editing implementation in this Slate Ralplan pass, broad GitHub rediscovery, virtualization changes, product-specific Plate APIs. |
-| Decision boundary | Default render props must not force path-shift rerenders. Apps can opt into current path reads only where they need them. |
-| User decision needed | None. This is a hard-cut recommendation before publish. |
+| Field                | Decision                                                                                                                                                                           |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Intent               | Decide whether passing `path` to renderers is performant and whether it should survive Slate v2.                                                                                   |
+| Desired outcome      | A later `ralph` pass can remove the hot public path prop without reopening the whole React runtime architecture.                                                                   |
+| In scope             | `slate-react` render props, void render props, element path context, DOM/path metadata, event-time path resolution, examples that close over path, and React/runtime fanout tests. |
+| Non-goals            | Editing implementation in this Slate Ralplan pass, broad GitHub rediscovery, virtualization changes, product-specific Plate APIs.                                                  |
+| Decision boundary    | Default render props must not force path-shift rerenders. Apps can opt into current path reads only where they need them.                                                          |
+| User decision needed | None. This is a hard-cut recommendation before publish.                                                                                                                            |
 
 ## Live Source Evidence
 
-| Surface | Current owner | Current shape | Verdict |
-| --- | --- | --- | --- |
-| Public render props | `../slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:480` | `EditableRenderElementProps` includes `index: number` and `path: Path`. | Cut eager props. |
-| Props construction | `../slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:800` | `renderElementPropsBase` passes `index` and `path` into every custom element render. | Cut from base props. |
-| Void render props | `../slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:505` | `EditableRenderVoidProps` includes `path: Path`. | Cut eager path; use lazy resolver. |
-| Runtime-id lookup | `../slate-v2/packages/slate/src/core/public-state.ts:640` | `Editor.getPathByRuntimeId(editor, runtimeId)` returns the current path from the live runtime index. | Keep as the backbone. |
-| Runtime node selector | `../slate-v2/packages/slate-react/src/editable/runtime-live-state.ts:35` | `readRuntimeNodeById` already resolves current path from runtime id before snapshot fallback. | Reuse. |
-| Runtime fanout skip | `../slate-v2/packages/slate-react/src/hooks/use-editor-selector.tsx:218` | root-order commits with null affected ids can skip runtime fanout when selection/full document did not change. | Keep; do not weaken for path props. |
-| Existing fanout proof | `../slate-v2/packages/slate-react/test/provider-hooks-contract.tsx:695` | Appending a root node does not notify every mounted runtime node. | Good but not the leading-insert proof. |
-| Existing path-shift hook proof | `../slate-v2/packages/slate-react/test/surface-contract.tsx:441` | `useElementSelected` survives selected path shift, but selection-changing structural edits may still fan out. | Not enough for public path prop. |
-| Weak-map path lookup | `../slate-v2/packages/slate-dom/src/plugin/dom-editor.ts:598` | `DOMEditor.findPath` walks `NODE_TO_PARENT` / `NODE_TO_INDEX`. | Must become runtime-id-first to be safe after skipped rerenders. |
-| DOM path metadata | `../slate-v2/packages/slate-react/src/hooks/use-slate-node-ref.tsx:198` | node refs set `data-slate-path` from the provided/current path. | Keep runtime-owned, but do not expose as public render-prop truth. |
+| Surface                        | Current owner                                                                    | Current shape                                                                                                  | Verdict                                                            |
+| ------------------------------ | -------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| Public render props            | `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:480` | `EditableRenderElementProps` includes `index: number` and `path: Path`.                                        | Cut eager props.                                                   |
+| Props construction             | `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:800` | `renderElementPropsBase` passes `index` and `path` into every custom element render.                           | Cut from base props.                                               |
+| Void render props              | `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:505` | `EditableRenderVoidProps` includes `path: Path`.                                                               | Cut eager path; use lazy resolver.                                 |
+| Runtime-id lookup              | `.tmp/slate-v2/packages/slate/src/core/public-state.ts:640`                      | `Editor.getPathByRuntimeId(editor, runtimeId)` returns the current path from the live runtime index.           | Keep as the backbone.                                              |
+| Runtime node selector          | `.tmp/slate-v2/packages/slate-react/src/editable/runtime-live-state.ts:35`       | `readRuntimeNodeById` already resolves current path from runtime id before snapshot fallback.                  | Reuse.                                                             |
+| Runtime fanout skip            | `.tmp/slate-v2/packages/slate-react/src/hooks/use-editor-selector.tsx:218`       | root-order commits with null affected ids can skip runtime fanout when selection/full document did not change. | Keep; do not weaken for path props.                                |
+| Existing fanout proof          | `.tmp/slate-v2/packages/slate-react/test/provider-hooks-contract.tsx:695`        | Appending a root node does not notify every mounted runtime node.                                              | Good but not the leading-insert proof.                             |
+| Existing path-shift hook proof | `.tmp/slate-v2/packages/slate-react/test/surface-contract.tsx:441`               | `useElementSelected` survives selected path shift, but selection-changing structural edits may still fan out.  | Not enough for public path prop.                                   |
+| Weak-map path lookup           | `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts:598`                  | `DOMEditor.findPath` walks `NODE_TO_PARENT` / `NODE_TO_INDEX`.                                                 | Must become runtime-id-first to be safe after skipped rerenders.   |
+| DOM path metadata              | `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-node-ref.tsx:198`        | node refs set `data-slate-path` from the provided/current path.                                                | Keep runtime-owned, but do not expose as public render-prop truth. |
 
 Verification run from `/Users/zbeyens/git/slate-v2`:
 
@@ -102,12 +102,12 @@ Top drivers:
 
 Options:
 
-| Option | Pros | Cons | Verdict |
-| --- | --- | --- | --- |
-| Keep eager `path` and re-render all shifted mounted nodes | Always fresh props/context. | Reintroduces sibling-wide render fanout for leading inserts. | Reject. |
-| Keep eager `path` and skip shifted-node rerenders | Fast in React. | Stale props, event handlers, context, DOM metadata, and weak maps. | Reject. |
-| Hard-cut eager `path` / `index`; use runtime-id-first lazy resolution | Fast default, correct event-time current path, close to legacy `findPath` DX. | Breaking API and examples need migration. | Choose. |
-| Keep eager `path` only behind compat alias | Easier migration. | Encourages the same footgun before v2 ships. | Reject for v2 publish. |
+| Option                                                                | Pros                                                                          | Cons                                                               | Verdict                |
+| --------------------------------------------------------------------- | ----------------------------------------------------------------------------- | ------------------------------------------------------------------ | ---------------------- |
+| Keep eager `path` and re-render all shifted mounted nodes             | Always fresh props/context.                                                   | Reintroduces sibling-wide render fanout for leading inserts.       | Reject.                |
+| Keep eager `path` and skip shifted-node rerenders                     | Fast in React.                                                                | Stale props, event handlers, context, DOM metadata, and weak maps. | Reject.                |
+| Hard-cut eager `path` / `index`; use runtime-id-first lazy resolution | Fast default, correct event-time current path, close to legacy `findPath` DX. | Breaking API and examples need migration.                          | Choose.                |
+| Keep eager `path` only behind compat alias                            | Easier migration.                                                             | Encourages the same footgun before v2 ships.                       | Reject for v2 publish. |
 
 Chosen option:
 
@@ -129,27 +129,27 @@ Target render element props:
 
 ```ts
 type RenderElementProps<TElement extends Element = Element> = {
-  attributes: RenderElementAttributes
-  children: ReactNode
-  element: TElement
-  isInline: boolean
-  slots: EditableElementSlots
-}
+  attributes: RenderElementAttributes;
+  children: ReactNode;
+  element: TElement;
+  isInline: boolean;
+  slots: EditableElementSlots;
+};
 ```
 
 Target render void props:
 
 ```ts
 type RenderVoidProps<TElement extends Element = Element> = {
-  element: TElement
-}
+  element: TElement;
+};
 ```
 
 Target path APIs:
 
 ```ts
-const path = ReactEditor.findPath(editor, element)
-const path = useElementPath()
+const path = ReactEditor.findPath(editor, element);
+const path = useElementPath();
 ```
 
 Rules:
@@ -204,13 +204,13 @@ Cut:
 
 ## Ecosystem Strategy Synthesis
 
-| System | Source | Mechanism | Avoids | Steal | Reject | Slate target | Verdict |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| Slate legacy | current source-close API shape and v2 `DOMEditor.findPath` | renderer receives element; path can be resolved on demand | render-prop path invalidation | event-time `findPath` DX | stale weak-map-only lookup | runtime-id-first `findPath` | partial |
-| Slate v2 live runtime | `public-state.ts:640`, `runtime-live-state.ts:35` | runtime id maps to current path | path as stable identity | id-to-current-path lookup | eager path props | lazy current path resolver | agree |
-| React 19.2 external store pattern | `use-editor-selector.tsx:68` | selector subscriptions update only when relevant | global rerender fanout | opt-in hook subscriptions | prop-churn as freshness mechanism | `useElementPath()` only for opt-in UI | agree |
-| ProseMirror | compiled PM runtime research | position mapping is transaction-owned, not React render-prop-owned | stale position captures | current-position resolution at command time | making every node view re-render for shifted positions | event-time path resolver | partial |
-| Lexical | compiled dirty-runtime research | keyed nodes drive dirty buckets | tree-address fanout | runtime-id keyed dirtiness | exposing tree addresses as primary node identity | runtime id backbone, path as query | agree |
+| System                            | Source                                                     | Mechanism                                                          | Avoids                        | Steal                                       | Reject                                                 | Slate target                          | Verdict |
+| --------------------------------- | ---------------------------------------------------------- | ------------------------------------------------------------------ | ----------------------------- | ------------------------------------------- | ------------------------------------------------------ | ------------------------------------- | ------- |
+| Slate legacy                      | current source-close API shape and v2 `DOMEditor.findPath` | renderer receives element; path can be resolved on demand          | render-prop path invalidation | event-time `findPath` DX                    | stale weak-map-only lookup                             | runtime-id-first `findPath`           | partial |
+| Slate v2 live runtime             | `public-state.ts:640`, `runtime-live-state.ts:35`          | runtime id maps to current path                                    | path as stable identity       | id-to-current-path lookup                   | eager path props                                       | lazy current path resolver            | agree   |
+| React 19.2 external store pattern | `use-editor-selector.tsx:68`                               | selector subscriptions update only when relevant                   | global rerender fanout        | opt-in hook subscriptions                   | prop-churn as freshness mechanism                      | `useElementPath()` only for opt-in UI | agree   |
+| ProseMirror                       | compiled PM runtime research                               | position mapping is transaction-owned, not React render-prop-owned | stale position captures       | current-position resolution at command time | making every node view re-render for shifted positions | event-time path resolver              | partial |
+| Lexical                           | compiled dirty-runtime research                            | keyed nodes drive dirty buckets                                    | tree-address fanout           | runtime-id keyed dirtiness                  | exposing tree addresses as primary node identity       | runtime id backbone, path as query    | agree   |
 
 ## Issue Ledger Accounting
 
@@ -233,42 +233,42 @@ Manual v2 sync ledger status:
 
 Issue matrix:
 
-| Issue | Cluster | Claim | Why | Proof route | V2 sync ledger | PR line |
-| --- | --- | --- | --- | --- | --- | --- |
-| #3656 | react-runtime-and-rerender-breadth | Improves | Existing breadth proof covers sibling leaves/parent on leaf edit; render path hard cut protects the same class for structural shifts. | add leading-insert render/path contract | unchanged | related matrix only |
-| #4141 | react-runtime-and-rerender-breadth | Improves | Existing deep-edit proof covers ancestors; render path hard cut prevents a new ancestor/sibling path-shift fanout. | add leading-insert render/path contract | unchanged | related matrix only |
-| #4210 | react-runtime-and-rerender-breadth | Related | This plan advances rerender prevention but does not fully close a broad issue. | benchmark + React contract | unchanged | related matrix only |
-| #3748 | react-runtime-and-rerender-breadth | Related | Structural wrap/unwrap rerender pressure is adjacent; this plan covers path-shift fanout, not exact wrap/unwrap repro. | future structural shift contract | unchanged | related matrix only |
-| #2051 | singleton-performance-benchmark | Related | Leaf rerender pressure remains represented by benchmark gates; no exact closure. | benchmark lane | unchanged | related matrix only |
+| Issue | Cluster                            | Claim    | Why                                                                                                                                   | Proof route                             | V2 sync ledger | PR line             |
+| ----- | ---------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------- | -------------- | ------------------- |
+| #3656 | react-runtime-and-rerender-breadth | Improves | Existing breadth proof covers sibling leaves/parent on leaf edit; render path hard cut protects the same class for structural shifts. | add leading-insert render/path contract | unchanged      | related matrix only |
+| #4141 | react-runtime-and-rerender-breadth | Improves | Existing deep-edit proof covers ancestors; render path hard cut prevents a new ancestor/sibling path-shift fanout.                    | add leading-insert render/path contract | unchanged      | related matrix only |
+| #4210 | react-runtime-and-rerender-breadth | Related  | This plan advances rerender prevention but does not fully close a broad issue.                                                        | benchmark + React contract              | unchanged      | related matrix only |
+| #3748 | react-runtime-and-rerender-breadth | Related  | Structural wrap/unwrap rerender pressure is adjacent; this plan covers path-shift fanout, not exact wrap/unwrap repro.                | future structural shift contract        | unchanged      | related matrix only |
+| #2051 | singleton-performance-benchmark    | Related  | Leaf rerender pressure remains represented by benchmark gates; no exact closure.                                                      | benchmark lane                          | unchanged      | related matrix only |
 
 PR reference sync:
 
 - `pr-description unchanged: no fixed issue claim, public PR body, release gate,
-  or accepted API line is changed by this planning-only pass yet.`
+or accepted API line is changed by this planning-only pass yet.`
 
 ## Regression Proof Matrix
 
-| Contract | Must prove |
-| --- | --- |
-| Leading root insert before 1000 mounted blocks | existing shifted siblings do not re-render solely because path/index changed. |
-| Leading root insert with selection unaffected | root selector updates order, runtime-node fanout stays bounded, DOM/path lookup resolves current paths. |
-| Leading root insert with selection affected | selection proof updates selected surfaces without notifying every unrelated mounted runtime node. |
-| Event-time `findPath` after leading insert | handler on shifted sibling resolves the new path, not the stale render path. |
-| `useElementPath()` opt-in | only components using the hook rerender when their runtime id's path changes. |
-| DOM-to-Slate conversion | runtime-id-first DOM bridge resolves current paths even when `data-slate-path` is stale or absent. |
-| Examples | check-lists, images, embeds, inlines no longer close over render-time `path`. |
-| Browser harness | path selectors either use runtime-id-backed helpers or have a metadata refresh contract. |
+| Contract                                       | Must prove                                                                                              |
+| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| Leading root insert before 1000 mounted blocks | existing shifted siblings do not re-render solely because path/index changed.                           |
+| Leading root insert with selection unaffected  | root selector updates order, runtime-node fanout stays bounded, DOM/path lookup resolves current paths. |
+| Leading root insert with selection affected    | selection proof updates selected surfaces without notifying every unrelated mounted runtime node.       |
+| Event-time `findPath` after leading insert     | handler on shifted sibling resolves the new path, not the stale render path.                            |
+| `useElementPath()` opt-in                      | only components using the hook rerender when their runtime id's path changes.                           |
+| DOM-to-Slate conversion                        | runtime-id-first DOM bridge resolves current paths even when `data-slate-path` is stale or absent.      |
+| Examples                                       | check-lists, images, embeds, inlines no longer close over render-time `path`.                           |
+| Browser harness                                | path selectors either use runtime-id-backed helpers or have a metadata refresh contract.                |
 
 ## Applicable Implementation Skill Review Matrix
 
-| Lens | Applicability | Finding | Plan delta |
-| --- | --- | --- | --- |
-| `vercel-react-best-practices` | applied | Do not use prop churn to synchronize external mutable editor state. Use external-store selectors only where UI needs the value. | Cut eager path/index; add opt-in hook. |
-| `performance-oracle` | applied | Leading insert makes eager path freshness O(shifted mounted siblings) if correctness is preserved. | Runtime-id-first resolver; no default sibling fanout. |
-| `performance` | applied | This is repeated-unit fanout pressure and must be measured as mounted sibling render count plus selector notification count. | Add 1000/5000 block leading-insert gates. |
-| `tdd` | applied | The dangerous behavior is externally visible through event-time handlers and DOM selection, not implementation shape alone. | Add tests before runtime cuts. |
-| `build-web-apps:shadcn` | skipped | No UI chrome design surface. | None. |
-| `react-useeffect` | applied | Effects should sync DOM/metadata, not app path props. | Keep path metadata runtime-owned. |
+| Lens                          | Applicability | Finding                                                                                                                         | Plan delta                                            |
+| ----------------------------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
+| `vercel-react-best-practices` | applied       | Do not use prop churn to synchronize external mutable editor state. Use external-store selectors only where UI needs the value. | Cut eager path/index; add opt-in hook.                |
+| `performance-oracle`          | applied       | Leading insert makes eager path freshness O(shifted mounted siblings) if correctness is preserved.                              | Runtime-id-first resolver; no default sibling fanout. |
+| `performance`                 | applied       | This is repeated-unit fanout pressure and must be measured as mounted sibling render count plus selector notification count.    | Add 1000/5000 block leading-insert gates.             |
+| `tdd`                         | applied       | The dangerous behavior is externally visible through event-time handlers and DOM selection, not implementation shape alone.     | Add tests before runtime cuts.                        |
+| `build-web-apps:shadcn`       | skipped       | No UI chrome design surface.                                                                                                    | None.                                                 |
+| `react-useeffect`             | applied       | Effects should sync DOM/metadata, not app path props.                                                                           | Keep path metadata runtime-owned.                     |
 
 ## High-Risk Deliberate Mode
 
@@ -303,12 +303,12 @@ stale public props. A compat alias would preserve the footgun.
 
 ## Slate Maintainer Objection Ledger
 
-| Change | Likely objection | Steelman antithesis | Tradeoff tension | Answer | Verdict |
-| --- | --- | --- | --- | --- | --- |
-| Remove `path` from render props | "I need the path to update/delete the current node." | Eager path is convenient and source-close for examples. | Event handlers need one extra resolver call. | Use `ReactEditor.findPath(editor, element)` inside the handler; make it runtime-id-first so it is current without rerender fanout. | keep |
-| Remove `index` from render props | "Index is handy for numbered UI." | Some UI displays sibling index. | Opt-in hook needed for live index display. | `index` has the same invalidation problem as path; derive from `useElementPath()` only where live display is intentional. | keep |
-| Remove `path` from `renderVoid` | "Void controls need to mutate themselves." | Void UI often needs remove/update actions. | Same event-time resolver migration. | `renderVoid` gets `element`; event handlers resolve current path. | keep |
-| Runtime-id-first `findPath` | "Runtime id is v2 machinery leaking into a legacy-named helper." | Weak maps are simpler. | Internal map maintenance required. | Runtime id stays internal; public API remains `findPath`. Weak maps remain fallback. | keep |
+| Change                           | Likely objection                                                 | Steelman antithesis                                     | Tradeoff tension                             | Answer                                                                                                                             | Verdict |
+| -------------------------------- | ---------------------------------------------------------------- | ------------------------------------------------------- | -------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| Remove `path` from render props  | "I need the path to update/delete the current node."             | Eager path is convenient and source-close for examples. | Event handlers need one extra resolver call. | Use `ReactEditor.findPath(editor, element)` inside the handler; make it runtime-id-first so it is current without rerender fanout. | keep    |
+| Remove `index` from render props | "Index is handy for numbered UI."                                | Some UI displays sibling index.                         | Opt-in hook needed for live index display.   | `index` has the same invalidation problem as path; derive from `useElementPath()` only where live display is intentional.          | keep    |
+| Remove `path` from `renderVoid`  | "Void controls need to mutate themselves."                       | Void UI often needs remove/update actions.              | Same event-time resolver migration.          | `renderVoid` gets `element`; event handlers resolve current path.                                                                  | keep    |
+| Runtime-id-first `findPath`      | "Runtime id is v2 machinery leaking into a legacy-named helper." | Weak maps are simpler.                                  | Internal map maintenance required.           | Runtime id stays internal; public API remains `findPath`. Weak maps remain fallback.                                               | keep    |
 
 ## Implementation Phases For Ralph
 
@@ -316,10 +316,10 @@ stale public props. A compat alias would preserve the footgun.
 
 Files:
 
-- `../slate-v2/packages/slate-react/test/provider-hooks-contract.tsx`
-- `../slate-v2/packages/slate-react/test/rendered-dom-shape-contract.tsx`
-- `../slate-v2/packages/slate-dom/test/bridge.ts`
-- `../slate-v2/packages/slate-react/test/surface-contract.tsx`
+- `.tmp/slate-v2/packages/slate-react/test/provider-hooks-contract.tsx`
+- `.tmp/slate-v2/packages/slate-react/test/rendered-dom-shape-contract.tsx`
+- `.tmp/slate-v2/packages/slate-dom/test/bridge.ts`
+- `.tmp/slate-v2/packages/slate-react/test/surface-contract.tsx`
 
 Add tests:
 
@@ -336,10 +336,10 @@ Add tests:
 
 Files:
 
-- `../slate-v2/packages/slate-dom/src/utils/weak-maps.ts`
-- `../slate-v2/packages/slate-dom/src/plugin/dom-editor.ts`
-- `../slate-v2/packages/slate-react/src/hooks/use-slate-node-ref.tsx`
-- `../slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
+- `.tmp/slate-v2/packages/slate-dom/src/utils/weak-maps.ts`
+- `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts`
+- `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-node-ref.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
 
 Implement:
 
@@ -352,10 +352,10 @@ Implement:
 
 Files:
 
-- `../slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
-- `../slate-v2/packages/slate-react/src/index.ts`
-- `../slate-v2/packages/slate-react/test/surface-contract.tsx`
-- `../slate-v2/packages/slate/test/public-surface-contract.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/index.ts`
+- `.tmp/slate-v2/packages/slate-react/test/surface-contract.tsx`
+- `.tmp/slate-v2/packages/slate/test/public-surface-contract.ts`
 
 Implement:
 
@@ -369,10 +369,10 @@ Implement:
 
 Files to inspect first:
 
-- `../slate-v2/site/examples/ts/check-lists.tsx`
-- `../slate-v2/site/examples/ts/images.tsx`
-- `../slate-v2/site/examples/ts/embeds.tsx`
-- `../slate-v2/site/examples/ts/inlines.tsx`
+- `.tmp/slate-v2/site/examples/ts/check-lists.tsx`
+- `.tmp/slate-v2/site/examples/ts/images.tsx`
+- `.tmp/slate-v2/site/examples/ts/embeds.tsx`
+- `.tmp/slate-v2/site/examples/ts/inlines.tsx`
 - any `RenderElementPropsFor<...>` custom example types.
 
 Migration rule:
@@ -411,14 +411,14 @@ exposes eager render `path` / `index` props.
 
 ## Scorecard
 
-| Dimension | Score | Evidence |
-| --- | ---: | --- |
-| React 19.2 runtime performance | 0.94 | Runtime-id fanout source, existing root-order no-fanout test, explicit hard cut avoids prop-churn freshness as the runtime mechanism. |
-| Slate-close unopinionated DX | 0.93 | `ReactEditor.findPath(editor, element)` preserves Slate-close event-time path reads; optional `useElementPath()` is narrowly scoped. |
-| Plate and slate-yjs migration-backbone shape | 0.92 | Runtime identity remains the shared backbone; no product-layer API is pushed into raw Slate. |
-| Regression-proof testing strategy | 0.92 | Replayable red contracts are named by file, scenario, expected render/fanout counters, and DOM/path behavior. |
-| Research evidence completeness | 0.91 | Live v2 source plus runtime-identity, React external-store, ProseMirror transaction-position, and Lexical keyed-dirtiness synthesis. |
-| shadcn-style composability and hook/component minimalism | 0.95 | Default render props get smaller; path is opt-in state instead of a universal prop. |
+| Dimension                                                | Score | Evidence                                                                                                                              |
+| -------------------------------------------------------- | ----: | ------------------------------------------------------------------------------------------------------------------------------------- |
+| React 19.2 runtime performance                           |  0.94 | Runtime-id fanout source, existing root-order no-fanout test, explicit hard cut avoids prop-churn freshness as the runtime mechanism. |
+| Slate-close unopinionated DX                             |  0.93 | `ReactEditor.findPath(editor, element)` preserves Slate-close event-time path reads; optional `useElementPath()` is narrowly scoped.  |
+| Plate and slate-yjs migration-backbone shape             |  0.92 | Runtime identity remains the shared backbone; no product-layer API is pushed into raw Slate.                                          |
+| Regression-proof testing strategy                        |  0.92 | Replayable red contracts are named by file, scenario, expected render/fanout counters, and DOM/path behavior.                         |
+| Research evidence completeness                           |  0.91 | Live v2 source plus runtime-identity, React external-store, ProseMirror transaction-position, and Lexical keyed-dirtiness synthesis.  |
+| shadcn-style composability and hook/component minimalism |  0.95 | Default render props get smaller; path is opt-in state instead of a universal prop.                                                   |
 
 Weighted total: `0.93`.
 
@@ -427,15 +427,15 @@ Implementation status: `done`.
 
 ## Pass-State Ledger
 
-| Pass | Status | Evidence added | Plan delta | Open issues | Next owner |
-| --- | --- | --- | --- | --- | --- |
-| Current-state read and initial score | complete | live render prop, selector, runtime id, DOM bridge, and existing tests | hard-cut verdict added | implementation proof still to write | ralplan closure |
-| Related issue discovery | complete | cached matrix/dossier/live ledger rows for rerender breadth | no issue claim changes | none | none |
-| Decision brief | complete | options and rejected alternatives | chose lazy resolver | none | none |
-| Regression proof plan | complete | leading-insert tests named | red tests are execution gates | implementation tests | ralph |
-| Closure score | complete | weighted score `0.93` | plan ready for user review and Ralph execution | none for planning | ralph |
-| Ralph execution start | complete | `.tmp/019e1c53-3e25-78c0-9083-355925be3817/completion-check.md`; `.tmp/019e1c53-3e25-78c0-9083-355925be3817/continue.md` | reopened scoped completion state as pending; started red contracts and hard cut | none | ralph |
-| Ralph hard cut | complete | `RenderElementProps` no longer exposes `path` / `index`; `RenderVoidProps` no longer exposes `path`; `DOMEditor.findPath` is runtime-id-first; touched examples resolve paths at event time; `../slate-v2/.changeset/slate-react-render-path-props.md` and `../slate-v2/.changeset/slate-dom-runtime-id-find-path.md` added | public render contract cut, lazy `useElementPath()` added, docs/reference synced | check-list Backspace browser row still fails independently of this migration | done |
+| Pass                                 | Status   | Evidence added                                                                                                                                                                                                                                                                                                                  | Plan delta                                                                       | Open issues                                                                  | Next owner      |
+| ------------------------------------ | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- | --------------- |
+| Current-state read and initial score | complete | live render prop, selector, runtime id, DOM bridge, and existing tests                                                                                                                                                                                                                                                          | hard-cut verdict added                                                           | implementation proof still to write                                          | ralplan closure |
+| Related issue discovery              | complete | cached matrix/dossier/live ledger rows for rerender breadth                                                                                                                                                                                                                                                                     | no issue claim changes                                                           | none                                                                         | none            |
+| Decision brief                       | complete | options and rejected alternatives                                                                                                                                                                                                                                                                                               | chose lazy resolver                                                              | none                                                                         | none            |
+| Regression proof plan                | complete | leading-insert tests named                                                                                                                                                                                                                                                                                                      | red tests are execution gates                                                    | implementation tests                                                         | ralph           |
+| Closure score                        | complete | weighted score `0.93`                                                                                                                                                                                                                                                                                                           | plan ready for user review and Ralph execution                                   | none for planning                                                            | ralph           |
+| Ralph execution start                | complete | `.tmp/019e1c53-3e25-78c0-9083-355925be3817/completion-check.md`; `.tmp/019e1c53-3e25-78c0-9083-355925be3817/continue.md`                                                                                                                                                                                                        | reopened scoped completion state as pending; started red contracts and hard cut  | none                                                                         | ralph           |
+| Ralph hard cut                       | complete | `RenderElementProps` no longer exposes `path` / `index`; `RenderVoidProps` no longer exposes `path`; `DOMEditor.findPath` is runtime-id-first; touched examples resolve paths at event time; `.tmp/slate-v2/.changeset/slate-react-render-path-props.md` and `.tmp/slate-v2/.changeset/slate-dom-runtime-id-find-path.md` added | public render contract cut, lazy `useElementPath()` added, docs/reference synced | check-list Backspace browser row still fails independently of this migration | done            |
 
 ## Ralph Execution Gates
 
@@ -444,7 +444,7 @@ Implementation status: `done`.
 - `editor.dom.findPath` is runtime-id-first and current after skipped-rerender
   structural shifts.
 - Examples no longer close over render-time `path`.
-- Focused tests and rerender breadth benchmark pass from `../slate-v2`.
+- Focused tests and rerender breadth benchmark pass from `.tmp/slate-v2`.
 - Browser rows for touched example behavior pass; the unrelated check-list
   Backspace row remains a separate failure.
 

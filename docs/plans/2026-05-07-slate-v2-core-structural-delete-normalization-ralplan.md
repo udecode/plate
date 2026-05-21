@@ -4,7 +4,7 @@ topic: slate-v2-core-structural-delete-normalization
 status: slate-ralplan-done
 score: 0.94
 completion: .tmp/completion-checks/slate-v2-core-structural-delete-normalization-ralplan.md
-owner: ../slate-v2/packages/slate
+owner: .tmp/slate-v2/packages/slate
 ---
 
 # Slate v2 Core Structural Delete And Normalization Ralplan
@@ -47,11 +47,11 @@ Current result:
 
 Implementation:
 
-- `../slate-v2/packages/slate/src/transforms-text/delete-text.ts`
-- `../slate-v2/packages/slate/src/transforms-node/merge-nodes.ts`
-- `../slate-v2/packages/slate/test/delete-contract.ts`
-- `../slate-v2/packages/slate/test/normalization-contract.ts`
-- `../slate-v2/packages/slate/test/transforms-contract.ts`
+- `.tmp/slate-v2/packages/slate/src/transforms-text/delete-text.ts`
+- `.tmp/slate-v2/packages/slate/src/transforms-node/merge-nodes.ts`
+- `.tmp/slate-v2/packages/slate/test/delete-contract.ts`
+- `.tmp/slate-v2/packages/slate/test/normalization-contract.ts`
+- `.tmp/slate-v2/packages/slate/test/transforms-contract.ts`
 
 Verification so far:
 
@@ -89,17 +89,17 @@ Gitcrawl pressure:
 
 Live source owners:
 
-- `../slate-v2/packages/slate/src/transforms-text/delete-text.ts:89` already has
+- `.tmp/slate-v2/packages/slate/src/transforms-text/delete-text.ts:89` already has
   same-mark adjacent text merge helpers.
-- `../slate-v2/packages/slate/src/transforms-text/delete-text.ts:186` owns the
+- `.tmp/slate-v2/packages/slate/src/transforms-text/delete-text.ts:186` owns the
   post-delete structural cleanup that just had to stop deleting nested blocks.
-- `../slate-v2/packages/slate/test/delete-contract.ts:105` already proves
+- `.tmp/slate-v2/packages/slate/test/delete-contract.ts:105` already proves
   Backspace after a table keeps row lengths `[4, 4, 4]`.
-- `../slate-v2/packages/slate/src/editor/normalize.ts:79` owns dirty normalize
+- `.tmp/slate-v2/packages/slate/src/editor/normalize.ts:79` owns dirty normalize
   passes, mutation-version iteration, and loop detection.
-- `../slate-v2/packages/slate/src/core/normalize-node.ts:238` owns default
+- `.tmp/slate-v2/packages/slate/src/core/normalize-node.ts:238` owns default
   block/inline child repair and direct-child operation targeting.
-- `../slate-v2/packages/slate/src/transforms-node/merge-nodes.ts:147` still
+- `.tmp/slate-v2/packages/slate/src/transforms-node/merge-nodes.ts:147` still
   calls `shouldMergeNodesRemovePrevNode`, which is exactly the kind of
   standalone legacy-shaped policy that should collapse into the structural
   boundary model if this lane needs a real merge rule.
@@ -130,13 +130,13 @@ Outcome:
 
 In scope:
 
-- `../slate-v2/packages/slate/src/transforms-text/delete-text.ts`
-- `../slate-v2/packages/slate/src/transforms-node/merge-nodes.ts`
-- `../slate-v2/packages/slate/src/transforms-node/split-nodes.ts`
-- `../slate-v2/packages/slate/src/transforms-node/remove-nodes.ts`
-- `../slate-v2/packages/slate/src/editor/normalize.ts`
-- `../slate-v2/packages/slate/src/core/normalize-node.ts`
-- core tests under `../slate-v2/packages/slate/test/**`
+- `.tmp/slate-v2/packages/slate/src/transforms-text/delete-text.ts`
+- `.tmp/slate-v2/packages/slate/src/transforms-node/merge-nodes.ts`
+- `.tmp/slate-v2/packages/slate/src/transforms-node/split-nodes.ts`
+- `.tmp/slate-v2/packages/slate/src/transforms-node/remove-nodes.ts`
+- `.tmp/slate-v2/packages/slate/src/editor/normalize.ts`
+- `.tmp/slate-v2/packages/slate/src/core/normalize-node.ts`
+- core tests under `.tmp/slate-v2/packages/slate/test/**`
 
 Non-goals:
 
@@ -156,20 +156,20 @@ Decision boundary:
 
 ## Issue Routing
 
-| Issue | Current decision | Why |
-| --- | --- | --- |
-| #4121 | target exact proof | Expanded delete must not remove content before the selected range. This belongs to delete planning and selection placement. |
-| #2500 | target exact proof | Select-all delete over list structure is the same structural reset problem as range delete, not a React toolbar problem. |
-| #3965 | target exact proof | Same-mark text around empty leaves should merge, not disappear. Current source has merge helpers, so this may already be done; prove it. |
-| #5811 | target exact proof or improved claim | Current normalize loop detection is promising, but exact wrap/unwrap oscillation needs a dedicated custom-normalizer fixture. |
-| #3950 | target exact proof or improved claim | Mutation during normalization must cause another pass over dirty entries until fixpoint. |
-| #1654 | architecture target | The likely core primitive is an internal `isIsolating` structural boundary policy, not table-specific logic. |
-| #2643 | related, not public API | Reject public schema veto for now. A future transaction validation hook is valid only after core transforms are deterministic. |
-| #2355 | related, not public API | Selection repair belongs at commit/projection boundaries, not a public `normalizeSelection` hook. |
-| #5972 | repro-first candidate | Inline input delete may fall out of the same delete boundary rules, but it needs current inlines/browser proof before any claim. |
-| #5977 | excluded from this lane | Custom operation validation is an API/extensibility lane, not structural delete/normalize correctness. |
-| #3964/#3973 | excluded from this lane | InsertBreak and word movement are core caret/movement bugs, but they are not the next structural delete/normalize owner. |
-| #3891 | related | Multi-node remove pressure is represented by `replace_children`, but public helper semantics need separate proof. |
+| Issue       | Current decision                     | Why                                                                                                                                      |
+| ----------- | ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| #4121       | target exact proof                   | Expanded delete must not remove content before the selected range. This belongs to delete planning and selection placement.              |
+| #2500       | target exact proof                   | Select-all delete over list structure is the same structural reset problem as range delete, not a React toolbar problem.                 |
+| #3965       | target exact proof                   | Same-mark text around empty leaves should merge, not disappear. Current source has merge helpers, so this may already be done; prove it. |
+| #5811       | target exact proof or improved claim | Current normalize loop detection is promising, but exact wrap/unwrap oscillation needs a dedicated custom-normalizer fixture.            |
+| #3950       | target exact proof or improved claim | Mutation during normalization must cause another pass over dirty entries until fixpoint.                                                 |
+| #1654       | architecture target                  | The likely core primitive is an internal `isIsolating` structural boundary policy, not table-specific logic.                             |
+| #2643       | related, not public API              | Reject public schema veto for now. A future transaction validation hook is valid only after core transforms are deterministic.           |
+| #2355       | related, not public API              | Selection repair belongs at commit/projection boundaries, not a public `normalizeSelection` hook.                                        |
+| #5972       | repro-first candidate                | Inline input delete may fall out of the same delete boundary rules, but it needs current inlines/browser proof before any claim.         |
+| #5977       | excluded from this lane              | Custom operation validation is an API/extensibility lane, not structural delete/normalize correctness.                                   |
+| #3964/#3973 | excluded from this lane              | InsertBreak and word movement are core caret/movement bugs, but they are not the next structural delete/normalize owner.                 |
+| #3891       | related                              | Multi-node remove pressure is represented by `replace_children`, but public helper semantics need separate proof.                        |
 
 ## Decision Brief
 
@@ -195,13 +195,13 @@ Drivers:
 
 Options:
 
-| Option | Verdict | Reason |
-| --- | --- | --- |
-| Keep current standalone heuristics | Reject | `shouldMergeNodesRemovePrevNode` and broad cleanup helpers will keep accumulating special cases. |
-| Hard-code table/list behavior | Reject | Raw Slate should not ship product schema assumptions. |
-| Add internal `isIsolating` structural boundary policy | Choose if tests need it | This matches ProseMirror's battle-tested concept while staying unopinionated. |
-| Add public schema veto / normalizeSelection now | Reject | These are escape hatches. They do not solve the core deterministic transform problem. |
-| Move everything to extension commands | Reject for core bugs | Tiptap-style commands are good for product behavior, but core delete and normalization must be reliable first. |
+| Option                                                | Verdict                 | Reason                                                                                                         |
+| ----------------------------------------------------- | ----------------------- | -------------------------------------------------------------------------------------------------------------- |
+| Keep current standalone heuristics                    | Reject                  | `shouldMergeNodesRemovePrevNode` and broad cleanup helpers will keep accumulating special cases.               |
+| Hard-code table/list behavior                         | Reject                  | Raw Slate should not ship product schema assumptions.                                                          |
+| Add internal `isIsolating` structural boundary policy | Choose if tests need it | This matches ProseMirror's battle-tested concept while staying unopinionated.                                  |
+| Add public schema veto / normalizeSelection now       | Reject                  | These are escape hatches. They do not solve the core deterministic transform problem.                          |
+| Move everything to extension commands                 | Reject for core bugs    | Tiptap-style commands are good for product behavior, but core delete and normalization must be reliable first. |
 
 Chosen shape:
 
@@ -317,32 +317,32 @@ After tests are green:
 Run the smallest meaningful proof first:
 
 ```bash
-cd ../slate-v2 && bun test ./packages/slate/test/delete-contract.ts ./packages/slate/test/normalization-contract.ts ./packages/slate/test/transforms-contract.ts
-cd ../slate-v2 && bun --filter slate typecheck
-cd ../slate-v2 && bun lint:fix
+cd .tmp/slate-v2 && bun test ./packages/slate/test/delete-contract.ts ./packages/slate/test/normalization-contract.ts ./packages/slate/test/transforms-contract.ts
+cd .tmp/slate-v2 && bun --filter slate typecheck
+cd .tmp/slate-v2 && bun lint:fix
 ```
 
 If #5972 becomes browser-owned:
 
 ```bash
-cd ../slate-v2 && bun test:integration-local --grep "inlines"
+cd .tmp/slate-v2 && bun test:integration-local --grep "inlines"
 ```
 
 If #1654 lands a structural boundary:
 
 ```bash
-cd ../slate-v2 && bun test ./packages/slate/test/delete-contract.ts ./packages/slate/test/transforms-contract.ts ./packages/slate/test/collab-history-runtime-contract.ts
+cd .tmp/slate-v2 && bun test ./packages/slate/test/delete-contract.ts ./packages/slate/test/transforms-contract.ts ./packages/slate/test/collab-history-runtime-contract.ts
 ```
 
 ## Maintainer Objections
 
-| Objection | Answer |
-| --- | --- |
-| "This is just table behavior." | No. #1654 explicitly names tables as one example of a general isolated-container rule. Core should expose a structural policy, not table logic. |
-| "Selection normalization should be public." | Not yet. Public `normalizeSelection` lets app code repair symptoms after commands. v2 should make commit selection valid by construction first. |
-| "Schema veto is cleaner." | Premature. A veto layer is useful only after core transforms have deterministic dry-run or validation metadata. Otherwise it is just another inconsistent interception point. |
-| "Why not fix #5977 now?" | Custom operation validation is real, but it is an API/extensibility contract. Mixing it into delete/normalization would blur the owner and produce a worse plan. |
-| "Why use ProseMirror's `isolating` idea?" | Because it is the exact established primitive for table cells and other content islands where join/lift/delete should not cross. Slate can use the concept without adopting ProseMirror's schema model. |
+| Objection                                   | Answer                                                                                                                                                                                                  |
+| ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| "This is just table behavior."              | No. #1654 explicitly names tables as one example of a general isolated-container rule. Core should expose a structural policy, not table logic.                                                         |
+| "Selection normalization should be public." | Not yet. Public `normalizeSelection` lets app code repair symptoms after commands. v2 should make commit selection valid by construction first.                                                         |
+| "Schema veto is cleaner."                   | Premature. A veto layer is useful only after core transforms have deterministic dry-run or validation metadata. Otherwise it is just another inconsistent interception point.                           |
+| "Why not fix #5977 now?"                    | Custom operation validation is real, but it is an API/extensibility contract. Mixing it into delete/normalization would blur the owner and produce a worse plan.                                        |
+| "Why use ProseMirror's `isolating` idea?"   | Because it is the exact established primitive for table cells and other content islands where join/lift/delete should not cross. Slate can use the concept without adopting ProseMirror's schema model. |
 
 ## Implementation Skill Notes
 

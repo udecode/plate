@@ -76,12 +76,12 @@ Desired outcome:
 
 In scope:
 
-- `../slate-v2/packages/slate-react` provider, selectors, projection stores,
+- `.tmp/slate-v2/packages/slate-react` provider, selectors, projection stores,
   decoration sources, annotation stores, widget stores, render leaf/text
   behavior, and examples/tests that prove them;
-- `../slate-v2/packages/slate` mark, range, anchor, runtime-id, and commit
+- `.tmp/slate-v2/packages/slate` mark, range, anchor, runtime-id, and commit
   metadata only where React projection depends on them;
-- `../slate-v2/packages/slate-dom` only where decorated or annotated DOM shape
+- `.tmp/slate-v2/packages/slate-dom` only where decorated or annotated DOM shape
   affects selection, focus, browser range translation, or input timing;
 - React runtime issue rows under `docs/slate-issues`;
 - decoration, mark, annotation, and overlay issue rows under
@@ -150,48 +150,48 @@ Live Slate v2 source shape:
 
 - `<Slate>` currently accepts `editor`, `decorationSources`, `annotationStore`,
   and change callbacks in
-  `../slate-v2/packages/slate-react/src/components/slate.tsx:63-74`.
+  `.tmp/slate-v2/packages/slate-react/src/components/slate.tsx:63-74`.
 - `<Slate>` subscribes to editor commits, batches focused state, DOM text sync,
   change callbacks, and selector dispatch in
-  `../slate-v2/packages/slate-react/src/components/slate.tsx:108-172`.
+  `.tmp/slate-v2/packages/slate-react/src/components/slate.tsx:108-172`.
 - `<Slate>` composes decoration sources and the annotation projection store in
-  `../slate-v2/packages/slate-react/src/components/slate.tsx:175-184`.
+  `.tmp/slate-v2/packages/slate-react/src/components/slate.tsx:175-184`.
 - Provider stack publishes selector, projection, annotation, editor, and focus
-  contexts in `../slate-v2/packages/slate-react/src/components/slate.tsx:216-228`.
+  contexts in `.tmp/slate-v2/packages/slate-react/src/components/slate.tsx:216-228`.
 - `useEditorSelector` supports equality, runtime id, deferred fanout, and
   `shouldUpdate` in
-  `../slate-v2/packages/slate-react/src/hooks/use-editor-selector.tsx:68-151`.
+  `.tmp/slate-v2/packages/slate-react/src/hooks/use-editor-selector.tsx:68-151`.
 - Selector fanout dedupes runtime-id listeners and skips stale mounted-node
   fanout for certain root changes in
-  `../slate-v2/packages/slate-react/src/hooks/use-editor-selector.tsx:212-330`.
+  `.tmp/slate-v2/packages/slate-react/src/hooks/use-editor-selector.tsx:212-330`.
 - Projection store has `dirtiness`, `runtimeScope`, `sourceId`, source/runtime
   subscribers, metrics, and refresh options in
-  `../slate-v2/packages/slate-react/src/projection-store.ts:31-100`.
+  `.tmp/slate-v2/packages/slate-react/src/projection-store.ts:31-100`.
 - Projection dirty matching understands selection, text, mark, node,
   annotation, and external classes in
-  `../slate-v2/packages/slate-react/src/projection-store.ts:206-243`.
+  `.tmp/slate-v2/packages/slate-react/src/projection-store.ts:206-243`.
 - Decoration sources are product-noun wrappers over projection stores in
-  `../slate-v2/packages/slate-react/src/decoration-source.ts:111-129`.
+  `.tmp/slate-v2/packages/slate-react/src/decoration-source.ts:111-129`.
 - Multiple overlay sources are composed through runtime snapshot and
   runtime-id subscriptions in
-  `../slate-v2/packages/slate-react/src/decoration-source.ts:131-204`.
+  `.tmp/slate-v2/packages/slate-react/src/decoration-source.ts:131-204`.
 - Annotation stores carry id, anchor, data, projection payload, annotation
   subscriptions, and projection store output in
-  `../slate-v2/packages/slate-react/src/annotation-store.ts:13-87`.
+  `.tmp/slate-v2/packages/slate-react/src/annotation-store.ts:13-87`.
 - Annotation refresh can target ids and avoid full fallback when candidates are
-  known in `../slate-v2/packages/slate-react/src/annotation-store.ts:215-267`
-  and `../slate-v2/packages/slate-react/src/annotation-store.ts:332-420`.
+  known in `.tmp/slate-v2/packages/slate-react/src/annotation-store.ts:215-267`
+  and `.tmp/slate-v2/packages/slate-react/src/annotation-store.ts:332-420`.
 - Annotation projection tracks changed runtime buckets, annotation subscribers,
-  and metrics in `../slate-v2/packages/slate-react/src/annotation-store.ts:664-742`.
+  and metrics in `.tmp/slate-v2/packages/slate-react/src/annotation-store.ts:664-742`.
 - Annotation external refresh accepts `ids` and treats `[]` as no-op in
-  `../slate-v2/packages/slate-react/src/annotation-store.ts:761-767`.
+  `.tmp/slate-v2/packages/slate-react/src/annotation-store.ts:761-767`.
 - Editable text consumes projection slices and passes them into segmented
   `renderLeaf` / `renderText` output in
-  `../slate-v2/packages/slate-react/src/components/editable-text.tsx:324-441`.
+  `.tmp/slate-v2/packages/slate-react/src/components/editable-text.tsx:324-441`.
 
 Focused current verification:
 
-- cwd: `../slate-v2`
+- cwd: `.tmp/slate-v2`
 - command:
   `bun test ./packages/slate-react/test/provider-hooks-contract.tsx ./packages/slate-react/test/projections-and-selection-contract.tsx ./packages/slate-react/test/annotation-store-contract.tsx ./packages/slate-react/test/widget-layer-contract.tsx ./packages/slate-react/test/render-profiler-contract.test.tsx`
 - result: `40 pass`, `0 fail`, `200 expect() calls`.
@@ -223,17 +223,17 @@ Initial read result:
 
 Pass 1 candidate set from the local slate-issues corpus:
 
-| Family | Candidate issues | Initial classification |
-| --- | --- | --- |
-| React identity / provider replacement | #5709, #4680, #4165, #5404 | likely improves or related; exact claims require pass 2 thread read |
-| React subscription / rerender breadth | #5131, #3656, #4141, #4210, #2051, #3430 | benchmark lane; do not claim fixes without benchmark thresholds |
-| Decoration performance / invalidation | #4483, #5987, #4993, #4997 | source-scoped invalidation lane; likely improves |
-| Decoration topology / cross-node projection | #4392, #3382, #3352 | projection proof exists, but legacy decorate API parity is not the target |
-| Overlapping semantic metadata | #3383 | likely architecture target; needs exact API/proof row |
-| Selection / IME fallout from decorations | #3309, #3162, #4712, #4581, #5398, #5433 | related to this lane but exact browser/device proof may route to Mobile/IME |
-| Mark active/render-time semantics | #4750, #4298, #4225, #2465, #2564 | split between core mark model and React render DX; needs pass 2 classification |
-| Annotation / comments / anchors | #4477 | improves through annotation store; product collaboration not fixed by raw Slate |
-| External app updates / focus churn | #3478, #3497, #5509 | related until current Redux/MobX/parent-rerender proof lands |
+| Family                                      | Candidate issues                         | Initial classification                                                          |
+| ------------------------------------------- | ---------------------------------------- | ------------------------------------------------------------------------------- |
+| React identity / provider replacement       | #5709, #4680, #4165, #5404               | likely improves or related; exact claims require pass 2 thread read             |
+| React subscription / rerender breadth       | #5131, #3656, #4141, #4210, #2051, #3430 | benchmark lane; do not claim fixes without benchmark thresholds                 |
+| Decoration performance / invalidation       | #4483, #5987, #4993, #4997               | source-scoped invalidation lane; likely improves                                |
+| Decoration topology / cross-node projection | #4392, #3382, #3352                      | projection proof exists, but legacy decorate API parity is not the target       |
+| Overlapping semantic metadata               | #3383                                    | likely architecture target; needs exact API/proof row                           |
+| Selection / IME fallout from decorations    | #3309, #3162, #4712, #4581, #5398, #5433 | related to this lane but exact browser/device proof may route to Mobile/IME     |
+| Mark active/render-time semantics           | #4750, #4298, #4225, #2465, #2564        | split between core mark model and React render DX; needs pass 2 classification  |
+| Annotation / comments / anchors             | #4477                                    | improves through annotation store; product collaboration not fixed by raw Slate |
+| External app updates / focus churn          | #3478, #3497, #5509                      | related until current Redux/MobX/parent-rerender proof lands                    |
 
 Important issue evidence already found:
 
@@ -265,7 +265,7 @@ Archive readiness:
 - `gitcrawl --version` returned `0.2.1`.
 - `gitcrawl doctor --json` reported one local `ianstormtaylor/slate` corpus,
   `659` open threads, `617` clusters, `last_sync_at:
-  2026-05-04T14:58:11.123944Z`, and no GitHub token.
+2026-05-04T14:58:11.123944Z`, and no GitHub token.
 - Decision: use gitcrawl as local archive evidence; do not make fresh GitHub
   state, duplicate, stale, or closure claims from it.
 
@@ -291,15 +291,15 @@ gitcrawl search issues "dynamic decorations renderChildren renderText" -R iansto
 
 Reviewed issue refs:
 
-| Family | Issues | Pass 2 posture |
-| --- | --- | --- |
-| Editor identity and hook API | #5709, #4680, #4165, #5404 | #5709 stays exact `Fixes`; #4680 is adjacent but not exact editor-replacement closure; #4165/#5404 stay hook naming/typing pressure. |
-| Subscription and rerender breadth | #5131, #3656, #4141, #4210, #2051, #3430 | Benchmark-owned. #3656/#4141/#2051 stay `Improves`; #5131/#3430 stay not claimed; #4210 needs benchmark promotion before claim. |
-| Decoration invalidation and API topology | #4483, #5987, #4392, #3382, #3352, #3383 | Source-scoped projection / decoration-source direction is right. Keep `Improves` or `Related`; do not claim legacy `renderChildren` or `Text.decorations` API parity. |
-| Decoration selection, IME, and composition fallout | #3309, #3162, #4712, #4581, #5398, #5433 | Related only until browser/device proof exists. #5398/#5433/#3162 belong primarily to Mobile/IME input runtime, not this React/decorations plan. |
-| Marks and render semantics | #4750, #4298, #4225, #2465, #2564 | Related / cluster-synced. These require core mark query semantics plus browser/render proof, not only projection-store proof. |
-| Annotation and external app updates | #4477, #3478, #3497, #5509 | #4477 stays substrate `Improves`; #3478/#3497/#5509 stay external React/focus/runtime related without exact Redux/MobX/focus closure. |
-| Absent local refs | #4993, #4997 | Not found in local `docs/slate-issues` refs or gitcrawl issue thread lookup during pass 2; keep out of claims until pass 3 corpus scan explains whether these are PRs, stale refs, or bad seeds. |
+| Family                                             | Issues                                   | Pass 2 posture                                                                                                                                                                                   |
+| -------------------------------------------------- | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Editor identity and hook API                       | #5709, #4680, #4165, #5404               | #5709 stays exact `Fixes`; #4680 is adjacent but not exact editor-replacement closure; #4165/#5404 stay hook naming/typing pressure.                                                             |
+| Subscription and rerender breadth                  | #5131, #3656, #4141, #4210, #2051, #3430 | Benchmark-owned. #3656/#4141/#2051 stay `Improves`; #5131/#3430 stay not claimed; #4210 needs benchmark promotion before claim.                                                                  |
+| Decoration invalidation and API topology           | #4483, #5987, #4392, #3382, #3352, #3383 | Source-scoped projection / decoration-source direction is right. Keep `Improves` or `Related`; do not claim legacy `renderChildren` or `Text.decorations` API parity.                            |
+| Decoration selection, IME, and composition fallout | #3309, #3162, #4712, #4581, #5398, #5433 | Related only until browser/device proof exists. #5398/#5433/#3162 belong primarily to Mobile/IME input runtime, not this React/decorations plan.                                                 |
+| Marks and render semantics                         | #4750, #4298, #4225, #2465, #2564        | Related / cluster-synced. These require core mark query semantics plus browser/render proof, not only projection-store proof.                                                                    |
+| Annotation and external app updates                | #4477, #3478, #3497, #5509               | #4477 stays substrate `Improves`; #3478/#3497/#5509 stay external React/focus/runtime related without exact Redux/MobX/focus closure.                                                            |
+| Absent local refs                                  | #4993, #4997                             | Not found in local `docs/slate-issues` refs or gitcrawl issue thread lookup during pass 2; keep out of claims until pass 3 corpus scan explains whether these are PRs, stale refs, or bad seeds. |
 
 Important neighbor evidence:
 
@@ -384,35 +384,35 @@ Corpus boundaries:
 
 Plan-relevant issue matrix:
 
-| Row family | Issues | Pass 3 classification | Claim boundary |
-| --- | --- | --- | --- |
-| Exact provider identity floor | #5709 | `Fixes` already in matrix | Keep exact because current provider hook contract proves replacement editor propagation. |
-| Editor identity and hook surface pressure | #4680, #4165, #5404 | related / triage-closed / cluster-synced | #4680 remains adjacent but not a second exact fix. #4165 and #5404 inform hook naming and type law, not issue closure. |
-| Broad hook and rerender breadth | #5131, #3656, #4141, #4210, #2051, #3430 | #3656/#4141/#2051 `Improves`; #5131/#3430 `Not claimed`; #4210 benchmark-owned related | `useEditor` / `useSlate` stays broad by contract unless pass 6 explicitly changes API law. Performance promotion needs benchmark thresholds. |
-| Decoration invalidation and async timing | #4483, #5987, #3354 | #4483/#5987 `Improves`; #3354 related | Source-scoped projection reduces global invalidation and async caret pressure. Stable-array infinite-loop closure needs exact legacy repro proof before a claim. |
-| Decoration topology and projection | #4392, #3382, #3352, #3309 | #4392/#3382/#3352 `Improves`; #3309 related | Runtime range projection is the target. Legacy `Text.decorations` and callback parity are not the public v2 contract. |
-| Overlapping metadata and mark/render model | #3383, #2465, #2564, #4750, #4298, #4225, #3671, #3568, #4317 | related / cluster-synced / triage-closed | This stays split between core mark semantics, render projection, and selection/input proof. Do not claim fix from projection tests alone. |
-| Selection and DOM fallout from overlays | #4712, #4581, #5274, #4560 | related | Projection is relevant, but exact closure belongs to DOM selection/focus proof with browser rows. |
-| IME and composition fallout from overlays | #3162, #5398, #5433, #4001, #3777 | related / outside exact lane | Mobile/IME owns exact closure. This plan must only require negative-control proof that React overlay work does not regress composition. |
-| External app updates and focus churn | #3478, #3497, #5509, #3634, #4961, #5537 | related / triage-closed | React runtime/focus pressure is real, but Redux/MobX/programmatic-focus exact closure needs targeted repro proof. |
-| Annotation and collaboration pressure | #4477, #3715 | #4477 `Improves`; #3715 `Not claimed` | Annotation/widget stores answer substrate pressure. Product comments and collaboration examples remain outside raw Slate closure. |
-| Search highlighting and examples | #4076 | issue-reviewed / docs-example | Useful example pressure only. It should not distort the raw runtime API. |
-| PR research refs, not issue rows | #4993, #4997 | architecture evidence only | These are stale/closed PR research handles in local docs, absent from gitcrawl issue lookup and live issue rows. They explain invalidation-contract failures, but they are not claimable issue refs. |
+| Row family                                 | Issues                                                        | Pass 3 classification                                                                  | Claim boundary                                                                                                                                                                                       |
+| ------------------------------------------ | ------------------------------------------------------------- | -------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Exact provider identity floor              | #5709                                                         | `Fixes` already in matrix                                                              | Keep exact because current provider hook contract proves replacement editor propagation.                                                                                                             |
+| Editor identity and hook surface pressure  | #4680, #4165, #5404                                           | related / triage-closed / cluster-synced                                               | #4680 remains adjacent but not a second exact fix. #4165 and #5404 inform hook naming and type law, not issue closure.                                                                               |
+| Broad hook and rerender breadth            | #5131, #3656, #4141, #4210, #2051, #3430                      | #3656/#4141/#2051 `Improves`; #5131/#3430 `Not claimed`; #4210 benchmark-owned related | `useEditor` / `useSlate` stays broad by contract unless pass 6 explicitly changes API law. Performance promotion needs benchmark thresholds.                                                         |
+| Decoration invalidation and async timing   | #4483, #5987, #3354                                           | #4483/#5987 `Improves`; #3354 related                                                  | Source-scoped projection reduces global invalidation and async caret pressure. Stable-array infinite-loop closure needs exact legacy repro proof before a claim.                                     |
+| Decoration topology and projection         | #4392, #3382, #3352, #3309                                    | #4392/#3382/#3352 `Improves`; #3309 related                                            | Runtime range projection is the target. Legacy `Text.decorations` and callback parity are not the public v2 contract.                                                                                |
+| Overlapping metadata and mark/render model | #3383, #2465, #2564, #4750, #4298, #4225, #3671, #3568, #4317 | related / cluster-synced / triage-closed                                               | This stays split between core mark semantics, render projection, and selection/input proof. Do not claim fix from projection tests alone.                                                            |
+| Selection and DOM fallout from overlays    | #4712, #4581, #5274, #4560                                    | related                                                                                | Projection is relevant, but exact closure belongs to DOM selection/focus proof with browser rows.                                                                                                    |
+| IME and composition fallout from overlays  | #3162, #5398, #5433, #4001, #3777                             | related / outside exact lane                                                           | Mobile/IME owns exact closure. This plan must only require negative-control proof that React overlay work does not regress composition.                                                              |
+| External app updates and focus churn       | #3478, #3497, #5509, #3634, #4961, #5537                      | related / triage-closed                                                                | React runtime/focus pressure is real, but Redux/MobX/programmatic-focus exact closure needs targeted repro proof.                                                                                    |
+| Annotation and collaboration pressure      | #4477, #3715                                                  | #4477 `Improves`; #3715 `Not claimed`                                                  | Annotation/widget stores answer substrate pressure. Product comments and collaboration examples remain outside raw Slate closure.                                                                    |
+| Search highlighting and examples           | #4076                                                         | issue-reviewed / docs-example                                                          | Useful example pressure only. It should not distort the raw runtime API.                                                                                                                             |
+| PR research refs, not issue rows           | #4993, #4997                                                  | architecture evidence only                                                             | These are stale/closed PR research handles in local docs, absent from gitcrawl issue lookup and live issue rows. They explain invalidation-contract failures, but they are not claimable issue refs. |
 
 Matrix-only / future-proof reconciliation:
 
-| Issue | Pass 3 decision |
-| --- | --- |
+| Issue | Pass 3 decision                                                                                          |
+| ----- | -------------------------------------------------------------------------------------------------------- |
 | #4680 | Keep as related/triage-closed adjacent identity pressure; #5709 is the exact provider replacement claim. |
-| #4165 | Keep as API law pressure; no closure unless pass 6 changes the public hook naming/typing contract. |
-| #4210 | Keep benchmark-owned. Promote only after the shared rerender-breadth lane has accepted thresholds. |
-| #3162 | Keep Mobile/IME-owned related row. Desktop projection tests do not prove IME closure. |
-| #4712 | Keep related to projection plus DOM selection. Exact closure needs browser selection proof. |
-| #5398 | Keep Mobile/IME-owned related row. Exact Chinese composition proof belongs to the Mobile/IME lane. |
-| #5433 | Keep Mobile/IME-owned related row. Do not claim from React rerender tests. |
-| #4750 | Keep core mark-query pressure. Needs mark aggregation and browser-selection proof. |
-| #2465 | Keep render-DX pressure, not a closure claim. |
-| #2564 | Keep API/model boundary pressure, not a closure claim. |
+| #4165 | Keep as API law pressure; no closure unless pass 6 changes the public hook naming/typing contract.       |
+| #4210 | Keep benchmark-owned. Promote only after the shared rerender-breadth lane has accepted thresholds.       |
+| #3162 | Keep Mobile/IME-owned related row. Desktop projection tests do not prove IME closure.                    |
+| #4712 | Keep related to projection plus DOM selection. Exact closure needs browser selection proof.              |
+| #5398 | Keep Mobile/IME-owned related row. Exact Chinese composition proof belongs to the Mobile/IME lane.       |
+| #5433 | Keep Mobile/IME-owned related row. Do not claim from React rerender tests.                               |
+| #4750 | Keep core mark-query pressure. Needs mark aggregation and browser-selection proof.                       |
+| #2465 | Keep render-DX pressure, not a closure claim.                                                            |
+| #2564 | Keep API/model boundary pressure, not a closure claim.                                                   |
 
 Issue-ledger effect:
 
@@ -455,13 +455,13 @@ Drivers:
 
 Viable options:
 
-| Option | Verdict | Why |
-| --- | --- | --- |
-| Restore legacy `decorate` as the primary scalable API | reject | It repeats the overloaded abstraction behind #4483/#5987/#3354 and makes external-state invalidation ambiguous again. |
-| Make `ProjectionStore` the main public API | reject | Correct transport, ugly default DX. Normal Slate users should not learn the runtime engine before highlighting text. |
-| Keep broad hooks and rely on memoization | reject | It leaves #5131/#4210/#2051-style rerender pressure structurally unresolved. |
-| Put comments, cursors, and suggestions into Slate document values | reject by default | Product policy, permissions, audit trail, undo semantics, and collaboration storage do not belong in raw Slate content by default. |
-| Selector-first React runtime plus decoration/annotation/widget stores | choose | It matches current source, issue pressure, and the package ownership split without making raw Slate product-shaped. |
+| Option                                                                | Verdict           | Why                                                                                                                                |
+| --------------------------------------------------------------------- | ----------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| Restore legacy `decorate` as the primary scalable API                 | reject            | It repeats the overloaded abstraction behind #4483/#5987/#3354 and makes external-state invalidation ambiguous again.              |
+| Make `ProjectionStore` the main public API                            | reject            | Correct transport, ugly default DX. Normal Slate users should not learn the runtime engine before highlighting text.               |
+| Keep broad hooks and rely on memoization                              | reject            | It leaves #5131/#4210/#2051-style rerender pressure structurally unresolved.                                                       |
+| Put comments, cursors, and suggestions into Slate document values     | reject by default | Product policy, permissions, audit trail, undo semantics, and collaboration storage do not belong in raw Slate content by default. |
+| Selector-first React runtime plus decoration/annotation/widget stores | choose            | It matches current source, issue pressure, and the package ownership split without making raw Slate product-shaped.                |
 
 Chosen target:
 
@@ -491,25 +491,25 @@ Consequences:
 
 Follow-up owners:
 
-| Owner | Next responsibility |
-| --- | --- |
-| Pass 6 proof pressure | Turn the decision into benchmark, browser, DX, migration, and regression gates. |
+| Owner                        | Next responsibility                                                                    |
+| ---------------------------- | -------------------------------------------------------------------------------------- |
+| Pass 6 proof pressure        | Turn the decision into benchmark, browser, DX, migration, and regression gates.        |
 | Pass 7 maintainer objections | Stress-test whether the chosen API is too engine-shaped or too far from classic Slate. |
-| Pass 8 high-risk review | Pre-mortem public API, browser, IME, collaboration, and performance risks. |
-| Pass 11 issue sync | Update corpus/coverage/PR ledgers only if later passes change claim state. |
+| Pass 8 high-risk review      | Pre-mortem public API, browser, IME, collaboration, and performance risks.             |
+| Pass 11 issue sync           | Update corpus/coverage/PR ledgers only if later passes change claim state.             |
 
 ## 6. Initial Confidence Score
 
 Weighted total after pass 10: `0.92`.
 
-| Dimension | Weight | Score | Evidence / cap |
-| --- | ---: | ---: | --- |
-| React 19.2 runtime performance | 0.20 | 0.92 | React selector/projection evidence is strong, `bench:react:rerender-breadth:local` passed, and pass 10 keeps React as external-store/scheduler consumer with source-scoped invalidation below React. |
-| Slate-close unopinionated DX | 0.20 | 0.93 | The revised target is explicit: `decorate` remains the first path, decoration sources are the scalable path, annotations/widgets are durable/product substrates, and projection transport is advanced. |
-| Plate and slate-yjs migration-backbone shape | 0.15 | 0.91 | The executable phases now require Plate public-substrate adapter proof and slate-yjs remote anchor mapping proof without raw Slate owning product workflow or CRDT services. |
-| Regression-proof testing strategy | 0.20 | 0.92 | Package, benchmark, browser/native, migration/adoption, docs/example, rollback, and issue-claim gates are merged into the execution phases. Browser rows are still not run. |
-| Research evidence completeness | 0.15 | 0.93 | React, Lexical, ProseMirror, Tiptap, local Slate v2 proof, source-scoped invalidation, relevant learnings, maintainer objections, and ecosystem-owner pressure are merged into keep/drop/proof rules. |
-| shadcn-style composability and hook/component minimalism | 0.10 | 0.91 | Docs/example discoverability now has a phase: simple `decorate`, scalable sources, durable annotation/widget APIs, product examples above raw Slate, projection internals last. |
+| Dimension                                                | Weight | Score | Evidence / cap                                                                                                                                                                                         |
+| -------------------------------------------------------- | -----: | ----: | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| React 19.2 runtime performance                           |   0.20 |  0.92 | React selector/projection evidence is strong, `bench:react:rerender-breadth:local` passed, and pass 10 keeps React as external-store/scheduler consumer with source-scoped invalidation below React.   |
+| Slate-close unopinionated DX                             |   0.20 |  0.93 | The revised target is explicit: `decorate` remains the first path, decoration sources are the scalable path, annotations/widgets are durable/product substrates, and projection transport is advanced. |
+| Plate and slate-yjs migration-backbone shape             |   0.15 |  0.91 | The executable phases now require Plate public-substrate adapter proof and slate-yjs remote anchor mapping proof without raw Slate owning product workflow or CRDT services.                           |
+| Regression-proof testing strategy                        |   0.20 |  0.92 | Package, benchmark, browser/native, migration/adoption, docs/example, rollback, and issue-claim gates are merged into the execution phases. Browser rows are still not run.                            |
+| Research evidence completeness                           |   0.15 |  0.93 | React, Lexical, ProseMirror, Tiptap, local Slate v2 proof, source-scoped invalidation, relevant learnings, maintainer objections, and ecosystem-owner pressure are merged into keep/drop/proof rules.  |
+| shadcn-style composability and hook/component minimalism |   0.10 |  0.91 | Docs/example discoverability now has a phase: simple `decorate`, scalable sources, durable annotation/widget APIs, product examples above raw Slate, projection internals last.                        |
 
 Why not higher:
 
@@ -530,7 +530,7 @@ Pass-10 score cap verdict:
   objections, high-risk gates, and ecosystem demands are now merged into the
   executable plan rather than parked as commentary.
 - This is plan confidence only. It does not mean implementation closure:
-  issue-ledger sync, final handoff, and the later `../slate-v2` implementation
+  issue-ledger sync, final handoff, and the later `.tmp/slate-v2` implementation
   gates remain required.
 
 ## 7. Ecosystem Strategy Synthesis
@@ -556,24 +556,24 @@ Evidence read:
   and
   `docs/solutions/performance-issues/2026-04-11-slate-v2-huge-document-typing-needs-selector-fanout-cuts-before-islands.md`
 - Live source refresh:
-  `../slate-v2/packages/slate-react/src/projection-store.ts`,
-  `../slate-v2/packages/slate-react/src/decoration-source.ts`,
-  `../slate-v2/packages/slate-react/src/annotation-store.ts`,
-  `../slate-v2/packages/slate-react/src/hooks/use-editor-selector.tsx`,
-  `../slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx`,
+  `.tmp/slate-v2/packages/slate-react/src/projection-store.ts`,
+  `.tmp/slate-v2/packages/slate-react/src/decoration-source.ts`,
+  `.tmp/slate-v2/packages/slate-react/src/annotation-store.ts`,
+  `.tmp/slate-v2/packages/slate-react/src/hooks/use-editor-selector.tsx`,
+  `.tmp/slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx`,
   and
-  `../slate-v2/packages/slate-react/test/annotation-store-contract.tsx`.
+  `.tmp/slate-v2/packages/slate-react/test/annotation-store-contract.tsx`.
 
 Strategy:
 
-| Reference | Steal | Reject | Diverge | Slate v2 consequence |
-| --- | --- | --- | --- | --- |
-| React 19.2 | `useSyncExternalStore`, nonurgent UI scheduling, `useDeferredValue`, `Activity`, and Performance Tracks as the React-facing proof vocabulary. | The idea that React scheduling replaces editor dirty metadata or child-scoped invalidation. | Keep invalidation in Slate; let React consume committed snapshots and external-store slices. | Keep selector hooks and background UI lanes, but require render-priority evidence for performance claims. |
-| Lexical | Inline mark ids plus external comment metadata, separate decorator-node UI, explicit render subscriptions, dirty leaf/element reconciliation as a benchmark. | Putting all overlay metadata in the document or claiming React 19.2 alone beats Lexical dirty runtime. | Keep Slate JSON/ops flexibility and product-noun stores instead of Lexical node classes as the API. | Add deeper dirty/source metadata below React; keep annotation metadata outside raw document value. |
-| ProseMirror | Persistent mapped decorations, child-scoped overlay propagation, durable bookmarks, and explicit incremental view-update discipline. | One global callback array as the only scalable decoration model. | Keep Slate `Bookmark` and projection/source stores without adopting ProseMirror schema/viewdesc shape. | Source/runtime buckets need mapping proof before field-best decoration perf claims. |
-| Tiptap | Extension ergonomics, command discoverability, optional chaining as transaction sugar, React selector guidance, composable UI helpers. | Commands or chain API as a second write engine; ProseMirror leakage as the advanced Slate default. | Keep `editor.update` as the write lifecycle and let Plate own opinionated product APIs. | Raw Slate stays unopinionated; Plate gets the richer DX layer on top. |
-| Current Slate v2 | Runtime-id projections, source dirtiness options, runtime/source subscriptions, metrics, decoration sources, annotation stores, and `Bookmark` tests. | Publishing raw projection plumbing as the default app authoring surface. | Use projection as transport; expose decoration/annotation/widget nouns first. | The current backbone is right, but pass 6 must define exact perf, browser, and API gates. |
-| Source-scoped invalidation decision | Dirty paths, touched runtime ids, replace epoch, operation class, source dirtiness, per-source/per-runtime updates, full refresh fallback. | Treating local subscribers as enough while recompute still starts broad. | Build source-scoped invalidation under the current projection API instead of replacing the API again. | `ralph` implementation slices should target recompute metadata before public superiority claims. |
+| Reference                           | Steal                                                                                                                                                        | Reject                                                                                                 | Diverge                                                                                                | Slate v2 consequence                                                                                      |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------- |
+| React 19.2                          | `useSyncExternalStore`, nonurgent UI scheduling, `useDeferredValue`, `Activity`, and Performance Tracks as the React-facing proof vocabulary.                | The idea that React scheduling replaces editor dirty metadata or child-scoped invalidation.            | Keep invalidation in Slate; let React consume committed snapshots and external-store slices.           | Keep selector hooks and background UI lanes, but require render-priority evidence for performance claims. |
+| Lexical                             | Inline mark ids plus external comment metadata, separate decorator-node UI, explicit render subscriptions, dirty leaf/element reconciliation as a benchmark. | Putting all overlay metadata in the document or claiming React 19.2 alone beats Lexical dirty runtime. | Keep Slate JSON/ops flexibility and product-noun stores instead of Lexical node classes as the API.    | Add deeper dirty/source metadata below React; keep annotation metadata outside raw document value.        |
+| ProseMirror                         | Persistent mapped decorations, child-scoped overlay propagation, durable bookmarks, and explicit incremental view-update discipline.                         | One global callback array as the only scalable decoration model.                                       | Keep Slate `Bookmark` and projection/source stores without adopting ProseMirror schema/viewdesc shape. | Source/runtime buckets need mapping proof before field-best decoration perf claims.                       |
+| Tiptap                              | Extension ergonomics, command discoverability, optional chaining as transaction sugar, React selector guidance, composable UI helpers.                       | Commands or chain API as a second write engine; ProseMirror leakage as the advanced Slate default.     | Keep `editor.update` as the write lifecycle and let Plate own opinionated product APIs.                | Raw Slate stays unopinionated; Plate gets the richer DX layer on top.                                     |
+| Current Slate v2                    | Runtime-id projections, source dirtiness options, runtime/source subscriptions, metrics, decoration sources, annotation stores, and `Bookmark` tests.        | Publishing raw projection plumbing as the default app authoring surface.                               | Use projection as transport; expose decoration/annotation/widget nouns first.                          | The current backbone is right, but pass 6 must define exact perf, browser, and API gates.                 |
+| Source-scoped invalidation decision | Dirty paths, touched runtime ids, replace epoch, operation class, source dirtiness, per-source/per-runtime updates, full refresh fallback.                   | Treating local subscribers as enough while recompute still starts broad.                               | Build source-scoped invalidation under the current projection API instead of replacing the API again.  | `ralph` implementation slices should target recompute metadata before public superiority claims.          |
 
 Non-negotiable conclusion:
 
@@ -608,15 +608,15 @@ Pass-9 evidence re-read:
 
 Maintainer pressure table:
 
-| Owner lens | Would accept | Would reject | Demand before execution | Plan response |
-| --- | --- | --- | --- | --- |
-| React maintainers | `useSyncExternalStore` snapshots, selector subscriptions, urgent editable work, nonurgent side UI, Performance Tracks as evidence. | Treating React scheduling as editor correctness, putting editable DOM sync behind background lanes, effect-plus-state loops for derived overlay data. | Show stable snapshots, narrow subscriptions, urgent typing/selection paths, and render-priority evidence for any React performance claim. | Keep React as the consumer of Slate commit/projection facts. Do not make React the dirty-node engine. Benchmark plus browser rows must prove the split. |
-| Slate maintainers | Classic `decorate` for simple transient ranges, Slate-close render names, unopinionated raw APIs, small escape hatches. | Product comments/review workflow in raw Slate, projection-store-first docs, breaking compatibility for no measured win. | Beginner docs must start with `decorate`; advanced docs must justify sources/projection with scale/proof; compatibility aliases need an audit. | Keep the simple/scalable/durable/advanced API ladder and move alias/prop decisions into the benchmark repair phase. |
-| Plate maintainers | Decoration/annotation/widget substrate that supports comments, suggestions, toolbars, sidebars, and product chrome without every feature reimplementing anchors. | Raw Slate owning Plate product policy, or forcing Plate to import projection internals for normal comments/suggestions. | A Plate-style adapter proof must compile through public substrate nouns first: decoration sources, annotation stores, widget stores, bookmarks, and commit metadata. | Add adapter proof to revision/pass 10 before `ralph`; projection internals remain an escape hatch, not Plate's primary integration path. |
-| slate-yjs maintainers | Deterministic operations, durable anchors/bookmarks, commit metadata, local-only rendering state, and remote edit mapping. | Shared CRDT state depending on mounted React state, shell/staged mount state, or product comment schemas in raw Slate. | Remote text/structure edit proof must map bookmarks and annotation projection buckets without forcing comment metadata into document value. | Keep collaboration service/schema above raw Slate; require remote-edit anchor proof before issue-sync upgrades. |
-| Lexical maintainers | Split inline ids from comment metadata, separate decorator/widget UI, explicit subscriptions, dirty leaf/element reconciliation as a benchmark target. | Claims that React 19.2 alone beats Lexical's dirty runtime, or that every overlay belongs in document JSON. | Show dirty/source/runtime impact facts below React, not just external-store subscriptions. | Keep source-scoped invalidation as the next implementation tranche and block field-best claims until benchmarks prove it. |
-| ProseMirror maintainers | Mapped overlay data, child-scoped propagation, durable bookmarks, and explicit view/update discipline. | One global `decorate` callback as the scalable story, or broad projection recompute hidden behind local subscriptions. | Prove child/runtime-scoped overlay slices, durable anchor rebasing, and browser selection behavior. | Keep `Bookmark`, projection/source stores, and source-scoped invalidation; require browser/native proof for DOM claims. |
-| Tiptap maintainers | Extension ergonomics, command discoverability, selector guidance, composable UI helpers, product-layer docs. | A second write engine, ProseMirror leakage as advanced Slate API, or docs that make users assemble too many primitives before seeing value. | Examples must be discoverable and composable: provider/content/sidebar/floating primitives at the product layer, with `editor.update` as the write lifecycle. | Keep raw Slate unopinionated; let Plate own richer product ergonomics; pass 10 must add an example/docs order that makes the API feel learnable. |
+| Owner lens              | Would accept                                                                                                                                                     | Would reject                                                                                                                                          | Demand before execution                                                                                                                                              | Plan response                                                                                                                                           |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| React maintainers       | `useSyncExternalStore` snapshots, selector subscriptions, urgent editable work, nonurgent side UI, Performance Tracks as evidence.                               | Treating React scheduling as editor correctness, putting editable DOM sync behind background lanes, effect-plus-state loops for derived overlay data. | Show stable snapshots, narrow subscriptions, urgent typing/selection paths, and render-priority evidence for any React performance claim.                            | Keep React as the consumer of Slate commit/projection facts. Do not make React the dirty-node engine. Benchmark plus browser rows must prove the split. |
+| Slate maintainers       | Classic `decorate` for simple transient ranges, Slate-close render names, unopinionated raw APIs, small escape hatches.                                          | Product comments/review workflow in raw Slate, projection-store-first docs, breaking compatibility for no measured win.                               | Beginner docs must start with `decorate`; advanced docs must justify sources/projection with scale/proof; compatibility aliases need an audit.                       | Keep the simple/scalable/durable/advanced API ladder and move alias/prop decisions into the benchmark repair phase.                                     |
+| Plate maintainers       | Decoration/annotation/widget substrate that supports comments, suggestions, toolbars, sidebars, and product chrome without every feature reimplementing anchors. | Raw Slate owning Plate product policy, or forcing Plate to import projection internals for normal comments/suggestions.                               | A Plate-style adapter proof must compile through public substrate nouns first: decoration sources, annotation stores, widget stores, bookmarks, and commit metadata. | Add adapter proof to revision/pass 10 before `ralph`; projection internals remain an escape hatch, not Plate's primary integration path.                |
+| slate-yjs maintainers   | Deterministic operations, durable anchors/bookmarks, commit metadata, local-only rendering state, and remote edit mapping.                                       | Shared CRDT state depending on mounted React state, shell/staged mount state, or product comment schemas in raw Slate.                                | Remote text/structure edit proof must map bookmarks and annotation projection buckets without forcing comment metadata into document value.                          | Keep collaboration service/schema above raw Slate; require remote-edit anchor proof before issue-sync upgrades.                                         |
+| Lexical maintainers     | Split inline ids from comment metadata, separate decorator/widget UI, explicit subscriptions, dirty leaf/element reconciliation as a benchmark target.           | Claims that React 19.2 alone beats Lexical's dirty runtime, or that every overlay belongs in document JSON.                                           | Show dirty/source/runtime impact facts below React, not just external-store subscriptions.                                                                           | Keep source-scoped invalidation as the next implementation tranche and block field-best claims until benchmarks prove it.                               |
+| ProseMirror maintainers | Mapped overlay data, child-scoped propagation, durable bookmarks, and explicit view/update discipline.                                                           | One global `decorate` callback as the scalable story, or broad projection recompute hidden behind local subscriptions.                                | Prove child/runtime-scoped overlay slices, durable anchor rebasing, and browser selection behavior.                                                                  | Keep `Bookmark`, projection/source stores, and source-scoped invalidation; require browser/native proof for DOM claims.                                 |
+| Tiptap maintainers      | Extension ergonomics, command discoverability, selector guidance, composable UI helpers, product-layer docs.                                                     | A second write engine, ProseMirror leakage as advanced Slate API, or docs that make users assemble too many primitives before seeing value.           | Examples must be discoverable and composable: provider/content/sidebar/floating primitives at the product layer, with `editor.update` as the write lifecycle.        | Keep raw Slate unopinionated; let Plate own richer product ergonomics; pass 10 must add an example/docs order that makes the API feel learnable.        |
 
 Accepted pass-9 revisions:
 
@@ -795,34 +795,34 @@ Status: defined after pass 6.
 
 Package proof rows:
 
-| Surface | Required proof | Current owner | Acceptance |
-| --- | --- | --- | --- |
-| Provider/editor identity | provider hook contract | `../slate-v2/packages/slate-react/test/provider-hooks-contract.tsx` | editor replacement and provider identity do not wake unrelated hot-path subscribers |
-| Projection slices | projection contract | `../slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx` | overlapping payloads stay multiplicity-safe; sibling projection changes do not rerender unrelated runtime ids |
-| Decoration selectors | decoration selector contract | `../slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx` | `useDecorationSelector` stays runtime-id scoped and advanced; no sibling projection rerender |
-| Annotation ids | annotation store contract | `../slate-v2/packages/slate-react/test/annotation-store-contract.tsx` | annotation metadata-only changes wake annotation subscribers, not projection/runtime subscribers |
-| Annotation runtime buckets | annotation projection contract | `../slate-v2/packages/slate-react/test/annotation-store-contract.tsx` | only affected annotation ids and runtime buckets wake; unrelated annotations stay quiet |
-| Widgets | widget layer contract | `../slate-v2/packages/slate-react/test/widget-layer-contract.tsx` | widget recompute stays separate from inline projection ranges |
-| Render profiling | render profiler contract | `../slate-v2/packages/slate-react/test/render-profiler-contract.test.tsx` | selector/render profiling keeps stable ids for benchmark rows |
+| Surface                    | Required proof                 | Current owner                                                                    | Acceptance                                                                                                    |
+| -------------------------- | ------------------------------ | -------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| Provider/editor identity   | provider hook contract         | `.tmp/slate-v2/packages/slate-react/test/provider-hooks-contract.tsx`            | editor replacement and provider identity do not wake unrelated hot-path subscribers                           |
+| Projection slices          | projection contract            | `.tmp/slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx` | overlapping payloads stay multiplicity-safe; sibling projection changes do not rerender unrelated runtime ids |
+| Decoration selectors       | decoration selector contract   | `.tmp/slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx` | `useDecorationSelector` stays runtime-id scoped and advanced; no sibling projection rerender                  |
+| Annotation ids             | annotation store contract      | `.tmp/slate-v2/packages/slate-react/test/annotation-store-contract.tsx`          | annotation metadata-only changes wake annotation subscribers, not projection/runtime subscribers              |
+| Annotation runtime buckets | annotation projection contract | `.tmp/slate-v2/packages/slate-react/test/annotation-store-contract.tsx`          | only affected annotation ids and runtime buckets wake; unrelated annotations stay quiet                       |
+| Widgets                    | widget layer contract          | `.tmp/slate-v2/packages/slate-react/test/widget-layer-contract.tsx`              | widget recompute stays separate from inline projection ranges                                                 |
+| Render profiling           | render profiler contract       | `.tmp/slate-v2/packages/slate-react/test/render-profiler-contract.test.tsx`      | selector/render profiling keeps stable ids for benchmark rows                                                 |
 
 Benchmark proof rows:
 
-| Lane | Command, cwd `../slate-v2` | Hard acceptance |
-| --- | --- | --- |
-| Rerender breadth | `bun run bench:react:rerender-breadth:local` | selection changes: broad/left/right block renders `0`, selection renders equal operation count; many-leaf edit: edited leaf `1`, sibling leaves `0`, block `0`; deep edit: deep leaf `1`, ancestors/siblings `0`; decoration toggle: one matching overlay render, no text/sibling overlay render, projection recompute `1`; source-scoped invalidation: only the dirty source recomputes, unrelated source recompute counts `0`. |
-| Current rerender evidence | same command, run 2026-05-08 | passed. Current maxes: selection 20 ops `5.71ms`, many-leaf edit `4.12ms`, deep edit `3.5ms`, decoration toggle `0.34ms`, source selection/text/external recompute split exactly matched source class. These numbers are evidence, not permanent cross-machine SLA. |
-| Huge-document overlays | `bun run bench:react:huge-document-overlays:local` | must pass before closure. It must report overlay toggle, active edit after overlay, and shell promotion with projection recompute `<= 1`, stable shell/mounted-text counts, no far text/projection rerender on active edit, and selection moved to the promoted shell target. |
-| Current huge-overlay evidence | same command, run 2026-05-08 after Ralph slice 1 | passed. The benchmark now uses `useEditorSelector`, `createDecorationSource`, `<Slate decorationSources={...}>`, and `withReact(createEditor())`. Current evidence: active edit after overlay rerenders active text once, far text/projection `0`, projection recompute `0`; overlay toggle recomputes `1` and wakes the far projection once; shell promotion moves selection to top-level `100`, shell count `8 -> 7`, mounted text `40 -> 60`, projection recompute `0`. |
+| Lane                          | Command, cwd `.tmp/slate-v2`                       | Hard acceptance                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| ----------------------------- | -------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Rerender breadth              | `bun run bench:react:rerender-breadth:local`       | selection changes: broad/left/right block renders `0`, selection renders equal operation count; many-leaf edit: edited leaf `1`, sibling leaves `0`, block `0`; deep edit: deep leaf `1`, ancestors/siblings `0`; decoration toggle: one matching overlay render, no text/sibling overlay render, projection recompute `1`; source-scoped invalidation: only the dirty source recomputes, unrelated source recompute counts `0`.                                           |
+| Current rerender evidence     | same command, run 2026-05-08                       | passed. Current maxes: selection 20 ops `5.71ms`, many-leaf edit `4.12ms`, deep edit `3.5ms`, decoration toggle `0.34ms`, source selection/text/external recompute split exactly matched source class. These numbers are evidence, not permanent cross-machine SLA.                                                                                                                                                                                                        |
+| Huge-document overlays        | `bun run bench:react:huge-document-overlays:local` | must pass before closure. It must report overlay toggle, active edit after overlay, and shell promotion with projection recompute `<= 1`, stable shell/mounted-text counts, no far text/projection rerender on active edit, and selection moved to the promoted shell target.                                                                                                                                                                                              |
+| Current huge-overlay evidence | same command, run 2026-05-08 after Ralph slice 1   | passed. The benchmark now uses `useEditorSelector`, `createDecorationSource`, `<Slate decorationSources={...}>`, and `withReact(createEditor())`. Current evidence: active edit after overlay rerenders active text once, far text/projection `0`, projection recompute `0`; overlay toggle recomputes `1` and wakes the far projection once; shell promotion moves selection to top-level `100`, shell count `8 -> 7`, mounted text `40 -> 60`, projection recompute `0`. |
 
 Native/browser proof rows:
 
-| Row | Required proof |
-| --- | --- |
-| Browser find | decorated/annotated/shelled content has explicit native, model-backed, materialize-first, or unsupported status per mode |
-| Native selection | selection drag, select-all, copy, paste, and follow-up typing work after overlay updates |
-| IME/composition | this lane only owns negative controls; raw mobile/device proof belongs to the Mobile/IME lane |
-| External refresh | external decoration refresh updates only intended overlay lanes and leaves caret/selection intact |
-| Review comments / annotations | persistent annotation anchors rebase through text edits and keep sidebar/inline projection coherent |
+| Row                           | Required proof                                                                                                           |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| Browser find                  | decorated/annotated/shelled content has explicit native, model-backed, materialize-first, or unsupported status per mode |
+| Native selection              | selection drag, select-all, copy, paste, and follow-up typing work after overlay updates                                 |
+| IME/composition               | this lane only owns negative controls; raw mobile/device proof belongs to the Mobile/IME lane                            |
+| External refresh              | external decoration refresh updates only intended overlay lanes and leaves caret/selection intact                        |
+| Review comments / annotations | persistent annotation anchors rebase through text edits and keep sidebar/inline projection coherent                      |
 
 ## 15. Browser Stress / Parity Strategy
 
@@ -830,20 +830,20 @@ Status: defined after pass 6.
 
 Browser strategy:
 
-| Example / route owner | Behavior to prove | Closure condition |
-| --- | --- | --- |
-| `../slate-v2/site/examples/ts/search-highlighting.tsx` | search decoration updates while selection and typing stay coherent | search update, select result, type after selection, copy selected text |
-| `../slate-v2/site/examples/ts/external-decoration-sources.tsx` | explicit external source refresh | refresh only matching source, caret remains stable, unrelated text does not rerender |
-| `../slate-v2/site/examples/ts/review-comments.tsx` | annotation sidebar plus inline projection | edit inside and before comment, sidebar range follows, inline projection follows |
-| `../slate-v2/site/examples/ts/persistent-annotation-anchors.tsx` | durable bookmark anchor behavior | insert/delete around anchor, then select/copy/follow-up type |
-| `../slate-v2/site/examples/ts/code-highlighting.tsx` and `highlighted-text.tsx` | overlapping marks/decorations | overlapping payloads render without `Object.assign`-style lossiness |
-| `../slate-v2/site/examples/ts/rendering-strategy-runtime.tsx` | shell/staged rendering native-behavior contract | browser find, select-all, copy, paste, shell promotion, and follow-up typing have explicit mode status |
+| Example / route owner                                                             | Behavior to prove                                                  | Closure condition                                                                                      |
+| --------------------------------------------------------------------------------- | ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------ |
+| `.tmp/slate-v2/site/examples/ts/search-highlighting.tsx`                          | search decoration updates while selection and typing stay coherent | search update, select result, type after selection, copy selected text                                 |
+| `.tmp/slate-v2/site/examples/ts/external-decoration-sources.tsx`                  | explicit external source refresh                                   | refresh only matching source, caret remains stable, unrelated text does not rerender                   |
+| `.tmp/slate-v2/site/examples/ts/review-comments.tsx`                              | annotation sidebar plus inline projection                          | edit inside and before comment, sidebar range follows, inline projection follows                       |
+| `.tmp/slate-v2/site/examples/ts/persistent-annotation-anchors.tsx`                | durable bookmark anchor behavior                                   | insert/delete around anchor, then select/copy/follow-up type                                           |
+| `.tmp/slate-v2/site/examples/ts/code-highlighting.tsx` and `highlighted-text.tsx` | overlapping marks/decorations                                      | overlapping payloads render without `Object.assign`-style lossiness                                    |
+| `.tmp/slate-v2/site/examples/ts/rendering-strategy-runtime.tsx`                   | shell/staged rendering native-behavior contract                    | browser find, select-all, copy, paste, shell promotion, and follow-up typing have explicit mode status |
 
 Command policy:
 
 - iteration: focused package tests plus benchmark scripts above;
-- browser closure: `bun test:integration-local` from `../slate-v2`;
-- release-quality local closure: `bun check:full` from `../slate-v2`;
+- browser closure: `bun test:integration-local` from `.tmp/slate-v2`;
+- release-quality local closure: `bun check:full` from `.tmp/slate-v2`;
 - raw mobile/device claims: only `bun test:mobile-device-proof:raw` on a real
   device lane, and not in this React/decorations plan.
 
@@ -851,37 +851,37 @@ Command policy:
 
 Pass 6 applicability:
 
-| Lens | Status | Applied decision |
-| --- | --- | --- |
+| Lens                        | Status  | Applied decision                                                                                                                                                                                                          |
+| --------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | vercel-react-best-practices | applied | Use external-store/selectors for render state; apply rerender rules to hot editor units; use `Activity` only for hidden side UI, not editable body semantics; use JS map/set/index rules for repeated projection lookups. |
-| performance-oracle | applied | Treat projection and annotation source reads as repeated-unit hot paths; reject unbounded O(document) recompute as steady state; require 10x/100x cohort thinking before claiming scale. |
-| performance | applied | Added cohorts, repeated-unit budgets, source/recompute budgets, memory/DOM tags, degradation contracts, native-behavior rows, and browser/benchmark separation. |
-| tdd | applied | Implementation phases must add/extend behavior tests before code: projection/source invalidation tests, annotation bucket tests, benchmark guard rows, then browser rows. |
-| shadcn | applied | Product UI examples should use composable provider/content/sidebar/floating primitives; raw Slate must not absorb Plate-style comment UI or toolbar API. |
-| react-useeffect | applied | Effects are allowed for external subscriptions, source lifecycle, and DOM/browser synchronization only. Derived overlay state belongs in render/selectors/stores, not effect-plus-state loops. |
+| performance-oracle          | applied | Treat projection and annotation source reads as repeated-unit hot paths; reject unbounded O(document) recompute as steady state; require 10x/100x cohort thinking before claiming scale.                                  |
+| performance                 | applied | Added cohorts, repeated-unit budgets, source/recompute budgets, memory/DOM tags, degradation contracts, native-behavior rows, and browser/benchmark separation.                                                           |
+| tdd                         | applied | Implementation phases must add/extend behavior tests before code: projection/source invalidation tests, annotation bucket tests, benchmark guard rows, then browser rows.                                                 |
+| shadcn                      | applied | Product UI examples should use composable provider/content/sidebar/floating primitives; raw Slate must not absorb Plate-style comment UI or toolbar API.                                                                  |
+| react-useeffect             | applied | Effects are allowed for external subscriptions, source lifecycle, and DOM/browser synchronization only. Derived overlay state belongs in render/selectors/stores, not effect-plus-state loops.                            |
 
 ## 16.1 Pass 6 Proof Pressure Matrix
 
 Performance cohorts:
 
-| Cohort | Size / complexity | Default stance |
-| --- | --- | --- |
-| normal | `0-500` blocks, low decoration density | DOM-present, strict repeated-unit budgets |
-| medium | `500-2000` blocks | DOM-present with measured selector/projection budgets |
-| large | `2000-10000` blocks | DOM-present grouping or staged work only with native-behavior rows |
-| stress | `10000-50000` blocks | explicit shell/staged degradation candidates |
-| pathological | custom renderers, high annotations/comments, hidden boundaries, tables, collab, mobile/IME | complexity-tagged; never hidden inside block count |
+| Cohort       | Size / complexity                                                                          | Default stance                                                     |
+| ------------ | ------------------------------------------------------------------------------------------ | ------------------------------------------------------------------ |
+| normal       | `0-500` blocks, low decoration density                                                     | DOM-present, strict repeated-unit budgets                          |
+| medium       | `500-2000` blocks                                                                          | DOM-present with measured selector/projection budgets              |
+| large        | `2000-10000` blocks                                                                        | DOM-present grouping or staged work only with native-behavior rows |
+| stress       | `10000-50000` blocks                                                                       | explicit shell/staged degradation candidates                       |
+| pathological | custom renderers, high annotations/comments, hidden boundaries, tables, collab, mobile/IME | complexity-tagged; never hidden inside block count                 |
 
 Repeated-unit budgets:
 
-| Unit | Budget |
-| --- | --- |
-| Text leaf | one edited leaf rerender; zero sibling leaf rerenders; no child effect just to mirror text/marks |
-| Element/block | no ancestor/sibling rerender for text-only edits unless its own runtime id is impacted |
-| Decoration source | recompute only for matching dirtiness class/source; unrelated source recompute count `0` |
-| Annotation store | metadata-only refresh wakes annotation subscribers only; projection changes wake only affected runtime buckets |
-| Widget store | widget recompute separate from inline text projection; no widget mount in every repeated text unit |
-| Shell/staged segment | mode must report shell count, mounted text count, selection behavior, and follow-up typing behavior |
+| Unit                 | Budget                                                                                                         |
+| -------------------- | -------------------------------------------------------------------------------------------------------------- |
+| Text leaf            | one edited leaf rerender; zero sibling leaf rerenders; no child effect just to mirror text/marks               |
+| Element/block        | no ancestor/sibling rerender for text-only edits unless its own runtime id is impacted                         |
+| Decoration source    | recompute only for matching dirtiness class/source; unrelated source recompute count `0`                       |
+| Annotation store     | metadata-only refresh wakes annotation subscribers only; projection changes wake only affected runtime buckets |
+| Widget store         | widget recompute separate from inline text projection; no widget mount in every repeated text unit             |
+| Shell/staged segment | mode must report shell count, mounted text count, selection behavior, and follow-up typing behavior            |
 
 Memory/DOM tags required for large and stress rows:
 
@@ -920,34 +920,34 @@ High-risk trigger:
 
 Blast radius:
 
-| Surface | Affected owners | Risk |
-| --- | --- | --- |
-| Public API | `Slate` props, selector hooks, decoration source APIs, annotation/widget hooks, projection hooks/types | stale aliases or projection-first docs could lock in the wrong authoring model |
-| React runtime | provider identity, selector fanout, commit dispatch, focus state, DOM text sync | unrelated rerenders, stale selection, or missed subscriber wakeups |
-| Browser behavior | rendered decorations, annotations, widgets, shell/staged mode, editable DOM | broken find, drag selection, select-all, copy, paste, follow-up typing, accessibility, or IME |
-| Data and anchors | mark/range projection, bookmarks, annotation anchors, commit metadata | annotations or overlays drift through local/remote edits |
-| Migration consumers | raw Slate authors, Plate, slate-yjs, custom renderers, existing `decorate` users | app authors import internals, adapters depend on unstable details, docs imply false compatibility |
-| Proof/release | package tests, benchmarks, browser examples, issue ledgers, PR reference | benchmark-only claims or premature `Fixes #...` language ship without the original repro proof |
+| Surface             | Affected owners                                                                                        | Risk                                                                                              |
+| ------------------- | ------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------- |
+| Public API          | `Slate` props, selector hooks, decoration source APIs, annotation/widget hooks, projection hooks/types | stale aliases or projection-first docs could lock in the wrong authoring model                    |
+| React runtime       | provider identity, selector fanout, commit dispatch, focus state, DOM text sync                        | unrelated rerenders, stale selection, or missed subscriber wakeups                                |
+| Browser behavior    | rendered decorations, annotations, widgets, shell/staged mode, editable DOM                            | broken find, drag selection, select-all, copy, paste, follow-up typing, accessibility, or IME     |
+| Data and anchors    | mark/range projection, bookmarks, annotation anchors, commit metadata                                  | annotations or overlays drift through local/remote edits                                          |
+| Migration consumers | raw Slate authors, Plate, slate-yjs, custom renderers, existing `decorate` users                       | app authors import internals, adapters depend on unstable details, docs imply false compatibility |
+| Proof/release       | package tests, benchmarks, browser examples, issue ledgers, PR reference                               | benchmark-only claims or premature `Fixes #...` language ship without the original repro proof    |
 
 Three-scenario pre-mortem:
 
-| Scenario | Failure mode | Early warning | Required prevention |
-| --- | --- | --- | --- |
-| API split becomes confusing | Authors use raw projection internals for normal highlights, or expect `useSlateSelector` / `projectionStore` to be stable because stale examples still compile somewhere. | examples import projection stores for basic decoration work; docs lead with internals; benchmark repair silently restores aliases without a public API decision. | Docs/tutorial order must be `decorate`, decoration sources, annotation/widget stores, projection internals. Benchmark repair must include an export/docs audit before restoring any alias or prop. |
-| Runtime proof misses browser reality | Package tests and benchmarks pass, but decorated/annotated editing breaks native selection, browser find, copy/paste, select-all, composition, or follow-up typing. | browser rows stay specified but unrun; shell/staged mode lacks mode status; IME language starts sounding like exact closure. | Focused browser rows and `bun test:integration-local` are closure gates. This lane may only claim IME negative controls; raw-device proof stays in the Mobile/IME lane. |
-| Migration/collab substrate is too weak | Plate comments/suggestions or slate-yjs remote edits need durable anchors and targeted projection updates, but adapters either import internals or force comment metadata into document value. | Plate proof imports projection internals as primary API; slate-yjs proof skips remote edit mapping; annotation metadata changes wake broad projection subscribers. | Adapter proof must use decoration/annotation/widget nouns first, prove durable anchor rebasing, and keep raw Slate out of product comment/suggestion/CRDT service ownership. |
+| Scenario                               | Failure mode                                                                                                                                                                                   | Early warning                                                                                                                                                      | Required prevention                                                                                                                                                                                |
+| -------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| API split becomes confusing            | Authors use raw projection internals for normal highlights, or expect `useSlateSelector` / `projectionStore` to be stable because stale examples still compile somewhere.                      | examples import projection stores for basic decoration work; docs lead with internals; benchmark repair silently restores aliases without a public API decision.   | Docs/tutorial order must be `decorate`, decoration sources, annotation/widget stores, projection internals. Benchmark repair must include an export/docs audit before restoring any alias or prop. |
+| Runtime proof misses browser reality   | Package tests and benchmarks pass, but decorated/annotated editing breaks native selection, browser find, copy/paste, select-all, composition, or follow-up typing.                            | browser rows stay specified but unrun; shell/staged mode lacks mode status; IME language starts sounding like exact closure.                                       | Focused browser rows and `bun test:integration-local` are closure gates. This lane may only claim IME negative controls; raw-device proof stays in the Mobile/IME lane.                            |
+| Migration/collab substrate is too weak | Plate comments/suggestions or slate-yjs remote edits need durable anchors and targeted projection updates, but adapters either import internals or force comment metadata into document value. | Plate proof imports projection internals as primary API; slate-yjs proof skips remote edit mapping; annotation metadata changes wake broad projection subscribers. | Adapter proof must use decoration/annotation/widget nouns first, prove durable anchor rebasing, and keep raw Slate out of product comment/suggestion/CRDT service ownership.                       |
 
 Expanded proof plan:
 
-| Proof layer | Required proof before `ralph` closure |
-| --- | --- |
-| Unit/package | Provider hook contract, projection contract, annotation store contract, widget layer contract, render profiler contract, plus explicit tests for source-scoped invalidation and metadata-only annotation wakes. |
-| Integration | Huge-overlay benchmark repaired against current API or deliberate compatibility shims, with `bench:react:huge-document-overlays:local` green in `../slate-v2`. |
-| Browser/native | Search highlighting, external decoration refresh, review comments, persistent annotation anchors, overlapping marks/decorations, and rendering-strategy runtime examples must prove find, selection, copy, paste, select-all, and follow-up typing status. |
-| Migration/adoption | Plate-style comments/suggestions adapter compiles without projection internals as the primary API; slate-yjs-style remote text/structure edit proof maps bookmarks and annotation projection buckets. |
-| Docs/examples | Beginner docs lead with `decorate`; scalable docs lead with decoration sources; durable docs name annotation anchors without product comment workflow; advanced docs isolate projection transport. |
-| Performance/release | Rerender breadth and huge-overlay benchmarks green; browser rows not replaced by benchmark rows; `bun check` remains the final fast sibling-repo gate, with `bun check:full` only for local full browser closure. |
-| Issue accounting | No exact `Fixes #...` claim unless the original issue class has a replayable proof owner. Related/improves/not-claimed rows stay conservative until pass 11 sync. |
+| Proof layer         | Required proof before `ralph` closure                                                                                                                                                                                                                      |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Unit/package        | Provider hook contract, projection contract, annotation store contract, widget layer contract, render profiler contract, plus explicit tests for source-scoped invalidation and metadata-only annotation wakes.                                            |
+| Integration         | Huge-overlay benchmark repaired against current API or deliberate compatibility shims, with `bench:react:huge-document-overlays:local` green in `.tmp/slate-v2`.                                                                                           |
+| Browser/native      | Search highlighting, external decoration refresh, review comments, persistent annotation anchors, overlapping marks/decorations, and rendering-strategy runtime examples must prove find, selection, copy, paste, select-all, and follow-up typing status. |
+| Migration/adoption  | Plate-style comments/suggestions adapter compiles without projection internals as the primary API; slate-yjs-style remote text/structure edit proof maps bookmarks and annotation projection buckets.                                                      |
+| Docs/examples       | Beginner docs lead with `decorate`; scalable docs lead with decoration sources; durable docs name annotation anchors without product comment workflow; advanced docs isolate projection transport.                                                         |
+| Performance/release | Rerender breadth and huge-overlay benchmarks green; browser rows not replaced by benchmark rows; `bun check` remains the final fast sibling-repo gate, with `bun check:full` only for local full browser closure.                                          |
+| Issue accounting    | No exact `Fixes #...` claim unless the original issue class has a replayable proof owner. Related/improves/not-claimed rows stay conservative until pass 11 sync.                                                                                          |
 
 Rollback and remediation answers:
 
@@ -995,35 +995,35 @@ Evidence refreshed for this pass:
 
 - current `<Slate>` public props are `editor`, `decorationSources`,
   `annotationStore`, and change callbacks in
-  `../slate-v2/packages/slate-react/src/components/slate.tsx:63-74`;
+  `.tmp/slate-v2/packages/slate-react/src/components/slate.tsx:63-74`;
 - current `<Slate>` composes decoration sources and annotation projection stores
-  in `../slate-v2/packages/slate-react/src/components/slate.tsx:175-184`;
+  in `.tmp/slate-v2/packages/slate-react/src/components/slate.tsx:175-184`;
 - current `slate-react` exports `useEditorSelector`, decoration source hooks,
   annotation hooks, widget hooks, projection hooks, and projection store types
-  in `../slate-v2/packages/slate-react/src/index.ts:82-138`;
+  in `.tmp/slate-v2/packages/slate-react/src/index.ts:82-138`;
 - current `createDecorationSource` wraps projection transport behind a
   product-noun source API in
-  `../slate-v2/packages/slate-react/src/decoration-source.ts:111-129`;
+  `.tmp/slate-v2/packages/slate-react/src/decoration-source.ts:111-129`;
 - current annotation stores own id, anchor, optional data/projection,
   projection store, and targeted subscription contracts in
-  `../slate-v2/packages/slate-react/src/annotation-store.ts:13-87`;
+  `.tmp/slate-v2/packages/slate-react/src/annotation-store.ts:13-87`;
 - the huge-document overlay benchmark is stale: it imports
   `useSlateSelector` and passes `projectionStore` to `<Slate>` in
-  `../slate-v2/scripts/benchmarks/browser/react/huge-document-overlays.tsx:12-19`
+  `.tmp/slate-v2/scripts/benchmarks/browser/react/huge-document-overlays.tsx:12-19`
   and
-  `../slate-v2/scripts/benchmarks/browser/react/huge-document-overlays.tsx:237-239`.
+  `.tmp/slate-v2/scripts/benchmarks/browser/react/huge-document-overlays.tsx:237-239`.
 
 Challenge rows:
 
-| Decision | Strongest fair objection | Steelman antithesis | Tradeoff tension | Alternatives | Why chosen wins | Adoption / docs answer | Proof required | Verdict |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Keep classic `decorate` for simple transient ranges and use decoration sources for high-churn/scalable overlays. | "Classic `decorate` was one function. Source stores are extra API, extra docs, and too engine-shaped for most users." | Keep only `decorate`, improve memo guidance, and avoid another public overlay primitive. | Two public overlay paths can confuse users and make examples feel split. | decorate-only; source-only; tiered basic/scalable model. | decorate-only keeps the old global invalidation pressure behind #4483/#5987/#4993-style failures. The current source API already hides projection behind `createDecorationSource`, while `decorate` can stay the first tutorial path. | Docs must start with `decorate` for small transient highlights, then show "graduate to a decoration source when refresh frequency, source ownership, or document size matters." Do not lead with `ProjectionStore`. | package tests for both paths, browser examples for both paths, rerender benchmark for source-scoped invalidation, no exact issue fixes until replayed. | keep, with docs-order revision |
-| Keep projection transport available but advanced/internal by default. | "If projection is powerful, hiding it blocks advanced users; if you expose it first, Slate React becomes an engine API." | Either expose raw projection as the main API, or make it fully private and force all authors through nouns. | Advanced authors need escape hatches; public projection contracts can fossilize internals. | projection-first API; fully private projection; noun-first API with advanced export. | Current exports already expose projection hooks/types, but current `<Slate>` props lead through decoration and annotation stores. That is the right split: power is present, but normal authors should not start there. | Public examples lead with decoration source, annotation store, and widget store. Projection gets an advanced page with explicit escape-hatch language and stability caveats. | API docs compile against current exports; examples do not import raw projection for normal overlay use; advanced tests cover raw projection behavior. | keep, with advanced-tier wording |
-| Keep annotation stores in raw Slate as durable substrate, not product comments. | "Annotations are app/product features. Raw Slate should not own comments, permissions, sidebars, review states, or collaboration service models." | Cut annotation store from raw Slate and leave everything to Plate or app code. | Raw Slate could leak product nouns into the core if this grows past anchors and projections. | no raw annotation API; full raw comment framework; substrate-only annotation store. | The live store shape is substrate-level: id, anchor, optional data/projection, snapshot, projection store, targeted subscriptions. It does not own comments, permissions, UI, or services. That solves durable anchor/projection mechanics without product lock-in. | Docs call it durable anchors/annotations, not comments. Product examples live in Plate/app layers. Raw Slate examples stay metadata-light. | annotation anchor rebase tests, metadata-only subscription tests, browser review-comment example as product-layer proof, no raw workflow APIs. | keep, with boundary guard |
-| Treat benchmarks as necessary but insufficient. | "Benchmarks can lie. Real editor bugs are selection, IME, browser range, native copy/paste, and focus fallout." | Ignore local benchmarks and rely on browser E2E/manual traces only. | Benchmarks catch repeated-unit regressions cheaply, but they can bless unusable browser behavior. | benchmark-only; browser-only; layered proof gates. | Source-scoped overlay work needs repeated-unit budgets and browser proof. The plan already separates package tests, benchmarks, browser rows, native behavior rows, and mobile/device rows. | Every benchmark claim must name what it proves and what it does not prove. Browser/native rows stay first-class closure gates. | `bench:react:rerender-breadth:local`, fixed huge-overlay benchmark, focused browser examples, `bun test:integration-local` before closure. | keep |
-| Repair the huge-overlay benchmark API drift before using it as evidence. | "The red benchmark exposes public API drift. Adding `useSlateSelector` back might be cheap, but it could also create stale names forever." | Restore `useSlateSelector` and a `projectionStore` prop as compatibility shims immediately. | Alias compatibility helps migration, but stale names and props make the new API less clear. | restore both alias/prop; migrate benchmark to `useEditorSelector` plus `decorationSources`; create temporary benchmark-local adapter; drop benchmark. | Current live source names the selector `useEditorSelector` and current `<Slate>` accepts `decorationSources` / `annotationStore`. Default should be migrating the stale benchmark to the current API. Restore an alias only after a public API/docs audit proves legacy compatibility is intentional. | Implementation phase 2 must include an export/docs audit, then either migrate the benchmark or restore a typed alias with JSDoc and tests. No implementation or release closure while the benchmark is red. | `bun run bench:react:huge-document-overlays:local` green in `../slate-v2`; type/API contract for whichever path is chosen. | revise |
-| Keep browser/native proof rows before `ralph` closure, but do not make this lane claim Mobile/IME closure. | "Selection and IME breakage is exactly where overlay engines fail; desktop React rows are not enough." | Block all implementation until full mobile-device proof is available. | Mobile proof belongs to the Mobile/IME lane, but this lane can still break desktop native selection and browser range behavior. | require raw mobile proof here; skip browser proof here; negative-control browser proof here and raw-device claims elsewhere. | This plan owns decorated/annotated DOM behavior, native selection, browser find/copy/paste/select-all, and IME negative controls. It must not claim raw-device Mobile/IME fixes. | The handoff must say "negative controls only" for IME/mobile. Browser examples must prove desktop native behavior before closure. | focused browser rows plus `bun test:integration-local`; raw mobile/device proof only in the Mobile/IME lane. | keep |
-| Allow shell/staged rendering only as opt-in degradation, not the default Slate rendering model. | "This turns Slate React into a custom rendering engine and risks breaking native browser affordances." | Keep only DOM-present rendering and reject shell/staged modes entirely. | Staged rendering can improve stress cohorts but makes find, selection, copy, paste, accessibility, and IME behavior harder. | DOM-present only; shell-first virtualization; DOM-present default with opt-in degradation contract. | Normal documents should stay DOM-present. Large/stress cohorts need an explicit degradation mode, and every mode must declare native/model-backed/materialize-first/unsupported behavior. | Docs put DOM-present first. Shell/staged examples must show mode status and native-behavior tradeoffs rather than selling it as invisible performance magic. | rendering-strategy browser rows with find/select/copy/paste/follow-up typing; accessibility and IME status rows. | keep, with degradation guard |
+| Decision                                                                                                         | Strongest fair objection                                                                                                                          | Steelman antithesis                                                                                         | Tradeoff tension                                                                                                                | Alternatives                                                                                                                                          | Why chosen wins                                                                                                                                                                                                                                                                                       | Adoption / docs answer                                                                                                                                                                                              | Proof required                                                                                                                                         | Verdict                          |
+| ---------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------- |
+| Keep classic `decorate` for simple transient ranges and use decoration sources for high-churn/scalable overlays. | "Classic `decorate` was one function. Source stores are extra API, extra docs, and too engine-shaped for most users."                             | Keep only `decorate`, improve memo guidance, and avoid another public overlay primitive.                    | Two public overlay paths can confuse users and make examples feel split.                                                        | decorate-only; source-only; tiered basic/scalable model.                                                                                              | decorate-only keeps the old global invalidation pressure behind #4483/#5987/#4993-style failures. The current source API already hides projection behind `createDecorationSource`, while `decorate` can stay the first tutorial path.                                                                 | Docs must start with `decorate` for small transient highlights, then show "graduate to a decoration source when refresh frequency, source ownership, or document size matters." Do not lead with `ProjectionStore`. | package tests for both paths, browser examples for both paths, rerender benchmark for source-scoped invalidation, no exact issue fixes until replayed. | keep, with docs-order revision   |
+| Keep projection transport available but advanced/internal by default.                                            | "If projection is powerful, hiding it blocks advanced users; if you expose it first, Slate React becomes an engine API."                          | Either expose raw projection as the main API, or make it fully private and force all authors through nouns. | Advanced authors need escape hatches; public projection contracts can fossilize internals.                                      | projection-first API; fully private projection; noun-first API with advanced export.                                                                  | Current exports already expose projection hooks/types, but current `<Slate>` props lead through decoration and annotation stores. That is the right split: power is present, but normal authors should not start there.                                                                               | Public examples lead with decoration source, annotation store, and widget store. Projection gets an advanced page with explicit escape-hatch language and stability caveats.                                        | API docs compile against current exports; examples do not import raw projection for normal overlay use; advanced tests cover raw projection behavior.  | keep, with advanced-tier wording |
+| Keep annotation stores in raw Slate as durable substrate, not product comments.                                  | "Annotations are app/product features. Raw Slate should not own comments, permissions, sidebars, review states, or collaboration service models." | Cut annotation store from raw Slate and leave everything to Plate or app code.                              | Raw Slate could leak product nouns into the core if this grows past anchors and projections.                                    | no raw annotation API; full raw comment framework; substrate-only annotation store.                                                                   | The live store shape is substrate-level: id, anchor, optional data/projection, snapshot, projection store, targeted subscriptions. It does not own comments, permissions, UI, or services. That solves durable anchor/projection mechanics without product lock-in.                                   | Docs call it durable anchors/annotations, not comments. Product examples live in Plate/app layers. Raw Slate examples stay metadata-light.                                                                          | annotation anchor rebase tests, metadata-only subscription tests, browser review-comment example as product-layer proof, no raw workflow APIs.         | keep, with boundary guard        |
+| Treat benchmarks as necessary but insufficient.                                                                  | "Benchmarks can lie. Real editor bugs are selection, IME, browser range, native copy/paste, and focus fallout."                                   | Ignore local benchmarks and rely on browser E2E/manual traces only.                                         | Benchmarks catch repeated-unit regressions cheaply, but they can bless unusable browser behavior.                               | benchmark-only; browser-only; layered proof gates.                                                                                                    | Source-scoped overlay work needs repeated-unit budgets and browser proof. The plan already separates package tests, benchmarks, browser rows, native behavior rows, and mobile/device rows.                                                                                                           | Every benchmark claim must name what it proves and what it does not prove. Browser/native rows stay first-class closure gates.                                                                                      | `bench:react:rerender-breadth:local`, fixed huge-overlay benchmark, focused browser examples, `bun test:integration-local` before closure.             | keep                             |
+| Repair the huge-overlay benchmark API drift before using it as evidence.                                         | "The red benchmark exposes public API drift. Adding `useSlateSelector` back might be cheap, but it could also create stale names forever."        | Restore `useSlateSelector` and a `projectionStore` prop as compatibility shims immediately.                 | Alias compatibility helps migration, but stale names and props make the new API less clear.                                     | restore both alias/prop; migrate benchmark to `useEditorSelector` plus `decorationSources`; create temporary benchmark-local adapter; drop benchmark. | Current live source names the selector `useEditorSelector` and current `<Slate>` accepts `decorationSources` / `annotationStore`. Default should be migrating the stale benchmark to the current API. Restore an alias only after a public API/docs audit proves legacy compatibility is intentional. | Implementation phase 2 must include an export/docs audit, then either migrate the benchmark or restore a typed alias with JSDoc and tests. No implementation or release closure while the benchmark is red.         | `bun run bench:react:huge-document-overlays:local` green in `.tmp/slate-v2`; type/API contract for whichever path is chosen.                           | revise                           |
+| Keep browser/native proof rows before `ralph` closure, but do not make this lane claim Mobile/IME closure.       | "Selection and IME breakage is exactly where overlay engines fail; desktop React rows are not enough."                                            | Block all implementation until full mobile-device proof is available.                                       | Mobile proof belongs to the Mobile/IME lane, but this lane can still break desktop native selection and browser range behavior. | require raw mobile proof here; skip browser proof here; negative-control browser proof here and raw-device claims elsewhere.                          | This plan owns decorated/annotated DOM behavior, native selection, browser find/copy/paste/select-all, and IME negative controls. It must not claim raw-device Mobile/IME fixes.                                                                                                                      | The handoff must say "negative controls only" for IME/mobile. Browser examples must prove desktop native behavior before closure.                                                                                   | focused browser rows plus `bun test:integration-local`; raw mobile/device proof only in the Mobile/IME lane.                                           | keep                             |
+| Allow shell/staged rendering only as opt-in degradation, not the default Slate rendering model.                  | "This turns Slate React into a custom rendering engine and risks breaking native browser affordances."                                            | Keep only DOM-present rendering and reject shell/staged modes entirely.                                     | Staged rendering can improve stress cohorts but makes find, selection, copy, paste, accessibility, and IME behavior harder.     | DOM-present only; shell-first virtualization; DOM-present default with opt-in degradation contract.                                                   | Normal documents should stay DOM-present. Large/stress cohorts need an explicit degradation mode, and every mode must declare native/model-backed/materialize-first/unsupported behavior.                                                                                                             | Docs put DOM-present first. Shell/staged examples must show mode status and native-behavior tradeoffs rather than selling it as invisible performance magic.                                                        | rendering-strategy browser rows with find/select/copy/paste/follow-up typing; accessibility and IME status rows.                                       | keep, with degradation guard     |
 
 Accepted revisions:
 
@@ -1054,20 +1054,20 @@ Unresolved decisions:
 
 ## 20. Pass Schedule And Pass-State Ledger
 
-| Pass | Name | Status | Evidence added | Plan delta | Open issues | Next owner |
-| --- | --- | --- | --- | --- | --- | --- |
-| 1 | Current-state read and initial score | complete | Live source/test reads; focused `../slate-v2` package tests; prior plan inventory | Created this combined plan, score `0.76`, no issue claims changed | ClawSweeper and issue-ledger passes pending | ClawSweeper related issue discovery |
-| 2 | Related issue discovery / ClawSweeper | complete | gitcrawl doctor/version; focused thread reads; neighbors for #5709/#4483/#5987/#3383/#4210/#3309/#5398/#4750/#4477; dossier append | Raised score to `0.80`; kept claims conservative; separated Mobile/IME rows from React/decorations closure | full corpus issue matrix still missing | Issue-ledger pass |
-| 3 | Issue-ledger pass | complete | Full `docs/slate-issues` stack scan; live ledger overlay; test/benchmark/package/requirements maps; #4993/#4997 PR-ref explanation | Added pass-3 matrix, reconciled future-proof rows, kept claims conservative, score `0.83` | no live ledger/PR sync until pass 11 | Intent/boundary and decision brief |
-| 4 | Intent/boundary and decision brief | complete | Intent-boundary pass; package ownership docs; pass-3 matrix; #4993/#4997 research refs | Hardened scope, non-goals, decision boundaries, consequences, and follow-up owners; score `0.84` | ecosystem strategy synthesis still missing | Research and ecosystem synthesis |
-| 5 | Research and ecosystem synthesis | complete | React 19.2, Lexical, ProseMirror, Tiptap, local Slate v2 proof, source-scoped invalidation, learnings, and live source refresh | Added concrete steal/reject/diverge strategy; raised score to `0.87`; kept projection transport advanced/internal | proof thresholds and objection answers still missing | Performance/DX/migration/regression pressure |
-| 6 | Performance/DX/migration/regression/simplicity pressure | complete | performance rule files; Vercel/shadcn/react-useeffect/tdd lenses; live source/export reads; benchmark script reads; `bench:react:rerender-breadth:local` pass; `bench:react:huge-document-overlays:local` red | Added exact cohorts, repeated-unit budgets, benchmark/native rows, DX/API rows, migration substrate rows, and red huge-overlay owner; score `0.88` | maintainer objections and high-risk pre-mortem still missing | Maintainer objection ledger |
-| 7 | Maintainer objection ledger | complete | steelman-pass; live `<Slate>` prop/export reads; live decoration/annotation source reads; stale huge-overlay benchmark read | Added challenge rows, accepted revisions, dropped choices, and score `0.89`; corrected red benchmark owner to include stale `projectionStore` prop | high-risk pre-mortem still missing; huge-overlay benchmark still red | High-risk deliberate pass |
-| 8 | High-risk deliberate pass | complete | high-risk-deliberate-pass; pass 6/7 proof rows; live API drift owner; browser/native and migration risk map | Added blast radius, three-scenario pre-mortem, expanded proof plan, rollback/remediation answers, and hard gates; score `0.90` | ecosystem maintainer pressure still missing; huge-overlay benchmark still red | Ecosystem maintainer pass |
-| 9 | Ecosystem maintainer pass | complete | React/Lexical/ProseMirror/Tiptap/local Slate v2 research re-read; local Plate/slate-yjs migration pressure scan | Added ecosystem maintainer table, accepted revisions, dropped demands, and score `0.91`; sent plan to revision | pass 10 must merge ecosystem demands into phases/handoff; huge-overlay benchmark still red | Revision pass |
-| 10 | Revision pass | complete | pass 7/8/9 accepted revisions; live source/API drift owner; proof and phase reconciliation | Merged revisions into public API, runtime, migration, proof, implementation phases, score caps, and handoff outline; score `0.92` | issue sync accounting still pending; huge-overlay benchmark still red | Issue sync accounting pass |
-| 11 | Issue sync accounting pass | complete | issue coverage matrix read; fork dossier read; live ledger read; PR reference patched | Kept issue classifications unchanged; synced PR reference to accepted API/proof wording; score stays `0.92` | closure pass still pending; huge-overlay benchmark still red | Closure score and final gates |
-| 12 | Closure score and final gates | complete | final gate review; pass-12 closure decision; final user-review handoff | Closed the Ralplan planning lane at `0.92`; assigned the red huge-overlay benchmark to implementation/release proof, not further planning | implementation slices still need `ralph`; huge-overlay benchmark still red | `ralph` implementation slices |
+| Pass | Name                                                    | Status   | Evidence added                                                                                                                                                                                                | Plan delta                                                                                                                                         | Open issues                                                                                | Next owner                                   |
+| ---- | ------------------------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ | -------------------------------------------- |
+| 1    | Current-state read and initial score                    | complete | Live source/test reads; focused `.tmp/slate-v2` package tests; prior plan inventory                                                                                                                           | Created this combined plan, score `0.76`, no issue claims changed                                                                                  | ClawSweeper and issue-ledger passes pending                                                | ClawSweeper related issue discovery          |
+| 2    | Related issue discovery / ClawSweeper                   | complete | gitcrawl doctor/version; focused thread reads; neighbors for #5709/#4483/#5987/#3383/#4210/#3309/#5398/#4750/#4477; dossier append                                                                            | Raised score to `0.80`; kept claims conservative; separated Mobile/IME rows from React/decorations closure                                         | full corpus issue matrix still missing                                                     | Issue-ledger pass                            |
+| 3    | Issue-ledger pass                                       | complete | Full `docs/slate-issues` stack scan; live ledger overlay; test/benchmark/package/requirements maps; #4993/#4997 PR-ref explanation                                                                            | Added pass-3 matrix, reconciled future-proof rows, kept claims conservative, score `0.83`                                                          | no live ledger/PR sync until pass 11                                                       | Intent/boundary and decision brief           |
+| 4    | Intent/boundary and decision brief                      | complete | Intent-boundary pass; package ownership docs; pass-3 matrix; #4993/#4997 research refs                                                                                                                        | Hardened scope, non-goals, decision boundaries, consequences, and follow-up owners; score `0.84`                                                   | ecosystem strategy synthesis still missing                                                 | Research and ecosystem synthesis             |
+| 5    | Research and ecosystem synthesis                        | complete | React 19.2, Lexical, ProseMirror, Tiptap, local Slate v2 proof, source-scoped invalidation, learnings, and live source refresh                                                                                | Added concrete steal/reject/diverge strategy; raised score to `0.87`; kept projection transport advanced/internal                                  | proof thresholds and objection answers still missing                                       | Performance/DX/migration/regression pressure |
+| 6    | Performance/DX/migration/regression/simplicity pressure | complete | performance rule files; Vercel/shadcn/react-useeffect/tdd lenses; live source/export reads; benchmark script reads; `bench:react:rerender-breadth:local` pass; `bench:react:huge-document-overlays:local` red | Added exact cohorts, repeated-unit budgets, benchmark/native rows, DX/API rows, migration substrate rows, and red huge-overlay owner; score `0.88` | maintainer objections and high-risk pre-mortem still missing                               | Maintainer objection ledger                  |
+| 7    | Maintainer objection ledger                             | complete | steelman-pass; live `<Slate>` prop/export reads; live decoration/annotation source reads; stale huge-overlay benchmark read                                                                                   | Added challenge rows, accepted revisions, dropped choices, and score `0.89`; corrected red benchmark owner to include stale `projectionStore` prop | high-risk pre-mortem still missing; huge-overlay benchmark still red                       | High-risk deliberate pass                    |
+| 8    | High-risk deliberate pass                               | complete | high-risk-deliberate-pass; pass 6/7 proof rows; live API drift owner; browser/native and migration risk map                                                                                                   | Added blast radius, three-scenario pre-mortem, expanded proof plan, rollback/remediation answers, and hard gates; score `0.90`                     | ecosystem maintainer pressure still missing; huge-overlay benchmark still red              | Ecosystem maintainer pass                    |
+| 9    | Ecosystem maintainer pass                               | complete | React/Lexical/ProseMirror/Tiptap/local Slate v2 research re-read; local Plate/slate-yjs migration pressure scan                                                                                               | Added ecosystem maintainer table, accepted revisions, dropped demands, and score `0.91`; sent plan to revision                                     | pass 10 must merge ecosystem demands into phases/handoff; huge-overlay benchmark still red | Revision pass                                |
+| 10   | Revision pass                                           | complete | pass 7/8/9 accepted revisions; live source/API drift owner; proof and phase reconciliation                                                                                                                    | Merged revisions into public API, runtime, migration, proof, implementation phases, score caps, and handoff outline; score `0.92`                  | issue sync accounting still pending; huge-overlay benchmark still red                      | Issue sync accounting pass                   |
+| 11   | Issue sync accounting pass                              | complete | issue coverage matrix read; fork dossier read; live ledger read; PR reference patched                                                                                                                         | Kept issue classifications unchanged; synced PR reference to accepted API/proof wording; score stays `0.92`                                        | closure pass still pending; huge-overlay benchmark still red                               | Closure score and final gates                |
+| 12   | Closure score and final gates                           | complete | final gate review; pass-12 closure decision; final user-review handoff                                                                                                                                        | Closed the Ralplan planning lane at `0.92`; assigned the red huge-overlay benchmark to implementation/release proof, not further planning          | implementation slices still need `ralph`; huge-overlay benchmark still red                 | `ralph` implementation slices                |
 
 ## 21. Plan Deltas From Review
 
@@ -1075,7 +1075,7 @@ Pass 1 deltas:
 
 - Created a new combined React/decorations slate-issues ralplan.
 - Reused prior done plans as evidence, not mutable state.
-- Recorded current live source owners and a focused `../slate-v2` test gate.
+- Recorded current live source owners and a focused `.tmp/slate-v2` test gate.
 - Seeded issue families and initial score.
 - Kept completion `pending`.
 
@@ -1148,9 +1148,9 @@ Pass 6 deltas:
 - Re-read live exports and confirmed `useDecorationSelector`,
   `useSlateDecorationSource`, annotation hooks, widget hooks, `EditorCommit`
   dirtiness, and `Slate` provider props as the current substrate.
-- Ran `bun run bench:react:rerender-breadth:local` in `../slate-v2`; it passed
+- Ran `bun run bench:react:rerender-breadth:local` in `.tmp/slate-v2`; it passed
   and produced exact current recompute/rerender evidence.
-- Ran `bun run bench:react:huge-document-overlays:local` in `../slate-v2`; it
+- Ran `bun run bench:react:huge-document-overlays:local` in `.tmp/slate-v2`; it
   failed because the benchmark imports stale `useSlateSelector` while live
   `slate-react` exports `useEditorSelector`.
 - Raised score from `0.87` to `0.88`; still below closure because pass 7/8
@@ -1293,7 +1293,7 @@ Executable draft after pass 10:
    - restore `useSlateSelector` or direct `<Slate projectionStore={...}>` only
      after an explicit public API audit, typed alias contract, and docs answer;
    - rerun `bun run bench:react:huge-document-overlays:local` in
-     `../slate-v2`.
+     `.tmp/slate-v2`.
 3. Source-scoped invalidation phase:
    - push dirty source class, source id, impacted runtime ids, annotation ids,
      and recompute metrics below React;
@@ -1340,7 +1340,7 @@ pnpm lint:fix
 bun run completion-check -- --file .tmp/completion-checks/slate-v2-react-decorations-slate-issues-ralplan.md
 ```
 
-Focused Slate v2 behavior gates, cwd `../slate-v2`:
+Focused Slate v2 behavior gates, cwd `.tmp/slate-v2`:
 
 ```bash
 bun test ./packages/slate-react/test/provider-hooks-contract.tsx ./packages/slate-react/test/projections-and-selection-contract.tsx ./packages/slate-react/test/annotation-store-contract.tsx ./packages/slate-react/test/widget-layer-contract.tsx ./packages/slate-react/test/render-profiler-contract.test.tsx
@@ -1348,7 +1348,7 @@ bun run bench:react:rerender-breadth:local
 bun run bench:react:huge-document-overlays:local
 ```
 
-Final Slate v2 closure gate, cwd `../slate-v2`:
+Final Slate v2 closure gate, cwd `.tmp/slate-v2`:
 
 ```bash
 bun check
@@ -1432,7 +1432,7 @@ Proof gates for `ralph`:
 - add browser/native rows for decorated/annotated/shelled selection, find,
   copy, paste, select-all, and follow-up typing before claiming browser
   behavior;
-- use `bun check` in `../slate-v2` as the fast sibling-repo closure gate.
+- use `bun check` in `.tmp/slate-v2` as the fast sibling-repo closure gate.
 
 Recommended `ralph` slice order:
 
@@ -1459,8 +1459,8 @@ Current gate status:
 - ecosystem synthesis complete;
 - performance/DX/migration/regression pressure pass complete;
 - Ralph slice 1 complete: `bench:react:huge-document-overlays:local` green in
-  `../slate-v2`;
-- `bun check` passed in `../slate-v2` after the benchmark repair;
+  `.tmp/slate-v2`;
+- `bun check` passed in `.tmp/slate-v2` after the benchmark repair;
 - maintainer objection pass complete;
 - high-risk deliberate pass complete;
 - ecosystem-maintainer pass complete;
@@ -1468,7 +1468,7 @@ Current gate status:
 - issue-sync pass complete;
 - final handoff complete.
 - Ralph slice 8 complete: Plate/slate-yjs adapter substrate proof is green in
-  `../slate-v2` through public comment examples, commit metadata, deterministic
+  `.tmp/slate-v2` through public comment examples, commit metadata, deterministic
   replay, local runtime targets, and bookmark rebasing.
 - Ralph slice 9 complete: docs/examples now expose the simple
   `Editable.decorate` path, scalable `decorationSources`, annotation stores,
@@ -1484,7 +1484,7 @@ Status: complete.
 
 Files changed:
 
-- `../slate-v2/scripts/benchmarks/browser/react/huge-document-overlays.tsx`
+- `.tmp/slate-v2/scripts/benchmarks/browser/react/huge-document-overlays.tsx`
 - `docs/slate-v2/references/pr-description.md`
 - `docs/plans/2026-05-08-slate-v2-react-decorations-slate-issues-ralplan.md`
 - `.tmp/completion-checks/slate-v2-react-decorations-slate-issues-ralplan.md`
@@ -1500,11 +1500,11 @@ Decision:
 
 Evidence:
 
-- `bun run bench:react:huge-document-overlays:local` passed in `../slate-v2`;
+- `bun run bench:react:huge-document-overlays:local` passed in `.tmp/slate-v2`;
 - focused `slate-react` package tests passed: provider hooks, projections,
   annotations, widgets, and render profiling;
-- `bun run bench:react:rerender-breadth:local` passed in `../slate-v2`;
-- `bun check` passed in `../slate-v2`.
+- `bun run bench:react:rerender-breadth:local` passed in `.tmp/slate-v2`;
+- `bun check` passed in `.tmp/slate-v2`.
 
 Next owner:
 
@@ -1523,20 +1523,20 @@ Files changed:
 
 Live source owner:
 
-- `../slate-v2/packages/slate-react/src/projection-store.ts`
+- `.tmp/slate-v2/packages/slate-react/src/projection-store.ts`
   - maps dirtiness classes to editor commit sources;
   - subscribes projection stores through `Editor.subscribeSource(...)`;
   - gates recompute by `dirtiness`, `runtimeScope`, and targeted `sourceId`;
   - exposes metrics for source reads, runtime bucket changes, and source
     subscriber wakes.
-- `../slate-v2/packages/slate-react/src/decoration-source.ts`
+- `.tmp/slate-v2/packages/slate-react/src/decoration-source.ts`
   - passes decoration source `id`, `dirtiness`, and `runtimeScope` into the
     projection store.
 
 Decision:
 
 - no implementation patch needed; the plan's target is already present in
-  current `../slate-v2`;
+  current `.tmp/slate-v2`;
 - kept PR reference unchanged because this slice changes no public API, issue
   claim, or proof status beyond already-recorded benchmark/source-scoped rows;
 - kept issue claims unchanged.
@@ -1544,10 +1544,10 @@ Decision:
 Evidence:
 
 - `bun test ./packages/slate-react/test/projections-and-selection-contract.tsx -t source`
-  passed in `../slate-v2`;
+  passed in `.tmp/slate-v2`;
 - `bun run bench:react:rerender-breadth:local` had already passed with
   `sourceScopedInvalidation` showing unrelated source recompute counts at `0`;
-- `bun check` passed in `../slate-v2`.
+- `bun check` passed in `.tmp/slate-v2`.
 
 Next owner:
 
@@ -1565,12 +1565,12 @@ Files changed:
 
 Live source owner:
 
-- `../slate-v2/packages/slate-react/src/hooks/use-editor-selector.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/hooks/use-editor-selector.tsx`
   - routes selector listeners through global, deferred, or runtime-id buckets;
   - limits runtime fanout to `affectedNodeRuntimeIds` /
     `nodeImpactRuntimeIds`;
   - skips stale mounted runtime-id fanout for root-order-only commits.
-- `../slate-v2/packages/slate-react/src/hooks/use-decoration-selector.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/hooks/use-decoration-selector.tsx`
   - reads one runtime id and subscribes through `store.subscribeRuntimeId(...)`
     when available.
 
@@ -1584,8 +1584,8 @@ Decision:
 Evidence:
 
 - `bun test ./packages/slate-react/test/provider-hooks-contract.tsx ./packages/slate-react/test/projections-and-selection-contract.tsx`
-  passed in `../slate-v2`;
-- prior full `bun check` passed in `../slate-v2` after slice 2.
+  passed in `.tmp/slate-v2`;
+- prior full `bun check` passed in `.tmp/slate-v2` after slice 2.
 
 Next owner:
 
@@ -1597,9 +1597,9 @@ Status: complete.
 
 Files changed:
 
-- `../slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
-- `../slate-v2/packages/slate-react/src/index.ts`
-- `../slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/index.ts`
+- `.tmp/slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx`
 - `docs/slate-v2/references/pr-description.md`
 - `docs/plans/2026-05-08-slate-v2-react-decorations-slate-issues-ralplan.md`
 - `.tmp/completion-checks/slate-v2-react-decorations-slate-issues-ralplan.md`
@@ -1607,12 +1607,12 @@ Files changed:
 
 Live source owner:
 
-- `../slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
   - adds `Editable.decorate` as the simple transient range API;
   - implements it as a thin `createDecorationSource(...)` adapter below
     `Editable`, composed with any provider-level projection store;
   - keeps generated projection keys internal when simple ranges omit a key.
-- `../slate-v2/packages/slate-react/src/decoration-source.ts`
+- `.tmp/slate-v2/packages/slate-react/src/decoration-source.ts`
   - remains the scalable source-id/runtime-bucket substrate for external or
     high-churn overlays.
 
@@ -1628,11 +1628,11 @@ Decision:
 Evidence:
 
 - `bun test ./packages/slate-react/test/projections-and-selection-contract.tsx -t "simple Editable decorate"`
-  passed in `../slate-v2`;
+  passed in `.tmp/slate-v2`;
 - `bun test ./packages/slate-react/test/projections-and-selection-contract.tsx ./packages/slate-react/test/app-owned-customization.tsx`
-  passed in `../slate-v2`;
-- `bun lint:fix` passed in `../slate-v2` and fixed formatting;
-- `bun check` passed in `../slate-v2`.
+  passed in `.tmp/slate-v2`;
+- `bun lint:fix` passed in `.tmp/slate-v2` and fixed formatting;
+- `bun check` passed in `.tmp/slate-v2`.
 
 Next owner:
 
@@ -1650,14 +1650,14 @@ Files changed:
 
 Live source owner:
 
-- `../slate-v2/packages/slate-react/src/annotation-store.ts`
+- `.tmp/slate-v2/packages/slate-react/src/annotation-store.ts`
   - keeps annotation subscribers separate from projection/runtime subscribers;
   - reprojects only candidate annotation ids when editor commit metadata allows;
   - wakes only changed annotation ids and changed runtime buckets.
-- `../slate-v2/packages/slate-react/src/hooks/use-slate-annotations.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-annotations.tsx`
   - exposes whole-store and single-annotation subscriptions through
     `useSyncExternalStore`.
-- `../slate-v2/packages/slate-react/src/widget-store.ts`
+- `.tmp/slate-v2/packages/slate-react/src/widget-store.ts`
   - owns widget visibility/state independently from text projection ranges.
 
 Decision:
@@ -1669,7 +1669,7 @@ Decision:
 Evidence:
 
 - `bun test ./packages/slate-react/test/annotation-store-contract.tsx ./packages/slate-react/test/widget-layer-contract.tsx`
-  passed in `../slate-v2`;
+  passed in `.tmp/slate-v2`;
 - `pnpm lint:fix` passed in `plate-2` after state sync.
 
 Next owner:
@@ -1682,14 +1682,14 @@ Status: complete.
 
 Files changed:
 
-- `../slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx`
+- `.tmp/slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx`
 - `docs/plans/2026-05-08-slate-v2-react-decorations-slate-issues-ralplan.md`
 - `.tmp/completion-checks/slate-v2-react-decorations-slate-issues-ralplan.md`
 - `.tmp/continue.md`
 
 Live source owner:
 
-- `../slate-v2/packages/slate-react/src/components/editable-text.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable-text.tsx`
   - splits text by all projection boundaries;
   - keeps `segment.slices` as multiplicity-safe projection metadata;
   - passes text marks through `leaf` / `segment.marks` without collapsing
@@ -1704,11 +1704,11 @@ Decision:
 Evidence:
 
 - `bun test ./packages/slate-react/test/projections-and-selection-contract.tsx -t "renderLeaf receives"`
-  passed in `../slate-v2`;
+  passed in `.tmp/slate-v2`;
 - `bun test ./packages/slate-react/test/projections-and-selection-contract.tsx`
-  passed in `../slate-v2`;
-- `bun lint:fix` passed in `../slate-v2`;
-- `bun check` passed in `../slate-v2`.
+  passed in `.tmp/slate-v2`;
+- `bun lint:fix` passed in `.tmp/slate-v2`;
+- `bun check` passed in `.tmp/slate-v2`.
 
 Next owner:
 
@@ -1750,11 +1750,11 @@ Rejected tactic:
 Evidence:
 
 - `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun run playwright playwright/integration/examples/highlighted-text.test.ts --project=chromium`
-  passed in `../slate-v2`: 12 passed;
+  passed in `.tmp/slate-v2`: 12 passed;
 - `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun run playwright playwright/integration/examples/review-comments.test.ts --project=chromium`
-  passed in `../slate-v2`: 1 passed;
+  passed in `.tmp/slate-v2`: 1 passed;
 - `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun run playwright playwright/integration/examples/dom-coverage-boundaries.test.ts --project=chromium`
-  passed in `../slate-v2`: 7 passed, 1 mobile-only skipped.
+  passed in `.tmp/slate-v2`: 7 passed, 1 mobile-only skipped.
 
 Next owner:
 
@@ -1766,7 +1766,7 @@ Status: complete.
 
 Files changed:
 
-- `../slate-v2/packages/slate-react/test/surface-contract.tsx`
+- `.tmp/slate-v2/packages/slate-react/test/surface-contract.tsx`
 - `docs/plans/2026-05-08-slate-v2-react-decorations-slate-issues-ralplan.md`
 - `docs/slate-v2/references/pr-description.md`
 - `.tmp/completion-checks/slate-v2-react-decorations-slate-issues-ralplan.md`
@@ -1774,20 +1774,20 @@ Files changed:
 
 Live source owner:
 
-- `../slate-v2/site/examples/ts/review-comments.tsx`
+- `.tmp/slate-v2/site/examples/ts/review-comments.tsx`
   - builds review comments from `Bookmark`, `useSlateAnnotationStore`,
     `useSlateAnnotations`, `useSlateWidgetStore`, and `useSlateWidgets`;
   - keeps comment workflow in the product example, not raw Slate core.
-- `../slate-v2/site/examples/ts/collaborative-comments.tsx`
+- `.tmp/slate-v2/site/examples/ts/collaborative-comments.tsx`
   - models writer document writes and reviewer comment writes as separate
     channels over public annotation substrate;
   - keeps reviewer document writes at `0`.
-- `../slate-v2/packages/slate/test/collab-history-runtime-contract.ts`
+- `.tmp/slate-v2/packages/slate/test/collab-history-runtime-contract.ts`
   - proves deterministic remote operation replay, remote metadata, history skip,
     bookmark rebasing, and local runtime target rebasing/nulling.
-- `../slate-v2/packages/slate/test/commit-metadata-contract.ts`
+- `.tmp/slate-v2/packages/slate/test/commit-metadata-contract.ts`
   - proves typed collaboration metadata, including Yjs-style origin metadata.
-- `../slate-v2/packages/slate/test/migration-backbone-contract.ts`
+- `.tmp/slate-v2/packages/slate/test/migration-backbone-contract.ts`
   - proves extension/state/tx backbone without adapter-shaped public namespaces
     such as `api`, `tf`, `plate`, or `yjs`.
 
@@ -1803,9 +1803,9 @@ Decision:
 Evidence:
 
 - `bun test ./packages/slate/test/collab-history-runtime-contract.ts ./packages/slate/test/commit-metadata-contract.ts ./packages/slate/test/migration-backbone-contract.ts ./packages/slate-react/test/surface-contract.tsx`
-  passed in `../slate-v2`: 27 passed;
-- `bun lint:fix` passed in `../slate-v2`;
-- `bun check` passed in `../slate-v2`: lint, package/site/root typecheck, Bun
+  passed in `.tmp/slate-v2`: 27 passed;
+- `bun lint:fix` passed in `.tmp/slate-v2`;
+- `bun check` passed in `.tmp/slate-v2`: lint, package/site/root typecheck, Bun
   tests, and Vitest with 202 `slate-react` tests.
 
 Next owner:
@@ -1818,10 +1818,10 @@ Status: complete.
 
 Files changed:
 
-- `../slate-v2/docs/libraries/slate-react/editable.md`
-- `../slate-v2/docs/libraries/slate-react/hooks.md`
-- `../slate-v2/docs/libraries/slate-react/slate.md`
-- `../slate-v2/packages/slate-react/test/surface-contract.tsx`
+- `.tmp/slate-v2/docs/libraries/slate-react/editable.md`
+- `.tmp/slate-v2/docs/libraries/slate-react/hooks.md`
+- `.tmp/slate-v2/docs/libraries/slate-react/slate.md`
+- `.tmp/slate-v2/packages/slate-react/test/surface-contract.tsx`
 - `docs/plans/2026-05-08-slate-v2-react-decorations-slate-issues-ralplan.md`
 - `docs/slate-v2/references/pr-description.md`
 - `.tmp/completion-checks/slate-v2-react-decorations-slate-issues-ralplan.md`
@@ -1829,15 +1829,15 @@ Files changed:
 
 Live source owner:
 
-- `../slate-v2/docs/libraries/slate-react/editable.md`
+- `.tmp/slate-v2/docs/libraries/slate-react/editable.md`
   - documents `Editable.decorate` as the simple editor-local decoration path;
   - points shared/high-churn overlays to provider-owned `decorationSources`.
-- `../slate-v2/docs/libraries/slate-react/slate.md`
+- `.tmp/slate-v2/docs/libraries/slate-react/slate.md`
   - uses `useSlateDecorationSource(...)` for provider-owned decoration sources;
   - names `Editable.decorate` as the simple callback path.
-- `../slate-v2/docs/libraries/slate-react/hooks.md`
+- `.tmp/slate-v2/docs/libraries/slate-react/hooks.md`
   - documents `useSlateDecorationSource`, annotation hooks, and widget hooks.
-- `../slate-v2/packages/slate-react/test/surface-contract.tsx`
+- `.tmp/slate-v2/packages/slate-react/test/surface-contract.tsx`
   - locks docs and product comments to public substrate nouns and rejects
     projection internals as the default path.
 
@@ -1851,9 +1851,9 @@ Decision:
 Evidence:
 
 - `bun test ./packages/slate-react/test/surface-contract.tsx` passed in
-  `../slate-v2`: 14 passed;
-- `bun lint:fix` passed in `../slate-v2`;
-- `bun check` passed in `../slate-v2`: lint, package/site/root typecheck, Bun
+  `.tmp/slate-v2`: 14 passed;
+- `bun lint:fix` passed in `.tmp/slate-v2`;
+- `bun check` passed in `.tmp/slate-v2`: lint, package/site/root typecheck, Bun
   tests, and Vitest with 203 `slate-react` tests.
 
 Next owner:

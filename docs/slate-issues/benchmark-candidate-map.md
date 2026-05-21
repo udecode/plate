@@ -61,7 +61,7 @@ Do not turn this into one giant benchmark lane. Keep it split by operation famil
 ### Current Proof
 
 The workload now has a stable harness lane in
-`../slate-v2/scripts/benchmarks/core/current/clipboard-large-payload.mjs`.
+`.tmp/slate-v2/scripts/benchmarks/core/current/clipboard-large-payload.mjs`.
 The issue-size gate is:
 
 ```bash
@@ -134,7 +134,6 @@ The issue already has a reproducible workload and contributor profiling that poi
 Do not benchmark “paste is slow” as one opaque blob. Break out the normalization-heavy path and the editor-validation path if the harness can expose both.
 
 ---
-
 
 ## Issue #4483
 
@@ -295,6 +294,7 @@ The package benchmark lane now covers populated-editor copy and middle paste at 
 Add the browser/user-path reproduction before upgrading the claim beyond `Improves`.
 
 ---
+
 ## Issue #3752
 
 - package: `slate-history`
@@ -358,6 +358,7 @@ This still needs a stable Safari harness, not just a screen recording.
 Build one browser-scoped lane first instead of pretending this should be cross-browser by default.
 
 ---
+
 ## Issue #5131
 
 - package: `slate-react`
@@ -387,6 +388,7 @@ This is a clean subscription-granularity question: how much work does `useSlate`
 This is not about micro-optimizing hooks in the abstract. It is about whether `slate-react` subscriptions are too broad.
 
 ---
+
 ## Issue #4210
 
 - package: `slate-react`
@@ -416,6 +418,7 @@ The issue is already a clean renderer invalidation complaint with a public repro
 This is the same family as the later nested-block rerender issues, so it should become one reusable renderer benchmark lane, not five nearly identical ones.
 
 ---
+
 ## Issue #4141
 
 - package: `slate-react`
@@ -447,7 +450,6 @@ It still needs a stable public harness instead of screenshots from React devtool
 ### Best Next Step
 
 Add one depth-aware variant to the rerender benchmark lane instead of inventing a separate perf harness.
-
 
 The 651-issue mark adds one real older `slate-react` perf lane from `#3430`: single-paragraph many-inline editing where render breadth and typing latency collapse together. The rest of this tranche mostly reinforced focus ownership, placeholder behavior, decoration invalidation, Android input, and extension-surface pressure instead of surfacing a pile of new benchmark work.
 

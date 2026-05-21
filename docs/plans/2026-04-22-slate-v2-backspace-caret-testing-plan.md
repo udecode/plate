@@ -83,12 +83,12 @@ Then type a follow-up character and assert it lands at the same logical caret.
 Required post-delete assertions:
 
 ```ts
-await editor.assert.text(expectedText)
-await editor.assert.selection(expectedSelection)
-await editor.assert.domSelection(expectedDOMSelection)
-await editor.type('Z')
-await editor.assert.text(expectedTextAfterFollowUpTyping)
-await editor.assert.selection(expectedSelectionAfterTyping)
+await editor.assert.text(expectedText);
+await editor.assert.selection(expectedSelection);
+await editor.assert.domSelection(expectedDOMSelection);
+await editor.type("Z");
+await editor.assert.text(expectedTextAfterFollowUpTyping);
+await editor.assert.selection(expectedSelectionAfterTyping);
 ```
 
 For rows not yet migrated to `slate-browser`, equivalent local helpers in
@@ -99,23 +99,23 @@ selection, and follow-up typing.
 
 Primary browser rows:
 
-- `../slate-v2/playwright/integration/examples/richtext.test.ts`
-- `../slate-v2/playwright/integration/examples/highlighted-text.test.ts`
-- `../slate-v2/playwright/integration/examples/large-document-runtime.test.ts`
-- `../slate-v2/playwright/integration/examples/shadow-dom.test.ts`
-- `../slate-v2/playwright/integration/examples/editable-voids.test.ts`
+- `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
+- `.tmp/slate-v2/playwright/integration/examples/highlighted-text.test.ts`
+- `.tmp/slate-v2/playwright/integration/examples/large-document-runtime.test.ts`
+- `.tmp/slate-v2/playwright/integration/examples/shadow-dom.test.ts`
+- `.tmp/slate-v2/playwright/integration/examples/editable-voids.test.ts`
 
 Helper owner:
 
-- `../slate-v2/packages/slate-browser/src/playwright/index.ts`
+- `.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts`
 
 Product owners if rows fail:
 
-- `../slate-v2/packages/slate-react/src/editable/keyboard-input-strategy.ts`
-- `../slate-v2/packages/slate-react/src/editable/model-input-strategy.ts`
-- `../slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`
-- `../slate-v2/packages/slate-react/src/editable/dom-repair-queue.ts`
-- `../slate-v2/packages/slate-react/src/components/editable.tsx` only if the
+- `.tmp/slate-v2/packages/slate-react/src/editable/keyboard-input-strategy.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/model-input-strategy.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/dom-repair-queue.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx` only if the
   coordinator or wrapper wiring is the measured owner
 
 ## TDD Sequence
@@ -345,18 +345,18 @@ bunx playwright test ./playwright/integration/examples/richtext.test.ts --projec
 
 ## Coverage Matrix
 
-| Lane | Current confidence | Needed proof |
-| --- | --- | --- |
-| Insert after browser selection | Good | Keep existing caret rows |
-| Backspace after browser selection | Bad | Native Backspace + model/DOM/caret + follow-up typing |
-| Delete after browser selection | Bad | Native Delete + model/DOM/caret + follow-up typing |
-| Expanded range delete | Medium | Native Backspace/Delete rows, not only semantic handles |
-| Decorated text delete | Weak | Highlighted-text delete/backspace rows |
-| Inline/void delete | Weak | Void/inline deletion + follow-up typing |
-| Large-doc delete | Medium | Add native user-path rows beside semantic-handle rows |
-| Shadow DOM delete | Weak | Backspace/Delete inside Shadow DOM |
-| IME deletion | Not active owner | Add only after basic deletion rows are stable |
-| Mobile deletion | Unknown | Expand after Chromium owner is closed |
+| Lane                              | Current confidence | Needed proof                                            |
+| --------------------------------- | ------------------ | ------------------------------------------------------- |
+| Insert after browser selection    | Good               | Keep existing caret rows                                |
+| Backspace after browser selection | Bad                | Native Backspace + model/DOM/caret + follow-up typing   |
+| Delete after browser selection    | Bad                | Native Delete + model/DOM/caret + follow-up typing      |
+| Expanded range delete             | Medium             | Native Backspace/Delete rows, not only semantic handles |
+| Decorated text delete             | Weak               | Highlighted-text delete/backspace rows                  |
+| Inline/void delete                | Weak               | Void/inline deletion + follow-up typing                 |
+| Large-doc delete                  | Medium             | Add native user-path rows beside semantic-handle rows   |
+| Shadow DOM delete                 | Weak               | Backspace/Delete inside Shadow DOM                      |
+| IME deletion                      | Not active owner   | Add only after basic deletion rows are stable           |
+| Mobile deletion                   | Unknown            | Expand after Chromium owner is closed                   |
 
 ## Final Gate For This Coverage Lane
 

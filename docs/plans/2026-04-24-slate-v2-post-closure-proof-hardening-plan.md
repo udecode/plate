@@ -65,20 +65,20 @@ Allowed docs/memory work:
 
 Allowed code work:
 
-- `../slate-v2/packages/slate/**`
-- `../slate-v2/packages/slate-history/**`
-- `../slate-v2/packages/slate-dom/**`
-- `../slate-v2/packages/slate-react/**`
-- `../slate-v2/packages/slate-browser/**`
-- `../slate-v2/playwright/integration/examples/**`
-- `../slate-v2/site/**` only for examples/proof surfaces
-- `../slate-v2/package.json` and test scripts only when a focused gate needs it
+- `.tmp/slate-v2/packages/slate/**`
+- `.tmp/slate-v2/packages/slate-history/**`
+- `.tmp/slate-v2/packages/slate-dom/**`
+- `.tmp/slate-v2/packages/slate-react/**`
+- `.tmp/slate-v2/packages/slate-browser/**`
+- `.tmp/slate-v2/playwright/integration/examples/**`
+- `.tmp/slate-v2/site/**` only for examples/proof surfaces
+- `.tmp/slate-v2/package.json` and test scripts only when a focused gate needs it
 
 Do not work on:
 
 - unrelated Plate docs
 - unrelated Slate examples
-- `../slate-v2/packages/slate-hyperscript/**` unless a public API gate proves it
+- `.tmp/slate-v2/packages/slate-hyperscript/**` unless a public API gate proves it
   is in scope
 - perf micro-optimization before escape-hatch/proof owners are done
 
@@ -122,7 +122,7 @@ Goal: create the ground-truth inventory before cutting or hardening anything.
 
 Work:
 
-- inventory all live hits in `../slate-v2`:
+- inventory all live hits in `.tmp/slate-v2`:
   - `Transforms.*`
   - `editor.selection`
   - `editor.children`
@@ -149,9 +149,9 @@ Work:
 
 Primary files:
 
-- `../slate-v2/packages/slate/test/public-surface-contract.ts`
-- `../slate-v2/packages/slate/test/public-field-hard-cut-contract.ts`
-- `../slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts`
+- `.tmp/slate-v2/packages/slate/test/public-surface-contract.ts`
+- `.tmp/slate-v2/packages/slate/test/public-field-hard-cut-contract.ts`
+- `.tmp/slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts`
 - new allowlist contract files only if current contracts become unreadable
 
 Driver gates:
@@ -192,11 +192,11 @@ Work:
 
 Primary files:
 
-- `../slate-v2/packages/slate/src/**`
-- `../slate-v2/packages/slate-history/src/**`
-- `../slate-v2/site/examples/**`
-- `../slate-v2/docs/**` if present
-- `../slate-v2/packages/slate/test/**`
+- `.tmp/slate-v2/packages/slate/src/**`
+- `.tmp/slate-v2/packages/slate-history/src/**`
+- `.tmp/slate-v2/site/examples/**`
+- `.tmp/slate-v2/docs/**` if present
+- `.tmp/slate-v2/packages/slate/test/**`
 
 Acceptance:
 
@@ -233,11 +233,11 @@ Work:
 
 Primary files:
 
-- `../slate-v2/packages/slate/src/**`
-- `../slate-v2/packages/slate-react/src/editable/editing-kernel.ts`
-- `../slate-v2/packages/slate-react/src/editable/input-state.ts`
-- `../slate-v2/packages/slate-react/test/editing-kernel-contract.ts`
-- `../slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts`
+- `.tmp/slate-v2/packages/slate/src/**`
+- `.tmp/slate-v2/packages/slate-react/src/editable/editing-kernel.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/input-state.ts`
+- `.tmp/slate-v2/packages/slate-react/test/editing-kernel-contract.ts`
+- `.tmp/slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts`
 
 Acceptance:
 
@@ -263,13 +263,13 @@ Work:
 
 Primary files:
 
-- `../slate-v2/packages/slate-react/src/components/editable.tsx`
-- `../slate-v2/packages/slate-react/src/editable/editing-kernel.ts`
-- `../slate-v2/packages/slate-react/src/editable/selection-controller.ts`
-- `../slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`
-- `../slate-v2/packages/slate-react/src/editable/mutation-controller.ts`
-- `../slate-v2/packages/slate-react/src/editable/dom-repair-queue.ts`
-- `../slate-v2/packages/slate-react/src/editable/*-strategy.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/editable/editing-kernel.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/selection-controller.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/mutation-controller.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/dom-repair-queue.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/*-strategy.ts`
 
 Acceptance:
 
@@ -308,12 +308,12 @@ Work:
 
 Primary files:
 
-- `../slate-v2/packages/slate-browser/src/**`
-- `../slate-v2/packages/slate-browser/test/core/**`
-- `../slate-v2/playwright/integration/examples/richtext.test.ts`
-- `../slate-v2/playwright/integration/examples/large-document-runtime.test.ts`
-- `../slate-v2/playwright/integration/examples/inlines.test.ts`
-- `../slate-v2/playwright/integration/examples/paste-html.test.ts`
+- `.tmp/slate-v2/packages/slate-browser/src/**`
+- `.tmp/slate-v2/packages/slate-browser/test/core/**`
+- `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
+- `.tmp/slate-v2/playwright/integration/examples/large-document-runtime.test.ts`
+- `.tmp/slate-v2/playwright/integration/examples/inlines.test.ts`
+- `.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts`
 
 Acceptance:
 
@@ -352,8 +352,8 @@ Work:
 
 Primary files:
 
-- `../slate-v2/packages/slate-browser/src/**`
-- `../slate-v2/playwright/integration/examples/richtext.test.ts`
+- `.tmp/slate-v2/packages/slate-browser/src/**`
+- `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
 - possible dev-browser helper scripts if a stable repo-owned wrapper exists
 
 Acceptance:
@@ -387,10 +387,10 @@ Work:
 
 Primary files:
 
-- `../slate-v2/packages/slate-browser/src/transports/**`
-- `../slate-v2/packages/slate-browser/test/core/proof.test.ts`
-- `../slate-v2/playwright/integration/examples/**`
-- existing Appium proof scripts under `../slate-v2` if present
+- `.tmp/slate-v2/packages/slate-browser/src/transports/**`
+- `.tmp/slate-v2/packages/slate-browser/test/core/proof.test.ts`
+- `.tmp/slate-v2/playwright/integration/examples/**`
+- existing Appium proof scripts under `.tmp/slate-v2` if present
 
 Acceptance:
 
@@ -426,10 +426,10 @@ Work:
 
 Primary files:
 
-- `../slate-v2/site/examples/**`
-- `../slate-v2/packages/slate/test/extension-methods-contract.ts`
-- `../slate-v2/packages/slate/test/extension-contract.ts`
-- `../slate-v2/playwright/integration/examples/**`
+- `.tmp/slate-v2/site/examples/**`
+- `.tmp/slate-v2/packages/slate/test/extension-methods-contract.ts`
+- `.tmp/slate-v2/packages/slate/test/extension-contract.ts`
+- `.tmp/slate-v2/playwright/integration/examples/**`
 
 Acceptance:
 

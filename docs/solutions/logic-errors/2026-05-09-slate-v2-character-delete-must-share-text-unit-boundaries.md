@@ -7,7 +7,7 @@ problem_type: logic_error
 component: testing_framework
 symptoms:
   - Reverse character delete removed only the trailing mark from Tamil and Thai grapheme sequences.
-  - "`getCharacterDistance` and `tx.text.delete({ unit: \"character\", reverse: true })` disagreed on the same text."
+  - '`getCharacterDistance` and `tx.text.delete({ unit: "character", reverse: true })` disagreed on the same text.'
   - Lexical #7163 Unicode rows passed distance checks but failed destructive delete proof.
 root_cause: logic_error
 resolution_type: code_fix
@@ -45,35 +45,35 @@ destructive delete still corrupted the behavior.
 Make `unit: "character"` deletion obey the same boundary owner everywhere.
 
 The fix removed the complex-script reverse-delete reinsertion path from
-`../slate-v2/packages/slate/src/transforms-text/delete-text.ts`, then updated
+`.tmp/slate-v2/packages/slate/src/transforms-text/delete-text.ts`, then updated
 the Thai fixtures to expect a whole text-unit deletion.
 
 The regression lock lives in
-`../slate-v2/packages/slate/test/text-units-contract.ts`:
+`.tmp/slate-v2/packages/slate/test/text-units-contract.ts`:
 
 ```ts
 const assertUnitCharacterDeletion = (
   testCase: LexicalGraphemeCase,
-  reverse: boolean
+  reverse: boolean,
 ) => {
   const editor = createTextEditor(
     testCase.text,
-    reverse ? testCase.text.length : 0
-  )
+    reverse ? testCase.text.length : 0,
+  );
 
   for (const distance of distances) {
-    const before = getEditorText(editor)
+    const before = getEditorText(editor);
     const expected = reverse
       ? before.slice(0, before.length - distance)
-      : before.slice(distance)
+      : before.slice(distance);
 
     editor.update((tx) => {
-      tx.text.delete({ reverse, unit: "character" })
-    })
+      tx.text.delete({ reverse, unit: "character" });
+    });
 
-    assert.equal(getEditorText(editor), expected, testCase.description)
+    assert.equal(getEditorText(editor), expected, testCase.description);
   }
-}
+};
 ```
 
 ## Why This Works

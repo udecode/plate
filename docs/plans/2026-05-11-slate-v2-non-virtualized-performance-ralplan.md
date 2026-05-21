@@ -42,27 +42,27 @@ Current answer:
 
 ## Intent Boundary
 
-| Field | Decision |
-| --- | --- |
-| Intent | Decide whether Slate v2 has the absolute best performance possible without the paused / experimental virtualization path, and write the execution-grade plan for the remaining work. |
-| Desired outcome | A later `ralph` pass can edit benchmark scripts and runtime code without reopening the whole architecture argument. |
-| In scope | Slate v2 core and `slate-react` non-virtualized performance, default `auto`, staged / DOM-present, explicit shell, rerender breadth, large-document compare, native-behavior proof, memory/DOM tags, issue-ledger accounting. |
-| Non-goals | Implementing from `slate-ralplan`, stabilizing virtualization, broad GitHub issue rediscovery, product-specific Plate APIs, claiming current Slate v2 closes every upstream performance issue. |
-| Decision boundary | A mode can be fast but still not be the default if it changes browser-native behavior, accessibility, clipboard, selection, IME, mobile, or collaboration semantics. |
-| User decision needed | None. The planning gate is closed; execution should run through `ralph`. |
+| Field                | Decision                                                                                                                                                                                                                      |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Intent               | Decide whether Slate v2 has the absolute best performance possible without the paused / experimental virtualization path, and write the execution-grade plan for the remaining work.                                          |
+| Desired outcome      | A later `ralph` pass can edit benchmark scripts and runtime code without reopening the whole architecture argument.                                                                                                           |
+| In scope             | Slate v2 core and `slate-react` non-virtualized performance, default `auto`, staged / DOM-present, explicit shell, rerender breadth, large-document compare, native-behavior proof, memory/DOM tags, issue-ledger accounting. |
+| Non-goals            | Implementing from `slate-ralplan`, stabilizing virtualization, broad GitHub issue rediscovery, product-specific Plate APIs, claiming current Slate v2 closes every upstream performance issue.                                |
+| Decision boundary    | A mode can be fast but still not be the default if it changes browser-native behavior, accessibility, clipboard, selection, IME, mobile, or collaboration semantics.                                                          |
+| User decision needed | None. The planning gate is closed; execution should run through `ralph`.                                                                                                                                                      |
 
 ## Current Source Read
 
-| Surface | Current read | Verdict |
-| --- | --- | --- |
-| Selector substrate | `../slate-v2/packages/slate-react/src/hooks/use-generic-selector.tsx` uses `useSyncExternalStore` and preserves equality filtering plus error replay. | Keep. The previous biggest React substrate concern is handled. |
-| Selector fanout | `useEditorSelectorContext` indexes runtime listeners by runtime id and fans out through `affectedNodeRuntimeIds` / `nodeImpactRuntimeIds`. | Keep. This is the right direction. |
-| Mounted node rendering | `useMountedNodeRenderSelector` can skip synced text render for text / selection ops. | Keep, but benchmark selector invocation counts, not only rerenders. |
-| Default rendering strategy | `EditableTextBlocks` uses grouped staged mounting with `ROOT_GROUP_SIZE = 16`, active group first, background mount batches, and stale group tracking. | Keep as default baseline. |
-| Native completion | Default/staged records `interactiveReady` separately from `nativeSurfaceComplete`. | Keep, but make this a release gate with p95/p99 and browser behavior rows. |
-| DOM text sync | `dom-text-sync.ts` opts out on empty text, projections, custom leaf, custom segment, and custom text. | Keep. Fast path is guarded. |
-| Virtualized strategy | `create-segment-plan.ts` keeps `{ type: 'virtualized' }` object-only and experimental. | Excluded from this plan. Do not use it to satisfy this performance goal. |
-| Explicit shell | Shell is non-virtualized but degrades DOM presence / native behavior. Fresh numbers show it loses important steady selection/promote lanes. | Keep explicit only. Do not make it the default performance answer. |
+| Surface                    | Current read                                                                                                                                            | Verdict                                                                    |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| Selector substrate         | `.tmp/slate-v2/packages/slate-react/src/hooks/use-generic-selector.tsx` uses `useSyncExternalStore` and preserves equality filtering plus error replay. | Keep. The previous biggest React substrate concern is handled.             |
+| Selector fanout            | `useEditorSelectorContext` indexes runtime listeners by runtime id and fans out through `affectedNodeRuntimeIds` / `nodeImpactRuntimeIds`.              | Keep. This is the right direction.                                         |
+| Mounted node rendering     | `useMountedNodeRenderSelector` can skip synced text render for text / selection ops.                                                                    | Keep, but benchmark selector invocation counts, not only rerenders.        |
+| Default rendering strategy | `EditableTextBlocks` uses grouped staged mounting with `ROOT_GROUP_SIZE = 16`, active group first, background mount batches, and stale group tracking.  | Keep as default baseline.                                                  |
+| Native completion          | Default/staged records `interactiveReady` separately from `nativeSurfaceComplete`.                                                                      | Keep, but make this a release gate with p95/p99 and browser behavior rows. |
+| DOM text sync              | `dom-text-sync.ts` opts out on empty text, projections, custom leaf, custom segment, and custom text.                                                   | Keep. Fast path is guarded.                                                |
+| Virtualized strategy       | `create-segment-plan.ts` keeps `{ type: 'virtualized' }` object-only and experimental.                                                                  | Excluded from this plan. Do not use it to satisfy this performance goal.   |
+| Explicit shell             | Shell is non-virtualized but degrades DOM presence / native behavior. Fresh numbers show it loses important steady selection/promote lanes.             | Keep explicit only. Do not make it the default performance answer.         |
 
 ## Fresh Benchmark Evidence
 
@@ -80,12 +80,12 @@ Result: pass.
 
 Key rows:
 
-| Lane | Result |
-| --- | --- |
-| selection breadth | broad renders `0`, left block renders `0`, right block renders `0`, selection p95 `5.45ms` |
-| many-leaf edit | block renders `0`, sibling leaf renders `0`, edited leaf renders `1`, edit p95 `4.14ms` |
-| deep ancestor edit | ancestor render events `0`, sibling branch/leaf renders `0`, deep leaf renders `1`, edit p95 `3.86ms` |
-| source-scoped invalidation | unrelated recomputes stay `0` for text, selection, and external lanes |
+| Lane                       | Result                                                                                                |
+| -------------------------- | ----------------------------------------------------------------------------------------------------- |
+| selection breadth          | broad renders `0`, left block renders `0`, right block renders `0`, selection p95 `5.45ms`            |
+| many-leaf edit             | block renders `0`, sibling leaf renders `0`, edited leaf renders `1`, edit p95 `4.14ms`               |
+| deep ancestor edit         | ancestor render events `0`, sibling branch/leaf renders `0`, deep leaf renders `1`, edit p95 `3.86ms` |
+| source-scoped invalidation | unrelated recomputes stay `0` for text, selection, and external lanes                                 |
 
 Conclusion: React invalidation breadth is not the remaining P0. Stop blaming
 "rerenders" generically.
@@ -108,33 +108,33 @@ Result: pass.
 
 `v2DefaultRenderAuto` versus legacy chunking-on:
 
-| Lane | legacy chunk-on mean | v2 default `auto` mean | Verdict |
-| --- | ---: | ---: | --- |
-| interactive ready | `318.40ms` | `23.20ms` | v2 wins hard |
-| select all | `0.95ms` | `0.26ms` | v2 wins |
-| start block type | `52.04ms` | `14.23ms` | v2 wins |
-| start select then type | `47.87ms` | `12.67ms` | v2 wins |
-| middle block type | `42.73ms` | `12.89ms` | v2 wins |
-| middle select then type | `37.87ms` | `34.41ms` | v2 wins narrowly |
-| middle promote then type | `38.64ms` | `37.72ms` | v2 wins barely |
-| replace full document with text | `131.03ms` | `6.77ms` | v2 wins hard |
-| insert fragment full document | `118.38ms` | `5.47ms` | v2 wins hard |
-| native surface complete | n/a | `1534.94ms` | must be budgeted separately |
+| Lane                            | legacy chunk-on mean | v2 default `auto` mean | Verdict                     |
+| ------------------------------- | -------------------: | ---------------------: | --------------------------- |
+| interactive ready               |           `318.40ms` |              `23.20ms` | v2 wins hard                |
+| select all                      |             `0.95ms` |               `0.26ms` | v2 wins                     |
+| start block type                |            `52.04ms` |              `14.23ms` | v2 wins                     |
+| start select then type          |            `47.87ms` |              `12.67ms` | v2 wins                     |
+| middle block type               |            `42.73ms` |              `12.89ms` | v2 wins                     |
+| middle select then type         |            `37.87ms` |              `34.41ms` | v2 wins narrowly            |
+| middle promote then type        |            `38.64ms` |              `37.72ms` | v2 wins barely              |
+| replace full document with text |           `131.03ms` |               `6.77ms` | v2 wins hard                |
+| insert fragment full document   |           `118.38ms` |               `5.47ms` | v2 wins hard                |
+| native surface complete         |                  n/a |            `1534.94ms` | must be budgeted separately |
 
 `v2DomPresent` / staged versus legacy chunking-on:
 
-| Lane | legacy chunk-on mean | v2 staged mean | Verdict |
-| --- | ---: | ---: | --- |
-| interactive ready | `318.40ms` | `22.81ms` | v2 wins hard |
-| select all | `0.95ms` | `0.22ms` | v2 wins |
-| start block type | `52.04ms` | `10.54ms` | v2 wins |
-| start select then type | `47.87ms` | `16.82ms` | v2 wins |
-| middle block type | `42.73ms` | `9.86ms` | v2 wins |
-| middle select then type | `37.87ms` | `49.50ms` | red |
-| middle promote then type | `38.64ms` | `46.68ms` | red |
-| replace full document with text | `131.03ms` | `7.43ms` | v2 wins hard |
-| insert fragment full document | `118.38ms` | `5.58ms` | v2 wins hard |
-| native surface complete | n/a | `1647.77ms` | must be budgeted separately |
+| Lane                            | legacy chunk-on mean | v2 staged mean | Verdict                     |
+| ------------------------------- | -------------------: | -------------: | --------------------------- |
+| interactive ready               |           `318.40ms` |      `22.81ms` | v2 wins hard                |
+| select all                      |             `0.95ms` |       `0.22ms` | v2 wins                     |
+| start block type                |            `52.04ms` |      `10.54ms` | v2 wins                     |
+| start select then type          |            `47.87ms` |      `16.82ms` | v2 wins                     |
+| middle block type               |            `42.73ms` |       `9.86ms` | v2 wins                     |
+| middle select then type         |            `37.87ms` |      `49.50ms` | red                         |
+| middle promote then type        |            `38.64ms` |      `46.68ms` | red                         |
+| replace full document with text |           `131.03ms` |       `7.43ms` | v2 wins hard                |
+| insert fragment full document   |           `118.38ms` |       `5.58ms` | v2 wins hard                |
+| native surface complete         |                  n/a |    `1647.77ms` | must be budgeted separately |
 
 Conclusion: default `auto` is green enough to keep. Staged / DOM-present is not
 clean enough to claim "absolute best" because the middle select/promote lanes
@@ -159,13 +159,13 @@ Result: pass.
 
 Important owner split:
 
-| Lane | v2 default `auto` delta vs chunk-on | v2 staged delta vs chunk-on | Read |
-| --- | ---: | ---: | --- |
-| start select | `+3.74ms` | `+0.11ms` | default still pays more selection setup than chunking-on |
-| middle select | `+8.50ms` | `+8.85ms` | both pay more far selection setup |
-| middle type after select | `-14.65ms` | `-10.14ms` | follow-up typing is good |
-| middle select then type | `-7.48ms` | `-2.57ms` | combined lane is acceptable but narrow |
-| middle promote then type | `-4.87ms` | `+12.74ms` | staged promotion is the real red tail |
+| Lane                     | v2 default `auto` delta vs chunk-on | v2 staged delta vs chunk-on | Read                                                     |
+| ------------------------ | ----------------------------------: | --------------------------: | -------------------------------------------------------- |
+| start select             |                           `+3.74ms` |                   `+0.11ms` | default still pays more selection setup than chunking-on |
+| middle select            |                           `+8.50ms` |                   `+8.85ms` | both pay more far selection setup                        |
+| middle type after select |                          `-14.65ms` |                  `-10.14ms` | follow-up typing is good                                 |
+| middle select then type  |                           `-7.48ms` |                   `-2.57ms` | combined lane is acceptable but narrow                   |
+| middle promote then type |                           `-4.87ms` |                  `+12.74ms` | staged promotion is the real red tail                    |
 
 The split run also exposed outlier noise: staged `startBlockTypeAfterSelectMs`
 had samples at `287.26ms` and `312.95ms` even though its combined
@@ -190,27 +190,27 @@ Result: pass.
 
 Shell radius 0 versus legacy chunking-on:
 
-| Lane | legacy chunk-on mean | shell r0 mean | Verdict |
-| --- | ---: | ---: | --- |
-| ready | `358.80ms` | `42.96ms` | v2 wins |
-| start block type | `39.95ms` | `21.28ms` | v2 wins |
-| middle block type | `44.60ms` | `10.22ms` | v2 wins |
-| middle select then type | `38.79ms` | `58.63ms` | red |
-| middle promote then type | `42.57ms` | `68.19ms` | red |
-| replace full document with text | `116.52ms` | `7.31ms` | v2 wins |
-| insert fragment full document | `116.56ms` | `10.03ms` | v2 wins |
+| Lane                            | legacy chunk-on mean | shell r0 mean | Verdict |
+| ------------------------------- | -------------------: | ------------: | ------- |
+| ready                           |           `358.80ms` |     `42.96ms` | v2 wins |
+| start block type                |            `39.95ms` |     `21.28ms` | v2 wins |
+| middle block type               |            `44.60ms` |     `10.22ms` | v2 wins |
+| middle select then type         |            `38.79ms` |     `58.63ms` | red     |
+| middle promote then type        |            `42.57ms` |     `68.19ms` | red     |
+| replace full document with text |           `116.52ms` |      `7.31ms` | v2 wins |
+| insert fragment full document   |           `116.56ms` |     `10.03ms` | v2 wins |
 
 Shell radius 1 versus legacy chunking-on:
 
-| Lane | legacy chunk-on mean | shell r1 mean | Verdict |
-| --- | ---: | ---: | --- |
-| ready | `358.80ms` | `50.45ms` | v2 wins |
-| start block type | `39.95ms` | `19.54ms` | v2 wins |
-| middle block type | `44.60ms` | `13.81ms` | v2 wins |
-| middle select then type | `38.79ms` | `90.08ms` | red |
-| middle promote then type | `42.57ms` | `84.33ms` | red |
-| replace full document with text | `116.52ms` | `9.26ms` | v2 wins |
-| insert fragment full document | `116.56ms` | `10.94ms` | v2 wins |
+| Lane                            | legacy chunk-on mean | shell r1 mean | Verdict |
+| ------------------------------- | -------------------: | ------------: | ------- |
+| ready                           |           `358.80ms` |     `50.45ms` | v2 wins |
+| start block type                |            `39.95ms` |     `19.54ms` | v2 wins |
+| middle block type               |            `44.60ms` |     `13.81ms` | v2 wins |
+| middle select then type         |            `38.79ms` |     `90.08ms` | red     |
+| middle promote then type        |            `42.57ms` |     `84.33ms` | red     |
+| replace full document with text |           `116.52ms` |      `9.26ms` | v2 wins |
+| insert fragment full document   |           `116.56ms` |     `10.94ms` | v2 wins |
 
 Conclusion: shell is an explicit stress/degradation mode. It is not the best
 non-virtualized default, and radius 1 cannot be defended as a pure performance
@@ -219,16 +219,16 @@ UX, not raw speed.
 
 ## Scorecard
 
-| Axis | Score | Reason |
-| --- | ---: | --- |
-| Default non-virtualized architecture | `0.93` | `auto` beats legacy chunking-on on the fresh direct means while preserving staged native completion accounting. |
-| React runtime locality | `0.96` | Fresh breadth benchmark shows zero broad/sibling/ancestor rerenders and source-scoped invalidation. |
-| Staged / DOM-present tail latency | `0.76` | Middle select/promote lanes still lose or nearly lose; split lanes show far selection/setup cost remains. |
-| Shell as non-virtualized perf option | `0.63` | Fast startup and full-doc ops, bad middle select/promote, degraded native behavior. Explicit only. |
-| Benchmark artifact quality | `0.70` | Fresh commands pass, but huge compare lacks p75/p95/p99 and overwrites artifacts by run. |
-| Browser/user-path proof | `0.78` | Chromium native-keyboard selected typing proof now exists with DOM/heap/long-task tags, but copy/paste/select-all, mobile/IME, and Safari remain open. |
-| Memory/DOM pressure proof | `0.72` | Trace records groups/native completion/stale count, but heap/DOM/listener/component tags are not first-class artifact rows. |
-| Plan readiness | `0.94` | Evidence is current, owners are narrow, and the next `ralph` slices are executable. |
+| Axis                                 |  Score | Reason                                                                                                                                                 |
+| ------------------------------------ | -----: | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Default non-virtualized architecture | `0.93` | `auto` beats legacy chunking-on on the fresh direct means while preserving staged native completion accounting.                                        |
+| React runtime locality               | `0.96` | Fresh breadth benchmark shows zero broad/sibling/ancestor rerenders and source-scoped invalidation.                                                    |
+| Staged / DOM-present tail latency    | `0.76` | Middle select/promote lanes still lose or nearly lose; split lanes show far selection/setup cost remains.                                              |
+| Shell as non-virtualized perf option | `0.63` | Fast startup and full-doc ops, bad middle select/promote, degraded native behavior. Explicit only.                                                     |
+| Benchmark artifact quality           | `0.70` | Fresh commands pass, but huge compare lacks p75/p95/p99 and overwrites artifacts by run.                                                               |
+| Browser/user-path proof              | `0.78` | Chromium native-keyboard selected typing proof now exists with DOM/heap/long-task tags, but copy/paste/select-all, mobile/IME, and Safari remain open. |
+| Memory/DOM pressure proof            | `0.72` | Trace records groups/native completion/stale count, but heap/DOM/listener/component tags are not first-class artifact rows.                            |
+| Plan readiness                       | `0.94` | Evidence is current, owners are narrow, and the next `ralph` slices are executable.                                                                    |
 
 Planning gate score: `0.94`.
 
@@ -238,36 +238,36 @@ This plan can close. The performance program cannot.
 
 ## Keep
 
-| Decision | Why |
-| --- | --- |
+| Decision                                             | Why                                                                                                                                                                |
+| ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Keep default `auto` as the main non-virtualized path | It is the strongest current balance: fast interactive ready, good direct typing, fast full-document operations, and no shell-native behavior downgrade by default. |
-| Keep staged readiness split | `interactiveReady` and `nativeSurfaceComplete` are different claims. Pretending otherwise would be dishonest. |
-| Keep runtime-id selector fanout | The fresh breadth lane proves locality. |
-| Keep `useSyncExternalStore` selector substrate | React-native external-store substrate is now in place. |
-| Keep DOM text sync as guarded fast path | It is fast only where safe and falls back for custom/projection/IME-sensitive surfaces. |
-| Keep shell explicit | It is useful for stress scenarios but not safe or fast enough to be default. |
-| Keep virtualization paused / experimental | It is outside this goal and remains object-only experimental. |
+| Keep staged readiness split                          | `interactiveReady` and `nativeSurfaceComplete` are different claims. Pretending otherwise would be dishonest.                                                      |
+| Keep runtime-id selector fanout                      | The fresh breadth lane proves locality.                                                                                                                            |
+| Keep `useSyncExternalStore` selector substrate       | React-native external-store substrate is now in place.                                                                                                             |
+| Keep DOM text sync as guarded fast path              | It is fast only where safe and falls back for custom/projection/IME-sensitive surfaces.                                                                            |
+| Keep shell explicit                                  | It is useful for stress scenarios but not safe or fast enough to be default.                                                                                       |
+| Keep virtualization paused / experimental            | It is outside this goal and remains object-only experimental.                                                                                                      |
 
 ## Rewrite Or Tighten
 
-| Area | Decision |
-| --- | --- |
-| Huge compare artifact schema | Add p75/p95/p99 and preserve per-run artifacts instead of silently overwriting the same JSON path. |
-| Staged selection/promote | Fix or classify middle selection setup and promotion cost before "absolute best" claims. |
-| Shell radius policy | Re-open radius 0 versus radius 1 as a current benchmark decision; radius 1 is not currently faster on middle select/promote. |
-| Browser trace proof | Add real browser event-to-update and event-to-paint rows; jsdom cannot close native browser claims. |
-| Memory/DOM tags | Emit heap, DOM nodes, listener count, mounted group count, pending group count, stale group count, and background completion in artifacts. |
-| Production observability | Make `onRenderingStrategyMetrics` / RUM guidance a release contract, not a nice extra. |
+| Area                         | Decision                                                                                                                                   |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| Huge compare artifact schema | Add p75/p95/p99 and preserve per-run artifacts instead of silently overwriting the same JSON path.                                         |
+| Staged selection/promote     | Fix or classify middle selection setup and promotion cost before "absolute best" claims.                                                   |
+| Shell radius policy          | Re-open radius 0 versus radius 1 as a current benchmark decision; radius 1 is not currently faster on middle select/promote.               |
+| Browser trace proof          | Add real browser event-to-update and event-to-paint rows; jsdom cannot close native browser claims.                                        |
+| Memory/DOM tags              | Emit heap, DOM nodes, listener count, mounted group count, pending group count, stale group count, and background completion in artifacts. |
+| Production observability     | Make `onRenderingStrategyMetrics` / RUM guidance a release contract, not a nice extra.                                                     |
 
 ## Cut
 
-| Candidate | Verdict |
-| --- | --- |
-| "Virtualized proves performance" | Cut from this lane. User excluded it, and it is experimental. |
-| "Shell is the default perf answer" | Cut. Fresh radius 0/1 rows lose steady middle select/promote. |
-| "Mean-only benchmark closure" | Cut. Mean-only is not absolute-best proof. |
-| "Rerender breadth is the remaining P0" | Cut. The fresh rerender benchmark says no. |
-| Broad GitHub rediscovery | Cut. Cached ledgers already account for this issue surface. |
+| Candidate                              | Verdict                                                       |
+| -------------------------------------- | ------------------------------------------------------------- |
+| "Virtualized proves performance"       | Cut from this lane. User excluded it, and it is experimental. |
+| "Shell is the default perf answer"     | Cut. Fresh radius 0/1 rows lose steady middle select/promote. |
+| "Mean-only benchmark closure"          | Cut. Mean-only is not absolute-best proof.                    |
+| "Rerender breadth is the remaining P0" | Cut. The fresh rerender benchmark says no.                    |
+| Broad GitHub rediscovery               | Cut. Cached ledgers already account for this issue surface.   |
 
 ## Execution Plan For Ralph
 
@@ -275,9 +275,9 @@ This plan can close. The performance program cannot.
 
 Owner:
 
-- `../slate-v2/scripts/benchmarks/browser/react/huge-document-legacy-compare.mjs`
-- `../slate-v2/scripts/benchmarks/shared/stats.mjs`
-- `../slate-v2/scripts/benchmarks/shared/react-benchmark.tsx`
+- `.tmp/slate-v2/scripts/benchmarks/browser/react/huge-document-legacy-compare.mjs`
+- `.tmp/slate-v2/scripts/benchmarks/shared/stats.mjs`
+- `.tmp/slate-v2/scripts/benchmarks/shared/react-benchmark.tsx`
 
 Goal:
 
@@ -325,8 +325,8 @@ Artifact must include p75/p95/p99 and trace tags for every selected surface.
 Owner:
 
 - benchmark script above;
-- `../slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`;
-- `../slate-v2/packages/slate-react/src/editable/root-selector-sources.ts`.
+- `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`;
+- `.tmp/slate-v2/packages/slate-react/src/editable/root-selector-sources.ts`.
 
 Goal:
 
@@ -360,9 +360,9 @@ tail.
 
 Owner:
 
-- `../slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
-- `../slate-v2/packages/slate-react/src/editable/root-selector-sources.ts`
-- `../slate-v2/packages/slate-react/src/editable/selection-controller.ts`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/editable/root-selector-sources.ts`
+- `.tmp/slate-v2/packages/slate-react/src/editable/selection-controller.ts`
 - DOM coverage materialization owners in `slate-dom/internal`.
 
 Problem:
@@ -407,8 +407,8 @@ reclassified as diagnostic / non-default.
 
 Owner:
 
-- `../slate-v2/packages/slate-react/src/rendering-strategy/create-segment-plan.ts`
-- `../slate-v2/packages/slate-react/src/rendering-strategy/segment-shell.tsx`
+- `.tmp/slate-v2/packages/slate-react/src/rendering-strategy/create-segment-plan.ts`
+- `.tmp/slate-v2/packages/slate-react/src/rendering-strategy/segment-shell.tsx`
 - shell behavior tests.
 
 Problem:
@@ -447,7 +447,7 @@ Shell docs and examples must state the degradation contract:
 
 Owner:
 
-- new benchmark command in `../slate-v2/scripts/benchmarks/browser/react/**`;
+- new benchmark command in `.tmp/slate-v2/scripts/benchmarks/browser/react/**`;
 - existing Playwright example fixture or a dedicated huge-document benchmark
   page.
 
@@ -537,8 +537,8 @@ DOM or reverse-engineering shell/staged mode.
 
 Owner:
 
-- `../slate-v2/packages/slate/**`
-- `../slate-v2/packages/slate-history/**`
+- `.tmp/slate-v2/packages/slate/**`
+- `.tmp/slate-v2/packages/slate-history/**`
 
 Goal:
 
@@ -565,35 +565,35 @@ Acceptance:
 
 ## Cohorts And Budgets
 
-| Cohort | Default stance | Proof required |
-| --- | --- | --- |
-| normal: `0-500` blocks | full DOM / ordinary path | no broad rerenders, no hot effects/listeners per repeated unit |
-| medium: `500-2000` blocks | DOM-present with strict budgets | p95 interaction rows and repeated-unit budgets |
-| large: `2000-10000` blocks | default `auto` staged DOM-present | native completion, stale DOM `0`, browser interaction proof |
-| stress: `10000-50000` blocks | explicit degradation candidates only | named behavior degradation contract |
-| pathological: custom renderers, heavy decorations, mobile/IME, collaboration | complexity-tagged | separate rows; never hidden inside block count |
+| Cohort                                                                       | Default stance                       | Proof required                                                 |
+| ---------------------------------------------------------------------------- | ------------------------------------ | -------------------------------------------------------------- |
+| normal: `0-500` blocks                                                       | full DOM / ordinary path             | no broad rerenders, no hot effects/listeners per repeated unit |
+| medium: `500-2000` blocks                                                    | DOM-present with strict budgets      | p95 interaction rows and repeated-unit budgets                 |
+| large: `2000-10000` blocks                                                   | default `auto` staged DOM-present    | native completion, stale DOM `0`, browser interaction proof    |
+| stress: `10000-50000` blocks                                                 | explicit degradation candidates only | named behavior degradation contract                            |
+| pathological: custom renderers, heavy decorations, mobile/IME, collaboration | complexity-tagged                    | separate rows; never hidden inside block count                 |
 
 Repeated unit budgets:
 
-| Unit | Budget question |
-| --- | --- |
-| top-level group | Does one edit wake only overlapping groups? |
-| text leaf | Does synced text skip React rerender where safe? |
-| element wrapper | Are effects and event handlers absent from the repeated hot unit? |
-| projection source | Does source dirtiness prevent unrelated recompute? |
-| selection bridge | Does `selectionchange` avoid broad DOM scans and rich allocations? |
-| shell segment | Is shell explicit and behavior-labeled? |
-| history payload | Is retained operation payload bounded and measured? |
+| Unit              | Budget question                                                    |
+| ----------------- | ------------------------------------------------------------------ |
+| top-level group   | Does one edit wake only overlapping groups?                        |
+| text leaf         | Does synced text skip React rerender where safe?                   |
+| element wrapper   | Are effects and event handlers absent from the repeated hot unit?  |
+| projection source | Does source dirtiness prevent unrelated recompute?                 |
+| selection bridge  | Does `selectionchange` avoid broad DOM scans and rich allocations? |
+| shell segment     | Is shell explicit and behavior-labeled?                            |
+| history payload   | Is retained operation payload bounded and measured?                |
 
 ## Ecosystem Synthesis
 
-| System | Steal | Reject | Slate v2 answer |
-| --- | --- | --- | --- |
-| Legacy Slate chunking | coarse memoized chunk containment and `content-visibility` lessons | child-count chunking as public foundation | staged root groups and runtime-id selectors |
-| Lexical | dirty leaves/elements, update tags, listener partitions | class-node identity, custom DOM reconciler as the whole editor | operations, commits, dirty runtime ids, React selectors |
-| ProseMirror | transaction metadata, one DOM bridge owner, selection mapping, decorations as view data | schema/view product heaviness | `editor.update`, model selection, DOM bridge ownership, projection stores |
-| React 19.2 | `useSyncExternalStore`, Activity, transitions, performance tracks | "React will solve editor invalidation" | React schedules UI; editor dirtiness remains the source of truth |
-| Tiptap | clear extension packaging and docs ergonomics | product opinion in raw Slate | keep Slate raw; Plate owns product APIs |
+| System                | Steal                                                                                   | Reject                                                         | Slate v2 answer                                                           |
+| --------------------- | --------------------------------------------------------------------------------------- | -------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| Legacy Slate chunking | coarse memoized chunk containment and `content-visibility` lessons                      | child-count chunking as public foundation                      | staged root groups and runtime-id selectors                               |
+| Lexical               | dirty leaves/elements, update tags, listener partitions                                 | class-node identity, custom DOM reconciler as the whole editor | operations, commits, dirty runtime ids, React selectors                   |
+| ProseMirror           | transaction metadata, one DOM bridge owner, selection mapping, decorations as view data | schema/view product heaviness                                  | `editor.update`, model selection, DOM bridge ownership, projection stores |
+| React 19.2            | `useSyncExternalStore`, Activity, transitions, performance tracks                       | "React will solve editor invalidation"                         | React schedules UI; editor dirtiness remains the source of truth          |
+| Tiptap                | clear extension packaging and docs ergonomics                                           | product opinion in raw Slate                                   | keep Slate raw; Plate owns product APIs                                   |
 
 ## Issue Accounting
 
@@ -603,26 +603,26 @@ Cached ledgers were used first. Broad GitHub issue discovery was not run.
 
 Current conservative rows stay correct:
 
-| Surface | Issues | Decision |
-| --- | --- | --- |
-| React rerender breadth | `#3656`, `#4141`, `#4210`, `#2051`, `#5131`, `#3430` | Preserve existing `Improves`, `Related`, and `Not claimed` statuses. Fresh rerender proof strengthens locality but does not add `Fixes`. |
-| Large document edit performance | `#5945`, `#4056`, `#5992`, `#790` | Preserve `Improves` / proof-needed wording. Browser repro closure still matters. |
-| Core / batch performance | `#6038`, `#2733`, `#2405`, `#2195` | Keep benchmark-gated. No threshold promotion from this pass. |
-| Decorations / overlays | `#4483`, `#3382`, `#3354` | Keep projection/locality rows; no API claim widening. |
-| Safari / browser selection | `#5216` | Still proof-needed. Needs browser/Safari lane, not jsdom. |
-| Memory retention | `#3752`, `#5592` | Keep memory benchmark separate from latency. |
-| Production instrumentation | `#2669` | Related. Slate should expose metrics, not a vendor-specific integration. |
+| Surface                         | Issues                                               | Decision                                                                                                                                 |
+| ------------------------------- | ---------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| React rerender breadth          | `#3656`, `#4141`, `#4210`, `#2051`, `#5131`, `#3430` | Preserve existing `Improves`, `Related`, and `Not claimed` statuses. Fresh rerender proof strengthens locality but does not add `Fixes`. |
+| Large document edit performance | `#5945`, `#4056`, `#5992`, `#790`                    | Preserve `Improves` / proof-needed wording. Browser repro closure still matters.                                                         |
+| Core / batch performance        | `#6038`, `#2733`, `#2405`, `#2195`                   | Keep benchmark-gated. No threshold promotion from this pass.                                                                             |
+| Decorations / overlays          | `#4483`, `#3382`, `#3354`                            | Keep projection/locality rows; no API claim widening.                                                                                    |
+| Safari / browser selection      | `#5216`                                              | Still proof-needed. Needs browser/Safari lane, not jsdom.                                                                                |
+| Memory retention                | `#3752`, `#5592`                                     | Keep memory benchmark separate from latency.                                                                                             |
+| Production instrumentation      | `#2669`                                              | Related. Slate should expose metrics, not a vendor-specific integration.                                                                 |
 
 ## Maintainer Objections
 
-| Objection | Answer |
-| --- | --- |
-| "You only proved means." | Correct. That blocks absolute-best claims. Slice 1 adds p75/p95/p99 before hard thresholds. |
-| "jsdom is not the browser." | Correct. Slice 5 adds browser trace / event-to-paint proof. |
-| "Default `auto` hides missing far DOM." | It may during warmup, which is why `nativeSurfaceComplete` and stale DOM count are separate release gates. Stale current DOM is never acceptable. |
-| "Shell is faster." | Not on the fresh middle select/promote rows. It stays explicit and behavior-labeled. |
-| "Virtualization would make this easy." | User excluded it, and it is experimental. It cannot be the answer here. |
-| "This is over-benchmarking." | No. The current numbers are good enough to keep the architecture, not good enough to claim absolute best. The missing proof is exactly where regressions hide. |
+| Objection                               | Answer                                                                                                                                                         |
+| --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| "You only proved means."                | Correct. That blocks absolute-best claims. Slice 1 adds p75/p95/p99 before hard thresholds.                                                                    |
+| "jsdom is not the browser."             | Correct. Slice 5 adds browser trace / event-to-paint proof.                                                                                                    |
+| "Default `auto` hides missing far DOM." | It may during warmup, which is why `nativeSurfaceComplete` and stale DOM count are separate release gates. Stale current DOM is never acceptable.              |
+| "Shell is faster."                      | Not on the fresh middle select/promote rows. It stays explicit and behavior-labeled.                                                                           |
+| "Virtualization would make this easy."  | User excluded it, and it is experimental. It cannot be the answer here.                                                                                        |
+| "This is over-benchmarking."            | No. The current numbers are good enough to keep the architecture, not good enough to claim absolute best. The missing proof is exactly where regressions hide. |
 
 ## Verification Commands Run
 
@@ -643,7 +643,7 @@ All passed.
 
 Status: complete.
 
-Changes in `../slate-v2`:
+Changes in `.tmp/slate-v2`:
 
 - `scripts/benchmarks/browser/react/huge-document-legacy-compare.mjs`
   preserves run-specific artifacts, keeps a latest artifact, emits p75/p95/p99,
@@ -668,7 +668,7 @@ All passed.
 
 Status: complete, but not sufficient for full lane closure.
 
-Change in `../slate-v2`:
+Change in `.tmp/slate-v2`:
 
 - `packages/slate/src/core/public-state.ts` keeps the full previous snapshot
   path for snapshot/source subscribers, but subscriber-free transactions use the
@@ -733,7 +733,7 @@ Next owner:
 
 Status: complete, but not sufficient for full lane closure.
 
-Changes in `../slate-v2`:
+Changes in `.tmp/slate-v2`:
 
 - `packages/slate/src/core/public-state.ts` publishes path-stable text
   snapshots for batched text commits so untouched 5,000-block siblings are not
@@ -792,7 +792,7 @@ Next owner:
 
 Status: complete, but not sufficient for full lane closure.
 
-Changes in `../slate-v2`:
+Changes in `.tmp/slate-v2`:
 
 - `scripts/benchmarks/browser/react/huge-document-browser-trace.mjs` adds a
   Chromium huge-document browser trace benchmark.
@@ -854,7 +854,7 @@ Next owner:
 
 Status: complete for this autonomous local lane.
 
-Changes in `../slate-v2`:
+Changes in `.tmp/slate-v2`:
 
 - `packages/slate-react/src/components/editable.tsx` exports
   `EditableRenderingStrategyDegradationMode`.
@@ -909,22 +909,22 @@ Result:
 
 ## Pass Schedule
 
-| Pass | Status |
-| --- | --- |
-| Skill and boundary reload | complete |
-| Local learning and prior-plan read | complete |
-| Live Slate v2 source read | complete |
-| Cached issue-ledger read | complete |
-| Rerender breadth benchmark | complete |
-| Default/staged huge-document compare | complete |
-| Split-selection huge-document compare | complete |
-| Shell radius huge-document compare | complete |
-| Execution-grade plan | complete |
-| Benchmark artifact hardening | complete |
-| Core transaction snapshot fast path | complete |
-| React p95 outlier trace and history tail fix | complete |
+| Pass                                                           | Status   |
+| -------------------------------------------------------------- | -------- |
+| Skill and boundary reload                                      | complete |
+| Local learning and prior-plan read                             | complete |
+| Live Slate v2 source read                                      | complete |
+| Cached issue-ledger read                                       | complete |
+| Rerender breadth benchmark                                     | complete |
+| Default/staged huge-document compare                           | complete |
+| Split-selection huge-document compare                          | complete |
+| Shell radius huge-document compare                             | complete |
+| Execution-grade plan                                           | complete |
+| Benchmark artifact hardening                                   | complete |
+| Core transaction snapshot fast path                            | complete |
+| React p95 outlier trace and history tail fix                   | complete |
 | Browser-native proof and staged materialization classification | complete |
-| Production metric contract and native behavior matrix | complete |
+| Production metric contract and native behavior matrix          | complete |
 
 ## Current Handoff
 

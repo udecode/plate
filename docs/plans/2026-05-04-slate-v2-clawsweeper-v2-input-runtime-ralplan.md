@@ -33,7 +33,7 @@ the closure handoff is recorded.
 Current owner: none.
 
 Next runnable step: hand this plan to `ralph` for execution when the user wants
-implementation work. This plan itself does not patch `../slate-v2`.
+implementation work. This plan itself does not patch `.tmp/slate-v2`.
 
 ## Intent And Boundary
 
@@ -107,25 +107,25 @@ Unresolved user-decision points:
   composition lifecycle, placeholder/empty-state behavior, Android/iOS
   reconciliation, and beforeinput policy.
 - Current command kernel:
-  `../slate-v2/packages/slate-react/src/editable/editing-kernel.ts:39` defines
+  `.tmp/slate-v2/packages/slate-react/src/editable/editing-kernel.ts:39` defines
   browser event families; `:60` defines kernel states; `:125` defines typed
   command metadata; `:1051` prepares keydown ownership and import policy.
 - Current beforeinput owner:
-  `../slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts:83`
+  `.tmp/slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts:83`
   wires the runtime beforeinput handler; `:120` prepares kernel decisions;
   `:181` delegates Android to the Android manager; `:230` syncs selection before
   model/native decisions; `:274` applies model-owned input.
 - Current Android owner:
-  `../slate-v2/packages/slate-react/src/editable/runtime-android-engine.ts:8`
+  `.tmp/slate-v2/packages/slate-react/src/editable/runtime-android-engine.ts:8`
   adapts the Android input manager into the runtime; the manager contract starts
   in
-  `../slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts:75`.
+  `.tmp/slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts:75`.
 - Existing tracer:
-  `../slate-v2/packages/slate-react/test/editing-kernel-contract.ts:265`
+  `.tmp/slate-v2/packages/slate-react/test/editing-kernel-contract.ts:265`
   proves keydown during active composition is browser-owned and does not import
   DOM/model-owned arrow movement.
 - Release proof boundary:
-  `../slate-v2/packages/slate-browser/test/core/release-proof.test.ts:55`
+  `.tmp/slate-v2/packages/slate-browser/test/core/release-proof.test.ts:55`
   rejects semantic/proxy mobile proof for raw device IME claims.
 
 Current-state read result:
@@ -211,28 +211,28 @@ Status: complete.
 
 Evidence used:
 
-- `../slate-v2/packages/slate-react/src/editable/editing-kernel.ts:39` defines
+- `.tmp/slate-v2/packages/slate-react/src/editable/editing-kernel.ts:39` defines
   the event families owned by the runtime.
-- `../slate-v2/packages/slate-react/src/editable/editing-kernel.ts:60` defines
+- `.tmp/slate-v2/packages/slate-react/src/editable/editing-kernel.ts:60` defines
   runtime states, including `composition`, `model-owned`, `app-owned`,
   `dom-selection`, and `shell-backed`.
-- `../slate-v2/packages/slate-react/src/editable/editing-kernel.ts:125`
+- `.tmp/slate-v2/packages/slate-react/src/editable/editing-kernel.ts:125`
   defines command metadata with model-owned commands.
-- `../slate-v2/packages/slate-react/src/editable/editing-kernel.ts:1051`
+- `.tmp/slate-v2/packages/slate-react/src/editable/editing-kernel.ts:1051`
   prepares keydown ownership.
-- `../slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts:120`
+- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts:120`
   prepares beforeinput kernel decisions.
-- `../slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts:181`
+- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts:181`
   delegates Android beforeinput to the Android manager.
-- `../slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts:230`
+- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts:230`
   syncs selection before model/native input handling.
-- `../slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts:274`
+- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts:274`
   applies model-owned beforeinput.
-- `../slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts:75`
+- `.tmp/slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts:75`
   exposes the Android manager contract.
-- `../slate-v2/packages/slate-react/test/editing-kernel-contract.ts:265`
+- `.tmp/slate-v2/packages/slate-react/test/editing-kernel-contract.ts:265`
   proves keydown during active composition stays browser-owned.
-- `../slate-v2/packages/slate-browser/test/core/release-proof.test.ts:55`
+- `.tmp/slate-v2/packages/slate-browser/test/core/release-proof.test.ts:55`
   rejects semantic/proxy mobile proof for direct mobile claims.
 - `docs/slate-issues/requirements-from-issues.md` R7 names input,
   composition, and IME semantics as first-class.
@@ -337,29 +337,29 @@ Applicable rules:
 
 Live source evidence:
 
-- `../slate-v2/packages/slate-react/src/editable/input-router.ts:100` attaches
+- `.tmp/slate-v2/packages/slate-react/src/editable/input-router.ts:100` attaches
   native `beforeinput` and `input` listeners at the editable root, and `:109`
   removes them from the same root.
-- `../slate-v2/packages/slate-react/src/editable/selection-reconciler.ts:184`
+- `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts:184`
   owns the document-level `selectionchange` listener and filters
   `INPUT`/`TEXTAREA` before scheduling editor selection work.
-- `../slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts:48`
+- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts:48`
   records beforeinput segment durations only when
   `__SLATE_REACT_RENDER_PROFILER__` is enabled.
-- `../slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts:120`
+- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts:120`
   through `:292` slices beforeinput into prepare, trace, root lookup, selection
   flush/read/sync, native decision, input rules, model apply, and repair.
-- `../slate-v2/packages/slate-react/src/editable/runtime-root-engine.ts:294`
+- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-root-engine.ts:294`
   applies input rules through one runtime loop and exits immediately when no
   rules exist.
-- `../slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:956`
+- `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:956`
   and `:984` own staged group mounting effects; `:1544` through `:1574` own
   placeholder measurement and cleanup.
-- `../slate-v2/docs/libraries/slate-react/editable.md:233` documents
+- `.tmp/slate-v2/docs/libraries/slate-react/editable.md:233` documents
   `onRenderingStrategyMetrics` with cohort, strategy, mounted/pending counts,
   DOM coverage boundary counts, visible DOM node count, editable descendant
   count, browser/mobile/IME tags, and degraded-mode separation.
-- `../slate-v2/docs/walkthroughs/09-performance.md:3` defines normal and large
+- `.tmp/slate-v2/docs/walkthroughs/09-performance.md:3` defines normal and large
   cohorts; `:7` makes typing INP the main guide metric; `:91` separates
   experimental virtualized rendering from normal staged/shell paths.
 
@@ -406,25 +406,25 @@ Performance decision:
 
 Live source evidence:
 
-- `../slate-v2/docs/concepts/08-plugins.md:3` defines plugins as named editor
+- `.tmp/slate-v2/docs/concepts/08-plugins.md:3` defines plugins as named editor
   extensions, `:5` names `defineEditorExtension(...)` and `editor.extend(...)`,
   and `:38` splits `state` for `editor.read(...)` from `tx` for
   `editor.update(...)`.
-- `../slate-v2/docs/concepts/08-plugins.md:137` records dependency,
+- `.tmp/slate-v2/docs/concepts/08-plugins.md:137` records dependency,
   peer-dependency, conflict, and cleanup behavior for extensions.
-- `../slate-v2/docs/concepts/08-plugins.md:183` says read helpers cannot write
+- `.tmp/slate-v2/docs/concepts/08-plugins.md:183` says read helpers cannot write
   and write helpers can read transaction-local state after prior writes.
-- `../slate-v2/docs/concepts/08-plugins.md:217` keeps behavior vocabulary in
+- `.tmp/slate-v2/docs/concepts/08-plugins.md:217` keeps behavior vocabulary in
   element specs: `inline`, `void`, `atom`, `isolating`, `keyboardSelectable`,
   `readOnly`, `selectable`, `markableVoid`, and `editable-island`.
-- `../slate-v2/docs/walkthroughs/07-enabling-collaborative-editing.md:36`
+- `.tmp/slate-v2/docs/walkthroughs/07-enabling-collaborative-editing.md:36`
   exports operations, metadata, tags, and selection before/after from commits.
-- `../slate-v2/docs/walkthroughs/07-enabling-collaborative-editing.md:60`
+- `.tmp/slate-v2/docs/walkthroughs/07-enabling-collaborative-editing.md:60`
   imports remote operations through `tx.operations.replay(...)`.
-- `../slate-v2/docs/walkthroughs/07-enabling-collaborative-editing.md:76`
+- `.tmp/slate-v2/docs/walkthroughs/07-enabling-collaborative-editing.md:76`
   states that subscribers, history, extension listeners, and React projection
   observe the same commit shape.
-- `../slate-v2/docs/walkthroughs/07-enabling-collaborative-editing.md:167`
+- `.tmp/slate-v2/docs/walkthroughs/07-enabling-collaborative-editing.md:167`
   keeps collaboration/storage/local editors on the same extension backbone
   without adapter-shaped namespaces on the editor object.
 
@@ -442,22 +442,22 @@ DX decision:
 
 Live proof evidence:
 
-- `../slate-v2/packages/slate-react/test/editing-epoch-kernel-contract.ts:60`
+- `.tmp/slate-v2/packages/slate-react/test/editing-epoch-kernel-contract.ts:60`
   proves destructive beforeinput joins the active keydown epoch.
-- `../slate-v2/packages/slate-react/test/editing-epoch-kernel-contract.ts:83`
+- `.tmp/slate-v2/packages/slate-react/test/editing-epoch-kernel-contract.ts:83`
   proves handled destructive keydown suppresses duplicate beforeinput command.
-- `../slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts:260`
+- `.tmp/slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts:260`
   through `:278` keeps selection/composition/Android construction out of the
   wrong owner.
-- `../slate-v2/packages/slate-browser/test/core/scenario.test.ts:172` keeps
+- `.tmp/slate-v2/packages/slate-browser/test/core/scenario.test.ts:172` keeps
   generated stress parity out of the default check script and `:184` points the
   stress lane at `playwright/stress/generated-editing.test.ts`.
-- `../slate-v2/playwright/integration/examples/rendering-strategy-runtime.test.ts:401`
+- `.tmp/slate-v2/playwright/integration/examples/rendering-strategy-runtime.test.ts:401`
   commits IME composition through the browser editing path.
-- `../slate-v2/playwright/integration/examples/rendering-strategy-runtime.test.ts:431`
+- `.tmp/slate-v2/playwright/integration/examples/rendering-strategy-runtime.test.ts:431`
   runs a generated composition gauntlet and `:476` rejects illegal kernel
   transitions.
-- `../slate-v2/playwright/stress/generated-editing.test.ts:980` defines a
+- `.tmp/slate-v2/playwright/stress/generated-editing.test.ts:980` defines a
   generated `selection-repair-ime` stress case.
 
 TDD decision:
@@ -636,7 +636,7 @@ Target:
 Proof:
 
 ```bash
-cd ../slate-v2/packages/slate-react
+cd .tmp/slate-v2/packages/slate-react
 bun test:vitest -- editing-kernel-contract editing-epoch-kernel-contract
 ```
 
@@ -657,7 +657,7 @@ Target:
 Proof:
 
 ```bash
-cd ../slate-v2
+cd .tmp/slate-v2
 bun --filter slate-react test:vitest -- selection-runtime-contract model-input-strategy-contract
 PLAYWRIGHT_RETRIES=0 bun run playwright playwright/integration/examples/richtext.test.ts --project=chromium --grep "browser insertion|beforeinput|delete|undo|native word"
 ```
@@ -680,7 +680,7 @@ Target:
 Proof:
 
 ```bash
-cd ../slate-v2
+cd .tmp/slate-v2
 bun --filter slate-react test:vitest -- rendering-strategy-and-scroll rendered-dom-shape-contract
 PLAYWRIGHT_RETRIES=0 bun run playwright playwright/integration/examples/richtext.test.ts playwright/integration/examples/placeholder.test.ts --project=chromium --project=firefox --grep "composition|placeholder|first"
 ```
@@ -703,7 +703,7 @@ Target:
 Proof:
 
 ```bash
-cd ../slate-v2
+cd .tmp/slate-v2
 PLAYWRIGHT_RETRIES=0 bun run playwright playwright/integration/examples/inlines.test.ts playwright/integration/examples/mentions.test.ts playwright/integration/examples/highlighted-text.test.ts playwright/integration/examples/markdown-shortcuts.test.ts --project=chromium --grep "Arrow|Backspace|Delete|cut|list|decorated"
 ```
 
@@ -725,7 +725,7 @@ Target:
 Proof:
 
 ```bash
-cd ../slate-v2
+cd .tmp/slate-v2
 bun --filter slate-browser test:proof
 bun test:mobile-device-proof:raw
 ```
@@ -1089,7 +1089,7 @@ Completed:
     use `native-allowed` ownership and expose explicit no-selection/no-repair
     policies.
   - Fresh proof:
-    `cd ../slate-v2/packages/slate-react && bun test:vitest -- editing-kernel-contract editing-epoch-kernel-contract`
+    `cd .tmp/slate-v2/packages/slate-react && bun test:vitest -- editing-kernel-contract editing-epoch-kernel-contract`
     passed with `24` tests.
 - Phase 2: Beforeinput Selection Sync.
   - Fixed the Phase 2 proof path by renaming
@@ -1097,10 +1097,10 @@ Completed:
     `model-input-strategy-contract.test.ts` and converting it to Vitest
     assertions, because the planned command skipped the old file.
   - Fresh unit proof:
-    `cd ../slate-v2 && bun --filter slate-react test:vitest -- selection-runtime-contract model-input-strategy-contract`
+    `cd .tmp/slate-v2 && bun --filter slate-react test:vitest -- selection-runtime-contract model-input-strategy-contract`
     passed with `2` files and `14` tests.
   - Fresh browser proof:
-    `cd ../slate-v2 && PLAYWRIGHT_RETRIES=0 bun run playwright playwright/integration/examples/richtext.test.ts --project=chromium --grep "browser insertion|beforeinput|delete|undo|native word"`
+    `cd .tmp/slate-v2 && PLAYWRIGHT_RETRIES=0 bun run playwright playwright/integration/examples/richtext.test.ts --project=chromium --grep "browser insertion|beforeinput|delete|undo|native word"`
     passed with `14` tests.
 - Phase 3: Placeholder And Empty-State Composition.
   - Added `rendering-strategy-and-scroll.test.tsx` so the planned Vitest
@@ -1108,21 +1108,21 @@ Completed:
   - Fixed hidden rendering-strategy tests to fire editable `select-all` and
     paste events through Testing Library with an editable target.
   - Fresh unit proof:
-    `cd ../slate-v2 && bun --filter slate-react test:vitest -- rendering-strategy-and-scroll rendered-dom-shape-contract`
+    `cd .tmp/slate-v2 && bun --filter slate-react test:vitest -- rendering-strategy-and-scroll rendered-dom-shape-contract`
     passed with `2` files and `35` tests.
   - Fresh browser proof:
-    `cd ../slate-v2 && PLAYWRIGHT_RETRIES=0 bun run playwright playwright/integration/examples/richtext.test.ts playwright/integration/examples/placeholder.test.ts --project=chromium --project=firefox --grep "composition|placeholder|first"`
+    `cd .tmp/slate-v2 && PLAYWRIGHT_RETRIES=0 bun run playwright playwright/integration/examples/richtext.test.ts playwright/integration/examples/placeholder.test.ts --project=chromium --project=firefox --grep "composition|placeholder|first"`
     passed with `6` tests.
 - Phase 4: Inline, Void, Mark, And Soft-Break Input.
   - Fresh browser proof:
-    `cd ../slate-v2 && PLAYWRIGHT_RETRIES=0 bun run playwright playwright/integration/examples/inlines.test.ts playwright/integration/examples/mentions.test.ts playwright/integration/examples/highlighted-text.test.ts playwright/integration/examples/markdown-shortcuts.test.ts --project=chromium --grep "Arrow|Backspace|Delete|cut|list|decorated"`
+    `cd .tmp/slate-v2 && PLAYWRIGHT_RETRIES=0 bun run playwright playwright/integration/examples/inlines.test.ts playwright/integration/examples/mentions.test.ts playwright/integration/examples/highlighted-text.test.ts playwright/integration/examples/markdown-shortcuts.test.ts --project=chromium --grep "Arrow|Backspace|Delete|cut|list|decorated"`
     passed with `17` tests.
 - Phase 5: Android Runtime Proof Gate.
   - Fresh Slate Browser proof:
-    `cd ../slate-v2 && bun --filter slate-browser test:proof` passed with
+    `cd .tmp/slate-v2 && bun --filter slate-browser test:proof` passed with
     `23` tests.
   - Raw mobile proof was attempted:
-    `cd ../slate-v2 && bun test:mobile-device-proof:raw` failed because
+    `cd .tmp/slate-v2 && bun test:mobile-device-proof:raw` failed because
     `test-results/release-proof/mobile-device-proof.json` is absent.
   - Android/iOS issue rows stay `Related`; no raw-device claim was promoted.
 - Phase 6: Ledger And PR Sync.
