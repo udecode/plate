@@ -318,6 +318,11 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
+      - name: 📝 Sync release docs to GitHub Releases
+        env:
+          GH_TOKEN: ${{ secrets.API_TOKEN_GITHUB || secrets.GITHUB_TOKEN }}
+        run: node tooling/scripts/sync-version-package-releases.mjs --latest 300 --from v49
+
       - name: 🏗 Build production registry
         run: pnpm --filter www build:registry && pnpm --filter www build:tw
 

@@ -7,6 +7,8 @@ import test from 'node:test';
 import {
   extractReleaseChanges,
   generateRawReleaseNotes,
+  getDetailedChanges,
+  getFullChangelog,
   getGlobalReleaseVersion,
   getWorkspacePackages,
   parsePublishedPackages,
@@ -85,7 +87,14 @@ test('generates raw release notes from published package changelogs', async () =
   );
 
   const body = await generateRawReleaseNotes({
-    commitRef: 'abc123',
+    detailedChanges: {
+      label: 'CHANGELOG',
+      url: 'https://github.com/udecode/plate/blob/abc/packages/list/CHANGELOG.md',
+    },
+    fullChangelog: {
+      label: 'v53.0.1...v53.0.2',
+      url: 'https://github.com/udecode/plate/compare/v53.0.1...v53.0.2',
+    },
     publishedPackages: [{ name: '@platejs/list', version: '53.0.2' }],
     workspacePackages: await getWorkspacePackages([packageRoot]),
   });
@@ -93,14 +102,107 @@ test('generates raw release notes from published package changelogs', async () =
   assert.match(body, /## `@platejs\/list`/);
   assert.match(body, /### Patch Changes/);
   assert.match(body, /Fix ordered list numbering/);
-  assert.match(
-    body,
-    /For detailed changes, see \[`CHANGELOG`\]\(https:\/\/github\.com\/udecode\/plate\/blob\/abc123\//
-  );
   assert.match(body, /## Contributors/);
   assert.match(body, /@dylans/);
-  assert.doesNotMatch(body, /compare\/v/);
-  assert.doesNotMatch(body, /Full changelog/);
+  assert.match(
+    body,
+    /For detailed changes, see \[`CHANGELOG`\]\(https:\/\/github\.com\/udecode\/plate\/blob\/abc\/packages\/list\/CHANGELOG\.md\)/
+  );
+  assert.match(
+    body,
+    /Full changelog: \[`v53\.0\.1\.\.\.v53\.0\.2`\]\(https:\/\/github\.com\/udecode\/plate\/compare\/v53\.0\.1\.\.\.v53\.0\.2\)/
+  );
+});
+
+test('selects the preferred package changelog for detailed changes', async () => {
+  const root = await mkdtemp(path.join(tmpdir(), 'plate-detailed-changes-'));
+  const packageRoot = path.join(root, 'packages');
+  const listDirectory = path.join(packageRoot, 'list');
+  const plateDirectory = path.join(packageRoot, 'plate');
+
+  await mkdir(listDirectory, { recursive: true });
+  await mkdir(plateDirectory, { recursive: true });
+  await writeFile(
+    path.join(listDirectory, 'package.json'),
+    JSON.stringify({ name: '@platejs/list', version: '53.0.5' })
+  );
+  await writeFile(
+    path.join(plateDirectory, 'package.json'),
+    JSON.stringify({ name: 'platejs', version: '53.0.5' })
+  );
+
+  assert.deepEqual(
+    getDetailedChanges({
+      commitRef: 'abc123',
+      publishedPackages: [
+        { name: '@platejs/list', version: '53.0.5' },
+        { name: 'platejs', version: '53.0.5' },
+      ],
+      repoRootDirectory: root,
+      version: '53.0.5',
+      workspacePackages: await getWorkspacePackages([packageRoot]),
+    }),
+    {
+      label: 'CHANGELOG',
+      url: 'https://github.com/udecode/plate/blob/abc123/packages/plate/CHANGELOG.md',
+    }
+  );
+});
+
+test('uses release index package tags for full changelog fallback', async () => {
+  const root = await mkdtemp(path.join(tmpdir(), 'plate-release-index-'));
+  const releaseIndexFile = path.join(root, 'release-index.json');
+
+  await writeFile(
+    releaseIndexFile,
+    JSON.stringify([
+      {
+        packageTag: '@platejs/ai@98.0.0',
+        tag: 'v98.0.0',
+      },
+    ])
+  );
+
+  assert.deepEqual(
+    await getFullChangelog({
+      globalReleaseTags: ['v1.0.0'],
+      publishedPackages: [{ name: 'platejs', version: '99.0.0' }],
+      releaseIndexFile,
+      version: '99.0.0',
+    }),
+    {
+      label: 'v98.0.0...v99.0.0',
+      url: 'https://github.com/udecode/plate/compare/%40platejs%2Fai%4098.0.0...platejs%4099.0.0',
+    }
+  );
+});
+
+test('uses previous global tag when it matches the release index version', async () => {
+  const root = await mkdtemp(path.join(tmpdir(), 'plate-release-index-'));
+  const releaseIndexFile = path.join(root, 'release-index.json');
+
+  await writeFile(
+    releaseIndexFile,
+    JSON.stringify([
+      {
+        packageTag: 'platejs@99.0.0',
+        tag: 'v99.0.0',
+      },
+    ])
+  );
+
+  assert.deepEqual(
+    await getFullChangelog({
+      globalReleaseTags: ['v99.0.0'],
+      publishedPackages: [{ name: 'platejs', version: '99.0.1' }],
+      releaseIndexFile,
+      version: '99.0.1',
+    }),
+    {
+      label: 'v99.0.0...v99.0.1',
+      url: 'https://github.com/udecode/plate/compare/v99.0.0...v99.0.1',
+    }
+  );
 });
 
 test('validates AI release notes preserve deterministic structure', () => {
