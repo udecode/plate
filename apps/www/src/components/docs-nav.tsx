@@ -23,6 +23,52 @@ import { hrefWithLocale } from '@/lib/withLocale';
 
 const CN_PREFIX_REGEX = /^\/cn/;
 
+function filterNavItems(
+  items: SidebarNavItem[],
+  filter: string
+): SidebarNavItem[] {
+  return items.reduce<SidebarNavItem[]>((acc, item) => {
+    const { keywords = [], ...itemWithoutKeywords } = item;
+    const itemMatches =
+      item.title?.toLowerCase().includes(filter) ||
+      [...keywords, ...castArray(item.label)].some((label) =>
+        label?.toLowerCase().includes(filter)
+      );
+
+    const filteredNestedItems = item.items
+      ? itemMatches
+        ? item.items
+        : filterNavItems(item.items, filter)
+      : undefined;
+
+    if (
+      itemMatches ||
+      (filteredNestedItems && filteredNestedItems.length > 0)
+    ) {
+      acc.push({
+        ...itemWithoutKeywords,
+        ...(filteredNestedItems && { items: filteredNestedItems }),
+      });
+    }
+
+    return acc;
+  }, []);
+}
+
+function hasActiveNestedItem(
+  items: SidebarNavItem[],
+  pathname: string
+): boolean {
+  return items.some((item) => {
+    if (item.href === pathname) return true;
+    if (item.items?.length) {
+      return hasActiveNestedItem(item.items, pathname);
+    }
+
+    return false;
+  });
+}
+
 export function DocsNav({ config }: { config: DocsConfig }) {
   const locale = useLocale();
   const pathname = usePathname();
@@ -36,42 +82,6 @@ export function DocsNav({ config }: { config: DocsConfig }) {
   );
 
   const sidebarNav = config.sidebarNav;
-
-  // Recursive function to filter items including nested ones
-  const filterItems = React.useCallback(
-    (items: SidebarNavItem[], filter: string): SidebarNavItem[] => {
-      return items.reduce<SidebarNavItem[]>((acc, item) => {
-        const { keywords = [], ...itemWithoutKeywords } = item;
-        const itemMatches =
-          item.title?.toLowerCase().includes(filter) ||
-          [...keywords, ...castArray(item.label)].some((label) =>
-            label?.toLowerCase().includes(filter)
-          );
-
-        // If the parent item matches, include ALL its children without filtering
-        // Otherwise, recursively filter nested items
-        const filteredNestedItems = item.items
-          ? itemMatches
-            ? item.items // Show all children if parent matches
-            : filterItems(item.items, filter) // Filter children if parent doesn't match
-          : undefined;
-
-        // Include the item if it matches OR has matching nested items
-        if (
-          itemMatches ||
-          (filteredNestedItems && filteredNestedItems.length > 0)
-        ) {
-          acc.push({
-            ...itemWithoutKeywords,
-            ...(filteredNestedItems && { items: filteredNestedItems }),
-          });
-        }
-
-        return acc;
-      }, []);
-    },
-    []
-  );
 
   const filteredNav = React.useMemo(() => {
     const lowercasedFilter = filter?.toLowerCase();
@@ -87,40 +97,25 @@ export function DocsNav({ config }: { config: DocsConfig }) {
           items: sectionMatches
             ? section.items
             : section.items
-              ? filterItems(section.items, lowercasedFilter)
+              ? filterNavItems(section.items, lowercasedFilter)
               : undefined,
         };
       })
       .filter((section) => section.items && section.items.length > 0);
-  }, [sidebarNav, filter, filterItems]);
+  }, [sidebarNav, filter]);
 
-  // Helper function to recursively check if any nested item is active
-  const hasActiveNestedItem = React.useCallback(
-    (items: SidebarNavItem[], pathname: string): boolean =>
-      items.some((item) => {
-        if (item.href === pathname) return true;
-        if (item.items?.length) {
-          return hasActiveNestedItem(item.items, pathname);
-        }
-        return false;
-      }),
-    []
-  );
-
-  // Update active section when pathname changes
   React.useEffect(() => {
     if (!normalizedPathname) return;
 
-    const newActiveIndex = filteredNav.findIndex((section) =>
+    const activeIndex = filteredNav.findIndex((section) =>
       section.items
         ? hasActiveNestedItem(section.items, normalizedPathname)
         : false
     );
 
-    setActiveSection(
-      newActiveIndex === -1 ? undefined : `item-${newActiveIndex}`
-    );
-  }, [normalizedPathname, filteredNav, hasActiveNestedItem]);
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Sync accordion state with the active route.
+    setActiveSection(activeIndex === -1 ? undefined : `item-${activeIndex}`);
+  }, [filteredNav, normalizedPathname]);
 
   // Auto-scroll to active item only on mount. To be improved.
   React.useEffect(() => {

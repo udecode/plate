@@ -1,0 +1,18 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "footnote-base-kit",
+  "type": "registry:component",
+  "dependencies": [
+    "@platejs/footnote"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/footnote-node.json"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/plugins/footnote-base-kit.tsx",
+      "content": "import {\n  BaseFootnoteDefinitionPlugin,\n  BaseFootnoteReferencePlugin,\n} from '@platejs/footnote';\n\nimport {\n  FootnoteDefinitionElementStatic,\n  FootnoteReferenceElementStatic,\n} from '@/registry/ui/footnote-node-static';\n\nexport const BaseFootnoteKit = [\n  BaseFootnoteReferencePlugin.withComponent(FootnoteReferenceElementStatic),\n  BaseFootnoteDefinitionPlugin.withComponent(FootnoteDefinitionElementStatic),\n];\n",
+      "type": "registry:component"
+    }
+  ]
+}

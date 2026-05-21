@@ -2,6 +2,7 @@ import * as React from 'react';
 
 import { render } from '@testing-library/react';
 import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
+import * as actualPlatejsReact from 'platejs/react';
 
 const useDraggableMock = mock();
 const parseTwitterUrlMock = mock();
@@ -29,6 +30,7 @@ mock.module('@platejs/resizable', () => ({
 }));
 
 mock.module('platejs/react', () => ({
+  ...actualPlatejsReact,
   PlateElement: ({ children }: any) => (
     <div data-testid="plate-element">{children}</div>
   ),
@@ -63,6 +65,14 @@ mock.module('./resize-handle', () => ({
 }));
 
 describe('VideoElement', () => {
+  const editor = {
+    getApi: () => ({
+      suggestion: {
+        suggestionData: () => null,
+      },
+    }),
+  } as any;
+
   beforeEach(() => {
     useDraggableMock.mockReset();
     parseTwitterUrlMock.mockReset();
@@ -102,6 +112,7 @@ describe('VideoElement', () => {
       <VideoElement
         attributes={{}}
         element={{ children: [{ text: '' }], type: 'video' } as any}
+        editor={editor}
       >
         {null}
       </VideoElement>
@@ -133,6 +144,7 @@ describe('VideoElement', () => {
       <VideoElement
         attributes={{}}
         element={{ children: [{ text: '' }], type: 'video' } as any}
+        editor={editor}
       >
         {null}
       </VideoElement>
@@ -163,6 +175,7 @@ describe('VideoElement', () => {
       <VideoElement
         attributes={{}}
         element={{ children: [{ text: '' }], type: 'video' } as any}
+        editor={editor}
       >
         {null}
       </VideoElement>

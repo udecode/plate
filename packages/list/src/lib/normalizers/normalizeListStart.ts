@@ -10,6 +10,7 @@ import {
 import type { GetSiblingListOptions } from '../queries/getSiblingList';
 
 import { getPreviousList } from '../queries/getPreviousList';
+import { ULIST_STYLE_TYPES } from '../types';
 
 export const getListExpectedListStart = (
   entry: NodeEntry,
@@ -52,7 +53,22 @@ export const normalizeListStart = <
 
     if (!listStyleType) return;
 
-    const prevEntry = getPreviousList(editor, entry, options);
+    if (ULIST_STYLE_TYPES.includes(listStyleType)) {
+      if (isDefined(listStart)) {
+        editor.tf.unsetNodes(KEYS.listStart, { at: path });
+
+        return true;
+      }
+
+      return;
+    }
+
+    const prevEntry = getPreviousList(editor, entry, {
+      breakOnEqIndentNeqListStyleType: false,
+      query: (nextNode, curNode) =>
+        (nextNode as any)[KEYS.listType] === (curNode as any)[KEYS.listType],
+      ...options,
+    });
     const expectedListStart = getListExpectedListStart(entry, prevEntry);
 
     if (isDefined(listStart) && expectedListStart === 1) {

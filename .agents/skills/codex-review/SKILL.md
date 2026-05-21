@@ -1,6 +1,6 @@
 ---
 name: codex-review
-description: "Codex code review closeout: local dirty changes, PR branch vs main, parallel tests."
+description: "Codex autoreview/code review closeout: local dirty changes, PR branch vs main, parallel tests."
 ---
 
 # Codex Review
@@ -21,9 +21,13 @@ Use when:
 - Prefer small fixes at the right ownership boundary; no refactor unless it clearly improves the bug class.
 - Keep going until Codex review returns no accepted/actionable findings.
 - If a review-triggered fix changes code, rerun focused tests and rerun Codex review.
+- For security-audit suppression changes, verify accepted findings remain auditable: suppressed findings stay in structured output, active output keeps an unsuppressible suppression notice, and aggregate findings cannot hide unrelated active risk.
+- Never switch or override the review model. If the review hits model capacity, retry the same command a few times with the same model. The helper runs nested review in yolo/full-access mode by default; use `--no-yolo` only when intentionally testing sandbox behavior.
 - Stop as soon as the review command/helper exits 0 with no accepted/actionable findings. Do not run an extra direct `codex review` just to get a nicer "clean" line, a second opinion, or clearer closeout wording.
 - Treat the helper's successful exit plus absence of actionable findings as the clean review result, even if the underlying Codex CLI output is terse.
 - If rejecting a finding as intentional/not worth fixing, add a brief inline code comment only when it explains a real invariant or ownership decision that future reviewers should know.
+- If `gh`/Gitcrawl reports `database disk image is malformed`, run `gitcrawl doctor --json` once to let the portable cache repair before retrying review; do not bypass the shim unless repair fails and freshness requires live GitHub.
+- If Gitcrawl reports a portable manifest mismatch, source/runtime DB health error, or stale portable-store checkout, run `gitcrawl doctor --json` and inspect `source_db_health`, `runtime_db_health`, and `portable_store_status` before falling back to live GitHub.
 - Do not push just to review. Push only when the user requested push/ship/PR update.
 
 ## Pick Target
@@ -35,10 +39,10 @@ codex review --uncommitted
 ```
 
 Use this only when the patch is actually unstaged/staged/untracked in the
-current checkout. For committed, pushed, or PR work, review the branch against
-its base instead; do not force `--mode local` / `--uncommitted` just because the
-helper docs mention dirty work first. A clean `--uncommitted` review only proves
-there is no local patch.
+current checkout. For committed, pushed, or PR work, point Codex at the commit
+or branch diff instead; do not force `--mode local` / `--uncommitted` just
+because the helper docs mention dirty work first. A clean `--uncommitted` review
+only proves there is no local patch.
 
 Branch/PR work:
 
@@ -47,7 +51,11 @@ git fetch origin
 codex review --base origin/main
 ```
 
-Do not pass an inline prompt with `--base`; current CLI rejects `--base` + `[PROMPT]` even though help text is ambiguous. If custom instructions are needed, run the plain base review first, then do a local/manual follow-up pass.
+Do not pass any prompt with `--base`. Some Codex CLI versions reject both inline
+and stdin prompt forms, including helper commands shaped like
+`codex review --base <ref> -`, with `--base <BRANCH> cannot be used with
+[PROMPT]`. If the helper hits this error, run plain `codex review --base <ref>`
+and report that helper prompt injection was skipped.
 
 If an open PR exists, use its actual base:
 
@@ -61,6 +69,17 @@ Committed single change:
 ```bash
 codex review --commit HEAD
 ```
+
+or with the helper:
+
+```bash
+/Users/steipete/Projects/agent-scripts/skills/codex-review/scripts/codex-review --mode commit --commit HEAD
+```
+
+Use commit review for already-landed or already-pushed work on `main`. Reviewing
+clean `main` against `origin/main` is usually an empty diff after push. For a
+small stack, review each commit explicitly or review the branch before merging
+with `--base`.
 
 ## Parallel Closeout
 
@@ -99,9 +118,14 @@ The helper:
 - chooses dirty `--uncommitted` first
 - otherwise uses current PR base if `gh pr view` works
 - otherwise uses `origin/main` for non-main branches
-- should be left in `--mode auto` or forced to `--mode branch` for committed/PR work; do not force `--mode local` after committing
+- auto-runs `PNPM_CONFIG_PM_ON_FAIL=ignore PNPM_CONFIG_VERIFY_DEPS_BEFORE_RUN=false PNPM_CONFIG_OFFLINE=true pnpm run check` in parallel when a repo has `package.json`, `pnpm-lock.yaml`, `node_modules`, and a `check` script; disable with `CODEX_REVIEW_AUTO_TESTS=0`
+- use `--mode commit --commit <ref>` for already-committed work, especially clean `main` after landing
+- should be left in `--mode auto` or forced to `--mode branch` for PR/branch work; do not force `--mode local` after committing
 - writes only to stdout unless `--output` or `CODEX_REVIEW_OUTPUT` is set
-- supports `--dry-run` and `--parallel-tests`
+- supports `--dry-run`, `--parallel-tests`, and commit refs
+- runs nested review with `--dangerously-bypass-approvals-and-sandbox` by default
+- branch mode may fail on Codex CLI versions that reject `--base` plus the helper's stdin prompt; on that exact parser error, rerun plain `codex review --base <ref>` instead of falling back to a non-Codex reviewer
+- keeps accepting `--full-access`; use `--no-yolo` or `CODEX_REVIEW_YOLO=0` to opt out
 - prints `codex-review clean: no accepted/actionable findings reported` when the selected review command exits 0
 
 ## Final Report

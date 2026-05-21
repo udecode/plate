@@ -72,4 +72,4 @@ It is used by:
 - `pnpm -C apps/www build`
 - `pnpm -C apps/www typecheck`
 - `pnpm lint:fix`
-- `dev-browser` reload of `http://localhost:3000/` with no hydration console error
+- `browser-use` reload of `http://localhost:3000/` with no hydration console error

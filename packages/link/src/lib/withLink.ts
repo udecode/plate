@@ -1,4 +1,4 @@
-import { type OverrideEditor, PathApi } from 'platejs';
+import { type OverrideEditor, PathApi, PointApi, TextApi } from 'platejs';
 import type { TText } from 'platejs';
 
 import type { BaseLinkConfig } from './BaseLinkPlugin';
@@ -20,12 +20,20 @@ export const withLink: OverrideEditor<BaseLinkConfig> = ({
     transforms: {
       normalizeNode([node, path]) {
         if (node.type === type) {
-          const range = editor.selection;
+          const focus = editor.selection?.focus;
+          const focusEntry = focus ? editor.api.node(focus.path) : undefined;
+          const focusIsValid =
+            !!focusEntry &&
+            (!TextApi.isText(focusEntry[0]) ||
+              (focus?.offset ?? 0) <= focusEntry[0].text.length);
+          const endPoint = editor.api.end(path);
 
           if (
-            range &&
+            focus &&
             editor.api.isCollapsed() &&
-            editor.api.isEnd(range.focus, path)
+            focusIsValid &&
+            endPoint &&
+            PointApi.equals(focus, endPoint)
           ) {
             const nextPoint = editor.api.start(path, { next: true });
 

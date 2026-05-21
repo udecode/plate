@@ -7,6 +7,7 @@ import { BaseColumnKit } from './plugins/column-base-kit';
 import { BaseCommentKit } from './plugins/comment-base-kit';
 import { BaseDateKit } from './plugins/date-base-kit';
 import { BaseFontKit } from './plugins/font-base-kit';
+import { BaseFootnoteKit } from './plugins/footnote-base-kit';
 import { BaseLineHeightKit } from './plugins/line-height-base-kit';
 import { BaseLinkKit } from './plugins/link-base-kit';
 import { BaseListKit } from './plugins/list-base-kit';
@@ -40,4 +41,5 @@ export const BaseEditorKit = [
   ...BaseCommentKit,
   ...BaseSuggestionKit,
   ...MarkdownKit,
+  ...BaseFootnoteKit,
 ];

@@ -9,10 +9,72 @@ on:
       - '.github/workflows/sync-templates.yml'
       - 'tooling/scripts/push-template.sh'
       - 'templates/**'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  TEMPLATE_BRANCH: ${{ github.ref_name }}
 
 jobs:
+  refresh:
+    name: Refresh Templates
+    if: ${{ github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.API_TOKEN_GITHUB || secrets.GITHUB_TOKEN }}
+
+      - uses: oven-sh/setup-bun@v2
+        name: Install bun
+        with:
+          bun-version: latest
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: 📦 Monorepo install
+        uses: ./.github/actions/pnpm-install
+        with:
+          link-workspace-packages: 'true'
+
+      - name: 🏗 Build Registry
+        run: pnpm --filter www build:registry && pnpm --filter www build:tw
+
+      - name: 🏗 Build local dev registry
+        run: pnpm --filter www rd
+
+      - name: 🔄 Update templates
+        env:
+          TEMPLATE_SKIP_VERIFY: 'true'
+        run: pnpm templates:update --local
+
+      - name: 🔧 Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: ⬆️ Push refreshed templates
+        run: |
+          git add templates
+
+          if git diff --cached --quiet; then
+            echo "No template changes to push."
+            exit 0
+          fi
+
+          git commit -m "chore: refresh templates [skip release]"
+          git push origin HEAD:${TEMPLATE_BRANCH}
   build:
     name: Build
+    if: ${{ github.event_name == 'push' }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -53,9 +115,9 @@ jobs:
         run: bun run build
 
   sync:
+    if: ${{ github.event_name == 'push' }}
     needs: build
     runs-on: ubuntu-latest
-    if: ${{ success() }}
     strategy:
       fail-fast: false
       matrix:

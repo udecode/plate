@@ -2,10 +2,12 @@
   "name": "plate",
   "private": true,
   "license": "MIT",
+  "workspaces": [
+    "apps/*",
+    "packages/*",
+    "packages/udecode/*"
+  ],
   "scripts": {
-    "brl": "pnpm g:brl",
-    "build": "pnpm g:build",
-    "build:apps": "turbo --filter \"./apps/www\" build",
     "bench:editor:build": "cd benchmarks/editor && npm run build:web",
     "bench:editor:build:plate": "pnpm run bench:editor:prepare:plate && cd benchmarks/editor && npm run build:plate",
     "bench:editor:contract": "cd benchmarks/editor && npm run benchmark:contract",
@@ -19,10 +21,15 @@
     "bench:editor:preview:slate": "cd benchmarks/editor && npm run preview:slate",
     "bench:editor:start": "cd benchmarks/editor && npm run start:web",
     "bench:editor:transform": "cd benchmarks/editor && npm run transform:interactive-results",
+    "brl": "pnpm g:brl",
+    "build": "pnpm g:build",
+    "build:apps": "turbo --filter \"./apps/www\" build",
     "build:tw": "pnpm --filter www build:tw",
     "build:watch": "ROARR_LOG=true turbowatch ./tooling/config/turbowatch.config.ts | roarr",
     "check": "pnpm lint && pnpm typecheck && pnpm test:all && pnpm test:slowest",
     "check:push": "pnpm lint && pnpm typecheck && pnpm test:all",
+    "ci:release": "pnpm release",
+    "ci:version": "pnpm changeset version && pnpm install --no-frozen-lockfile",
     "completion-check": "node tooling/scripts/completion-check.mjs",
     "deps:check": "npx npm-check-updates@latest --configFileName config/ncurc.yml --workspaces --root --mergeConfig",
     "deps:update": "npx npm-check-updates@latest --configFileName config/ncurc.yml -u --workspaces --root --mergeConfig",
@@ -69,8 +76,8 @@
     "templates:ai": "./tooling/scripts/update-template.sh ai",
     "templates:basic": "./tooling/scripts/update-template.sh basic",
     "templates:check": "cd templates/plate-template && pnpm lint && pnpm typecheck && cd ../plate-playground-template && pnpm lint && pnpm typecheck",
-    "templates:skills": "./tooling/scripts/update-template-skills.sh",
     "templates:push": "./tooling/scripts/push-template.sh \"templates/*\"",
+    "templates:skills": "./tooling/scripts/update-template-skills.sh",
     "templates:test": "cd templates/plate-template && npx shadcn@latest add http://localhost:3000/rd/editor-ai -o && pnpm lint && pnpm typecheck",
     "templates:update": "./tooling/scripts/update-templates.sh",
     "test": "bun tooling/scripts/test-fast.mjs",
@@ -144,8 +151,8 @@
     "concurrently": "9.1.2",
     "cross-env": "7.0.3",
     "dotenv": "16.5.0",
-    "eslint": "^9.39.1",
-    "eslint-plugin-react-hooks": "7.0.1",
+    "eslint": "10.2.1",
+    "eslint-plugin-react-hooks": "7.1.1",
     "openai": "5.3.0",
     "platejs": "workspace:^",
     "prompts": "2.4.2",
@@ -176,10 +183,5 @@
   "patchedDependencies": {
     "is-hotkey@0.2.0": "patches/is-hotkey@0.2.0.patch",
     "react-dnd@16.0.1": "patches/react-dnd@16.0.1.patch"
-  },
-  "workspaces": [
-    "apps/*",
-    "packages/*",
-    "packages/udecode/*"
-  ]
+  }
 }

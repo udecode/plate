@@ -1,5 +1,7 @@
 # @platejs/diff
 
+## 53.0.0
+
 ## 52.3.10
 
 ### Patch Changes

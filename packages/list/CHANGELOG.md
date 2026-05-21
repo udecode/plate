@@ -1,5 +1,17 @@
 # @platejs/list
 
+## 53.0.2
+
+### Patch Changes
+
+- [#4954](https://github.com/udecode/plate/pull/4954) by [@dylans](https://github.com/dylans) – Fix `normalizeListStart` to skip unordered list items and resume ordered list numbering past same-indent unordered siblings
+
+## 53.0.0
+
+### Patch Changes
+
+- [#4941](https://github.com/udecode/plate/pull/4941) by [@zbeyens](https://github.com/zbeyens) – Allow list markdown rule families to override shared runtime rule fields while keeping semantic `variant` and `checked` options
+
 ## 52.3.10
 
 ### Patch Changes

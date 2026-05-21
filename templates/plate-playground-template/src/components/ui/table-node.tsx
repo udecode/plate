@@ -779,6 +779,7 @@ function TableFloatingToolbar({
 
   React.useEffect(() => {
     if (!isExpandedSelectionPending) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Reset the delayed toolbar gate when selection is no longer expanded.
       setIsExpandedSelectionToolbarReady(false);
 
       return;

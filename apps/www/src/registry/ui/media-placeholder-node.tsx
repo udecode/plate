@@ -197,6 +197,7 @@ export function ImageProgress({
 
   React.useEffect(() => {
     const url = URL.createObjectURL(file);
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Store the object URL tied to this File and revoke it on cleanup.
     setObjectUrl(url);
 
     return () => {

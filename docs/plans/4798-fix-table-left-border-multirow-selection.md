@@ -65,5 +65,5 @@ Fix GitHub issue `#4798` so toggling the left border for a multi-row table selec
 - Browser:
   - Connected to the persistent debug Chrome and verified the real local docs page at `http://localhost:3000/docs/table`.
   - Reached the live editor instance through the React tree, set a real multi-cell selection on the table demo, and confirmed the DOM reflected the expected two selected cells.
-  - Saved fresh browser proof at `~/.dev-browser/tmp/issue-4798-longterm-selection.png`.
+  - Saved fresh browser proof at `~/.browser-use/tmp/issue-4798-longterm-selection.png`.
   - The exact border-toggle dropdown path was still not reliably automatable in-browser, so final behavior proof remains strongest in the new selection-override regression plus the border integration regression.

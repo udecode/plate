@@ -27,7 +27,7 @@ export function TocElementStatic(props: SlateElementProps) {
     <SlateElement {...props} className="mb-1 p-0">
       <div>
         {headingList.length > 0 ? (
-          headingList.map((item) => (
+          headingList.map((item: Heading) => (
             <Button
               className={headingItemVariants({
                 depth: item.depth as 1 | 2 | 3,
@@ -113,7 +113,7 @@ export function TocElementDocx(props: SlateElementProps) {
         }}
       >
         {headingList.length > 0 ? (
-          headingList.map((item) => (
+          headingList.map((item: Heading) => (
             <p
               key={item.id}
               style={{

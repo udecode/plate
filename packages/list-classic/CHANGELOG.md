@@ -1,5 +1,11 @@
 # @platejs/list-classic
 
+## 53.0.0
+
+### Patch Changes
+
+- [#4941](https://github.com/udecode/plate/pull/4941) by [@zbeyens](https://github.com/zbeyens) – Allow classic list markdown rule families to override shared runtime rule fields while keeping semantic `variant` and `checked` options
+
 ## 52.3.10
 
 ### Patch Changes

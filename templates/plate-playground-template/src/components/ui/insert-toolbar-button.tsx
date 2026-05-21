@@ -22,6 +22,7 @@ import {
   QuoteIcon,
   RadicalIcon,
   SquareIcon,
+  SuperscriptIcon,
   TableIcon,
   TableOfContentsIcon,
 } from 'lucide-react';
@@ -204,6 +205,12 @@ const groups: Group[] = [
         icon: <CalendarIcon />,
         label: 'Date',
         value: KEYS.date,
+      },
+      {
+        focusEditor: true,
+        icon: <SuperscriptIcon />,
+        label: 'Footnote',
+        value: 'action_footnote',
       },
       {
         focusEditor: false,

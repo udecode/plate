@@ -418,6 +418,10 @@
           "type": "registry:ui"
         },
         {
+          "path": "src/registry/lib/block-discussion-index.ts",
+          "type": "registry:lib"
+        },
+        {
           "path": "src/registry/ui/block-suggestion.tsx",
           "type": "registry:ui"
         },
@@ -1829,6 +1833,7 @@
         "@platejs/suggestion"
       ],
       "registryDependencies": [
+        "https://platejs.org/r/suggestion.json",
         "https://platejs.org/r/suggestion-kit.json"
       ],
       "files": [
@@ -1862,7 +1867,8 @@
         "@platejs/date"
       ],
       "registryDependencies": [
-        "@shadcn/calendar"
+        "@shadcn/calendar",
+        "https://platejs.org/r/suggestion.json"
       ],
       "files": [
         {
@@ -1898,7 +1904,8 @@
         "react-textarea-autosize"
       ],
       "registryDependencies": [
-        "@shadcn/popover"
+        "@shadcn/popover",
+        "https://platejs.org/r/suggestion.json"
       ],
       "files": [
         {
@@ -2038,12 +2045,50 @@
       }
     },
     {
+      "name": "footnote-node",
+      "type": "registry:ui",
+      "title": "Footnote Elements",
+      "description": "Inline footnote references, definitions, and input UI.",
+      "dependencies": [
+        "@platejs/footnote"
+      ],
+      "registryDependencies": [
+        "@shadcn/button",
+        "@shadcn/command",
+        "@shadcn/hover-card",
+        "@shadcn/popover",
+        "https://platejs.org/r/inline-combobox.json"
+      ],
+      "files": [
+        {
+          "path": "src/registry/ui/footnote-node.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "src/registry/ui/footnote-node-static.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "meta": {
+        "docs": [
+          {
+            "route": "/docs/footnote"
+          }
+        ],
+        "examples": [
+          "footnote-demo"
+        ]
+      }
+    },
+    {
       "name": "heading-node",
       "type": "registry:ui",
       "title": "Heading Element",
       "description": "A heading with multiple level support.",
       "dependencies": [],
-      "registryDependencies": [],
+      "registryDependencies": [
+        "https://platejs.org/r/highlight-style.json"
+      ],
       "files": [
         {
           "path": "src/registry/ui/heading-node.tsx",
@@ -2239,7 +2284,9 @@
       "dependencies": [
         "@platejs/link"
       ],
-      "registryDependencies": [],
+      "registryDependencies": [
+        "https://platejs.org/r/suggestion.json"
+      ],
       "files": [
         {
           "path": "src/registry/ui/link-node.tsx",
@@ -2492,6 +2539,7 @@
         "@platejs/mention"
       ],
       "registryDependencies": [
+        "https://platejs.org/r/suggestion.json",
         "https://platejs.org/r/use-mounted.json",
         "https://platejs.org/r/inline-combobox.json"
       ],
@@ -2889,6 +2937,22 @@
       ]
     },
     {
+      "name": "footnote-base-kit",
+      "type": "registry:component",
+      "dependencies": [
+        "@platejs/footnote"
+      ],
+      "registryDependencies": [
+        "https://platejs.org/r/footnote-node.json"
+      ],
+      "files": [
+        {
+          "path": "src/registry/components/editor/plugins/footnote-base-kit.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
       "name": "excalidraw-kit",
       "type": "registry:component",
       "dependencies": [
@@ -3109,6 +3173,7 @@
         "https://platejs.org/r/column-base-kit.json",
         "https://platejs.org/r/comment-base-kit.json",
         "https://platejs.org/r/date-base-kit.json",
+        "https://platejs.org/r/footnote-base-kit.json",
         "https://platejs.org/r/font-base-kit.json",
         "https://platejs.org/r/line-height-base-kit.json",
         "https://platejs.org/r/link-base-kit.json",
@@ -3171,7 +3236,6 @@
       "name": "autoformat-classic-kit",
       "type": "registry:component",
       "dependencies": [
-        "@platejs/autoformat",
         "@platejs/code-block",
         "@platejs/list-classic"
       ],
@@ -3190,7 +3254,6 @@
       "name": "autoformat-kit",
       "type": "registry:component",
       "dependencies": [
-        "@platejs/autoformat",
         "@platejs/code-block",
         "@platejs/list"
       ],
@@ -3531,6 +3594,7 @@
         "https://platejs.org/r/exit-break-kit.json",
         "https://platejs.org/r/fixed-toolbar-kit.json",
         "https://platejs.org/r/floating-toolbar-kit.json",
+        "https://platejs.org/r/footnote-kit.json",
         "https://platejs.org/r/font-kit.json",
         "https://platejs.org/r/line-height-kit.json",
         "https://platejs.org/r/link-kit.json",
@@ -3637,6 +3701,22 @@
       "files": [
         {
           "path": "src/registry/components/editor/plugins/floating-toolbar-classic-kit.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "footnote-kit",
+      "type": "registry:component",
+      "dependencies": [
+        "@platejs/footnote"
+      ],
+      "registryDependencies": [
+        "https://platejs.org/r/footnote-node.json"
+      ],
+      "files": [
+        {
+          "path": "src/registry/components/editor/plugins/footnote-kit.tsx",
           "type": "registry:component"
         }
       ]
@@ -3752,7 +3832,9 @@
       "name": "markdown-kit",
       "type": "registry:component",
       "dependencies": [
+        "@platejs/footnote",
         "@platejs/markdown",
+        "remark-emoji",
         "remark-gfm",
         "remark-math"
       ],
@@ -4347,6 +4429,17 @@
       ]
     },
     {
+      "name": "suggestion",
+      "type": "registry:lib",
+      "dependencies": [],
+      "files": [
+        {
+          "path": "src/registry/lib/suggestion.ts",
+          "type": "registry:lib"
+        }
+      ]
+    },
+    {
       "name": "uploadthing",
       "type": "registry:hook",
       "dependencies": [
@@ -4738,6 +4831,7 @@
         "https://platejs.org/r/playwright-docs",
         "https://platejs.org/r/plugin-components-docs",
         "https://platejs.org/r/plugin-context-docs",
+        "https://platejs.org/r/plugin-input-rules-docs",
         "https://platejs.org/r/plugin-methods-docs",
         "https://platejs.org/r/plugin-rules-docs",
         "https://platejs.org/r/plugin-shortcuts-docs",
@@ -4761,6 +4855,7 @@
         "https://platejs.org/r/date-docs",
         "https://platejs.org/r/equation-docs",
         "https://platejs.org/r/excalidraw-docs",
+        "https://platejs.org/r/footnote-docs",
         "https://platejs.org/r/heading-docs",
         "https://platejs.org/r/horizontal-rule-docs",
         "https://platejs.org/r/link-docs",
@@ -4786,6 +4881,7 @@
         "https://platejs.org/r/dnd-docs",
         "https://platejs.org/r/find-replace-docs",
         "https://platejs.org/r/multi-select-docs",
+        "https://platejs.org/r/navigation-feedback-docs",
         "https://platejs.org/r/tabbable-docs",
         "https://platejs.org/r/toolbar-docs",
         "https://platejs.org/r/basic-marks-docs",
@@ -5019,6 +5115,19 @@
       ],
       "name": "plugin-context-docs",
       "title": "Plugin Context",
+      "type": "registry:file"
+    },
+    {
+      "description": "Typed editor rules for markdown shortcuts, block fences, autolinks, and text substitutions.",
+      "files": [
+        {
+          "path": "../../content/(guides)/plugin-input-rules.mdx",
+          "target": "content/docs/plate/(guides)/plugin-input-rules.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "plugin-input-rules-docs",
+      "title": "Plugin Input Rules",
       "type": "registry:file"
     },
     {
@@ -5321,6 +5430,19 @@
       "type": "registry:file"
     },
     {
+      "description": "Documentation for Footnote",
+      "files": [
+        {
+          "path": "../../content/(plugins)/(elements)/footnote.mdx",
+          "target": "content/docs/plate/(plugins)/(elements)/footnote.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "footnote-docs",
+      "title": "Footnote",
+      "type": "registry:file"
+    },
+    {
       "description": "Documentation for Heading",
       "files": [
         {
@@ -5529,7 +5651,7 @@
       "type": "registry:file"
     },
     {
-      "description": "Automatic text formatting via shortcodes and markdown-like shortcuts.",
+      "description": "Markdown shortcuts and text substitutions powered by input rules.",
       "files": [
         {
           "path": "../../content/(plugins)/(functionality)/autoformat.mdx",
@@ -5643,6 +5765,19 @@
       ],
       "name": "multi-select-docs",
       "title": "Multi Select",
+      "type": "registry:file"
+    },
+    {
+      "description": "Flash a landed target after TOC, footnote, search, or custom navigation jumps.",
+      "files": [
+        {
+          "path": "../../content/(plugins)/(functionality)/navigation-feedback.mdx",
+          "target": "content/docs/plate/(plugins)/(functionality)/navigation-feedback.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "navigation-feedback-docs",
+      "title": "Navigation Feedback",
       "type": "registry:file"
     },
     {

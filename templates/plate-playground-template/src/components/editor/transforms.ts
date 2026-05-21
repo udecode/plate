@@ -5,6 +5,7 @@ import { insertCodeBlock, toggleCodeBlock } from '@platejs/code-block';
 import { insertCodeDrawing } from '@platejs/code-drawing';
 import { insertDate } from '@platejs/date';
 import { insertExcalidraw } from '@platejs/excalidraw';
+import { insertFootnote } from '@platejs/footnote';
 import { insertColumnGroup, toggleColumnGroup } from '@platejs/layout';
 import { triggerFloatingLink } from '@platejs/link/react';
 import { insertEquation, insertInlineEquation } from '@platejs/math';
@@ -27,6 +28,7 @@ import {
 import type { PlateEditor } from 'platejs/react';
 
 const ACTION_THREE_COLUMNS = 'action_three_columns';
+const ACTION_FOOTNOTE = 'action_footnote';
 
 const insertList = (editor: PlateEditor, type: string) => {
   editor.tf.insertNodes(
@@ -36,6 +38,19 @@ const insertList = (editor: PlateEditor, type: string) => {
     }),
     { select: true }
   );
+};
+
+const createBlockquote = (editor: PlateEditor) => ({
+  children: [editor.api.create.block({ type: KEYS.p })],
+  type: KEYS.blockquote,
+});
+
+const selectBlockquoteStart = (editor: PlateEditor, path: Path) => {
+  const start = editor.api.start(path.concat([0]));
+
+  if (start) {
+    editor.tf.select(start);
+  }
 };
 
 const insertBlockMap: Record<
@@ -76,6 +91,7 @@ const insertInlineMap: Record<
   (editor: PlateEditor, type: string) => void
 > = {
   [KEYS.date]: (editor) => insertDate(editor, { select: true }),
+  [ACTION_FOOTNOTE]: (editor) => insertFootnote(editor, { select: true }),
   [KEYS.inlineEquation]: (editor) =>
     insertInlineEquation(editor, '', { select: true }),
   [KEYS.link]: (editor) => triggerFloatingLink(editor, { focused: true }),
@@ -107,6 +123,24 @@ export const insertBlock = (
       return;
     }
 
+    if (type === KEYS.blockquote) {
+      const insertPath = PathApi.next(path);
+
+      editor.tf.insertNodes(createBlockquote(editor), { at: insertPath });
+
+      if (!isSameBlockType && isCurrentBlockEmpty) {
+        editor.getApi(SuggestionPlugin).suggestion.withoutSuggestions(() => {
+          editor.tf.removeNodes({ at: path });
+        });
+      }
+
+      selectBlockquoteStart(
+        editor,
+        isCurrentBlockEmpty && !isSameBlockType ? path : insertPath
+      );
+
+      return;
+    }
     if (type in insertBlockMap) {
       insertBlockMap[type](editor, type);
     } else {
@@ -163,6 +197,21 @@ export const setBlockType = (
   { at }: { at?: Path } = {}
 ) => {
   editor.tf.withoutNormalizing(() => {
+    if (type === KEYS.blockquote) {
+      const target = at ?? editor.selection;
+
+      if (!target || editor.api.some({ at: target, match: { type } })) {
+        return;
+      }
+
+      editor.tf.toggleBlock(type, {
+        ...(at ? { at } : {}),
+        wrap: true,
+      });
+
+      return;
+    }
+
     const setEntry = (entry: NodeEntry<TElement>) => {
       const [node, path] = entry;
 

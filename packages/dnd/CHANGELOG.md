@@ -1,5 +1,7 @@
 # @platejs/dnd
 
+## 53.0.0
+
 ## 52.3.16
 
 ### Patch Changes

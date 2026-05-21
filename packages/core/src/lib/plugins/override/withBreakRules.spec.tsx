@@ -832,7 +832,7 @@ describe('withBreakRules', () => {
           <element indent={1} listStyleType="disc" type="h1">
             Heading
           </element>
-          <element indent={1} listStart={2} listStyleType="disc" type="h1">
+          <element indent={1} listStyleType="disc" type="h1">
             <cursor />
             content
           </element>

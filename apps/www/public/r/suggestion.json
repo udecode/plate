@@ -1,0 +1,13 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "suggestion",
+  "type": "registry:lib",
+  "dependencies": [],
+  "files": [
+    {
+      "path": "src/registry/lib/suggestion.ts",
+      "content": "import { cva } from 'class-variance-authority';\n\nexport const inlineSuggestionVariants = cva(\n  'in-data-[inline-suggestion=insert]:bg-emerald-100! in-data-[inline-suggestion=remove]:bg-red-100! in-data-[inline-suggestion=insert]:text-emerald-700! in-data-[inline-suggestion=remove]:text-red-700! data-[inline-suggestion=insert]:bg-emerald-100! data-[inline-suggestion=remove]:bg-red-100! data-[inline-suggestion=insert]:text-emerald-700! data-[inline-suggestion=remove]:text-red-700!'\n);\n",
+      "type": "registry:lib"
+    }
+  ]
+}

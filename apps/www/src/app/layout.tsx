@@ -1,5 +1,6 @@
 import React from 'react';
 
+import { Agentation } from 'agentation';
 import type { Metadata, Viewport } from 'next';
 
 import { NuqsAdapter } from 'nuqs/adapters/next/app';
@@ -114,6 +115,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
           </Providers>
         </NuqsAdapter>
 
+        {process.env.NODE_ENV === 'development' && <Agentation />}
         <TailwindIndicator />
 
         <GA />

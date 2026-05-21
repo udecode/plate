@@ -89,17 +89,12 @@ export function AIMenu() {
   React.useEffect(() => {
     if (!streaming) return;
 
-    const timeoutId = setTimeout(() => {
-      const anchorEntry = api.aiChat.node({ anchor: true });
-      if (!anchorEntry) return;
+    const anchorEntry = api.aiChat.node({ anchor: true });
+    if (!anchorEntry) return;
 
-      const anchorDom = editor.api.toDOMNode(anchorEntry[0])!;
-      setAnchorElement(anchorDom);
-    }, 0);
-
-    return () => {
-      clearTimeout(timeoutId);
-    };
+    const anchorDom = editor.api.toDOMNode(anchorEntry[0])!;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Position the popover from editor DOM while the edit stream is active.
+    setAnchorElement(anchorDom);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [streaming]);
 
@@ -152,25 +147,26 @@ export function AIMenu() {
   const isLoading = status === 'streaming' || status === 'submitted';
 
   React.useEffect(() => {
-    if (toolName === 'edit' && mode === 'chat' && !isLoading) {
-      let anchorNode = editor.api.node({
-        at: [],
-        reverse: true,
-        match: (n) => !!n[KEYS.suggestion] && !!n[getTransientSuggestionKey()],
-      });
+    if (toolName !== 'edit' || mode !== 'chat' || isLoading) return;
 
-      if (!anchorNode) {
-        anchorNode = editor
-          .getApi(BlockSelectionPlugin)
-          .blockSelection.getNodes({ selectionFallback: true, sort: true })
-          .at(-1);
-      }
+    let anchorNode = editor.api.node({
+      at: [],
+      reverse: true,
+      match: (n) => !!n[KEYS.suggestion] && !!n[getTransientSuggestionKey()],
+    });
 
-      if (!anchorNode) return;
-
-      const block = editor.api.block({ at: anchorNode[1] });
-      setAnchorElement(editor.api.toDOMNode(block![0]!)!);
+    if (!anchorNode) {
+      anchorNode = editor
+        .getApi(BlockSelectionPlugin)
+        .blockSelection.getNodes({ selectionFallback: true, sort: true })
+        .at(-1);
     }
+
+    if (!anchorNode) return;
+
+    const block = editor.api.block({ at: anchorNode[1] });
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Position the popover from editor DOM after the edit stream completes.
+    setAnchorElement(editor.api.toDOMNode(block![0]!)!);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoading]);
 

@@ -16,6 +16,7 @@ import {
 
 import { cn } from '@/lib/utils';
 import { useMounted } from '@/registry/hooks/use-mounted';
+import { inlineSuggestionVariants } from '@/registry/lib/suggestion';
 
 import {
   InlineCombobox,
@@ -31,8 +32,7 @@ export function MentionElement(
     prefix?: string;
   }
 ) {
-  const element = props.element;
-
+  const { element } = props;
   const selected = useSelected();
   const focused = useFocused();
   const mounted = useMounted();
@@ -43,6 +43,7 @@ export function MentionElement(
       {...props}
       className={cn(
         'inline-block rounded-md bg-muted px-1.5 py-0.5 align-baseline font-medium text-sm',
+        inlineSuggestionVariants(),
         !readOnly && 'cursor-pointer',
         selected && focused && 'ring-2 ring-ring',
         element.children[0][KEYS.bold] === true && 'font-bold',

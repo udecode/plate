@@ -1,8 +1,8 @@
 ---
 name: planning-with-files
-description: Implements Manus-style file-based planning to organize and track progress on complex tasks. Creates task_plan.md, findings.md, and progress.md. Use when asked to plan out, break down, or organize a multi-step project, research task, or any work requiring >5 tool calls. Supports automatic session recovery after /clear.
+description: Implements Manus-style file-based planning to organize and track progress on complex tasks. Creates task_plan.md, findings.md, and progress.md. Use when asked to plan out, break down, or organize a multi-step project, research task, or any work requiring 5+ tool calls. Supports automatic session recovery after /clear.
 user-invocable: true
-allowed-tools: "Read, Write, Edit, Bash, Glob, Grep"
+allowed-tools: "Read Write Edit Bash Glob Grep"
 hooks:
   UserPromptSubmit:
     - hooks:
@@ -21,9 +21,9 @@ hooks:
   Stop:
     - hooks:
         - type: command
-          command: "SD=\"${CLAUDE_PLUGIN_ROOT:-$HOME/.claude/plugins/planning-with-files}/scripts\"; powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"$SD/check-complete.ps1\" 2>/dev/null || sh \"$SD/check-complete.sh\""
+          command: "powershell.exe -NoProfile -ExecutionPolicy Bypass -Command \"& (Get-ChildItem -Path (Join-Path ~ '.claude/plugins/cache') -Filter check-complete.ps1 -Recurse -EA 0 | Select-Object -First 1).FullName\" 2>/dev/null || sh \"$(ls $HOME/.claude/plugins/cache/*/*/*/scripts/check-complete.sh 2>/dev/null | head -1)\" 2>/dev/null || true"
 metadata:
-  version: "2.26.1"
+  version: "2.35.0"
 ---
 
 # Planning with Files

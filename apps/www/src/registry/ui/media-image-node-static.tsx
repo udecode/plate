@@ -20,14 +20,16 @@ export function ImageElementStatic(
           className="relative min-w-[92px] max-w-full"
           style={{ textAlign: align }}
         >
-          <img
-            className={cn(
-              'w-full max-w-full cursor-default object-cover px-0',
-              'rounded-sm'
-            )}
-            alt={(props.attributes as any).alt}
-            src={url}
-          />
+          <div>
+            <img
+              className={cn(
+                'w-full max-w-full cursor-default object-cover px-0',
+                'rounded-sm'
+              )}
+              alt={(props.attributes as any).alt}
+              src={url}
+            />
+          </div>
           {caption && (
             <figcaption
               className="mx-auto mt-2 h-[24px] max-w-full"

@@ -1,6 +1,7 @@
 export const TEST_FILE_PATTERNS = [
   'apps/**/*.spec.{ts,tsx}',
   'packages/**/*.spec.{ts,tsx}',
+  'tooling/scripts/**/*.test.mjs',
 ];
 
 export const TEST_SLOW_FILE_PATTERNS = [

@@ -84,7 +84,6 @@ type CommentConfig = ExtendConfig<
     activeId: string | null;
     commentingBlock: Path | null;
     hoverId: string | null;
-    uniquePathMap: Map<string, Path>;
   }
 >;
 
@@ -95,7 +94,6 @@ export const commentPlugin = toTPlatePlugin<CommentConfig>(
       activeId: null,
       commentingBlock: null,
       hoverId: null,
-      uniquePathMap: new Map(),
     },
     render: {
       node: CommentLeaf,
@@ -107,7 +105,6 @@ export const commentPlugin = toTPlatePlugin<CommentConfig>(
 - `options.activeId`: Currently active comment ID for visual highlighting
 - `options.commentingBlock`: Path of the block currently being commented
 - `options.hoverId`: Currently hovered comment ID for hover effects
-- `options.uniquePathMap`: Map tracking unique paths for comment resolution
 - `render.node`: Assigns [`CommentLeaf`](/docs/components/comment-node) to render comment text marks
 
 ### Add Click Handler
@@ -268,9 +265,6 @@ Plugin for creating and managing text comments with state tracking and discussio
     </APIItem>
     <APIItem name="hoverId" type="string | null">
       Currently hovered comment ID for hover effects.
-    </APIItem>
-    <APIItem name="uniquePathMap" type="Map<string, Path>">
-      Map tracking unique paths for comment resolution.
     </APIItem>
   </APIOptions>
 </API>

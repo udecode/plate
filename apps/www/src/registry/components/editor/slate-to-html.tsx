@@ -14,7 +14,7 @@ import { BaseEditorKit } from './editor-base-kit';
 function useThemedHtml(html: string, serverTheme?: string) {
   const { resolvedTheme } = useTheme();
 
-  const getThemedHtml = React.useCallback(() => {
+  return React.useMemo(() => {
     if (typeof window === 'undefined') return html;
     // Only parse and update if theme differs from server
     if (serverTheme === resolvedTheme) return html;
@@ -31,8 +31,6 @@ function useThemedHtml(html: string, serverTheme?: string) {
 
     return doc.documentElement.outerHTML;
   }, [html, resolvedTheme, serverTheme]);
-
-  return { getThemedHtml };
 }
 
 export function ExportHtmlButton({
@@ -44,19 +42,19 @@ export function ExportHtmlButton({
   className?: string;
   serverTheme?: string;
 }) {
-  const { getThemedHtml } = useThemedHtml(html, serverTheme);
+  const themedHtml = useThemedHtml(html, serverTheme);
   const [url, setUrl] = React.useState<string>();
 
   React.useEffect(() => {
-    const updatedHtml = getThemedHtml();
-    const blob = new Blob([updatedHtml], { type: 'text/html' });
+    const blob = new Blob([themedHtml], { type: 'text/html' });
     const blobUrl = URL.createObjectURL(blob);
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Track browser object URL lifecycle for the generated export blob.
     setUrl(blobUrl);
 
     return () => {
       URL.revokeObjectURL(blobUrl);
     };
-  }, [getThemedHtml]);
+  }, [themedHtml]);
 
   return (
     <a
@@ -79,12 +77,7 @@ export function HtmlIframe({
   html: string;
   serverTheme?: string;
 } & React.ComponentProps<'iframe'>) {
-  const { getThemedHtml } = useThemedHtml(html, serverTheme);
-  const [content, setContent] = React.useState(html);
-
-  React.useEffect(() => {
-    setContent(getThemedHtml());
-  }, [getThemedHtml]);
+  const content = useThemedHtml(html, serverTheme);
 
   return <iframe title="Preview" srcDoc={content} {...props} />;
 }

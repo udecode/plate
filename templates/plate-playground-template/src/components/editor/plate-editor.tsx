@@ -248,10 +248,37 @@ const value = normalizeStaticValue([
       {
         children: [
           {
-            text: 'Blockquotes are great for highlighting important information.',
+            text: 'Blockquotes can group paragraphs, quoted lists, and reply chains.',
           },
         ],
         type: 'p',
+      },
+      {
+        children: [
+          {
+            text: 'Markdown blockquotes keep this nested structure instead of flattening it.',
+          },
+        ],
+        type: 'p',
+      },
+      {
+        children: [
+          {
+            text: 'Quoted list item inside the same container.',
+          },
+        ],
+        indent: 1,
+        listStyleType: 'disc',
+        type: 'p',
+      },
+      {
+        children: [
+          {
+            children: [{ text: 'Nested blockquotes work here too.' }],
+            type: 'p',
+          },
+        ],
+        type: 'blockquote',
       },
     ],
     type: 'blockquote',

@@ -45,4 +45,4 @@
 ## Errors
 
 - `planning-with-files` session catchup script path from the generated skill is missing locally, so catchup could not run in this repo.
-- `dev-browser` screenshot writes only accept repo-relative paths, not absolute paths.
+- `browser-use` screenshot writes only accept repo-relative paths, not absolute paths.

@@ -1,5 +1,5 @@
 ---
-description: Open a concise GitHub follow-up for reusable dev-browser or agent-browser limitations. Use when browser automation is blocked by a likely tool-side issue that is worth fixing separately, especially for clicks, dropdowns, file inputs, focus traps, or other repeatable agent/browser failures.
+description: Open a concise GitHub follow-up for reusable browser-use limitations. Use when browser automation is blocked by a likely tool-side issue that is worth fixing separately, especially for clicks, dropdowns, file inputs, focus traps, or other repeatable agent/browser failures.
 argument-hint: '[browser block summary]'
 disable-model-invocation: true
 name: agent-browser-issue

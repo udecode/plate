@@ -1,9 +1,19 @@
-import { createSlateEditor } from 'platejs';
+import { createSlateEditor, createSlatePlugin, KEYS } from 'platejs';
 
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
 import { findSuggestionProps } from './findSuggestionProps';
 
 describe('findSuggestionProps', () => {
+  const MentionPlugin = createSlatePlugin({
+    key: KEYS.mention,
+    node: {
+      isElement: true,
+      isInline: true,
+      isMarkableVoid: true,
+      isVoid: true,
+    },
+  });
+
   it('reuses metadata only for same-type current-user suggestions', () => {
     const editor = createSlateEditor({
       plugins: [
@@ -94,6 +104,55 @@ describe('findSuggestionProps', () => {
     ).toEqual({
       createdAt: 42,
       id: 'line-break',
+    });
+  });
+
+  it('reuses remove metadata from the adjacent inline void suggestion when continuing backward deletion', () => {
+    const editor = createSlateEditor({
+      plugins: [
+        BaseSuggestionPlugin.configure({
+          options: {
+            currentUserId: 'user-1',
+          },
+        }),
+        MentionPlugin,
+      ],
+      selection: {
+        anchor: { offset: 5, path: [0, 0] },
+        focus: { offset: 5, path: [0, 0] },
+      },
+      value: [
+        {
+          type: 'p',
+          children: [
+            { text: 'like ' },
+            {
+              type: KEYS.mention,
+              value: 'Alice',
+              key: 'u1',
+              suggestion: true,
+              suggestion_same: {
+                id: 'same',
+                createdAt: 77,
+                type: 'remove',
+                userId: 'user-1',
+              },
+              children: [{ text: '' }],
+            },
+            { text: ',or' },
+          ],
+        },
+      ],
+    });
+
+    expect(
+      findSuggestionProps(editor, {
+        at: editor.selection!,
+        type: 'remove',
+      })
+    ).toEqual({
+      createdAt: 77,
+      id: 'same',
     });
   });
 });

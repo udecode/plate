@@ -1,5 +1,17 @@
 # @platejs/link
 
+## 53.0.3
+
+### Patch Changes
+
+- [#4945](https://github.com/udecode/plate/pull/4945) by [@felixfeng33](https://github.com/felixfeng33) – Fix empty link normalization when suggestion acceptance removes the last link character
+
+## 53.0.0
+
+### Patch Changes
+
+- [#4941](https://github.com/udecode/plate/pull/4941) by [@zbeyens](https://github.com/zbeyens) – Keep pasted URLs literal inside markdown link source entry by default
+
 ## 52.3.17
 
 ### Patch Changes

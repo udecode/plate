@@ -136,6 +136,16 @@ const nextConfig = async (_phase: string) => {
     async redirects() {
       return [
         {
+          destination: '/docs/releases',
+          permanent: true,
+          source: '/docs/migration',
+        },
+        {
+          destination: '/cn/docs/releases',
+          permanent: true,
+          source: '/cn/docs/migration',
+        },
+        {
           destination: '/r/:path.json',
           permanent: true,
           source: '/r/:path([^.]*)',

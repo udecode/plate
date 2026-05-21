@@ -58,11 +58,15 @@ jobs:
     name: CI
     runs-on: ubuntu-latest
     if: >-
-      (github.event_name != 'pull_request' || github.event.pull_request.title != '[Release] Version packages') &&
-      (github.event_name != 'push' || (
-        github.event.head_commit.message != 'Version Packages' &&
-        !contains(github.event.head_commit.message, '[skip ci]')
-      ))
+      (
+        github.event_name != 'pull_request' ||
+        github.event.pull_request.title != '[Release] Version packages'
+      ) && (
+        github.event_name != 'push' || (
+          github.event.head_commit.message != 'Version Packages' &&
+          !contains(github.event.head_commit.message, '[skip ci]')
+        )
+      )
 
     steps:
       - uses: actions/checkout@v4

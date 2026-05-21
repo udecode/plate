@@ -6,10 +6,10 @@ import {
   getDraftCommentKey,
 } from '@platejs/comment';
 import type { ExtendConfig, Path } from 'platejs';
-import { isSlateString } from 'platejs';
 import { toTPlatePlugin } from 'platejs/react';
 
 import { CommentLeaf } from '@/components/ui/comment-node';
+import { getDiscussionClickTarget } from './discussion-kit';
 
 type CommentConfig = ExtendConfig<
   BaseCommentConfig,
@@ -17,52 +17,34 @@ type CommentConfig = ExtendConfig<
     activeId: string | null;
     commentingBlock: Path | null;
     hoverId: string | null;
-    uniquePathMap: Map<string, Path>;
   }
 >;
 
 export const commentPlugin = toTPlatePlugin<CommentConfig>(BaseCommentPlugin, {
   handlers: {
     onClick: ({ api, event, setOption, type }) => {
-      let leaf = event.target as HTMLElement;
-      let isSet = false;
+      const activeTarget = getDiscussionClickTarget({
+        selector: `.slate-${type}`,
+        target: event.target,
+      });
 
-      const unsetActiveSuggestion = () => {
+      if (!activeTarget) {
         setOption('activeId', null);
-        isSet = true;
-      };
-
-      if (!isSlateString(leaf)) unsetActiveSuggestion();
-
-      while (leaf.parentElement) {
-        if (leaf.classList.contains(`slate-${type}`)) {
-          const commentsEntry = api.comment!.node();
-
-          if (!commentsEntry) {
-            unsetActiveSuggestion();
-
-            break;
-          }
-
-          const id = api.comment!.nodeId(commentsEntry[0]);
-
-          setOption('activeId', id ?? null);
-          isSet = true;
-
-          break;
-        }
-
-        leaf = leaf.parentElement;
+        return;
       }
 
-      if (!isSet) unsetActiveSuggestion();
+      const commentEntry = api.comment?.node();
+
+      setOption(
+        'activeId',
+        commentEntry ? (api.comment?.nodeId(commentEntry[0]) ?? null) : null
+      );
     },
   },
   options: {
     activeId: null,
     commentingBlock: null,
     hoverId: null,
-    uniquePathMap: new Map(),
   },
 })
   .extendTransforms(

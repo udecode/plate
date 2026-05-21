@@ -66,7 +66,7 @@ describe('withInsertBreakList', () => {
         <hp indent={1} listStyleType="disc">
           Disc item
         </hp>
-        <hp indent={1} listStart={2} listStyleType="disc">
+        <hp indent={1} listStyleType="disc">
           <cursor />
         </hp>
       </editor>

@@ -10,7 +10,7 @@ Make footnote references behave like real inline atoms instead of editable text.
 - [x] Add red tests for inline-void ref behavior and backlink navigation
 - [x] Implement the footnote reference inline-void model and renderer/nav fixes
 - [x] Verify with targeted tests, package checks, registry build, lint, and
-  `dev-browser`
+  `browser-use`
 
 ## Notes
 

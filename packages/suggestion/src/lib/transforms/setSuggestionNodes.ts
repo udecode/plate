@@ -16,6 +16,7 @@ export const setSuggestionNodes = (
   editor: SlateEditor,
   options?: {
     createdAt?: number;
+    includeInlineElements?: boolean;
     suggestionDeletion?: boolean;
     suggestionId?: string;
   } & SetNodesOptions
@@ -25,12 +26,15 @@ export const setSuggestionNodes = (
   if (!at) return;
 
   const { suggestionId = nanoid() } = options ?? {};
+  const includeInlineElements = options?.includeInlineElements ?? true;
 
   // TODO: get all inline nodes to be set
-  const _nodeEntries = editor.api.nodes({
-    match: (n) => ElementApi.isElement(n) && editor.api.isInline(n),
-    ...options,
-  });
+  const _nodeEntries = includeInlineElements
+    ? editor.api.nodes({
+        match: (n) => ElementApi.isElement(n) && editor.api.isInline(n),
+        ...options,
+      })
+    : [];
   const nodeEntries = [..._nodeEntries];
 
   editor.tf.withoutNormalizing(() => {

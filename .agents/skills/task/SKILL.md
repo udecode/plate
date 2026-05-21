@@ -208,7 +208,7 @@ Apply this section only when the task source is a tracker item.
   Use when requirements are still ambiguous after reading the source of truth and nearby code.
 - `framework-docs-researcher`
   Use when touching unfamiliar, version-sensitive, or unstable third-party APIs after checking local clones and docs per AGENTS.
-- `dev-browser`
+- `browser-use`
   Use only when there is a real browser surface to verify.
   Require real browser proof only for browser or UI tasks.
 - `agent-browser-issue`
@@ -360,11 +360,11 @@ Every final response must include:
 ### UI Or Browser Tasks
 
 - Include at least one real browser proof screenshot in the final response.
-- The screenshot must come from `dev-browser` or the real browser workflow used for verification.
+- The screenshot must come from `browser-use` or the real browser workflow used for verification.
 - When `**🌐 Browser Check**` is present, put the screenshot immediately after that section.
 - Otherwise, put the screenshot immediately after the metadata lines + flow table, before the completion summary.
 - If no real browser proof exists, the task is not done unless the user explicitly waived it.
-- If `dev-browser` is blocked on a likely reusable tool-side issue and the product task is still otherwise fixable, load `agent-browser-issue`.
+- If `browser-use` is blocked on a likely reusable tool-side issue and the product task is still otherwise fixable, load `agent-browser-issue`.
 - If that follow-up issue is opened, mention it in the caveat or handoff.
 - `**🌐 Browser Check**` must be a flat bullet list:
   - keep it short and concrete
@@ -395,6 +395,24 @@ Apply this section only when the task came from a tracker item and reached a mea
 
 ### Pull Request
 
+- If the PR contains any real `.changeset/*.md` file, put the managed auto-release block at the very top of the PR description yourself. Do not wait for CI to add it.
+- Use this exact checked block when every changeset frontmatter entry is `patch`:
+
+  ```md
+  <!-- auto-release:start -->
+  - [x] Auto release
+  <!-- auto-release:end -->
+  ```
+
+- Use this exact unchecked block when any changeset frontmatter entry is `minor` or `major`:
+
+  ```md
+  <!-- auto-release:start -->
+  - [ ] Auto release
+  <!-- auto-release:end -->
+  ```
+
+- If the PR has no real `.changeset/*.md` file, omit the auto-release block.
 - When a PR exists, the PR description must match the exact current final handoff from chat:
   - same flow table
   - same metadata lines, except omit the leading `🔀 PR ...` line because the PR page already identifies itself
@@ -413,7 +431,7 @@ Apply this section only when the task came from a tracker item and reached a mea
   - upload the image immediately
   - replace the placeholder with the real hosted proof before handoff
 - If the PR description includes a local image path for proof, do not leave it that way on GitHub.
-- Use `dev-browser --connect http://127.0.0.1:9222` to upload the image through the PR comment file input as a staging area, then replace the local proof path in the PR body with the hosted GitHub attachment URL.
+- Use `browser-use` to upload the image through the PR comment file input as a staging area, then replace the local proof path in the PR body with the hosted GitHub attachment URL.
 - Use the PR comment textarea only as staging:
   - upload image
   - read generated markdown or URL from the textarea
