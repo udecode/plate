@@ -52,7 +52,7 @@ Generate release docs from the Version Packages PR body:
 - After `changesets/action` creates or updates `[Release] Version packages`, the workflow checks out that PR and runs `tooling/scripts/sync-version-package-releases.mjs --pr <number>`.
 - `tooling/scripts/sync-version-package-releases.mjs` parses the PR description's `# Releases` section, groups package headings by version, and writes `apps/www/src/generated/release-index.json`.
 - For historical backfills, run `node tooling/scripts/sync-version-package-releases.mjs --latest <count> --from v49` so the docs include every generated release entry from v49 onward without pulling older history.
-- The generated entry keeps the Better Auth-style body and stores a preferred package tag for compare links. It does not add a single fake `CHANGELOG` footer for monorepo releases.
+- The generated entry keeps the Better Auth-style body and stores a preferred package tag for compare links. It does not add a single fake `CHANGELOG` footer when a global GitHub Release exists; older rows without a global release keep `CHANGELOG` pointed at the Version Packages PR fallback.
 - Preferred tags use `platejs@version` when that package published, otherwise the first package tag in the release PR body.
 - `Full changelog` links compare the previous generated release's preferred package tag to the current release's preferred package tag.
 - `tooling/scripts/release-notes.mjs` reads `PUBLISHED_PACKAGES`, resolves the matching package directories, extracts each package's exact `CHANGELOG.md` section, and emits deterministic raw notes grouped by package with one bottom `Full changelog` compare link.
@@ -78,7 +78,7 @@ Full changelog: [`v53.0.4...v53.0.5`](https://github.com/udecode/plate/compare/<
 
 ## Why This Works
 
-The feed answers "what changed recently?" without inventing summaries. Each release row carries all package changes inline, with Better Auth-style fade/expand behavior for long releases. Released rows link the title to the GitHub Release and keep the compare footer. Package changelog links belong in the GitHub Release body only when the body is an AI-polished summary.
+The feed answers "what changed recently?" without inventing summaries. Each release row carries all package changes inline, with Better Auth-style fade/expand behavior for long releases. Released rows link the title to the GitHub Release and keep the compare footer. Older rows without a global release keep `CHANGELOG` as a Version Packages PR fallback. Package changelog links belong in the GitHub Release body only when the body is an AI-polished summary.
 
 Package-tag compares solve the one-click diff problem without relying on nonexistent repo tags. When `platejs` is published, the compare uses `platejs@version`; otherwise it uses the first published package tag for that version.
 

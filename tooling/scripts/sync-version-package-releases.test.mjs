@@ -140,17 +140,15 @@ test('falls back to first package tag and builds compare URLs', () => {
   assert.equal(releases[0].url, 'https://github.com/udecode/plate/pull/2');
   assert.match(
     releases[0].content,
-    /\[`v53\.0\.1\.\.\.v53\.0\.2`\]\(https:\/\/github\.com\/udecode\/plate\/compare\/%40platejs%2Fmedia%4053\.0\.1\.\.\.%40platejs%2Flist%4053\.0\.2\) · By \[@beta\]\(https:\/\/github\.com\/beta\), \[@alpha\]\(https:\/\/github\.com\/alpha\)/
+    /\[`CHANGELOG`\]\(https:\/\/github\.com\/udecode\/plate\/pull\/2\) · \[`v53\.0\.1\.\.\.v53\.0\.2`\]\(https:\/\/github\.com\/udecode\/plate\/compare\/%40platejs%2Fmedia%4053\.0\.1\.\.\.%40platejs%2Flist%4053\.0\.2\) · By \[@beta\]\(https:\/\/github\.com\/beta\), \[@alpha\]\(https:\/\/github\.com\/alpha\)/
   );
-  assert.doesNotMatch(releases[0].content, /\[`CHANGELOG`\]/);
   assert.doesNotMatch(releases[0].content, /For detailed changes/);
   assert.doesNotMatch(releases[0].content, /Full changelog:/);
   assert.equal(releases[1].url, 'https://github.com/udecode/plate/pull/1');
   assert.match(
     releases[1].content,
-    /\[`v53\.0\.1`\]\(https:\/\/github\.com\/udecode\/plate\/pull\/1\)/
+    /\[`CHANGELOG`\]\(https:\/\/github\.com\/udecode\/plate\/pull\/1\) · \[`v53\.0\.1`\]\(https:\/\/github\.com\/udecode\/plate\/pull\/1\)/
   );
-  assert.doesNotMatch(releases[1].content, /\[`CHANGELOG`\]/);
 });
 
 test('uses GitHub Release URLs without fake package changelog footer links', () => {
