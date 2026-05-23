@@ -542,3 +542,9 @@ External:
   - `.cn.mdx` files are present and representative translated docs are generated
   - missing Chinese translations still have an English source for fallback
   - docs registry generation still includes `docs`, `fumadocs`, `table-docs`, and skips translated `.cn.mdx` exports without writing `public/r`
+
+### 2026-05-23
+
+- PR CI failure: `Registry / Validate Registry` failed while building `templates/plate-playground-template`.
+- Root cause: `pnpm templates:update --local` uses `shadcn@latest`, which generated `components/ui/calendar.tsx` with `classNames.table` while the template dependency graph installed `react-day-picker@9.14.0`. React Day Picker v9.14 exposes `month_grid`, not `table`.
+- Fix direction: patch the template updater's generated-code normalization step, not `templates/**` by hand.
