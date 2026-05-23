@@ -70,7 +70,7 @@ normalize_react_day_picker_class_names() {
     return
   fi
 
-  perl -0pi -e "s/(\\n\\s*)table:/$1month_grid:/g; s/defaultClassNames\\.table/defaultClassNames.month_grid/g" "$calendar_file"
+  perl -0pi -e 's/(\n\s*)table:/${1}month_grid:/g; s/defaultClassNames\.table/defaultClassNames.month_grid/g' "$calendar_file"
 }
 
 # Map mode to template and registry
