@@ -547,4 +547,5 @@ External:
 
 - PR CI failure: `Registry / Validate Registry` failed while building `templates/plate-playground-template`.
 - Root cause: `pnpm templates:update --local` uses `shadcn@latest`, which generated `components/ui/calendar.tsx` with `classNames.table` while the template dependency graph installed `react-day-picker@9.14.0`. React Day Picker v9.14 exposes `month_grid`, not `table`.
-- Fix direction: patch the template updater's generated-code normalization step, not `templates/**` by hand.
+- Follow-up failure: the same template update path now upgrades `react-day-picker` to `10.0.1`, where `initialFocus` is removed from `DayPickerProps`.
+- Fix direction: patch the template updater's generated-code normalization step for React Day Picker API drift, not `templates/**` by hand.
