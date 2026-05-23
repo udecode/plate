@@ -6,7 +6,8 @@ import { notFound } from 'next/navigation';
 
 import { siteConfig } from '@/config/site';
 import { getAllBlocks } from '@/lib/blocks';
-import { getRegistryComponent, getRegistryItem } from '@/lib/rehype-utils';
+import { getRegistryComponent } from '@/lib/registry-component';
+import { getRegistryItem } from '@/lib/rehype-utils';
 import { cn } from '@/lib/utils';
 
 const getCachedRegistryItem = React.cache(

@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { createMDX } from 'fumadocs-mdx/next';
 import type { NextConfig } from 'next';
 import { PHASE_DEVELOPMENT_SERVER } from 'next/constants';
 
@@ -77,6 +78,8 @@ const buildWorkspaceSourceAliases = () => {
 
   return aliases;
 };
+
+const withMDX = createMDX({});
 
 const nextConfig = async (_phase: string) => {
   const isDev = _phase === PHASE_DEVELOPMENT_SERVER;
@@ -206,7 +209,7 @@ const nextConfig = async (_phase: string) => {
     // },
   };
 
-  return config;
+  return withMDX(config);
 };
 
 export default nextConfig;

@@ -1,4 +1,4 @@
-// Pre is deeply coupled to Contentlayer, so we need a wrapper to make it work
+// Pre expects MDX code metadata, so this wrapper keeps install snippets copyable.
 import * as React from 'react';
 import type { ReactNode } from 'react';
 import { type SyntaxHighlighterProps, Prism } from 'react-syntax-highlighter';

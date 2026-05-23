@@ -61,10 +61,9 @@ async function getFrontmatter(filePath: string) {
   };
 }
 
-export async function buildDocsRegistry() {
-  rimraf.sync(path.join(process.cwd(), TARGET));
-
+export async function createDocsRegistry(): Promise<Registry> {
   // Build the complete path map from navigation structure
+  pathMap.clear();
   buildPathMap(docsConfig.sidebarNav);
 
   const files = await getFiles(SOURCE_DIR);
@@ -110,7 +109,7 @@ export async function buildDocsRegistry() {
       const relativePath = path.relative(SOURCE_DIR, filePath);
       const pathWithoutExt = relativePath.replace('.mdx', '');
 
-      // Apply the same (directory) pattern removal as contentlayer
+      // Match Fumadocs route-group stripping for registry item names.
       const cleanPath = pathWithoutExt.replace(DIRECTORY_PATTERN_REGEX, '');
 
       const name = `${cleanPath
@@ -208,6 +207,13 @@ export async function buildDocsRegistry() {
     name: `${NAME}-docs`,
   };
 
+  return registry;
+}
+
+export async function buildDocsRegistry() {
+  rimraf.sync(path.join(process.cwd(), TARGET));
+
+  const registry = await createDocsRegistry();
   const docsJson = JSON.stringify(registry, null, 2);
 
   const docsTargetDir = path.dirname(path.join(process.cwd(), TARGET));
@@ -239,7 +245,7 @@ function buildPathMap(nav: SidebarNavItem[], parentTitle?: string) {
     // Map this item's href if it has one
     if (item.href) {
       const href = item.href.replace(DOCS_PREFIX_REGEX, '');
-      // Apply the same (directory) pattern removal as contentlayer
+      // Match Fumadocs route-group stripping for nav hrefs.
       const cleanHref = href.replace(DIRECTORY_PATTERN_REGEX, '');
       // Skip get-started section mapping except for installation
       if (
@@ -256,7 +262,7 @@ function buildPathMap(nav: SidebarNavItem[], parentTitle?: string) {
         if (!subItem.href) return;
 
         const href = subItem.href.replace(DOCS_PREFIX_REGEX, '');
-        // Apply the same (directory) pattern removal as contentlayer
+        // Match Fumadocs route-group stripping for nav hrefs.
         const cleanHref = href.replace(DIRECTORY_PATTERN_REGEX, '');
 
         // If subItem has its own items, it's a parent

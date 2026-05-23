@@ -3,8 +3,7 @@
   "compilerOptions": {
     "paths": {
       "@/*": ["./src/*"],
-      "@/.contentlayer/generated": ["./.contentlayer/generated"],
-      "contentlayer/generated": ["./.contentlayer/generated"],
+      "@/.source": ["./.source"],
       "registry": ["./public/r/registry.json"],
       "registry-shadcn": ["./registry-shadcn.json"]
     }

@@ -1,19 +1,14 @@
-'use client';
-
 import * as React from 'react';
 import type { HTMLAttributes, ReactNode } from 'react';
 
 import { cva } from 'class-variance-authority';
-import { Provider } from 'jotai';
 import { CircleCheck, CircleX, Info, TriangleAlert } from 'lucide-react';
 import dynamic from 'next/dynamic';
-import { useMDXComponent } from 'next-contentlayer2/hooks';
 import Image from 'next/image';
 
 import { Card, Cards } from '@/components/cards';
 import { CodeTabs } from '@/components/code-tabs';
 import { ComponentInstallation } from '@/components/component-installation';
-import { packageInfoAtom } from '@/hooks/use-package-info';
 import { cn } from '@/lib/utils';
 
 import {
@@ -39,7 +34,6 @@ import { ComponentExample } from './component-example';
 import { ComponentPreview } from './component-preview';
 import { ComponentPreviewPro } from './component-preview-pro';
 import { ComponentSource } from './component-source';
-import { HydrateAtoms } from './context/hydrate-atoms';
 import { FrameworkDocs } from './framework-docs';
 import { Link } from './link';
 import { PackageInfo } from './package-info';
@@ -47,7 +41,7 @@ import * as Typography from './typography';
 import {
   AccordionContent,
   AccordionItem,
-  Accordion as AccordionPrimitive,
+  Accordion as AccordionRoot,
   AccordionTrigger,
 } from './ui/accordion';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
@@ -66,7 +60,7 @@ const ReleaseIndex = dynamic(() =>
   import('./release-index').then((module) => module.ReleaseIndex)
 );
 
-const components = {
+export const mdxComponents = {
   a: Link,
   Accordion,
   AccordionContent,
@@ -216,37 +210,13 @@ const components = {
   ),
 };
 
-// Type names that may appear as MDX expressions in API docs - provide as scope to avoid "X is not defined"
-
-export function Mdx({
-  code,
-  packageInfo,
-}: {
-  code: string;
-  packageInfo?: {
-    gzip: string | null;
-  };
-}) {
-  const Component = useMDXComponent(code);
-
-  return (
-    <div className="typography">
-      <Provider>
-        <HydrateAtoms initialValues={[[packageInfoAtom, packageInfo]]}>
-          {/* eslint-disable-next-line react-hooks/static-components -- useMDXComponent is designed to return dynamic MDX components */}
-          <Component components={components as any} />
-        </HydrateAtoms>
-      </Provider>
-    </div>
-  );
-}
-
 // Fumadocs
 function Accordions({
   children,
-  disabled = false,
-  orientation = 'vertical',
-  type = 'single',
+  className,
+  disabled: _disabled = false,
+  orientation: _orientation = 'vertical',
+  type: _type = 'single',
   ...props
 }: {
   children: ReactNode;
@@ -257,14 +227,9 @@ function Accordions({
   type?: 'multiple' | 'single';
 }) {
   return (
-    <AccordionPrimitive
-      orientation={orientation}
-      disabled={disabled}
-      type={type}
-      {...props}
-    >
+    <div className={cn('flex flex-col gap-2', className)} {...props}>
       {children}
-    </AccordionPrimitive>
+    </div>
   );
 }
 
@@ -284,10 +249,12 @@ function Accordion({
   value?: string;
 }) {
   return (
-    <AccordionItem value={value ?? title} {...props}>
-      <AccordionTrigger disabled={disabled}>{title}</AccordionTrigger>
-      <AccordionContent>{children}</AccordionContent>
-    </AccordionItem>
+    <AccordionRoot type="single" collapsible>
+      <AccordionItem value={value ?? title} {...props}>
+        <AccordionTrigger disabled={disabled}>{title}</AccordionTrigger>
+        <AccordionContent>{children}</AccordionContent>
+      </AccordionItem>
+    </AccordionRoot>
   );
 }
 

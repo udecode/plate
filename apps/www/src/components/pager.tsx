@@ -1,9 +1,8 @@
 import type { NavItem, NavItemWithChildren } from '@/types/nav';
-import type { Doc } from '@/.contentlayer/generated';
 
 import { docsConfig } from '@/config/docs';
 
-export function getPagerForDoc(doc: Doc) {
+export function getPagerForDoc(doc: { slug?: string }) {
   const flattenedLinks = [null, ...flatten(docsConfig.sidebarNav), null];
   const activeIndex = flattenedLinks.findIndex(
     (link) => doc.slug === link?.href

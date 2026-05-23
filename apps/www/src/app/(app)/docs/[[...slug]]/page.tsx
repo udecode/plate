@@ -3,13 +3,13 @@ import type { RegistryItem } from 'shadcn/registry';
 
 import type { Metadata } from 'next';
 
-import { allDocs } from '@/.contentlayer/generated';
 import { notFound } from 'next/navigation';
 
 import { DocContent } from '@/app/(app)/docs/[[...slug]]/doc-content';
 import { ComponentInstallation } from '@/components/component-installation';
 import { ComponentPreview } from '@/components/component-preview';
-import { Mdx } from '@/components/mdx-components';
+import { mdxComponents } from '@/components/mdx-components';
+import { MdxProvider } from '@/components/mdx-provider';
 import { docsMap } from '@/config/docs';
 import { slugToCategory } from '@/config/docs-utils';
 import { siteConfig } from '@/config/site';
@@ -22,6 +22,7 @@ import {
 } from '@/lib/registry-cache';
 import { getDocTitle, getRegistryTitle } from '@/lib/registry-utils';
 import { getAllDependencies, getAllFiles } from '@/lib/rehype-utils';
+import { source } from '@/lib/source';
 import { getTableOfContents } from '@/lib/toc';
 import { registry } from '@/registry/registry';
 import { registryExamples } from '@/registry/registry-examples';
@@ -30,7 +31,7 @@ import { registryUI } from '@/registry/registry-ui';
 
 type DocPageProps = {
   params: Promise<{
-    slug: string[];
+    slug?: string[];
   }>;
 };
 
@@ -38,17 +39,7 @@ export const dynamic = 'force-static';
 
 async function getDocFromParams({ params }: DocPageProps) {
   const slugParam = (await params).slug;
-  const slug = `docs${slugParam?.join('/') ? `/${slugParam.join('/')}` : ''}`;
-  const doc = allDocs.find((doc) => doc.slugAsParams === slug);
-
-  if (!doc) {
-    return null;
-  }
-
-  const path = slugParam?.join('/') || '';
-  doc.slug = `/docs${path ? `/${path}` : ''}`;
-
-  return doc;
+  return source.getPage(slugParam ?? [], 'en') ?? null;
 }
 
 export async function generateMetadata({
@@ -60,9 +51,9 @@ export async function generateMetadata({
   let slug: string;
 
   if (doc) {
-    title = doc.title;
-    description = doc.description;
-    slug = doc.slug;
+    title = doc.data.title;
+    slug = doc.url;
+    description = doc.data.description ?? docsMap[slug]?.description;
   } else {
     const slugParam = (await params).slug;
     const category = slugToCategory(slugParam);
@@ -133,11 +124,9 @@ function getRegistryStaticParams() {
 
 export function generateStaticParams() {
   return [
-    ...allDocs
-      .filter((doc) => !doc._raw.sourceFileName?.endsWith('.cn.mdx'))
-      .map((doc) => ({
-        slug: doc.slugAsParams.split('/').slice(1),
-      })),
+    ...source.getPages('en').map((doc) => ({
+      slug: doc.slugs,
+    })),
     ...getRegistryStaticParams(),
   ].filter(
     (value, index, array) =>
@@ -237,15 +226,29 @@ export default async function DocPage(props: DocPageProps) {
       </DocContent>
     );
   }
-  if (!doc.description) {
-    doc.description = docsMap[doc.slug]?.description;
-  }
+  const raw = await doc.data.getText('raw');
+  const description = doc.data.description ?? docsMap[doc.url]?.description;
+  const MDX = doc.data.body;
 
-  const toc = await getTableOfContents(doc.body.raw);
+  const toc = await getTableOfContents(raw);
 
   return (
-    <DocContent category={category as any} doc={doc} toc={toc}>
-      <Mdx code={doc.body.code} packageInfo={packageInfo} />
+    <DocContent
+      category={category as any}
+      doc={{
+        description,
+        docs: doc.data.docs,
+        links: doc.data.links,
+        raw,
+        slug: doc.url,
+        title: doc.data.title,
+        toc: doc.data.toc,
+      }}
+      toc={toc}
+    >
+      <MdxProvider packageInfo={packageInfo}>
+        <MDX components={mdxComponents as any} />
+      </MdxProvider>
     </DocContent>
   );
 }
@@ -393,10 +396,4 @@ async function getExampleCode(name?: string) {
 //     pkg.sourcePath +
 //     '/src';
 //   packageInfo.npm = 'https://www.npmjs.com/package/@udecode/' + pkg.name;
-// }
-
-// let toc: TableOfContents;
-// if (params.slug?.[0] === 'api') {
-//   toc = getAPITableOfContents(doc.body.raw);
-// } else {
 // }

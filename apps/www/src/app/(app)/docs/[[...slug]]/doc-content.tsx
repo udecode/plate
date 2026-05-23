@@ -3,7 +3,6 @@
 import React from 'react';
 
 import type { TocItem } from '@/lib/toc';
-import type { Doc } from '@/.contentlayer/generated';
 import type { RegistryItem } from 'shadcn/registry';
 
 import { IconArrowLeft, IconArrowRight } from '@tabler/icons-react';
@@ -21,6 +20,19 @@ import { categoryNavGroups, docSections } from '@/config/docs-utils';
 import { useDedupeNavItems } from '@/hooks/use-dedupe-nav-items';
 import { getDocTitle, getRegistryTitle } from '@/lib/registry-utils';
 import { cn } from '@/lib/utils';
+
+export type DocContentDoc = {
+  description?: string;
+  docs?: { route?: string; title?: string }[];
+  links?: {
+    api?: string;
+    doc?: string;
+  };
+  raw?: string;
+  slug?: string;
+  title?: string;
+  toc?: boolean;
+};
 
 // import { formatBytes, getPackageData } from '@/lib/bundlephobia';
 
@@ -58,7 +70,7 @@ export function DocContent({
 }: {
   category: 'api' | 'component' | 'example' | 'guide' | 'plugin';
   children: React.ReactNode;
-  doc: Partial<Doc>;
+  doc: DocContentDoc;
   toc?: TocItem[];
 } & Partial<RegistryItem>) {
   const title = doc?.title ?? getRegistryTitle(file);
@@ -127,16 +139,16 @@ export function DocContent({
             </div>
 
             {/* Copy Markdown and View Options */}
-            {doc?.slug && doc?.body?.raw && (
+            {doc?.slug && doc?.raw && (
               <div className="flex flex-row items-center gap-2">
                 <LLMCopyButton
                   title={title}
-                  content={doc.body.raw}
+                  content={doc.raw}
                   docUrl={`https://platejs.org${doc.slug}`}
                 />
                 <ViewOptions
                   title={title}
-                  content={doc.body.raw}
+                  content={doc.raw}
                   docUrl={`https://platejs.org${doc.slug}`}
                 />
               </div>

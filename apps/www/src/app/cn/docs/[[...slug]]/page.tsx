@@ -3,13 +3,13 @@ import type { RegistryItem } from 'shadcn/registry';
 
 import type { Metadata } from 'next';
 
-import { allDocs } from '@/.contentlayer/generated';
 import { notFound } from 'next/navigation';
 
 import { DocContent } from '@/app/(app)/docs/[[...slug]]/doc-content';
 import { ComponentInstallation } from '@/components/component-installation';
 import { ComponentPreview } from '@/components/component-preview';
-import { Mdx } from '@/components/mdx-components';
+import { mdxComponents } from '@/components/mdx-components';
+import { MdxProvider } from '@/components/mdx-provider';
 import { docsMap } from '@/config/docs';
 import { slugToCategory } from '@/config/docs-utils';
 import { siteConfig } from '@/config/site';
@@ -22,6 +22,7 @@ import {
 } from '@/lib/registry-cache';
 import { getDocTitle, getRegistryTitle } from '@/lib/registry-utils';
 import { getAllDependencies, getAllFiles } from '@/lib/rehype-utils';
+import { source } from '@/lib/source';
 import { getTableOfContents } from '@/lib/toc';
 import { registry } from '@/registry/registry';
 import { registryExamples } from '@/registry/registry-examples';
@@ -30,7 +31,7 @@ import { registryUI } from '@/registry/registry-ui';
 
 type DocPageProps = {
   params: Promise<{
-    slug: string[];
+    slug?: string[];
   }>;
 };
 
@@ -38,33 +39,7 @@ export const dynamic = 'force-static';
 
 async function getDocFromParams({ params }: DocPageProps) {
   const slugParam = (await params).slug;
-  const slug = slugParam?.join('/') || '';
-
-  // Look for Chinese version with .cn.mdx
-  const cnDoc = allDocs.find(
-    (doc) =>
-      doc.slugAsParams === `docs/${slug || 'index'}.cn` &&
-      doc._raw.sourceFileName?.endsWith('.cn.mdx')
-  );
-
-  if (cnDoc) {
-    const path = slugParam?.join('/') || '';
-    cnDoc.slug = `/cn/docs${path ? `/${path}` : ''}`;
-    return cnDoc;
-  }
-
-  // Fallback to English doc if no Chinese version exists
-  const englishSlug = `docs${slug ? `/${slug}` : ''}`;
-  const doc = allDocs.find((doc) => doc.slugAsParams === englishSlug);
-
-  if (!doc) {
-    return null;
-  }
-
-  const path = slugParam?.join('/') || '';
-  doc.slug = `/cn/docs${path ? `/${path}` : ''}`;
-
-  return doc;
+  return source.getPage(slugParam ?? [], 'cn') ?? null;
 }
 
 export async function generateMetadata({
@@ -76,9 +51,11 @@ export async function generateMetadata({
   let slug: string;
 
   if (doc) {
-    title = doc.title;
-    description = doc.description;
-    slug = doc.slug;
+    title = doc.data.title;
+    slug = doc.url;
+    description =
+      doc.data.description ??
+      docsMap[slug.replace(CN_DOCS_PREFIX_REGEX, '')]?.description;
   } else {
     const slugParam = (await params).slug;
     const category = slugToCategory(slugParam);
@@ -134,8 +111,8 @@ export async function generateMetadata({
 }
 
 const registryNames = new Set(registry.items.map((item) => item.name));
-const CN_SUFFIX_REGEX = /\.cn$/;
 const DEMO_SUFFIX_REGEX = /-demo$/;
+const CN_DOCS_PREFIX_REGEX = /^\/cn(?=\/docs)/;
 
 function getRegistryStaticParams() {
   return [
@@ -149,13 +126,10 @@ function getRegistryStaticParams() {
 }
 
 export function generateStaticParams() {
-  // Generate params for CN docs - both .cn.mdx files and fallback to English
   return [
-    ...allDocs
-      .filter((doc) => doc._raw.sourceFileName?.endsWith('.cn.mdx'))
-      .map((doc) => ({
-        slug: doc.slugAsParams.replace(CN_SUFFIX_REGEX, '').split('/').slice(1),
-      })),
+    ...source.getPages('cn').map((doc) => ({
+      slug: doc.slugs,
+    })),
     ...getRegistryStaticParams(),
   ].filter(
     (value, index, array) =>
@@ -255,15 +229,31 @@ export default async function CNDocPage(props: DocPageProps) {
       </DocContent>
     );
   }
-  if (!doc.description) {
-    doc.description = docsMap[doc.slug]?.description;
-  }
+  const raw = await doc.data.getText('raw');
+  const description =
+    doc.data.description ??
+    docsMap[doc.url.replace(CN_DOCS_PREFIX_REGEX, '')]?.description;
+  const MDX = doc.data.body;
 
-  const toc = await getTableOfContents(doc.body.raw);
+  const toc = await getTableOfContents(raw);
 
   return (
-    <DocContent category={category as any} doc={doc} toc={toc}>
-      <Mdx code={doc.body.code} packageInfo={packageInfo} />
+    <DocContent
+      category={category as any}
+      doc={{
+        description,
+        docs: doc.data.docs,
+        links: doc.data.links,
+        raw,
+        slug: doc.url,
+        title: doc.data.title,
+        toc: doc.data.toc,
+      }}
+      toc={toc}
+    >
+      <MdxProvider packageInfo={packageInfo}>
+        <MDX components={mdxComponents as any} />
+      </MdxProvider>
     </DocContent>
   );
 }
