@@ -33,7 +33,7 @@
   - package-local `node_modules/react` or `node_modules/react-dom` paths under `packages/*`
   - mixed `.bun` and `.pnpm` React paths in the same failing stack
 - If `pnpm test`, `bun test`, or `pnpm check` suddenly fails with those signals and the failure does not line up with the current diff, run `pnpm run reinstall` once before blocking on the task.
-- `pnpm run reinstall` is the repo reset button: it deletes root/workspace/app `node_modules`, `.turbo`, `apps/www/.next`, `apps/www/.contentlayer`, and `tsconfig.tsbuildinfo`, then runs `pnpm install`.
+- `pnpm run reinstall` is the repo reset button: it deletes root/workspace/app `node_modules`, `.turbo`, `apps/www/.next`, and `tsconfig.tsbuildinfo`, then runs `pnpm install`.
 - Do not use `pnpm run reinstall` as a lazy substitute for fixing real code errors.
 - For `react-dnd` / DnD fixes, do not treat a follow-up Bun `Invalid hook call`, `resolveDispatcher()`, or mixed `.bun` + `.pnpm` React stack as proof the DnD fix is wrong. In this repo, run `pnpm run reinstall` once before reopening the diagnosis; that failure shape is usually local env rot, not duplicate deps or broken DnD logic.
 

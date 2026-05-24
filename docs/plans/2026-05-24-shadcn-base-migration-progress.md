@@ -6,7 +6,7 @@ Continue the docs restart from `docs/plans/2026-05-23-shadcn-docs-restart-compar
 
 ## Current Slice
 
-Status: thirty-second slice complete
+Status: thirty-third slice complete
 
 1. Make Fumadocs metadata/pageTree the docs navigation authority.
 2. Move sidebar and pager reads off direct `docsConfig` runtime access.
@@ -40,6 +40,7 @@ Status: thirty-second slice complete
 30. Align `DocsCopyPage` with the upstream copy-page grouped-button/dropdown/popover model while preserving Plate-specific LLM, Markdown, and GitHub actions and making clipboard failures non-fatal.
 31. Delete unreferenced template helper scripts that still mutate `templates/**` between localhost and production registry URLs or initialize Plate from a localhost registry URL.
 32. Remove the commented shadcn block-request CTA residue from the retained Plate editors page.
+33. Remove Contentlayer residue from repo tooling, agent docs, lint ignores, and the Bun lockfile so the Fumadocs cutover is reflected outside `apps/www` runtime source too.
 
 ## Findings
 
@@ -96,6 +97,7 @@ Status: thirty-second slice complete
 - `DocsCopyPage` had already replaced the old `LLMCopyButton`/`ViewOptions` surface, but its implementation still used the thinner Plate dropdown instead of upstream's grouped copy-page control. Browser verification also exposed that `useCopyToClipboard` left `navigator.clipboard.writeText(...)` rejections unhandled when the document is not focused.
 - `tooling/scripts/pre-basic.sh`, `pre-ai.sh`, `post-basic.sh`, `post-ai.sh`, `init-plate-template.sh`, `init-plate.sh`, and `init2.sh` had no active callers and preserved the old workflow of hand-mutating template `components.json` files or initializing Plate from `http://localhost:3000/r`. Keeping them contradicted the shadcn v4 namespace contract now owned by `components.json`, `update-template.sh`, and `prepare-local-template-registry.mjs`.
 - `EditorDescription` still carried a commented upstream shadcn block-request CTA pointing at `shadcn-ui/ui` discussions. The editors page is a retained Plate product surface; dead upstream product links should be deleted instead of preserved in comments.
+- `apps/www` package metadata and `pnpm-lock.yaml` no longer referenced Contentlayer, but root `bun.lock`, vendor update exclusions, reinstall cleanup targets, generated agent instructions, and lint ignores still carried `contentlayer2`, `next-contentlayer2`, or `.contentlayer`. A hard Fumadocs cutover should not keep those maintenance hooks alive.
 
 ## Verification Plan
 
@@ -217,3 +219,5 @@ Status: thirty-second slice complete
 - 2026-05-24: Verification passed for the stale template helper deletion slice: retained shell scripts pass `bash -n`, active tooling search has no `init-plate*`/`init2`/pre-post helper references and no `http://localhost:3000/r` or `/rd` template install residue, `pnpm install` passed, `pnpm lint:fix` passed with no fixes applied, and PR gate `pnpm check` passed.
 - 2026-05-24: Started the editors CTA residue cleanup slice: removed the commented shadcn-ui block-request button from `EditorDescription`, leaving the retained Plate editors page with only the active Plate browse CTA.
 - 2026-05-24: Verification passed for the editors CTA residue cleanup slice: active source search has no `shadcn-ui`, `blocks-request`, or `Request a block` residue under `apps/www/src`; `pnpm install`, `pnpm --filter www typecheck`, `pnpm lint:fix`, and PR gate `pnpm check` passed.
+- 2026-05-24: Started the Contentlayer tooling residue cleanup slice: removed `contentlayer2` and `next-contentlayer2` from vendor update exclusions, removed `.contentlayer` from reinstall/lint ignore lists, updated the docs-creator verification rule to use Fumadocs source generation, and prepared the root Bun lockfile for regeneration.
+- 2026-05-24: Verification passed for the Contentlayer tooling residue cleanup slice: `bun install --lockfile-only` regenerated `bun.lock` without Contentlayer packages; `pnpm install` synced generated agent docs; active tooling/package/lock search has no Contentlayer residue; retained shell scripts pass `bash -n`; `pnpm --filter www typecheck` and `pnpm lint:fix` passed.

@@ -15,7 +15,6 @@ export default defineConfig([
       '**/.turbo/**',
       '**/coverage/**',
       '**/templates/**',
-      '**/.contentlayer/**',
       '**/public/**',
       '**/*.config.*',
       '**/*.d.ts',

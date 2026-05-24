@@ -407,7 +407,7 @@ Do not force `<ComponentPreview>`, `<PackageInfo>`, or a giant feature list just
 
 Before finishing a docs change:
 
-- `pnpm build:contentlayer` parses the MDX cleanly.
+- `pnpm --filter www build:source` parses the MDX cleanly.
 - Every named API, option, transform, and component exists in the source.
 - Every import path matches the current repo/package layout.
 - Every ownership claim matches the code.
