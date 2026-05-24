@@ -6,7 +6,7 @@ import type { RegistryItem } from 'shadcn/registry';
 
 import { BlockCode } from '@/components/block-viewer';
 import { ComponentPreviewPro } from '@/components/component-preview-pro';
-import { siteConfig } from '@/config/site';
+import { getRegistryInstallCommand } from '@/lib/registry-install';
 import { getRegistryTitle } from '@/lib/registry-utils';
 
 import { CodeBlock } from './codeblock';
@@ -54,6 +54,7 @@ export function ComponentInstallation({
   const tree = props.tree ?? JSON.parse(__treeProp__);
 
   const dependenciesString = dependencies.join(' ');
+  const installCommand = getRegistryInstallCommand(name ?? item.name);
 
   return (
     <div className="mt-4 mb-12">
@@ -77,7 +78,7 @@ export function ComponentInstallation({
         <TabsContent value="cli">
           <CodeBlock
             className="mt-6 mb-4"
-            value={`npx shadcn@latest add ${siteConfig.registryUrl}${name}`}
+            value={installCommand}
             language="bash"
           />
         </TabsContent>

@@ -16,8 +16,8 @@ import Link from 'next/link';
 
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { siteConfig } from '@/config/site';
 import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard';
+import { getRegistryInstallCommand } from '@/lib/registry-install';
 import { cn } from '@/lib/utils';
 
 import { BlockCopyButton } from './block-copy-button';
@@ -35,6 +35,7 @@ export function PlaygroundPreviewToolbar({
   // setFullScreen: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
   const src = block.descriptionSrc ?? block.src;
+  const installCommand = getRegistryInstallCommand(block.name);
 
   const { copyToClipboard, isCopied } = useCopyToClipboard();
 
@@ -68,13 +69,11 @@ export function PlaygroundPreviewToolbar({
           variant="ghost"
           className="h-7 rounded-md border bg-muted shadow-none"
           onClick={() => {
-            copyToClipboard(
-              `npx shadcn@latest add ${siteConfig.registryUrl}${block.name}`
-            );
+            copyToClipboard(installCommand);
           }}
         >
           {isCopied ? <CheckIcon /> : <TerminalIcon />}
-          npx shadcn@latest add {block.name}
+          {installCommand}
         </Button>
         <Separator orientation="vertical" className="mx-2 hidden h-4 md:flex" />
         <div className="hidden h-[28px] items-center gap-1.5 rounded-md border bg-background p-[2px] shadow-xs md:flex">

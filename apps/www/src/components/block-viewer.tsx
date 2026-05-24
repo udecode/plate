@@ -57,6 +57,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { siteConfig } from '@/config/site';
 import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard';
+import { getRegistryInstallCommand } from '@/lib/registry-install';
 import { cn } from '@/lib/utils';
 
 // SYNC
@@ -209,6 +210,7 @@ function BlockViewerProvider({
 function BlockViewerToolbar({ block }: { block: boolean }) {
   const { item, resizablePanelRef, setView } = useBlockViewer();
   const { copyToClipboard, isCopied } = useCopyToClipboard();
+  const installCommand = getRegistryInstallCommand(item.name);
 
   const description =
     item.meta?.descriptionSrc ??
@@ -268,17 +270,13 @@ function BlockViewerToolbar({ block }: { block: boolean }) {
                   'flex h-7 rounded-md border bg-transparent px-1.5 shadow-none lg:w-auto'
                 )}
                 onClick={() => {
-                  copyToClipboard(
-                    `npx shadcn@latest add ${siteConfig.registryUrl}${item.name}`
-                  );
+                  copyToClipboard(installCommand);
                 }}
               >
                 {isCopied ? <Check /> : <Terminal />}
 
                 {block && (
-                  <span className="hidden lg:inline">
-                    npx shadcn@latest add {item.name}
-                  </span>
+                  <span className="hidden lg:inline">{installCommand}</span>
                 )}
               </Button>
 

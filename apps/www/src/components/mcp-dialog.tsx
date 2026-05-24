@@ -11,17 +11,18 @@ import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { siteConfig } from '@/config/site';
+import { getRegistryInstallCommand } from '@/lib/registry-install';
 
 export function SetupMCPDialog() {
   const [open, setOpen] = useState(false);
 
-  const initCommand = `npx shadcn@latest add ${siteConfig.registryUrl}editor-basic`;
+  const initCommand = getRegistryInstallCommand('editor-basic');
 
   const codeXConfig = `[mcp_servers.plate]\ncommand = "npx"\nargs = ["shadcn@latest", "mcp"]\n`;
 
@@ -84,11 +85,11 @@ export function SetupMCPDialog() {
           <div className="flex items-center justify-between">
             <DialogTitle className="font-bold text-xl">Setup MCP</DialogTitle>
           </div>
-          <p className="mt-2 text-muted-foreground">
+          <DialogDescription className="mt-2">
             <Link onClick={() => setOpen(false)} href="/docs/installation/mcp">
               Learn more about our MCP registry
             </Link>
-          </p>
+          </DialogDescription>
         </DialogHeader>
 
         <Steps>

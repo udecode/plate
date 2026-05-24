@@ -2,12 +2,12 @@ import { Suspense } from 'react';
 
 import type { Metadata } from 'next';
 
-import { siteConfig } from '@/config/site';
+import { getRegistryInstallCommand } from '@/lib/registry-install';
 import { cn } from '@/lib/utils';
 import PlaygroundDemo from '@/registry/examples/playground-demo';
 
 const title = 'Playground';
-const description = `npx shadcn@latest add ${siteConfig.registryUrl}editor-ai`;
+const description = getRegistryInstallCommand('editor-ai');
 
 export const metadata: Metadata = {
   description,
