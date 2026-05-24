@@ -35,14 +35,14 @@ Before writing, read only what actually grounds the page:
 - the source code for the behavior or API being documented
 - `docs/solutions/style.md` — non-negotiable
 - strongest baselines:
-  - `content/index.mdx`
-  - `content/installation.mdx`
-  - `content/installation/plate-ui.mdx`
-  - `content/(guides)/plugin-rules.mdx`
-  - `content/(guides)/plugin-input-rules.mdx`
-  - `content/(plugins)/(serializing)/html.mdx`
-  - `content/(plugins)/(serializing)/markdown.mdx`
-  - `content/(plugins)/(ai)/ai.mdx`
+  - `content/docs/index.mdx`
+  - `content/docs/installation.mdx`
+  - `content/docs/installation/plate-ui.mdx`
+  - `content/docs/(guides)/plugin-rules.mdx`
+  - `content/docs/(guides)/plugin-input-rules.mdx`
+  - `content/docs/(plugins)/(serializing)/html.mdx`
+  - `content/docs/(plugins)/(serializing)/markdown.mdx`
+  - `content/docs/(plugins)/(ai)/ai.mdx`
 - relevant `docs/solutions/*` learnings when the lane touches ownership, spec
   truth, docs drift, or authoring doctrine
 
@@ -203,7 +203,7 @@ Use the page shape that matches the job, not the one you wrote last time.
 
 ### Install / Get Started
 
-Entry docs like `content/index.mdx`, `content/installation.mdx`.
+Entry docs like `content/docs/index.mdx`, `content/docs/installation.mdx`.
 
 Required shape:
 

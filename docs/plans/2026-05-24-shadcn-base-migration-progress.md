@@ -6,7 +6,7 @@ Continue the docs restart from `docs/plans/2026-05-23-shadcn-docs-restart-compar
 
 ## Current Slice
 
-Status: thirty-third slice complete
+Status: thirty-fourth slice complete
 
 1. Make Fumadocs metadata/pageTree the docs navigation authority.
 2. Move sidebar and pager reads off direct `docsConfig` runtime access.
@@ -41,6 +41,7 @@ Status: thirty-third slice complete
 31. Delete unreferenced template helper scripts that still mutate `templates/**` between localhost and production registry URLs or initialize Plate from a localhost registry URL.
 32. Remove the commented shadcn block-request CTA residue from the retained Plate editors page.
 33. Remove Contentlayer residue from repo tooling, agent docs, lint ignores, and the Bun lockfile so the Fumadocs cutover is reflected outside `apps/www` runtime source too.
+34. Update docs-authoring agent rules to point at the committed `content/docs/**` source root so future docs work does not reintroduce old root-content paths.
 
 ## Findings
 
@@ -98,6 +99,7 @@ Status: thirty-third slice complete
 - `tooling/scripts/pre-basic.sh`, `pre-ai.sh`, `post-basic.sh`, `post-ai.sh`, `init-plate-template.sh`, `init-plate.sh`, and `init2.sh` had no active callers and preserved the old workflow of hand-mutating template `components.json` files or initializing Plate from `http://localhost:3000/r`. Keeping them contradicted the shadcn v4 namespace contract now owned by `components.json`, `update-template.sh`, and `prepare-local-template-registry.mjs`.
 - `EditorDescription` still carried a commented upstream shadcn block-request CTA pointing at `shadcn-ui/ui` discussions. The editors page is a retained Plate product surface; dead upstream product links should be deleted instead of preserved in comments.
 - `apps/www` package metadata and `pnpm-lock.yaml` no longer referenced Contentlayer, but root `bun.lock`, vendor update exclusions, reinstall cleanup targets, generated agent instructions, and lint ignores still carried `contentlayer2`, `next-contentlayer2`, or `.contentlayer`. A hard Fumadocs cutover should not keep those maintenance hooks alive.
+- `docs-creator` is a real authoring source of truth, not harmless prose. Its baseline docs list still pointed at old root `content/**` paths after the content-root migration, so future docs work could follow stale instructions even though active runtime source was clean.
 
 ## Verification Plan
 
@@ -126,6 +128,7 @@ Status: thirty-third slice complete
 - If package metadata cleanup changes `apps/www/package.json`, run `pnpm install` and verify the stale app-local `resolutions` warning is gone, then run `www` typecheck, lint, and the PR gate.
 - If template tooling changes, verify shell scripts with `bash -n`, verify root package metadata with `pnpm install`, run `pnpm lint:fix`, and run the PR gate. Do not run template generation or manually edit `templates/**`.
 - If copy-page UI changes, verify `DocsCopyPage` on a real docs page with Browser Use: grouped buttons render, menu links point to Markdown/ChatGPT/Claude/GitHub with `noopener noreferrer`, copy click does not emit console or server errors, then run `www` typecheck, lint, and the PR gate.
+- If `.agents/rules/**` changes, run `pnpm install` to sync generated agent docs, then verify stale migration residues are absent from active agent/source files.
 
 ## Progress Log
 
@@ -221,3 +224,6 @@ Status: thirty-third slice complete
 - 2026-05-24: Verification passed for the editors CTA residue cleanup slice: active source search has no `shadcn-ui`, `blocks-request`, or `Request a block` residue under `apps/www/src`; `pnpm install`, `pnpm --filter www typecheck`, `pnpm lint:fix`, and PR gate `pnpm check` passed.
 - 2026-05-24: Started the Contentlayer tooling residue cleanup slice: removed `contentlayer2` and `next-contentlayer2` from vendor update exclusions, removed `.contentlayer` from reinstall/lint ignore lists, updated the docs-creator verification rule to use Fumadocs source generation, and prepared the root Bun lockfile for regeneration.
 - 2026-05-24: Verification passed for the Contentlayer tooling residue cleanup slice: `bun install --lockfile-only` regenerated `bun.lock` without Contentlayer packages; `pnpm install` synced generated agent docs; active tooling/package/lock search has no Contentlayer residue; retained shell scripts pass `bash -n`; `pnpm --filter www typecheck` and `pnpm lint:fix` passed.
+- 2026-05-24: Started the docs-authoring source-root cleanup slice: updated `.agents/rules/docs-creator.mdc` baseline paths from old root `content/**` to committed `content/docs/**`.
+- 2026-05-24: `pnpm install` synced generated docs-creator skill output and Fumadocs source files; active source search now has no old root docs path, Contentlayer, `docsConfig`, or `sync-docs-meta` residue.
+- 2026-05-24: Verification passed for the docs-authoring source-root cleanup slice: `pnpm install`, active-source residue search, `pnpm lint:fix`, and PR gate `pnpm check` passed.
