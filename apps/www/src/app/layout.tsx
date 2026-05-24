@@ -107,10 +107,8 @@ export default function RootLayout({ children }: RootLayoutProps) {
       >
         <NuqsAdapter>
           <Providers>
-            <div vaul-drawer-wrapper="">
-              <div className="relative flex min-h-svh flex-col bg-background">
-                {children}
-              </div>
+            <div className="relative flex min-h-svh flex-col bg-background">
+              {children}
             </div>
           </Providers>
         </NuqsAdapter>

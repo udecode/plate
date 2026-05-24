@@ -1,7 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn-prose";
-@import "./themes.css";
 
 @plugin "tailwind-scrollbar-hide";
 

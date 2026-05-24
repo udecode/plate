@@ -4,7 +4,6 @@ import type { Metadata } from 'next';
 
 import Link from 'next/link';
 
-import CustomizerDrawer from '@/components/customizer-drawer';
 import {
   PageHeader,
   PageHeaderDescription,
@@ -12,7 +11,6 @@ import {
 } from '@/components/page-header';
 import { PlaygroundPreview } from '@/components/playground-preview';
 import { SiteFooter } from '@/components/site-footer';
-import { ThemesButton } from '@/components/themes-button';
 import { Button } from '@/components/ui/button';
 import { siteConfig } from '@/config/site';
 
@@ -22,14 +20,14 @@ import { PotionLazyBlock } from './_components/potion-lazy-block';
 const i18n = {
   cn: {
     buildYourRichTextEditor: '构建你的富文本编辑器',
-    description: '框架 · 插件 · 组件 · 主题',
+    description: '框架 · 插件 · 组件',
     getStarted: '开始使用',
     github: 'GitHub',
     potionDescription: '一个类似 Notion 的 AI 模板。',
   },
   en: {
     buildYourRichTextEditor: 'Build your rich-text editor',
-    description: 'Framework · Plugins · Components · Themes',
+    description: 'Framework · Plugins · Components',
     getStarted: 'Get Started',
     github: 'GitHub',
     potionDescription: 'A Notion-like AI template.',
@@ -78,12 +76,9 @@ export default async function IndexPage() {
           <PageHeader className="w-full pb-8">
             <AnnouncementButton />
 
-            <div className="flex w-full items-center justify-between">
-              <PageHeaderHeading>
-                {content.buildYourRichTextEditor}
-              </PageHeaderHeading>
-              <ThemesButton />
-            </div>
+            <PageHeaderHeading>
+              {content.buildYourRichTextEditor}
+            </PageHeaderHeading>
             <PageHeaderDescription>{content.description}</PageHeaderDescription>
             <section className="flex w-full items-center space-x-2 py-2">
               <Button asChild size="sm" className="rounded-md text-xs">
@@ -110,8 +105,6 @@ export default async function IndexPage() {
         <div className="container py-6">
           <section className="relative">
             <PlaygroundPreview />
-
-            <CustomizerDrawer />
           </section>
 
           <div className="relative mt-12 scroll-m-16 pb-48 md:mt-24 lg:mt-36">
