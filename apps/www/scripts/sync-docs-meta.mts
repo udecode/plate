@@ -3,7 +3,16 @@ import type { SidebarNavItem } from '@/types/nav';
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 
-import { docsConfig } from '@/config/docs';
+import {
+  componentNavGroups,
+  docsConfig,
+  gettingStartedNavItems,
+  guidesNavItems,
+  installationNavItems,
+} from '@/config/docs';
+import { docsApi } from '@/config/docs-api';
+import { docsExamples } from '@/config/docs-examples';
+import { pluginsNavItems } from '@/config/docs-plugins';
 
 const CONTENT_DIR = path.join(process.cwd(), '../../content/docs');
 const META_FILE = path.join(CONTENT_DIR, 'meta.json');
@@ -16,6 +25,61 @@ type MetaOverlayItem = {
   title?: string;
   titleCn?: string;
 };
+
+const docSections: SidebarNavItem[] = [
+  {
+    items: [
+      { href: '/docs', title: 'Guides', titleCn: '指南', value: 'guide' },
+      {
+        href: '/docs/plugins',
+        title: 'Plugins',
+        titleCn: '插件',
+        value: 'plugin',
+      },
+      {
+        href: '/docs/components',
+        title: 'Components',
+        titleCn: '组件',
+        value: 'component',
+      },
+      {
+        href: '/docs/examples',
+        title: 'Examples',
+        titleCn: '示例',
+        value: 'example',
+      },
+      {
+        href: '/docs/api',
+        title: 'API Reference',
+        titleCn: 'API 参考',
+        value: 'api',
+      },
+    ],
+  },
+];
+
+const categoryGroups = {
+  api: [{ items: docsApi }],
+  component: componentNavGroups,
+  example: [{ items: docsExamples }],
+  guide: [
+    { items: gettingStartedNavItems, title: 'Overview', titleCn: '概览' },
+    { items: installationNavItems, title: 'Installation', titleCn: '安装' },
+    { items: guidesNavItems, title: 'Guides', titleCn: '指南' },
+    {
+      items: [
+        {
+          href: '/docs/migration/slate-to-plate',
+          title: 'From Slate to Plate',
+          titleCn: '从 Slate 到 Plate',
+        },
+      ],
+      title: 'Migration',
+      titleCn: '迁移',
+    },
+  ],
+  plugin: [{ items: pluginsNavItems }],
+} satisfies Record<string, SidebarNavItem[]>;
 
 function addMetaOverlayItem(
   item: SidebarNavItem,
@@ -88,7 +152,15 @@ async function main() {
 
   await fs.writeFile(
     META_FILE,
-    `${JSON.stringify({ root: true, pages, _plate: { sections, items } }, null, 2)}\n`
+    `${JSON.stringify(
+      {
+        root: true,
+        pages,
+        _plate: { categoryGroups, docSections, sections, items },
+      },
+      null,
+      2
+    )}\n`
   );
 }
 

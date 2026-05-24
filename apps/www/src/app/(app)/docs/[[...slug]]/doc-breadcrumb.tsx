@@ -22,7 +22,10 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { getDocIcon } from '@/config/docs-icons';
+import { useLocale } from '@/hooks/useLocale';
+import { getLocalizedNavTitle } from '@/lib/docs-nav-metadata';
 import { cn } from '@/lib/utils';
+import { hrefWithLocale } from '@/lib/withLocale';
 
 // Recursive function to flatten nested items
 const flattenItems = (items: SidebarNavItem[]): SidebarNavItem[] => {
@@ -61,6 +64,7 @@ export function DocBreadcrumb({
   value?: string;
 }) {
   const router = useRouter();
+  const locale = useLocale();
   const [open, setOpen] = React.useState(false);
 
   const flatItems = React.useMemo(
@@ -85,12 +89,16 @@ export function DocBreadcrumb({
               buttonClassName
             )}
           >
-            {selectedItem?.title ?? placeholder}
+            {selectedItem
+              ? getLocalizedNavTitle(selectedItem, locale)
+              : placeholder}
             <ChevronsUpDown className="shrink-0 opacity-50" />
           </Button>
         ) : (
           <Button size="sm" variant="ghost">
-            {selectedItem?.title ?? placeholder}
+            {selectedItem
+              ? getLocalizedNavTitle(selectedItem, locale)
+              : placeholder}
           </Button>
         )}
       </PopoverTrigger>
@@ -120,7 +128,7 @@ export function DocBreadcrumb({
                         className="flex items-center gap-2"
                         value={item.value ?? item.href}
                         onSelect={() => {
-                          router.push(item.href!);
+                          router.push(hrefWithLocale(item.href!, locale));
                           setOpen(false);
                         }}
                       >
@@ -136,7 +144,7 @@ export function DocBreadcrumb({
                               // category && 'font-medium'
                             )}
                           >
-                            {item.title}
+                            {getLocalizedNavTitle(item, locale)}
                           </div>
                           {category && item.description && (
                             <div className="line-clamp-1 text-muted-foreground text-xs">

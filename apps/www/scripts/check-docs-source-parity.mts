@@ -85,6 +85,8 @@ async function getGeneratedSourcePaths() {
 async function checkDocsMetaOverlay() {
   const meta = JSON.parse(await fs.readFile(META_FILE, 'utf8')) as {
     _plate?: {
+      categoryGroups?: Record<string, SidebarNavItem[]>;
+      docSections?: SidebarNavItem[];
       items?: Record<
         string,
         {
@@ -107,6 +109,24 @@ async function checkDocsMetaOverlay() {
   assert(
     meta._plate?.items?.['/docs/plugin-shortcuts']?.titleCn === '插件快捷键',
     'Expected content/docs/meta.json to carry localized item labels'
+  );
+  assert(
+    meta._plate?.docSections?.[0]?.items?.some(
+      (item) => item.value === 'component' && item.href === '/docs/components'
+    ),
+    'Expected content/docs/meta.json to carry docs category switcher metadata'
+  );
+  assert(
+    meta._plate?.categoryGroups?.component?.some(
+      (group) => group.href === '/docs/components'
+    ),
+    'Expected content/docs/meta.json to carry component category groups'
+  );
+  assert(
+    meta._plate?.categoryGroups?.plugin?.some((group) =>
+      collectDocsHrefs([group]).has('/docs/table')
+    ),
+    'Expected content/docs/meta.json to carry plugin category groups'
   );
 }
 
@@ -166,6 +186,22 @@ function checkNavRoutes(sourceUrls: Set<string>) {
       .map((href) => `- ${href}`)
       .join('\n')}`
   );
+}
+
+async function checkCnAppOnlyDocsRoutes() {
+  for (const route of appOnlyDocsRoutes) {
+    const routePath =
+      route === '/docs'
+        ? 'page.tsx'
+        : `${route.replace('/docs/', '')}/page.tsx`;
+    const pagePath = path.join(process.cwd(), 'src/app/cn/docs', routePath);
+
+    try {
+      await fs.stat(pagePath);
+    } catch {
+      throw new Error(`Expected CN app-only docs route to exist: ${pagePath}`);
+    }
+  }
 }
 
 async function checkChineseRoutes(sourceRoutes: {
@@ -267,6 +303,7 @@ try {
 
   await checkDocsMetaOverlay();
   checkNavRoutes(sourceRoutes.en);
+  await checkCnAppOnlyDocsRoutes();
   await checkChineseRoutes(sourceRoutes);
   await checkDocsRegistry();
   console.info('Docs source parity check passed.');

@@ -4,40 +4,19 @@ import type React from 'react';
 
 import { findNeighbour } from 'fumadocs-core/server';
 
+import {
+  getDocsNavMeta,
+  getDocsSectionTitleCn,
+  normalizeDocsHref,
+} from '@/lib/docs-nav-metadata';
 import { hrefWithLocale } from '@/lib/withLocale';
 import { source } from '@/lib/source';
-import docsMeta from '../../../../content/docs/meta.json';
-
-const CN_DOCS_PREFIX_REGEX = /^\/cn(?=\/docs)/;
-
-type DocsMetaOverlayItem = {
-  description?: string;
-  keywords?: string[];
-  label?: string | string[];
-  title?: string;
-  titleCn?: string;
-};
-
-type DocsMetaOverlay = {
-  items?: Record<string, DocsMetaOverlayItem>;
-  sections?: Record<string, string>;
-};
-
-const docsOverlay = (docsMeta as { _plate?: DocsMetaOverlay })._plate ?? {};
 
 function nodeNameToString(name: React.ReactNode) {
   if (typeof name === 'string') return name;
   if (typeof name === 'number') return String(name);
 
   return;
-}
-
-function normalizeDocsHref(href: string) {
-  return href.replace(CN_DOCS_PREFIX_REGEX, '');
-}
-
-export function getDocsNavMeta(href: string) {
-  return docsOverlay.items?.[normalizeDocsHref(href)];
 }
 
 function withDocsOverlay(item: SidebarNavItem): SidebarNavItem {
@@ -87,7 +66,7 @@ export function getSidebarNavFromPageTree(locale = 'en') {
     currentSection = {
       items: [],
       title,
-      titleCn: docsOverlay.sections?.[title],
+      titleCn: getDocsSectionTitleCn(title),
     };
     sections.push(currentSection);
 
@@ -101,7 +80,7 @@ export function getSidebarNavFromPageTree(locale = 'en') {
       currentSection = {
         items: [],
         title,
-        titleCn: docsOverlay.sections?.[title],
+        titleCn: getDocsSectionTitleCn(title),
       };
       sections.push(currentSection);
       continue;

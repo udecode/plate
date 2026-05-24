@@ -10,10 +10,10 @@ import { ComponentInstallation } from '@/components/component-installation';
 import { ComponentPreview } from '@/components/component-preview';
 import { mdxComponents } from '@/components/mdx-components';
 import { MdxProvider } from '@/components/mdx-provider';
-import { slugToCategory } from '@/config/docs-utils';
 import { siteConfig } from '@/config/site';
 import { absoluteUrl } from '@/lib/absoluteUrl';
-import { getDocsNavMeta, getPagerForDoc } from '@/lib/docs-page-tree';
+import { getPagerForDoc } from '@/lib/docs-page-tree';
+import { getDocsNavMeta, slugToCategory } from '@/lib/docs-nav-metadata';
 import { getPlateLLMPageMarkdown, processMdxForLLMs } from '@/lib/llm';
 import {
   getCachedDependencies,

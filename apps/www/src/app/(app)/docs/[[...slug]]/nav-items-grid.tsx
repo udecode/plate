@@ -13,9 +13,13 @@ import { H3 } from '@/components/typography';
 import { Card, CardContent, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { getDocIcon } from '@/config/docs-icons';
-import { categoryNavGroups, docSections } from '@/config/docs-utils';
 import { useDedupeNavItems } from '@/hooks/use-dedupe-nav-items';
 import { useLocale } from '@/hooks/useLocale';
+import {
+  getDocsCategoryGroups,
+  getDocSections,
+  getLocalizedNavTitle,
+} from '@/lib/docs-nav-metadata';
 import { cn } from '@/lib/utils';
 import { hrefWithLocale } from '@/lib/withLocale';
 
@@ -46,6 +50,7 @@ const filterItems = (
   return items.reduce<SidebarNavItem[]>((acc, item) => {
     const itemMatches =
       item.title?.toLowerCase().includes(filter) ||
+      item.titleCn?.toLowerCase().includes(filter) ||
       item.description?.toLowerCase().includes(filter);
 
     // If the parent item matches, include ALL its children without filtering
@@ -80,6 +85,8 @@ export function NavItemCard({
 }) {
   const locale = useLocale();
   const Icon = getDocIcon(item, category) ?? CircleDashedIcon;
+  const title = getLocalizedNavTitle(item, locale);
+
   return (
     <Link
       key={item.href}
@@ -94,7 +101,7 @@ export function NavItemCard({
           </div>
           <div className="space-y-0">
             <CardTitle className="mt-0.5 line-clamp-1 font-medium text-base">
-              {item.title}
+              {title}
             </CardTitle>
             {item.description && (
               <p className="line-clamp-1 text-muted-foreground text-sm">
@@ -116,7 +123,8 @@ export function NavItemsGrid({
   showFilter?: boolean;
 }) {
   const [filter, setFilter] = useState('');
-  const items = useDedupeNavItems((categoryNavGroups as any)[category]);
+  const locale = useLocale();
+  const items = useDedupeNavItems(getDocsCategoryGroups(category));
 
   const filteredItems = showFilter
     ? items
@@ -136,7 +144,7 @@ export function NavItemsGrid({
           <DocBreadcrumb
             value={category}
             placeholder="Search"
-            items={docSections}
+            items={getDocSections()}
           />
         </div>
         {showFilter && (
@@ -170,7 +178,7 @@ export function NavItemsGrid({
                       <Icons.pragma className="size-4 text-muted-foreground" />
                     </div>
                   </a>
-                  {group.title}
+                  {getLocalizedNavTitle(group, locale)}
                 </H3>
               </div>
             )}

@@ -6,7 +6,7 @@ Continue the docs restart from `docs/plans/2026-05-23-shadcn-docs-restart-compar
 
 ## Current Slice
 
-Status: twelfth slice complete
+Status: thirteenth slice complete
 
 1. Make Fumadocs metadata/pageTree the docs navigation authority.
 2. Move sidebar and pager reads off direct `docsConfig` runtime access.
@@ -23,6 +23,7 @@ Status: twelfth slice complete
 13. Include Fumadocs `meta.json` in the docs registry export and remove old `docsConfig`-driven docs-registry generation scaffolding.
 14. Move runtime docs navigation overlays out of `docsConfig` and into committed Fumadocs-adjacent metadata.
 15. Move Plate docs content under the upstream-style `content/docs/**` Fumadocs source root.
+16. Move category grid/breadcrumb metadata out of runtime `docsConfig` imports and add CN app-only docs routes for localized category links.
 
 ## Findings
 
@@ -52,6 +53,8 @@ Status: twelfth slice complete
 - The docs registry should export `docs-meta` as a normal shadcn v4 registry item and make the aggregate `docs` item depend on `@plate/docs-meta`. Generating a sidecar `docs-meta.json` outside the registry dependency graph would preserve the old installer workaround instead of using upstream namespace resolution.
 - `docs-page-tree.ts` still imported `docsConfig/docsMap` at runtime after pageTree adoption. That kept the old TS nav graph on the hot path for labels, CN titles, and keywords even though `content/docs/meta.json` already owns ordering.
 - The comparison doc still called out root `content/**` as a remaining divergence from upstream. Moving the source root to `content/docs/**` is the direct fix; keeping `defineDocs({ dir: '../../content' })` after adding metadata would be half a migration, and that's how these forks rot.
+- Category grid pages and the breadcrumb switcher still pulled `docsConfig` through `docs-utils`, even after sidebar, pager, and command menu moved to Fumadocs metadata. That kept old TS nav data in the browser bundle.
+- Localizing app-only category links exposes a route parity requirement: if `/docs/components`, `/docs/examples`, `/docs/plugins`, `/docs/api`, or special example routes are part of the CN nav, explicit `/cn/docs/...` app routes need to exist because Fumadocs source fallback cannot invent those pages.
 
 ## Verification Plan
 
@@ -65,6 +68,7 @@ Status: twelfth slice complete
 - If docs registry export changes, verify `createDocsRegistry()` through `check-docs-source-parity.mts`, verify source registry normalization, and run `www` typecheck.
 - If docs nav metadata changes, regenerate `content/docs/meta.json`, verify the parity script asserts the metadata overlay, and run `www` typecheck.
 - If the docs source root changes, verify `build:source`, docs source parity, docs registry source paths, and English/CN rendered routes.
+- If category grid or breadcrumb metadata changes, verify `content/docs/meta.json` carries `_plate.categoryGroups` and `_plate.docSections`, run docs source parity, and smoke `/cn/docs/components`, `/cn/docs/plugins`, `/cn/docs/examples`, `/cn/docs/api`, plus app-only special example routes.
 
 ## Progress Log
 
@@ -116,3 +120,7 @@ Status: twelfth slice complete
 - 2026-05-24: Verification passed for the content-root slice: `pnpm install`, `pnpm --filter www sync:docs-meta`, `pnpm --filter www build:source`, `pnpm --filter www exec tsx --tsconfig ./scripts/tsconfig.scripts.json scripts/check-docs-source-parity.mts`, `pnpm --filter www exec tsx --tsconfig ./scripts/tsconfig.scripts.json scripts/check-registry-source.mts`, `pnpm --filter www typecheck`, and `pnpm lint:fix`.
 - 2026-05-24: Browser Use was still unavailable from the tool registry. Fallback HTTP smoke passed on `http://localhost:3100/docs/plugin-shortcuts`, `http://localhost:3100/cn/docs/table`, `http://localhost:3100/docs/plugin-shortcuts.md`, and `/api/search?query=table`, confirming stable English docs, CN docs, markdown route, and Fumadocs search after the source-root move.
 - 2026-05-24: PR gate passed with `pnpm check` after the content-root move.
+- 2026-05-24: Started the category metadata slice: `sync-docs-meta.mts` now writes `_plate.docSections` and `_plate.categoryGroups` into `content/docs/meta.json`; runtime category grid, breadcrumb switcher, docs page category detection, and Slate-to-HTML special page metadata read from `docs-nav-metadata` instead of `docs-utils`.
+- 2026-05-24: Deleted `apps/www/src/config/docs-utils.ts`; remaining `docsConfig` reads outside registry source are limited to metadata generation and parity scripts.
+- 2026-05-24: Added CN app-only docs routes for `/cn/docs/api`, `/cn/docs/components`, `/cn/docs/examples`, `/cn/docs/plugins`, `/cn/docs/examples/slate-to-html`, and `/cn/docs/examples/server-side`, matching the localized links emitted by CN nav.
+- 2026-05-24: Verification passed for the category metadata/CN route slice: `pnpm install`, `pnpm --filter www sync:docs-meta`, `pnpm --filter www build:source`, `pnpm --filter www exec tsx --tsconfig ./scripts/tsconfig.scripts.json scripts/check-docs-source-parity.mts`, `pnpm --filter www typecheck`, `pnpm lint:fix`, and final `pnpm --filter www typecheck`. Browser Use was unavailable from tool discovery; fallback HTTP smoke passed for `/cn/docs/components`, `/cn/docs/plugins`, `/cn/docs/examples`, `/cn/docs/api`, `/cn/docs/examples/slate-to-html`, and `/cn/docs/examples/server-side` on `localhost:3100`.

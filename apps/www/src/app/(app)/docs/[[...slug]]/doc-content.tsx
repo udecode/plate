@@ -14,8 +14,6 @@ import { DocsTableOfContents } from '@/components/docs-toc';
 import { OpenInPlus } from '@/components/open-in-plus';
 import { badgeVariants } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { categoryNavGroups, docSections } from '@/config/docs-utils';
-import { useDedupeNavItems } from '@/hooks/use-dedupe-nav-items';
 import { getDocTitle, getRegistryTitle } from '@/lib/registry-utils';
 import { cn } from '@/lib/utils';
 
@@ -78,12 +76,6 @@ export function DocContent({
 } & Partial<RegistryItem>) {
   const title = doc?.title ?? getRegistryTitle(file);
   const hasToc = doc?.toc && toc;
-
-  const _docSection = docSections[0].items!.find(
-    (item) => item.value === category
-  );
-
-  const _items = useDedupeNavItems(categoryNavGroups[category]);
 
   return (
     <div className="relative flex items-stretch lg:w-full" data-slot="docs">
