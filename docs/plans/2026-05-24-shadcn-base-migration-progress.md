@@ -6,7 +6,7 @@ Continue the docs restart from `docs/plans/2026-05-23-shadcn-docs-restart-compar
 
 ## Current Slice
 
-Status: ninth slice complete
+Status: tenth slice complete
 
 1. Make Fumadocs metadata/pageTree the docs navigation authority.
 2. Move sidebar and pager reads off direct `docsConfig` runtime access.
@@ -20,6 +20,7 @@ Status: ninth slice complete
 10. Move the shared app shell toward upstream's `data-slot="layout"` structure with layout-owned footer behavior and centered page headers.
 11. Move root runtime providers and global CSS closer to upstream's provider stack, while keeping Plate's required DnD/Jotai/editor runtime.
 12. Align header, mobile nav, and command-menu fallback links with upstream's Fumadocs-aware header behavior while preserving Plate product links.
+13. Include Fumadocs `meta.json` in the docs registry export and remove old `docsConfig`-driven docs-registry generation scaffolding.
 
 ## Findings
 
@@ -45,6 +46,8 @@ Status: ninth slice complete
 - Plate's mobile nav rendered the Fumadocs-derived tree but did not localize visible titles or hrefs at click time. On `/cn`, the mobile menu could point users back to English routes.
 - Plate's command-menu fallback link groups also used raw titles and hrefs. Fumadocs search owns indexed docs results, but fallback nav groups still need locale-safe labels and links.
 - `hrefWithLocale` must be safe for `/`, existing `/cn` links, hash links, and absolute external URLs. Prefixing every href blindly is how external links and CN homepage links get subtly broken.
+- `build-docs-registry.mts` still had a half-removed `docsConfig`/pathMap/meta generation path. The active export scanned Fumadocs content, but it did not publish the committed `content/meta.json`, so an installed docs registry missed the navigation authority that the app now relies on.
+- The docs registry should export `docs-meta` as a normal shadcn v4 registry item and make the aggregate `docs` item depend on `@plate/docs-meta`. Generating a sidecar `docs-meta.json` outside the registry dependency graph would preserve the old installer workaround instead of using upstream namespace resolution.
 
 ## Verification Plan
 
@@ -55,6 +58,7 @@ Status: ninth slice complete
 - If a browser-visible app-shell/homepage change is left in a runnable state this turn, verify `/` and `/cn` render without the discarded theme/customizer surface.
 - If provider or global CSS changes affect the root shell, verify body/layout markers, footer visibility, theme shortcut behavior, and at least one docs page with code blocks.
 - If header or mobile navigation changes, verify English and CN mobile menus, external Plate Plus behavior, command-menu fallback routing, and desktop breakpoint visibility.
+- If docs registry export changes, verify `createDocsRegistry()` through `check-docs-source-parity.mts`, verify source registry normalization, and run `www` typecheck.
 
 ## Progress Log
 
@@ -95,3 +99,7 @@ Status: ninth slice complete
 - 2026-05-24: Updated `CommandMenu` fallback links/groups to use localized titles and locale-safe hrefs while keeping Fumadocs search as the docs-search source.
 - 2026-05-24: Verification passed for the header/mobile-nav slice: `pnpm install`, `pnpm --filter www build:source`, `pnpm --filter www typecheck`, `pnpm lint:fix`, and local Chrome smoke on `http://localhost:3100/`, `http://localhost:3100/cn`, and `http://localhost:3100/docs`. The smoke confirmed English mobile links, CN mobile links, CN page-tree links, Plate Plus external target, CN command-menu routing to `/cn/docs`, one docs layout shell, hidden docs footer, desktop mobile-menu invisibility, and no meaningful browser logs after filtering the known dev-port manifest CORS noise.
 - 2026-05-24: Added `docs/solutions/developer-experience/2026-05-24-shadcn-header-nav-needs-locale-safe-client-links.md` through the ce-compound closeout.
+- 2026-05-24: Added a `docs-meta` registry item that publishes `../../content/meta.json` to `content/docs/plate/meta.json`, made the aggregate `docs` registry item depend on `@plate/docs-meta`, and extended docs source parity checks to assert the meta export.
+- 2026-05-24: Removed the dead `docsConfig`/pathMap/meta-generation scaffolding from `build-docs-registry.mts`; docs registry export now follows the committed Fumadocs metadata instead of a stale TS-nav shadow path.
+- 2026-05-24: Verification passed for the docs registry meta slice: `pnpm --filter www exec tsx --tsconfig ./scripts/tsconfig.scripts.json scripts/check-docs-source-parity.mts`, `pnpm --filter www exec tsx --tsconfig ./scripts/tsconfig.scripts.json scripts/check-registry-source.mts`, `pnpm --filter www typecheck`, `pnpm lint:fix`, and a final `pnpm --filter www typecheck` rerun after cleanup.
+- 2026-05-24: Added `docs/solutions/developer-experience/2026-05-24-fumadocs-docs-registry-exports-need-meta-item.md` through the ce-compound closeout.

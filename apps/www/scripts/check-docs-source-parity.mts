@@ -173,10 +173,15 @@ async function checkDocsRegistry() {
   );
 
   assert(itemsByName.has('docs'), 'Expected registry docs aggregate item');
+  assert(itemsByName.has('docs-meta'), 'Expected registry docs meta item');
   assert(itemsByName.has('fumadocs'), 'Expected registry fumadocs item');
   assert(itemsByName.has('table-docs'), 'Expected table docs registry item');
 
   const docsItem = itemsByName.get('docs');
+  assert(
+    docsItem?.registryDependencies?.includes('@plate/docs-meta'),
+    'Expected docs aggregate item to depend on @plate/docs-meta'
+  );
   assert(
     docsItem?.registryDependencies?.includes('@plate/table-docs'),
     'Expected docs aggregate item to depend on @plate/table-docs'
@@ -192,6 +197,17 @@ async function checkDocsRegistry() {
   assert(
     fumadocsItem?.registryDependencies?.includes('@plate/docs'),
     'Expected fumadocs item to depend on @plate/docs'
+  );
+
+  const docsMeta = itemsByName.get('docs-meta');
+  assert(
+    docsMeta?.files?.some(
+      (file) =>
+        typeof file !== 'string' &&
+        file.path === '../../content/meta.json' &&
+        file.target === 'content/docs/plate/meta.json'
+    ),
+    'Expected docs-meta to publish Fumadocs meta.json'
   );
 
   const tableDocs = itemsByName.get('table-docs');
