@@ -158,11 +158,10 @@ function BlockViewerToolbar({ block }: { block: boolean }) {
   const { item, resizablePanelRef, setView } = useBlockViewer();
   const { copyToClipboard, isCopied } = useCopyToClipboard();
   const installCommand = getRegistryInstallCommand(item.name);
+  const previewUrl =
+    item.meta?.src?.replace('?iframe=true', '') ?? `/view/${item.name}`;
 
-  const description =
-    item.meta?.descriptionSrc ??
-    item.meta?.src?.replace('?iframe=true', '') ??
-    `/blocks/${item.name}`;
+  const description = item.meta?.descriptionSrc ?? previewUrl;
 
   return (
     <div className="flex w-full items-center gap-2 md:pr-[14px]">
@@ -300,13 +299,7 @@ function BlockViewerToolbar({ block }: { block: boolean }) {
                 className="size-[22px] rounded-sm p-0"
                 title="Open in New Tab"
               >
-                <Link
-                  href={
-                    item.meta?.src?.replace('?iframe=true', '') ??
-                    `/blocks/${item.name}`
-                  }
-                  target="_blank"
-                >
+                <Link href={previewUrl} target="_blank">
                   <span className="sr-only">Open in New Tab</span>
                   <Fullscreen className="size-3.5" />
                 </Link>
@@ -365,7 +358,7 @@ function BlockViewerView({
                 title={item.name}
                 height={item.meta?.iframeHeight ?? '100%'}
                 sandbox="allow-scripts allow-same-origin allow-top-navigation allow-forms"
-                src={item.meta?.src ?? `/blocks/${item.name}`}
+                src={item.meta?.src ?? `/view/${item.name}`}
               />
             )}
           </ResizablePanel>

@@ -6,7 +6,7 @@ Continue the docs restart from `docs/plans/2026-05-23-shadcn-docs-restart-compar
 
 ## Current Slice
 
-Status: nineteenth slice complete
+Status: twentieth slice complete
 
 1. Make Fumadocs metadata/pageTree the docs navigation authority.
 2. Move sidebar and pager reads off direct `docsConfig` runtime access.
@@ -27,6 +27,7 @@ Status: nineteenth slice complete
 17. Remove the lazy `/api/registry/[name]` highlighted-source route and dead v0 open button residue.
 18. Remove public `/dev` debug routes from the docs app restart surface.
 19. Move docs route parity checks off `docsConfig` and onto committed Fumadocs metadata pages.
+20. Add the upstream-style `/view/[name]` block preview renderer and route default block iframes through it.
 
 ## Findings
 
@@ -62,6 +63,7 @@ Status: nineteenth slice complete
 - The old `OpenInV0Button` file was dead code, and `BlockViewer` still carried a commented v0 toolbar block. The comparison doc calls out v0 as discard-all; keeping the corpse around is how it comes back.
 - `apps/www/src/app/dev/**` was still a public Next route group with markdown streaming, custom type, and table performance playgrounds. The comparison doc explicitly says dev/debug routes do not belong in the restarted public docs app.
 - `check-docs-source-parity.mts` still used `docsConfig.sidebarNav` for route parity after runtime navigation moved to Fumadocs metadata. That made the verification path prove the old TS nav graph rather than the committed `content/docs/meta.json` page list.
+- `apps/www/scripts/capture-registry.mts` already captured screenshots from `/view/{block}`, but the app only shipped `/blocks/{name}` preview routes. Adding `/view/[name]` aligns the generated screenshot path and `BlockViewer` iframe target with upstream's preview-renderer split while keeping `/blocks/[name]` as a compatibility route.
 
 ## Verification Plan
 
@@ -79,6 +81,7 @@ Status: nineteenth slice complete
 - If block/source preview loading changes, verify registry pages receive full highlighted files without `/api/registry/[name]`, run `www` typecheck, and smoke at least one block/code-view surface.
 - If public debug routes are removed, verify `/dev` and `/dev/table-perf` are no longer routable while docs/home routes still render.
 - If route parity changes, verify `check-docs-source-parity.mts` reads `content/docs/meta.json` pages and run `www` typecheck.
+- If block preview routing changes, verify `/view/[name]`, `/blocks/[name]`, and a registry docs page that embeds `BlockViewer`.
 
 ## Progress Log
 
@@ -141,3 +144,5 @@ Status: nineteenth slice complete
 - 2026-05-24: Verification passed for the public debug-route cleanup slice: `pnpm --filter www typecheck`, `pnpm lint:fix`, and fallback HTTP smoke on `localhost:3100` confirming `/` and `/docs` return 200 while `/dev` and `/dev/table-perf` return 404.
 - 2026-05-24: Started the route-parity metadata slice: `check-docs-source-parity.mts` now reads route parity from committed `content/docs/meta.json` `pages` links instead of importing `docsConfig`.
 - 2026-05-24: Verification passed for the route-parity metadata slice: `pnpm --filter www exec tsx --tsconfig ./scripts/tsconfig.scripts.json scripts/check-docs-source-parity.mts`, `pnpm install`, `pnpm --filter www build:source`, `pnpm --filter www typecheck`, `pnpm lint:fix`, and PR gate `pnpm check`.
+- 2026-05-24: Started the block preview route slice: extracted shared block preview page rendering, added `/view/[name]`, kept `/blocks/[name]` on the same renderer, and switched default `BlockViewer` iframe/fullscreen targets to `/view/[name]`.
+- 2026-05-24: Verification passed for the block preview route slice: `pnpm --filter www typecheck`, `pnpm lint:fix`, a final `pnpm --filter www typecheck`, and fallback HTTP smoke on `localhost:3100` confirming `/view/editor-basic`, `/blocks/editor-basic`, and `/docs/components/table-node` all return 200 with no dev-server errors. Browser Use was unavailable from tool discovery.
