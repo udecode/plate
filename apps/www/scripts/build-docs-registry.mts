@@ -7,12 +7,12 @@ import path from 'node:path';
 import { rimraf } from 'rimraf';
 
 import { docsConfig } from '../src/config/docs';
+import { toRegistryDependencySpecifier } from './registry-dependencies.mts';
 
 const HOMEPAGE = 'https://platejs.org';
 const NAME = 'plate';
 
 const isDev = process.env.NODE_ENV === 'development';
-const REGISTRY_URL = isDev ? 'http://localhost:3000/rd' : `${HOMEPAGE}/r`;
 const RELATIVE_SOURCE_DIR = '../../content';
 const SOURCE_DIR = path.join(process.cwd(), RELATIVE_SOURCE_DIR);
 const TARGET_FILE = 'registry-docs.json';
@@ -161,8 +161,8 @@ export async function createDocsRegistry(): Promise<Registry> {
         description: `All documentation files for ${NAME}`,
         files: [],
         name: 'docs',
-        registryDependencies: items.map(
-          (item) => `${REGISTRY_URL}/${item.name}`
+        registryDependencies: items.map((item) =>
+          toRegistryDependencySpecifier(item.name)
         ),
         title: 'Documentation',
         type: 'registry:file',
@@ -196,7 +196,7 @@ export async function createDocsRegistry(): Promise<Registry> {
         ],
         name: 'fumadocs',
         registryDependencies: [
-          `${REGISTRY_URL}/docs`,
+          toRegistryDependencySpecifier('docs'),
           // `${REGISTRY_URL}/docs-meta`,
         ],
         title: 'Fumadocs app',

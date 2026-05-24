@@ -178,10 +178,20 @@ async function checkDocsRegistry() {
 
   const docsItem = itemsByName.get('docs');
   assert(
-    docsItem?.registryDependencies?.some((dependency) =>
-      dependency.endsWith('/table-docs')
+    docsItem?.registryDependencies?.includes('@plate/table-docs'),
+    'Expected docs aggregate item to depend on @plate/table-docs'
+  );
+  assert(
+    docsItem?.registryDependencies?.every((dependency) =>
+      dependency.startsWith('@plate/')
     ),
-    'Expected docs aggregate item to depend on table-docs'
+    'Expected docs aggregate dependencies to use the @plate namespace'
+  );
+
+  const fumadocsItem = itemsByName.get('fumadocs');
+  assert(
+    fumadocsItem?.registryDependencies?.includes('@plate/docs'),
+    'Expected fumadocs item to depend on @plate/docs'
   );
 
   const tableDocs = itemsByName.get('table-docs');
