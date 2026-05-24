@@ -218,6 +218,10 @@ const nextConfig = async (_phase: string) => {
           destination: '/cn/llm/:path*',
           source: '/cn/docs/:path*.md',
         },
+        {
+          destination: '/init/md',
+          source: '/init.md',
+        },
       ];
     },
 

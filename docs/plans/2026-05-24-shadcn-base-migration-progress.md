@@ -6,7 +6,7 @@ Continue the docs restart from `docs/plans/2026-05-23-shadcn-docs-restart-compar
 
 ## Current Slice
 
-Status: twentieth slice complete
+Status: twenty-first slice complete
 
 1. Make Fumadocs metadata/pageTree the docs navigation authority.
 2. Move sidebar and pager reads off direct `docsConfig` runtime access.
@@ -28,6 +28,7 @@ Status: twentieth slice complete
 18. Remove public `/dev` debug routes from the docs app restart surface.
 19. Move docs route parity checks off `docsConfig` and onto committed Fumadocs metadata pages.
 20. Add the upstream-style `/view/[name]` block preview renderer and route default block iframes through it.
+21. Add a Plate `/init` bootstrap route that follows the shadcn `registry:base` contract, plus the upstream-style `/init.md` markdown rewrite.
 
 ## Findings
 
@@ -64,6 +65,9 @@ Status: twentieth slice complete
 - `apps/www/src/app/dev/**` was still a public Next route group with markdown streaming, custom type, and table performance playgrounds. The comparison doc explicitly says dev/debug routes do not belong in the restarted public docs app.
 - `check-docs-source-parity.mts` still used `docsConfig.sidebarNav` for route parity after runtime navigation moved to Fumadocs metadata. That made the verification path prove the old TS nav graph rather than the committed `content/docs/meta.json` page list.
 - `apps/www/scripts/capture-registry.mts` already captured screenshots from `/view/{block}`, but the app only shipped `/blocks/{name}` preview routes. Adding `/view/[name]` aligns the generated screenshot path and `BlockViewer` iframe target with upstream's preview-renderer split while keeping `/blocks/[name]` as a compatibility route.
+- Upstream `/init` is not a generic components.json endpoint; it returns a shadcn `registry:base` item whose `config` is merged into `components.json`. Plate should use that same contract for bootstrap, not invent a Plate-only installer shape.
+- Plate's useful init surface is narrow: configure the public `@plate` registry namespace and install `@plate/editor-basic`. The v0/create flow stays discarded.
+- The MCP docs still had `@platejs` in the `components.json` snippet even though templates, visible commands, and generated registry dependencies now use `@plate`.
 
 ## Verification Plan
 
@@ -82,6 +86,7 @@ Status: twentieth slice complete
 - If public debug routes are removed, verify `/dev` and `/dev/table-perf` are no longer routable while docs/home routes still render.
 - If route parity changes, verify `check-docs-source-parity.mts` reads `content/docs/meta.json` pages and run `www` typecheck.
 - If block preview routing changes, verify `/view/[name]`, `/blocks/[name]`, and a registry docs page that embeds `BlockViewer`.
+- If init/bootstrap routing changes, verify `/init` returns a valid `registry:base` item, `/init.md` rewrites to markdown instructions, `/init/v0` is absent, and MCP docs use `@plate`.
 
 ## Progress Log
 
@@ -146,3 +151,6 @@ Status: twentieth slice complete
 - 2026-05-24: Verification passed for the route-parity metadata slice: `pnpm --filter www exec tsx --tsconfig ./scripts/tsconfig.scripts.json scripts/check-docs-source-parity.mts`, `pnpm install`, `pnpm --filter www build:source`, `pnpm --filter www typecheck`, `pnpm lint:fix`, and PR gate `pnpm check`.
 - 2026-05-24: Started the block preview route slice: extracted shared block preview page rendering, added `/view/[name]`, kept `/blocks/[name]` on the same renderer, and switched default `BlockViewer` iframe/fullscreen targets to `/view/[name]`.
 - 2026-05-24: Verification passed for the block preview route slice: `pnpm --filter www typecheck`, `pnpm lint:fix`, a final `pnpm --filter www typecheck`, and fallback HTTP smoke on `localhost:3100` confirming `/view/editor-basic`, `/blocks/editor-basic`, and `/docs/components/table-node` all return 200 with no dev-server errors. Browser Use was unavailable from tool discovery.
+- 2026-05-24: Started the Plate init bootstrap slice: added `/init` as a shadcn `registry:base` item for the `@plate` registry and `@plate/editor-basic`, added `/init/md` plus `/init.md` rewrite, and fixed the stale `@platejs` MCP docs snippets.
+- 2026-05-24: Verification passed for the Plate init bootstrap slice: `bun test apps/www/src/lib/plate-init.test.ts`, `pnpm install`, `pnpm --filter www typecheck`, `pnpm lint:fix`, fallback HTTP smoke on `localhost:3101` confirming `/init`, `/init.md`, `/init/md`, `/init/v0`, and EN/CN MCP docs, and final PR gate `pnpm check`. Browser Use was unavailable from tool discovery.
+- 2026-05-24: Added `docs/solutions/developer-experience/2026-05-24-plate-init-routes-should-return-shadcn-registry-base-items.md` through the ce-compound closeout.
