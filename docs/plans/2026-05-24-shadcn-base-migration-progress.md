@@ -6,7 +6,7 @@ Continue the docs restart from `docs/plans/2026-05-23-shadcn-docs-restart-compar
 
 ## Current Slice
 
-Status: sixth slice complete
+Status: seventh slice complete
 
 1. Make Fumadocs metadata/pageTree the docs navigation authority.
 2. Move sidebar and pager reads off direct `docsConfig` runtime access.
@@ -17,6 +17,7 @@ Status: sixth slice complete
 7. Route visible registry install commands through the `@plate/*` namespace configured by `components.json`.
 8. Route generated Plate registry self-dependencies through `@plate/*`, while preserving local-file template sync.
 9. Upgrade the docs app to the upstream shadcn v4 package and validate Plate registry source against the v4 schema contract.
+10. Move the shared app shell toward upstream's `data-slot="layout"` structure with layout-owned footer behavior and centered page headers.
 
 ## Findings
 
@@ -34,6 +35,8 @@ Status: sixth slice complete
 - Local template sync must rewrite `@plate/{name}` back to `{name}.json`, because `update-template.sh --local` intentionally feeds shadcn local-file mode from a prepared JSON mirror.
 - The upstream shadcn v4 registry schema is exported from `shadcn/schema`; `shadcn/registry` is no longer the schema/type authority. Plate registry source and builders now use the v4 schema entrypoint.
 - The full local registry build is still CI-owned, so this slice adds a source-only registry contract check to `www` typecheck instead of running `build:registry` locally.
+- Upstream owns the app shell shape through `data-slot="layout"`, a layout-level footer, centered `PageHeader`, and footer visibility controlled by route descendants such as `data-slot="docs"`.
+- Plate's English and CN home pages previously owned their own footers and action-row layout, which kept the old fork shell alive even after the theme/customizer removal.
 
 ## Verification Plan
 
@@ -68,3 +71,8 @@ Status: sixth slice complete
 - 2026-05-24: Added `apps/www/scripts/check-registry-source.mts` to validate Plate's authored registry composition against the shadcn v4 schema and assert normalized registry dependencies use resolver-safe specifiers.
 - 2026-05-24: Verification passed for the shadcn v4 schema slice: `pnpm install`, `pnpm --filter www exec tsx --tsconfig ./scripts/tsconfig.scripts.json scripts/check-registry-source.mts`, `pnpm --filter www exec tsx --tsconfig ./scripts/tsconfig.scripts.json scripts/check-docs-source-parity.mts`, `bun test apps/www/scripts/registry-dependencies.test.mts`, `pnpm --filter www build:source`, `pnpm --filter www typecheck`, and `pnpm lint:fix`.
 - 2026-05-24: Added `docs/solutions/developer-experience/2026-05-24-shadcn-v4-registry-schema-needs-source-only-validation.md` through the ce-compound closeout.
+- 2026-05-24: Added a shared `AppShell` for `(app)` and `/cn` routes using upstream's `data-slot="layout"` wrapper, moved footer ownership from home pages into the layout, and updated `SiteFooter` to hide on docs/designer descendants.
+- 2026-05-24: Updated `PageHeader`, English home, CN home, and editors intro toward upstream's centered page-header/action composition while preserving Plate copy and product CTAs.
+- 2026-05-24: Browser smoke caught that body-level footer hiding did not hide on `/docs`; fixed it by also targeting the nearer `group/layout` shell.
+- 2026-05-24: Verification passed for the app-shell slice: `pnpm install`, `pnpm --filter www build:source`, `pnpm --filter www typecheck`, `pnpm lint:fix`, and a local Chrome smoke on `http://localhost:3100/`, `http://localhost:3100/cn`, and `http://localhost:3100/docs`. The smoke confirmed each route has one `data-slot="layout"` shell, English/CN home pages expose one footer, docs keeps the layout footer hidden, search/header render, and browser errors/warnings are empty.
+- 2026-05-24: Added `docs/solutions/developer-experience/2026-05-24-shadcn-app-shell-footer-visibility-needs-nearest-layout-group.md` through the ce-compound closeout.

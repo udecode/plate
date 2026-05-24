@@ -6,11 +6,11 @@ import Link from 'next/link';
 
 import {
   PageHeader,
+  PageActions,
   PageHeaderDescription,
   PageHeaderHeading,
 } from '@/components/page-header';
 import { PlaygroundPreview } from '@/components/playground-preview';
-import { SiteFooter } from '@/components/site-footer';
 import { Button } from '@/components/ui/button';
 import { siteConfig } from '@/config/site';
 
@@ -57,49 +57,42 @@ export const dynamic = 'force-static';
 
 export default async function CNIndexPage() {
   return (
-    <>
-      <div className="relative">
-        <div className="flex items-center justify-between">
-          <PageHeader className="w-full pb-8">
-            <AnnouncementButton />
+    <div className="flex flex-1 flex-col">
+      <PageHeader>
+        <AnnouncementButton />
 
-            <PageHeaderHeading>
-              {content.buildYourRichTextEditor}
-            </PageHeaderHeading>
-            <PageHeaderDescription>{content.description}</PageHeaderDescription>
-            <section className="flex w-full items-center space-x-2 py-2">
-              <Button asChild size="sm" className="rounded-md text-xs">
-                <Link href="/cn/docs">{content.getStarted}</Link>
-              </Button>
-              <Button
-                asChild
-                size="sm"
-                variant="ghost"
-                className="rounded-md text-xs"
-              >
-                <Link
-                  href={siteConfig.links.github}
-                  rel="noreferrer"
-                  target="_blank"
-                >
-                  {content.github}
-                </Link>
-              </Button>
-            </section>
-          </PageHeader>
-        </div>
+        <PageHeaderHeading>{content.buildYourRichTextEditor}</PageHeaderHeading>
+        <PageHeaderDescription>{content.description}</PageHeaderDescription>
+        <PageActions>
+          <Button asChild size="sm" className="h-[31px] rounded-lg text-xs">
+            <Link href="/cn/docs">{content.getStarted}</Link>
+          </Button>
+          <Button
+            asChild
+            size="sm"
+            variant="ghost"
+            className="rounded-lg text-xs"
+          >
+            <Link
+              href={siteConfig.links.github}
+              rel="noreferrer"
+              target="_blank"
+            >
+              {content.github}
+            </Link>
+          </Button>
+        </PageActions>
+      </PageHeader>
 
-        <div className="container py-6">
-          <section className="relative">
-            <PlaygroundPreview />
-          </section>
+      <div className="container py-6">
+        <section className="relative">
+          <PlaygroundPreview />
+        </section>
 
-          <div className="relative mt-12 scroll-m-16 pb-48 md:mt-24 lg:mt-36">
-            <PotionLazyBlock />
-          </div>
+        <div className="relative mt-12 scroll-m-16 pb-48 md:mt-24 lg:mt-36">
+          <PotionLazyBlock />
         </div>
       </div>
-      <SiteFooter />
-    </>
+    </div>
   );
 }

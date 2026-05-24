@@ -2,9 +2,9 @@ import { siteConfig } from '@/config/site';
 
 export function SiteFooter() {
   return (
-    <footer className="border-border/40 border-t py-6 md:px-8 md:py-0 dark:border-border">
-      <div className="container flex flex-col items-center justify-between gap-4 md:h-24 md:flex-row">
-        <p className="text-balance text-center text-muted-foreground text-sm leading-loose md:text-left">
+    <footer className="3xl:fixed:bg-transparent group-has-[[data-slot=designer]]/body:hidden group-has-[[data-slot=designer]]/layout:hidden group-has-[[data-slot=docs]]/body:hidden group-has-[[data-slot=docs]]/layout:hidden group-has-[.section-soft]/body:bg-surface/40 group-has-[.docs-nav]/body:pb-20 group-has-[.docs-nav]/body:sm:pb-0 dark:bg-transparent dark:group-has-[.section-soft]/body:bg-surface/40">
+      <div className="container-wrapper px-4 xl:px-6">
+        <p className="flex h-(--footer-height) items-center justify-center px-1 text-center text-muted-foreground text-sm leading-loose">
           From{' '}
           <a
             className="font-medium underline underline-offset-4"
