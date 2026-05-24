@@ -115,7 +115,6 @@ const nextConfig = async (_phase: string) => {
       ],
     },
     outputFileTracingIncludes: {
-      '/api/registry/[name]': ['./src/registry/**/*', './public/r/**/*'],
       '/blocks/slate-to-html': ['./public/tailwind.css'],
       '/cn/docs/[[...slug]]': ['./src/registry/**/*', './public/r/**/*'],
       '/docs/[[...slug]]': ['./src/registry/**/*', './public/r/**/*'],

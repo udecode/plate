@@ -6,7 +6,7 @@ Continue the docs restart from `docs/plans/2026-05-23-shadcn-docs-restart-compar
 
 ## Current Slice
 
-Status: twenty-first slice complete
+Status: twenty-second slice complete
 
 1. Make Fumadocs metadata/pageTree the docs navigation authority.
 2. Move sidebar and pager reads off direct `docsConfig` runtime access.
@@ -29,6 +29,7 @@ Status: twenty-first slice complete
 19. Move docs route parity checks off `docsConfig` and onto committed Fumadocs metadata pages.
 20. Add the upstream-style `/view/[name]` block preview renderer and route default block iframes through it.
 21. Add a Plate `/init` bootstrap route that follows the shadcn `registry:base` contract, plus the upstream-style `/init.md` markdown rewrite.
+22. Remove the legacy Pages Router `/api/components` endpoint and stale tracing for the deleted `/api/registry/[name]` route.
 
 ## Findings
 
@@ -68,6 +69,8 @@ Status: twenty-first slice complete
 - Upstream `/init` is not a generic components.json endpoint; it returns a shadcn `registry:base` item whose `config` is merged into `components.json`. Plate should use that same contract for bootstrap, not invent a Plate-only installer shape.
 - Plate's useful init surface is narrow: configure the public `@plate` registry namespace and install `@plate/editor-basic`. The v0/create flow stays discarded.
 - The MCP docs still had `@platejs` in the `components.json` snippet even though templates, visible commands, and generated registry dependencies now use `@plate`.
+- `apps/www/src/pages/api/components.*` was the last Pages Router endpoint in the docs app. It served a single stale Button JSON snapshot, had no repo references beyond its own import, and has no equivalent in upstream `../ui/apps/v4`.
+- `apps/www/next.config.ts` still traced assets for `/api/registry/[name]` after that App Router endpoint was deleted. Keeping tracing for a deleted route is harmless until it isn't; it advertises an API surface the restarted app intentionally removed.
 
 ## Verification Plan
 
@@ -87,6 +90,7 @@ Status: twenty-first slice complete
 - If route parity changes, verify `check-docs-source-parity.mts` reads `content/docs/meta.json` pages and run `www` typecheck.
 - If block preview routing changes, verify `/view/[name]`, `/blocks/[name]`, and a registry docs page that embeds `BlockViewer`.
 - If init/bootstrap routing changes, verify `/init` returns a valid `registry:base` item, `/init.md` rewrites to markdown instructions, `/init/v0` is absent, and MCP docs use `@plate`.
+- If legacy API cleanup changes routes, verify `/api/components` and `/api/registry/[name]` are absent while `/init`, docs pages, and block previews still render.
 
 ## Progress Log
 
@@ -154,3 +158,5 @@ Status: twenty-first slice complete
 - 2026-05-24: Started the Plate init bootstrap slice: added `/init` as a shadcn `registry:base` item for the `@plate` registry and `@plate/editor-basic`, added `/init/md` plus `/init.md` rewrite, and fixed the stale `@platejs` MCP docs snippets.
 - 2026-05-24: Verification passed for the Plate init bootstrap slice: `bun test apps/www/src/lib/plate-init.test.ts`, `pnpm install`, `pnpm --filter www typecheck`, `pnpm lint:fix`, fallback HTTP smoke on `localhost:3101` confirming `/init`, `/init.md`, `/init/md`, `/init/v0`, and EN/CN MCP docs, and final PR gate `pnpm check`. Browser Use was unavailable from tool discovery.
 - 2026-05-24: Added `docs/solutions/developer-experience/2026-05-24-plate-init-routes-should-return-shadcn-registry-base-items.md` through the ce-compound closeout.
+- 2026-05-24: Started the legacy Pages API cleanup slice: deleted `apps/www/src/pages/api/components.*` and removed stale output tracing for the already-deleted `/api/registry/[name]` route.
+- 2026-05-24: Verification passed for the legacy Pages API cleanup slice: `pnpm install`, `pnpm --filter www typecheck`, `pnpm lint:fix`, fallback HTTP smoke on `localhost:3102` confirming `/api/components` and `/api/registry/editor-basic` return 404 while `/init`, `/init.md`, `/docs/components/table-node`, `/view/editor-basic`, and `/blocks/editor-basic` return 200, and PR gate `pnpm check`. Browser Use was unavailable from tool discovery. The first dev-server smoke exposed local disk pressure from a 12G `.next` cache; deleting that generated cache restored 13G free space before `pnpm check`.
