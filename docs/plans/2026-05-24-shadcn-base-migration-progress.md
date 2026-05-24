@@ -6,7 +6,7 @@ Continue the docs restart from `docs/plans/2026-05-23-shadcn-docs-restart-compar
 
 ## Current Slice
 
-Status: thirty-fourth slice complete
+Status: thirty-fifth slice complete
 
 1. Make Fumadocs metadata/pageTree the docs navigation authority.
 2. Move sidebar and pager reads off direct `docsConfig` runtime access.
@@ -42,6 +42,7 @@ Status: thirty-fourth slice complete
 32. Remove the commented shadcn block-request CTA residue from the retained Plate editors page.
 33. Remove Contentlayer residue from repo tooling, agent docs, lint ignores, and the Bun lockfile so the Fumadocs cutover is reflected outside `apps/www` runtime source too.
 34. Update docs-authoring agent rules to point at the committed `content/docs/**` source root so future docs work does not reintroduce old root-content paths.
+35. Delete the unreferenced local registry test harness that still installed registry items through raw `http://localhost:3000/rd/*` URLs.
 
 ## Findings
 
@@ -100,6 +101,7 @@ Status: thirty-fourth slice complete
 - `EditorDescription` still carried a commented upstream shadcn block-request CTA pointing at `shadcn-ui/ui` discussions. The editors page is a retained Plate product surface; dead upstream product links should be deleted instead of preserved in comments.
 - `apps/www` package metadata and `pnpm-lock.yaml` no longer referenced Contentlayer, but root `bun.lock`, vendor update exclusions, reinstall cleanup targets, generated agent instructions, and lint ignores still carried `contentlayer2`, `next-contentlayer2`, or `.contentlayer`. A hard Fumadocs cutover should not keep those maintenance hooks alive.
 - `docs-creator` is a real authoring source of truth, not harmless prose. Its baseline docs list still pointed at old root `content/**` paths after the content-root migration, so future docs work could follow stale instructions even though active runtime source was clean.
+- `apps/www/src/test-registry.mts` was not referenced by any package script or caller, but it still encoded the old workflow of installing registry items by raw localhost `/rd` URLs. Keeping a dead harness around is worse than no harness: it teaches the wrong shadcn install contract.
 
 ## Verification Plan
 
@@ -129,6 +131,7 @@ Status: thirty-fourth slice complete
 - If template tooling changes, verify shell scripts with `bash -n`, verify root package metadata with `pnpm install`, run `pnpm lint:fix`, and run the PR gate. Do not run template generation or manually edit `templates/**`.
 - If copy-page UI changes, verify `DocsCopyPage` on a real docs page with Browser Use: grouped buttons render, menu links point to Markdown/ChatGPT/Claude/GitHub with `noopener noreferrer`, copy click does not emit console or server errors, then run `www` typecheck, lint, and the PR gate.
 - If `.agents/rules/**` changes, run `pnpm install` to sync generated agent docs, then verify stale migration residues are absent from active agent/source files.
+- If an unreferenced registry smoke/test harness is removed, verify no package script or source reference remains, run `www` typecheck, lint, and the PR gate.
 
 ## Progress Log
 
@@ -227,3 +230,5 @@ Status: thirty-fourth slice complete
 - 2026-05-24: Started the docs-authoring source-root cleanup slice: updated `.agents/rules/docs-creator.mdc` baseline paths from old root `content/**` to committed `content/docs/**`.
 - 2026-05-24: `pnpm install` synced generated docs-creator skill output and Fumadocs source files; active source search now has no old root docs path, Contentlayer, `docsConfig`, or `sync-docs-meta` residue.
 - 2026-05-24: Verification passed for the docs-authoring source-root cleanup slice: `pnpm install`, active-source residue search, `pnpm lint:fix`, and PR gate `pnpm check` passed.
+- 2026-05-24: Started the stale local registry smoke cleanup slice: deleted unreferenced `apps/www/src/test-registry.mts` and its unused `apps/www/scripts/test-registry-config.json` config because the script still installed items through raw localhost `/rd` URLs instead of the configured `@plate` namespace.
+- 2026-05-24: Verification passed for the stale local registry smoke cleanup slice: reference search now finds only the migration plan notes, old raw localhost registry install residue is limited to intentional local dev config and backwards-compatibility tests, `pnpm --filter www typecheck` passed, and `pnpm lint:fix` passed.
