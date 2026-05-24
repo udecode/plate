@@ -4,7 +4,6 @@ import matter from 'gray-matter';
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 
-import { docsConfig } from '@/config/docs';
 import { registryExamples } from '@/registry/registry-examples';
 import { registryUI } from '@/registry/registry-ui';
 
@@ -12,6 +11,7 @@ import { createDocsRegistry } from './build-docs-registry.mts';
 
 const DOCS_HREF_REGEX = /^\/docs(?:\/|$)/;
 const HASH_OR_QUERY_REGEX = /[#?].*$/;
+const META_PAGE_HREF_REGEX = /\]\(([^)]+)\)$/;
 const TRAILING_SLASH_REGEX = /\/$/;
 const DEMO_SUFFIX_REGEX = /-demo$/;
 const MDX_EXTENSION_REGEX = /\.mdx$/;
@@ -30,6 +30,22 @@ const appOnlyDocsRoutes = new Set([
   '/docs/examples/slate-to-html',
   '/docs/plugins',
 ]);
+
+type DocsMeta = {
+  _plate?: {
+    categoryGroups?: Record<string, SidebarNavItem[]>;
+    docSections?: SidebarNavItem[];
+    items?: Record<
+      string,
+      {
+        label?: string | string[];
+        titleCn?: string;
+      }
+    >;
+    sections?: Record<string, string>;
+  };
+  pages?: string[];
+};
 
 function assert(condition: unknown, message: string) {
   if (!condition) {
@@ -52,6 +68,20 @@ function collectDocsHrefs(items: SidebarNavItem[], hrefs = new Set<string>()) {
 
     if (item.items) {
       collectDocsHrefs(item.items, hrefs);
+    }
+  }
+
+  return hrefs;
+}
+
+function collectMetaPageHrefs(pages: string[] = []) {
+  const hrefs = new Set<string>();
+
+  for (const page of pages) {
+    const href = page.match(META_PAGE_HREF_REGEX)?.[1];
+
+    if (href && DOCS_HREF_REGEX.test(href)) {
+      hrefs.add(normalizeDocsHref(href));
     }
   }
 
@@ -82,25 +112,18 @@ async function getGeneratedSourcePaths() {
   );
 }
 
-async function checkDocsMetaOverlay() {
-  const meta = JSON.parse(await fs.readFile(META_FILE, 'utf8')) as {
-    _plate?: {
-      categoryGroups?: Record<string, SidebarNavItem[]>;
-      docSections?: SidebarNavItem[];
-      items?: Record<
-        string,
-        {
-          label?: string | string[];
-          titleCn?: string;
-        }
-      >;
-      sections?: Record<string, string>;
-    };
-  };
+async function readDocsMeta() {
+  return JSON.parse(await fs.readFile(META_FILE, 'utf8')) as DocsMeta;
+}
 
+function checkDocsMetaOverlay(meta: DocsMeta) {
   assert(
     meta._plate?.sections?.['Get Started'] === '开始',
     'Expected content/docs/meta.json to carry localized section labels'
+  );
+  assert(
+    collectMetaPageHrefs(meta.pages).has('/docs/plugin-input-rules'),
+    'Expected content/docs/meta.json pages to carry docs routes'
   );
   assert(
     meta._plate?.items?.['/docs/plugin-input-rules']?.label === 'New',
@@ -167,7 +190,7 @@ async function getFrontmatterTitle(filePath: string) {
   return data.title;
 }
 
-function checkNavRoutes(sourceUrls: Set<string>) {
+function checkNavRoutes(meta: DocsMeta, sourceUrls: Set<string>) {
   const registryFallbackUrls = new Set([
     ...registryUI.map((item) => `/docs/components/${item.name}`),
     ...registryExamples.map(
@@ -175,14 +198,14 @@ function checkNavRoutes(sourceUrls: Set<string>) {
     ),
   ]);
 
-  const missing = [...collectDocsHrefs(docsConfig.sidebarNav)]
+  const missing = [...collectMetaPageHrefs(meta.pages)]
     .filter((href) => !appOnlyDocsRoutes.has(href))
     .filter((href) => !registryFallbackUrls.has(href))
     .filter((href) => !sourceUrls.has(href));
 
   assert(
     missing.length === 0,
-    `docsConfig contains routes missing from Fumadocs source or registry fallback:\n${missing
+    `content/docs/meta.json contains routes missing from Fumadocs source or registry fallback:\n${missing
       .map((href) => `- ${href}`)
       .join('\n')}`
   );
@@ -300,9 +323,10 @@ async function checkDocsRegistry() {
 
 try {
   const sourceRoutes = getSourceRoutes(await getGeneratedSourcePaths());
+  const docsMeta = await readDocsMeta();
 
-  await checkDocsMetaOverlay();
-  checkNavRoutes(sourceRoutes.en);
+  checkDocsMetaOverlay(docsMeta);
+  checkNavRoutes(docsMeta, sourceRoutes.en);
   await checkCnAppOnlyDocsRoutes();
   await checkChineseRoutes(sourceRoutes);
   await checkDocsRegistry();

@@ -6,7 +6,7 @@ Continue the docs restart from `docs/plans/2026-05-23-shadcn-docs-restart-compar
 
 ## Current Slice
 
-Status: fifteenth slice complete
+Status: nineteenth slice complete
 
 1. Make Fumadocs metadata/pageTree the docs navigation authority.
 2. Move sidebar and pager reads off direct `docsConfig` runtime access.
@@ -26,6 +26,7 @@ Status: fifteenth slice complete
 16. Move category grid/breadcrumb metadata out of runtime `docsConfig` imports and add CN app-only docs routes for localized category links.
 17. Remove the lazy `/api/registry/[name]` highlighted-source route and dead v0 open button residue.
 18. Remove public `/dev` debug routes from the docs app restart surface.
+19. Move docs route parity checks off `docsConfig` and onto committed Fumadocs metadata pages.
 
 ## Findings
 
@@ -60,6 +61,7 @@ Status: fifteenth slice complete
 - `BlockViewer` still lazy-fetched highlighted source from `/api/registry/[name]` when switching to code view. That preserved an extra Plate-only API route after registry pages already had server-side access to full registry source data.
 - The old `OpenInV0Button` file was dead code, and `BlockViewer` still carried a commented v0 toolbar block. The comparison doc calls out v0 as discard-all; keeping the corpse around is how it comes back.
 - `apps/www/src/app/dev/**` was still a public Next route group with markdown streaming, custom type, and table performance playgrounds. The comparison doc explicitly says dev/debug routes do not belong in the restarted public docs app.
+- `check-docs-source-parity.mts` still used `docsConfig.sidebarNav` for route parity after runtime navigation moved to Fumadocs metadata. That made the verification path prove the old TS nav graph rather than the committed `content/docs/meta.json` page list.
 
 ## Verification Plan
 
@@ -76,6 +78,7 @@ Status: fifteenth slice complete
 - If category grid or breadcrumb metadata changes, verify `content/docs/meta.json` carries `_plate.categoryGroups` and `_plate.docSections`, run docs source parity, and smoke `/cn/docs/components`, `/cn/docs/plugins`, `/cn/docs/examples`, `/cn/docs/api`, plus app-only special example routes.
 - If block/source preview loading changes, verify registry pages receive full highlighted files without `/api/registry/[name]`, run `www` typecheck, and smoke at least one block/code-view surface.
 - If public debug routes are removed, verify `/dev` and `/dev/table-perf` are no longer routable while docs/home routes still render.
+- If route parity changes, verify `check-docs-source-parity.mts` reads `content/docs/meta.json` pages and run `www` typecheck.
 
 ## Progress Log
 
@@ -136,3 +139,5 @@ Status: fifteenth slice complete
 - 2026-05-24: Verification passed for the static block-source slice: `pnpm --filter www typecheck`, `pnpm lint:fix`, and final `pnpm --filter www typecheck`. Browser Use was unavailable from tool discovery; fallback HTTP smoke passed for `/docs/components/table-node`, `/blocks/editor-basic`, and `/docs/examples/slate-to-html`, and confirmed `/api/registry/editor-basic` returns 404.
 - 2026-05-24: Deleted public `/dev` debug routes from `apps/www/src/app/dev/**`; historical benchmark docs may still mention `/dev/table-perf`, but the public docs app no longer ships that route.
 - 2026-05-24: Verification passed for the public debug-route cleanup slice: `pnpm --filter www typecheck`, `pnpm lint:fix`, and fallback HTTP smoke on `localhost:3100` confirming `/` and `/docs` return 200 while `/dev` and `/dev/table-perf` return 404.
+- 2026-05-24: Started the route-parity metadata slice: `check-docs-source-parity.mts` now reads route parity from committed `content/docs/meta.json` `pages` links instead of importing `docsConfig`.
+- 2026-05-24: Verification passed for the route-parity metadata slice: `pnpm --filter www exec tsx --tsconfig ./scripts/tsconfig.scripts.json scripts/check-docs-source-parity.mts`, `pnpm install`, `pnpm --filter www build:source`, `pnpm --filter www typecheck`, `pnpm lint:fix`, and PR gate `pnpm check`.
