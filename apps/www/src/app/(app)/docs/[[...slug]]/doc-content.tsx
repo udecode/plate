@@ -9,25 +9,24 @@ import { IconArrowLeft, IconArrowRight } from '@tabler/icons-react';
 import { ExternalLinkIcon } from 'lucide-react';
 import Link from 'next/link';
 
+import { DocsCopyPage } from '@/components/docs-copy-page';
 import { DocsTableOfContents } from '@/components/docs-toc';
-import { LLMCopyButton } from '@/components/llm-copy-button';
 import { OpenInPlus } from '@/components/open-in-plus';
 import { badgeVariants } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ViewOptions } from '@/components/view-options';
 import { categoryNavGroups, docSections } from '@/config/docs-utils';
 import { useDedupeNavItems } from '@/hooks/use-dedupe-nav-items';
 import { getDocTitle, getRegistryTitle } from '@/lib/registry-utils';
 import { cn } from '@/lib/utils';
 
 export type DocContentDoc = {
+  copyMarkdown?: string;
   description?: string;
   docs?: { route?: string; title?: string }[];
   links?: {
     api?: string;
     doc?: string;
   };
-  raw?: string;
   slug?: string;
   title?: string;
   toc?: boolean;
@@ -103,7 +102,15 @@ export function DocContent({
                 <h1 className="scroll-m-20 font-semibold text-4xl tracking-tight sm:text-3xl lg:text-4xl">
                   {title}
                 </h1>
-                <div className="flex items-center gap-2 pt-1.5">
+                <div className="flex shrink-0 items-center gap-2 pt-1.5">
+                  {doc?.slug && doc?.copyMarkdown && (
+                    <div className="hidden sm:block">
+                      <DocsCopyPage
+                        page={doc.copyMarkdown}
+                        url={`https://platejs.org${doc.slug}`}
+                      />
+                    </div>
+                  )}
                   {neighbours.previous?.href && (
                     <Button
                       asChild
@@ -138,22 +145,6 @@ export function DocContent({
                 </p>
               )}
             </div>
-
-            {/* Copy Markdown and View Options */}
-            {doc?.slug && doc?.raw && (
-              <div className="flex flex-row items-center gap-2">
-                <LLMCopyButton
-                  title={title}
-                  content={doc.raw}
-                  docUrl={`https://platejs.org${doc.slug}`}
-                />
-                <ViewOptions
-                  title={title}
-                  content={doc.raw}
-                  docUrl={`https://platejs.org${doc.slug}`}
-                />
-              </div>
-            )}
 
             {/* {links ? (
               <div className="flex items-center space-x-2 pt-4">

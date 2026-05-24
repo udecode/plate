@@ -15,6 +15,7 @@ import { slugToCategory } from '@/config/docs-utils';
 import { siteConfig } from '@/config/site';
 import { absoluteUrl } from '@/lib/absoluteUrl';
 import { getPagerForDoc } from '@/lib/docs-page-tree';
+import { getPlateLLMPageMarkdown, processMdxForLLMs } from '@/lib/llm';
 import {
   getCachedDependencies,
   getCachedFileTree,
@@ -241,9 +242,13 @@ export default async function DocPage(props: DocPageProps) {
       category={category as any}
       doc={{
         description,
+        copyMarkdown: getPlateLLMPageMarkdown({
+          content: processMdxForLLMs(raw),
+          docUrl: `https://platejs.org${doc.url}`,
+          title: doc.data.title,
+        }),
         docs: doc.data.docs,
         links: doc.data.links,
-        raw,
         slug: doc.url,
         title: doc.data.title,
         toc: doc.data.toc,

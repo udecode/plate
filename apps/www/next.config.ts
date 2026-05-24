@@ -149,6 +149,26 @@ const nextConfig = async (_phase: string) => {
           source: '/cn/docs/migration',
         },
         {
+          destination: '/docs',
+          permanent: true,
+          source: '/docs.mdx',
+        },
+        {
+          destination: '/docs/:path*.md',
+          permanent: true,
+          source: '/docs/:path*.mdx',
+        },
+        {
+          destination: '/cn/docs',
+          permanent: true,
+          source: '/cn/docs.mdx',
+        },
+        {
+          destination: '/cn/docs/:path*.md',
+          permanent: true,
+          source: '/cn/docs/:path*.mdx',
+        },
+        {
           destination: '/r/:path.json',
           permanent: true,
           source: '/r/:path([^.]*)',
@@ -176,6 +196,27 @@ const nextConfig = async (_phase: string) => {
           has: [{ key: 'locale', type: 'query', value: 'cn' }],
           permanent: true,
           source: '/:path*',
+        },
+      ];
+    },
+
+    async rewrites() {
+      return [
+        {
+          destination: '/llm',
+          source: '/docs.md',
+        },
+        {
+          destination: '/llm/:path*',
+          source: '/docs/:path*.md',
+        },
+        {
+          destination: '/cn/llm',
+          source: '/cn/docs.md',
+        },
+        {
+          destination: '/cn/llm/:path*',
+          source: '/cn/docs/:path*.md',
         },
       ];
     },
