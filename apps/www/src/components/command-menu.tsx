@@ -2,17 +2,21 @@
 
 import * as React from 'react';
 
-import type { NavItemWithChildren, SidebarNavItem } from '@/types/nav';
+import type {
+  MainNavItem,
+  NavItemWithChildren,
+  SidebarNavItem,
+} from '@/types/nav';
 import type { DialogProps } from '@radix-ui/react-dialog';
 
-import { Command } from 'cmdk';
-import { castArray } from 'lodash';
+import { useDocsSearch as useFumadocsSearch } from 'fumadocs-core/search/client';
 import { Circle, File, Laptop, Moon, SunMedium } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { useRouter } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
 import {
+  Command,
   CommandEmpty,
   CommandGroup,
   CommandInput,
@@ -22,134 +26,84 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { docsConfig } from '@/config/docs';
+import { Spinner } from '@/components/ui/spinner';
 import { cn } from '@/lib/utils';
 
-export function CommandItems({
-  idx = 0,
+const WHITESPACE_REGEX = /\s+/;
+
+type Query = Awaited<ReturnType<typeof useFumadocsSearch>>['query'];
+
+function getItemKeywords(item: NavItemWithChildren, parentTitle = '') {
+  return [
+    ...(item.keywords ?? []),
+    ...(Array.isArray(item.label)
+      ? item.label
+      : item.label
+        ? [item.label]
+        : []),
+    parentTitle,
+  ].filter(Boolean);
+}
+
+function CommandItems({
   item,
-  parentKey = '',
   parentTitle = '',
   runCommand,
 }: {
   item: NavItemWithChildren;
-  runCommand: any;
-  idx?: number;
-  parentKey?: string;
+  runCommand: (command: () => unknown) => void;
   parentTitle?: string;
 }) {
   const router = useRouter();
-  const itemKey = `${parentKey}-${item.href ?? item.title}-${idx}`;
-
-  // Invisible characters to make items unique across groups
-  const invisibleSuffixes: Record<string, string> = {
-    'group-API': '\uFEFF', // Zero Width No-Break Space
-    'group-Examples': '\u2060', // Word Joiner
-    'group-Getting Started': '\u200B', // Zero Width Space
-    'group-Guides': '\u061C', // Arabic Letter Mark
-    'group-Installation': '\u200C', // Zero Width Non-Joiner
-    'group-Migration': '\u180E', // Mongolian Vowel Separator
-    'group-Plugins': '\u200D', // Zero Width Joiner
-  };
-
-  // Dirty hack to make items unique across groups, fallback to combining different characters
-  const getInvisibleSuffix = (key: string) => {
-    if (invisibleSuffixes[key]) return invisibleSuffixes[key];
-    // Generate a unique invisible character combination for unknown groups
-    const hash = key
-      .split('')
-      .reduce((a, b) => Math.trunc((a << 5) - a + (b.codePointAt(0) ?? 0)), 0);
-    const suffixIndex = Math.abs(hash) % 7;
-    const fallbackSuffixes = [
-      '\u200B',
-      '\u200C',
-      '\u200D',
-      '\u2060',
-      '\uFEFF',
-      '\u061C',
-      '\u180E',
-    ];
-    return fallbackSuffixes[suffixIndex];
-  };
-
-  const invisibleSuffix = getInvisibleSuffix(parentKey);
-
-  // Extract keywords from the item, including labels and parent title
-  const { keywords = [] } = item;
-  const allKeywords = [
-    ...keywords,
-    ...castArray(item.label),
-    ...(parentTitle ? [parentTitle] : []),
-  ].filter(Boolean);
+  const keywords = getItemKeywords(item, parentTitle);
 
   return (
-    <React.Fragment key={itemKey}>
+    <>
       {item.href && (
         <CommandItem
+          key={item.href}
           onSelect={() => {
             runCommand(() => router.push(item.href as string));
           }}
-          keywords={allKeywords}
+          keywords={keywords}
+          value={`${parentTitle} ${item.title ?? ''} ${item.href}`}
         >
           <div className="flex items-center justify-center">
-            <Circle className="size-3" />
+            <Circle />
           </div>
           {item.title}
-          {invisibleSuffix}
         </CommandItem>
       )}
-      {item.headings?.map((heading, headingIdx) => (
-        <CommandItem
-          key={`${itemKey}-heading-${headingIdx}`}
-          onSelect={() => {
-            runCommand(() =>
-              router.push(
-                (item.href +
-                  '#' +
-                  heading.replaceAll(' ', '').toLowerCase()) as string
-              )
-            );
-          }}
-          keywords={allKeywords}
-        >
-          <div className="flex items-center justify-center">
-            <Circle className="size-3" />
-          </div>
-          {item.title} – {heading}
-          {invisibleSuffix}
-        </CommandItem>
-      ))}
-      {item.items?.map((child, childIdx) => (
+      {item.items?.map((child) => (
         <CommandItems
-          key={`${itemKey}-child-${childIdx}`}
-          idx={childIdx}
+          key={child.href ?? `${item.title}:${child.title}`}
           item={child}
-          parentKey={itemKey}
-          parentTitle={item.title}
+          parentTitle={item.title ?? parentTitle}
           runCommand={runCommand}
         />
       ))}
-    </React.Fragment>
+    </>
   );
 }
 
-export function CommandMenuGroup({
+function CommandMenuGroup({
   runCommand,
   ...group
 }: {
-  runCommand: any;
+  runCommand: (command: () => unknown) => void;
 } & SidebarNavItem) {
+  if (!group.items?.length) return null;
+
   return (
     <CommandGroup heading={group.title}>
-      {group.items?.map((navItem, navIdx) => (
+      {group.items.map((navItem) => (
         <CommandItems
-          key={`group-${group.title}-${navIdx}`}
-          idx={navIdx}
+          key={navItem.href ?? `${group.title}:${navItem.title}`}
           item={navItem}
-          parentKey={`group-${group.title}`}
           parentTitle={group.title}
           runCommand={runCommand}
         />
@@ -158,10 +112,72 @@ export function CommandMenuGroup({
   );
 }
 
-export function CommandMenu({ ...props }: DialogProps) {
+function SearchResults({
+  query,
+  search,
+  setOpen,
+}: {
+  query: Query;
+  search: string;
+  setOpen: (open: boolean) => void;
+}) {
+  const router = useRouter();
+
+  const uniqueResults = React.useMemo(() => {
+    if (!query.data || !Array.isArray(query.data)) {
+      return [];
+    }
+
+    return query.data.filter(
+      (item, index, self) =>
+        !(
+          item.type === 'text' &&
+          item.content.trim().split(WHITESPACE_REGEX).length <= 1
+        ) &&
+        index === self.findIndex((result) => result.content === item.content)
+    );
+  }, [query.data]);
+
+  if (!search.trim() || !query.data || query.data === 'empty') {
+    return null;
+  }
+
+  if (uniqueResults.length === 0) {
+    return null;
+  }
+
+  return (
+    <CommandGroup heading="Search Results">
+      {uniqueResults.map((item) => (
+        <CommandItem
+          key={item.id}
+          data-type={item.type}
+          onSelect={() => {
+            router.push(item.url);
+            setOpen(false);
+          }}
+          keywords={[item.content]}
+          value={`${item.content} ${item.type}`}
+        >
+          <div className="line-clamp-1 text-sm">{item.content}</div>
+        </CommandItem>
+      ))}
+    </CommandGroup>
+  );
+}
+
+export function CommandMenu({
+  navItems,
+  sidebarNav,
+  ...props
+}: DialogProps & {
+  navItems: MainNavItem[];
+  sidebarNav: SidebarNavItem[];
+}) {
   const router = useRouter();
   const [open, setOpen] = React.useState(false);
   const { setTheme } = useTheme();
+  const { search, setSearch, query } = useFumadocsSearch({ type: 'fetch' });
 
   React.useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -190,6 +206,17 @@ export function CommandMenu({ ...props }: DialogProps) {
     command();
   }, []);
 
+  const commandFilter = React.useCallback(
+    (value: string, searchValue: string, keywords?: string[]) => {
+      const searchableValue = `${value} ${keywords?.join(' ') ?? ''}`;
+
+      return searchableValue.toLowerCase().includes(searchValue.toLowerCase())
+        ? 1
+        : 0;
+    },
+    []
+  );
+
   return (
     <>
       <Button
@@ -208,55 +235,60 @@ export function CommandMenu({ ...props }: DialogProps) {
       </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogHeader className="sr-only">
-          <DialogTitle>Search</DialogTitle>
-        </DialogHeader>
-
         <DialogContent className="overflow-hidden p-0">
+          <DialogHeader className="sr-only">
+            <DialogTitle>Search</DialogTitle>
+            <DialogDescription>Search documentation.</DialogDescription>
+          </DialogHeader>
           <Command
             className="**:data-[slot=command-input-wrapper]:h-12 [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-muted-foreground [&_[cmdk-group]:not([hidden])_~[cmdk-group]]:pt-0 [&_[cmdk-group]]:px-2 [&_[cmdk-input-wrapper]_svg]:h-5 [&_[cmdk-input-wrapper]_svg]:w-5 [&_[cmdk-input]]:h-12 [&_[cmdk-item]]:px-2 [&_[cmdk-item]]:py-3 [&_[cmdk-item]_svg]:h-5 [&_[cmdk-item]_svg]:w-5"
-            filter={(value, search, keywords) => {
-              const searchValue = search.toLowerCase();
-              if (
-                value.toLowerCase().includes(searchValue) ||
-                keywords?.some((keyword) =>
-                  keyword.toLowerCase().includes(searchValue)
-                )
-              ) {
-                return 1;
-              }
-              return 0;
-            }}
+            filter={commandFilter}
           >
-            <CommandInput placeholder="Type a command or search..." />
-            <CommandEmpty>No results found.</CommandEmpty>
+            <div className="relative">
+              <CommandInput
+                onValueChange={(value) => {
+                  React.startTransition(() => setSearch(value));
+                }}
+                placeholder="Type a command or search..."
+              />
+              {query.isLoading && (
+                <div className="-translate-y-1/2 pointer-events-none absolute top-1/2 right-3 flex items-center justify-center">
+                  <Spinner />
+                </div>
+              )}
+            </div>
+            <CommandEmpty>
+              {query.isLoading ? 'Searching...' : 'No results found.'}
+            </CommandEmpty>
             <CommandList>
               <CommandGroup heading="Links">
-                {docsConfig.mainNav
-                  .filter((navitem) => !navitem.external)
+                {navItems
+                  .filter((navItem) => !navItem.external)
                   .map((navItem) => (
                     <CommandItem
                       key={navItem.href}
                       onSelect={() => {
                         runCommand(() => router.push(navItem.href as string));
                       }}
+                      value={`Link ${navItem.title ?? ''} ${navItem.href ?? ''}`}
                     >
                       <File />
                       {navItem.title}
                     </CommandItem>
                   ))}
               </CommandGroup>
-              {docsConfig.sidebarNav.map((group) => {
-                if (group.title === 'API') return null;
 
-                return (
+              {sidebarNav.map((group) =>
+                group.title === 'API' ? null : (
                   <CommandMenuGroup
                     key={`${group.title}:sidebar`}
                     runCommand={runCommand}
                     {...group}
                   />
-                );
-              })}
+                )
+              )}
+
+              <SearchResults query={query} search={search} setOpen={setOpen} />
 
               <CommandGroup heading="Theme">
                 <CommandItem
@@ -279,18 +311,15 @@ export function CommandMenu({ ...props }: DialogProps) {
                 </CommandItem>
               </CommandGroup>
 
-              {docsConfig.sidebarNav.map((group) => {
-                // API is last
-                if (group.title !== 'API') return null;
-
-                return (
+              {sidebarNav.map((group) =>
+                group.title !== 'API' ? null : (
                   <CommandMenuGroup
                     key={group.title}
                     runCommand={runCommand}
                     {...group}
                   />
-                );
-              })}
+                )
+              )}
             </CommandList>
           </Command>
         </DialogContent>

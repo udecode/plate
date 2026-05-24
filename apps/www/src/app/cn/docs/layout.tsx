@@ -1,9 +1,7 @@
-'use client';
-
 import { Suspense } from 'react';
 
 import { DocsNav } from '@/components/docs-nav';
-import { docsConfig } from '@/config/docs';
+import { getSidebarNavFromPageTree } from '@/lib/docs-page-tree';
 import { cn } from '@/lib/utils';
 
 // Reuse the same layout as (app)/docs
@@ -12,6 +10,8 @@ export default function CNDocsLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const sidebarNav = getSidebarNavFromPageTree('cn');
+
   return (
     <div className="container-wrapper flex flex-1 flex-col px-2">
       <div
@@ -23,7 +23,7 @@ export default function CNDocsLayout({
         <aside className="fixed top-14 z-30 hidden h-[calc(100vh-3.5rem)] w-full shrink-0 md:sticky md:block">
           <div className="scrollbar-hide h-full overflow-auto">
             <Suspense fallback={null}>
-              <DocsNav config={docsConfig} />
+              <DocsNav sidebarNav={sidebarNav} />
             </Suspense>
           </div>
         </aside>

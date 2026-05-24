@@ -2,8 +2,8 @@ import Link from 'next/link';
 
 import { ModeSwitcher } from '@/components/mode-switcher';
 import { Button } from '@/components/ui/button';
-import { docsConfig } from '@/config/docs';
 import { siteConfig } from '@/config/site';
+import { getSidebarNavFromPageTree } from '@/lib/docs-page-tree';
 
 import { CommandMenu } from './command-menu';
 import { Icons } from './icons';
@@ -14,6 +14,25 @@ import { SetupMCPDialog } from './mcp-dialog';
 import { MobileNav } from './mobile-nav';
 
 export function SiteHeader() {
+  const sidebarNav = getSidebarNavFromPageTree();
+  const mainNavItems = [
+    {
+      href: '/',
+      title: 'Home',
+      titleCn: '首页',
+    },
+    ...siteConfig.navItems.map((item) => ({
+      href: item.href,
+      title: item.label,
+      titleCn: item.labelCn,
+    })),
+    {
+      href: siteConfig.links.platePro,
+      title: 'Plate Plus',
+      titleCn: 'Plate Plus',
+    },
+  ];
+
   // const { stargazers_count: count } = await fetch(
   //   'https://api.github.com/repos/udecode/plate',
   //   {
@@ -38,8 +57,8 @@ export function SiteHeader() {
           {/* Mobile only */}
           <MobileNav
             className="flex md:hidden"
-            items={docsConfig.mainNav}
-            tree={docsConfig.sidebarNav}
+            items={mainNavItems}
+            tree={sidebarNav}
           />
 
           {/* Desktop only */}
@@ -49,7 +68,7 @@ export function SiteHeader() {
           {/* Header end */}
           <div className="ml-auto flex items-center gap-2 md:flex-1 md:justify-end">
             <div className="hidden w-full flex-1 md:flex md:w-auto md:flex-none">
-              <CommandMenu />
+              <CommandMenu navItems={mainNavItems} sidebarNav={sidebarNav} />
             </div>
 
             <Button size="icon" variant="ghost" className="size-8 px-0">

@@ -2,7 +2,6 @@
 
 import React, { Suspense, useState } from 'react';
 
-import type { DocsConfig } from '@/config/docs';
 import type { SidebarNavItem } from '@/types/nav';
 
 import { castArray } from 'lodash';
@@ -69,19 +68,17 @@ function hasActiveNestedItem(
   });
 }
 
-export function DocsNav({ config }: { config: DocsConfig }) {
+export function DocsNav({ sidebarNav }: { sidebarNav: SidebarNavItem[] }) {
   const locale = useLocale();
   const pathname = usePathname();
   const [filter, setFilter] = useState('');
-  const [activeSection, setActiveSection] = useState<string | undefined>();
+  const [activeSection, setActiveSection] = useState('');
 
   // Normalize pathname by removing /cn prefix if it exists
   const normalizedPathname = React.useMemo(
     () => pathname?.replace(CN_PREFIX_REGEX, '') ?? '',
     [pathname]
   );
-
-  const sidebarNav = config.sidebarNav;
 
   const filteredNav = React.useMemo(() => {
     const lowercasedFilter = filter?.toLowerCase();
@@ -114,7 +111,7 @@ export function DocsNav({ config }: { config: DocsConfig }) {
     );
 
     // eslint-disable-next-line react-hooks/set-state-in-effect -- Sync accordion state with the active route.
-    setActiveSection(activeIndex === -1 ? undefined : `item-${activeIndex}`);
+    setActiveSection(activeIndex === -1 ? '' : `item-${activeIndex}`);
   }, [filteredNav, normalizedPathname]);
 
   // Auto-scroll to active item only on mount. To be improved.

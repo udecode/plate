@@ -14,6 +14,7 @@ import { docsMap } from '@/config/docs';
 import { slugToCategory } from '@/config/docs-utils';
 import { siteConfig } from '@/config/site';
 import { absoluteUrl } from '@/lib/absoluteUrl';
+import { getPagerForDoc } from '@/lib/docs-page-tree';
 import {
   getCachedDependencies,
   getCachedFileTree,
@@ -171,6 +172,7 @@ export default async function CNDocPage(props: DocPageProps) {
     const files = getAllFiles(docName);
 
     const slug = `/cn/docs/${params.slug?.join('/') ?? ''}`;
+    const neighbours = getPagerForDoc({ slug }, 'cn');
 
     const docs = getRegistryDocs({
       docName,
@@ -206,6 +208,7 @@ export default async function CNDocPage(props: DocPageProps) {
           docs: docs as any,
           slug,
         }}
+        neighbours={neighbours}
       >
         {category === 'component' ? (
           <ComponentInstallation
@@ -236,6 +239,7 @@ export default async function CNDocPage(props: DocPageProps) {
   const MDX = doc.data.body;
 
   const toc = await getTableOfContents(raw);
+  const neighbours = getPagerForDoc({ slug: doc.url }, 'cn');
 
   return (
     <DocContent
@@ -249,6 +253,7 @@ export default async function CNDocPage(props: DocPageProps) {
         title: doc.data.title,
         toc: doc.data.toc,
       }}
+      neighbours={neighbours}
       toc={toc}
     >
       <MdxProvider packageInfo={packageInfo}>

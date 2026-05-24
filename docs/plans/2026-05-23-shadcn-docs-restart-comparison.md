@@ -2,13 +2,13 @@
 
 ## Goal
 
-Compare latest local upstream shadcn docs in `../shadcn/apps/v4` with Plate's current docs app in `apps/www`, then identify every meaningful Plate-specific change before restarting Plate docs from upstream.
+Compare latest local upstream shadcn docs in `../ui/apps/v4` with Plate's current docs app in `apps/www`, then identify every meaningful Plate-specific change before restarting Plate docs from upstream.
 
 The question is not "how do we merge this today." The question is: when Plate restarts from latest shadcn docs, what is worth deliberately reapplying, what should be thrown away, and what should be adopted from upstream without debate?
 
 ## Bottom Line
 
-Restart from `../shadcn/apps/v4`. Do not try to patch the current `apps/www` app forward. The two apps no longer differ by theme and copy. They have different docs engines, route maps, search models, registry pipelines, and product surface.
+Restart from `../ui/apps/v4`. Do not try to patch the current `apps/www` app forward. The two apps no longer differ by theme and copy. They have different route maps, search models, registry pipelines, and product surface.
 
 Upstream should win for:
 
@@ -26,16 +26,36 @@ Plate should reapply only the parts that are real Plate product leverage:
 - Workspace-package source aliases and split typecheck model.
 - Package integration tests if `apps/www` remains the integration harness.
 - CN docs only if Chinese docs are still a product requirement.
-- Plate-specific header links, MCP entry, Plate Plus links, and LLM copy/view actions only if still used.
+- Plate-specific header links, MCP entry, Plate Plus links, and LLM/raw-markdown support through the upstream copy-page model.
 
 Throw the Plate theme/customizer work. Brutal take: it is old fork residue with high surface area and low leverage. Upstream's current theme/style system is stronger, fresher, and tied to the actual shadcn v4 product.
 
+## 2026-05-24 Current-State Refresh
+
+This artifact was first written before the Plate docs source cutover landed. The current checkout is already past that first step:
+
+- The local upstream shadcn docs source is `../ui/apps/v4`; `../shadcn/apps/v4` is not present in this workspace.
+- `apps/www` now has `source.config.ts`, `src/lib/source.ts`, `createMDX` in `next.config.ts`, `build:source`, `postinstall: fumadocs-mdx`, and docs routes that read `source.getPage(...)`.
+- English docs rendering uses `doc.data.body`, `doc.data.getText("raw")`, and the registry component/example fallback.
+- CN docs are modeled through Fumadocs i18n with `languages: ["en", "cn"]`.
+- Contentlayer is gone from `apps/www` scripts and dependencies.
+
+The current middle state is narrower than the original restart problem, but still not the final restart:
+
+- Content remains in root `content/**`, not upstream's `content/docs/**`.
+- There are still zero `meta.json` files under `content/**`.
+- `docsConfig` still drives `docs-nav`, pager-adjacent metadata, and `command-menu`.
+- `command-menu` is still client-only nav-config search, not Fumadocs search.
+- The route shell, theme/customizer surface, registry build, generated registry output model, and shadcn dependency are still Plate's old fork shape.
+
+So the next useful restart work is not "remove Contentlayer." That is done. The next useful work is to replace the remaining navigation/search/registry/app-shell authorities with the upstream Fumadocs and shadcn v4 model while deliberately reapplying Plate product surfaces.
+
 ## Evidence Snapshot
 
-| Area | Upstream `../shadcn/apps/v4` | Plate `apps/www` | Take |
+| Area | Upstream `../ui/apps/v4` | Plate `apps/www` | Take |
 | --- | --- | --- | --- |
-| Main app files | 206 under `app` | 41 under `src/app` | Route tree diverged hard. |
-| Content files | 227 under `content/docs`, including `meta.json` | 251 root `content/**/*.mdx`, including 124 CN files | No shared content paths. |
+| Main app files | 206 under `app` | 51 under `src/app` | Route tree diverged hard. |
+| Content files | 227 under `content/docs`, including `meta.json` | 251 root `content/**/*.mdx`, including 124 CN files and 0 `meta.json` files | No shared content paths. |
 | Registry files | 1127 under `registry` | 381 under `src/registry` | Different registry ownership and generated output model. |
 | Components | 71 under `components` | 104 under `src/components` | Plate added docs/API/editor/product components. |
 | Scripts | 6 under `scripts` | 7 under `apps/www/scripts` | Plate replaced upstream registry/docs build pieces. |
@@ -49,11 +69,11 @@ Throw the Plate theme/customizer work. Brutal take: it is old fork residue with 
 
 Files:
 
-- `../shadcn/apps/v4/package.json`
-- `../shadcn/apps/v4/next.config.mjs`
-- `../shadcn/apps/v4/source.config.ts`
-- `../shadcn/apps/v4/lib/source.ts`
-- `../shadcn/apps/v4/mdx-components.tsx`
+- `../ui/apps/v4/package.json`
+- `../ui/apps/v4/next.config.mjs`
+- `../ui/apps/v4/source.config.ts`
+- `../ui/apps/v4/lib/source.ts`
+- `../ui/apps/v4/mdx-components.tsx`
 
 Upstream uses `fumadocs-mdx`, `fumadocs-ui`, `fumadocs-core`, `shadcn@4.8.0`, `next@16.1.6`, React `19.2.3`, `@base-ui/react`, `radix-ui`, icon packs, and a shadcn v4 registry build.
 
@@ -76,22 +96,25 @@ Files:
 
 - `apps/www/package.json`
 - `apps/www/next.config.ts`
-- `apps/www/contentlayer.config.js`
+- `apps/www/source.config.ts`
+- `apps/www/src/lib/source.ts`
 - `apps/www/src/components/mdx-components.tsx`
 - `apps/www/scripts/build-registry.mts`
 - `apps/www/scripts/build-docs-registry.mts`
+- `apps/www/scripts/check-docs-source-parity.mts`
 
-Plate uses `contentlayer2`, `next-contentlayer2`, old `shadcn@2.6.3`, `fumadocs-core@15.5.1` but not the upstream Fumadocs pipeline, plus many `@platejs/*` workspace deps, editor runtime deps, AI/upload/docx/yjs/dnd deps, and package integration tests.
+Plate now uses `fumadocs-mdx@13.0.2`, `fumadocs-core@15.5.1`, `createMDX`, and `defineDocs({ dir: "../../content" })`. It still uses old `shadcn@2.6.3`, many `@platejs/*` workspace deps, editor runtime deps, AI/upload/docx/yjs/dnd deps, and package integration tests.
 
 Important scripts:
 
-- `prebuild: pnpm build:contentlayer`
-- `build: pnpm prebuild && pnpm build:registry && next build`
-- `dev: concurrently "contentlayer2 dev" "next dev"`
-- `typecheck: pnpm prebuild && tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.package-integration.json`
+- `prebuild: pnpm build:source`
+- `build: pnpm build:registry && next build` with the `prebuild` lifecycle running `pnpm build:source`
+- `build:source: fumadocs-mdx`
+- `dev: pnpm build:source && next dev`
+- `typecheck: pnpm build:source && tsx --tsconfig ./scripts/tsconfig.scripts.json scripts/check-docs-source-parity.mts && tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.package-integration.json`
 - `build:registry: tsx --tsconfig ./scripts/tsconfig.scripts.json scripts/build-registry.mts`
 
-Decision: adopt upstream Fumadocs as the new docs engine. Keep Plate's API MDX vocabulary and registry docs publishing as content/features to port into that engine.
+Decision: the Fumadocs source-engine adoption is already done in this checkout. Keep Plate's API MDX vocabulary and registry docs publishing as content/features, then finish the restart by replacing the remaining old nav/search/registry/app-shell pieces.
 
 ## Routing Comparison
 
@@ -99,19 +122,19 @@ Decision: adopt upstream Fumadocs as the new docs engine. Keep Plate's API MDX v
 
 Primary files:
 
-- `../shadcn/apps/v4/app/(app)/(root)/page.tsx`
-- `../shadcn/apps/v4/app/(app)/docs/[[...slug]]/page.tsx`
-- `../shadcn/apps/v4/app/(app)/docs/layout.tsx`
-- `../shadcn/apps/v4/app/(app)/blocks/[...categories]/page.tsx`
-- `../shadcn/apps/v4/app/(app)/charts/[type]/page.tsx`
-- `../shadcn/apps/v4/app/(app)/colors/page.tsx`
-- `../shadcn/apps/v4/app/(app)/create/page.tsx`
-- `../shadcn/apps/v4/app/(app)/llm/[[...slug]]/route.ts`
-- `../shadcn/apps/v4/app/(create)/init/route.ts`
-- `../shadcn/apps/v4/app/(create)/init/md/route.ts`
-- `../shadcn/apps/v4/app/(create)/init/v0/route.ts`
-- `../shadcn/apps/v4/app/(view)/view/[style]/[name]/page.tsx`
-- `../shadcn/apps/v4/app/api/search/route.ts`
+- `../ui/apps/v4/app/(app)/(root)/page.tsx`
+- `../ui/apps/v4/app/(app)/docs/[[...slug]]/page.tsx`
+- `../ui/apps/v4/app/(app)/docs/layout.tsx`
+- `../ui/apps/v4/app/(app)/blocks/[...categories]/page.tsx`
+- `../ui/apps/v4/app/(app)/charts/[type]/page.tsx`
+- `../ui/apps/v4/app/(app)/colors/page.tsx`
+- `../ui/apps/v4/app/(app)/create/page.tsx`
+- `../ui/apps/v4/app/(app)/llm/[[...slug]]/route.ts`
+- `../ui/apps/v4/app/(create)/init/route.ts`
+- `../ui/apps/v4/app/(create)/init/md/route.ts`
+- `../ui/apps/v4/app/(create)/init/v0/route.ts`
+- `../ui/apps/v4/app/(view)/view/[style]/[name]/page.tsx`
+- `../ui/apps/v4/app/api/search/route.ts`
 
 Upstream docs app is also a shadcn product app:
 
@@ -169,10 +192,10 @@ Decision: use upstream route shape as the base, then reintroduce Plate routes de
 
 Files:
 
-- `../shadcn/apps/v4/source.config.ts`
-- `../shadcn/apps/v4/lib/source.ts`
-- `../shadcn/apps/v4/content/docs/**`
-- `../shadcn/apps/v4/content/docs/**/meta.json`
+- `../ui/apps/v4/source.config.ts`
+- `../ui/apps/v4/lib/source.ts`
+- `../ui/apps/v4/content/docs/**`
+- `../ui/apps/v4/content/docs/**/meta.json`
 
 Upstream docs are Fumadocs-native:
 
@@ -188,22 +211,24 @@ Upstream docs are Fumadocs-native:
 Files:
 
 - `content/**/*.mdx`
-- `apps/www/contentlayer.config.js`
+- `apps/www/source.config.ts`
+- `apps/www/src/lib/source.ts`
 - `apps/www/src/config/docs.ts`
 - `apps/www/src/config/docs-api.ts`
 - `apps/www/src/config/docs-examples.ts`
 - `apps/www/src/config/docs-plugins.ts`
 - `apps/www/src/config/registry-to-nav.ts`
 
-Plate docs are Contentlayer plus hand-authored nav config:
+Plate docs are Fumadocs MDX plus hand-authored nav config:
 
 - Root `content/**`, not app-local `content/docs/**`.
 - `(group)` directory names are stripped from slugs.
 - `*.cn.mdx` translated docs live beside English docs.
 - `docsConfig.sidebarNav` is the real nav source.
-- Contentlayer fields include `component`, `description`, `docs`, `featured`, `links`, `published`, `title`, `toc`.
+- `source.config.ts` extends Fumadocs frontmatter for `component`, `docs`, `featured`, `links`, `published`, and `toc`.
+- `apps/www/src/lib/source.ts` exposes Fumadocs i18n with English and Chinese languages.
 
-Decision: migrate Plate content into upstream Fumadocs layout. The target should be `content/docs/**` with Fumadocs metadata, not a restored Contentlayer layer.
+Decision: the source engine has migrated, but the content layout has not restarted from upstream. The target should still be `content/docs/**` or an equally explicit Fumadocs layout with committed `meta.json` navigation, not root content plus permanent TS nav authority.
 
 Keep from Plate:
 
@@ -213,9 +238,9 @@ Keep from Plate:
 
 Throw from Plate:
 
-- `contentlayer.config.js` as the long-term docs engine.
+- Root-content routing as an implicit permanent compatibility layer.
 - The manual `docsConfig` nav as the only page-tree source.
-- Generated Contentlayer hooks in `src/components/mdx-components.tsx`.
+- Any lingering docs metadata fallback that duplicates Fumadocs page data without a transition check.
 
 ## MDX And API Docs
 
@@ -223,12 +248,12 @@ Throw from Plate:
 
 Files:
 
-- `../shadcn/apps/v4/mdx-components.tsx`
-- `../shadcn/apps/v4/components/component-preview.tsx`
-- `../shadcn/apps/v4/components/component-source.tsx`
-- `../shadcn/apps/v4/components/components-list.tsx`
-- `../shadcn/apps/v4/components/code-tabs.tsx`
-- `../shadcn/apps/v4/components/code-block-command.tsx`
+- `../ui/apps/v4/mdx-components.tsx`
+- `../ui/apps/v4/components/component-preview.tsx`
+- `../ui/apps/v4/components/component-source.tsx`
+- `../ui/apps/v4/components/components-list.tsx`
+- `../ui/apps/v4/components/code-tabs.tsx`
+- `../ui/apps/v4/components/code-block-command.tsx`
 
 Upstream MDX components are mostly shadcn docs primitives:
 
@@ -308,13 +333,13 @@ Keep:
 
 Files:
 
-- `../shadcn/apps/v4/app/(app)/docs/[[...slug]]/page.tsx`
-- `../shadcn/apps/v4/app/(app)/docs/layout.tsx`
-- `../shadcn/apps/v4/components/docs-sidebar.tsx`
-- `../shadcn/apps/v4/components/docs-toc.tsx`
-- `../shadcn/apps/v4/components/docs-copy-page.tsx`
-- `../shadcn/apps/v4/components/docs-base-switcher.tsx`
-- `../shadcn/apps/v4/components/open-in-v0-cta.tsx`
+- `../ui/apps/v4/app/(app)/docs/[[...slug]]/page.tsx`
+- `../ui/apps/v4/app/(app)/docs/layout.tsx`
+- `../ui/apps/v4/components/docs-sidebar.tsx`
+- `../ui/apps/v4/components/docs-toc.tsx`
+- `../ui/apps/v4/components/docs-copy-page.tsx`
+- `../ui/apps/v4/components/docs-base-switcher.tsx`
+- `../ui/apps/v4/components/open-in-v0-cta.tsx`
 
 Upstream page behavior:
 
@@ -342,21 +367,21 @@ Files:
 Plate page behavior:
 
 - Static docs with `dynamic = 'force-static'`.
-- Looks up Contentlayer docs by slug.
+- Looks up Fumadocs pages with `source.getPage(params.slug, "en")`.
 - Falls back to registry-derived docs for `/docs/components/[name]` and `/docs/examples/[name]`.
-- Generates static params from both docs and registry items.
+- Generates static params from both `source.getPages("en")` and registry items.
 - Builds related docs from registry file/dependency data.
 - Renders `ComponentInstallation` for component docs.
 - Renders `ComponentPreview` for example docs.
 - Adds `LLMCopyButton`, `ViewOptions`, `OpenInPlus`, related docs badges, previous/next buttons, and custom TOC.
 
-Decision: keep the registry-derived docs behavior, but rewrite it against Fumadocs source/page tree. The current `doc-content.tsx` has valuable Plate UX, but it should not remain Contentlayer-shaped.
+Decision: keep the registry-derived docs behavior. The first Fumadocs route cutover is already in place, but `doc-content.tsx`, related docs, pager/nav metadata, and LLM UI still need to be judged against upstream's Fumadocs page model instead of carried forward by inertia.
 
 Keep:
 
 - Registry fallback pages for Plate UI components and examples.
 - Related docs inference from registry dependencies and `file.meta.docs`.
-- `LLMCopyButton` and `ViewOptions` if LLM-oriented docs workflows still matter.
+- Plate-specific LLM context only if upstream's copy-page and `.md` route model leaves a real gap.
 - `OpenInPlus` if Plate Plus is still part of docs conversion.
 
 Throw or rewrite:
@@ -371,13 +396,13 @@ Throw or rewrite:
 
 Files:
 
-- `../shadcn/apps/v4/scripts/build-registry.mts`
-- `../shadcn/apps/v4/registry/bases/base/registry.ts`
-- `../shadcn/apps/v4/registry/bases/radix/registry.ts`
-- `../shadcn/apps/v4/registry/new-york-v4/**`
-- `../shadcn/apps/v4/registry/styles/style-*.css`
-- `../shadcn/apps/v4/public/r/**`
-- `../shadcn/apps/v4/registry/config.test.ts`
+- `../ui/apps/v4/scripts/build-registry.mts`
+- `../ui/apps/v4/registry/bases/base/registry.ts`
+- `../ui/apps/v4/registry/bases/radix/registry.ts`
+- `../ui/apps/v4/registry/new-york-v4/**`
+- `../ui/apps/v4/registry/styles/style-*.css`
+- `../ui/apps/v4/public/r/**`
+- `../ui/apps/v4/registry/config.test.ts`
 
 Upstream v4 registry pipeline:
 
@@ -450,10 +475,10 @@ Throw:
 
 Files:
 
-- `../shadcn/apps/v4/components/block-viewer.tsx`
-- `../shadcn/apps/v4/components/component-preview.tsx`
-- `../shadcn/apps/v4/components/component-source.tsx`
-- `../shadcn/apps/v4/app/(view)/view/[style]/[name]/page.tsx`
+- `../ui/apps/v4/components/block-viewer.tsx`
+- `../ui/apps/v4/components/component-preview.tsx`
+- `../ui/apps/v4/components/component-source.tsx`
+- `../ui/apps/v4/app/(view)/view/[style]/[name]/page.tsx`
 
 Upstream `BlockViewer`:
 
@@ -509,10 +534,10 @@ Throw:
 
 Files:
 
-- `../shadcn/apps/v4/app/api/search/route.ts`
-- `../shadcn/apps/v4/components/command-menu.tsx`
-- `../shadcn/apps/v4/lib/page-tree.ts`
-- `../shadcn/apps/v4/lib/source.ts`
+- `../ui/apps/v4/app/api/search/route.ts`
+- `../ui/apps/v4/components/command-menu.tsx`
+- `../ui/apps/v4/lib/page-tree.ts`
+- `../ui/apps/v4/lib/source.ts`
 
 Upstream search:
 
@@ -556,13 +581,13 @@ Throw:
 
 Files:
 
-- `../shadcn/apps/v4/app/globals.css`
-- `../shadcn/apps/v4/app/legacy-themes.css`
-- `../shadcn/apps/v4/components/active-theme.tsx`
-- `../shadcn/apps/v4/components/theme-customizer.tsx`
-- `../shadcn/apps/v4/lib/themes.ts`
-- `../shadcn/apps/v4/registry/styles/style-*.css`
-- `../shadcn/apps/v4/registry/themes.ts`
+- `../ui/apps/v4/app/globals.css`
+- `../ui/apps/v4/app/legacy-themes.css`
+- `../ui/apps/v4/components/active-theme.tsx`
+- `../ui/apps/v4/components/theme-customizer.tsx`
+- `../ui/apps/v4/lib/themes.ts`
+- `../ui/apps/v4/registry/styles/style-*.css`
+- `../ui/apps/v4/registry/themes.ts`
 
 Upstream has a current shadcn v4 theme/style system:
 
@@ -615,9 +640,9 @@ Adopt:
 
 Files:
 
-- `../shadcn/apps/v4/app/layout.tsx`
-- `../shadcn/apps/v4/components/theme-provider.tsx`
-- `../shadcn/apps/v4/components/active-theme.tsx`
+- `../ui/apps/v4/app/layout.tsx`
+- `../ui/apps/v4/components/theme-provider.tsx`
+- `../ui/apps/v4/components/active-theme.tsx`
 
 Upstream providers:
 
@@ -674,7 +699,7 @@ Known trap:
 
 ### Upstream
 
-File: `../shadcn/apps/v4/next.config.mjs`
+File: `../ui/apps/v4/next.config.mjs`
 
 Upstream config:
 
@@ -732,11 +757,11 @@ Files:
 
 - `apps/www/tsconfig.json`
 - `apps/www/tsconfig.package-integration.json`
-- `../shadcn/apps/v4/tsconfig.json`
+- `../ui/apps/v4/tsconfig.json`
 - `apps/www/src/__tests__/package-integration/**`
 - `apps/www/src/registry/**/*.spec.ts*`
-- `../shadcn/apps/v4/app/(create)/**.test.ts`
-- `../shadcn/apps/v4/registry/config.test.ts`
+- `../ui/apps/v4/app/(create)/**.test.ts`
+- `../ui/apps/v4/registry/config.test.ts`
 
 Upstream TS config is simple and app-local:
 
@@ -806,11 +831,11 @@ Throw:
 
 Files:
 
-- `../shadcn/apps/v4/app/(app)/(root)/page.tsx`
-- `../shadcn/apps/v4/components/site-header.tsx`
-- `../shadcn/apps/v4/lib/config.ts`
-- `../shadcn/apps/v4/components/main-nav.tsx`
-- `../shadcn/apps/v4/components/mobile-nav.tsx`
+- `../ui/apps/v4/app/(app)/(root)/page.tsx`
+- `../ui/apps/v4/components/site-header.tsx`
+- `../ui/apps/v4/lib/config.ts`
+- `../ui/apps/v4/components/main-nav.tsx`
+- `../ui/apps/v4/components/mobile-nav.tsx`
 
 Upstream header/nav:
 
@@ -862,9 +887,9 @@ Throw:
 
 Upstream files:
 
-- `../shadcn/apps/v4/app/(app)/llm/[[...slug]]/route.ts`
-- `../shadcn/apps/v4/components/docs-copy-page.tsx`
-- `../shadcn/apps/v4/lib/llm.ts`
+- `../ui/apps/v4/app/(app)/llm/[[...slug]]/route.ts`
+- `../ui/apps/v4/components/docs-copy-page.tsx`
+- `../ui/apps/v4/lib/llm.ts`
 
 Plate files:
 
@@ -872,14 +897,13 @@ Plate files:
 - `apps/www/src/components/view-options.tsx`
 - `apps/www/src/lib/llm-context.ts`
 
-Upstream serves `.md` routes through Fumadocs and `page.data.getText("raw")`. Plate exposes copy/view actions on docs pages but does not use the upstream route model.
+Upstream serves `.md` routes through Fumadocs and `page.data.getText("raw")`. Plate exposes copy/view actions on docs pages, but the restart should not preserve that duplicate UI by default.
 
-Decision: adopt upstream `.md` route and reapply Plate's LLM copy UX if it improves agent/docs workflows.
+Decision: adopt upstream `.md` route and copy-page model. Reapply Plate-specific LLM context only if the upstream route cannot cover a real Plate agent/docs workflow.
 
 Keep:
 
-- Plate copy/view buttons if actively used.
-- Plate LLM context helpers if they add Plate-specific context.
+- Plate LLM context helpers only if they add context upstream cannot derive from Fumadocs raw text.
 
 Adopt:
 
@@ -897,10 +921,10 @@ Plate files:
 
 Upstream files:
 
-- `../shadcn/apps/v4/public/r/**`
-- `../shadcn/apps/v4/registry/__index__.tsx`
-- `../shadcn/apps/v4/registry/bases/__index__.tsx`
-- `../shadcn/apps/v4/examples/__index__.tsx`
+- `../ui/apps/v4/public/r/**`
+- `../ui/apps/v4/registry/__index__.tsx`
+- `../ui/apps/v4/registry/bases/__index__.tsx`
+- `../ui/apps/v4/examples/__index__.tsx`
 
 Decision: generated artifacts should come from the new source pipeline. Do not hand-edit them. For the restart, preserve source and scripts, not old generated output.
 
@@ -935,33 +959,33 @@ Read these before phase two implementation:
 
 | Item | Files | Verdict | Phase Two Action |
 | --- | --- | --- | --- |
-| Fumadocs engine | `../shadcn/apps/v4/source.config.ts`, `../shadcn/apps/v4/lib/source.ts` | Adopt | Make this the new docs source. |
-| Contentlayer engine | `apps/www/contentlayer.config.js`, `next-contentlayer2` usage | Throw | Migrate content and MDX components to Fumadocs. |
-| Plate docs content | `content/**` | Keep | Move into Fumadocs `content/docs/**`, preserving slugs intentionally. |
-| Fumadocs meta | `../shadcn/apps/v4/content/docs/**/meta.json` | Adopt | Replace manual nav config as page-tree authority. |
-| Manual docs nav | `apps/www/src/config/docs*.ts` | Rewrite | Use as migration input, not runtime authority. |
+| Fumadocs engine | `../ui/apps/v4/source.config.ts`, `../ui/apps/v4/lib/source.ts` | Adopted | Already wired in `apps/www/source.config.ts` and `apps/www/src/lib/source.ts`; preserve it. |
+| Contentlayer engine | former `apps/www/contentlayer.config.js`, `next-contentlayer2` usage | Thrown | Already removed; do not recreate compatibility layers around it. |
+| Plate docs content | `content/**` | Keep | Currently loaded by Fumadocs from root; still decide whether to move into `content/docs/**` or keep root with explicit metadata. |
+| Fumadocs meta | `../ui/apps/v4/content/docs/**/meta.json` | Adopt | Still missing in Plate; generate or hand-author `meta.json` and replace manual nav config as page-tree authority. |
+| Manual docs nav | `apps/www/src/config/docs*.ts` | Rewrite | Still runtime input for sidebar, pager, command menu, and docs registry export; use as migration data, not final authority. |
 | Plate API MDX components | `apps/www/src/components/api-list.tsx`, `apps/www/src/registry/blocks/fumadocs/*` | Keep | Port into Fumadocs MDX layer. |
-| Plate MDX Contentlayer wrapper | `apps/www/src/components/mdx-components.tsx` | Rewrite | Keep component mapping, drop `useMDXComponent`. |
-| Registry-derived docs pages | `apps/www/src/app/(app)/docs/[[...slug]]/page.tsx` | Keep concept | Rebuild fallback logic against Fumadocs. |
-| Plate `DocContent` UX | `apps/www/src/app/(app)/docs/[[...slug]]/doc-content.tsx` | Keep selectively | Port related docs, LLM buttons, Plus CTA if still wanted. |
+| Plate MDX Contentlayer wrapper | `apps/www/src/components/mdx-components.tsx` | Rewritten partly | `useMDXComponent` is gone; keep auditing component boundaries against Fumadocs/server rendering. |
+| Registry-derived docs pages | `apps/www/src/app/(app)/docs/[[...slug]]/page.tsx` | Kept partly | Fumadocs fallback is wired; next pass should simplify metadata fallbacks and align with upstream static highlighted-source flow. |
+| Plate `DocContent` UX | `apps/www/src/app/(app)/docs/[[...slug]]/doc-content.tsx` | Keep selectively | Port related docs, Plus CTA, and any retained copy UX onto upstream page/tree assumptions. |
 | Plate `DocsNav` | `apps/www/src/components/docs-nav.tsx` | Keep UX, rewrite code | Keep accordion/grouped sidebar behavior for Plate's large docs tree, but rebuild it on Fumadocs page data and upstream sidebar primitives. |
 | Plate command menu | `apps/www/src/components/command-menu.tsx` | Throw/rewrite | Replace with upstream Fumadocs search plus Plate groups. |
 | Invisible command suffix hack | `apps/www/src/components/command-menu.tsx` | Throw | Do not port. |
-| Upstream search route | `../shadcn/apps/v4/app/api/search/route.ts` | Adopt | Use Fumadocs search API. |
+| Upstream search route | `../ui/apps/v4/app/api/search/route.ts` | Adopt | Use Fumadocs search API. |
 | Plate registry content | `apps/www/src/registry/**` | Keep | Upgrade to shadcn v4 contract. |
 | Plate registry build | `apps/www/scripts/build-registry.mts` | Rewrite | Keep Plate content rules, adopt upstream v4 registry model. |
 | Plate docs registry build | `apps/www/scripts/build-docs-registry.mts` | Keep concept | Generate Fumadocs-ready docs registry. |
-| Upstream registry v4 pipeline | `../shadcn/apps/v4/scripts/build-registry.mts` | Adopt patterns | Use schema/resolver/base/style behavior as source of truth. |
+| Upstream registry v4 pipeline | `../ui/apps/v4/scripts/build-registry.mts` | Adopt patterns | Use schema/resolver/base/style behavior as source of truth. |
 | `/api/registry/[name]` | `apps/www/src/app/api/registry/[name]/route.ts` | Maybe throw | Keep only if static docs cannot carry highlighted source. |
 | Plate component install UI | `apps/www/src/components/component-installation.tsx` | Keep | Reapply for Plate registry items. |
 | Plate previews | `apps/www/src/components/component-preview.tsx`, `block-viewer.tsx` | Keep selectively | Combine with upstream `/view` model. |
-| Upstream `/view` route | `../shadcn/apps/v4/app/(view)/view/[style]/[name]/page.tsx` | Adopt if style previews stay | Prefer over Plate-only block preview route. |
+| Upstream `/view` route | `../ui/apps/v4/app/(view)/view/[style]/[name]/page.tsx` | Adopt if style previews stay | Prefer over Plate-only block preview route. |
 | Plate editor demos | `apps/www/src/registry/examples/**`, `apps/www/src/app/(app)/editors/**` | Keep | These are Plate docs product surface. |
 | Plate theme library | `apps/www/src/lib/themes.ts`, `apps/www/src/app/themes.css` | Throw | Use upstream shadcn theme/style system. |
 | Plate customizer drawer | `apps/www/src/components/customizer-drawer.tsx`, theme selectors | Throw | Dead weight for restart. |
-| Upstream create/customizer | `../shadcn/apps/v4/app/(app)/create/**` | Adopt if wanted | Use for preset/style generation, not Plate old theme UI. |
+| Upstream create/customizer | `../ui/apps/v4/app/(app)/create/**` | Adopt if wanted | Use for preset/style generation, not Plate old theme UI. |
 | Plate providers | `apps/www/src/components/context/providers.tsx` | Keep selectively | Add DnD/Jotai only for retained editor surfaces. |
-| Upstream providers | `../shadcn/apps/v4/app/layout.tsx`, `components/theme-provider.tsx`, `active-theme.tsx` | Adopt | Use as base shell. |
+| Upstream providers | `../ui/apps/v4/app/layout.tsx`, `components/theme-provider.tsx`, `active-theme.tsx` | Adopt | Use as base shell. |
 | Workspace aliases | `apps/www/next.config.ts`, `apps/www/tsconfig.json` | Keep | Required for local package dev/typecheck sanity. |
 | Split typecheck | `apps/www/tsconfig.package-integration.json` | Keep | Required if app remains package harness. |
 | CN docs | `content/**/*.cn.mdx`, `src/app/cn/**` | Keep | Keep Chinese docs; rewrite routing with Fumadocs/i18n instead of duplicating the old route logic. |
@@ -977,12 +1001,12 @@ This is the recommended default for confirmation. "Discard upstream" means do no
 | Area | Keep From Upstream Shadcn | Discard From Upstream Shadcn | Keep From Custom Plate | Discard From Custom Plate | Suggested Default |
 | --- | --- | --- | --- | --- | --- |
 | Base app foundation | `apps/v4` app-router structure, Fumadocs-first docs shell, modern shadcn v4 app patterns | Upstream brand/product copy | Plate brand, `siteConfig`, Plate nav labels | Current app shell if it fights Fumadocs | Start from upstream, rebrand to Plate |
-| Docs engine | `fumadocs-mdx`, `fumadocs-ui`, `source.config.ts`, `lib/source.ts`, `createMDX` Next wrapper | None | Plate docs content and custom MDX vocabulary | Contentlayer runtime and `next-contentlayer2` | Adopt upstream engine, kill Contentlayer |
-| Content source | Fumadocs `content/docs/**` layout and `meta.json` navigation model | Upstream shadcn docs content as public Plate docs | Root `content/**` Plate docs, API docs, examples, guides, plugins, install docs | Content path grouping only if it blocks Fumadocs | Migrate Plate content into Fumadocs |
+| Docs engine | `fumadocs-mdx`, `fumadocs-ui`, `source.config.ts`, `lib/source.ts`, `createMDX` Next wrapper | None | Plate docs content and custom MDX vocabulary | Contentlayer runtime and `next-contentlayer2` | Engine is adopted; keep it hard-cut from Contentlayer |
+| Content source | Fumadocs `content/docs/**` layout and `meta.json` navigation model | Upstream shadcn docs content as public Plate docs | Root `content/**` Plate docs, API docs, examples, guides, plugins, install docs | Content path grouping only if it blocks Fumadocs | Add explicit Fumadocs metadata; move content only if root layout blocks page-tree authority |
 | Public docs navigation | Fumadocs page tree, upstream `DocsSidebar` primitives, mobile nav model | Upstream nav items for Components, Blocks, Charts, Directory, Create unless Plate wants those pages | Plate nav categories: Docs, Editors, API, Plugins, Examples, Installation | Manual nav as runtime authority | Use Fumadocs tree, generate/port Plate nav structure |
 | Sidebar accordion/filter | Upstream shadcn sidebar primitives and Fumadocs page-tree data | Upstream always-expanded flat docs sidebar as the final Plate UX | Plate accordion sections, active-section compression, filter input, labels, CN labels | Current `DocsNav` implementation: manual `docsConfig` authority, timeout scroll, direct DOM query, route-prefix hacks | Keep the Plate accordion UX, rewrite it cleanly |
 | Search | Fumadocs `app/api/search/route.ts`, `useDocsSearch`, upstream command-menu architecture | Upstream color/block/create/v0 search groups | Plate API, plugins, examples, editors, MCP groups | Invisible Unicode suffix hack and client-only nav search | Adopt upstream search, inject Plate groups |
-| Docs page rendering | Static Fumadocs page loading, TOC, neighbours, upstream copy-page pattern | `OpenInV0Cta` | Plate `DocContent` ideas: related docs and Plus CTA | Contentlayer-shaped page plumbing, Plate extra LLM copy/view UI | Rewrite Plate UX around Fumadocs page data |
+| Docs page rendering | Static Fumadocs page loading, TOC, neighbours, upstream copy-page pattern | `OpenInV0Cta` | Plate `DocContent` ideas: related docs and Plus CTA | Metadata fallbacks that duplicate Fumadocs, Plate extra LLM copy/view UI | Continue rewriting Plate UX around Fumadocs page data |
 | API MDX docs | Fumadocs MDX compile/runtime path | None | `API*`, `APISubList*`, `KeyTable`, `PackageInfo`, current API docs content | Old `useMDXComponent` wrapper | Keep strongly |
 | Fumadocs API bridge | Upstream default MDX components and Fumadocs UI primitives | None | `src/registry/blocks/fumadocs/fumadocs-mdx-components.tsx`, `mdx-plate-components.tsx` | Placeholder behavior that hides needed docs UI | Use this as the port starting point |
 | Component docs generated from registry | Upstream component-source/preview patterns | Upstream shadcn component docs content | Plate `ComponentInstallation`, registry-derived `/docs/components/[name]` | Contentlayer fallback shape | Keep concept, rewrite implementation |
@@ -1025,18 +1049,19 @@ This is the recommended default for confirmation. "Discard upstream" means do no
 
 ## Recommended Phase Two Order
 
-1. Create new docs app base from `../shadcn/apps/v4`.
-2. Bring over Plate `siteConfig`, logo, product nav labels, and minimal providers.
-3. Move Plate content into Fumadocs `content/docs/**`.
-4. Create Fumadocs metadata from `docsConfig` and current content grouping.
-5. Port Plate API MDX components using `apps/www/src/registry/blocks/fumadocs/*` as the starting point.
-6. Port registry-derived docs pages for components/examples.
-7. Port Plate registry content and rewrite build scripts against upstream shadcn v4 registry behavior.
-8. Reapply editor demos and preview/source display.
-9. Reapply confirmed product surfaces: CN docs, Plate Plus/Pro hooks, MCP docs/dialog, GA-only analytics, centered Plate homepage, Slate-to-HTML special route, and non-v0 `@plate` init/bootstrap if useful.
-10. Reintroduce package integration tests and workspace alias/typecheck model.
-11. Regenerate public registry output.
-12. Run build/typecheck/lint/browser verification.
+1. Treat the Fumadocs source cutover as complete; do not redo the Contentlayer removal.
+2. Create Fumadocs metadata from `docsConfig` and current content grouping, then move sidebar/pager toward `source.pageTree`.
+3. Replace command-menu search with upstream Fumadocs search plus Plate groups.
+4. Start the app-shell restart from `../ui/apps/v4`, bringing over Plate `siteConfig`, logo, product nav labels, and minimal providers.
+5. Confirm whether root `content/**` remains acceptable. Move Plate content into `content/docs/**` only if that is needed for clean Fumadocs metadata and page-tree authority.
+6. Continue porting Plate API MDX components using `apps/www/src/registry/blocks/fumadocs/*` as the starting point.
+7. Keep and simplify registry-derived docs pages for components/examples around Fumadocs page data.
+8. Port Plate registry content and rewrite build scripts against upstream shadcn v4 registry behavior.
+9. Reapply editor demos and preview/source display.
+10. Reapply confirmed product surfaces: CN docs, Plate Plus/Pro hooks, MCP docs/dialog, GA-only analytics, centered Plate homepage, Slate-to-HTML special route, and non-v0 `@plate` init/bootstrap if useful.
+11. Preserve package integration tests and workspace alias/typecheck model.
+12. Regenerate public registry output.
+13. Run build/typecheck/lint/browser verification.
 
 ## Confirmed Product Decisions
 
@@ -1084,4 +1109,14 @@ Completed evidence pass:
 - Compared TypeScript configs and test inventories.
 - Checked prior `docs/solutions` traps relevant to `apps/www`.
 
-No runtime verification was needed because this task produced a research artifact only. No source app behavior was changed.
+2026-05-24 refresh evidence:
+
+- Confirmed `../ui/apps/v4` exists and `../shadcn/apps/v4` does not in this workspace.
+- Confirmed upstream still has 206 app files, 227 docs content/meta files, and 1127 registry files.
+- Confirmed Plate currently has 51 app files, 251 MDX content files, 124 Chinese MDX files, 0 committed `meta.json` files, and 381 registry source files.
+- Confirmed `apps/www/package.json` uses `build:source`, `postinstall: fumadocs-mdx`, and `typecheck` runs `scripts/check-docs-source-parity.mts`.
+- Confirmed `apps/www/source.config.ts`, `apps/www/src/lib/source.ts`, and `apps/www/next.config.ts` are the active Fumadocs source path.
+- Confirmed `apps/www/src/app/(app)/docs/[[...slug]]/page.tsx` uses `source.getPage`, `source.getPages`, `doc.data.body`, and `doc.data.getText("raw")`.
+- Confirmed `docs-nav`, `pager`, `site-header`, and `command-menu` still import `docsConfig`.
+
+No runtime verification was needed because this refresh only updated the research artifact. No source app behavior was changed.

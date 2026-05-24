@@ -1,9 +1,7 @@
-'use client';
-
 import { Suspense } from 'react';
 
 import { DocsNav } from '@/components/docs-nav';
-import { docsConfig } from '@/config/docs';
+import { getSidebarNavFromPageTree } from '@/lib/docs-page-tree';
 import { cn } from '@/lib/utils';
 
 // SYNC
@@ -13,6 +11,8 @@ type DocsLayoutProps = {
 };
 
 export default function DocsLayout({ children }: DocsLayoutProps) {
+  const sidebarNav = getSidebarNavFromPageTree();
+
   return (
     <div className="container-wrapper flex flex-1 flex-col px-2">
       <div
@@ -24,7 +24,7 @@ export default function DocsLayout({ children }: DocsLayoutProps) {
         <aside className="fixed top-14 z-30 hidden h-[calc(100vh-3.5rem)] w-full shrink-0 md:sticky md:block">
           <div className="scrollbar-hide h-full overflow-auto">
             <Suspense fallback={null}>
-              <DocsNav config={docsConfig} />
+              <DocsNav sidebarNav={sidebarNav} />
             </Suspense>
           </div>
         </aside>

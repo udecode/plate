@@ -12,7 +12,6 @@ import Link from 'next/link';
 import { DocsTableOfContents } from '@/components/docs-toc';
 import { LLMCopyButton } from '@/components/llm-copy-button';
 import { OpenInPlus } from '@/components/open-in-plus';
-import { getPagerForDoc } from '@/components/pager';
 import { badgeVariants } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ViewOptions } from '@/components/view-options';
@@ -65,12 +64,17 @@ export function DocContent({
   category,
   children,
   doc,
+  neighbours = { next: null, previous: null },
   toc,
   ...file
 }: {
   category: 'api' | 'component' | 'example' | 'guide' | 'plugin';
   children: React.ReactNode;
   doc: DocContentDoc;
+  neighbours?: {
+    next: { href?: string; title?: string; titleCn?: string } | null;
+    previous: { href?: string; title?: string; titleCn?: string } | null;
+  };
   toc?: TocItem[];
 } & Partial<RegistryItem>) {
   const title = doc?.title ?? getRegistryTitle(file);
@@ -81,9 +85,6 @@ export function DocContent({
   );
 
   const _items = useDedupeNavItems(categoryNavGroups[category]);
-
-  // v3
-  const neighbours = getPagerForDoc(doc as any);
 
   return (
     <div className="relative flex items-stretch lg:w-full" data-slot="docs">

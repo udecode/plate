@@ -23,8 +23,8 @@ Plate's `apps/www` started as a shadcn docs fork, but upstream shadcn and Plate 
 
 ## Symptoms
 
-- Upstream docs in `../shadcn/apps/v4` use Fumadocs, shadcn v4 registry scripts, and a much larger current app surface.
-- Plate docs in `apps/www` still use Contentlayer, custom registry docs generation, Plate API MDX components, editor demos, CN routes, and custom themes.
+- Upstream docs in `../ui/apps/v4` use Fumadocs, shadcn v4 registry scripts, and a much larger current app surface.
+- Plate docs in `apps/www` use Fumadocs for source loading, but still carry custom registry docs generation, `docsConfig` navigation/search, Plate API MDX components, editor demos, CN routes, and custom themes.
 - There is no safe file-level merge path: content paths, route trees, registry layout, and search/nav models all diverged.
 
 ## What Didn't Work
@@ -38,14 +38,14 @@ Plate's `apps/www` started as a shadcn docs fork, but upstream shadcn and Plate 
 Write a comprehensive comparison before implementation:
 
 - Full artifact: `docs/plans/2026-05-23-shadcn-docs-restart-comparison.md`
-- Upstream source: `../shadcn/apps/v4`
+- Upstream source: `../ui/apps/v4`
 - Plate source: `apps/www`
 
 The decision from that comparison:
 
-- Adopt upstream Fumadocs, search, app shell, and shadcn v4 registry behavior.
+- Preserve the already-landed Fumadocs source cutover, then adopt upstream search, app shell, and shadcn v4 registry behavior.
 - Keep Plate docs content, API MDX vocabulary, registry content, editor demos, package integration tests, and workspace alias/typecheck model.
-- Throw Contentlayer as the long-term docs engine, Plate custom themes/customizer, client-only nav search hacks, and stale CSS marked for sync removal.
+- Keep Contentlayer out, and throw Plate custom themes/customizer, client-only nav search hacks, and stale CSS marked for sync removal.
 - Keep CN docs, MCP UI, Plate Plus hooks, GA, a centered Plate homepage, and the Slate-to-HTML special page; use upstream shadcn's LLM/copy-page model instead of Plate's extra LLM UI.
 
 ## Why This Works
