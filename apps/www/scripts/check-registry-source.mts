@@ -53,6 +53,13 @@ assert(
   editorBasic?.registryDependencies?.includes('@plate/plate-ui'),
   'Expected editor-basic to depend on @plate/plate-ui after normalization'
 );
+
+const excalidrawNode = itemsByName.get('excalidraw-node');
+assert(
+  excalidrawNode?.meta?.examples?.includes('excalidraw-demo'),
+  'Expected excalidraw-node to expose its existing registry demo'
+);
+
 assert(
   normalizedRegistry.items.every((item) =>
     item.registryDependencies

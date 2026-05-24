@@ -1228,8 +1228,7 @@ export const uiNodes: Registry['items'] = [
     files: [{ path: 'ui/excalidraw-node.tsx', type: 'registry:ui' }],
     meta: {
       docs: [{ route: '/docs/excalidraw' }],
-      // FIXME
-      // examples: ['excalidraw-demo'],
+      examples: ['excalidraw-demo'],
     },
     name: 'excalidraw-node',
     registryDependencies: [],

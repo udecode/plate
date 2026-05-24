@@ -6,7 +6,7 @@ Continue the docs restart from `docs/plans/2026-05-23-shadcn-docs-restart-compar
 
 ## Current Slice
 
-Status: thirty-fifth slice complete
+Status: thirty-sixth slice complete
 
 1. Make Fumadocs metadata/pageTree the docs navigation authority.
 2. Move sidebar and pager reads off direct `docsConfig` runtime access.
@@ -43,6 +43,7 @@ Status: thirty-fifth slice complete
 33. Remove Contentlayer residue from repo tooling, agent docs, lint ignores, and the Bun lockfile so the Fumadocs cutover is reflected outside `apps/www` runtime source too.
 34. Update docs-authoring agent rules to point at the committed `content/docs/**` source root so future docs work does not reintroduce old root-content paths.
 35. Delete the unreferenced local registry test harness that still installed registry items through raw `http://localhost:3000/rd/*` URLs.
+36. Remove two remaining active-source TODO/FIXME residues by wiring Excalidraw component metadata to its existing demo and making the media preview download control functional.
 
 ## Findings
 
@@ -102,6 +103,8 @@ Status: thirty-fifth slice complete
 - `apps/www` package metadata and `pnpm-lock.yaml` no longer referenced Contentlayer, but root `bun.lock`, vendor update exclusions, reinstall cleanup targets, generated agent instructions, and lint ignores still carried `contentlayer2`, `next-contentlayer2`, or `.contentlayer`. A hard Fumadocs cutover should not keep those maintenance hooks alive.
 - `docs-creator` is a real authoring source of truth, not harmless prose. Its baseline docs list still pointed at old root `content/**` paths after the content-root migration, so future docs work could follow stale instructions even though active runtime source was clean.
 - `apps/www/src/test-registry.mts` was not referenced by any package script or caller, but it still encoded the old workflow of installing registry items by raw localhost `/rd` URLs. Keeping a dead harness around is worse than no harness: it teaches the wrong shadcn install contract.
+- `excalidraw-node` already had a real `excalidraw-demo` registry example and docs pages, but the component registry metadata still carried a commented `FIXME` instead of listing the demo.
+- `MediaPreviewDialog` rendered a download icon button with no handler. A visible no-op toolbar control is worse than omission; it should either work or disappear.
 
 ## Verification Plan
 
@@ -232,3 +235,6 @@ Status: thirty-fifth slice complete
 - 2026-05-24: Verification passed for the docs-authoring source-root cleanup slice: `pnpm install`, active-source residue search, `pnpm lint:fix`, and PR gate `pnpm check` passed.
 - 2026-05-24: Started the stale local registry smoke cleanup slice: deleted unreferenced `apps/www/src/test-registry.mts` and its unused `apps/www/scripts/test-registry-config.json` config because the script still installed items through raw localhost `/rd` URLs instead of the configured `@plate` namespace.
 - 2026-05-24: Verification passed for the stale local registry smoke cleanup slice: reference search now finds only the migration plan notes, old raw localhost registry install residue is limited to intentional local dev config and backwards-compatibility tests, `pnpm --filter www typecheck` passed, and `pnpm lint:fix` passed.
+- 2026-05-24: Started the active TODO/FIXME residue cleanup slice: `excalidraw-node` now advertises its existing `excalidraw-demo`, and `MediaPreviewDialog` now downloads the current preview image instead of showing a no-op download button.
+- 2026-05-24: Verification passed for the active TODO/FIXME residue cleanup slice: registry source check now asserts `excalidraw-node` exposes `excalidraw-demo`; active-source residue search no longer finds the Excalidraw `FIXME` or media-preview download `TODO`; `pnpm --filter www typecheck` passed; `pnpm lint:fix` passed with no fixes applied.
+- 2026-05-24: First PR gate attempt failed on React Compiler `preserve-manual-memoization` after the download handler used an unnecessary `useCallback`; removing the manual memo fixed the lint issue. Final verification passed with `pnpm --filter www typecheck` and full PR gate `pnpm lint:fix && pnpm check`.
