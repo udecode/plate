@@ -6,7 +6,7 @@ Continue the docs restart from `docs/plans/2026-05-23-shadcn-docs-restart-compar
 
 ## Current Slice
 
-Status: eighth slice complete
+Status: ninth slice complete
 
 1. Make Fumadocs metadata/pageTree the docs navigation authority.
 2. Move sidebar and pager reads off direct `docsConfig` runtime access.
@@ -19,6 +19,7 @@ Status: eighth slice complete
 9. Upgrade the docs app to the upstream shadcn v4 package and validate Plate registry source against the v4 schema contract.
 10. Move the shared app shell toward upstream's `data-slot="layout"` structure with layout-owned footer behavior and centered page headers.
 11. Move root runtime providers and global CSS closer to upstream's provider stack, while keeping Plate's required DnD/Jotai/editor runtime.
+12. Align header, mobile nav, and command-menu fallback links with upstream's Fumadocs-aware header behavior while preserving Plate product links.
 
 ## Findings
 
@@ -40,6 +41,10 @@ Status: eighth slice complete
 - Plate's English and CN home pages previously owned their own footers and action-row layout, which kept the old fork shell alive even after the theme/customizer removal.
 - Upstream's root app uses `group/body`, a top-level tooltip provider, and a `d` theme shortcut in the theme provider. Plate still needs Jotai and DnD for retained editor surfaces, so the provider restart should add upstream behavior around those retained providers rather than deleting them.
 - `apps/www/src/app/globals.css` still carried old sync markers for custom scrollbar, prose, and duplicate MDX pretty-code styles. The current shadcn-style pretty-code rules already target the active generated attributes, so the marked fallback CSS can be removed after browser-checking code blocks.
+- Upstream keeps mobile nav visible until the `lg` breakpoint and lets the header pass Fumadocs page-tree data into mobile/search surfaces. Plate still needs its own product links, but those links should use the same locale href handling as docs page-tree links.
+- Plate's mobile nav rendered the Fumadocs-derived tree but did not localize visible titles or hrefs at click time. On `/cn`, the mobile menu could point users back to English routes.
+- Plate's command-menu fallback link groups also used raw titles and hrefs. Fumadocs search owns indexed docs results, but fallback nav groups still need locale-safe labels and links.
+- `hrefWithLocale` must be safe for `/`, existing `/cn` links, hash links, and absolute external URLs. Prefixing every href blindly is how external links and CN homepage links get subtly broken.
 
 ## Verification Plan
 
@@ -49,6 +54,7 @@ Status: eighth slice complete
 - If a browser-visible sidebar/search change is left in a runnable state this turn, verify via Browser Use before claiming full UI completion.
 - If a browser-visible app-shell/homepage change is left in a runnable state this turn, verify `/` and `/cn` render without the discarded theme/customizer surface.
 - If provider or global CSS changes affect the root shell, verify body/layout markers, footer visibility, theme shortcut behavior, and at least one docs page with code blocks.
+- If header or mobile navigation changes, verify English and CN mobile menus, external Plate Plus behavior, command-menu fallback routing, and desktop breakpoint visibility.
 
 ## Progress Log
 
@@ -83,3 +89,9 @@ Status: eighth slice complete
 - 2026-05-24: Updated the root app shell provider layer with upstream-style `group/body`, a top-level tooltip provider, and the upstream `d` theme shortcut while preserving Plate's Jotai and DnD providers.
 - 2026-05-24: Removed the old `globals.css` blocks explicitly marked `remove after sync` for custom scrollbar, custom prose, and duplicate MDX pretty-code fallback styling.
 - 2026-05-24: Verification passed for the provider/CSS slice: `pnpm install`, `pnpm --filter www build:source`, `pnpm --filter www typecheck`, `pnpm lint:fix`, and local Chrome smoke on `http://localhost:3100/`, `http://localhost:3100/docs`, `http://localhost:3100/docs/migration/slate-to-plate`, and `http://localhost:3100/cn/docs/migration/slate-to-plate`. The smoke confirmed `group/body`, one layout shell, home footer visible, docs footers hidden, `d` theme shortcut toggling, visible code blocks on English/CN docs pages, and empty browser error/warning logs.
+- 2026-05-24: Updated `hrefWithLocale` to avoid double-prefixing `/cn`, keep external/hash hrefs untouched, and map CN home to `/cn`.
+- 2026-05-24: Updated `SiteHeader`, `Logo`, and `MainNav` toward upstream's `lg` desktop breakpoint and removed the old commented header fork.
+- 2026-05-24: Updated `MobileNav` to localize top links, page-tree group titles, page-tree hrefs, and external Plate Plus behavior from the current locale.
+- 2026-05-24: Updated `CommandMenu` fallback links/groups to use localized titles and locale-safe hrefs while keeping Fumadocs search as the docs-search source.
+- 2026-05-24: Verification passed for the header/mobile-nav slice: `pnpm install`, `pnpm --filter www build:source`, `pnpm --filter www typecheck`, `pnpm lint:fix`, and local Chrome smoke on `http://localhost:3100/`, `http://localhost:3100/cn`, and `http://localhost:3100/docs`. The smoke confirmed English mobile links, CN mobile links, CN page-tree links, Plate Plus external target, CN command-menu routing to `/cn/docs`, one docs layout shell, hidden docs footer, desktop mobile-menu invisibility, and no meaningful browser logs after filtering the known dev-port manifest CORS noise.
+- 2026-05-24: Added `docs/solutions/developer-experience/2026-05-24-shadcn-header-nav-needs-locale-safe-client-links.md` through the ce-compound closeout.

@@ -28,44 +28,25 @@ export function SiteHeader() {
     })),
     {
       href: siteConfig.links.platePro,
+      external: true,
       title: 'Plate Plus',
       titleCn: 'Plate Plus',
     },
   ];
 
-  // const { stargazers_count: count } = await fetch(
-  //   'https://api.github.com/repos/udecode/plate',
-  //   {
-  //     ...(process.env.GITHUB_OAUTH_TOKEN && {
-  //       headers: {
-  //         Authorization: `Bearer ${process.env.GITHUB_OAUTH_TOKEN}`,
-  //         'Content-Type': 'application/json',
-  //       },
-  //     }),
-  //     next: {
-  //       revalidate: 3600,
-  //     },
-  //   }
-  // )
-  //   .then((res) => res.json())
-  //   .catch(() => ({ stargazers_count: 0 }));
-
   return (
     <header className="sticky top-0 z-50 w-full bg-background">
       <div className="container-wrapper 3xl:fixed:px-0 px-6">
         <div className="**:data-[slot=separator]:!h-4 3xl:fixed:container flex h-(--header-height) items-center gap-2">
-          {/* Mobile only */}
           <MobileNav
-            className="flex md:hidden"
+            className="flex lg:hidden"
             items={mainNavItems}
             tree={sidebarNav}
           />
 
-          {/* Desktop only */}
           <Logo />
-          <MainNav className="hidden md:flex" items={siteConfig.navItems} />
+          <MainNav className="hidden lg:flex" items={siteConfig.navItems} />
 
-          {/* Header end */}
           <div className="ml-auto flex items-center gap-2 md:flex-1 md:justify-end">
             <div className="hidden w-full flex-1 md:flex md:w-auto md:flex-none">
               <CommandMenu navItems={mainNavItems} sidebarNav={sidebarNav} />
@@ -106,25 +87,5 @@ export function SiteHeader() {
         </div>
       </div>
     </header>
-
-    // <header className="sticky top-0 z-50 w-full bg-background">
-    //   <div className="container flex h-14 items-center justify-between px-4">
-    //     <MainNav />
-    //     <MobileNav />
-
-    //     {/* <StarOnGithub count={count} /> */}
-    //     <div className="flex flex-1 items-center justify-between gap-2 md:justify-end">
-    //       <div className="w-full flex-1 md:w-auto md:flex-none">
-    //         <CommandMenu />
-    //       </div>
-    //       <nav className="flex items-center gap-0.5">
-
-    //
-    //
-    //
-    //       </nav>
-    //     </div>
-    //   </div>
-    // </header>
   );
 }

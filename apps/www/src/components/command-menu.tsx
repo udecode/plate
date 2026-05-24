@@ -31,11 +31,56 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Spinner } from '@/components/ui/spinner';
+import { useLocale } from '@/hooks/useLocale';
 import { cn } from '@/lib/utils';
+import { hrefWithLocale } from '@/lib/withLocale';
 
+const ABSOLUTE_HREF_REGEX = /^[a-z][a-z\d+\-.]*:/i;
 const WHITESPACE_REGEX = /\s+/;
 
 type Query = Awaited<ReturnType<typeof useFumadocsSearch>>['query'];
+type Router = ReturnType<typeof useRouter>;
+
+const i18n = {
+  cn: {
+    dark: '深色',
+    light: '浅色',
+    links: '链接',
+    noResults: '没有结果。',
+    placeholder: '输入命令或搜索...',
+    search: '搜索',
+    searchDescription: '搜索文档。',
+    searchDocumentation: '搜索文档...',
+    searchResults: '搜索结果',
+    searchShort: '搜索...',
+    searching: '搜索中...',
+    system: '系统',
+    theme: '主题',
+  },
+  en: {
+    dark: 'Dark',
+    light: 'Light',
+    links: 'Links',
+    noResults: 'No results found.',
+    placeholder: 'Type a command or search...',
+    search: 'Search',
+    searchDescription: 'Search documentation.',
+    searchDocumentation: 'Search documentation...',
+    searchResults: 'Search Results',
+    searchShort: 'Search...',
+    searching: 'Searching...',
+    system: 'System',
+    theme: 'Theme',
+  },
+};
+
+function getNavTitle(item: NavItemWithChildren, locale: string) {
+  return locale === 'cn' ? item.titleCn || item.title : item.title;
+}
+
+function isString(value: string | undefined): value is string {
+  return Boolean(value);
+}
 
 function getItemKeywords(item: NavItemWithChildren, parentTitle = '') {
   return [
@@ -46,19 +91,32 @@ function getItemKeywords(item: NavItemWithChildren, parentTitle = '') {
         ? [item.label]
         : []),
     parentTitle,
-  ].filter(Boolean);
+    item.titleCn,
+  ].filter(isString);
+}
+
+function navigateToHref(router: Router, href: string) {
+  if (ABSOLUTE_HREF_REGEX.test(href)) {
+    window.open(href, '_blank', 'noopener,noreferrer');
+    return;
+  }
+
+  router.push(href);
 }
 
 function CommandItems({
   item,
+  locale,
   parentTitle = '',
   runCommand,
 }: {
   item: NavItemWithChildren;
+  locale: string;
   runCommand: (command: () => unknown) => void;
   parentTitle?: string;
 }) {
   const router = useRouter();
+  const title = getNavTitle(item, locale);
   const keywords = getItemKeywords(item, parentTitle);
 
   return (
@@ -67,22 +125,27 @@ function CommandItems({
         <CommandItem
           key={item.href}
           onSelect={() => {
-            runCommand(() => router.push(item.href as string));
+            runCommand(() =>
+              navigateToHref(router, hrefWithLocale(item.href!, locale))
+            );
           }}
           keywords={keywords}
-          value={`${parentTitle} ${item.title ?? ''} ${item.href}`}
+          value={`${parentTitle} ${title ?? ''} ${item.titleCn ?? ''} ${
+            item.href
+          }`}
         >
           <div className="flex items-center justify-center">
             <Circle />
           </div>
-          {item.title}
+          {title}
         </CommandItem>
       )}
       {item.items?.map((child) => (
         <CommandItems
           key={child.href ?? `${item.title}:${child.title}`}
           item={child}
-          parentTitle={item.title ?? parentTitle}
+          locale={locale}
+          parentTitle={title ?? parentTitle}
           runCommand={runCommand}
         />
       ))}
@@ -91,20 +154,25 @@ function CommandItems({
 }
 
 function CommandMenuGroup({
+  locale,
   runCommand,
   ...group
 }: {
+  locale: string;
   runCommand: (command: () => unknown) => void;
 } & SidebarNavItem) {
   if (!group.items?.length) return null;
 
+  const title = getNavTitle(group, locale);
+
   return (
-    <CommandGroup heading={group.title}>
+    <CommandGroup heading={title}>
       {group.items.map((navItem) => (
         <CommandItems
           key={navItem.href ?? `${group.title}:${navItem.title}`}
           item={navItem}
-          parentTitle={group.title}
+          locale={locale}
+          parentTitle={title}
           runCommand={runCommand}
         />
       ))}
@@ -113,10 +181,14 @@ function CommandMenuGroup({
 }
 
 function SearchResults({
+  content,
+  locale,
   query,
   search,
   setOpen,
 }: {
+  content: (typeof i18n)['en'];
+  locale: string;
   query: Query;
   search: string;
   setOpen: (open: boolean) => void;
@@ -147,13 +219,13 @@ function SearchResults({
   }
 
   return (
-    <CommandGroup heading="Search Results">
+    <CommandGroup heading={content.searchResults}>
       {uniqueResults.map((item) => (
         <CommandItem
           key={item.id}
           data-type={item.type}
           onSelect={() => {
-            router.push(item.url);
+            router.push(hrefWithLocale(item.url, locale));
             setOpen(false);
           }}
           keywords={[item.content]}
@@ -175,6 +247,8 @@ export function CommandMenu({
   sidebarNav: SidebarNavItem[];
 }) {
   const router = useRouter();
+  const locale = useLocale();
+  const content = i18n[locale as keyof typeof i18n];
   const [open, setOpen] = React.useState(false);
   const { setTheme } = useTheme();
   const { search, setSearch, query } = useFumadocsSearch({ type: 'fetch' });
@@ -227,8 +301,10 @@ export function CommandMenu({
         onClick={() => setOpen(true)}
         {...props}
       >
-        <span className="hidden lg:inline-flex">Search documentation...</span>
-        <span className="inline-flex lg:hidden">Search...</span>
+        <span className="hidden lg:inline-flex">
+          {content.searchDocumentation}
+        </span>
+        <span className="inline-flex lg:hidden">{content.searchShort}</span>
         <kbd className="pointer-events-none absolute top-[0.3rem] right-[0.3rem] hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-medium font-mono text-[10px] opacity-100 sm:flex">
           <span className="text-xs">⌘</span>K
         </kbd>
@@ -237,8 +313,8 @@ export function CommandMenu({
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="overflow-hidden p-0">
           <DialogHeader className="sr-only">
-            <DialogTitle>Search</DialogTitle>
-            <DialogDescription>Search documentation.</DialogDescription>
+            <DialogTitle>{content.search}</DialogTitle>
+            <DialogDescription>{content.searchDescription}</DialogDescription>
           </DialogHeader>
           <Command
             className="**:data-[slot=command-input-wrapper]:h-12 [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-muted-foreground [&_[cmdk-group]:not([hidden])_~[cmdk-group]]:pt-0 [&_[cmdk-group]]:px-2 [&_[cmdk-input-wrapper]_svg]:h-5 [&_[cmdk-input-wrapper]_svg]:w-5 [&_[cmdk-input]]:h-12 [&_[cmdk-item]]:px-2 [&_[cmdk-item]]:py-3 [&_[cmdk-item]_svg]:h-5 [&_[cmdk-item]_svg]:w-5"
@@ -249,7 +325,7 @@ export function CommandMenu({
                 onValueChange={(value) => {
                   React.startTransition(() => setSearch(value));
                 }}
-                placeholder="Type a command or search..."
+                placeholder={content.placeholder}
               />
               {query.isLoading && (
                 <div className="-translate-y-1/2 pointer-events-none absolute top-1/2 right-3 flex items-center justify-center">
@@ -258,56 +334,74 @@ export function CommandMenu({
               )}
             </div>
             <CommandEmpty>
-              {query.isLoading ? 'Searching...' : 'No results found.'}
+              {query.isLoading ? content.searching : content.noResults}
             </CommandEmpty>
             <CommandList>
-              <CommandGroup heading="Links">
+              <CommandGroup heading={content.links}>
                 {navItems
                   .filter((navItem) => !navItem.external)
-                  .map((navItem) => (
-                    <CommandItem
-                      key={navItem.href}
-                      onSelect={() => {
-                        runCommand(() => router.push(navItem.href as string));
-                      }}
-                      value={`Link ${navItem.title ?? ''} ${navItem.href ?? ''}`}
-                    >
-                      <File />
-                      {navItem.title}
-                    </CommandItem>
-                  ))}
+                  .map((navItem) => {
+                    const title = getNavTitle(navItem, locale);
+
+                    return (
+                      <CommandItem
+                        key={navItem.href}
+                        onSelect={() => {
+                          runCommand(() =>
+                            navigateToHref(
+                              router,
+                              hrefWithLocale(navItem.href!, locale)
+                            )
+                          );
+                        }}
+                        value={`Link ${title ?? ''} ${
+                          navItem.titleCn ?? ''
+                        } ${navItem.href ?? ''}`}
+                      >
+                        <File />
+                        {title}
+                      </CommandItem>
+                    );
+                  })}
               </CommandGroup>
 
               {sidebarNav.map((group) =>
                 group.title === 'API' ? null : (
                   <CommandMenuGroup
                     key={`${group.title}:sidebar`}
+                    locale={locale}
                     runCommand={runCommand}
                     {...group}
                   />
                 )
               )}
 
-              <SearchResults query={query} search={search} setOpen={setOpen} />
+              <SearchResults
+                content={content}
+                locale={locale}
+                query={query}
+                search={search}
+                setOpen={setOpen}
+              />
 
-              <CommandGroup heading="Theme">
+              <CommandGroup heading={content.theme}>
                 <CommandItem
                   onSelect={() => runCommand(() => setTheme('light'))}
                 >
                   <SunMedium />
-                  Light
+                  {content.light}
                 </CommandItem>
                 <CommandItem
                   onSelect={() => runCommand(() => setTheme('dark'))}
                 >
                   <Moon />
-                  Dark
+                  {content.dark}
                 </CommandItem>
                 <CommandItem
                   onSelect={() => runCommand(() => setTheme('system'))}
                 >
                   <Laptop />
-                  System
+                  {content.system}
                 </CommandItem>
               </CommandGroup>
 
@@ -315,6 +409,7 @@ export function CommandMenu({
                 group.title !== 'API' ? null : (
                   <CommandMenuGroup
                     key={group.title}
+                    locale={locale}
                     runCommand={runCommand}
                     {...group}
                   />
