@@ -42,6 +42,11 @@ export const metadata: Metadata = {
   ],
   manifest: `${siteConfig.url}/site.webmanifest`,
   metadataBase: new URL(siteConfig.url),
+  alternates: {
+    types: {
+      'application/rss+xml': `${siteConfig.url}/rss.xml`,
+    },
+  },
   openGraph: {
     description: siteConfig.description,
     images: [
