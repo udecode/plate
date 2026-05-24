@@ -1,6 +1,7 @@
 ---
 title: Fumadocs pageTree search needs locale-safe metadata
 date: 2026-05-24
+last_updated: 2026-05-24
 category: developer-experience
 module: apps/www docs
 problem_type: developer_experience
@@ -25,6 +26,7 @@ After the docs source cutover, `apps/www` still used `docsConfig` as the runtime
 
 - `DocsNav`, pager, mobile docs nav, and command-menu docs entries were still driven by `docsConfig`.
 - Fumadocs pageTree had no useful ordering until `meta.json` existed.
+- `docs-page-tree.ts` still imported `docsConfig/docsMap` after the pageTree switch, keeping the old TS nav graph in runtime code for descriptions, labels, keywords, and CN labels.
 - Browser search for `table` hit `/api/search?query=table`, then the dev server logged:
 
 ```text
@@ -70,9 +72,43 @@ export const { GET } = createFromSource(source, {
 
 Keep `docsConfig` only as migration data for labels, Chinese titles, and the metadata generator until those values live in first-class Fumadocs or registry sources.
 
+As a follow-up, move runtime-only overlay data into the committed metadata file itself. The generator can still consume `docsConfig` temporarily, but runtime code should read `content/meta.json`:
+
+```json
+{
+  "root": true,
+  "pages": ["---Get Started---", "[Introduction](/docs)"],
+  "_plate": {
+    "sections": {
+      "Get Started": "开始"
+    },
+    "items": {
+      "/docs/plugin-shortcuts": {
+        "label": "Updated",
+        "titleCn": "插件快捷键"
+      }
+    }
+  }
+}
+```
+
+Then centralize overlay lookup beside the Fumadocs pageTree adapter:
+
+```ts
+import docsMeta from '../../../../content/meta.json';
+
+const docsOverlay = (docsMeta as { _plate?: DocsMetaOverlay })._plate ?? {};
+
+export function getDocsNavMeta(href: string) {
+  return docsOverlay.items?.[normalizeDocsHref(href)];
+}
+```
+
 ## Why This Works
 
 Fumadocs `meta.json` is the pageTree ordering contract. Root `pages` entries can include separators and links, which lets Plate represent app-only and registry-derived docs routes without pretending every route is a physical MDX file.
+
+Fumadocs' built-in meta schema only exposes fields such as `pages`, `title`, and `description` to the pageTree. Keeping Plate-specific overlay fields under `_plate` lets the app read them directly from the committed metadata file while Fumadocs continues to ignore unknown data during source generation.
 
 Fumadocs search delegates tokenization to Orama. Orama supports `english`, not Plate's locale key `cn`; mapping `cn` to a supported tokenizer keeps the i18n search index buildable while preserving `/cn/docs/*` routing.
 
@@ -80,7 +116,8 @@ Fumadocs search delegates tokenization to Orama. Orama supports `english`, not P
 
 - Add `meta.json` before switching visible navigation to `source.pageTree`.
 - For Fumadocs i18n search, explicitly map custom locale keys to tokenizer languages supported by Orama.
-- Keep temporary `docsConfig` usage centralized as a migration overlay, not scattered through UI components.
+- Keep temporary `docsConfig` usage centralized in metadata generation/parity scripts, not runtime page rendering.
+- Assert representative `_plate.sections` and `_plate.items` values in docs parity so regenerated metadata cannot silently drop labels or CN titles.
 - Browser-test both `/docs` and `/cn/docs/*` after changing search or pageTree code.
 
 ## Related Issues

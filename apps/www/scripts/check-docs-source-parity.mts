@@ -17,6 +17,7 @@ const DEMO_SUFFIX_REGEX = /-demo$/;
 const MDX_EXTENSION_REGEX = /\.mdx$/;
 const CN_EXTENSION_REGEX = /\.cn$/;
 const CONTENT_DIR = path.join(process.cwd(), '../../content');
+const META_FILE = path.join(CONTENT_DIR, 'meta.json');
 const SOURCE_INDEX = path.join(process.cwd(), '.source/index.ts');
 const SOURCE_INFO_PATH_REGEX = /info: {"path":"([^"]+)"/g;
 const ROUTE_GROUP_REGEX = /^\(.+\)$/;
@@ -78,6 +79,34 @@ async function getGeneratedSourcePaths() {
   const sourceIndex = await fs.readFile(SOURCE_INDEX, 'utf8');
   return [...sourceIndex.matchAll(SOURCE_INFO_PATH_REGEX)].map(
     (match) => match[1]
+  );
+}
+
+async function checkDocsMetaOverlay() {
+  const meta = JSON.parse(await fs.readFile(META_FILE, 'utf8')) as {
+    _plate?: {
+      items?: Record<
+        string,
+        {
+          label?: string | string[];
+          titleCn?: string;
+        }
+      >;
+      sections?: Record<string, string>;
+    };
+  };
+
+  assert(
+    meta._plate?.sections?.['Get Started'] === '开始',
+    'Expected content/meta.json to carry localized section labels'
+  );
+  assert(
+    meta._plate?.items?.['/docs/plugin-input-rules']?.label === 'New',
+    'Expected content/meta.json to carry nav labels'
+  );
+  assert(
+    meta._plate?.items?.['/docs/plugin-shortcuts']?.titleCn === '插件快捷键',
+    'Expected content/meta.json to carry localized item labels'
   );
 }
 
@@ -236,6 +265,7 @@ async function checkDocsRegistry() {
 try {
   const sourceRoutes = getSourceRoutes(await getGeneratedSourcePaths());
 
+  await checkDocsMetaOverlay();
   checkNavRoutes(sourceRoutes.en);
   await checkChineseRoutes(sourceRoutes);
   await checkDocsRegistry();

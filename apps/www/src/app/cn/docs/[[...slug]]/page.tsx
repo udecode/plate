@@ -10,11 +10,10 @@ import { ComponentInstallation } from '@/components/component-installation';
 import { ComponentPreview } from '@/components/component-preview';
 import { mdxComponents } from '@/components/mdx-components';
 import { MdxProvider } from '@/components/mdx-provider';
-import { docsMap } from '@/config/docs';
 import { slugToCategory } from '@/config/docs-utils';
 import { siteConfig } from '@/config/site';
 import { absoluteUrl } from '@/lib/absoluteUrl';
-import { getPagerForDoc } from '@/lib/docs-page-tree';
+import { getDocsNavMeta, getPagerForDoc } from '@/lib/docs-page-tree';
 import { getPlateLLMPageMarkdown, processMdxForLLMs } from '@/lib/llm';
 import {
   getCachedDependencies,
@@ -55,9 +54,7 @@ export async function generateMetadata({
   if (doc) {
     title = doc.data.title;
     slug = doc.url;
-    description =
-      doc.data.description ??
-      docsMap[slug.replace(CN_DOCS_PREFIX_REGEX, '')]?.description;
+    description = doc.data.description ?? getDocsNavMeta(slug)?.description;
   } else {
     const slugParam = (await params).slug;
     const category = slugToCategory(slugParam);
@@ -114,7 +111,6 @@ export async function generateMetadata({
 
 const registryNames = new Set(registry.items.map((item) => item.name));
 const DEMO_SUFFIX_REGEX = /-demo$/;
-const CN_DOCS_PREFIX_REGEX = /^\/cn(?=\/docs)/;
 
 function getRegistryStaticParams() {
   return [
@@ -235,8 +231,7 @@ export default async function CNDocPage(props: DocPageProps) {
   }
   const raw = await doc.data.getText('raw');
   const description =
-    doc.data.description ??
-    docsMap[doc.url.replace(CN_DOCS_PREFIX_REGEX, '')]?.description;
+    doc.data.description ?? getDocsNavMeta(doc.url)?.description;
   const MDX = doc.data.body;
 
   const toc = await getTableOfContents(raw);

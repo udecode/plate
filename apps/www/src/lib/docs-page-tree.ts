@@ -4,11 +4,26 @@ import type React from 'react';
 
 import { findNeighbour } from 'fumadocs-core/server';
 
-import { docsConfig, docsMap } from '@/config/docs';
 import { hrefWithLocale } from '@/lib/withLocale';
 import { source } from '@/lib/source';
+import docsMeta from '../../../../content/meta.json';
 
 const CN_DOCS_PREFIX_REGEX = /^\/cn(?=\/docs)/;
+
+type DocsMetaOverlayItem = {
+  description?: string;
+  keywords?: string[];
+  label?: string | string[];
+  title?: string;
+  titleCn?: string;
+};
+
+type DocsMetaOverlay = {
+  items?: Record<string, DocsMetaOverlayItem>;
+  sections?: Record<string, string>;
+};
+
+const docsOverlay = (docsMeta as { _plate?: DocsMetaOverlay })._plate ?? {};
 
 function nodeNameToString(name: React.ReactNode) {
   if (typeof name === 'string') return name;
@@ -21,10 +36,14 @@ function normalizeDocsHref(href: string) {
   return href.replace(CN_DOCS_PREFIX_REGEX, '');
 }
 
+export function getDocsNavMeta(href: string) {
+  return docsOverlay.items?.[normalizeDocsHref(href)];
+}
+
 function withDocsOverlay(item: SidebarNavItem): SidebarNavItem {
   if (!item.href) return item;
 
-  const overlay = docsMap[normalizeDocsHref(item.href)];
+  const overlay = getDocsNavMeta(item.href);
 
   return {
     ...item,
@@ -59,9 +78,6 @@ function pageTreeNodeToNavItem(node: PageTree.Node): SidebarNavItem | null {
 
 export function getSidebarNavFromPageTree(locale = 'en') {
   const tree = source.getPageTree(locale);
-  const sectionTitles = new Map(
-    docsConfig.sidebarNav.map((section) => [section.title, section])
-  );
   const sections: SidebarNavItem[] = [];
   let currentSection: SidebarNavItem | undefined;
 
@@ -71,7 +87,7 @@ export function getSidebarNavFromPageTree(locale = 'en') {
     currentSection = {
       items: [],
       title,
-      titleCn: sectionTitles.get(title)?.titleCn,
+      titleCn: docsOverlay.sections?.[title],
     };
     sections.push(currentSection);
 
@@ -85,7 +101,7 @@ export function getSidebarNavFromPageTree(locale = 'en') {
       currentSection = {
         items: [],
         title,
-        titleCn: sectionTitles.get(title)?.titleCn,
+        titleCn: docsOverlay.sections?.[title],
       };
       sections.push(currentSection);
       continue;
@@ -105,7 +121,7 @@ function toPagerItem(item: PageTree.Item | undefined, locale: string) {
   if (!item) return null;
 
   const href = normalizeDocsHref(item.url);
-  const overlay = docsMap[href];
+  const overlay = getDocsNavMeta(href);
 
   return {
     href: hrefWithLocale(href, locale),
