@@ -6,7 +6,7 @@ Continue the docs restart from `docs/plans/2026-05-23-shadcn-docs-restart-compar
 
 ## Current Slice
 
-Status: twenty-sixth slice complete
+Status: twenty-seventh slice complete
 
 1. Make Fumadocs metadata/pageTree the docs navigation authority.
 2. Move sidebar and pager reads off direct `docsConfig` runtime access.
@@ -34,6 +34,7 @@ Status: twenty-sixth slice complete
 24. Remove stale create/project/theme state from the public homepage preview path: delete unused project add hooks/components, delete unused theme registry preview wrapper, drop the old customizer radius from shared install config, and remove lift-mode state from the playground preview.
 25. Collapse the duplicated English/CN docs catch-all route implementation into one locale-aware Fumadocs/registry page renderer, localize registry-related docs links through the same helper, and remove stale `// SYNC` markers from retained public docs surfaces.
 26. Clean up `DocsNav` after the pageTree cutover: remove route-prefix hacks, direct DOM active-item queries, and timeout-based scrolling; keep active/filter section state derived from Fumadocs metadata and localized href helpers.
+27. Remove the leftover public `e2e-examples` route group from the restarted docs app surface.
 
 ## Findings
 
@@ -84,6 +85,7 @@ Status: twenty-sixth slice complete
 - `DocsNav` still carried old client-side migration residue after `docsConfig` removal: a local `/cn` prefix regex, active-link DOM queries, and a delayed `setTimeout` scroll. The Fumadocs-era sidebar can use the same `normalizeDocsHref`, `getLocalizedNavTitle`, and `hrefWithLocale` helpers as the rest of docs navigation.
 - Filtering the docs sidebar needs an explicit fallback open section. If the current route is not part of the filtered result set, keeping the old accordion value leaves all matches hidden.
 - CN docs currently have no physical `.cn.mdx` files, so the CN sidebar should reuse the English pageTree and let `DocsNav` apply CN labels and `/cn/docs/*` hrefs. Reading the `cn` pageTree directly can leave the active route without an open section.
+- `apps/www/src/app/(app)/e2e-examples/**` was an unlinked public route group containing only a PlateController test/demo page. It had no active source references and belongs with test fixtures, not the restarted public docs app.
 
 ## Verification Plan
 
@@ -108,6 +110,7 @@ Status: twenty-sixth slice complete
 - If homepage preview state cleanup changes client components, verify no active imports remain for removed hooks/components, run `www` typecheck and lint, and smoke `/` plus `/cn` if a dev server is available.
 - If docs catch-all route logic changes, verify English and CN MDX docs, English and CN registry fallback docs, editors, view preview, and deleted legacy APIs.
 - If `DocsNav` client state changes, Browser-verify active links, filter results, localized placeholders, localized CN hrefs, and empty console error/warn logs.
+- If public e2e/demo routes are removed, verify `/e2e-examples/plate-controller` is no longer routable while docs and editor surfaces still render.
 
 ## Progress Log
 
@@ -189,3 +192,5 @@ Status: twenty-sixth slice complete
 - 2026-05-24: Started the `DocsNav` cleanup slice: removed the local CN prefix regex, direct active-link DOM query, delayed timeout scroll, and keyword-stripping filter copy from the client sidebar.
 - 2026-05-24: Fixed docs sidebar filter state to open the first filtered section when the current route is not in the filtered result set, and changed the CN docs layout to reuse the English pageTree because CN docs currently rely on English MDX fallback plus localized metadata.
 - 2026-05-24: Verification passed for the `DocsNav` cleanup slice: `pnpm install`, `pnpm lint:fix`, `pnpm --filter www typecheck`, rerun `pnpm lint:fix`, rerun `pnpm --filter www typecheck`, and Browser Use on `localhost:3106` confirming `/docs/plugin-shortcuts` active nav, English filter results, `/cn/docs/table` active nav, `/cn/docs/*` filtered links, localized placeholders, and empty browser error/warn logs. Dev-server cache again consumed several GB; stopping the server and deleting generated `apps/www/.next` restored local disk headroom.
+- 2026-05-24: Started the public e2e route cleanup slice: deleted the unlinked `apps/www/src/app/(app)/e2e-examples/**` route group so the restarted docs app no longer ships the PlateController test/demo page as public product surface.
+- 2026-05-24: Verification passed for the public e2e route cleanup slice: `pnpm install`, `pnpm --filter www typecheck`, `pnpm lint:fix`, final `pnpm --filter www typecheck`, Browser Use on `localhost:3107` confirming `/cn/docs/table`, `/editors`, `/view/editor-basic`, and the removed `/e2e-examples/plate-controller` 404 page, plus HTTP status smoke confirming `/e2e-examples/plate-controller` returns 404 while retained docs/editor/view routes return 200. The first browser navigation hit a cold dev compile timeout; warming the routes and retrying verified the pages. Dev server was stopped and generated `apps/www/.next` was deleted after the smoke.
