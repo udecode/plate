@@ -6,7 +6,7 @@ Continue the docs restart from `docs/plans/2026-05-23-shadcn-docs-restart-compar
 
 ## Current Slice
 
-Status: twenty-ninth slice complete
+Status: thirtieth slice complete
 
 1. Make Fumadocs metadata/pageTree the docs navigation authority.
 2. Move sidebar and pager reads off direct `docsConfig` runtime access.
@@ -37,6 +37,7 @@ Status: twenty-ninth slice complete
 27. Remove the leftover public `e2e-examples` route group from the restarted docs app surface.
 28. Remove the ignored app-local React 18 `resolutions` block from `apps/www/package.json` so the docs app package metadata matches the React 19 shadcn base instead of emitting stale pnpm warnings.
 29. Remove stale template tooling that still installs Plate registry items through raw localhost URLs instead of the configured `@plate` shadcn namespace.
+30. Align `DocsCopyPage` with the upstream copy-page grouped-button/dropdown/popover model while preserving Plate-specific LLM, Markdown, and GitHub actions and making clipboard failures non-fatal.
 
 ## Findings
 
@@ -90,6 +91,7 @@ Status: twenty-ninth slice complete
 - `apps/www/src/app/(app)/e2e-examples/**` was an unlinked public route group containing only a PlateController test/demo page. It had no active source references and belongs with test fixtures, not the restarted public docs app.
 - `apps/www/package.json` still carried an ignored `resolutions` block pinning `react` and `react-dom` to React 18 even though the docs app, root package, and upstream shadcn v4 app use React 19. pnpm warned on every install that the field did not take effect, so keeping it only preserved stale fork metadata.
 - `tooling/scripts/add-ai.sh` still called missing `pre-registry.sh`/`post-registry.sh` scripts and installed `editor-ai` from `http://localhost:3000/rd/editor-ai`. The supported template sync path is `tooling/scripts/update-template.sh`, and template install smoke tests should exercise the configured `@plate` registry namespace instead of requiring a local docs server.
+- `DocsCopyPage` had already replaced the old `LLMCopyButton`/`ViewOptions` surface, but its implementation still used the thinner Plate dropdown instead of upstream's grouped copy-page control. Browser verification also exposed that `useCopyToClipboard` left `navigator.clipboard.writeText(...)` rejections unhandled when the document is not focused.
 
 ## Verification Plan
 
@@ -117,6 +119,7 @@ Status: twenty-ninth slice complete
 - If public e2e/demo routes are removed, verify `/e2e-examples/plate-controller` is no longer routable while docs and editor surfaces still render.
 - If package metadata cleanup changes `apps/www/package.json`, run `pnpm install` and verify the stale app-local `resolutions` warning is gone, then run `www` typecheck, lint, and the PR gate.
 - If template tooling changes, verify shell scripts with `bash -n`, verify root package metadata with `pnpm install`, run `pnpm lint:fix`, and run the PR gate. Do not run template generation or manually edit `templates/**`.
+- If copy-page UI changes, verify `DocsCopyPage` on a real docs page with Browser Use: grouped buttons render, menu links point to Markdown/ChatGPT/Claude/GitHub with `noopener noreferrer`, copy click does not emit console or server errors, then run `www` typecheck, lint, and the PR gate.
 
 ## Progress Log
 
@@ -204,3 +207,5 @@ Status: twenty-ninth slice complete
 - 2026-05-24: Verification passed for the package metadata cleanup slice: `pnpm install` no longer emits the ignored app-local `resolutions` warning, `pnpm --filter www typecheck` passed, and `pnpm lint:fix` passed with no fixes applied.
 - 2026-05-24: Started the stale template tooling cleanup slice: deleted the broken `tooling/scripts/add-ai.sh` helper and changed `templates:test` to install `@plate/editor-ai` through the shadcn namespace configured in `components.json`, not a local `/rd` URL.
 - 2026-05-24: Verification passed for the template tooling cleanup slice: exact old-localhost residue search only finds the intentional updated `templates:test` script, `package.json` parses, retained template shell scripts pass `bash -n`, `pnpm install` passed with an unchanged lockfile, `pnpm lint:fix` passed with no fixes applied, and PR gate `pnpm check` passed.
+- 2026-05-24: Started the copy-page alignment slice: updated `DocsCopyPage` to use upstream's grouped button, desktop dropdown, and mobile popover structure while retaining Plate's Markdown, ChatGPT, Claude, and GitHub actions and keeping v0 discarded.
+- 2026-05-24: Browser Use on `localhost:3108/docs/plugin-shortcuts` verified one copy button, one options button, four expected menu links with `noopener noreferrer`, and no browser warnings/errors. The first copy click exposed an unhandled clipboard rejection when the document was unfocused; `useCopyToClipboard` now catches failed writes and only shows success toasts after successful writes. A repeat Browser Use copy click produced no browser or server errors.
