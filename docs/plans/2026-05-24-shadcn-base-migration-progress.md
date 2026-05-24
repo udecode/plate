@@ -6,7 +6,7 @@ Continue the docs restart from `docs/plans/2026-05-23-shadcn-docs-restart-compar
 
 ## Current Slice
 
-Status: seventh slice complete
+Status: eighth slice complete
 
 1. Make Fumadocs metadata/pageTree the docs navigation authority.
 2. Move sidebar and pager reads off direct `docsConfig` runtime access.
@@ -18,6 +18,7 @@ Status: seventh slice complete
 8. Route generated Plate registry self-dependencies through `@plate/*`, while preserving local-file template sync.
 9. Upgrade the docs app to the upstream shadcn v4 package and validate Plate registry source against the v4 schema contract.
 10. Move the shared app shell toward upstream's `data-slot="layout"` structure with layout-owned footer behavior and centered page headers.
+11. Move root runtime providers and global CSS closer to upstream's provider stack, while keeping Plate's required DnD/Jotai/editor runtime.
 
 ## Findings
 
@@ -37,6 +38,8 @@ Status: seventh slice complete
 - The full local registry build is still CI-owned, so this slice adds a source-only registry contract check to `www` typecheck instead of running `build:registry` locally.
 - Upstream owns the app shell shape through `data-slot="layout"`, a layout-level footer, centered `PageHeader`, and footer visibility controlled by route descendants such as `data-slot="docs"`.
 - Plate's English and CN home pages previously owned their own footers and action-row layout, which kept the old fork shell alive even after the theme/customizer removal.
+- Upstream's root app uses `group/body`, a top-level tooltip provider, and a `d` theme shortcut in the theme provider. Plate still needs Jotai and DnD for retained editor surfaces, so the provider restart should add upstream behavior around those retained providers rather than deleting them.
+- `apps/www/src/app/globals.css` still carried old sync markers for custom scrollbar, prose, and duplicate MDX pretty-code styles. The current shadcn-style pretty-code rules already target the active generated attributes, so the marked fallback CSS can be removed after browser-checking code blocks.
 
 ## Verification Plan
 
@@ -45,6 +48,7 @@ Status: seventh slice complete
 - Run `pnpm lint:fix`.
 - If a browser-visible sidebar/search change is left in a runnable state this turn, verify via Browser Use before claiming full UI completion.
 - If a browser-visible app-shell/homepage change is left in a runnable state this turn, verify `/` and `/cn` render without the discarded theme/customizer surface.
+- If provider or global CSS changes affect the root shell, verify body/layout markers, footer visibility, theme shortcut behavior, and at least one docs page with code blocks.
 
 ## Progress Log
 
@@ -76,3 +80,6 @@ Status: seventh slice complete
 - 2026-05-24: Browser smoke caught that body-level footer hiding did not hide on `/docs`; fixed it by also targeting the nearer `group/layout` shell.
 - 2026-05-24: Verification passed for the app-shell slice: `pnpm install`, `pnpm --filter www build:source`, `pnpm --filter www typecheck`, `pnpm lint:fix`, and a local Chrome smoke on `http://localhost:3100/`, `http://localhost:3100/cn`, and `http://localhost:3100/docs`. The smoke confirmed each route has one `data-slot="layout"` shell, English/CN home pages expose one footer, docs keeps the layout footer hidden, search/header render, and browser errors/warnings are empty.
 - 2026-05-24: Added `docs/solutions/developer-experience/2026-05-24-shadcn-app-shell-footer-visibility-needs-nearest-layout-group.md` through the ce-compound closeout.
+- 2026-05-24: Updated the root app shell provider layer with upstream-style `group/body`, a top-level tooltip provider, and the upstream `d` theme shortcut while preserving Plate's Jotai and DnD providers.
+- 2026-05-24: Removed the old `globals.css` blocks explicitly marked `remove after sync` for custom scrollbar, custom prose, and duplicate MDX pretty-code fallback styling.
+- 2026-05-24: Verification passed for the provider/CSS slice: `pnpm install`, `pnpm --filter www build:source`, `pnpm --filter www typecheck`, `pnpm lint:fix`, and local Chrome smoke on `http://localhost:3100/`, `http://localhost:3100/docs`, `http://localhost:3100/docs/migration/slate-to-plate`, and `http://localhost:3100/cn/docs/migration/slate-to-plate`. The smoke confirmed `group/body`, one layout shell, home footer visible, docs footers hidden, `d` theme shortcut toggling, visible code blocks on English/CN docs pages, and empty browser error/warning logs.

@@ -2,7 +2,43 @@
 
 import * as React from 'react';
 
-import { ThemeProvider as NextThemesProvider } from 'next-themes';
+import { ThemeProvider as NextThemesProvider, useTheme } from 'next-themes';
+
+function ThemeShortcut() {
+  const { resolvedTheme, setTheme } = useTheme();
+
+  React.useEffect(() => {
+    const down = (event: KeyboardEvent) => {
+      if (
+        event.key.toLowerCase() !== 'd' ||
+        event.metaKey ||
+        event.ctrlKey ||
+        event.altKey
+      ) {
+        return;
+      }
+
+      if (
+        (event.target instanceof HTMLElement &&
+          event.target.isContentEditable) ||
+        event.target instanceof HTMLInputElement ||
+        event.target instanceof HTMLTextAreaElement ||
+        event.target instanceof HTMLSelectElement
+      ) {
+        return;
+      }
+
+      event.preventDefault();
+      setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
+    };
+
+    document.addEventListener('keydown', down);
+
+    return () => document.removeEventListener('keydown', down);
+  }, [resolvedTheme, setTheme]);
+
+  return null;
+}
 
 export function ThemeProvider({
   children,
@@ -14,5 +50,10 @@ export function ThemeProvider({
     document.cookie = `theme=${theme};path=/;max-age=31536000`;
   }, []);
 
-  return <NextThemesProvider {...props}>{children}</NextThemesProvider>;
+  return (
+    <NextThemesProvider {...props}>
+      <ThemeShortcut />
+      {children}
+    </NextThemesProvider>
+  );
 }
