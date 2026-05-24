@@ -6,7 +6,7 @@ Continue the docs restart from `docs/plans/2026-05-23-shadcn-docs-restart-compar
 
 ## Current Slice
 
-Status: thirty-first slice complete
+Status: thirty-second slice complete
 
 1. Make Fumadocs metadata/pageTree the docs navigation authority.
 2. Move sidebar and pager reads off direct `docsConfig` runtime access.
@@ -39,6 +39,7 @@ Status: thirty-first slice complete
 29. Remove stale template tooling that still installs Plate registry items through raw localhost URLs instead of the configured `@plate` shadcn namespace.
 30. Align `DocsCopyPage` with the upstream copy-page grouped-button/dropdown/popover model while preserving Plate-specific LLM, Markdown, and GitHub actions and making clipboard failures non-fatal.
 31. Delete unreferenced template helper scripts that still mutate `templates/**` between localhost and production registry URLs or initialize Plate from a localhost registry URL.
+32. Remove the commented shadcn block-request CTA residue from the retained Plate editors page.
 
 ## Findings
 
@@ -94,6 +95,7 @@ Status: thirty-first slice complete
 - `tooling/scripts/add-ai.sh` still called missing `pre-registry.sh`/`post-registry.sh` scripts and installed `editor-ai` from `http://localhost:3000/rd/editor-ai`. The supported template sync path is `tooling/scripts/update-template.sh`, and template install smoke tests should exercise the configured `@plate` registry namespace instead of requiring a local docs server.
 - `DocsCopyPage` had already replaced the old `LLMCopyButton`/`ViewOptions` surface, but its implementation still used the thinner Plate dropdown instead of upstream's grouped copy-page control. Browser verification also exposed that `useCopyToClipboard` left `navigator.clipboard.writeText(...)` rejections unhandled when the document is not focused.
 - `tooling/scripts/pre-basic.sh`, `pre-ai.sh`, `post-basic.sh`, `post-ai.sh`, `init-plate-template.sh`, `init-plate.sh`, and `init2.sh` had no active callers and preserved the old workflow of hand-mutating template `components.json` files or initializing Plate from `http://localhost:3000/r`. Keeping them contradicted the shadcn v4 namespace contract now owned by `components.json`, `update-template.sh`, and `prepare-local-template-registry.mjs`.
+- `EditorDescription` still carried a commented upstream shadcn block-request CTA pointing at `shadcn-ui/ui` discussions. The editors page is a retained Plate product surface; dead upstream product links should be deleted instead of preserved in comments.
 
 ## Verification Plan
 
@@ -213,3 +215,5 @@ Status: thirty-first slice complete
 - 2026-05-24: Browser Use on `localhost:3108/docs/plugin-shortcuts` verified one copy button, one options button, four expected menu links with `noopener noreferrer`, and no browser warnings/errors. The first copy click exposed an unhandled clipboard rejection when the document was unfocused; `useCopyToClipboard` now catches failed writes and only shows success toasts after successful writes. A repeat Browser Use copy click produced no browser or server errors.
 - 2026-05-24: Started the stale template helper deletion slice: deleted the unreferenced localhost registry init scripts and pre/post template URL mutation scripts so retained template tooling flows through `update-template.sh` and the configured `@plate` namespace.
 - 2026-05-24: Verification passed for the stale template helper deletion slice: retained shell scripts pass `bash -n`, active tooling search has no `init-plate*`/`init2`/pre-post helper references and no `http://localhost:3000/r` or `/rd` template install residue, `pnpm install` passed, `pnpm lint:fix` passed with no fixes applied, and PR gate `pnpm check` passed.
+- 2026-05-24: Started the editors CTA residue cleanup slice: removed the commented shadcn-ui block-request button from `EditorDescription`, leaving the retained Plate editors page with only the active Plate browse CTA.
+- 2026-05-24: Verification passed for the editors CTA residue cleanup slice: active source search has no `shadcn-ui`, `blocks-request`, or `Request a block` residue under `apps/www/src`; `pnpm install`, `pnpm --filter www typecheck`, `pnpm lint:fix`, and PR gate `pnpm check` passed.

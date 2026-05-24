@@ -34,15 +34,6 @@ export function EditorDescription() {
         <Button asChild size="sm" className="text-xs">
           <a href="#blocks">{content.browseEditors}</a>
         </Button>
-        {/* <Button asChild size="sm" variant="ghost">
-          <a
-            href="https://github.com/shadcn-ui/ui/discussions/new?category=blocks-request"
-            rel="noreferrer"
-            target="_blank"
-          >
-            Request a block
-          </a>
-        </Button> */}
       </PageActions>
     </section>
   );
