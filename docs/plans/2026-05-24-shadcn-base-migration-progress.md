@@ -6,7 +6,7 @@ Continue the docs restart from `docs/plans/2026-05-23-shadcn-docs-restart-compar
 
 ## Current Slice
 
-Status: twenty-eighth slice complete
+Status: twenty-ninth slice complete
 
 1. Make Fumadocs metadata/pageTree the docs navigation authority.
 2. Move sidebar and pager reads off direct `docsConfig` runtime access.
@@ -36,6 +36,7 @@ Status: twenty-eighth slice complete
 26. Clean up `DocsNav` after the pageTree cutover: remove route-prefix hacks, direct DOM active-item queries, and timeout-based scrolling; keep active/filter section state derived from Fumadocs metadata and localized href helpers.
 27. Remove the leftover public `e2e-examples` route group from the restarted docs app surface.
 28. Remove the ignored app-local React 18 `resolutions` block from `apps/www/package.json` so the docs app package metadata matches the React 19 shadcn base instead of emitting stale pnpm warnings.
+29. Remove stale template tooling that still installs Plate registry items through raw localhost URLs instead of the configured `@plate` shadcn namespace.
 
 ## Findings
 
@@ -88,6 +89,7 @@ Status: twenty-eighth slice complete
 - CN docs currently have no physical `.cn.mdx` files, so the CN sidebar should reuse the English pageTree and let `DocsNav` apply CN labels and `/cn/docs/*` hrefs. Reading the `cn` pageTree directly can leave the active route without an open section.
 - `apps/www/src/app/(app)/e2e-examples/**` was an unlinked public route group containing only a PlateController test/demo page. It had no active source references and belongs with test fixtures, not the restarted public docs app.
 - `apps/www/package.json` still carried an ignored `resolutions` block pinning `react` and `react-dom` to React 18 even though the docs app, root package, and upstream shadcn v4 app use React 19. pnpm warned on every install that the field did not take effect, so keeping it only preserved stale fork metadata.
+- `tooling/scripts/add-ai.sh` still called missing `pre-registry.sh`/`post-registry.sh` scripts and installed `editor-ai` from `http://localhost:3000/rd/editor-ai`. The supported template sync path is `tooling/scripts/update-template.sh`, and template install smoke tests should exercise the configured `@plate` registry namespace instead of requiring a local docs server.
 
 ## Verification Plan
 
@@ -114,6 +116,7 @@ Status: twenty-eighth slice complete
 - If `DocsNav` client state changes, Browser-verify active links, filter results, localized placeholders, localized CN hrefs, and empty console error/warn logs.
 - If public e2e/demo routes are removed, verify `/e2e-examples/plate-controller` is no longer routable while docs and editor surfaces still render.
 - If package metadata cleanup changes `apps/www/package.json`, run `pnpm install` and verify the stale app-local `resolutions` warning is gone, then run `www` typecheck, lint, and the PR gate.
+- If template tooling changes, verify shell scripts with `bash -n`, verify root package metadata with `pnpm install`, run `pnpm lint:fix`, and run the PR gate. Do not run template generation or manually edit `templates/**`.
 
 ## Progress Log
 
@@ -199,3 +202,5 @@ Status: twenty-eighth slice complete
 - 2026-05-24: Verification passed for the public e2e route cleanup slice: `pnpm install`, `pnpm --filter www typecheck`, `pnpm lint:fix`, final `pnpm --filter www typecheck`, Browser Use on `localhost:3107` confirming `/cn/docs/table`, `/editors`, `/view/editor-basic`, and the removed `/e2e-examples/plate-controller` 404 page, plus HTTP status smoke confirming `/e2e-examples/plate-controller` returns 404 while retained docs/editor/view routes return 200. The first browser navigation hit a cold dev compile timeout; warming the routes and retrying verified the pages. Dev server was stopped and generated `apps/www/.next` was deleted after the smoke.
 - 2026-05-24: Started the package metadata cleanup slice: removed the ignored React 18 `resolutions` block from `apps/www/package.json`; the docs app now relies on its explicit React 19 dependencies and the workspace root metadata instead of a stale, non-effective override.
 - 2026-05-24: Verification passed for the package metadata cleanup slice: `pnpm install` no longer emits the ignored app-local `resolutions` warning, `pnpm --filter www typecheck` passed, and `pnpm lint:fix` passed with no fixes applied.
+- 2026-05-24: Started the stale template tooling cleanup slice: deleted the broken `tooling/scripts/add-ai.sh` helper and changed `templates:test` to install `@plate/editor-ai` through the shadcn namespace configured in `components.json`, not a local `/rd` URL.
+- 2026-05-24: Verification passed for the template tooling cleanup slice: exact old-localhost residue search only finds the intentional updated `templates:test` script, `package.json` parses, retained template shell scripts pass `bash -n`, `pnpm install` passed with an unchanged lockfile, `pnpm lint:fix` passed with no fixes applied, and PR gate `pnpm check` passed.
