@@ -30,7 +30,7 @@ const linksPropertiesSchema = z.object({
 });
 
 export const docs = defineDocs({
-  dir: '../../content',
+  dir: '../../content/docs',
   docs: {
     schema: frontmatterSchema.extend({
       component: z.boolean().default(false),

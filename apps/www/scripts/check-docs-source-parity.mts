@@ -16,7 +16,7 @@ const TRAILING_SLASH_REGEX = /\/$/;
 const DEMO_SUFFIX_REGEX = /-demo$/;
 const MDX_EXTENSION_REGEX = /\.mdx$/;
 const CN_EXTENSION_REGEX = /\.cn$/;
-const CONTENT_DIR = path.join(process.cwd(), '../../content');
+const CONTENT_DIR = path.join(process.cwd(), '../../content/docs');
 const META_FILE = path.join(CONTENT_DIR, 'meta.json');
 const SOURCE_INDEX = path.join(process.cwd(), '.source/index.ts');
 const SOURCE_INFO_PATH_REGEX = /info: {"path":"([^"]+)"/g;
@@ -98,15 +98,15 @@ async function checkDocsMetaOverlay() {
 
   assert(
     meta._plate?.sections?.['Get Started'] === '开始',
-    'Expected content/meta.json to carry localized section labels'
+    'Expected content/docs/meta.json to carry localized section labels'
   );
   assert(
     meta._plate?.items?.['/docs/plugin-input-rules']?.label === 'New',
-    'Expected content/meta.json to carry nav labels'
+    'Expected content/docs/meta.json to carry nav labels'
   );
   assert(
     meta._plate?.items?.['/docs/plugin-shortcuts']?.titleCn === '插件快捷键',
-    'Expected content/meta.json to carry localized item labels'
+    'Expected content/docs/meta.json to carry localized item labels'
   );
 }
 
@@ -233,7 +233,7 @@ async function checkDocsRegistry() {
     docsMeta?.files?.some(
       (file) =>
         typeof file !== 'string' &&
-        file.path === '../../content/meta.json' &&
+        file.path === '../../content/docs/meta.json' &&
         file.target === 'content/docs/plate/meta.json'
     ),
     'Expected docs-meta to publish Fumadocs meta.json'
@@ -244,7 +244,7 @@ async function checkDocsRegistry() {
     tableDocs?.files?.some(
       (file) =>
         typeof file !== 'string' &&
-        file.path === '../../content/(plugins)/(elements)/table.mdx'
+        file.path === '../../content/docs/(plugins)/(elements)/table.mdx'
     ),
     'Expected table-docs to publish the source table MDX file'
   );

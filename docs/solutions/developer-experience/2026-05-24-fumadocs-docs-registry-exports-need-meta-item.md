@@ -1,6 +1,7 @@
 ---
 title: Fumadocs docs registry exports need meta item
 date: 2026-05-24
+last_updated: 2026-05-24
 category: developer-experience
 module: apps/www docs registry
 problem_type: developer_experience
@@ -23,7 +24,7 @@ After docs navigation moves to Fumadocs `meta.json` and `pageTree`, the docs reg
 
 ## Symptoms
 
-- `build-docs-registry.mts` created registry items from `content/**/*.mdx`, but did not include `content/meta.json`.
+- `build-docs-registry.mts` created registry items from docs MDX files, but did not include the Fumadocs root `meta.json`.
 - The script still imported `docsConfig` and carried old pathMap/meta generation code that was not part of the active export path.
 - `check-docs-source-parity.mts` asserted representative MDX docs and aggregate dependencies, but not the Fumadocs metadata file.
 
@@ -34,7 +35,7 @@ After docs navigation moves to Fumadocs `meta.json` and `pageTree`, the docs reg
 
 ## Solution
 
-Publish `content/meta.json` as a normal registry item:
+Publish `content/docs/meta.json` as a normal registry item:
 
 ```ts
 const docsMetaItem: RegistryItem = {
@@ -73,6 +74,12 @@ assert(
 ## Why This Works
 
 Fumadocs `meta.json` is not auxiliary output; it is part of the docs source contract. Making it a registry item keeps the install graph self-contained and lets shadcn v4 resolve it with the same `@plate/*` namespace behavior used for the rest of the Plate docs registry.
+
+When the docs source root moves to `content/docs`, keep the registry source path aligned:
+
+```ts
+const RELATIVE_SOURCE_DIR = '../../content/docs';
+```
 
 Removing the stale `docsConfig` generation branch matters because it prevents two navigation authorities from quietly diverging again.
 

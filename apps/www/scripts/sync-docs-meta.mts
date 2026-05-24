@@ -5,7 +5,7 @@ import path from 'node:path';
 
 import { docsConfig } from '@/config/docs';
 
-const CONTENT_DIR = path.join(process.cwd(), '../../content');
+const CONTENT_DIR = path.join(process.cwd(), '../../content/docs');
 const META_FILE = path.join(CONTENT_DIR, 'meta.json');
 const DOCS_HREF_REGEX = /^\/docs(?:\/|$)/;
 

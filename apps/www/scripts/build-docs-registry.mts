@@ -15,7 +15,7 @@ const HOMEPAGE = 'https://platejs.org';
 const NAME = 'plate';
 
 const isDev = process.env.NODE_ENV === 'development';
-const RELATIVE_SOURCE_DIR = '../../content';
+const RELATIVE_SOURCE_DIR = '../../content/docs';
 const SOURCE_DIR = path.join(process.cwd(), RELATIVE_SOURCE_DIR);
 const META_FILE = 'meta.json';
 const TARGET_FILE = 'registry-docs.json';

@@ -6,7 +6,7 @@ import { findNeighbour } from 'fumadocs-core/server';
 
 import { hrefWithLocale } from '@/lib/withLocale';
 import { source } from '@/lib/source';
-import docsMeta from '../../../../content/meta.json';
+import docsMeta from '../../../../content/docs/meta.json';
 
 const CN_DOCS_PREFIX_REGEX = /^\/cn(?=\/docs)/;
 

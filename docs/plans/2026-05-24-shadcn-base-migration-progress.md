@@ -6,7 +6,7 @@ Continue the docs restart from `docs/plans/2026-05-23-shadcn-docs-restart-compar
 
 ## Current Slice
 
-Status: eleventh slice complete
+Status: twelfth slice complete
 
 1. Make Fumadocs metadata/pageTree the docs navigation authority.
 2. Move sidebar and pager reads off direct `docsConfig` runtime access.
@@ -22,13 +22,14 @@ Status: eleventh slice complete
 12. Align header, mobile nav, and command-menu fallback links with upstream's Fumadocs-aware header behavior while preserving Plate product links.
 13. Include Fumadocs `meta.json` in the docs registry export and remove old `docsConfig`-driven docs-registry generation scaffolding.
 14. Move runtime docs navigation overlays out of `docsConfig` and into committed Fumadocs-adjacent metadata.
+15. Move Plate docs content under the upstream-style `content/docs/**` Fumadocs source root.
 
 ## Findings
 
 - Contentlayer removal and Fumadocs source loading are already complete.
 - `docsConfig` still exists, but this slice removes direct runtime reads from `DocsNav`, pager, command menu, and mobile docs nav.
 - Fumadocs supports root `meta.json` with `pages`, links, and separators; links can represent app-only and registry-derived docs routes.
-- The current content layout has root pages plus folders such as `(guides)`, `(plugins)`, `api`, `components`, `examples`, `installation`, `migration`, and `releases`.
+- The content layout now lives under `content/docs/**`, with root pages plus folders such as `(guides)`, `(plugins)`, `api`, `components`, `examples`, `installation`, `migration`, and `releases`.
 - CN routes can keep using English metadata because `DocsNav` applies locale labels and href prefixing.
 - Fumadocs search maps i18n locale names into Orama tokenizer languages. Plate's `cn` locale must be mapped explicitly to a supported tokenizer.
 - The upstream `.md` model maps `/docs/*.md` through a hidden `/llm/*` route. Plate now mirrors that for `/docs/*.md` and `/cn/docs/*.md`, while keeping canonical `https://platejs.org` source URLs in copied markdown.
@@ -47,9 +48,10 @@ Status: eleventh slice complete
 - Plate's mobile nav rendered the Fumadocs-derived tree but did not localize visible titles or hrefs at click time. On `/cn`, the mobile menu could point users back to English routes.
 - Plate's command-menu fallback link groups also used raw titles and hrefs. Fumadocs search owns indexed docs results, but fallback nav groups still need locale-safe labels and links.
 - `hrefWithLocale` must be safe for `/`, existing `/cn` links, hash links, and absolute external URLs. Prefixing every href blindly is how external links and CN homepage links get subtly broken.
-- `build-docs-registry.mts` still had a half-removed `docsConfig`/pathMap/meta generation path. The active export scanned Fumadocs content, but it did not publish the committed `content/meta.json`, so an installed docs registry missed the navigation authority that the app now relies on.
+- `build-docs-registry.mts` still had a half-removed `docsConfig`/pathMap/meta generation path. The active export scanned Fumadocs content, but it did not publish the committed `content/docs/meta.json`, so an installed docs registry missed the navigation authority that the app now relies on.
 - The docs registry should export `docs-meta` as a normal shadcn v4 registry item and make the aggregate `docs` item depend on `@plate/docs-meta`. Generating a sidecar `docs-meta.json` outside the registry dependency graph would preserve the old installer workaround instead of using upstream namespace resolution.
-- `docs-page-tree.ts` still imported `docsConfig/docsMap` at runtime after pageTree adoption. That kept the old TS nav graph on the hot path for labels, CN titles, and keywords even though `content/meta.json` already owns ordering.
+- `docs-page-tree.ts` still imported `docsConfig/docsMap` at runtime after pageTree adoption. That kept the old TS nav graph on the hot path for labels, CN titles, and keywords even though `content/docs/meta.json` already owns ordering.
+- The comparison doc still called out root `content/**` as a remaining divergence from upstream. Moving the source root to `content/docs/**` is the direct fix; keeping `defineDocs({ dir: '../../content' })` after adding metadata would be half a migration, and that's how these forks rot.
 
 ## Verification Plan
 
@@ -61,12 +63,13 @@ Status: eleventh slice complete
 - If provider or global CSS changes affect the root shell, verify body/layout markers, footer visibility, theme shortcut behavior, and at least one docs page with code blocks.
 - If header or mobile navigation changes, verify English and CN mobile menus, external Plate Plus behavior, command-menu fallback routing, and desktop breakpoint visibility.
 - If docs registry export changes, verify `createDocsRegistry()` through `check-docs-source-parity.mts`, verify source registry normalization, and run `www` typecheck.
-- If docs nav metadata changes, regenerate `content/meta.json`, verify the parity script asserts the metadata overlay, and run `www` typecheck.
+- If docs nav metadata changes, regenerate `content/docs/meta.json`, verify the parity script asserts the metadata overlay, and run `www` typecheck.
+- If the docs source root changes, verify `build:source`, docs source parity, docs registry source paths, and English/CN rendered routes.
 
 ## Progress Log
 
 - 2026-05-24: Loaded comparison artifact and prior solution notes. Selected navigation/search/pageTree as the next aligned migration slice.
-- 2026-05-24: Added `content/meta.json` generated from the current `docsConfig` nav, added `apps/www/scripts/sync-docs-meta.mts`, and added `sync:docs-meta`.
+- 2026-05-24: Added Fumadocs `meta.json` generated from the current `docsConfig` nav, added `apps/www/scripts/sync-docs-meta.mts`, and added `sync:docs-meta`.
 - 2026-05-24: Added `apps/www/src/lib/docs-page-tree.ts` so sidebar and pager read Fumadocs pageTree with `docsConfig` only as a migration overlay for labels/CN titles.
 - 2026-05-24: Rewired English and CN docs layouts to pass pageTree-derived nav into `DocsNav`.
 - 2026-05-24: Rewired English and CN docs pages to pass pageTree-derived neighbours into `DocContent`; deleted the old `components/pager.tsx` docsConfig pager.
@@ -102,10 +105,14 @@ Status: eleventh slice complete
 - 2026-05-24: Updated `CommandMenu` fallback links/groups to use localized titles and locale-safe hrefs while keeping Fumadocs search as the docs-search source.
 - 2026-05-24: Verification passed for the header/mobile-nav slice: `pnpm install`, `pnpm --filter www build:source`, `pnpm --filter www typecheck`, `pnpm lint:fix`, and local Chrome smoke on `http://localhost:3100/`, `http://localhost:3100/cn`, and `http://localhost:3100/docs`. The smoke confirmed English mobile links, CN mobile links, CN page-tree links, Plate Plus external target, CN command-menu routing to `/cn/docs`, one docs layout shell, hidden docs footer, desktop mobile-menu invisibility, and no meaningful browser logs after filtering the known dev-port manifest CORS noise.
 - 2026-05-24: Added `docs/solutions/developer-experience/2026-05-24-shadcn-header-nav-needs-locale-safe-client-links.md` through the ce-compound closeout.
-- 2026-05-24: Added a `docs-meta` registry item that publishes `../../content/meta.json` to `content/docs/plate/meta.json`, made the aggregate `docs` registry item depend on `@plate/docs-meta`, and extended docs source parity checks to assert the meta export.
+- 2026-05-24: Added a `docs-meta` registry item that publishes Fumadocs `meta.json` to `content/docs/plate/meta.json`, made the aggregate `docs` registry item depend on `@plate/docs-meta`, and extended docs source parity checks to assert the meta export.
 - 2026-05-24: Removed the dead `docsConfig`/pathMap/meta-generation scaffolding from `build-docs-registry.mts`; docs registry export now follows the committed Fumadocs metadata instead of a stale TS-nav shadow path.
 - 2026-05-24: Verification passed for the docs registry meta slice: `pnpm --filter www exec tsx --tsconfig ./scripts/tsconfig.scripts.json scripts/check-docs-source-parity.mts`, `pnpm --filter www exec tsx --tsconfig ./scripts/tsconfig.scripts.json scripts/check-registry-source.mts`, `pnpm --filter www typecheck`, `pnpm lint:fix`, and a final `pnpm --filter www typecheck` rerun after cleanup.
 - 2026-05-24: Added `docs/solutions/developer-experience/2026-05-24-fumadocs-docs-registry-exports-need-meta-item.md` through the ce-compound closeout.
-- 2026-05-24: Started the runtime nav-overlay slice: `sync-docs-meta.mts` now writes `_plate.sections` and `_plate.items` into `content/meta.json`; `docs-page-tree.ts` and the EN/CN docs page metadata fallback read those overlays from `content/meta.json` instead of importing `docsConfig/docsMap`.
+- 2026-05-24: Started the runtime nav-overlay slice: `sync-docs-meta.mts` now writes `_plate.sections` and `_plate.items` into Fumadocs `meta.json`; `docs-page-tree.ts` and the EN/CN docs page metadata fallback read those overlays from `content/docs/meta.json` instead of importing `docsConfig/docsMap`.
 - 2026-05-24: Verification passed for the runtime nav-overlay slice: `pnpm --filter www sync:docs-meta`, `pnpm --filter www typecheck`, `pnpm lint:fix`, and a final `pnpm --filter www typecheck` rerun after formatting. The typecheck includes `build:source`, docs parity, registry source validation, app TS, and package integration TS.
 - 2026-05-24: Browser Use was not exposed by the current tool registry after two lookup attempts. Fallback HTTP smoke passed on `http://localhost:3100/docs/plugin-shortcuts` and `http://localhost:3100/cn/docs/plugin-shortcuts`, confirming `data-slot="docs"` plus English and CN page titles/text. A standalone `tsx` import smoke of `docs-page-tree.ts` failed on Fumadocs' `fumadocs-core/server` package export and was not used as evidence.
+- 2026-05-24: Started the content-root slice: moved Plate docs content from root `content/**` to `content/docs/**`, updated Fumadocs `defineDocs`, docs meta read/write paths, docs registry source root, and parity assertions to use `content/docs`.
+- 2026-05-24: Verification passed for the content-root slice: `pnpm install`, `pnpm --filter www sync:docs-meta`, `pnpm --filter www build:source`, `pnpm --filter www exec tsx --tsconfig ./scripts/tsconfig.scripts.json scripts/check-docs-source-parity.mts`, `pnpm --filter www exec tsx --tsconfig ./scripts/tsconfig.scripts.json scripts/check-registry-source.mts`, `pnpm --filter www typecheck`, and `pnpm lint:fix`.
+- 2026-05-24: Browser Use was still unavailable from the tool registry. Fallback HTTP smoke passed on `http://localhost:3100/docs/plugin-shortcuts`, `http://localhost:3100/cn/docs/table`, `http://localhost:3100/docs/plugin-shortcuts.md`, and `/api/search?query=table`, confirming stable English docs, CN docs, markdown route, and Fumadocs search after the source-root move.
+- 2026-05-24: PR gate passed with `pnpm check` after the content-root move.

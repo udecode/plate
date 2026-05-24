@@ -39,14 +39,13 @@ This artifact was first written before the Plate docs source cutover landed. The
 - English docs rendering uses `doc.data.body`, `doc.data.getText("raw")`, and the registry component/example fallback.
 - CN docs are modeled through Fumadocs i18n with `languages: ["en", "cn"]`.
 - Contentlayer is gone from `apps/www` scripts and dependencies.
+- Docs content now lives under `content/docs/**`, with `content/docs/meta.json` as the committed Fumadocs page-tree metadata root.
+- Runtime docs navigation, pager metadata, mobile docs nav, and command-menu fallback links no longer read `docsConfig` directly.
 
 The current middle state is narrower than the original restart problem, but still not the final restart:
 
-- Content remains in root `content/**`, not upstream's `content/docs/**`.
-- There are still zero `meta.json` files under `content/**`.
-- `docsConfig` still drives `docs-nav`, pager-adjacent metadata, and `command-menu`.
-- `command-menu` is still client-only nav-config search, not Fumadocs search.
-- The route shell, theme/customizer surface, registry build, generated registry output model, and shadcn dependency are still Plate's old fork shape.
+- `docsConfig` still exists as a metadata generator/parity source while labels, CN titles, and registry/app-only links finish moving into committed metadata or registry sources.
+- The route tree, registry build, generated registry output model, and retained Plate product surfaces still need further upstream-aligned pruning.
 
 So the next useful restart work is not "remove Contentlayer." That is done. The next useful work is to replace the remaining navigation/search/registry/app-shell authorities with the upstream Fumadocs and shadcn v4 model while deliberately reapplying Plate product surfaces.
 
@@ -55,7 +54,7 @@ So the next useful restart work is not "remove Contentlayer." That is done. The 
 | Area | Upstream `../ui/apps/v4` | Plate `apps/www` | Take |
 | --- | --- | --- | --- |
 | Main app files | 206 under `app` | 51 under `src/app` | Route tree diverged hard. |
-| Content files | 227 under `content/docs`, including `meta.json` | 251 root `content/**/*.mdx`, including 124 CN files and 0 `meta.json` files | No shared content paths. |
+| Content files | 227 under `content/docs`, including `meta.json` | Plate docs now live under `content/docs/**`, including CN files and `meta.json` | Content root is aligned; exact document set is Plate-owned. |
 | Registry files | 1127 under `registry` | 381 under `src/registry` | Different registry ownership and generated output model. |
 | Components | 71 under `components` | 104 under `src/components` | Plate added docs/API/editor/product components. |
 | Scripts | 6 under `scripts` | 7 under `apps/www/scripts` | Plate replaced upstream registry/docs build pieces. |
@@ -103,7 +102,7 @@ Files:
 - `apps/www/scripts/build-docs-registry.mts`
 - `apps/www/scripts/check-docs-source-parity.mts`
 
-Plate now uses `fumadocs-mdx@13.0.2`, `fumadocs-core@15.5.1`, `createMDX`, `defineDocs({ dir: "../../content" })`, and `shadcn@4.8.0`. It still uses many `@platejs/*` workspace deps, editor runtime deps, AI/upload/docx/yjs/dnd deps, and package integration tests.
+Plate now uses `fumadocs-mdx@13.0.2`, `fumadocs-core@15.5.1`, `createMDX`, `defineDocs({ dir: "../../content/docs" })`, and `shadcn@4.8.0`. It still uses many `@platejs/*` workspace deps, editor runtime deps, AI/upload/docx/yjs/dnd deps, and package integration tests.
 
 Important scripts:
 
