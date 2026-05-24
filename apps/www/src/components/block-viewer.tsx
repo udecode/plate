@@ -112,66 +112,16 @@ function BlockViewerProvider({
 }) {
   const [view, setView] =
     React.useState<BlockViewerContext['view']>(defaultView);
-  const [highlightedFiles, setHighlightedFiles] = React.useState<
-    BlockViewerContext['highlightedFiles']
-  >(highlightedFilesProp ?? []);
-  const [activeFile, setActiveFile] = React.useState<
+  const highlightedFiles = highlightedFilesProp ?? [];
+  const [activeFileState, setActiveFile] = React.useState<
     BlockViewerContext['activeFile']
-  >(highlightedFiles?.[0]?.target ?? null);
-  const [isLoading, setIsLoading] = React.useState(false);
-  const [isSettled, setIsSettled] = React.useState(false);
-  const [hasError, setHasError] = React.useState(false); // Add error state
+  >(highlightedFiles[0]?.target ?? null);
   const resizablePanelRef = React.useRef<ImperativePanelHandle>(null);
 
-  // Load code files when switching to code view
-  React.useEffect(() => {
-    if (
-      view === 'code' &&
-      highlightedFiles?.[1] &&
-      !highlightedFiles[1].content &&
-      !isLoading &&
-      !hasError &&
-      !isSettled
-    ) {
-      const loadFiles = async () => {
-        setIsLoading(true);
-
-        try {
-          const response = await fetch(
-            `/api/registry/${encodeURIComponent(item.name)}`
-          );
-          const data = await response.json();
-
-          if (!response.ok) {
-            throw new Error(data.error || 'Failed to fetch files');
-          }
-          if (data.files) {
-            setHighlightedFiles(data.files);
-
-            if (!activeFile && data.files?.length) {
-              setActiveFile(data.files[0].target!);
-            }
-          }
-        } catch (error) {
-          console.error('Failed to load files:', error);
-          setHasError(true); // Set error state to prevent retries
-        } finally {
-          setIsLoading(false);
-        }
-
-        setIsSettled(true);
-      };
-      void loadFiles();
-    }
-  }, [
-    activeFile,
-    hasError,
-    highlightedFiles,
-    isLoading,
-    isSettled,
-    item.name,
-    view,
-  ]);
+  const activeFile =
+    highlightedFiles.find((file) => file.target === activeFileState)?.target ??
+    highlightedFiles[0]?.target ??
+    null;
 
   return (
     <BlockViewerContext.Provider
@@ -179,7 +129,7 @@ function BlockViewerProvider({
         activeFile,
         dependencies,
         highlightedFiles,
-        isLoading,
+        isLoading: false,
         item,
         resizablePanelRef,
         setActiveFile,
@@ -364,19 +314,6 @@ function BlockViewerToolbar({ block }: { block: boolean }) {
             </ToggleGroup>
           </div>
         )}
-
-        {/* {!item.meta?.isPro && (
-          <>
-            <Separator
-              orientation="vertical"
-              className="mx-1 hidden h-4 xl:flex"
-            />
-            <OpenInV0Button
-              name={item.name}
-              className="hidden shadow-none sm:flex"
-            />
-          </>
-        )} */}
       </div>
     </div>
   );

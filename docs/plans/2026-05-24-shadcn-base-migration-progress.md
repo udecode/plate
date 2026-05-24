@@ -6,7 +6,7 @@ Continue the docs restart from `docs/plans/2026-05-23-shadcn-docs-restart-compar
 
 ## Current Slice
 
-Status: thirteenth slice complete
+Status: fourteenth slice complete
 
 1. Make Fumadocs metadata/pageTree the docs navigation authority.
 2. Move sidebar and pager reads off direct `docsConfig` runtime access.
@@ -24,6 +24,7 @@ Status: thirteenth slice complete
 14. Move runtime docs navigation overlays out of `docsConfig` and into committed Fumadocs-adjacent metadata.
 15. Move Plate docs content under the upstream-style `content/docs/**` Fumadocs source root.
 16. Move category grid/breadcrumb metadata out of runtime `docsConfig` imports and add CN app-only docs routes for localized category links.
+17. Remove the lazy `/api/registry/[name]` highlighted-source route and dead v0 open button residue.
 
 ## Findings
 
@@ -55,6 +56,8 @@ Status: thirteenth slice complete
 - The comparison doc still called out root `content/**` as a remaining divergence from upstream. Moving the source root to `content/docs/**` is the direct fix; keeping `defineDocs({ dir: '../../content' })` after adding metadata would be half a migration, and that's how these forks rot.
 - Category grid pages and the breadcrumb switcher still pulled `docsConfig` through `docs-utils`, even after sidebar, pager, and command menu moved to Fumadocs metadata. That kept old TS nav data in the browser bundle.
 - Localizing app-only category links exposes a route parity requirement: if `/docs/components`, `/docs/examples`, `/docs/plugins`, `/docs/api`, or special example routes are part of the CN nav, explicit `/cn/docs/...` app routes need to exist because Fumadocs source fallback cannot invent those pages.
+- `BlockViewer` still lazy-fetched highlighted source from `/api/registry/[name]` when switching to code view. That preserved an extra Plate-only API route after registry pages already had server-side access to full registry source data.
+- The old `OpenInV0Button` file was dead code, and `BlockViewer` still carried a commented v0 toolbar block. The comparison doc calls out v0 as discard-all; keeping the corpse around is how it comes back.
 
 ## Verification Plan
 
@@ -69,6 +72,7 @@ Status: thirteenth slice complete
 - If docs nav metadata changes, regenerate `content/docs/meta.json`, verify the parity script asserts the metadata overlay, and run `www` typecheck.
 - If the docs source root changes, verify `build:source`, docs source parity, docs registry source paths, and English/CN rendered routes.
 - If category grid or breadcrumb metadata changes, verify `content/docs/meta.json` carries `_plate.categoryGroups` and `_plate.docSections`, run docs source parity, and smoke `/cn/docs/components`, `/cn/docs/plugins`, `/cn/docs/examples`, `/cn/docs/api`, plus app-only special example routes.
+- If block/source preview loading changes, verify registry pages receive full highlighted files without `/api/registry/[name]`, run `www` typecheck, and smoke at least one block/code-view surface.
 
 ## Progress Log
 
@@ -124,3 +128,6 @@ Status: thirteenth slice complete
 - 2026-05-24: Deleted `apps/www/src/config/docs-utils.ts`; remaining `docsConfig` reads outside registry source are limited to metadata generation and parity scripts.
 - 2026-05-24: Added CN app-only docs routes for `/cn/docs/api`, `/cn/docs/components`, `/cn/docs/examples`, `/cn/docs/plugins`, `/cn/docs/examples/slate-to-html`, and `/cn/docs/examples/server-side`, matching the localized links emitted by CN nav.
 - 2026-05-24: Verification passed for the category metadata/CN route slice: `pnpm install`, `pnpm --filter www sync:docs-meta`, `pnpm --filter www build:source`, `pnpm --filter www exec tsx --tsconfig ./scripts/tsconfig.scripts.json scripts/check-docs-source-parity.mts`, `pnpm --filter www typecheck`, `pnpm lint:fix`, and final `pnpm --filter www typecheck`. Browser Use was unavailable from tool discovery; fallback HTTP smoke passed for `/cn/docs/components`, `/cn/docs/plugins`, `/cn/docs/examples`, `/cn/docs/api`, `/cn/docs/examples/slate-to-html`, and `/cn/docs/examples/server-side` on `localhost:3100`.
+- 2026-05-24: Started the static block-source slice: `BlockViewer` no longer fetches `/api/registry/[name]`; docs/block callers now pass registry items with full file content so highlighted files are available without a client-side registry API.
+- 2026-05-24: Deleted `apps/www/src/app/api/registry/[name]/route.ts`, deleted dead `OpenInV0Button`, and removed the commented v0 toolbar block from `BlockViewer`.
+- 2026-05-24: Verification passed for the static block-source slice: `pnpm --filter www typecheck`, `pnpm lint:fix`, and final `pnpm --filter www typecheck`. Browser Use was unavailable from tool discovery; fallback HTTP smoke passed for `/docs/components/table-node`, `/blocks/editor-basic`, and `/docs/examples/slate-to-html`, and confirmed `/api/registry/editor-basic` returns 404.

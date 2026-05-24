@@ -32,7 +32,7 @@ export async function BlockDisplay({
     );
   }
 
-  const item = await getCachedRegistryItem(block.name, true);
+  const item = await getCachedRegistryItem(block.name);
 
   if (!item?.files) {
     return null;

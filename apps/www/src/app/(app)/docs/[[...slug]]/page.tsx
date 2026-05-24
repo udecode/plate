@@ -178,7 +178,7 @@ export default async function DocPage(props: DocPageProps) {
       registryNames,
     });
 
-    const item = await getCachedRegistryItem(docName, true);
+    const item = await getCachedRegistryItem(docName);
 
     if (!item?.files) {
       notFound();
@@ -368,7 +368,7 @@ async function getExampleCode(name?: string) {
   }
 
   // Use the same caching pattern
-  const item = await getCachedRegistryItem(name, true);
+  const item = await getCachedRegistryItem(name);
   let highlightedFiles: any = [];
   let tree: any = null;
   let dependencies: string[] = [];
