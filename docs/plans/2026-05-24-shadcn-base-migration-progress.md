@@ -6,7 +6,7 @@ Continue the docs restart from `docs/plans/2026-05-23-shadcn-docs-restart-compar
 
 ## Current Slice
 
-Status: thirtieth slice complete
+Status: thirty-first slice complete
 
 1. Make Fumadocs metadata/pageTree the docs navigation authority.
 2. Move sidebar and pager reads off direct `docsConfig` runtime access.
@@ -38,6 +38,7 @@ Status: thirtieth slice complete
 28. Remove the ignored app-local React 18 `resolutions` block from `apps/www/package.json` so the docs app package metadata matches the React 19 shadcn base instead of emitting stale pnpm warnings.
 29. Remove stale template tooling that still installs Plate registry items through raw localhost URLs instead of the configured `@plate` shadcn namespace.
 30. Align `DocsCopyPage` with the upstream copy-page grouped-button/dropdown/popover model while preserving Plate-specific LLM, Markdown, and GitHub actions and making clipboard failures non-fatal.
+31. Delete unreferenced template helper scripts that still mutate `templates/**` between localhost and production registry URLs or initialize Plate from a localhost registry URL.
 
 ## Findings
 
@@ -92,6 +93,7 @@ Status: thirtieth slice complete
 - `apps/www/package.json` still carried an ignored `resolutions` block pinning `react` and `react-dom` to React 18 even though the docs app, root package, and upstream shadcn v4 app use React 19. pnpm warned on every install that the field did not take effect, so keeping it only preserved stale fork metadata.
 - `tooling/scripts/add-ai.sh` still called missing `pre-registry.sh`/`post-registry.sh` scripts and installed `editor-ai` from `http://localhost:3000/rd/editor-ai`. The supported template sync path is `tooling/scripts/update-template.sh`, and template install smoke tests should exercise the configured `@plate` registry namespace instead of requiring a local docs server.
 - `DocsCopyPage` had already replaced the old `LLMCopyButton`/`ViewOptions` surface, but its implementation still used the thinner Plate dropdown instead of upstream's grouped copy-page control. Browser verification also exposed that `useCopyToClipboard` left `navigator.clipboard.writeText(...)` rejections unhandled when the document is not focused.
+- `tooling/scripts/pre-basic.sh`, `pre-ai.sh`, `post-basic.sh`, `post-ai.sh`, `init-plate-template.sh`, `init-plate.sh`, and `init2.sh` had no active callers and preserved the old workflow of hand-mutating template `components.json` files or initializing Plate from `http://localhost:3000/r`. Keeping them contradicted the shadcn v4 namespace contract now owned by `components.json`, `update-template.sh`, and `prepare-local-template-registry.mjs`.
 
 ## Verification Plan
 
@@ -209,3 +211,5 @@ Status: thirtieth slice complete
 - 2026-05-24: Verification passed for the template tooling cleanup slice: exact old-localhost residue search only finds the intentional updated `templates:test` script, `package.json` parses, retained template shell scripts pass `bash -n`, `pnpm install` passed with an unchanged lockfile, `pnpm lint:fix` passed with no fixes applied, and PR gate `pnpm check` passed.
 - 2026-05-24: Started the copy-page alignment slice: updated `DocsCopyPage` to use upstream's grouped button, desktop dropdown, and mobile popover structure while retaining Plate's Markdown, ChatGPT, Claude, and GitHub actions and keeping v0 discarded.
 - 2026-05-24: Browser Use on `localhost:3108/docs/plugin-shortcuts` verified one copy button, one options button, four expected menu links with `noopener noreferrer`, and no browser warnings/errors. The first copy click exposed an unhandled clipboard rejection when the document was unfocused; `useCopyToClipboard` now catches failed writes and only shows success toasts after successful writes. A repeat Browser Use copy click produced no browser or server errors.
+- 2026-05-24: Started the stale template helper deletion slice: deleted the unreferenced localhost registry init scripts and pre/post template URL mutation scripts so retained template tooling flows through `update-template.sh` and the configured `@plate` namespace.
+- 2026-05-24: Verification passed for the stale template helper deletion slice: retained shell scripts pass `bash -n`, active tooling search has no `init-plate*`/`init2`/pre-post helper references and no `http://localhost:3000/r` or `/rd` template install residue, `pnpm install` passed, `pnpm lint:fix` passed with no fixes applied, and PR gate `pnpm check` passed.
