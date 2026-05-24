@@ -6,12 +6,12 @@ Continue the docs restart from `docs/plans/2026-05-23-shadcn-docs-restart-compar
 
 ## Current Slice
 
-Status: twenty-second slice complete
+Status: twenty-third slice complete
 
 1. Make Fumadocs metadata/pageTree the docs navigation authority.
 2. Move sidebar and pager reads off direct `docsConfig` runtime access.
 3. Replace command menu docs search with Fumadocs search API.
-4. Keep `docsConfig` only as migration overlay for labels, CN titles, and non-content registry/app links until those live in Fumadocs metadata or registry docs source.
+4. Keep `docsConfig` only as a temporary migration overlay until labels, CN titles, and non-content registry/app links live in Fumadocs metadata or registry docs source.
 5. Replace Plate's old LLM copy/view buttons with the upstream-style copy-page dropdown and `.md` markdown route model.
 6. Remove the old Plate theme/customizer shell surface called out for deletion in the comparison doc.
 7. Route visible registry install commands through the `@plate/*` namespace configured by `components.json`.
@@ -30,11 +30,12 @@ Status: twenty-second slice complete
 20. Add the upstream-style `/view/[name]` block preview renderer and route default block iframes through it.
 21. Add a Plate `/init` bootstrap route that follows the shadcn `registry:base` contract, plus the upstream-style `/init.md` markdown rewrite.
 22. Remove the legacy Pages Router `/api/components` endpoint and stale tracing for the deleted `/api/registry/[name]` route.
+23. Promote committed `content/docs/meta.json` to the only docs navigation metadata source by deleting the old `docsConfig` sync generator and TS nav config.
 
 ## Findings
 
 - Contentlayer removal and Fumadocs source loading are already complete.
-- `docsConfig` still exists, but this slice removes direct runtime reads from `DocsNav`, pager, command menu, and mobile docs nav.
+- `docsConfig` no longer exists in active source. It was first isolated from runtime reads, then removed after `content/docs/meta.json` took over pages, labels, CN titles, sections, category tabs, and category grids.
 - Fumadocs supports root `meta.json` with `pages`, links, and separators; links can represent app-only and registry-derived docs routes.
 - The content layout now lives under `content/docs/**`, with root pages plus folders such as `(guides)`, `(plugins)`, `api`, `components`, `examples`, `installation`, `migration`, and `releases`.
 - CN routes can keep using English metadata because `DocsNav` applies locale labels and href prefixing.
@@ -71,6 +72,8 @@ Status: twenty-second slice complete
 - The MCP docs still had `@platejs` in the `components.json` snippet even though templates, visible commands, and generated registry dependencies now use `@plate`.
 - `apps/www/src/pages/api/components.*` was the last Pages Router endpoint in the docs app. It served a single stale Button JSON snapshot, had no repo references beyond its own import, and has no equivalent in upstream `../ui/apps/v4`.
 - `apps/www/next.config.ts` still traced assets for `/api/registry/[name]` after that App Router endpoint was deleted. Keeping tracing for a deleted route is harmless until it isn't; it advertises an API surface the restarted app intentionally removed.
+- `content/docs/meta.json` now carries 265 Fumadocs page entries, 257 `_plate.items` overlays, localized section labels, category switcher metadata, and category groups. The old `sync-docs-meta.mts` generator was no longer needed as a transitional bridge.
+- Keeping `docsConfig` after runtime navigation, parity, and registry docs export all read committed Fumadocs metadata would recreate the exact competing-source problem the migration plan warned about. The metadata file is now edited as source, like upstream shadcn `content/docs/**/meta.json`.
 
 ## Verification Plan
 
@@ -91,6 +94,7 @@ Status: twenty-second slice complete
 - If block preview routing changes, verify `/view/[name]`, `/blocks/[name]`, and a registry docs page that embeds `BlockViewer`.
 - If init/bootstrap routing changes, verify `/init` returns a valid `registry:base` item, `/init.md` rewrites to markdown instructions, `/init/v0` is absent, and MCP docs use `@plate`.
 - If legacy API cleanup changes routes, verify `/api/components` and `/api/registry/[name]` are absent while `/init`, docs pages, and block previews still render.
+- If docs metadata authority changes, verify no active source imports `docsConfig`, run docs source parity, and smoke English/CN docs navigation surfaces.
 
 ## Progress Log
 
@@ -160,3 +164,6 @@ Status: twenty-second slice complete
 - 2026-05-24: Added `docs/solutions/developer-experience/2026-05-24-plate-init-routes-should-return-shadcn-registry-base-items.md` through the ce-compound closeout.
 - 2026-05-24: Started the legacy Pages API cleanup slice: deleted `apps/www/src/pages/api/components.*` and removed stale output tracing for the already-deleted `/api/registry/[name]` route.
 - 2026-05-24: Verification passed for the legacy Pages API cleanup slice: `pnpm install`, `pnpm --filter www typecheck`, `pnpm lint:fix`, fallback HTTP smoke on `localhost:3102` confirming `/api/components` and `/api/registry/editor-basic` return 404 while `/init`, `/init.md`, `/docs/components/table-node`, `/view/editor-basic`, and `/blocks/editor-basic` return 200, and PR gate `pnpm check`. Browser Use was unavailable from tool discovery. The first dev-server smoke exposed local disk pressure from a 12G `.next` cache; deleting that generated cache restored 13G free space before `pnpm check`.
+- 2026-05-24: Started the docs metadata authority cleanup slice: removed `sync:docs-meta`, deleted `apps/www/scripts/sync-docs-meta.mts`, and deleted the old `docsConfig`/nav generator files. Active docs navigation metadata now lives in committed `content/docs/meta.json`.
+- 2026-05-24: Verification passed for the docs metadata authority cleanup slice: `pnpm install`, `pnpm --filter www typecheck`, `pnpm lint:fix`, active-source `rg` confirms no `docsConfig`/`sync-docs-meta` references remain, and fallback HTTP smoke on `localhost:3103` confirmed `/docs`, `/cn/docs/table`, `/docs/plugin-shortcuts`, `/docs/components`, `/cn/docs/components`, `/docs/examples`, `/cn/docs/examples`, and `/api/search?query=table`. Browser Use was unavailable from tool discovery. The dev smoke again filled local `.next` cache; deleting the generated cache restored free disk space before final PR gate.
+- 2026-05-24: ce-compound closeout updated `docs/solutions/developer-experience/2026-05-24-fumadocs-page-tree-search-needs-locale-safe-metadata.md` with the final generator-removal rule instead of creating a duplicate learning.

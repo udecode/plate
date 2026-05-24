@@ -21,7 +21,6 @@
     "rc": "pnpm build:source && concurrently \"next dev\" \"PORT=4444 node ../../node_modules/y-webrtc/bin/server.js\"",
     "rd": "NODE_ENV=development tsx --tsconfig ./scripts/tsconfig.scripts.json scripts/build-registry.mts",
     "registry:capture": "tsx --tsconfig ./scripts/tsconfig.scripts.json ./scripts/capture-registry.mts",
-    "sync:docs-meta": "tsx --tsconfig ./scripts/tsconfig.scripts.json scripts/sync-docs-meta.mts",
     "shadcn:build": "shadcn build public/r/registry.json",
     "shadcn:build:docs": "shadcn build public/r/registry-docs.json",
     "shadcn:dev": "shadcn build public/rd/registry.json --output public/rd",

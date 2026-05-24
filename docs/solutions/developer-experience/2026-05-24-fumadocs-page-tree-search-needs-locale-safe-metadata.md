@@ -74,7 +74,7 @@ export const { GET } = createFromSource(source, {
 });
 ```
 
-Keep `docsConfig` only as migration data for labels, Chinese titles, and the metadata generator until those values live in first-class Fumadocs or registry sources.
+Use `docsConfig` only as migration data for labels, Chinese titles, and the first metadata generator. Once `content/docs/meta.json` carries the page list and `_plate` overlays, delete the generator and the TS nav files instead of keeping both systems alive.
 
 Move runtime-only overlay data into the committed metadata file itself. The generator can still consume `docsConfig` temporarily, but runtime code should read `content/docs/meta.json`:
 
@@ -120,6 +120,28 @@ export function getDocsCategoryGroups(category: DocsCategory | string) {
 }
 ```
 
+The final cleanup should make committed metadata the only docs navigation source:
+
+```text
+content/docs/meta.json
+  pages
+  _plate.sections
+  _plate.items
+  _plate.docSections
+  _plate.categoryGroups
+```
+
+At that point, remove the old sync bridge:
+
+```text
+apps/www/scripts/sync-docs-meta.mts
+apps/www/src/config/docs*.ts
+apps/www/src/config/nav-to-object.ts
+apps/www/src/config/registry-to-nav.ts
+```
+
+This makes metadata edits explicit and matches upstream shadcn's hand-authored `content/docs/**/meta.json` model.
+
 For app-only docs surfaces that the CN nav can link to, add explicit `/cn/docs/...` routes that reuse the retained page UI. That covers category roots and special examples that are not physical MDX files.
 
 ## Why This Works
@@ -135,7 +157,9 @@ Fumadocs search delegates tokenization to Orama. Orama supports `english`, not P
 - Add `content/docs/meta.json` before switching visible navigation to `source.pageTree`.
 - For Fumadocs i18n search, explicitly map custom locale keys to tokenizer languages supported by Orama.
 - Keep temporary `docsConfig` usage centralized in metadata generation/parity scripts, not runtime page rendering.
+- Delete that temporary generator once parity proves `content/docs/meta.json` carries pages, labels, CN titles, sections, category tabs, and category groups.
 - Assert representative `_plate.sections`, `_plate.items`, `_plate.docSections`, and `_plate.categoryGroups` values in docs parity so regenerated metadata cannot silently drop labels, CN titles, category tabs, or grid groups.
+- After deleting the generator, keep the parity check pointed at committed metadata and add an active-source search for `docsConfig`/`sync-docs-meta` before shipping the slice.
 - When localizing app-only docs links, add matching CN app routes or a parity check that proves they already exist.
 - Browser-test both `/docs` and `/cn/docs/*` after changing search or pageTree code.
 
