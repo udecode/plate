@@ -4,9 +4,6 @@ import registry from 'registry';
 import { registryItemSchema } from 'shadcn/schema';
 import { z } from 'zod';
 
-// SYNC
-
-// const BLOCKS_WHITELIST_PREFIXES = ['sidebar', 'login'];
 const REGISTRY_BLOCK_TYPES = new Set(['registry:block']);
 
 export async function getAllBlocks() {
@@ -23,9 +20,5 @@ function _getAllBlocks() {
     (block) =>
       REGISTRY_BLOCK_TYPES.has(block.type) &&
       block.categories?.includes('Editors')
-    // BLOCKS_WHITELIST_PREFIXES.some(
-    //   (prefix) =>
-    //     block.name.startsWith(prefix) && REGISTRY_BLOCK_TYPES.has(block.type)
-    // )
   );
 }

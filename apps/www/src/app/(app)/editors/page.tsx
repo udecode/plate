@@ -6,8 +6,6 @@ import { BlockDisplay } from '@/components/block-display';
 import { siteConfig } from '@/config/site';
 import { getAllBlocks } from '@/lib/blocks';
 
-// SYNC
-
 const potionBlock: RegistryItem = {
   description: 'A Notion-like AI template',
   meta: {

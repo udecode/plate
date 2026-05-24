@@ -11,6 +11,7 @@ symptoms:
   - "command-menu search needed to move from client-only nav filtering to Fumadocs search"
   - "searching with the cn locale crashed Orama with Language \"cn\" is not supported"
   - "localized CN navigation could point at app-only docs routes that had no /cn counterpart"
+  - "English and CN docs catch-all routes duplicated registry fallback and metadata logic after the Fumadocs i18n cutover"
 root_cause: config_error
 resolution_type: migration
 severity: medium
@@ -30,6 +31,7 @@ After the docs source cutover, `apps/www` still used `docsConfig` as the runtime
 - `docs-page-tree.ts` still imported `docsConfig/docsMap` after the pageTree switch, keeping the old TS nav graph in runtime code for descriptions, labels, keywords, and CN labels.
 - Category grid pages and the breadcrumb switcher still imported `docsConfig` through `docs-utils`, keeping the old TS nav graph in the browser bundle.
 - CN navigation localized app-only category links such as `/docs/components` to `/cn/docs/components`, but those category pages did not have explicit CN app routes.
+- `/cn/docs/[[...slug]]` copied the English catch-all route almost line-for-line, so registry fallback pages, related docs, metadata, pager inputs, and highlighted-source loading could drift by locale.
 - Browser search for `table` hit `/api/search?query=table`, then the dev server logged:
 
 ```text
@@ -144,6 +146,24 @@ This makes metadata edits explicit and matches upstream shadcn's hand-authored `
 
 For app-only docs surfaces that the CN nav can link to, add explicit `/cn/docs/...` routes that reuse the retained page UI. That covers category roots and special examples that are not physical MDX files.
 
+For catch-all docs pages, keep locale-specific Next route files thin and route everything through one shared server helper:
+
+```ts
+export function generateStaticParams() {
+  return generateDocStaticParams('cn');
+}
+
+export function generateMetadata(props: DocPageProps) {
+  return generateDocMetadata(props, 'cn');
+}
+
+export default function CNDocPage(props: DocPageProps) {
+  return renderDocPage(props, 'cn');
+}
+```
+
+The shared helper should own Fumadocs `source.getPage(...)`, registry fallback pages, `ComponentInstallation`, `ComponentPreview`, related-doc inference, metadata generation, and pager lookup. Localize internal related-doc routes in that helper with the same `hrefWithLocale` behavior used by navigation, so CN registry fallback pages do not link users back to English docs.
+
 ## Why This Works
 
 Fumadocs `meta.json` is the pageTree ordering contract. Root `pages` entries can include separators and links, which lets Plate represent app-only and registry-derived docs routes without pretending every route is a physical MDX file. Keep that metadata under `content/docs/` with the MDX files, matching the upstream shadcn/Fumadocs content root.
@@ -161,6 +181,8 @@ Fumadocs search delegates tokenization to Orama. Orama supports `english`, not P
 - Assert representative `_plate.sections`, `_plate.items`, `_plate.docSections`, and `_plate.categoryGroups` values in docs parity so regenerated metadata cannot silently drop labels, CN titles, category tabs, or grid groups.
 - After deleting the generator, keep the parity check pointed at committed metadata and add an active-source search for `docsConfig`/`sync-docs-meta` before shipping the slice.
 - When localizing app-only docs links, add matching CN app routes or a parity check that proves they already exist.
+- Do not keep separate English and CN catch-all implementations. Keep separate route files only for Next's route exports, then call a shared locale-aware renderer.
+- When refactoring localized docs routes, smoke both MDX-backed pages and registry fallback pages in English and CN.
 - Browser-test both `/docs` and `/cn/docs/*` after changing search or pageTree code.
 
 ## Related Issues

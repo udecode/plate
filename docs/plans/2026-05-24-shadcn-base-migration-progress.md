@@ -6,7 +6,7 @@ Continue the docs restart from `docs/plans/2026-05-23-shadcn-docs-restart-compar
 
 ## Current Slice
 
-Status: twenty-fourth slice complete
+Status: twenty-fifth slice complete
 
 1. Make Fumadocs metadata/pageTree the docs navigation authority.
 2. Move sidebar and pager reads off direct `docsConfig` runtime access.
@@ -32,6 +32,7 @@ Status: twenty-fourth slice complete
 22. Remove the legacy Pages Router `/api/components` endpoint and stale tracing for the deleted `/api/registry/[name]` route.
 23. Promote committed `content/docs/meta.json` to the only docs navigation metadata source by deleting the old `docsConfig` sync generator and TS nav config.
 24. Remove stale create/project/theme state from the public homepage preview path: delete unused project add hooks/components, delete unused theme registry preview wrapper, drop the old customizer radius from shared install config, and remove lift-mode state from the playground preview.
+25. Collapse the duplicated English/CN docs catch-all route implementation into one locale-aware Fumadocs/registry page renderer, localize registry-related docs links through the same helper, and remove stale `// SYNC` markers from retained public docs surfaces.
 
 ## Findings
 
@@ -76,6 +77,9 @@ Status: twenty-fourth slice complete
 - `content/docs/meta.json` now carries 265 Fumadocs page entries, 257 `_plate.items` overlays, localized section labels, category switcher metadata, and category groups. The old `sync-docs-meta.mts` generator was no longer needed as a transitional bridge.
 - Keeping `docsConfig` after runtime navigation, parity, and registry docs export all read committed Fumadocs metadata would recreate the exact competing-source problem the migration plan warned about. The metadata file is now edited as source, like upstream shadcn `content/docs/**/meta.json`.
 - The comparison doc calls out create/v0/project/theme surfaces as discard-all unless they directly serve Plate's kept product routes. `ProjectAddButton`, `useProject`, `ThemeComponent`, and `useLiftMode` had no active consumers after the preview/view/init cleanup. The homepage playground only needed the preview shell and package-manager install config, not project storage, lift-mode storage, or customizer radius storage.
+- `/cn/docs/[[...slug]]` still duplicated the English docs catch-all route logic after the Fumadocs i18n cutover. That duplication made registry fallback pages, related-doc links, metadata, and pager behavior easy to drift between locales.
+- The docs catch-all route should keep thin Next route files per locale, but route discovery, metadata generation, Fumadocs page rendering, registry fallback rendering, related docs, and highlighted source loading belong in one shared server helper parameterized by locale.
+- Old `// SYNC` comments in retained app-shell, docs, editors, block viewer, and block listing files no longer represented actionable migration work. Leaving stale sync markers in kept surfaces makes future audits noisier than the code.
 
 ## Verification Plan
 
@@ -98,6 +102,7 @@ Status: twenty-fourth slice complete
 - If legacy API cleanup changes routes, verify `/api/components` and `/api/registry/[name]` are absent while `/init`, docs pages, and block previews still render.
 - If docs metadata authority changes, verify no active source imports `docsConfig`, run docs source parity, and smoke English/CN docs navigation surfaces.
 - If homepage preview state cleanup changes client components, verify no active imports remain for removed hooks/components, run `www` typecheck and lint, and smoke `/` plus `/cn` if a dev server is available.
+- If docs catch-all route logic changes, verify English and CN MDX docs, English and CN registry fallback docs, editors, view preview, and deleted legacy APIs.
 
 ## Progress Log
 
@@ -173,3 +178,6 @@ Status: twenty-fourth slice complete
 - 2026-05-24: Started the create/project/theme residue cleanup slice: deleted `ProjectAddButton`, `useProject`, `ThemeComponent`, `ThemeWrapper`, and `useLiftMode`; simplified the homepage playground preview around the retained preview shell; removed old customizer radius state from `useConfig`; and pruned unused theme/color/lift tracking event names.
 - 2026-05-24: Verification passed for the create/project/theme residue cleanup slice: active-source `rg` confirms the deleted hooks/components/events have no consumers, `pnpm install`, `pnpm --filter www typecheck`, `pnpm lint:fix`, fallback HTTP smoke on `localhost:3104` confirmed `/`, `/cn`, `/blocks/playground`, and `/view/editor-basic` return 200 while the deleted legacy APIs remain 404, and PR gate `pnpm check`. Browser Use was unavailable from tool discovery. The dev smoke filled local `.next` cache again; deleting that generated cache restored free disk space before the final gate.
 - 2026-05-24: ce-compound closeout updated `docs/solutions/best-practices/2026-05-23-shadcn-docs-restart-comparison.md` with the orphaned create/project/theme state cleanup rule instead of creating a duplicate learning.
+- 2026-05-24: Started the docs route de-duplication slice: extracted a shared locale-aware `doc-page.tsx` renderer for English and CN docs catch-all routes, kept route files as thin Next exports, and localized registry fallback related-doc routes through the shared helper.
+- 2026-05-24: Removed stale `// SYNC` markers and old commented block whitelist residue from retained public app-shell/docs/editors/block-viewer surfaces.
+- 2026-05-24: Verification passed for the docs route de-duplication slice: `pnpm install`, `pnpm --filter www typecheck`, `pnpm lint:fix`, final `pnpm --filter www typecheck`, and fallback HTTP smoke on `localhost:3105` confirmed `/`, `/cn`, `/docs/plugin-shortcuts`, `/cn/docs/table`, `/docs/components/table-node`, `/cn/docs/components/table-node`, `/editors`, and `/view/editor-basic` return 200 while `/api/registry/editor-basic` and `/api/components` remain 404. Browser Use was unavailable from tool discovery. The dev smoke again filled `.next` cache and logged `No space left on device`; stopping the dev server and deleting generated `apps/www/.next` restored enough disk for non-dev gates.

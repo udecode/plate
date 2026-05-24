@@ -4,8 +4,6 @@ import type { Metadata } from 'next';
 
 import { EditorDescription } from './editor-description';
 
-// SYNC
-
 const title = 'Building Editors for the Web';
 const description =
   'Clean, modern building editors. Copy and paste into your apps. Works with all React frameworks.';

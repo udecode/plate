@@ -57,8 +57,6 @@ import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard';
 import { getRegistryInstallCommand } from '@/lib/registry-install';
 import { cn } from '@/lib/utils';
 
-// SYNC
-
 type BlockViewerContext = {
   activeFile: string | null;
   dependencies: string[];

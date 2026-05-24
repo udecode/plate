@@ -4,8 +4,6 @@ import { DocsNav } from '@/components/docs-nav';
 import { getSidebarNavFromPageTree } from '@/lib/docs-page-tree';
 import { cn } from '@/lib/utils';
 
-// SYNC
-
 type DocsLayoutProps = {
   children: React.ReactNode;
 };
