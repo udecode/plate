@@ -5,13 +5,11 @@ import * as React from 'react';
 
 import type { ImperativePanelHandle } from 'react-resizable-panels';
 
-import { useLiftMode } from '@/hooks/use-lift-mode';
 import { useLocale } from '@/hooks/useLocale';
 import { cn } from '@/lib/utils';
 import PlaygroundDemo from '@/registry/examples/playground-demo';
 
 import { PlaygroundPreviewToolbar } from './playground-preview-toolbar';
-import { ThemeWrapper } from './theme-wrapper';
 import {
   ResizableHandle,
   ResizablePanel,
@@ -27,9 +25,7 @@ const i18n = {
   },
 };
 
-// TODO: sync
 export function PlaygroundPreview({
-  children,
   className,
   ...props
 }: {
@@ -44,20 +40,12 @@ export function PlaygroundPreview({
     src: '/blocks/playground',
   };
 
-  const { isLiftMode } = useLiftMode(block.name);
-  // const [isLoading, setIsLoading] = React.useState(true);
   const ref = React.useRef<ImperativePanelHandle>(null);
-  // const [fullScreen, setFullScreen] = useState(false);
 
   return (
     <div
       id={block.name}
-      className={cn(
-        'relative w-full scroll-m-28',
-        className
-        // fullScreen &&
-        //   'fixed inset-0 z-50 max-w-none **:data-slate-editor:max-h-[calc(100dvh-44px)]'
-      )}
+      className={cn('relative w-full scroll-m-28', className)}
       style={
         {
           '--container-height': block.container?.height,
@@ -65,53 +53,23 @@ export function PlaygroundPreview({
       }
       {...props}
     >
-      <PlaygroundPreviewToolbar
-        block={block}
-        resizablePanelRef={ref}
-        // fullScreen={fullScreen}
-        // setFullScreen={setFullScreen}
-      />
+      <PlaygroundPreviewToolbar block={block} resizablePanelRef={ref} />
 
       <ResizablePanelGroup className="relative z-10" direction="horizontal">
         <ResizablePanel
           ref={ref}
-          className={cn(
-            'relative rounded-lg border bg-background max-sm:w-full max-sm:flex-auto!',
-            isLiftMode && 'border-border/50'
-          )}
+          className="relative rounded-lg border bg-background max-sm:w-full max-sm:flex-auto!"
           defaultSize={100}
           minSize={30}
         >
-          <div className="chunk-mode relative z-20 w-full bg-background">
-            <ThemeWrapper>
-              <React.Suspense fallback={null}>
-                <PlaygroundDemo className="h-[650px]" />
-              </React.Suspense>
-            </ThemeWrapper>
+          <div className="themes-wrapper chunk-mode relative z-20 w-full bg-background">
+            <React.Suspense fallback={null}>
+              <PlaygroundDemo className="h-[650px]" />
+            </React.Suspense>
           </div>
-
-          {/* {isLoading ? ( */}
-          {/*  <div className="absolute inset-0 z-10 flex h-(--container-height) w-full items-center justify-center gap-2 text-sm text-muted-foreground"> */}
-          {/*    <Icons.spinner className="h-4 w-4 animate-spin" /> */}
-          {/*    Loading... */}
-          {/*  </div> */}
-          {/* ) : null} */}
-          {/* <iframe */}
-          {/*  src={`/blocks/${block.style}/${block.name}`} */}
-          {/*  height={block.container?.height ?? 450} */}
-          {/*  className="chunk-mode relative z-20 w-full bg-background" */}
-          {/*  onLoad={() => { */}
-          {/*    setIsLoading(false) */}
-          {/*  }} */}
-          {/* /> */}
         </ResizablePanel>
 
-        <ResizableHandle
-          className={cn(
-            'after:-translate-x-px after:-translate-y-1/2 relative hidden w-3 bg-transparent p-0 after:absolute after:top-1/2 after:right-0 after:h-8 after:w-[6px] after:rounded-full after:bg-border after:transition-all hover:after:h-10 sm:block',
-            isLiftMode && 'invisible'
-          )}
-        />
+        <ResizableHandle className="after:-translate-x-px after:-translate-y-1/2 relative hidden w-3 bg-transparent p-0 after:absolute after:top-1/2 after:right-0 after:h-8 after:w-[6px] after:rounded-full after:bg-border after:transition-all hover:after:h-10 sm:block" />
         <ResizablePanel defaultSize={0} minSize={0} />
       </ResizablePanelGroup>
     </div>

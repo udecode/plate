@@ -64,8 +64,6 @@ export const metadata: Metadata = {
 
 export const dynamic = 'force-static';
 
-// SYNC
-
 export default async function IndexPage() {
   const content = i18n.en;
 

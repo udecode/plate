@@ -44,7 +44,7 @@ This artifact was first written before the Plate docs source cutover landed. The
 
 The current middle state is narrower than the original restart problem, but still not the final restart:
 
-- `docsConfig` still exists as a metadata generator/parity source while labels, CN titles, and registry/app-only links finish moving into committed metadata or registry sources.
+- `docsConfig` and its sync generator are gone; committed `content/docs/meta.json` is the navigation metadata source.
 - The route tree, registry build, generated registry output model, and retained Plate product surfaces still need further upstream-aligned pruning.
 
 So the next useful restart work is not "remove Contentlayer." That is done. The next useful work is to replace the remaining navigation/search/registry/app-shell authorities with the upstream Fumadocs and shadcn v4 model while deliberately reapplying Plate product surfaces.
@@ -960,9 +960,9 @@ Read these before phase two implementation:
 | --- | --- | --- | --- |
 | Fumadocs engine | `../ui/apps/v4/source.config.ts`, `../ui/apps/v4/lib/source.ts` | Adopted | Already wired in `apps/www/source.config.ts` and `apps/www/src/lib/source.ts`; preserve it. |
 | Contentlayer engine | former `apps/www/contentlayer.config.js`, `next-contentlayer2` usage | Thrown | Already removed; do not recreate compatibility layers around it. |
-| Plate docs content | `content/**` | Keep | Currently loaded by Fumadocs from root; still decide whether to move into `content/docs/**` or keep root with explicit metadata. |
-| Fumadocs meta | `../ui/apps/v4/content/docs/**/meta.json` | Adopt | Still missing in Plate; generate or hand-author `meta.json` and replace manual nav config as page-tree authority. |
-| Manual docs nav | `apps/www/src/config/docs*.ts` | Rewrite | Still runtime input for sidebar, pager, command menu, and docs registry export; use as migration data, not final authority. |
+| Plate docs content | `content/docs/**` | Keep | Moved under the upstream-style Fumadocs source root. |
+| Fumadocs meta | `../ui/apps/v4/content/docs/**/meta.json` | Adopted | `content/docs/meta.json` is committed and owns the Plate page tree plus `_plate` overlays. |
+| Manual docs nav | former `apps/www/src/config/docs*.ts` | Thrown | Deleted after metadata covered pages, labels, CN titles, registry/app-only links, sections, and category groups. |
 | Plate API MDX components | `apps/www/src/components/api-list.tsx`, `apps/www/src/registry/blocks/fumadocs/*` | Keep | Port into Fumadocs MDX layer. |
 | Plate MDX Contentlayer wrapper | `apps/www/src/components/mdx-components.tsx` | Rewritten partly | `useMDXComponent` is gone; keep auditing component boundaries against Fumadocs/server rendering. |
 | Registry-derived docs pages | `apps/www/src/app/(app)/docs/[[...slug]]/page.tsx` | Kept partly | Fumadocs fallback is wired; next pass should simplify metadata fallbacks and align with upstream static highlighted-source flow. |

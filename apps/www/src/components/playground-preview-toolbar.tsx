@@ -18,7 +18,6 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard';
 import { getRegistryInstallCommand } from '@/lib/registry-install';
-import { cn } from '@/lib/utils';
 
 import { BlockCopyButton } from './block-copy-button';
 import { ToggleGroup, ToggleGroupItem } from './ui/toggle-group';
@@ -26,13 +25,9 @@ import { ToggleGroup, ToggleGroupItem } from './ui/toggle-group';
 export function PlaygroundPreviewToolbar({
   block,
   resizablePanelRef,
-  // fullScreen,
-  // setFullScreen,
 }: {
-  block: { hasLiftMode: boolean } & any;
+  block: any;
   resizablePanelRef: React.RefObject<ImperativePanelHandle | null>;
-  // fullScreen: boolean;
-  // setFullScreen: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
   const src = block.descriptionSrc ?? block.src;
   const installCommand = getRegistryInstallCommand(block.name);
@@ -40,25 +35,13 @@ export function PlaygroundPreviewToolbar({
   const { copyToClipboard, isCopied } = useCopyToClipboard();
 
   return (
-    <div
-      className={cn(
-        'mb-4 flex items-center gap-4'
-        // 'absolute right-0 z-50',
-        // '-top-4 -translate-y-full'
-        // fullScreen && 'bottom-4'
-      )}
-    >
+    <div className="mb-4 flex items-center gap-4">
       <Button
         asChild
         variant="link"
         className="whitespace-normal px-1 pb-0 md:px-2"
       >
-        <a
-          className="whitespace-nowrap"
-          href={src ?? `#${block.name}`}
-          // rel={src ? 'noreferrer' : undefined}
-          // target={src ? '_blank' : undefined}
-        >
+        <a className="whitespace-nowrap" href={src ?? `#${block.name}`}>
           {block.description}
         </a>
       </Button>
@@ -81,15 +64,6 @@ export function PlaygroundPreviewToolbar({
             className="w-full"
             defaultValue="100"
             onValueChange={(value) => {
-              // if (value === 'full') {
-              //   setFullScreen(true);
-
-              //   return;
-              // }
-              // if (fullScreen) {
-              //   setFullScreen(false);
-              // }
-
               setTimeout(() => {
                 if (resizablePanelRef.current) {
                   resizablePanelRef.current.resize(Number.parseInt(value, 10));
@@ -98,12 +72,6 @@ export function PlaygroundPreviewToolbar({
             }}
             type="single"
           >
-            {/* <ToggleGroupItem
-              className="size-[22px] rounded-sm p-0"
-              value="full"
-            >
-              <Maximize className="size-3.5!" />
-            </ToggleGroupItem> */}
             <ToggleGroupItem className="size-[22px] rounded-sm p-0" value="100">
               <Monitor className="size-3.5!" />
             </ToggleGroupItem>

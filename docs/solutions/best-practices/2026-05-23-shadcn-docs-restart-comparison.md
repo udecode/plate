@@ -1,6 +1,7 @@
 ---
 title: Shadcn docs restarts need a keep/throw comparison first
 date: 2026-05-23
+last_updated: 2026-05-24
 category: docs/solutions/best-practices
 module: Docs App
 problem_type: best_practice
@@ -9,6 +10,7 @@ symptoms:
   - A forked docs app has years of Plate-specific product, registry, MDX, and design changes mixed with old shadcn code.
   - Latest upstream shadcn docs moved to a Fumadocs and shadcn v4 registry architecture.
   - Restarting from upstream without a comparison risks reapplying dead custom themes while losing valuable API docs and registry behavior.
+  - Removing visible theme/customizer UI can still leave orphaned project, lift-mode, radius, and registry-preview helper state behind.
 root_cause: inadequate_documentation
 resolution_type: documentation_update
 severity: medium
@@ -24,7 +26,8 @@ Plate's `apps/www` started as a shadcn docs fork, but upstream shadcn and Plate 
 ## Symptoms
 
 - Upstream docs in `../ui/apps/v4` use Fumadocs, shadcn v4 registry scripts, and a much larger current app surface.
-- Plate docs in `apps/www` use Fumadocs for source loading, but still carry custom registry docs generation, `docsConfig` navigation/search, Plate API MDX components, editor demos, CN routes, and custom themes.
+- Plate docs in `apps/www` use Fumadocs for source loading, but still carry custom registry docs generation, Plate API MDX components, editor demos, CN routes, and product-specific homepage preview behavior.
+- After visible theme/customizer removal, unused helpers such as `ProjectAddButton`, `useProject`, `ThemeComponent`, `useLiftMode`, and customizer-only `radius` config can survive unless active-source searches target the discarded surface names.
 - There is no safe file-level merge path: content paths, route trees, registry layout, and search/nav models all diverged.
 
 ## What Didn't Work
@@ -32,6 +35,7 @@ Plate's `apps/www` started as a shadcn docs fork, but upstream shadcn and Plate 
 - Treating the difference as styling drift. The apps differ in docs engine, registry pipeline, routing, search, and generated output.
 - Treating every Plate customization as worth saving. The custom theme/customizer layer is high-cost old fork residue.
 - Treating upstream as only visual inspiration. Upstream now owns the stronger Fumadocs and shadcn v4 registry direction.
+- Stopping after deleting visible entrypoints. That leaves old state hooks and helper components alive, even when no retained route imports them.
 
 ## Solution
 
@@ -47,6 +51,7 @@ The decision from that comparison:
 - Keep Plate docs content, API MDX vocabulary, registry content, editor demos, package integration tests, and workspace alias/typecheck model.
 - Keep Contentlayer out, and throw Plate custom themes/customizer, client-only nav search hacks, and stale CSS marked for sync removal.
 - Keep CN docs, MCP UI, Plate Plus hooks, GA, a centered Plate homepage, and the Slate-to-HTML special page; use upstream shadcn's LLM/copy-page model instead of Plate's extra LLM UI.
+- After deleting a public surface, run active-source searches for the deleted vocabulary and remove orphaned helper state. For the theme/create/project slice, that meant deleting `ProjectAddButton`, `useProject`, `ThemeComponent`, `ThemeWrapper`, `useLiftMode`, and customizer-only event/config variants while keeping the package-manager install config used by code blocks.
 
 ## Why This Works
 
@@ -59,6 +64,7 @@ It also preserves known local traps before implementation starts: workspace pack
 - Before restarting a forked docs app from upstream, produce a keep/throw/adopt matrix with concrete file references.
 - Do not keep custom theme or nav systems just because they exist.
 - Keep registry content and API docs behavior as source-owned product assets, but align installer behavior with upstream shadcn.
+- For every discarded surface, search both UI entrypoints and hidden state names: component names, hook names, localStorage keys, event names, route names, and stale sync comments. Visible UI deletion is not enough.
 - Read the comparison artifact before phase two implementation.
 
 ## Related Issues

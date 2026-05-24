@@ -6,7 +6,7 @@ Continue the docs restart from `docs/plans/2026-05-23-shadcn-docs-restart-compar
 
 ## Current Slice
 
-Status: twenty-third slice complete
+Status: twenty-fourth slice complete
 
 1. Make Fumadocs metadata/pageTree the docs navigation authority.
 2. Move sidebar and pager reads off direct `docsConfig` runtime access.
@@ -31,6 +31,7 @@ Status: twenty-third slice complete
 21. Add a Plate `/init` bootstrap route that follows the shadcn `registry:base` contract, plus the upstream-style `/init.md` markdown rewrite.
 22. Remove the legacy Pages Router `/api/components` endpoint and stale tracing for the deleted `/api/registry/[name]` route.
 23. Promote committed `content/docs/meta.json` to the only docs navigation metadata source by deleting the old `docsConfig` sync generator and TS nav config.
+24. Remove stale create/project/theme state from the public homepage preview path: delete unused project add hooks/components, delete unused theme registry preview wrapper, drop the old customizer radius from shared install config, and remove lift-mode state from the playground preview.
 
 ## Findings
 
@@ -74,6 +75,7 @@ Status: twenty-third slice complete
 - `apps/www/next.config.ts` still traced assets for `/api/registry/[name]` after that App Router endpoint was deleted. Keeping tracing for a deleted route is harmless until it isn't; it advertises an API surface the restarted app intentionally removed.
 - `content/docs/meta.json` now carries 265 Fumadocs page entries, 257 `_plate.items` overlays, localized section labels, category switcher metadata, and category groups. The old `sync-docs-meta.mts` generator was no longer needed as a transitional bridge.
 - Keeping `docsConfig` after runtime navigation, parity, and registry docs export all read committed Fumadocs metadata would recreate the exact competing-source problem the migration plan warned about. The metadata file is now edited as source, like upstream shadcn `content/docs/**/meta.json`.
+- The comparison doc calls out create/v0/project/theme surfaces as discard-all unless they directly serve Plate's kept product routes. `ProjectAddButton`, `useProject`, `ThemeComponent`, and `useLiftMode` had no active consumers after the preview/view/init cleanup. The homepage playground only needed the preview shell and package-manager install config, not project storage, lift-mode storage, or customizer radius storage.
 
 ## Verification Plan
 
@@ -95,6 +97,7 @@ Status: twenty-third slice complete
 - If init/bootstrap routing changes, verify `/init` returns a valid `registry:base` item, `/init.md` rewrites to markdown instructions, `/init/v0` is absent, and MCP docs use `@plate`.
 - If legacy API cleanup changes routes, verify `/api/components` and `/api/registry/[name]` are absent while `/init`, docs pages, and block previews still render.
 - If docs metadata authority changes, verify no active source imports `docsConfig`, run docs source parity, and smoke English/CN docs navigation surfaces.
+- If homepage preview state cleanup changes client components, verify no active imports remain for removed hooks/components, run `www` typecheck and lint, and smoke `/` plus `/cn` if a dev server is available.
 
 ## Progress Log
 
@@ -167,3 +170,6 @@ Status: twenty-third slice complete
 - 2026-05-24: Started the docs metadata authority cleanup slice: removed `sync:docs-meta`, deleted `apps/www/scripts/sync-docs-meta.mts`, and deleted the old `docsConfig`/nav generator files. Active docs navigation metadata now lives in committed `content/docs/meta.json`.
 - 2026-05-24: Verification passed for the docs metadata authority cleanup slice: `pnpm install`, `pnpm --filter www typecheck`, `pnpm lint:fix`, active-source `rg` confirms no `docsConfig`/`sync-docs-meta` references remain, and fallback HTTP smoke on `localhost:3103` confirmed `/docs`, `/cn/docs/table`, `/docs/plugin-shortcuts`, `/docs/components`, `/cn/docs/components`, `/docs/examples`, `/cn/docs/examples`, and `/api/search?query=table`. Browser Use was unavailable from tool discovery. The dev smoke again filled local `.next` cache; deleting the generated cache restored free disk space before final PR gate.
 - 2026-05-24: ce-compound closeout updated `docs/solutions/developer-experience/2026-05-24-fumadocs-page-tree-search-needs-locale-safe-metadata.md` with the final generator-removal rule instead of creating a duplicate learning.
+- 2026-05-24: Started the create/project/theme residue cleanup slice: deleted `ProjectAddButton`, `useProject`, `ThemeComponent`, `ThemeWrapper`, and `useLiftMode`; simplified the homepage playground preview around the retained preview shell; removed old customizer radius state from `useConfig`; and pruned unused theme/color/lift tracking event names.
+- 2026-05-24: Verification passed for the create/project/theme residue cleanup slice: active-source `rg` confirms the deleted hooks/components/events have no consumers, `pnpm install`, `pnpm --filter www typecheck`, `pnpm lint:fix`, fallback HTTP smoke on `localhost:3104` confirmed `/`, `/cn`, `/blocks/playground`, and `/view/editor-basic` return 200 while the deleted legacy APIs remain 404, and PR gate `pnpm check`. Browser Use was unavailable from tool discovery. The dev smoke filled local `.next` cache again; deleting that generated cache restored free disk space before the final gate.
+- 2026-05-24: ce-compound closeout updated `docs/solutions/best-practices/2026-05-23-shadcn-docs-restart-comparison.md` with the orphaned create/project/theme state cleanup rule instead of creating a duplicate learning.
