@@ -9,7 +9,7 @@ import {
   type RegistryItem,
   type registryItemFileSchema,
   registryItemSchema,
-} from 'shadcn/registry';
+} from 'shadcn/schema';
 import { Project, ScriptKind } from 'ts-morph';
 
 import registryShadcnData from '../../registry-shadcn.json';

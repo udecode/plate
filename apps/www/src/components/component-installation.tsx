@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 
-import type { RegistryItem } from 'shadcn/registry';
+import type { RegistryItem } from 'shadcn/schema';
 
 import { BlockCode } from '@/components/block-viewer';
 import { ComponentPreviewPro } from '@/components/component-preview-pro';

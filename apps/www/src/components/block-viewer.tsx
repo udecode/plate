@@ -7,10 +7,7 @@ import type {
   FileTree,
 } from '@/lib/rehype-utils';
 import type { ImperativePanelHandle } from 'react-resizable-panels';
-import type {
-  registryItemFileSchema,
-  registryItemSchema,
-} from 'shadcn/registry';
+import type { registryItemFileSchema, registryItemSchema } from 'shadcn/schema';
 import type { z } from 'zod';
 
 import {

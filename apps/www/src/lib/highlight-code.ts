@@ -1,4 +1,4 @@
-import type { registryItemFileSchema } from 'shadcn/registry';
+import type { registryItemFileSchema } from 'shadcn/schema';
 import type { z } from 'zod';
 
 import { codeToHtml } from 'shiki';

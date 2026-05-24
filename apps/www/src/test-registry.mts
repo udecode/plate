@@ -14,7 +14,7 @@
  * Config file: scripts/test-registry-config.json
  */
 
-import type { RegistryItem } from 'shadcn/registry';
+import type { RegistryItem } from 'shadcn/schema';
 
 import kleur from 'kleur';
 import { type ListrTaskWrapper, Listr } from 'listr2';

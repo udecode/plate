@@ -1,5 +1,9 @@
 import type { SidebarNavItem } from '@/types/nav';
-import type { Registry, RegistryItem } from 'shadcn/registry';
+import {
+  type Registry,
+  type RegistryItem,
+  registrySchema,
+} from 'shadcn/schema';
 
 import matter from 'gray-matter';
 import { promises as fs } from 'node:fs';
@@ -154,7 +158,7 @@ export async function createDocsRegistry(): Promise<Registry> {
     })
   );
 
-  const registry: Registry = {
+  return registrySchema.parse({
     homepage: HOMEPAGE,
     items: [
       {
@@ -205,9 +209,7 @@ export async function createDocsRegistry(): Promise<Registry> {
       ...items,
     ],
     name: `${NAME}-docs`,
-  };
-
-  return registry;
+  });
 }
 
 export async function buildDocsRegistry() {

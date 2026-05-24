@@ -27,7 +27,7 @@
     "shadcn:dev": "shadcn build public/rd/registry.json --output public/rd",
     "shadcn:dev:docs": "shadcn build public/rd/registry-docs.json --output public/rd",
     "start": "next start",
-    "typecheck": "pnpm build:source && tsx --tsconfig ./scripts/tsconfig.scripts.json scripts/check-docs-source-parity.mts && tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.package-integration.json",
+    "typecheck": "pnpm build:source && tsx --tsconfig ./scripts/tsconfig.scripts.json scripts/check-docs-source-parity.mts && tsx --tsconfig ./scripts/tsconfig.scripts.json scripts/check-registry-source.mts && tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.package-integration.json",
     "typecheck:watch": "pnpm build:source && concurrently \"tsc --noEmit -p tsconfig.json --watch\" \"tsc --noEmit -p tsconfig.package-integration.json --watch\""
   },
   "browserslist": {
@@ -175,7 +175,7 @@
     "remark-gfm": "4.0.1",
     "remark-math": "6.0.0",
     "sass": "1.89.2",
-    "shadcn": "2.6.3",
+    "shadcn": "4.8.0",
     "shadcn-prose": "1.0.8",
     "slate": "0.124.1",
     "sonner": "2.0.5",

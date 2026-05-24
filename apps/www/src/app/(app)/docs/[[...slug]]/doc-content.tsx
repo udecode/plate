@@ -3,7 +3,7 @@
 import React from 'react';
 
 import type { TocItem } from '@/lib/toc';
-import type { RegistryItem } from 'shadcn/registry';
+import type { RegistryItem } from 'shadcn/schema';
 
 import { IconArrowLeft, IconArrowRight } from '@tabler/icons-react';
 import { ExternalLinkIcon } from 'lucide-react';

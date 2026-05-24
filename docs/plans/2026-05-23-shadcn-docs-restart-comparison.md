@@ -103,7 +103,7 @@ Files:
 - `apps/www/scripts/build-docs-registry.mts`
 - `apps/www/scripts/check-docs-source-parity.mts`
 
-Plate now uses `fumadocs-mdx@13.0.2`, `fumadocs-core@15.5.1`, `createMDX`, and `defineDocs({ dir: "../../content" })`. It still uses old `shadcn@2.6.3`, many `@platejs/*` workspace deps, editor runtime deps, AI/upload/docx/yjs/dnd deps, and package integration tests.
+Plate now uses `fumadocs-mdx@13.0.2`, `fumadocs-core@15.5.1`, `createMDX`, `defineDocs({ dir: "../../content" })`, and `shadcn@4.8.0`. It still uses many `@platejs/*` workspace deps, editor runtime deps, AI/upload/docx/yjs/dnd deps, and package integration tests.
 
 Important scripts:
 
@@ -1044,7 +1044,7 @@ This is the recommended default for confirmation. "Discard upstream" means do no
 | Dev/debug routes | None | None | Move useful debug tools elsewhere if still needed | `apps/www/src/app/dev/**` in public docs app | Discard from restart |
 | Slate-to-HTML special page | None | None | `docs/examples/slate-to-html`, `blocks/slate-to-html`, Tailwind trace include | Generic preview path for this page, because RSC cannot be previewed normally | Keep special route/page |
 | Release docs | Fumadocs content patterns | shadcn changelog content | Plate `content/releases/index.mdx`, `ReleaseIndex` if release docs stay | Contentlayer-only release generation assumptions | Keep content, port renderer |
-| Dependencies | Current upstream Fumadocs/shadcn v4 deps | v0-only deps if any | Plate editor/runtime deps required by retained demos | `contentlayer2`, `next-contentlayer2`, old `shadcn@2.6.3`, old theme-only deps | Upgrade and prune |
+| Dependencies | Current upstream Fumadocs/shadcn v4 deps | v0-only deps if any | Plate editor/runtime deps required by retained demos | `contentlayer2`, `next-contentlayer2`, old theme-only deps | Keep upgrading and pruning |
 | Verification model | Upstream app tests for retained upstream routes | Tests for discarded routes | Plate package integration and registry validation | Browser checks for discarded theme/create/v0 paths | Verify retained surfaces only |
 
 ## Recommended Phase Two Order

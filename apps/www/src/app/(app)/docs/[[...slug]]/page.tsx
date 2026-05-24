@@ -1,5 +1,5 @@
 import type { PackageInfoType } from '@/hooks/use-package-info';
-import type { RegistryItem } from 'shadcn/registry';
+import type { RegistryItem } from 'shadcn/schema';
 
 import type { Metadata } from 'next';
 

@@ -6,7 +6,7 @@ Continue the docs restart from `docs/plans/2026-05-23-shadcn-docs-restart-compar
 
 ## Current Slice
 
-Status: fifth slice complete
+Status: sixth slice complete
 
 1. Make Fumadocs metadata/pageTree the docs navigation authority.
 2. Move sidebar and pager reads off direct `docsConfig` runtime access.
@@ -16,6 +16,7 @@ Status: fifth slice complete
 6. Remove the old Plate theme/customizer shell surface called out for deletion in the comparison doc.
 7. Route visible registry install commands through the `@plate/*` namespace configured by `components.json`.
 8. Route generated Plate registry self-dependencies through `@plate/*`, while preserving local-file template sync.
+9. Upgrade the docs app to the upstream shadcn v4 package and validate Plate registry source against the v4 schema contract.
 
 ## Findings
 
@@ -31,6 +32,8 @@ Status: fifth slice complete
 - Raw `/r/*` URLs are still the right shape for resolvable registry content links, LLM context, and v0 URLs. User install commands should prefer `npx shadcn@latest add @plate/{name}`.
 - Upstream shadcn v4 resolves namespaced `registryDependencies` such as `@custom/custom-component` through configured registries. Plate can use the same contract for its own generated self-dependencies instead of emitting public `https://platejs.org/r/*.json` dependencies.
 - Local template sync must rewrite `@plate/{name}` back to `{name}.json`, because `update-template.sh --local` intentionally feeds shadcn local-file mode from a prepared JSON mirror.
+- The upstream shadcn v4 registry schema is exported from `shadcn/schema`; `shadcn/registry` is no longer the schema/type authority. Plate registry source and builders now use the v4 schema entrypoint.
+- The full local registry build is still CI-owned, so this slice adds a source-only registry contract check to `www` typecheck instead of running `build:registry` locally.
 
 ## Verification Plan
 
@@ -61,3 +64,7 @@ Status: fifth slice complete
 - 2026-05-24: Added `apps/www/scripts/registry-dependencies.mts` so `build-registry.mts` and `build-docs-registry.mts` emit `@plate/*` for Plate self-dependencies while preserving `@shadcn/*`, direct URLs, and local path specifiers. Updated docs source parity to assert `@plate/table-docs` and `@plate/docs`.
 - 2026-05-24: Updated `tooling/scripts/prepare-local-template-registry.mjs` to rewrite `@plate/*` dependencies back to local `{name}.json` dependencies for `update-template.sh --local`.
 - 2026-05-24: Verification passed for the registry dependency namespace slice: `pnpm install`, `pnpm --filter www build:source`, `bun test apps/www/scripts/registry-dependencies.test.mts`, a temp-directory smoke of `tooling/scripts/prepare-local-template-registry.mjs`, `pnpm --filter www typecheck`, and `pnpm lint:fix`.
+- 2026-05-24: Upgraded `apps/www` from `shadcn@2.6.3` to `shadcn@4.8.0`, moved registry schema/type imports from `shadcn/registry` to `shadcn/schema`, and validated `build-registry.mts` plus `build-docs-registry.mts` through v4 `registrySchema.parse`.
+- 2026-05-24: Added `apps/www/scripts/check-registry-source.mts` to validate Plate's authored registry composition against the shadcn v4 schema and assert normalized registry dependencies use resolver-safe specifiers.
+- 2026-05-24: Verification passed for the shadcn v4 schema slice: `pnpm install`, `pnpm --filter www exec tsx --tsconfig ./scripts/tsconfig.scripts.json scripts/check-registry-source.mts`, `pnpm --filter www exec tsx --tsconfig ./scripts/tsconfig.scripts.json scripts/check-docs-source-parity.mts`, `bun test apps/www/scripts/registry-dependencies.test.mts`, `pnpm --filter www build:source`, `pnpm --filter www typecheck`, and `pnpm lint:fix`.
+- 2026-05-24: Added `docs/solutions/developer-experience/2026-05-24-shadcn-v4-registry-schema-needs-source-only-validation.md` through the ce-compound closeout.

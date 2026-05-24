@@ -1,7 +1,7 @@
 'use server';
 
 import registry from 'registry';
-import { registryItemSchema } from 'shadcn/registry';
+import { registryItemSchema } from 'shadcn/schema';
 import { z } from 'zod';
 
 // SYNC

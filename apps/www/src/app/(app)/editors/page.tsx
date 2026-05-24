@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import type { RegistryItem } from 'shadcn/registry';
+import type { RegistryItem } from 'shadcn/schema';
 
 import { BlockDisplay } from '@/components/block-display';
 import { siteConfig } from '@/config/site';

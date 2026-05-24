@@ -1,4 +1,4 @@
-import type { Registry, RegistryItem } from 'shadcn/registry';
+import type { Registry, RegistryItem } from 'shadcn/schema';
 
 import { registryBlocks } from './registry-blocks';
 import { registryComponents } from './registry-components';

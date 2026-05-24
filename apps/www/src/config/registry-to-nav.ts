@@ -1,5 +1,5 @@
 import type { SidebarNavItem } from '@/types/nav';
-import type { Registry } from 'shadcn/registry';
+import type { Registry } from 'shadcn/schema';
 
 import { getRegistryTitle } from '@/lib/registry-utils';
 
