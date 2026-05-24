@@ -10,7 +10,8 @@ export default function CNDocsLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const sidebarNav = getSidebarNavFromPageTree('cn');
+  // CN docs fall back to English MDX; DocsNav localizes labels and hrefs.
+  const sidebarNav = getSidebarNavFromPageTree();
 
   return (
     <div className="container-wrapper flex flex-1 flex-col px-2">

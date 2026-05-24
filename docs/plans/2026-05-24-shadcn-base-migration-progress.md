@@ -6,7 +6,7 @@ Continue the docs restart from `docs/plans/2026-05-23-shadcn-docs-restart-compar
 
 ## Current Slice
 
-Status: twenty-fifth slice complete
+Status: twenty-sixth slice complete
 
 1. Make Fumadocs metadata/pageTree the docs navigation authority.
 2. Move sidebar and pager reads off direct `docsConfig` runtime access.
@@ -33,6 +33,7 @@ Status: twenty-fifth slice complete
 23. Promote committed `content/docs/meta.json` to the only docs navigation metadata source by deleting the old `docsConfig` sync generator and TS nav config.
 24. Remove stale create/project/theme state from the public homepage preview path: delete unused project add hooks/components, delete unused theme registry preview wrapper, drop the old customizer radius from shared install config, and remove lift-mode state from the playground preview.
 25. Collapse the duplicated English/CN docs catch-all route implementation into one locale-aware Fumadocs/registry page renderer, localize registry-related docs links through the same helper, and remove stale `// SYNC` markers from retained public docs surfaces.
+26. Clean up `DocsNav` after the pageTree cutover: remove route-prefix hacks, direct DOM active-item queries, and timeout-based scrolling; keep active/filter section state derived from Fumadocs metadata and localized href helpers.
 
 ## Findings
 
@@ -80,6 +81,9 @@ Status: twenty-fifth slice complete
 - `/cn/docs/[[...slug]]` still duplicated the English docs catch-all route logic after the Fumadocs i18n cutover. That duplication made registry fallback pages, related-doc links, metadata, and pager behavior easy to drift between locales.
 - The docs catch-all route should keep thin Next route files per locale, but route discovery, metadata generation, Fumadocs page rendering, registry fallback rendering, related docs, and highlighted source loading belong in one shared server helper parameterized by locale.
 - Old `// SYNC` comments in retained app-shell, docs, editors, block viewer, and block listing files no longer represented actionable migration work. Leaving stale sync markers in kept surfaces makes future audits noisier than the code.
+- `DocsNav` still carried old client-side migration residue after `docsConfig` removal: a local `/cn` prefix regex, active-link DOM queries, and a delayed `setTimeout` scroll. The Fumadocs-era sidebar can use the same `normalizeDocsHref`, `getLocalizedNavTitle`, and `hrefWithLocale` helpers as the rest of docs navigation.
+- Filtering the docs sidebar needs an explicit fallback open section. If the current route is not part of the filtered result set, keeping the old accordion value leaves all matches hidden.
+- CN docs currently have no physical `.cn.mdx` files, so the CN sidebar should reuse the English pageTree and let `DocsNav` apply CN labels and `/cn/docs/*` hrefs. Reading the `cn` pageTree directly can leave the active route without an open section.
 
 ## Verification Plan
 
@@ -103,6 +107,7 @@ Status: twenty-fifth slice complete
 - If docs metadata authority changes, verify no active source imports `docsConfig`, run docs source parity, and smoke English/CN docs navigation surfaces.
 - If homepage preview state cleanup changes client components, verify no active imports remain for removed hooks/components, run `www` typecheck and lint, and smoke `/` plus `/cn` if a dev server is available.
 - If docs catch-all route logic changes, verify English and CN MDX docs, English and CN registry fallback docs, editors, view preview, and deleted legacy APIs.
+- If `DocsNav` client state changes, Browser-verify active links, filter results, localized placeholders, localized CN hrefs, and empty console error/warn logs.
 
 ## Progress Log
 
@@ -181,3 +186,6 @@ Status: twenty-fifth slice complete
 - 2026-05-24: Started the docs route de-duplication slice: extracted a shared locale-aware `doc-page.tsx` renderer for English and CN docs catch-all routes, kept route files as thin Next exports, and localized registry fallback related-doc routes through the shared helper.
 - 2026-05-24: Removed stale `// SYNC` markers and old commented block whitelist residue from retained public app-shell/docs/editors/block-viewer surfaces.
 - 2026-05-24: Verification passed for the docs route de-duplication slice: `pnpm install`, `pnpm --filter www typecheck`, `pnpm lint:fix`, final `pnpm --filter www typecheck`, and fallback HTTP smoke on `localhost:3105` confirmed `/`, `/cn`, `/docs/plugin-shortcuts`, `/cn/docs/table`, `/docs/components/table-node`, `/cn/docs/components/table-node`, `/editors`, and `/view/editor-basic` return 200 while `/api/registry/editor-basic` and `/api/components` remain 404. Browser Use was unavailable from tool discovery. The dev smoke again filled `.next` cache and logged `No space left on device`; stopping the dev server and deleting generated `apps/www/.next` restored enough disk for non-dev gates.
+- 2026-05-24: Started the `DocsNav` cleanup slice: removed the local CN prefix regex, direct active-link DOM query, delayed timeout scroll, and keyword-stripping filter copy from the client sidebar.
+- 2026-05-24: Fixed docs sidebar filter state to open the first filtered section when the current route is not in the filtered result set, and changed the CN docs layout to reuse the English pageTree because CN docs currently rely on English MDX fallback plus localized metadata.
+- 2026-05-24: Verification passed for the `DocsNav` cleanup slice: `pnpm install`, `pnpm lint:fix`, `pnpm --filter www typecheck`, rerun `pnpm lint:fix`, rerun `pnpm --filter www typecheck`, and Browser Use on `localhost:3106` confirming `/docs/plugin-shortcuts` active nav, English filter results, `/cn/docs/table` active nav, `/cn/docs/*` filtered links, localized placeholders, and empty browser error/warn logs. Dev-server cache again consumed several GB; stopping the server and deleting generated `apps/www/.next` restored local disk headroom.

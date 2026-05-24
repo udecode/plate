@@ -183,6 +183,7 @@ Fumadocs search delegates tokenization to Orama. Orama supports `english`, not P
 - When localizing app-only docs links, add matching CN app routes or a parity check that proves they already exist.
 - Do not keep separate English and CN catch-all implementations. Keep separate route files only for Next's route exports, then call a shared locale-aware renderer.
 - When refactoring localized docs routes, smoke both MDX-backed pages and registry fallback pages in English and CN.
+- For localized sidebars without physical localized MDX files, reuse the default pageTree and localize labels/hrefs at render time. Keep accordion open state derived from the current route or filtered result set, not from DOM queries or delayed scroll timers.
 - Browser-test both `/docs` and `/cn/docs/*` after changing search or pageTree code.
 
 ## Related Issues

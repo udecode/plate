@@ -17,22 +17,41 @@ import {
 } from '@/components/ui/accordion';
 import { Input } from '@/components/ui/input';
 import { useLocale } from '@/hooks/useLocale';
+import {
+  getLocalizedNavTitle,
+  normalizeDocsHref,
+} from '@/lib/docs-nav-metadata';
 import { cn } from '@/lib/utils';
 import { hrefWithLocale } from '@/lib/withLocale';
 
-const CN_PREFIX_REGEX = /^\/cn/;
+function getLabelValues(label: SidebarNavItem['label']) {
+  return castArray(label).filter(Boolean);
+}
+
+function getSearchTokens(item: SidebarNavItem) {
+  return [
+    item.title,
+    item.titleCn,
+    item.description,
+    ...getLabelValues(item.label),
+    ...(item.keywords ?? []),
+  ]
+    .filter((token): token is string => Boolean(token))
+    .map((token) => token.toLowerCase());
+}
+
+function navItemMatches(item: SidebarNavItem, filter: string) {
+  if (!filter) return true;
+
+  return getSearchTokens(item).some((token) => token.includes(filter));
+}
 
 function filterNavItems(
   items: SidebarNavItem[],
   filter: string
 ): SidebarNavItem[] {
   return items.reduce<SidebarNavItem[]>((acc, item) => {
-    const { keywords = [], ...itemWithoutKeywords } = item;
-    const itemMatches =
-      item.title?.toLowerCase().includes(filter) ||
-      [...keywords, ...castArray(item.label)].some((label) =>
-        label?.toLowerCase().includes(filter)
-      );
+    const itemMatches = navItemMatches(item, filter);
 
     const filteredNestedItems = item.items
       ? itemMatches
@@ -45,7 +64,7 @@ function filterNavItems(
       (filteredNestedItems && filteredNestedItems.length > 0)
     ) {
       acc.push({
-        ...itemWithoutKeywords,
+        ...item,
         ...(filteredNestedItems && { items: filteredNestedItems }),
       });
     }
@@ -59,7 +78,7 @@ function hasActiveNestedItem(
   pathname: string
 ): boolean {
   return items.some((item) => {
-    if (item.href === pathname) return true;
+    if (item.href && normalizeDocsHref(item.href) === pathname) return true;
     if (item.items?.length) {
       return hasActiveNestedItem(item.items, pathname);
     }
@@ -68,15 +87,19 @@ function hasActiveNestedItem(
   });
 }
 
+function getSectionValue(section: SidebarNavItem, index: number) {
+  return section.href ?? section.title ?? `section-${index}`;
+}
+
 export function DocsNav({ sidebarNav }: { sidebarNav: SidebarNavItem[] }) {
   const locale = useLocale();
   const pathname = usePathname();
   const [filter, setFilter] = useState('');
   const [activeSection, setActiveSection] = useState('');
+  const activeItemRef = React.useRef<HTMLAnchorElement | null>(null);
 
-  // Normalize pathname by removing /cn prefix if it exists
   const normalizedPathname = React.useMemo(
-    () => pathname?.replace(CN_PREFIX_REGEX, '') ?? '',
+    () => normalizeDocsHref(pathname ?? ''),
     [pathname]
   );
 
@@ -85,9 +108,7 @@ export function DocsNav({ sidebarNav }: { sidebarNav: SidebarNavItem[] }) {
 
     return sidebarNav
       .map((section) => {
-        const sectionMatches = section.title
-          ?.toLowerCase()
-          .includes(lowercasedFilter);
+        const sectionMatches = navItemMatches(section, lowercasedFilter);
 
         return {
           ...section,
@@ -101,7 +122,7 @@ export function DocsNav({ sidebarNav }: { sidebarNav: SidebarNavItem[] }) {
       .filter((section) => section.items && section.items.length > 0);
   }, [sidebarNav, filter]);
 
-  React.useEffect(() => {
+  const activeSectionValue = React.useMemo(() => {
     if (!normalizedPathname) return;
 
     const activeIndex = filteredNav.findIndex((section) =>
@@ -110,55 +131,33 @@ export function DocsNav({ sidebarNav }: { sidebarNav: SidebarNavItem[] }) {
         : false
     );
 
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- Sync accordion state with the active route.
-    setActiveSection(activeIndex === -1 ? '' : `item-${activeIndex}`);
+    if (activeIndex === -1) return;
+
+    return getSectionValue(filteredNav[activeIndex], activeIndex);
   }, [filteredNav, normalizedPathname]);
 
-  // Auto-scroll to active item only on mount. To be improved.
+  const fallbackSectionValue = React.useMemo(() => {
+    if (!filter || activeSectionValue || filteredNav.length === 0) return;
+
+    return getSectionValue(filteredNav[0], 0);
+  }, [activeSectionValue, filter, filteredNav]);
+
+  const sectionValues = React.useMemo(
+    () => filteredNav.map((section, index) => getSectionValue(section, index)),
+    [filteredNav]
+  );
+  const accordionValue = sectionValues.includes(activeSection)
+    ? activeSection
+    : (activeSectionValue ?? fallbackSectionValue ?? '');
+
   React.useEffect(() => {
-    if (!normalizedPathname) return;
+    const nextActiveSection = activeSectionValue ?? fallbackSectionValue;
 
-    // Scroll to active item after a short delay to ensure accordion is open
-    const scrollToActiveItem = () => {
-      const activeElement = document.querySelector(
-        `[data-href="${normalizedPathname}"]`
-      ) as HTMLElement;
+    if (!nextActiveSection) return;
 
-      if (activeElement) {
-        // Find the accordion item with data-state="open" that contains this element
-        const openAccordionItem = activeElement.closest(
-          '[data-state="open"][data-slot="accordion-item"]'
-        ) as HTMLElement;
-
-        if (openAccordionItem) {
-          // Find the scrollable div inside the open accordion item
-          const scrollableDiv = openAccordionItem.querySelector(
-            'div[class*="overflow-y-auto"]'
-          ) as HTMLElement;
-
-          if (scrollableDiv) {
-            const containerRect = scrollableDiv.getBoundingClientRect();
-            const elementRect = activeElement.getBoundingClientRect();
-            const relativeTop = elementRect.top - containerRect.top;
-            const scrollTop = scrollableDiv.scrollTop;
-
-            // Calculate the position to scroll to (position item at top with offset)
-            const targetScrollTop = scrollTop + relativeTop - 32;
-
-            scrollableDiv.scrollTo({
-              top: Math.max(0, targetScrollTop),
-            });
-          }
-        }
-      }
-    };
-
-    // Delay to ensure accordion animation completes. Not always working well.
-    const timeoutId = setTimeout(scrollToActiveItem, 500);
-
-    return () => clearTimeout(timeoutId);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Empty dependency array - only runs on mount
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Keep the active route or filtered results open when navigation changes.
+    setActiveSection(nextActiveSection);
+  }, [activeSectionValue, fallbackSectionValue]);
 
   return sidebarNav.length > 0 ? (
     <div className="relative w-[calc(100%-1rem)] pl-4">
@@ -170,7 +169,7 @@ export function DocsNav({ sidebarNav }: { sidebarNav: SidebarNavItem[] }) {
             )}
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
-            placeholder="Filter..."
+            placeholder={locale === 'cn' ? '筛选...' : 'Filter...'}
           />
           {filter && (
             <button
@@ -186,51 +185,60 @@ export function DocsNav({ sidebarNav }: { sidebarNav: SidebarNavItem[] }) {
 
       <Accordion
         className="flex max-h-[calc(100vh-var(--header-height)-44px)] flex-col overflow-y-hidden"
-        value={activeSection}
+        value={accordionValue}
         onValueChange={setActiveSection}
         type="single"
         collapsible
       >
-        {filteredNav.map((item, index) => (
-          <AccordionItem
-            key={index}
-            className="flex flex-col overflow-y-hidden data-[state=closed]:shrink-0 data-[state=open]:grow"
-            value={`item-${index}`}
-          >
-            <AccordionTrigger className="h-9 shrink-0 items-center px-2 py-1 text-sm outline-none">
-              <div className="flex items-center">
-                {locale === 'cn' ? item.titleCn || item.title : item.title}
-                {item.label && (
-                  <div className="flex gap-1">
-                    {castArray(item.label).map((label, labelIndex) => (
-                      <span
-                        key={labelIndex}
-                        className={cn(
-                          'ml-2 rounded-md bg-secondary px-1.5 py-0.5 font-medium text-foreground text-xs leading-none',
-                          label === 'Plus' &&
-                            'bg-primary text-background dark:text-background',
-                          label === 'New' && 'bg-[#adfa1d] dark:text-background'
-                        )}
-                      >
-                        {label}
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </AccordionTrigger>
-            <Suspense fallback={null}>
-              <ScrollableAccordionContent>
-                {item?.items?.length && (
-                  <DocsNavItems
-                    items={item.items}
-                    pathname={normalizedPathname}
-                  />
-                )}
-              </ScrollableAccordionContent>
-            </Suspense>
-          </AccordionItem>
-        ))}
+        {filteredNav.map((item, index) => {
+          const sectionValue = getSectionValue(item, index);
+
+          return (
+            <AccordionItem
+              key={sectionValue}
+              className="flex flex-col overflow-y-hidden data-[state=closed]:shrink-0 data-[state=open]:grow"
+              value={sectionValue}
+            >
+              <AccordionTrigger className="h-9 shrink-0 items-center px-2 py-1 text-sm outline-none">
+                <div className="flex items-center">
+                  {getLocalizedNavTitle(item, locale)}
+                  {item.label && (
+                    <div className="flex gap-1">
+                      {getLabelValues(item.label).map((label, labelIndex) => (
+                        <span
+                          key={labelIndex}
+                          className={cn(
+                            'ml-2 rounded-md bg-secondary px-1.5 py-0.5 font-medium text-foreground text-xs leading-none',
+                            label === 'Plus' &&
+                              'bg-primary text-background dark:text-background',
+                            label === 'New' &&
+                              'bg-[#adfa1d] dark:text-background'
+                          )}
+                        >
+                          {label}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </AccordionTrigger>
+              <Suspense fallback={null}>
+                <ScrollableAccordionContent
+                  activeItemRef={activeItemRef}
+                  isActiveSection={accordionValue === sectionValue}
+                >
+                  {item?.items?.length && (
+                    <DocsNavItems
+                      activeItemRef={activeItemRef}
+                      items={item.items}
+                      pathname={normalizedPathname}
+                    />
+                  )}
+                </ScrollableAccordionContent>
+              </Suspense>
+            </AccordionItem>
+          );
+        })}
       </Accordion>
     </div>
   ) : null;
@@ -241,16 +249,16 @@ function DocsNavItems({
   depth = 0,
   items,
   pathname,
+  activeItemRef,
 }: {
   items: SidebarNavItem[];
+  activeItemRef: React.RefObject<HTMLAnchorElement | null>;
   pathname: string | null;
   className?: string;
   depth?: number;
 }) {
   const locale = useLocale();
-
-  // Normalize pathname by removing /cn prefix if it exists
-  const normalizedPathname = pathname?.replace(CN_PREFIX_REGEX, '') ?? '';
+  const normalizedPathname = normalizeDocsHref(pathname ?? '');
 
   return items?.length ? (
     <div
@@ -268,11 +276,18 @@ function DocsNavItems({
               item.disabled && 'cursor-not-allowed opacity-60'
             )}
           >
-            {locale === 'cn' ? item.titleCn || item.title : item.title}
+            {getLocalizedNavTitle(item, locale)}
             {item.label && (
-              <span className="ml-2 rounded-md bg-muted px-1.5 py-0.5 text-muted-foreground text-xs leading-none no-underline group-hover:no-underline">
-                {item.label}
-              </span>
+              <div className="ml-2 flex gap-1">
+                {getLabelValues(item.label).map((label, labelIndex) => (
+                  <span
+                    key={labelIndex}
+                    className="rounded-md bg-muted px-1.5 py-0.5 text-muted-foreground text-xs leading-none no-underline group-hover:no-underline"
+                  >
+                    {label}
+                  </span>
+                ))}
+              </div>
             )}
           </span>
         ) : (
@@ -282,19 +297,23 @@ function DocsNavItems({
                 className={cn(
                   'group relative flex h-8 w-full items-center truncate whitespace-nowrap rounded-lg px-2 after:absolute after:inset-x-0 after:inset-y-[-2px] after:rounded-lg hover:bg-accent hover:text-accent-foreground',
                   item.disabled && 'cursor-not-allowed opacity-60',
-                  normalizedPathname === item.href
+                  normalizedPathname === normalizeDocsHref(item.href)
                     ? 'bg-accent font-medium text-accent-foreground'
                     : 'font-normal text-foreground'
                 )}
-                data-href={item.href}
                 href={hrefWithLocale(item.href, locale)}
+                ref={
+                  normalizedPathname === normalizeDocsHref(item.href)
+                    ? activeItemRef
+                    : undefined
+                }
                 rel={item.external ? 'noreferrer' : ''}
                 target={item.external ? '_blank' : ''}
               >
-                {locale === 'cn' ? item.titleCn || item.title : item.title}
+                {getLocalizedNavTitle(item, locale)}
                 {item.label && (
                   <div className="ml-2 flex gap-1">
-                    {castArray(item.label).map((label, labelIndex) => (
+                    {getLabelValues(item.label).map((label, labelIndex) => (
                       <span
                         key={labelIndex}
                         className={cn(
@@ -309,9 +328,6 @@ function DocsNavItems({
                     ))}
                   </div>
                 )}
-                {/* {item.title?.toLowerCase().includes('leaf') && (
-                  <Leaf className="ml-auto size-4 text-foreground/80" />
-                )} */}
               </Link>
             ) : (
               <span
@@ -319,10 +335,10 @@ function DocsNavItems({
                   'flex h-8 w-full select-none items-center truncate rounded-lg px-2 font-medium text-foreground'
                 )}
               >
-                {locale === 'cn' ? item.titleCn || item.title : item.title}
+                {getLocalizedNavTitle(item, locale)}
                 {item.label && (
                   <div className="ml-2 flex gap-1">
-                    {castArray(item.label).map((label, labelIndex) => (
+                    {getLabelValues(item.label).map((label, labelIndex) => (
                       <span
                         key={labelIndex}
                         className={cn(
@@ -337,9 +353,6 @@ function DocsNavItems({
                     ))}
                   </div>
                 )}
-                {/* {item.title?.toLowerCase().includes('leaf') && (
-                  <Leaf className="ml-auto size-4 text-foreground/80" />
-                )} */}
               </span>
             )}
             {!!item.items?.length && (
@@ -350,6 +363,7 @@ function DocsNavItems({
                 )}
               >
                 <DocsNavItems
+                  activeItemRef={activeItemRef}
                   depth={depth + 1}
                   items={item.items}
                   pathname={normalizedPathname}
@@ -364,14 +378,18 @@ function DocsNavItems({
 }
 
 function ScrollableAccordionContent({
+  activeItemRef,
   children,
   className,
+  isActiveSection,
   ...props
-}: React.ComponentProps<typeof AccordionContent>) {
+}: React.ComponentProps<typeof AccordionContent> & {
+  activeItemRef: React.RefObject<HTMLAnchorElement | null>;
+  isActiveSection: boolean;
+}) {
   const [showTopIndicator, setShowTopIndicator] = useState(false);
   const [showBottomIndicator, setShowBottomIndicator] = useState(false);
   const contentRef = React.useRef<HTMLDivElement>(null);
-  const accordionRef = React.useRef<HTMLDivElement>(null);
 
   const handleScroll = React.useCallback(() => {
     const element = contentRef.current;
@@ -395,10 +413,8 @@ function ScrollableAccordionContent({
     const element = contentRef.current;
     if (!element) return;
 
-    // Check initial state
     checkScrollState();
 
-    // Watch for content size changes to update scroll indicators
     const resizeObserver = new ResizeObserver(() => {
       checkScrollState();
     });
@@ -414,22 +430,39 @@ function ScrollableAccordionContent({
     };
   }, [handleScroll, checkScrollState, children]);
 
+  React.useEffect(() => {
+    const element = contentRef.current;
+    const activeElement = activeItemRef.current;
+
+    if (!isActiveSection || !element || !activeElement) return;
+    if (!element.contains(activeElement)) return;
+
+    const frame = requestAnimationFrame(() => {
+      const containerRect = element.getBoundingClientRect();
+      const itemRect = activeElement.getBoundingClientRect();
+      const top = element.scrollTop + itemRect.top - containerRect.top - 32;
+
+      element.scrollTo({ top: Math.max(0, top) });
+      checkScrollState();
+    });
+
+    return () => cancelAnimationFrame(frame);
+  }, [activeItemRef, checkScrollState, isActiveSection, children]);
+
   return (
     <div className="relative flex grow flex-col overflow-y-hidden">
       <div ref={contentRef} className="grow overflow-y-auto">
-        <AccordionContent ref={accordionRef} className="pb-1" {...props}>
+        <AccordionContent className={cn('pb-1', className)} {...props}>
           {children}
         </AccordionContent>
       </div>
 
-      {/* Top scroll indicator */}
       {showTopIndicator && (
         <div className="pointer-events-none absolute top-0 right-0 left-0 z-10 flex h-8 items-start justify-center bg-gradient-to-b from-background via-background/60 to-transparent pt-1">
           <ChevronDown className="size-3.5 rotate-180 text-muted-foreground" />
         </div>
       )}
 
-      {/* Bottom scroll indicator */}
       {showBottomIndicator && (
         <div className="pointer-events-none absolute right-0 bottom-0 left-0 z-10 flex h-8 items-end justify-center bg-gradient-to-t from-background via-background/60 to-transparent pb-1">
           <ChevronDown className="size-3.5 text-muted-foreground" />
