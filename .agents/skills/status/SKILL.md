@@ -1,51 +1,57 @@
 ---
-description: Show current planning status at a glance - phases, progress, and any logged errors.
+description: Show current goal-plan status at a glance - phases, progress, checklist, verification, and risks.
 name: status
 metadata:
   skiller:
     source: .agents/rules/status.mdc
 ---
 
-Read task_plan.md from the current project directory and display a compact status summary.
+Read the active `docs/plans` goal plan and display a compact status summary. If
+the user did not name a file, use the active goal context and the most relevant
+recent `docs/plans/*.md`; if ambiguous, list the likely files and ask for the
+smallest clarification.
 
 ## What to Show
 
-1. **Current Phase**: Extract from "## Current Phase" section
-2. **Phase Progress**: Count phases and their status (pending/in_progress/complete)
-3. **Phase List**: Show each phase with status icon
-4. **Errors**: Count entries in "## Errors Encountered" table if present
-5. **Files Check**: Confirm which planning files exist
+1. **Current Phase/Pass**: Extract from the phase/pass table.
+2. **Checklist**: Count checked, unchecked, and N/A required items.
+3. **Verification**: Show latest verification evidence.
+4. **Errors**: Count unresolved error attempts.
+5. **Risks**: Show open risks.
 
 ## Status Icons
 
-- `[ ]` or "pending" → ⏸️
-- "in_progress" → 🔄
-- `[x]` or "complete" → ✅
-- "failed" or "blocked" → ❌
+- `[ ]` or `pending` -> pending
+- `in_progress` -> in progress
+- `[x]`, `complete`, or `done` -> complete
+- `failed` or `blocked` -> blocked
 
 ## Output Format
 
 ```
-📋 Planning Status
+Goal Plan Status
 
 Current: Phase {N} of {total} ({percent}%)
-Status: {status_icon} {status_text}
+Status: {status_text}
 
-  {icon} Phase 1: {name}
-  {icon} Phase 2: {name} ← you are here
-  {icon} Phase 3: {name}
+  {status} Phase 1: {name}
+  {status} Phase 2: {name} <- current
+  {status} Phase 3: {name}
   ...
 
-Files: task_plan.md {✓|✗} | findings.md {✓|✗} | progress.md {✓|✗}
-Errors logged: {count}
+Plan: docs/plans/{file}.md
+Checklist: {checked}/{total} complete
+Errors unresolved: {count}
+Risks: {none|summary}
 ```
 
 ## If No Planning Files Exist
 
 ```
-📋 No planning files found
+No goal plan found
 
-Run /plan to start a new planning session.
+Create one with:
+node .agents/rules/autogoal/scripts/create-goal-scratchpad.mjs ...
 ```
 
 ## Keep It Brief

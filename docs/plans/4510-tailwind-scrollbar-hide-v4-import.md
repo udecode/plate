@@ -35,7 +35,7 @@
 ## Progress
 
 - Fetched issue and comments with `gh issue view`.
-- Loaded task, planning-with-files, and learnings-researcher instructions.
+- Loaded task, goal workflow, and learnings-researcher instructions.
 - Searched repo for `tailwind-scrollbar-hide` references.
 - Verified upstream package guidance from the installed `tailwind-scrollbar-hide@4.0.0` README and exports.
 - Reproduced both Tailwind v4 compile paths locally and diffed the emitted CSS.

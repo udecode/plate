@@ -30,7 +30,7 @@ extras on top.
 ## Progress
 
 - Loaded `hard-cut`, `north-star`, `major-task`, `learnings-researcher`,
-  `planning-with-files`, `testing`, `tdd`, and `task`.
+  `goal workflow`, `testing`, `tdd`, and `task`.
 - Framed this as a core API fix, not another local rule patch.
 - Added a core regression proving custom block-start extras merge with the base
   match payload.

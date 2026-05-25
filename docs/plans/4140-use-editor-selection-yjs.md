@@ -37,7 +37,7 @@
 
 ## Progress
 
-- Loaded `task`, `planning-with-files`, `learnings-researcher`, `tdd`, and `changeset`.
+- Loaded `task`, `goal workflow`, `learnings-researcher`, `tdd`, and `changeset`.
 - Re-read the GitHub issue and comments.
 - Read the current Yjs plugin, init specs, and Plate selection/version code.
 - Confirmed the triage seam still looks right: Plate selection subscribers depend on `versionSelection`, and Yjs does not obviously advance that path today.

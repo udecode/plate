@@ -25,6 +25,11 @@ This is the entrypoint for the compiled agent research layer.
   Architecture and authority maps.
 - [editor-behavior-architecture.md](docs/research/systems/editor-behavior-architecture.md)
   Long-horizon architecture for profile-driven editor behavior.
+- [systems/editor-architecture-landscape.md](docs/research/systems/editor-architecture-landscape.md)
+  Compiled comparison map for the editor architecture candidate lane behind the
+  Slate v2 overlay rewrite.
+- [systems/slate-v2-overlay-architecture.md](docs/research/systems/slate-v2-overlay-architecture.md)
+  Stable research-layer architecture map for the Slate v2 overlay system.
 - [entities/README.md](docs/research/entities/README.md)
   Concrete named things like editors, packages, and plugins.
 - [entities/typora.md](docs/research/entities/typora.md)
@@ -67,6 +72,63 @@ This is the entrypoint for the compiled agent research layer.
   - [media-authoring-follows-the-image-path-policy-family.md](docs/research/decisions/media-authoring-follows-the-image-path-policy-family.md)
   - [date-mdx-payload-contract.md](docs/research/open-questions/date-mdx-payload-contract.md)
   - [math-delimiter-trigger-authority.md](docs/research/open-questions/math-delimiter-trigger-authority.md)
+- editor architecture lane now also includes:
+  - [sources/editor-architecture/README.md](docs/research/sources/editor-architecture/README.md)
+  - [decorations-annotations-overlay-corpus.md](docs/research/sources/editor-architecture/decorations-annotations-overlay-corpus.md)
+  - narrower source clusters for:
+    ProseMirror,
+    Lexical,
+    Tiptap,
+    local Slate v2 proof,
+    layout/measurement/IME,
+    lightweight editable surfaces,
+    and service/store models
+  - [systems/editor-architecture-landscape.md](docs/research/systems/editor-architecture-landscape.md)
+  - [systems/slate-v2-perfect-plan-steal-reject-defer-map.md](docs/research/systems/slate-v2-perfect-plan-steal-reject-defer-map.md)
+  - [systems/slate-v2-overlay-architecture.md](docs/research/systems/slate-v2-overlay-architecture.md)
+  - [slate-v2-overlay-architecture-cuts.md](docs/research/decisions/slate-v2-overlay-architecture-cuts.md)
+  - [slate-v2-overlay-superiority-vs-legacy-and-field.md](docs/research/decisions/slate-v2-overlay-superiority-vs-legacy-and-field.md)
+  - [react-19-2-external-store-and-background-ui.md](docs/research/sources/editor-architecture/react-19-2-external-store-and-background-ui.md)
+  - [tanstack-virtual-and-github-large-surface-virtualization.md](docs/research/sources/editor-architecture/tanstack-virtual-and-github-large-surface-virtualization.md)
+  - [pretext-pagination-page-virtualization.md](docs/research/sources/editor-architecture/pretext-pagination-page-virtualization.md)
+  - [slate-v2-react-19-2-perf-architecture-vs-field.md](docs/research/decisions/slate-v2-react-19-2-perf-architecture-vs-field.md)
+  - [source-scoped-overlay-invalidation.md](docs/research/concepts/source-scoped-overlay-invalidation.md)
+  - [slate-v2-source-scoped-overlay-invalidation.md](docs/research/decisions/slate-v2-source-scoped-overlay-invalidation.md)
+  - [slate-v2-collaborative-annotation-channels.md](docs/research/decisions/slate-v2-collaborative-annotation-channels.md)
+  - [slate-v2-data-model-first-react-perfect-runtime.md](docs/research/decisions/slate-v2-data-model-first-react-perfect-runtime.md)
+  - [read-update-runtime-corpus-ledger.md](docs/research/sources/editor-architecture/read-update-runtime-corpus-ledger.md)
+  - [lexical-read-update-extension-runtime.md](docs/research/sources/editor-architecture/lexical-read-update-extension-runtime.md)
+  - [prosemirror-transaction-view-dom-runtime.md](docs/research/sources/editor-architecture/prosemirror-transaction-view-dom-runtime.md)
+  - [tiptap-extension-command-react-dx.md](docs/research/sources/editor-architecture/tiptap-extension-command-react-dx.md)
+  - [slate-v2-read-update-runtime-architecture.md](docs/research/decisions/slate-v2-read-update-runtime-architecture.md)
+  - [slate-v2-perfect-plan-should-steal-read-update-transaction-discipline-and-extension-dx.md](docs/research/decisions/slate-v2-perfect-plan-should-steal-read-update-transaction-discipline-and-extension-dx.md)
+  - [slate-v2-state-tx-public-api-and-extension-namespaces.md](docs/research/decisions/slate-v2-state-tx-public-api-and-extension-namespaces.md)
+  - [slate-v2-post-closure-architecture-review.md](docs/research/decisions/slate-v2-post-closure-architecture-review.md)
+  - [slate-v2-architecture-verdict-after-human-stress-sweep.md](docs/research/decisions/slate-v2-architecture-verdict-after-human-stress-sweep.md)
+  - [node-text-mark-render-dx-corpus-ledger.md](docs/research/sources/editor-architecture/node-text-mark-render-dx-corpus-ledger.md)
+  - [scroll-selection-visibility-runtime.md](docs/research/sources/editor-architecture/scroll-selection-visibility-runtime.md)
+  - [editor-node-text-mark-dx-landscape.md](docs/research/systems/editor-node-text-mark-dx-landscape.md)
+  - [editor-node-dx-should-use-runtime-owned-shells-and-spec-first-renderers.md](docs/research/decisions/editor-node-dx-should-use-runtime-owned-shells-and-spec-first-renderers.md)
+  - concept pages for:
+    [overlay-lane-separation](docs/research/concepts/overlay-lane-separation.md),
+    [durable-anchor-vs-live-handle](docs/research/concepts/durable-anchor-vs-live-handle.md),
+    [runtime-identity-vs-tree-address](docs/research/concepts/runtime-identity-vs-tree-address.md),
+    and
+    [source-scoped-overlay-invalidation](docs/research/concepts/source-scoped-overlay-invalidation.md)
+  - entity pages for:
+    [ProseMirror](docs/research/entities/prosemirror.md),
+    [Lexical](docs/research/entities/lexical.md),
+    [Tiptap](docs/research/entities/tiptap.md),
+    [Premirror](docs/research/entities/premirror.md),
+    [Pretext](docs/research/entities/pretext.md),
+    [Slate](docs/research/entities/slate.md),
+    [edix](docs/research/entities/edix.md),
+    [use-editable](docs/research/entities/use-editable.md),
+    [rich-textarea](docs/research/entities/rich-textarea.md),
+    [VS Code](docs/research/entities/vscode.md),
+    [TanStack DB](docs/research/entities/tanstack-db.md),
+    and
+    [EditContext](docs/research/entities/editcontext.md)
 - Milkdown compiled source pages derived from `../raw/milkdown`, starting in
   [sources/milkdown/README.md](docs/research/sources/milkdown/README.md)
 - Obsidian compiled source pages derived from `../raw/obsidian`, starting in
