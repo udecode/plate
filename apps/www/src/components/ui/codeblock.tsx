@@ -4,15 +4,31 @@
 'use client';
 
 import React, { type FC, memo } from 'react';
-import { type SyntaxHighlighterProps, Prism } from 'react-syntax-highlighter';
-import { coldarkDark } from 'react-syntax-highlighter/dist/cjs/styles/prism';
 
 import { Icons } from '@/components/icons';
+import { ThemedSyntaxHighlighter } from '@/components/themed-syntax-highlighter';
 import { Button } from '@/components/ui/button';
 import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard';
 
-const SyntaxHighlighter =
-  Prism as unknown as typeof React.Component<SyntaxHighlighterProps>;
+const codeActionButtonClassName =
+  'size-7 rounded-lg bg-transparent p-0 text-code-foreground hover:bg-muted-foreground/15 hover:text-code-foreground focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-0 [&_svg]:size-3';
+
+const codeCustomStyle = {
+  background: 'transparent',
+  margin: 0,
+  padding: '1rem',
+  width: '100%',
+};
+
+const codeTagStyle = {
+  fontFamily: 'var(--font-mono)',
+  fontSize: '0.9rem',
+};
+
+const lineNumberStyle: React.CSSProperties = {
+  color: 'var(--muted-foreground)',
+  userSelect: 'none',
+};
 
 type languageMap = Record<string, string | undefined>;
 
@@ -95,62 +111,46 @@ const CodeBlock: FC<Props> = memo(({ language, value }) => {
   };
 
   return (
-    <div className="codeblock relative w-full bg-zinc-950 font-sans">
-      <div className="flex w-full items-center justify-between bg-zinc-800 px-6 py-1 pr-4 text-zinc-100">
+    <div className="codeblock relative w-full overflow-hidden rounded-lg border bg-code font-sans text-code-foreground">
+      <div className="flex w-full items-center justify-between border-b px-4 py-1 text-code-foreground">
         <span className="text-xs lowercase">{language}</span>
 
         <div className="flex items-center space-x-1">
           <Button
-            size="sm"
+            size="icon"
             variant="ghost"
-            className="hover:bg-zinc-800 focus-visible:ring-1 focus-visible:ring-slate-700 focus-visible:ring-offset-0 [&_svg]:hover:text-muted-foreground"
+            className={codeActionButtonClassName}
             onClick={downloadAsFile}
           >
-            <Icons.download className="size-4" />
+            <Icons.download />
 
             <span className="sr-only">Download</span>
           </Button>
 
           <Button
-            size="sm"
+            size="icon"
             variant="ghost"
-            className="text-xs hover:bg-zinc-800 focus-visible:ring-1 focus-visible:ring-slate-700 focus-visible:ring-offset-0 [&_svg]:hover:text-muted-foreground"
+            className={codeActionButtonClassName}
             onClick={onCopy}
           >
-            {isCopied ? (
-              <Icons.check className="size-4" />
-            ) : (
-              <Icons.copy className="size-4" />
-            )}
+            {isCopied ? <Icons.check /> : <Icons.copy />}
 
             <span className="sr-only">Copy code</span>
           </Button>
         </div>
       </div>
 
-      <SyntaxHighlighter
-        style={coldarkDark}
-        codeTagProps={{
-          style: {
-            fontFamily: 'var(--font-mono)',
-            fontSize: '0.9rem',
-          },
-        }}
-        customStyle={{
-          background: 'transparent',
-          margin: 0,
-          padding: '1.5rem 1rem',
-          width: '100%',
-        }}
+      <ThemedSyntaxHighlighter
+        className="no-scrollbar"
+        codeTagProps={{ style: codeTagStyle }}
+        customStyle={codeCustomStyle}
         language={language}
-        lineNumberStyle={{
-          userSelect: 'none',
-        }}
+        lineNumberStyle={lineNumberStyle}
         PreTag="div"
         showLineNumbers
       >
         {value}
-      </SyntaxHighlighter>
+      </ThemedSyntaxHighlighter>
     </div>
   );
 });

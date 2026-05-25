@@ -21,6 +21,9 @@ import { cn } from '@/lib/utils';
 
 import { Icons } from './icons';
 
+const codeCopyButtonClassName =
+  'relative z-10 size-6 bg-code text-code-foreground opacity-70 hover:bg-muted-foreground/15 hover:text-code-foreground hover:opacity-100 focus-visible:opacity-100 [&_svg]:!size-3';
+
 interface CopyButtonProps extends ComponentProps<typeof Button> {
   value: string;
   event?: Event['name'];
@@ -55,10 +58,7 @@ export function CopyButton({
     <Button
       size="icon"
       variant={variant}
-      className={cn(
-        '[&_svg]:!size-3 relative z-10 size-6 text-slate-50 hover:bg-slate-700 hover:text-slate-50',
-        className
-      )}
+      className={cn(codeCopyButtonClassName, className)}
       onClick={() => {
         void copyToClipboardWithMeta(
           value,
@@ -110,10 +110,7 @@ export function CopyWithClassNames({
         <Button
           size="icon"
           variant="ghost"
-          className={cn(
-            'relative z-10 size-6 text-slate-50 hover:bg-slate-700 hover:text-slate-50',
-            className
-          )}
+          className={cn(codeCopyButtonClassName, className)}
         >
           {hasCopied ? (
             <Icons.check className="size-3" />
@@ -176,10 +173,7 @@ export function CopyNpmCommandButton({
         <Button
           size="icon"
           variant="ghost"
-          className={cn(
-            'relative z-10 size-6 text-slate-50 hover:bg-slate-700 hover:text-slate-50',
-            className
-          )}
+          className={cn(codeCopyButtonClassName, className)}
         >
           {hasCopied ? (
             <Icons.check className="size-3" />

@@ -1,6 +1,7 @@
 ---
 title: Docs code blocks need light Shiki tokens on light surfaces
 date: 2026-05-25
+last_updated: 2026-05-25
 category: docs/solutions/ui-bugs
 module: Docs
 problem_type: ui_bug
@@ -9,12 +10,16 @@ symptoms:
   - "Docs code blocks used low-contrast light tokens on a light code surface"
   - "Command code blocks could render duplicate light and dark output without explicit theme visibility rules"
   - "`github-light-default` crashed docs rendering because the bundled Shiki themes did not include it"
+  - "Client-rendered React SyntaxHighlighter blocks could keep light token styles after switching to dark mode"
 root_cause: config_error
 resolution_type: code_fix
 severity: medium
 tags:
   - docs
   - code-block
+  - hydration
+  - next-themes
+  - react-syntax-highlighter
   - shiki
   - rehype-pretty-code
   - theme
@@ -28,11 +33,21 @@ Changing the docs code-block container to a light `bg-code` surface is not
 enough. If `rehype-pretty-code` still emits only dark-theme tokens, the code
 looks washed out or strangely colored on the light background.
 
+The same rule applies to client-rendered `react-syntax-highlighter` blocks:
+the wrapper surface, token palette, and theme switching behavior all need to
+agree.
+
 ## Symptoms
 
 - JSX and TypeScript tokens appear too pale on the light docs code surface.
 - The regular `pre` block and npm-command block do not visually match shadcn's
   light code style.
+- React SyntaxHighlighter blocks render dark or mismatched colors on light docs
+  surfaces.
+- Dark mode can show a dark `bg-code` wrapper while the token spans keep light
+  theme colors.
+- Rendering separate light and dark highlighters doubles Prism tokenization and
+  DOM size on code-heavy pages.
 - Trying `github-light-default` throws:
 
 ```txt
@@ -47,6 +62,14 @@ ShikiError: Theme github-light-default is not included in this bundle
   the current Plate Shiki bundle does not ship that theme.
 - Passing the whole `pre` prop object into the command component created a ref
   type mismatch because the command wrapper renders a `div`, not a `pre`.
+- Hiding one `react-syntax-highlighter` instance with `dark:hidden` still mounts
+  and tokenizes both themes.
+- Picking the SyntaxHighlighter theme directly from `useTheme()` on the first
+  client render can create a server/client inline-style mismatch that React does
+  not reliably patch.
+- Letting imported highlighter themes keep `background`, `backgroundColor`, or
+  `border` on the rendered surface conflicts with the docs `bg-code` wrapper and
+  can trigger React style shorthand warnings during theme updates.
 
 ## Solution
 
@@ -89,6 +112,39 @@ For command blocks, preserve only the relevant generated attributes such as
 `data-language` and `data-theme` when routing the `pre` through the custom
 command renderer.
 
+For React SyntaxHighlighter-backed surfaces, render exactly one highlighter and
+select its theme in a shared client component:
+
+```tsx
+const theme = mounted && resolvedTheme === 'dark' ? darkTheme : lightTheme;
+
+return (
+  <SyntaxHighlighter {...props} style={theme as any}>
+    {children}
+  </SyntaxHighlighter>
+);
+```
+
+Keep the first render deterministic by using the light theme until the component
+mounts. Normalize imported Prism themes so the wrapper owns background and
+border styling:
+
+```ts
+function normalizeTheme(theme: Record<string, React.CSSProperties>) {
+  const {
+    background: _preBackground,
+    backgroundColor: _preBackgroundColor,
+    border: _preBorder,
+    ...preStyle
+  } = theme['pre[class*="language-"]'] ?? {};
+
+  return {
+    ...theme,
+    ['pre[class*="language-"]']: preStyle,
+  };
+}
+```
+
 ## Why This Works
 
 The visible code surface and the syntax token palette must come from the same
@@ -98,6 +154,12 @@ CSS rules choose the correct one for the active document theme.
 Preserving `data-theme` also keeps command blocks in the same visibility system
 as normal code blocks instead of treating them as a special case.
 
+For client highlighters, the initial server-rendered style and the first client
+render must match. After mount, a normal state update can switch to the active
+`next-themes` mode and React will patch the token styles. Rendering a single
+highlighter also avoids doubling Prism work on release notes and other
+code-heavy pages.
+
 ## Prevention
 
 - When changing docs code-block backgrounds, check the actual token colors in
@@ -106,6 +168,10 @@ as normal code blocks instead of treating them as a special case.
   upstream shadcn theme string.
 - For `rehype-pretty-code` dual-theme output, verify one light block is visible
   in light mode and the dark duplicate is hidden.
+- For client-side highlighters, verify the first visible code block has exactly
+  one mounted highlighter in both light and dark mode.
+- Treat React hydration or shorthand style warnings as real style bugs when code
+  themes are controlled by inline style objects.
 - Do not spread `pre` props into a non-`pre` wrapper without checking refs and
   element-specific attributes.
 

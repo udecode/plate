@@ -444,7 +444,10 @@ export function BlockViewerFileTree({ size }: { size?: 'default' | 'sm' }) {
   return (
     <div className={cn('w-72 shrink-0', size === 'sm' && 'w-60')}>
       <SidebarProvider className="flex min-h-full! flex-col border-r">
-        <Sidebar className="w-full flex-1" collapsible="none">
+        <Sidebar
+          className="min-h-0 w-full flex-1 overflow-y-auto overflow-x-hidden"
+          collapsible="none"
+        >
           <SidebarGroupLabel className="h-12 rounded-none border-b px-4 text-sm">
             Files
           </SidebarGroupLabel>
