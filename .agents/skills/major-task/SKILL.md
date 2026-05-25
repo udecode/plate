@@ -19,13 +19,13 @@ Handle $ARGUMENTS. Use this for architectural, comparative, benchmark, migration
 - Read the source of truth first.
 - Plan before drifting into implementation.
 - Start from repo constraints, not internet takes.
-- Search for existing seams, patterns, and prior decisions before inventing new ones.
+- Search for existing boundaries, patterns, and prior decisions before inventing new ones.
 - Prefer the smallest heavy stack that can answer the decision.
 - Usually load 3 to 5 helpers, not every possible helper.
 - Separate facts, inference, and recommendation.
 - Do not default to ce-review, browser proof, PR work, or compounding.
 - Use external docs only when repo evidence and local clones are not enough or the task explicitly depends on third-party behavior.
-- If the task turns into code-changing execution, prefer the best durable seam fix over a local patch.
+- If the task turns into code-changing execution, prefer the best durable ownership fix over a local patch.
 
 ## Use This For
 
@@ -69,8 +69,20 @@ Handle $ARGUMENTS. Use this for architectural, comparative, benchmark, migration
    - planning only
    - planning plus later implementation
    - already code-changing execution
-7. Load `planning-with-files` immediately.
-8. Load `ce:plan` when the work needs a real implementation plan, phased rollout, or a plan artifact.
+7. Load `autogoal` immediately and create or update one `docs/plans` goal plan
+   from the major primary template plus packs:
+
+   ```bash
+   node .agents/rules/autogoal/scripts/create-goal-scratchpad.mjs \
+     --template major-task \
+     --title "<short major task title>"
+   ```
+
+   Add touched-surface packs as needed: `--with docs`, `--with browser`,
+   `--with package-api`, or `--with agent-native`.
+8. When the work needs a real implementation plan, phased rollout, or plan
+   artifact, make the active `major-task` goal plan the durable planning
+   surface.
 9. Load `learnings-researcher` early when the domain smells repeated or the repo has prior decisions worth mining.
 10. If the work is editor-framework-facing, start from `@docs/analysis/editor-architecture-candidates.md` as the candidate map instead of widening the field randomly.
 11. For library or framework questions, inspect the local clone in `..` first per AGENTS. If missing, clone it. Only then reach for official docs.
@@ -85,7 +97,7 @@ Handle $ARGUMENTS. Use this for architectural, comparative, benchmark, migration
 - acceptance criteria or decision criteria
 - likely files, packages, or public surfaces affected
 - whether there is a real browser surface to verify
-- likely highest-leverage seam
+- likely highest-leverage owner
 
 14. Read repo instructions and nearby implementation patterns before editing.
 15. If the task becomes code-changing work:
@@ -126,10 +138,11 @@ Apply this section only when the task source is a tracker item.
 
 ## Load Skills Only When Justified
 
-- `planning-with-files`
-  Use by default here. Major work should not rely on short-lived memory.
-- `ce:plan`
-  Use for phased implementation plans, rollout plans, or plan artifacts.
+- `autogoal`
+  Use by default here. Major work should not rely on short-lived memory. Keep
+  the durable working state in one `docs/plans` goal plan. Use
+  `--template major-task`, then add touched-surface packs for docs, browser,
+  package/API, or agent-native surfaces.
 - `learnings-researcher`
   Use early when prior repo decisions, solutions, or repeated failures may matter.
 - `repo-research-analyst`
@@ -168,19 +181,16 @@ Apply this section only when the task source is a tracker item.
   Use when verified work changes a published package under `packages/` and the repo expects release notes before completion.
 - `git-commit-push-pr`
   Use when verified code-changing work should ship as a PR.
-- `ce-compound`
-  Use only after verified, non-trivial work that produced reusable knowledge.
-
 ## Execution Paths
 
 ### Architecture Or Public API
 
-1. Map the current seams, ownership, public surface, and package boundaries first.
+1. Map the current boundaries, ownership, public surface, and package boundaries first.
 2. Find what already exists before proposing new structure.
-3. Prefer changing the seam over papering around it at each call site.
+3. Prefer changing the ownership boundary over papering around it at each call site.
 4. Call out blast radius explicitly when the recommendation changes public API or package contracts.
 5. If recommending a migration path, include staged rollout, compatibility strategy, and rollback shape.
-6. If a smaller seam change and a broader architecture reset are both viable, say why one wins now.
+6. If a smaller boundary change and a broader architecture reset are both viable, say why one wins now.
 
 ### Performance And Optimization
 
@@ -227,7 +237,8 @@ Apply this section only when the task source is a tracker item.
 
 1. Use `spec-flow-analyzer` to pressure-test completeness.
 2. Define constraints, acceptance criteria, rollout, verification, and open questions before implementation.
-3. If the task is still mushy product framing rather than implementation strategy, route to `ce:brainstorm` first.
+3. If the task is still mushy product framing rather than implementation
+   strategy, stop for focused clarification or switch to collaborative planning.
 4. If the spec will be a real decision artifact, run the conditional document-review pass before calling it done.
 
 ### Document Review
@@ -253,11 +264,13 @@ Apply this section only when the task source is a tracker item.
 
 ### Code-Changing Major Work
 
-1. Once the decision is made, reduce execution to the smallest meaningful slice that proves the seam.
+1. Once the decision is made, reduce execution to the smallest meaningful slice that proves the ownership boundary.
 2. Prefer the cleanest long-term design that fits the slice, not the quickest bolt-on.
 3. If existing patterns are weak, improve the pattern or API instead of copying it blindly.
 4. Use targeted tests and checks during iteration.
-5. Use browser verification only if the work actually hits a browser surface.
+5. Add touched-surface packs before execution proof: `docs`, `browser`,
+   `package-api`, `agent-native`, or `review` as applicable.
+6. Use browser verification only if the work actually hits a browser surface.
 
 ### Review Or Investigation
 
@@ -332,7 +345,10 @@ Apply this section only when the task came from a tracker item and reached a mea
 - Source-of-truth context was read first.
 - Relevant local instructions and nearby patterns were read before editing.
 - Major-work lane was classified explicitly.
-- `planning-with-files` was loaded before the work sprawled.
+- `autogoal` was loaded and the `docs/plans` goal plan used
+  `--template major-task` before the work sprawled.
+- Touched docs, browser, package/API, or agent-native surfaces added the
+  matching pack rows instead of inheriting another primary template.
 - Editor-framework comparison stayed bounded by the analysis doc when relevant.
 - Local clones/source were checked before external docs when third-party behavior mattered.
 - Only the necessary helpers were loaded.

@@ -34,7 +34,7 @@
 ## Progress
 
 - Fetched the issue and comments.
-- Read the task, planning-with-files, learnings-researcher, and bug-reproduction-validator skill docs.
+- Read the task, goal workflow, learnings-researcher, and bug-reproduction-validator skill docs.
 - Searched local solution docs and current code for AI streaming, anchors, and `AIMenu`.
 - Confirmed the current `AIMenu` implementation still uses `const anchorDom = editor.api.toDOMNode(anchor![0])!` inside a `setTimeout`.
 - Added a regression test in `apps/www/src/registry/ui/ai-menu.spec.tsx` that reproduced the current undefined-anchor crash on `main`.
@@ -44,5 +44,5 @@
 
 ## Errors
 
-- `planning-with-files` session catchup script path from the generated skill is missing locally, so catchup could not run in this repo.
+- `goal workflow` session catchup script path from the generated skill is missing locally, so catchup could not run in this repo.
 - `browser-use` screenshot writes only accept repo-relative paths, not absolute paths.

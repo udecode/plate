@@ -1,0 +1,475 @@
+---
+description: Use when repairing slate-v2 drift against legacy with strict source-first recovery
+---
+
+# Repair Drift
+
+Use this when repairing `slate-v2` drift against legacy.
+
+Soft recovery creates fake wins.
+Default to strict source-first recovery:
+
+- source diff first
+- contract diff first for public APIs
+- legacy file is the default truth
+- runtime proof is secondary
+- tests get fixed after the source file is honest
+
+## Non-Negotiables
+
+- Look at the real `git diff` or `diff -u` first.
+- For same-path examples/files, recover the source file first.
+- For public API drift, recover the legacy type/signature first.
+- Do not call a row `recovered` because a browser row is green.
+- Do not keep drift unless it is explicitly justified as `added` or `extended`.
+- If a file still reads like a rewrite, it is still `open`.
+- Do not answer from memory when the legacy contract is in the diff.
+
+## Default Rule
+
+For a same-path legacy example/file:
+
+1. Start from the legacy source file.
+2. Port it as directly as the current runtime allows.
+3. Keep only the minimum current-runtime adaptations.
+4. Remove every drift that is not forced.
+5. Fix tests afterward.
+
+If you feel tempted to approximate the legacy file with a fresh rewrite, stop.
+
+## Path-First Rule
+
+Same-path recovery means the same path.
+
+Do not quietly:
+
+- move it to a nearby folder
+- replace it with a sibling file of a different extension or name
+- leave a duplicate or stale copy at the old/current path
+- update consumers to a fake replacement path and call that recovery
+
+For declaration files, config files, helper modules, and other non-page source
+files, path drift is still source drift.
+
+## JS + Type Drift Rule
+
+Source parity includes:
+
+- JS structure
+- local type shape
+- meaningful source comments
+
+If the legacy file is direct:
+
+- keep direct local function signatures
+- keep direct local control flow
+- keep direct local render structure
+- keep meaningful legacy comments unless the code around them is genuinely gone
+
+Bad:
+
+- replacing `([node, path]: NodeEntry)` with generic wrappers
+- adding casts or helper indirection when the direct local type works
+- adding fallback/default branches legacy did not need
+- adding test-only props/hooks
+- deleting compat/invariant comments that still describe live behavior
+- dropping explanatory comments during whole-file rewrites just because the code still compiles
+
+Good:
+
+- keep the legacy local signature if it still compiles
+- keep the legacy control flow if the current runtime still supports it
+- make the smallest forced adaptation, then stop
+- keep legacy comments when they still explain a live branch, compat path, or invariant
+- restore meaningful comments if a mechanical rewrite dropped them by accident
+
+Current lint/type/toolchain-only adaptations are acceptable when they do not
+change the local behavior or branch shape.
+
+Examples:
+
+- type-only imports
+- hoisting a hot-path regex or constant to module scope
+- splitting `return scheduleAction(...)` into `scheduleAction(...); return`
+- splitting assignment-in-expression control flow into the same loop with one
+  extra local
+- removing an option field the current helper type no longer accepts when the
+  behavior is otherwise the same
+- using the smallest local type adaptation when the current package types are
+  stricter but the runtime contract is unchanged
+
+Do not let toolchain cleanup become an excuse to rewrite the surrounding branch.
+
+One justified drift does not buy more drift around it.
+
+## React Repair Rule
+
+When repairing React source:
+
+- restore the legacy behavioral contract first
+- use React 19.2-native patterns only when they preserve that contract
+- do not treat a newer React API as automatic justification for source drift
+
+React modernization is allowed only when it is contract-preserving or clearly
+forced by the current engine/runtime.
+
+Effects are for external synchronization.
+Do not rewrite:
+
+- render-derived logic
+- event-driven logic
+- pre-commit lifecycle behavior
+
+into `useEffect` / `useLayoutEffect` just because the file is being recovered.
+
+If legacy behavior depends on a lifecycle that hooks do not replicate cleanly,
+keep that lifecycle.
+
+Examples:
+
+- `useEffectEvent` is good when it preserves the contract
+- `useMemo` is good for pure derived render work when it does not change the contract
+- `Activity` is not a substitute for DOM restore or mutation rollback logic
+- `getSnapshotBeforeUpdate` should not be replaced with effects if pre-commit timing is the real behavior
+
+## Contract-First Rule
+
+When the drift is on a public API:
+
+1. diff the legacy type/signature first
+2. treat that exact contract as the starting truth
+3. restore the whole contract before discussing individual props
+
+Do not repair regressions symptom-by-symptom.
+
+If the current public API is expressed through helper wrappers like
+`OmitFirstArg`, `WithEditorFirstArg`, mapped delegates, or surface aggregator
+types, audit those wrappers too.
+
+Legacy generic contracts often drift there first.
+
+Do not stop after restoring the instance/interface signature if the exported
+helper namespace or delegated wrapper still erases the generic.
+
+If legacy says:
+
+```ts
+type EditableProps = {
+  ...
+} & React.TextareaHTMLAttributes<HTMLDivElement>
+```
+
+then the recovery target is that whole contract, not a few props you happened
+to notice.
+
+If the current package source still seeds, syncs, or mutates a public field in
+its real runtime owners, do not accept a narrowed readonly/exported type for
+that field as intentional drift.
+
+That is usually a package type miss.
+
+If a same-path interface file deleted exported helper type names but the current
+runtime still has equivalent option bags or helper contracts under renamed local
+types, recover the exported alias names first.
+
+Do not accept a pure rename-cut on exported helper types as justified drift.
+
+## Public API Workflow
+
+1. diff the legacy exported type
+2. diff the current exported type
+3. list the missing fields / inherited attributes
+4. restore the contract in the component props
+5. restore runtime forwarding of those props
+6. add a type-level test
+7. add a runtime forwarding test
+8. only then update docs or ledgers
+
+## Testing Rule
+
+If a drift is detected, use `tdd` only when it is actually valuable.
+
+Do not overkill testing for every single drift.
+
+The main reason drift keeps coming back is often missing coverage, but the fix
+for that is targeted testing, not ritual test sprawl.
+
+Good:
+
+- add a focused regression test when the drift exposed a real contract hole
+- add tests for shared behavior, public APIs, or bug-prone browser/input paths
+- skip TDD for tiny mechanical parity edits when the source recovery is obvious
+  and existing verification is enough
+
+Bad:
+
+- forcing a red-green loop for every formatting, comment, or direct source-port
+  cleanup
+- writing broad new test scaffolding before the source file is honest
+- using tests as an excuse to avoid reading and repairing the real legacy diff
+
+## Learning Update Rule
+
+Every time you use `repair-drift`, do a short end-of-task learning pass before
+you leave.
+
+Ask:
+
+- did this repair expose a repeated false-positive review pattern?
+- did it reveal a new justified-drift bucket?
+- did it expose a package-miss smell that should be called out earlier?
+- did it reveal a better replacement-proof check?
+- did it add a React repair constraint worth preserving?
+- did it show a recurring comment/source-parity rule we keep forgetting?
+
+If yes:
+
+1. update the source rule at `.agents/rules/repair-drift.mdc`
+2. keep the addition short, reusable, and general
+3. prefer tightening an existing section over adding a new junk section
+4. run `bun install` so the generated skill stays in sync
+
+If no durable learning came out of the task, do nothing.
+
+Do not dump one-off ticket trivia, file-specific notes, or temporary repo state
+into the skill.
+
+The skill should get sharper every time it is used, not fatter every time a
+session happened.
+
+## Source-First Classification
+
+- `recovered`: current file reads like a close legacy port in source
+- `mixed`: source-close, but important behavior/proof still incomplete
+- `extended`: source-close with intentional current-only value beyond legacy
+- `open`: still reads like a rewrite or major source drift
+
+`git diff` wins ties.
+
+## Allowed Drift
+
+Only keep drift that is forced and name it explicitly.
+
+Typical justified drift:
+
+- `EditableBlocks` or another current surface primitive replacing legacy `Editable`
+- current runtime lacking a legacy prop like `spellCheck` or `autoFocus`
+- Biome-only syntax/import/wrapping churn
+- engine-rewrite drift the current package/runtime genuinely cannot express without fake compatibility code
+- explicit added/extended logic that unlocks a better current comparison surface
+
+If drift is 100% justified by the engine rewrite, accept it and write the exact
+reason in the ledger.
+
+If the drift might instead be a missing current package prop, type contract, or
+runtime behavior, treat it as a package miss first and try to fix the package.
+
+## Rewrite-Justified Drift Buckets
+
+When a drift is accepted, name the exact bucket in the ledger.
+
+Do not write vague junk like:
+
+- engine rewrite
+- optimization
+- modern React
+- architecture changed
+
+Write the specific reason.
+
+### Engine rewrite buckets
+
+These are usually acceptable when the current runtime really owns the behavior
+somewhere else or intentionally cuts the old mechanism:
+
+- current surface split:
+  legacy same-path behavior is now intentionally owned by a current split
+  surface like `EditableText`, `EditableTextBlocks`, `SlatePlaceholder`,
+  `SlateLeaf`, or `SlateText`
+- projection/selector-first runtime:
+  legacy rerender-era bookkeeping, reconciliation, or DOM-sync internals were
+  replaced by projection-first, selector-first, semantic-island, or mounted
+  bridge runtime ownership
+- decoration engine rewrite:
+  legacy `decorate` plumbing, leaf splitting, or decoration ownership was
+  replaced by the current decoration-source / projection decoration engine
+- chunking cut:
+  legacy chunking or `renderChunk`-style control flow no longer exists because
+  the current text/render pipeline does not chunk on that path
+- snapshot/text extraction rewrite:
+  current snapshot, extraction, or DOM-to-model capture hooks replaced legacy
+  text-path or DOM-point plumbing for the same runtime reason
+- snapshot commit callback rewrite:
+  legacy callback payloads like `onChange({ operation })` were replaced by a
+  commit-notification callback plus snapshot/subscription ownership, so keeping
+  the old callback argument shape would be fake compatibility
+- restore-dom ownership move:
+  legacy DOM restore guards, rollback plumbing, or cleanup branches moved into
+  current restore-dom managers / wrappers / dedicated owners
+- large-document specialization:
+  current large-document or mounted-runtime behavior adds non-legacy guards or
+  alternate ownership that legacy did not have
+
+### React optimization buckets
+
+These are acceptable only when they preserve the caller-visible contract:
+
+- memoized pure render work:
+  `useMemo`, `useCallback`, or component extraction for pure render stability
+  or rerender reduction
+- effect-event stabilization:
+  `useEffectEvent` or equivalent stable event capture that preserves the old
+  trigger path and behavior
+- external subscription placement:
+  `useLayoutEffect` / `useEffect` for external DOM subscription setup/cleanup
+  when the old code depended on imperative subscription timing, not pre-commit
+  lifecycle semantics
+- ref/handler stabilization:
+  ref composition, stable callbacks, or handler hoisting added only to preserve
+  correctness or avoid stale closures in the rewritten runtime
+
+### Not covered by these buckets
+
+These still need recovery or a package fix:
+
+- public API or exported type narrowing
+- missing forwarded DOM props or runtime callback forwarding
+- caller-visible behavior regressions
+- missing meaningful legacy comments on still-live branches
+- local bandaids added because the package/runtime contract is still wrong
+
+Bucket match is not enough by itself.
+You still need replacement proof for same-path behavior that used to exist.
+
+## Declaration + Ambient Rule
+
+If the legacy file defines a declaration contract, registry contract, or other
+program-wide type/config surface:
+
+1. recover the same-path file first
+2. recover the exported or ambient contract second
+3. inventory the current consumer shapes before widening or cutting the contract
+4. fix package drift if the current public surface no longer supports the legacy contract
+5. only then repair the consuming examples/files
+
+Do not replace a legacy declaration/config file with a local ad hoc helper just
+because the current consumers are red.
+
+If the current program truly needs extra non-legacy shapes, do not dump them
+back into the recovered base file by default.
+
+Prefer:
+
+- a recovered legacy-oriented shared file
+- plus a clearly named current-only extension file or file-local type owner
+
+The shared base file should stay as close to the legacy contract as the current
+runtime honestly allows.
+
+## Rewritten-Internals Rule
+
+Not every deleted or rewritten legacy internal is a regression.
+
+Before treating a missing legacy helper, wrapper branch, or internal subsystem
+as drift to recover:
+
+1. read the current docs / ledgers / architecture notes for that area
+2. check whether the current runtime explicitly redefined that behavior owner
+3. distinguish:
+   - contributor-facing public contract drift
+   - example/source drift
+   - internal architecture that is now an explicit cut or better-cut
+
+Docs and architecture notes are not enough by themselves.
+
+If a same-path file used to own a behavior branch, guard, cleanup step, or
+bookkeeping step, you do not get to waive that drift just because some nearby
+current module looks related.
+
+You need replacement proof.
+
+Bad:
+
+- cargo-culting deleted internals back into the code because the same path used
+  to have them
+- treating legacy chunking, rerender-era DOM restore, or wrapper plumbing as
+  automatic recovery targets without checking the rewritten architecture
+- assuming a same-path file must regain every old internal branch even when the
+  current runtime moved that behavior elsewhere or explicitly cut it
+- pointing at a manager, hook, wrapper, subsystem, or docs page and calling the
+  missing branch "covered" without proving the exact trigger path and effect
+- proving that a broad subsystem exists, while the specific legacy branch
+  behavior is still unproven on the path that used to own it
+
+Good:
+
+- recover the public behavior or public type contract first
+- restore a legacy internal only if the current architecture still claims that
+  behavior owner and the behavior is missing
+- if the docs/ledgers say the behavior owner is explicitly redefined or cut,
+  record that as justified drift instead of reviving dead internals
+- map old branch -> current owner -> exact replacement behavior before calling
+  the legacy branch obsolete
+
+## Replacement-Proof Rule
+
+When you think a missing legacy branch is already handled elsewhere, prove it at
+the branch level:
+
+1. name the exact old trigger path
+2. name the exact current owner for that behavior
+3. prove the same guard / cleanup / bookkeeping / state handoff still happens
+4. prove it happens for the same caller class, not just a nearby happy path
+
+If you cannot prove all four, do not mark it as justified drift.
+
+Classify it as one of:
+
+- package/runtime drift to recover
+- source drift still open
+- unresolved until you have proof
+
+Do not downgrade a missing same-path behavior branch to "intentional rewrite"
+from architectural similarity alone.
+
+Historical design analysis is evidence, not a command to resurrect the old
+mechanism.
+
+If the current runtime is selector-first, semantic-island based, mounted-bridge
+ based, projection-first, or otherwise intentionally rewritten, recover the
+current contract honestly instead of forcing the old implementation shape back
+in.
+
+## Forbidden Drift
+
+Do not keep these unless there is a hard runtime blocker:
+
+- `as CustomEditor` casts added just to silence types
+- fresh abstractions replacing straightforward legacy code
+- generic surface wrappers when legacy was direct
+- widened local signatures when the legacy direct signature still works
+- extra fallback/default branches added only to satisfy types or lint
+- current-only copy changes
+- reduced toolbar/control density
+- source rewrites that keep only the legacy shell
+- test-only `id`, `data-*`, or wrapper nodes
+- prop-by-prop whack-a-mole instead of restoring the exported legacy contract
+
+## One-Shot Workflow
+
+For each same-path example/file:
+
+1. run `diff -u legacy current`
+2. read the legacy file fully
+3. read the current file fully
+4. delete fake drift first
+5. port the legacy structure directly
+6. reintroduce only forced current-runtime adaptations
+7. recalculate source similarity and diff size
+8. only then touch tests and browser proof
+9. only after source + proof are honest, update the ledger
+
+For public APIs, prepend:
+
+0. diff the legacy exported type/signature
+0.5 restore the contract before touching consuming examples

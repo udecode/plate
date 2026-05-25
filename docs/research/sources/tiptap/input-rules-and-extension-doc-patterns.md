@@ -4,9 +4,9 @@ type: source
 status: partial
 updated: 2026-04-15
 source_refs:
-  - /Users/zbeyens/git/tiptap-docs/src/content/editor/api/input-rules.mdx
-  - /Users/zbeyens/git/tiptap-docs/src/content/editor/api/editor.mdx
-  - /Users/zbeyens/git/tiptap-docs/src/content/editor/extensions/custom-extensions/create-new/extension.mdx
+  - ../raw/tiptap/docs/src/content/editor/api/input-rules.mdx
+  - ../raw/tiptap/docs/src/content/editor/api/editor.mdx
+  - ../raw/tiptap/docs/src/content/editor/extensions/custom-extensions/create-new/extension.mdx
   - https://tiptap.dev/docs/editor/api/input-rules
 related:
   - docs/research/systems/plugin-input-rule-doc-pattern-landscape.md

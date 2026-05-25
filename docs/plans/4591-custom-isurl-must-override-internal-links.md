@@ -33,7 +33,7 @@
 ## Progress
 
 - Fetched the issue and comments.
-- Read the task, planning-with-files, learnings-researcher, and tdd skill docs.
+- Read the task, goal workflow, learnings-researcher, and tdd skill docs.
 - Searched `docs/solutions` and read the recent link-validation learning about `//` internal-path regressions.
 - Verified `validateUrl` still bypasses custom `isUrl` for `/...` and `#...`.
 - Confirmed the old Claude branch exists remotely, but there is no PR for `#4591`.
@@ -50,4 +50,4 @@
 
 ## Errors
 
-- `planning-with-files` session catchup script path from the generated skill is missing locally, so catchup could not run in this repo.
+- `goal workflow` session catchup script path from the generated skill is missing locally, so catchup could not run in this repo.

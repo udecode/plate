@@ -23,7 +23,7 @@ Make `plate-template` and `plate-playground-template` build again after the regi
 
 ## Progress
 
-- Loaded learnings/task/react/planning-with-files/tdd.
+- Loaded learnings/task/react/goal workflow/tdd.
 - Confirmed the break is in registry/template dependency wiring, not app-local imports.
 - Added registry coverage for `block-discussion-index`, `get-annotation-click-target`, and `trailing-block-kit`.
 - Inlined `suggestion-line-break-anchor` and `suggestion-styles` into `ui/suggestion-node.tsx`, then removed the extra registry file entries.

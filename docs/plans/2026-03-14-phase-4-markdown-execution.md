@@ -26,7 +26,7 @@ Complete the phase-4 `markdown` slice only. Add high-ROI non-React logic coverag
 
 ## Progress
 
-- Re-read the phase-4 plan, `task.mdc`, `testing.mdc`, `planning-with-files`, `tdd`, and changeset guidance.
+- Re-read the phase-4 plan, `task.mdc`, `testing.mdc`, `goal workflow`, `tdd`, and changeset guidance.
 - Audited markdown package structure, existing specs, and helper/test harnesses.
 - Probed live `markdownToSlateNodesSafely` output with a temporary Bun script to identify public behavior and confirm a likely fallback bug.
 - Added focused markdown helper specs for:

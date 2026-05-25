@@ -150,7 +150,7 @@ lanes are release-prep or later-release follow-up.
 ## Progress Log
 
 - 2026-04-02: Reloaded Ralph execution context after compaction.
-- 2026-04-02: Re-read `ralph`, `major-task`, `planning-with-files`, `tdd`, and `learnings-researcher` instructions.
+- 2026-04-02: Re-read `ralph`, `major-task`, `goal workflow`, `tdd`, and `learnings-researcher` instructions.
 - 2026-04-02: Re-read the approved `.omx` PRD and test-spec artifacts.
 - 2026-04-02: Loaded relevant prior artifacts:
   - `docs/plans/4898-blockquote-markdown-first.md`

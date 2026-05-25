@@ -8,7 +8,7 @@ Pick the next best issue to start in this repo, with a short rationale grounded 
 
 - User request: "pick the next best issue to start"
 - Workflow: `task`
-- Supporting skills: `planning-with-files`, `issue-intelligence-analyst`
+- Supporting skills: `goal workflow`, `issue-intelligence-analyst`
 
 ## Task Shape
 
@@ -28,7 +28,7 @@ Pick the next best issue to start in this repo, with a short rationale grounded 
 ## Findings
 
 - Repo requires concise handoff.
-- For non-trivial work, planning state should live in `.claude/docs/plans/`.
+- For non-trivial work, planning state should live in `docs/plans/`.
 - This task is tracker analysis, not code implementation, so no branch/setup noise.
 - Repo: `udecode/plate`
 - Open issue count analyzed: 14
@@ -48,7 +48,7 @@ Pick the next best issue to start in this repo, with a short rationale grounded 
 
 ## Progress
 
-- Loaded `task`, `planning-with-files`, and `issue-intelligence-analyst`.
+- Loaded `task`, `goal workflow`, and `issue-intelligence-analyst`.
 - Read repo-local `AGENTS.md`.
 - Fetched labels, open issues, recent closed issues, active PRs, and top-candidate issue threads.
 - Final pick: `#4111` `Table: the table cell border is removed from the wrong cell`.

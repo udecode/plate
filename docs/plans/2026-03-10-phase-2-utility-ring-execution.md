@@ -42,7 +42,7 @@ Use TDD for every new spec group. Keep this file as the live record for status, 
 ## Progress
 
 - Created phase-2 execution log.
-- Re-read `tdd`, `planning-with-files`, and current testing policy.
+- Re-read `tdd`, `goal workflow`, and current testing policy.
 - Audited target package sources and existing specs.
 - Audited existing harness patterns for `@platejs/utils`.
 - Wrote the first `@platejs/utils` red specs for `ExitBreakPlugin` and hook behavior.
