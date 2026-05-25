@@ -26,7 +26,7 @@ export function EditorDescription() {
   const content = i18n[locale as keyof typeof i18n];
 
   return (
-    <section className="flex flex-col items-center gap-2 py-8 text-center md:py-10 lg:py-12">
+    <section className="flex flex-col items-start gap-2 py-8 md:py-10 lg:py-12">
       {/* <Announcement /> */}
       <PageHeaderHeading>{content.title}</PageHeaderHeading>
       <PageHeaderDescription>{content.description}</PageHeaderDescription>

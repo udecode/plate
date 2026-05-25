@@ -4,18 +4,27 @@ import * as React from 'react';
 
 import type { NpmCommands } from '@/types/unist';
 
-import { CheckIcon, ClipboardIcon } from 'lucide-react';
+import { CheckIcon, ClipboardIcon, TerminalIcon } from 'lucide-react';
 
 import { copyToClipboardWithMeta } from '@/components/copy-button';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useConfig } from '@/hooks/use-config';
+import { cn } from '@/lib/utils';
+
+type CodeBlockCommandProps = React.HTMLAttributes<HTMLDivElement> &
+  NpmCommands & {
+    'data-language'?: string;
+    'data-theme'?: string;
+  };
 
 export function CodeBlockCommand({
   __bunCommand__,
   __npmCommand__,
   __pnpmCommand__,
-}: React.ComponentProps<'pre'> & NpmCommands) {
+  className,
+  ...props
+}: CodeBlockCommandProps) {
   const [config, setConfig] = useConfig();
   const [hasCopied, setHasCopied] = React.useState(false);
   React.useEffect(() => {
@@ -48,8 +57,15 @@ export function CodeBlockCommand({
     setHasCopied(true);
   }, [packageManager, tabs]);
   return (
-    <div className="relative mt-6 max-h-[650px] overflow-x-auto rounded-xl bg-zinc-950 dark:bg-zinc-900">
+    <div
+      className={cn(
+        'relative mt-6 overflow-hidden rounded-lg bg-code text-code-foreground',
+        className
+      )}
+      {...props}
+    >
       <Tabs
+        className="gap-0"
         value={packageManager}
         onValueChange={(value) => {
           setConfig({
@@ -58,12 +74,15 @@ export function CodeBlockCommand({
           });
         }}
       >
-        <div className="flex items-center justify-between border-zinc-800 border-b bg-zinc-900 px-3 pt-2.5">
-          <TabsList className="h-7 translate-y-[2px] gap-3 bg-transparent p-0 pl-1">
+        <div className="flex items-center gap-2 border-border/50 border-b px-3 py-1">
+          <div className="flex size-4 items-center justify-center rounded-[1px] bg-foreground opacity-70">
+            <TerminalIcon className="size-3 text-code" />
+          </div>
+          <TabsList className="rounded-none bg-transparent p-0">
             {Object.entries(tabs).map(([key]) => (
               <TabsTrigger
                 key={key}
-                className="rounded-none border-transparent border-b bg-transparent p-0 pb-1.5 font-mono text-zinc-400 data-[state=active]:border-b-zinc-50 data-[state=active]:bg-transparent data-[state=active]:text-zinc-50"
+                className="data-[state=active]:!bg-background h-7 border border-transparent pt-0.5 shadow-none data-[state=active]:border-input data-[state=active]:shadow-none"
                 value={key}
               >
                 {key}
@@ -71,23 +90,27 @@ export function CodeBlockCommand({
             ))}
           </TabsList>
         </div>
-        {Object.entries(tabs).map(([key, value]) => (
-          <TabsContent key={key} className="mt-0" value={key}>
-            <pre className="px-4 py-5">
-              <code
-                className="relative font-mono text-sm leading-none"
-                data-language="bash"
-              >
-                {value}
-              </code>
-            </pre>
-          </TabsContent>
-        ))}
+        <div className="no-scrollbar overflow-x-auto">
+          {Object.entries(tabs).map(([key, value]) => (
+            <TabsContent key={key} className="mt-0 px-4 py-3.5" value={key}>
+              <pre>
+                <code
+                  className="relative font-mono text-sm leading-none"
+                  data-language="bash"
+                >
+                  {value}
+                </code>
+              </pre>
+            </TabsContent>
+          ))}
+        </div>
       </Tabs>
       <Button
+        data-slot="copy-button"
+        data-copied={hasCopied}
         size="icon"
-        variant="default"
-        className="[&_svg]:!size-3 absolute top-2 right-2.5 z-10 h-6 w-6 text-zinc-50 hover:bg-zinc-700 hover:text-zinc-50"
+        variant="ghost"
+        className="absolute top-2 right-2 z-10 size-7 bg-code opacity-70 hover:opacity-100 focus-visible:opacity-100"
         onClick={copyCommand}
       >
         <span className="sr-only">Copy</span>

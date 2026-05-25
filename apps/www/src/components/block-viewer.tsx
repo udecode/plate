@@ -26,6 +26,7 @@ import {
 import Link from 'next/link';
 
 import { CopyNpmCommandButton } from '@/components/copy-button';
+import { getIconForLanguageExtension } from '@/components/icons';
 import { Button, buttonVariants } from '@/components/ui/button';
 import {
   Collapsible,
@@ -380,7 +381,7 @@ function BlockViewerCode({ size }: { size?: 'default' | 'sm' }) {
 
   if (!file?.content && isLoading) {
     return (
-      <div className="mr-[14px] flex h-(--height) overflow-hidden rounded-xl bg-zinc-950 text-white group-data-[view=preview]/block-view-wrapper:hidden">
+      <div className="mr-[14px] flex overflow-hidden rounded-xl border bg-code text-code-foreground group-data-[view=preview]/block-view-wrapper:hidden md:h-(--height)">
         <BlockViewerFileTree size={size} />
         <div className="flex min-w-0 flex-1 flex-col items-center justify-center">
           <Spinner />
@@ -392,17 +393,25 @@ function BlockViewerCode({ size }: { size?: 'default' | 'sm' }) {
     return null;
   }
 
+  const language = file.path.split('.').pop() ?? 'tsx';
+
   return (
-    <div className="mr-[14px] flex h-(--height) overflow-hidden rounded-xl bg-zinc-950 text-white group-data-[view=preview]/block-view-wrapper:hidden">
+    <div className="mr-[14px] flex overflow-hidden rounded-xl border bg-code text-code-foreground group-data-[view=preview]/block-view-wrapper:hidden md:h-(--height)">
       <BlockViewerFileTree size={size} />
-      <div className="flex min-w-0 flex-1 flex-col">
-        <div className="flex h-12 items-center gap-2 border-zinc-700 border-b bg-zinc-900 px-4 font-medium text-sm">
-          <File className="size-4" />
+      <figure
+        className="mx-0! mt-0 flex min-w-0 flex-1 flex-col rounded-xl border-none"
+        data-rehype-pretty-code-figure=""
+      >
+        <figcaption
+          className="flex h-12 shrink-0 items-center gap-2 border-b px-4 py-2 text-code-foreground [&_svg]:size-4 [&_svg]:text-code-foreground [&_svg]:opacity-70"
+          data-language={language}
+        >
+          {getIconForLanguageExtension(language)}
           {file.target}
           <div className="ml-auto flex items-center gap-2">
             {dependencies.length > 0 && (
               <CopyNpmCommandButton
-                className="flex h-7 rounded-md bg-inherit px-1.5 text-inherit shadow-none lg:w-auto"
+                className="size-7 rounded-lg bg-transparent p-0 text-code-foreground shadow-none hover:bg-muted-foreground/15 hover:text-code-foreground focus:bg-muted-foreground/15 focus:text-code-foreground focus-visible:bg-muted-foreground/15 focus-visible:text-code-foreground active:bg-muted-foreground/15 active:text-code-foreground [&>svg]:size-3"
                 commands={{
                   __bunCommand__: `bun add ${deps}`,
                   __npmCommand__: `npm install ${deps}`,
@@ -414,14 +423,13 @@ function BlockViewerCode({ size }: { size?: 'default' | 'sm' }) {
 
             <BlockCopyCodeButton />
           </div>
-        </div>
+        </figcaption>
         <div
           key={file?.path}
-          className="[&_.line:before]:-translate-y-px relative flex-1 overflow-hidden after:absolute after:inset-y-0 after:left-0 after:w-10 after:bg-zinc-950 [&_.line:before]:sticky [&_.line:before]:left-2 [&_.line:before]:z-10 [&_.line:before]:pr-1 [&_pre]:h-(--height) [&_pre]:overflow-auto [&_pre]:bg-transparent! [&_pre]:pt-4 [&_pre]:pb-20 [&_pre]:font-mono [&_pre]:text-sm [&_pre]:leading-relaxed"
-          data-rehype-pretty-code-fragment
+          className="no-scrollbar overflow-y-auto"
           dangerouslySetInnerHTML={{ __html: file?.highlightedContent ?? '' }}
         />
-      </div>
+      </figure>
     </div>
   );
 }
@@ -434,18 +442,15 @@ export function BlockViewerFileTree({ size }: { size?: 'default' | 'sm' }) {
   }
 
   return (
-    <div className={cn('w-[280px]', size === 'sm' && 'w-[240px]')}>
-      <SidebarProvider className="flex min-h-full! flex-col">
-        <Sidebar
-          className="w-full flex-1 overflow-y-auto overflow-x-hidden border-zinc-700 border-r bg-zinc-900 text-white"
-          collapsible="none"
-        >
-          <SidebarGroupLabel className="sticky top-0 z-10 h-12 rounded-none border-zinc-700 border-b bg-zinc-900 px-4 text-sm text-white">
+    <div className={cn('w-72 shrink-0', size === 'sm' && 'w-60')}>
+      <SidebarProvider className="flex min-h-full! flex-col border-r">
+        <Sidebar className="w-full flex-1" collapsible="none">
+          <SidebarGroupLabel className="h-12 rounded-none border-b px-4 text-sm">
             Files
           </SidebarGroupLabel>
           <SidebarGroup className="p-0">
             <SidebarGroupContent>
-              <SidebarMenu className="gap-1.5">
+              <SidebarMenu className="translate-x-0 gap-1.5">
                 {tree.map((file, index) => (
                   <Tree key={index} index={1} item={file} />
                 ))}
@@ -466,11 +471,11 @@ function Tree({ index, item }: { index: number; item: FileTree }) {
       <SidebarMenuItem>
         <SidebarMenuButton
           className={cn(
-            'overflow-x-auto whitespace-nowrap rounded-none pl-(--index) hover:bg-zinc-700 hover:text-white focus:bg-zinc-700 focus:text-white focus-visible:bg-zinc-700 focus-visible:text-white active:bg-zinc-700 active:text-white data-[active=true]:bg-zinc-700 data-[active=true]:text-white'
+            'whitespace-nowrap rounded-none pl-(--index) hover:bg-muted-foreground/15 focus:bg-muted-foreground/15 focus-visible:bg-muted-foreground/15 active:bg-muted-foreground/15 data-[active=true]:bg-muted-foreground/15'
           )}
           style={
             {
-              '--index': `${index * 0.75}rem`,
+              '--index': `${index * (index === 2 ? 1.2 : 1.3)}rem`,
             } as React.CSSProperties
           }
           onClick={() => item.path && setActiveFile(item.path)}
@@ -494,11 +499,11 @@ function Tree({ index, item }: { index: number; item: FileTree }) {
         <CollapsibleTrigger asChild>
           <SidebarMenuButton
             className={cn(
-              'overflow-x-auto whitespace-nowrap rounded-none pl-(--index) hover:bg-zinc-700 hover:text-white focus-visible:bg-zinc-700 focus-visible:text-white active:bg-zinc-700 active:text-white data-[active=true]:bg-zinc-700 data-[active=true]:text-white data-[state=open]:hover:bg-zinc-700 data-[state=open]:hover:text-white'
+              'whitespace-nowrap rounded-none pl-(--index) hover:bg-muted-foreground/15 focus:bg-muted-foreground/15 focus-visible:bg-muted-foreground/15 active:bg-muted-foreground/15 data-[active=true]:bg-muted-foreground/15 data-[state=open]:hover:bg-muted-foreground/15'
             )}
             style={
               {
-                '--index': `${index * 0.75}rem`,
+                '--index': `${index * (index === 1 ? 1 : 1.2)}rem`,
               } as React.CSSProperties
             }
           >
@@ -508,7 +513,7 @@ function Tree({ index, item }: { index: number; item: FileTree }) {
           </SidebarMenuButton>
         </CollapsibleTrigger>
         <CollapsibleContent>
-          <SidebarMenuSub className="m-0 w-full border-none p-0">
+          <SidebarMenuSub className="m-0 w-full translate-x-0 border-none p-0">
             {item.children.map((subItem, key) => (
               <Tree key={key} index={index + 1} item={subItem} />
             ))}
@@ -536,8 +541,9 @@ function BlockCopyCodeButton() {
 
   return (
     <Button
+      size="icon"
       variant="ghost"
-      className="size-7 shrink-0 rounded-lg p-0 hover:bg-zinc-700 hover:text-white focus:bg-zinc-700 focus:text-white focus-visible:bg-zinc-700 focus-visible:text-white active:bg-zinc-700 active:text-white data-[active=true]:bg-zinc-700 data-[active=true]:text-white [&>svg]:size-3"
+      className="size-7 shrink-0 rounded-lg p-0 hover:bg-muted-foreground/15 focus:bg-muted-foreground/15 focus-visible:bg-muted-foreground/15 active:bg-muted-foreground/15 data-[active=true]:bg-muted-foreground/15 [&>svg]:size-3"
       onClick={() => {
         copyToClipboard(content);
       }}

@@ -80,7 +80,10 @@ export default defineConfig({
           rehypePrettyCode,
           {
             getHighlighter,
-            theme: 'github-dark',
+            theme: {
+              dark: 'github-dark',
+              light: 'github-light',
+            },
             onVisitHighlightedLine(node: any) {
               node.properties.className.push('line--highlighted');
             },
@@ -101,24 +104,25 @@ export default defineConfig({
                 return;
               }
 
-              const preElement = node.children.at(-1);
+              const hasMeta = node.children.some(
+                (child: any) => child.tagName === 'div'
+              );
 
-              if (preElement?.tagName !== 'pre') {
-                return;
-              }
+              for (const preElement of node.children.filter(
+                (child: any) => child.tagName === 'pre'
+              )) {
+                preElement.properties.__withMeta__ = hasMeta;
+                preElement.properties.__rawString__ = node.__rawString__;
 
-              preElement.properties.__withMeta__ =
-                node.children.at(0).tagName === 'div';
-              preElement.properties.__rawString__ = node.__rawString__;
-
-              if (node.__src__) {
-                preElement.properties.__src__ = node.__src__;
-              }
-              if (node.__event__) {
-                preElement.properties.__event__ = node.__event__;
-              }
-              if (node.__style__) {
-                preElement.properties.__style__ = node.__style__;
+                if (node.__src__) {
+                  preElement.properties.__src__ = node.__src__;
+                }
+                if (node.__event__) {
+                  preElement.properties.__event__ = node.__event__;
+                }
+                if (node.__style__) {
+                  preElement.properties.__style__ = node.__style__;
+                }
               }
             }
           });

@@ -255,6 +255,38 @@
 }
 
 @layer components {
+  [data-rehype-pretty-code-fragment] > :not(code)[data-theme="light"] {
+    display: block;
+  }
+
+  [data-rehype-pretty-code-fragment] > :not(code)[data-theme="dark"] {
+    display: none;
+  }
+
+  .dark [data-rehype-pretty-code-fragment] > :not(code)[data-theme="light"] {
+    display: none;
+  }
+
+  .dark [data-rehype-pretty-code-fragment] > :not(code)[data-theme="dark"] {
+    display: block;
+  }
+
+  [data-rehype-pretty-code-fragment] > code[data-theme="light"] {
+    display: inline;
+  }
+
+  [data-rehype-pretty-code-fragment] > code[data-theme="dark"] {
+    display: none;
+  }
+
+  .dark [data-rehype-pretty-code-fragment] > code[data-theme="light"] {
+    display: none;
+  }
+
+  .dark [data-rehype-pretty-code-fragment] > code[data-theme="dark"] {
+    display: inline;
+  }
+
   .steps {
     &:first-child {
       @apply !mt-0;

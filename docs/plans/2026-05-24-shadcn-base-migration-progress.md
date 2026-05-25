@@ -6,7 +6,7 @@ Continue the docs restart from `docs/plans/2026-05-23-shadcn-docs-restart-compar
 
 ## Current Slice
 
-Status: thirty-seventh slice complete
+Status: thirty-eighth slice complete
 
 1. Make Fumadocs metadata/pageTree the docs navigation authority.
 2. Move sidebar and pager reads off direct `docsConfig` runtime access.
@@ -45,6 +45,7 @@ Status: thirty-seventh slice complete
 35. Delete the unreferenced local registry test harness that still installed registry items through raw `http://localhost:3000/rd/*` URLs.
 36. Remove two remaining active-source TODO/FIXME residues by wiring Excalidraw component metadata to its existing demo and making the media preview download control functional.
 37. Add the upstream-style RSS route and metadata alternate using Plate's generated release index as the feed source.
+38. Align the BlockViewer code surface with upstream shadcn's tokenized code viewer styling while preserving Plate registry install controls.
 
 ## Findings
 
@@ -67,6 +68,9 @@ Status: thirty-seventh slice complete
 - Upstream's root app uses `group/body`, a top-level tooltip provider, and a `d` theme shortcut in the theme provider. Plate still needs Jotai and DnD for retained editor surfaces, so the provider restart should add upstream behavior around those retained providers rather than deleting them.
 - `apps/www/src/app/globals.css` still carried old sync markers for custom scrollbar, prose, and duplicate MDX pretty-code styles. The current shadcn-style pretty-code rules already target the active generated attributes, so the marked fallback CSS can be removed after browser-checking code blocks.
 - Upstream exposes `/rss.xml` and advertises it through root metadata alternates. Plate already has a generated release index, so the correct rebrand is a release feed instead of shadcn changelog content.
+- `BlockViewerCode` still used a hard-coded `zinc-950`/`zinc-900` dark shell after the app's pretty-code and code-surface tokens moved to upstream-style `bg-code`/`text-code-foreground`. That makes the code tab visually diverge from both light mode and upstream shadcn.
+- `highlight-code.ts` also generated Shiki HTML with a single dark theme and inline dark background, so fixing only the BlockViewer shell left the right-side code pane black. The highlighter has to emit light/dark token styles and transparent `pre` backgrounds.
+- The upstream-style centered `PageHeader` is not correct for Plate's retained homepage/editor marketing surfaces. Those pages should keep Plate's original left-aligned hero rhythm.
 - Upstream keeps mobile nav visible until the `lg` breakpoint and lets the header pass Fumadocs page-tree data into mobile/search surfaces. Plate still needs its own product links, but those links should use the same locale href handling as docs page-tree links.
 - Plate's mobile nav rendered the Fumadocs-derived tree but did not localize visible titles or hrefs at click time. On `/cn`, the mobile menu could point users back to English routes.
 - Plate's command-menu fallback link groups also used raw titles and hrefs. Fumadocs search owns indexed docs results, but fallback nav groups still need locale-safe labels and links.
@@ -243,3 +247,7 @@ Status: thirty-seventh slice complete
 - 2026-05-24: Started the RSS parity slice: added `/rss.xml` as a static RSS route backed by Plate's generated release index and advertised it through root metadata alternates.
 - 2026-05-24: The first RSS route smoke used top-level await in `tsx -e`, which fails under the script tsconfig's CJS output. Re-running the same smoke as an async IIFE passed.
 - 2026-05-24: Verification passed for the RSS parity slice: `pnpm install`, `pnpm --filter www typecheck`, `pnpm lint:fix`, direct RSS route smoke confirming `application/rss+xml; charset=utf-8`, `Plate Releases`, and release items, plus full PR gate `pnpm check`.
+- 2026-05-25: Started the BlockViewer code visual alignment slice: replacing hard-coded dark code-tab styling with upstream tokenized code, figure, file-tree, and copy-button surfaces while keeping Plate's dependency install dropdown and server-provided highlighted source.
+- 2026-05-25: Verification passed for the BlockViewer code visual alignment slice: `pnpm install`, `pnpm --filter www typecheck`, and `pnpm lint:fix` passed. Browser Use on existing `localhost:3001/docs/components/table-node` clicked the Code tab and confirmed the code shell uses `bg-code text-code-foreground`, the pretty-code figure exists, the file tree exists, dependency/copy controls use tokenized button classes, no scoped `zinc-*`/old fragment nodes remain, and browser error/warn logs are empty. Browser screenshot capture hit a `Page.captureScreenshot` timeout, so DOM/style inspection was used as the browser evidence.
+- 2026-05-25: Follow-up fixed the right-side code pane by changing `highlight-code.ts` from single dark Shiki output to light/dark themes with transparent `pre` backgrounds and per-file language detection. Browser Use on `localhost:3001/editors` verified the AI editor Code tab now computes the code `pre` background as transparent over the `bg-code` shell.
+- 2026-05-25: Follow-up restored the original left-aligned hero style by reverting shared `PageHeader` spacing/typography/actions to Plate's pre-centering layout and moving `EditorDescription` back to `items-start`.

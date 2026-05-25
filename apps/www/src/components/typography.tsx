@@ -226,8 +226,16 @@ export const Pre = ({
   React.HTMLAttributes<HTMLPreElement>) => {
   const isNpmCommand = __npmCommand__ && __pnpmCommand__ && __bunCommand__;
   if (isNpmCommand) {
+    const dataProps = props as React.HTMLAttributes<HTMLPreElement> & {
+      'data-language'?: string;
+      'data-theme'?: string;
+    };
+
     return (
       <CodeBlockCommand
+        className={className}
+        data-language={dataProps['data-language']}
+        data-theme={dataProps['data-theme']}
         __bunCommand__={__bunCommand__}
         __npmCommand__={__npmCommand__}
         __pnpmCommand__={__pnpmCommand__}
@@ -238,7 +246,7 @@ export const Pre = ({
   return (
     <pre
       className={cn(
-        'relative mt-6 mb-4 max-h-[650px] overflow-x-auto rounded-xl bg-zinc-950 py-4 text-white dark:bg-zinc-900 *:[code]:bg-inherit',
+        'relative mt-6 mb-4 max-h-[650px] overflow-x-auto rounded-lg bg-code py-4 text-code-foreground *:[code]:bg-inherit',
         className
       )}
       {...props}
@@ -247,8 +255,10 @@ export const Pre = ({
 
       {__rawString__ && (
         <CopyButton
-          variant="default"
-          className={cn('absolute top-4 right-4')}
+          variant="ghost"
+          className={cn(
+            'absolute top-3 right-2 size-7 bg-code text-code-foreground opacity-70 hover:bg-muted-foreground/15 hover:text-code-foreground hover:opacity-100 focus-visible:opacity-100'
+          )}
           value={__rawString__}
           event={__event__}
           src={__src__}
