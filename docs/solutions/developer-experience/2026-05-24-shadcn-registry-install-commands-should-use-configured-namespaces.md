@@ -1,7 +1,7 @@
 ---
 title: Shadcn registry install commands should use configured namespaces
 date: 2026-05-24
-last_updated: 2026-05-24
+last_updated: 2026-05-25
 category: developer-experience
 module: apps/www docs registry
 problem_type: developer_experience
@@ -11,7 +11,7 @@ symptoms:
   - "MCP setup showed a raw registry URL command while also telling users to configure the @plate registry"
   - "Generated registry self-dependencies still used raw platejs.org /r URLs after visible install commands were fixed"
   - "Browser smoke surfaced a Radix dialog warning after opening the MCP setup dialog"
-  - "Block source preview still lazy-fetched highlighted files through a Plate-only /api/registry/[name] route"
+  - "Removing lazy code hydration made non-initial code-tab files render blank"
   - "A dead OpenInV0Button file and commented toolbar block kept v0 residue in the docs app"
 root_cause: config_error
 resolution_type: migration
@@ -35,7 +35,7 @@ That mixed two different contracts: raw `/r/*` URLs are good for resolvable regi
 - `build-registry.mts` and `build-docs-registry.mts` still expanded Plate self-dependencies into `https://platejs.org/r/*.json`.
 - `update-template.sh --local` uses shadcn local-file mode from a prepared JSON mirror, so changing generated dependencies to `@plate/*` without rewriting the local mirror would accidentally send local template sync back through the configured remote registry.
 - Opening the MCP dialog in browser smoke logged Radix's missing description warning.
-- `BlockViewer` loaded only the first registry source file server-side, then fetched the full highlighted file list from `/api/registry/[name]` on code-tab activation.
+- `BlockViewer` loaded only the first registry source file in compiled MDX, so removing lazy hydration made non-initial code-tab files blank.
 - `OpenInV0Button` was no longer rendered, but the file and a commented toolbar block still pointed at `v0.dev`.
 
 ## What Didn't Work
@@ -44,7 +44,7 @@ That mixed two different contracts: raw `/r/*` URLs are good for resolvable regi
 - Hand-editing templates. The template `components.json` files were already correct and `tooling/scripts/update-template.sh` already defaults to `@plate`.
 - Changing public registry output to `@plate/*` without updating `prepare-local-template-registry.mjs`. Local-file template sync needs file names such as `toolbar.json`, not namespaced remote specifiers.
 - Ignoring browser smoke because the command text was easy to inspect statically. The smoke found the separate MCP dialog description warning that static grep would miss.
-- Keeping the lazy registry API because it was convenient. The docs and block pages already run on the server and can pass full highlighted registry files into the client viewer.
+- Baking every highlighted registry file into MDX. That fixes the blank-tab data gap in isolation, but compiled docs chunks balloon and cold Turbopack route compilation gets slow enough to look hung.
 - Leaving dead v0 code commented out. v0 is a discarded upstream surface for Plate's restart; dead references are not harmless when they preserve a wrong product direction.
 
 ## Solution
@@ -116,14 +116,13 @@ Keep raw registry URLs where the user or tool needs a URL that resolves directly
 
 For the MCP dialog warning, add a real `DialogDescription` inside the dialog header instead of using an unassociated paragraph.
 
-For source preview, prefer server-provided highlighted files over a Plate-only API route:
+For source preview, keep compiled MDX small and hydrate full code only when the user opens the Code tab:
 
 ```ts
-const item = await getCachedRegistryItem(name);
-const highlightedFiles = await getCachedHighlightedFiles(item.files);
+const item = await getRegistryItem(name, true);
 ```
 
-Then let `BlockViewer` render the supplied files directly instead of fetching `/api/registry/[name]` after hydration.
+Use the prefetched item for the initial preview, then let `BlockViewer` fetch `/api/registry/[name]` when later files have no `content`. The route calls `getRegistryItem(name)` and `highlightFiles(item.files)`, so copy buttons and non-initial code tabs receive the full highlighted payload without putting that payload into every MDX chunk.
 
 Delete v0-only UI instead of keeping commented code. Plate owns a registry around the shadcn contract; it does not need upstream's v0 open flow.
 
@@ -147,7 +146,7 @@ Keeping raw URLs only for direct content links avoids breaking tools that need a
 
 For template local sync, the prepared mirror is the boundary. Public/dev registry JSON can use the upstream namespace contract, then `prepare-local-template-registry.mjs` converts `@plate/foo` to `foo.json` before shadcn local-file install runs.
 
-Passing full source data from the server removes an extra public API surface and matches the upstream static-source direction better than a lazy Plate-only fetch. It also keeps registry/source errors in the same server-rendered page path that already owns the item lookup.
+Lazy source hydration is the right boundary for MDX-authored `ComponentPreview` blocks. The page HTML carries enough data for the initial file and tree, while the static registry route carries the expensive full highlighted file list only after the Code tab needs it.
 
 ## Prevention
 
@@ -160,12 +159,13 @@ rg -n 'siteConfig\.registryUrl|npx shadcn@latest add http|npx shadcn@latest add 
 ```
 
 - Browser-smoke at least one registry docs page, one plugin docs page with `ComponentSource`, the MCP dialog, and block metadata after changing install command text.
-- Search for v0 and lazy registry API residue before finishing shadcn-base work:
+- Search for v0 residue and accidental full-MDX hydration before finishing shadcn-base work:
 
 ```bash
-rg -n 'OpenInV0|v0\\.dev|/api/registry/' apps/www/src
+rg -n 'OpenInV0|v0\\.dev|getRegistryItem\\(name\\)' apps/www/src
 ```
 
+- Browser-smoke a `ComponentPreview` page by selecting a non-initial file in the Code tab and copying it; the clipboard should contain real source, not an empty string.
 - Add or keep a pure resolver test for namespace output and local mirror rewriting, then let `pnpm --filter www typecheck` run `check-docs-source-parity.mts` against the docs registry aggregate dependencies.
 - If full `pnpm check` fails only on `test:slowest` fast-suite timing, rerun `pnpm test:slowest` once before moving tests. A clean isolated rerun points to machine load, not a real test classification fix.
 

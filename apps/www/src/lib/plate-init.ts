@@ -1,13 +1,11 @@
 import { registryItemSchema } from 'shadcn/schema';
 
 import {
+  PLATE_INIT_DEPENDENCY,
+  PLATE_INIT_URL,
   PLATE_REGISTRY_NAMESPACE,
   plateComponentsJsonConfig,
 } from './plate-registry-config';
-
-const PLATE_INIT_URL = 'https://platejs.org/init';
-const PLATE_INIT_ITEM = 'editor-basic';
-const PLATE_INIT_DEPENDENCY = `${PLATE_REGISTRY_NAMESPACE}/${PLATE_INIT_ITEM}`;
 
 export const plateInitRegistryItem = registryItemSchema.parse({
   $schema: 'https://ui.shadcn.com/schema/registry-item.json',

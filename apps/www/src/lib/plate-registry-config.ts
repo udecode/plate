@@ -1,5 +1,8 @@
 export const PLATE_REGISTRY_NAMESPACE = '@plate';
 export const PLATE_REGISTRY_URL = 'https://platejs.org/r/{name}.json';
+export const PLATE_INIT_URL = 'https://platejs.org/init';
+export const PLATE_INIT_ITEM = 'editor-basic';
+export const PLATE_INIT_DEPENDENCY = `${PLATE_REGISTRY_NAMESPACE}/${PLATE_INIT_ITEM}`;
 
 export const plateComponentsJsonConfig = {
   $schema: 'https://ui.shadcn.com/schema.json',

@@ -17,12 +17,12 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { getRegistryInstallCommand } from '@/lib/registry-install';
+import { PLATE_INIT_URL } from '@/lib/plate-registry-config';
 
 export function SetupMCPDialog() {
   const [open, setOpen] = useState(false);
 
-  const initCommand = getRegistryInstallCommand('editor-basic');
+  const initCommand = `npx shadcn@latest init --preset ${PLATE_INIT_URL}`;
 
   const codeXConfig = `[mcp_servers.plate]\ncommand = "npx"\nargs = ["shadcn@latest", "mcp"]\n`;
 

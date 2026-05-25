@@ -111,16 +111,70 @@ function BlockViewerProvider({
 }) {
   const [view, setView] =
     React.useState<BlockViewerContext['view']>(defaultView);
-  const highlightedFiles = highlightedFilesProp ?? [];
+  const [highlightedFiles, setHighlightedFiles] = React.useState<
+    BlockViewerContext['highlightedFiles']
+  >(highlightedFilesProp ?? []);
+  const files = highlightedFiles ?? [];
   const [activeFileState, setActiveFile] = React.useState<
     BlockViewerContext['activeFile']
-  >(highlightedFiles[0]?.target ?? null);
+  >(files[0]?.target ?? null);
+  const [isLoading, setIsLoading] = React.useState(false);
+  const [isSettled, setIsSettled] = React.useState(false);
+  const [hasError, setHasError] = React.useState(false);
   const resizablePanelRef = React.useRef<ImperativePanelHandle>(null);
 
   const activeFile =
-    highlightedFiles.find((file) => file.target === activeFileState)?.target ??
-    highlightedFiles[0]?.target ??
+    files.find((file) => file.target === activeFileState)?.target ??
+    files[0]?.target ??
     null;
+
+  React.useEffect(() => {
+    if (
+      view === 'code' &&
+      files[1] &&
+      !files[1].content &&
+      !isLoading &&
+      !hasError &&
+      !isSettled
+    ) {
+      const loadFiles = async () => {
+        setIsLoading(true);
+
+        try {
+          const response = await fetch(
+            `/api/registry/${encodeURIComponent(item.name)}`
+          );
+          const data = await response.json();
+
+          if (!response.ok) {
+            throw new Error(data.error || 'Failed to fetch files');
+          }
+          if (data.files) {
+            setHighlightedFiles(data.files);
+
+            if (!activeFileState && data.files?.length) {
+              setActiveFile(data.files[0].target ?? null);
+            }
+          }
+        } catch (error) {
+          console.error('Failed to load files:', error);
+          setHasError(true);
+        } finally {
+          setIsLoading(false);
+          setIsSettled(true);
+        }
+      };
+      void loadFiles();
+    }
+  }, [
+    activeFileState,
+    hasError,
+    highlightedFiles,
+    isLoading,
+    isSettled,
+    item.name,
+    view,
+  ]);
 
   return (
     <BlockViewerContext.Provider
@@ -128,7 +182,7 @@ function BlockViewerProvider({
         activeFile,
         dependencies,
         highlightedFiles,
-        isLoading: false,
+        isLoading,
         item,
         resizablePanelRef,
         setActiveFile,
