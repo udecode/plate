@@ -42,6 +42,16 @@ Current summary:
   or improved claims from that sync: `0`.
 - Yjs/collaboration readiness sync promotes `#5771` from Related to Improves,
   with no new exact fixed issue claim.
+- Slate-Yjs package readiness sync keeps `#5771` at Improves and keeps
+  `#5533`, `#1770`, `#3741`, and `#4178` related/non-closure. It also records
+  the package identity boundary: repo folder `packages/slate-yjs`, preferred
+  public package name `@slate/yjs`, no PR/import-path claim until publish access
+  is resolved.
+- Slate-Yjs package readiness refresh on 2026-05-24 confirms the core
+  collab-readiness benchmark now passes against current `setup(...)` /
+  `onCommit(...)` APIs. This does not change issue claims: package source,
+  full example, package tests, and Playwright selection proof are still required
+  before any `#5771` fixed claim.
 - Native beforeinput command-handler sync adds related rows for `#3586` and
   `#4681`, and refreshes `#3568`, `#5181`, and `#4317`. New exact fixed or
   improved claims from that sync: `0`.

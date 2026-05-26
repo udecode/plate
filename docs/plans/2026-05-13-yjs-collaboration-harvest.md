@@ -1,5 +1,16 @@
 # Yjs Collaboration Editor-Test Harvest Plan
 
+> Sync note, 2026-05-18: current package planning lives in
+> `docs/plans/2026-05-18-slate-yjs-package-readiness-ralplan.md`. This harvest
+> remains the evidence inventory, not the current `slate-yjs` API decision.
+>
+> Sync note, 2026-05-24: keep using the stable harvest artifacts as the test
+> corpus, but do not infer current API or package existence from this file.
+> Current source truth is in the 2026-05-18 package-readiness ralplan refresh:
+> `packages/slate-yjs` still lacks source, and the required execution work is
+> package scaffold, full simulation example, package tests, and Playwright
+> selection coverage.
+
 status: done
 owner_skill: .agents/skills/editor-test-harvester/SKILL.md
 report: docs/editor-test-harvester/yjs-collaboration/report.md

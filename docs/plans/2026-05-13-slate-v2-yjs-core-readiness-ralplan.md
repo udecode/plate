@@ -1,5 +1,19 @@
 # Slate v2 Yjs core-readiness ralplan
 
+> Sync note, 2026-05-18: superseded for package timing by
+> `docs/plans/2026-05-18-slate-yjs-package-readiness-ralplan.md`. The core
+> substrate cautions remain useful, but current package work must use live
+> `setup(...)` / `onCommit(...)` APIs instead of the older
+> `register` / `commitListeners` examples.
+>
+> Sync note, 2026-05-24: do not use this file as the package plan. The latest
+> package target remains
+> `docs/plans/2026-05-18-slate-yjs-package-readiness-ralplan.md`, refreshed
+> against current `../slate-v2`. Core readiness tests and the
+> `collab-readiness` benchmark now pass; `packages/slate-yjs` source, the full
+> simulation example, package tests, and Playwright selection proof still do
+> not exist.
+
 Date: 2026-05-13
 Status: done
 Score: 0.94
@@ -383,8 +397,8 @@ The script should produce these lanes for each cohort:
 - `bookmarkRebaseMs`: remote replay while active bookmarks/range refs exist,
   then resolve them.
 - `canonicalReplaceMs`: `tx.value.replace` with remote collaboration metadata.
-- `historySkipMs`: same remote import with `withHistory`, asserting undo stack
-  stays clean.
+- `historySkipMs`: same remote import with the current `history()` extension,
+  asserting undo stack stays clean.
 - `connectDisconnectHeapDeltaBytes`: repeated fake adapter extend/unextend with
   optional GC, reporting heap delta and listener cleanup.
 
@@ -669,7 +683,7 @@ Required assertions:
 - one commit is published
 - commit class is `replace`
 - commit has `collaboration` tag and remote collab metadata
-- `withHistory` undo stack is not polluted
+- `history()` extension undo stack is not polluted
 - current selection policy is explicit:
   - preserve/null when remote canonical state invalidates it
   - no DOM/focus/scroll side effect implied by metadata

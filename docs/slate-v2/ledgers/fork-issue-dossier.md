@@ -1546,8 +1546,8 @@ Evidence:
 
 Decision:
 Improves only. Slate v2 now proves the core collaboration-selection substrate,
-but exact provider/browser closure remains unclaimed until a real adapter repro
-passes.
+but exact provider/browser closure remains unclaimed until a real `@slate/yjs`
+adapter/browser repro passes.
 
 PR-description text:
 None; detailed ledger only.
@@ -4979,7 +4979,7 @@ closure yet.
 
 ## #1770 Support for combining or merging operations
 
-Status: fixed
+Status: related
 Bucket: v2-core-engine
 Confidence: high
 
@@ -5004,7 +5004,7 @@ closure.
 
 ## #3741 The move_node operation should include moved node to support collaborative editors
 
-Status: fixes-claimed
+Status: related
 Bucket: v2-core-engine
 Confidence: medium
 
@@ -5031,6 +5031,39 @@ decision.
 PR-description text:
 Related #3741: `move_node` collaboration metadata pressure; no moved-node
 payload closure.
+
+## #4178 Operations show the source of the change
+
+Status: related
+Bucket: v2-api-dx
+Confidence: medium
+
+Issue summary:
+The issue asks for operations to expose the source of a change so collaboration
+and history logic can distinguish local, remote, and programmatic edits without
+fragile `apply` wrapping.
+
+Evidence:
+
+- live/open corpus row:
+  `docs/slate-issues/gitcrawl-live-open-ledger.md`.
+- current v2 sync row:
+  `docs/slate-issues/gitcrawl-v2-sync-ledger.md`.
+- historical dossier:
+  `docs/slate-issues/open-issues-dossiers/4268-4162.md`.
+- current package plan:
+  `docs/plans/2026-05-18-slate-yjs-package-readiness-ralplan.md`.
+
+Decision:
+Keep as `related`. Slate v2 commit metadata and adapter origins are the right
+place for `@slate/yjs` to track source provenance. Do not claim exact closure:
+this plan does not add durable public source fields to every serialized Slate
+operation.
+
+PR-description text:
+Related #4178: collaboration adapters can use commit metadata and origins for
+source provenance, but Slate operations still do not expose durable public
+source fields.
 
 ## #3752 slate-history causes memory leaks
 

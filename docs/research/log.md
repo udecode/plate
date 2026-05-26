@@ -1,5 +1,17 @@
 # Research Log
 
+## [2026-05-18] maintain | slate-yjs collaboration binding refresh
+
+- compiled a dedicated editor-architecture source summary for Slate v2
+  `slate-yjs` package planning:
+  [yjs-collaboration-bindings.md](docs/research/sources/editor-architecture/yjs-collaboration-bindings.md)
+- compared live `../slate-v2`, external `../slate-yjs`, Lexical Yjs, and
+  y-prosemirror source for extension lifecycle, remote import, relative
+  positions, undo selection, awareness, and React cursor subscription posture
+- recorded the hard split: steal the binding mechanics, reject editor wrapper
+  mutation, and recreate `packages/slate-yjs` as a current Slate v2 source
+  package
+
 ## [2026-05-14] maintain | slate v2 example memoization ecosystem refresh
 
 - reused the existing editor-architecture lane for Lexical, ProseMirror,
