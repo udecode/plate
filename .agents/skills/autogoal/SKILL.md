@@ -94,6 +94,15 @@ into the generated plan's `Start Gates`, `Work Checklist`, and
 `Completion Gates`. After creation, the generated plan is the truth; the checker
 validates that materialized plan only.
 
+The generated plan is the dedicated plan shell. Fill that exact file
+immediately after generation: replace placeholders, resolve every gate row, and
+mark non-applicable generated rows as `N/A: <reason>` with evidence. Do not
+delete, wholesale replace, or hand-narrow the generated plan into an ad hoc
+smaller plan after durable work has started. If the selected template is plainly
+wrong and no substantive work has started, regenerate once with the right
+template and record why. If work has already started, keep the generated plan
+and close it honestly.
+
 Use packs like this:
 
 ```bash
@@ -550,10 +559,13 @@ Gate closure rules:
    honestly complete or fit within the current active goal.
 8. Create the `docs/plans` goal plan from the checklist template before
    substantive work.
-9. Record the flow mode and goal plan path in the goal plan, then use that exact
-   path for
+9. Fill the generated plan itself before substantive work: write the objective,
+   threshold, verification surface, constraints, boundaries, blocked condition,
+   flow mode, and goal plan path; resolve generated gates as yes/no/N/A instead
+   of deleting or replacing the template output.
+10. Use that exact path for
    `check-complete.mjs`.
-10. Do not start durable work until the goal is set, verified as already matching,
+11. Do not start durable work until the goal is set, verified as already matching,
    or the user explicitly resolves the missing-goal path.
 
 Set the goal before mutable lane state when the workflow depends on a goal. For
@@ -597,6 +609,14 @@ blocked condition through CLI flags. The CLI only creates the static plan shell.
 After creation, edit the generated `docs/plans` file and write the active goal
 objective, completion threshold, verification surface, constraints, boundaries,
 blocked condition, and remaining goal-specific rows into the file.
+
+Editing the generated file means filling and resolving that materialized shell,
+not replacing it with a hand-made mini-plan. Keep generated sections and rows
+unless the row is truly irrelevant, then mark it complete with `N/A: <reason>`.
+If a template choice is wrong before work starts, regenerate with the correct
+template and record the replacement. If any durable work has already started,
+do not swap the plan out from under the work; close the generated plan with
+honest evidence, N/A rows, or a blocker.
 
 The default project template is generic:
 

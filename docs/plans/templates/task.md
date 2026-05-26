@@ -134,7 +134,8 @@ Completion Gates:
 | Agent-native review for agent/tooling changes | pending | For `.agents/**`, `.claude/**`, `.codex/**`, skills, hooks, commands, prompts, or user-action tooling, load `.agents/skills/agent-native-reviewer/SKILL.md` and close accepted/actionable findings, or record N/A | pending |
 | Local install corruption suspected | pending | Run `pnpm run reinstall` once, rerun the exact failing command, or record N/A | pending |
 | Autoreview for non-trivial implementation changes | pending | Load `.agents/skills/autoreview/SKILL.md`; use dirty local `--mode local`, branch/PR `--mode branch --base <base>`, or committed slice `--mode commit --commit <ref>` until no accepted/actionable findings, or record N/A for docs-only/trivial/no local patch | pending |
-| PR create or update | pending | Run `check` before PR work and sync PR body to final handoff | pending |
+| PR create or update | pending | Run `check` before PR work and sync PR body to the task-style final handoff | pending |
+| Task-style PR body verified | pending | Verify the PR body with `gh pr view --json body`; it must preserve auto-release blocks when applicable, must not include a current-PR self-link, and must include an issue/tracker/fix line when applicable, confidence, Reproduced/Verified table, Outcome, Caveat, Design, and Verified sections as applicable | pending |
 | PR proof image hosting | pending | If PR body needs browser proof, replace local image paths with hosted GitHub URLs or record N/A | pending |
 | Tracker sync-back | pending | Post concise issue/Linear sync after PR exists, or record N/A/blocker | pending |
 | Final handoff contract | pending | Fill the final handoff fields below with exact PR/issue/confidence/tests/browser/outcome/caveats/design/verification content or N/A reason | pending |
@@ -185,6 +186,21 @@ Final handoff contract:
   - Why not quick patch: pending
   - Why not broader change: pending
 - Verified: pending
+- PR body verified: pending
+
+Task-style PR body contract:
+- Preserve any existing `<!-- auto-release:start -->` block. If a changeset is
+  part of the diff and repo policy expects auto release, include that block.
+- Use the final handoff fields in this order: issue, tracker, or fix line when
+  applicable; confidence line; Reproduced / Verified table; Outcome; Caveat;
+  Design; and Verified.
+- Never include a line that links to the current PR itself. The current PR URL
+  belongs in the final response, not in its own description.
+- Do not replace this with a generic `Summary` / `Verification` PR body, an
+  adaptive prose body from a git helper skill, or an unrelated generated badge
+  footer unless the caller or repo template explicitly asks for it.
+- Proof is `gh pr view --json body` output or a concise source-backed summary
+  of that output.
 
 Final handoff / sync:
 - PR: pending
