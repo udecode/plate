@@ -42,14 +42,17 @@ export const resolvePlugin = <P extends AnySlatePlugin>(
 
   // Apply the stored configuration first
   if (plugin.__configuration) {
-    const configResult = plugin.__configuration(
+    const rawConfigResult = plugin.__configuration(
       getEditorPlugin(editor, plugin as any)
     ) as any;
+    // Copy before mutating: the user's config object is captured by closure
+    // and reused across editor instances, so mutating it would clear
+    // inputRules on subsequent resolutions.
+    const { inputRules: configInputRules, ...configResult } = rawConfigResult;
 
-    if (configResult.inputRules !== undefined) {
-      const normalizedInputRules = normalizeConfiguredInputRules(
-        configResult.inputRules
-      );
+    if (configInputRules !== undefined) {
+      const normalizedInputRules =
+        normalizeConfiguredInputRules(configInputRules);
 
       (plugin as any).__configuredInputRules = [
         ...normalizeConfiguredInputRules(
@@ -57,7 +60,6 @@ export const resolvePlugin = <P extends AnySlatePlugin>(
         ),
         ...normalizedInputRules,
       ];
-      configResult.inputRules = undefined;
     }
 
     plugin = mergePlugins(plugin, configResult);
