@@ -7,7 +7,7 @@ Status: `done`
 Owner: `slate-ralplan`
 
 Completion:
-`.tmp/019e1c53-3e25-78c0-9083-355925be3817/completion-check.md`
+`active goal state`
 
 ## Current Verdict
 

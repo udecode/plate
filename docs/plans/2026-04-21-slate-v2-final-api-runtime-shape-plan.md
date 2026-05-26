@@ -1124,7 +1124,7 @@ Changed files:
 
 - `/Users/zbeyens/git/slate-v2/playwright/integration/examples/richtext.test.ts`
 - `/Users/zbeyens/git/slate-v2/packages/slate-react/src/components/editable.tsx`
-- `/Users/zbeyens/git/plate-2/.tmp/<session-id>/completion-check.md`
+- `/Users/zbeyens/git/plate-2/active goal state`
 
 Rejected tactics:
 

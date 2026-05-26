@@ -18,7 +18,7 @@ transaction engine.
 
 - `ralph`
 - `major-task`
-- `planning-with-files`
+- `goal workflow`
 - `learnings-researcher`
 
 # Constraints

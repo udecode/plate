@@ -1465,8 +1465,8 @@ Decisions:
 ## Ralph Execution Ledger
 
 Status: `done`
-Runtime state: `.tmp/019e1fc0-dba0-7de1-9236-b484a144cda6/completion-check.md`
-Continuation prompt: `.tmp/019e1fc0-dba0-7de1-9236-b484a144cda6/continue.md`
+Runtime state: `active goal state`
+Continuation prompt: `active goal state`
 
 Activation:
 

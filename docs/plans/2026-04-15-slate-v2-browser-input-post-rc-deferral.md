@@ -21,7 +21,7 @@ follow-up work without lying about the broader blanket replacement claim.
 
 - `major-task`
 - `task`
-- `planning-with-files`
+- `goal workflow`
 - `learnings-researcher`
 
 # Phases

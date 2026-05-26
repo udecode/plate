@@ -302,8 +302,8 @@ Required before even considering a product mode:
 - `.tmp/slate-v2/packages/slate-react/test/surface-contract.tsx`
 - `docs/plans/2026-05-03-slate-v2-dom-present-large-doc-phase-6-plan.md`
 - `docs/solutions/performance-issues/2026-05-03-slate-dom-present-staging-needs-document-epoch-and-range-materialization.md`
-- `.tmp/<session-id>/completion-check.md`
-- `.tmp/continue.md`
+- `active goal state`
+- `active goal state`
 
 ## Completion Target
 

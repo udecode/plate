@@ -3,8 +3,8 @@
 status: done
 owner: slate-ralplan
 created: 2026-05-11
-completion: `.tmp/019e1701-5e30-75c0-9a6d-bf7127ba2ee0/completion-check.md`
-continuation: `.tmp/019e1701-5e30-75c0-9a6d-bf7127ba2ee0/continue.md`
+completion: `active goal state`
+continuation: `active goal state`
 
 ## Verdict
 

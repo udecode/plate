@@ -420,8 +420,8 @@ Mitigation:
 
 When execution starts:
 
-- Update `.tmp/<session-id>/completion-check.md` to `status: pending`.
-- Refresh `.tmp/continue.md` with this plan.
+- Update `active goal state` to `status: pending`.
+- Refresh `active goal state` with this plan.
 - Keep status `pending` while any phase has a runnable next move.
 - Set `done` only after Phase 4 final gates pass.
 - Set `blocked` only when no autonomous progress is possible.
@@ -433,8 +433,8 @@ When execution starts:
 Actions:
 
 - Activated this plan through `complete-plan`.
-- Set `.tmp/<session-id>/completion-check.md` to `status: pending`.
-- Refreshed `.tmp/continue.md` for this lane.
+- Set `active goal state` to `status: pending`.
+- Refreshed `active goal state` for this lane.
 - Added root selector source ownership guards to
   `.tmp/slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts`.
 - Added current `EditableDOMRoot` root runtime orchestration inventory for the
@@ -455,8 +455,8 @@ Evidence:
 
 Changed files:
 
-- `.tmp/<session-id>/completion-check.md`
-- `.tmp/continue.md`
+- `active goal state`
+- `active goal state`
 - `docs/plans/2026-04-28-slate-v2-root-runtime-selector-guard-hard-cut-plan.md`
 - `.tmp/slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts`
 
@@ -626,7 +626,7 @@ Evidence:
 
 Changed files:
 
-- `.tmp/<session-id>/completion-check.md`
+- `active goal state`
 - `docs/plans/2026-04-28-slate-v2-root-runtime-selector-guard-hard-cut-plan.md`
 
 Decision:

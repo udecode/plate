@@ -521,7 +521,7 @@ Accepted revisions from the objection pass:
 
 - Activated `ralph` execution: completion state is pending again, the current
   owner is `.tmp/slate-v2/packages/slate-react/test/use-element-selected.test.tsx`,
-  and `.tmp/continue.md` is an execution prompt.
+  and `active goal state` is an execution prompt.
 - Selected `#6053` as the next runnable issue lane.
 - Promoted `#6053` to `fixes-claimed` after exact package proof.
 - Added missing issue coverage matrix row for `#6053`.

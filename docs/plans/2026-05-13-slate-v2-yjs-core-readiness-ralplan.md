@@ -965,7 +965,7 @@ Current owner: `.tmp/slate-v2/packages/slate`.
 Current pass: `p0-collab-adapter-extension-contract`.
 
 Continuation prompt:
-`.tmp/019e1c53-3e25-78c0-9083-355925be3817/continue.md`.
+`active goal state`.
 
 Scope:
 
@@ -1281,5 +1281,5 @@ Completion check:
 
 ```bash
 cd /Users/zbeyens/git/plate-2 && node tooling/scripts/completion-check.mjs
-# [completion-check] complete: /Users/zbeyens/git/plate-2/.tmp/019e1c53-3e25-78c0-9083-355925be3817/completion-check.md
+# [completion-check] complete: /Users/zbeyens/git/plate-2/active goal state
 ```

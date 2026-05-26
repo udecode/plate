@@ -492,7 +492,7 @@ Acceptance:
 
 - `bun test:release-proof` fails if DOM-shape proof artifacts are absent.
 - `bun check:full` includes the DOM-shape release proof before full integration.
-- `.tmp/<session-id>/completion-check.md` remains `done` for the old completed plan until this
+- `active goal state` remains `done` for the old completed plan until this
   plan becomes the active implementation lane.
 
 ## Driver Gates
@@ -555,9 +555,9 @@ the start of the lane.
 
 ### 2026-04-25: Start Batch 0
 
-- actions: activated this plan and set `.tmp/<session-id>/completion-check.md` to `pending`.
+- actions: activated this plan and set `active goal state` to `pending`.
 - commands: none yet.
-- artifacts: `.tmp/continue.md` is being generated for Stop-hook continuation.
+- artifacts: `active goal state` is being generated for Stop-hook continuation.
 - evidence: user-reported richtext repeated Backspace/Option-Backspace visual
   blank-line repro; prior Playwright-style model/selection proof was too weak.
 - hypothesis: the first missing release invariant is rendered DOM shape after
@@ -565,7 +565,7 @@ the start of the lane.
 - decision: start with a focused RED browser row in `.tmp/slate-v2` before core
   cleanup.
 - owner classification: Batch 0, RED reproduction lock.
-- changed files: `.tmp/<session-id>/completion-check.md`,
+- changed files: `active goal state`,
   `docs/plans/2026-04-25-slate-v2-leaf-lifecycle-dom-shape-conformance-plan.md`.
 - rejected tactics: do not start by patching `ZeroWidthString`; do not claim the
   previous epoch proof covers visual DOM shape.
@@ -917,7 +917,7 @@ the start of the lane.
   transform owner instead.
 - do-not-do list: do not claim completion from focused gates alone.
 - next action: run the closure gate `bun check:full`, then set
-  `.tmp/<session-id>/completion-check.md` according to the result.
+  `active goal state` according to the result.
 
 ### 2026-04-25: Closure Gates Passed
 
@@ -947,8 +947,8 @@ the start of the lane.
   - `docs/plans/2026-04-25-slate-v2-leaf-lifecycle-dom-shape-conformance-plan.md`
   - `docs/research/decisions/slate-v2-destructive-leaf-boundary-legacy-parity.md`
   - `docs/solutions/logic-errors/2026-04-25-slate-v2-destructive-delete-must-clean-empty-leaves-before-render.md`
-  - `.tmp/<session-id>/completion-check.md`
-  - `.tmp/continue.md`
+  - `active goal state`
+  - `active goal state`
   - `.tmp/slate-v2/packages/slate/src/core/leaf-lifecycle.ts`
   - `.tmp/slate-v2/packages/slate-browser/src/core/release-proof.ts`
   - `.tmp/slate-v2/packages/slate-browser/test/core/release-proof.test.ts`

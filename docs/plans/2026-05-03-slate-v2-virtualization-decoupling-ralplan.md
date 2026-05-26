@@ -775,7 +775,7 @@ Passed gates:
 - score is `>=0.92` and no dimension is below `0.85`;
 - source-backed current/before shape remains accurate;
 - red decoupling guard tests are accepted as implementation gates;
-- `.tmp/continue.md` no longer has a runnable slate-ralplan pass.
+- `active goal state` no longer has a runnable slate-ralplan pass.
 
 Next implementation owner:
 

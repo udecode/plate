@@ -495,4 +495,4 @@ This review lane can be marked `done` only when:
 - every major docs page has current source/test evidence
 - browser-sensitive examples map to replayable proof rows
 - pass schedule is complete
-- `.tmp/<session-id>/completion-check.md` says `done`
+- `active goal state` says `done`

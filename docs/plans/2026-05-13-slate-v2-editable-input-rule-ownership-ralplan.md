@@ -7,7 +7,7 @@ Status: `done`
 Owner: `slate-ralplan`
 
 Completion:
-`.tmp/019e1fc0-dba0-7de1-9236-b484a144cda6/completion-check.md`
+`active goal state`
 
 ## Current Verdict
 
@@ -434,7 +434,7 @@ Pass-state ledger:
 | Issue/ledger refresh | complete | Re-read live ledger, frozen ledger rows for `#3384`, `#3408`, `#4528`, coverage matrix, fork dossier, and PR reference.                   | Updated PR reference Section 6.2; no new fixed/improved issue claim; current issue stance remains related/not claimed until implementation proof. | `#3384`, `#3408`, `#4528` remain related/not fixed. | Ralph if executed |
 | Research refresh     | complete | Re-read research index/log and prior compiled editor architecture/input-rule references already cited in this plan.                       | No change; Lexical/ProseMirror/Tiptap/Plate strategy still supports command substrate plus Plate-owned rule families.                             | None.                                               | none              |
 | Objection recheck    | complete | Rechecked maintainer objection rows against the latest cleaner inline example shape.                                                      | No change; cleaner inline callbacks do not rescue the public rule abstraction.                                                                    | None.                                               | none              |
-| Closure              | complete | This section plus updated `.tmp/019e1fc0-dba0-7de1-9236-b484a144cda6/completion-check.md`.                                                | Plan remains ready for user review and Ralph execution.                                                                                           | None.                                               | user / Ralph      |
+| Closure              | complete | This section plus updated `active goal state`.                                                | Plan remains ready for user review and Ralph execution.                                                                                           | None.                                               | user / Ralph      |
 
 Score after revalidation:
 
@@ -722,7 +722,7 @@ Goal:
 
 Continuation prompt:
 
-- `.tmp/019e1fc0-dba0-7de1-9236-b484a144cda6/continue.md`
+- `active goal state`
 
 Current pass:
 
@@ -1264,7 +1264,7 @@ Goal:
 
 Continuation prompt:
 
-- `.tmp/019e1fc0-dba0-7de1-9236-b484a144cda6/continue.md`
+- `active goal state`
 
 Current pass:
 
@@ -1882,8 +1882,8 @@ Changed Slate v2 files:
 - `.tmp/slate-v2/packages/slate/test/normalization-contract.ts`
 - `.tmp/slate-v2/packages/slate/test/apply-onchange-hard-cut-contract.ts`
 - `docs/slate-v2/references/pr-description.md`
-- `.tmp/019e1fc0-dba0-7de1-9236-b484a144cda6/completion-check.md`
-- `.tmp/019e1fc0-dba0-7de1-9236-b484a144cda6/continue.md`
+- `active goal state`
+- `active goal state`
 
 Verification:
 

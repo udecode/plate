@@ -12,6 +12,18 @@
   mutation, and recreate `packages/slate-yjs` as a current Slate v2 source
   package
 
+## [2026-05-23] maintain | TanStack Virtual perf and iOS refresh
+
+- refreshed
+  [tanstack-virtual-and-github-large-surface-virtualization.md](docs/research/sources/editor-architecture/tanstack-virtual-and-github-large-surface-virtualization.md)
+  against the 2026-05-19 TanStack Virtual perf/iOS post and latest npm package
+  metadata
+- updated the Slate v2 conclusion: upgrade to `@tanstack/react-virtual@3.13.25`
+  / `@tanstack/virtual-core@3.15.0`, keep the Slate public API unchanged, keep
+  virtualized mode experimental, avoid overriding upstream backward-scroll
+  defaults, and route internal layout-backed virtualized scroll writes through
+  TanStack where practical
+
 ## [2026-05-14] maintain | slate v2 example memoization ecosystem refresh
 
 - reused the existing editor-architecture lane for Lexical, ProseMirror,
@@ -595,3 +607,17 @@
   storage, commands, and selector subscription DX
 - no new source page was added because existing compiled research plus local
   raw/current-source lines were sufficient for this pass
+
+## [2026-05-25] maintain | Slate v2 Pretext pagination virtualization refresh
+
+- added
+  [pretext-pagination-page-virtualization.md](docs/research/sources/editor-architecture/pretext-pagination-page-virtualization.md)
+  for the Slate v2 pagination / virtualization planning lane
+- recorded the current conclusion:
+  Pretext is the right layout engine, but `prepare()` still depends on canvas
+  measurement; paged mode should virtualize pages/spreads first; strict
+  collaboration/export should use optional profile-aware authoritative
+  page-break snapshots
+- recorded Tiptap Pages evidence that pagination failure lives in split policy,
+  table/media boxes, page content rects, and oversized non-splittable blocks,
+  not just text measurement

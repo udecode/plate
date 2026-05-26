@@ -1,6 +1,7 @@
 ---
 title: Slate history leading selection imports are batch preconditions
 date: 2026-05-13
+last_updated: 2026-05-21
 category: docs/solutions/logic-errors
 module: slate-v2 slate-history
 problem_type: logic_error
@@ -9,10 +10,11 @@ symptoms:
   - Undo after typing at a DOM-imported middle-block caret restored selection to the start of the block.
   - A focused browser undo row passed while a package-level mixed commit still stored stale history selection.
   - Redo needed to keep explicit selection operations that occur after the first text operation.
+  - In a multi-root document, the second toolbar undo moved the focused body caret while undoing a header-owned batch.
 root_cause: logic_error
 resolution_type: code_fix
 severity: high
-tags: [slate-v2, slate-history, selection, undo, redo, set-selection]
+tags: [slate-v2, slate-history, selection, undo, redo, set-selection, multi-root]
 ---
 
 # Slate history leading selection imports are batch preconditions
@@ -32,6 +34,9 @@ from before the caret import.
   package commit containing both selection import and text insertion.
 - A package repro with `set_selection(start -> middle)` followed by
   `insert_text` undid the text but restored `[0,0]@0` instead of `[0,0]@3`.
+- In a multi-root runtime, undoing a header edit from the main view removed the
+  right text but moved the focused body selection. The text changed in the
+  header, but the visible cursor jumped in the body.
 
 ## What Didn't Work
 
@@ -79,6 +84,29 @@ const prepareHistoryBatch = (
 }
 ```
 
+For multi-root documents, the precondition range must also preserve root
+identity. A leading `set_selection` operation may carry the root on the
+operation rather than on each point, so `applySelectionPatch` needs the
+operation root when it clones points:
+
+```ts
+const clonePoint = (point: Range['anchor'], root?: string) => {
+  const nextRoot = point.root ?? root
+
+  return {
+    offset: point.offset,
+    path: [...point.path],
+    ...(nextRoot && nextRoot !== 'main' ? { root: nextRoot } : {}),
+  }
+}
+
+batchSelectionBefore = applySelectionPatch(
+  batchSelectionBefore,
+  operation.newProperties,
+  operation.root
+)
+```
+
 Undo and redo should set `batch.selectionBefore` unconditionally, including
 `null`, because a valid history precondition can be "no selection":
 
@@ -87,9 +115,29 @@ tx.selection.set(batch.selectionBefore)
 tx.operations.replay(batch.operations)
 ```
 
+When the saved range is rooted, restore it only if it belongs to the invoking
+view root. A single browser selection cannot both keep the body caret active and
+restore an off-focus header caret. Cross-root history should change the other
+root's content without moving the active view selection:
+
+```ts
+const root = getRangeRootOrMain(batch.selectionBefore)
+
+if (root !== tx.view.root()) {
+  return
+}
+
+tx.operations.replay([rootedSetSelectionOperation])
+```
+
 Keep `set_selection` operations after the first saveable operation in the
 batch. Those operations are part of the user-visible edit result, and redo must
 replay them.
+
+For toolbar-driven multi-root examples, run document history through the active
+root view and then refocus that editable while preserving its DOM range.
+State-only undo should preserve title/input focus. Cross-root content undo
+should not globally force the active root to follow the restored batch root.
 
 ## Why This Works
 
@@ -102,6 +150,12 @@ history behavior without returning to operation-by-operation plugin wrapping.
 It also keeps Slate v2 operation-first history intact for collaboration rebase,
 because `selectionBefore` still flows through the existing range transform path.
 
+Rooted history adds one more invariant: the range precondition, the invoking
+view root, and the replayed selection operation must agree on ownership. If the
+range is cloned rootless, or if a rooted range is replayed through the wrong
+view, document text can undo correctly while the active caret moves somewhere
+the user did not ask for.
+
 ## Prevention
 
 - Add package contracts for mixed commits, not only browser rows.
@@ -111,6 +165,12 @@ because `selectionBefore` still flows through the existing range transform path.
   redo proves trailing selection operations were not trimmed.
 - Keep browser undo rows as integration proof, but use package tests to lock
   core history semantics.
+- In multi-root tests, invoke history from a focused root while the next history
+  batch belongs to another root, then assert the focused root selection is
+  unchanged.
+- In examples with external toolbar buttons, test the full browser loop:
+  focus root A, undo root A, undo root B, then type again and assert typing
+  still lands in root A.
 
 ## Related Issues
 

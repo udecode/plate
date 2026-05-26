@@ -411,7 +411,7 @@ Files:
 
 - this plan
 - `.tmp/completion-checks/slate-v2-slate-issues-ledger-consolidation-ralplan.md`
-- `.tmp/continue.md`
+- `active goal state`
 
 Work:
 

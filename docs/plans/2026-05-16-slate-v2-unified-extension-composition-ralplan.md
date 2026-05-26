@@ -2,7 +2,7 @@
 
 Status: done
 Runtime id: 019e1fc0-dba0-7de1-9236-b484a144cda6
-Completion file: `.tmp/019e1fc0-dba0-7de1-9236-b484a144cda6/completion-check.md`
+Completion file: `active goal state`
 Current pass: complete
 Next pass: none
 
@@ -2049,7 +2049,7 @@ execute the plan in `.tmp/slate-v2`.
 Status: pending for implementation.
 
 Ralph generated the scoped continuation prompt at
-`.tmp/019e1fc0-dba0-7de1-9236-b484a144cda6/continue.md` and moved the scoped
+`active goal state` and moved the scoped
 completion state back to `pending` for execution.
 
 Current pass:

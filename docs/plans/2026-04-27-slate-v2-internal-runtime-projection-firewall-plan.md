@@ -1138,8 +1138,8 @@ boundary.
 
 Actions taken:
 
-- Generated `.tmp/continue.md` from the active items 4-6 plan.
-- Set `.tmp/<session-id>/completion-check.md` to `pending` for the new lane.
+- Generated `active goal state` from the active items 4-6 plan.
+- Set `active goal state` to `pending` for the new lane.
 - Read the completed void/atom lane state before activating the next owner.
 - Ran the item 4A public-surface inventory commands against `.tmp/slate-v2`.
 - Added the current public-surface inventory table above.
@@ -1634,8 +1634,8 @@ Owner classification: Phase 0 browser/runtime proof infrastructure.
 
 Actions taken:
 
-- Generated `.tmp/continue.md` from this active plan.
-- Set `.tmp/<session-id>/completion-check.md` to `pending`.
+- Generated `active goal state` from this active plan.
+- Set `active goal state` to `pending`.
 - Started execution instead of stopping at prompt generation.
 
 Current hypothesis:
@@ -2154,7 +2154,7 @@ Evidence:
 
 Rejected tactics:
 
-- Do not fake completion by marking `.tmp/<session-id>/completion-check.md` done while
+- Do not fake completion by marking `active goal state` done while
   selector-owned projection work remains.
 - Do not overfit the image budget back to total three after moving spacer
   placement into `VoidElement`; that undercounts the wrapper the profiler now

@@ -8,8 +8,7 @@ source_refs:
   - docs/research/sources/prosemirror/guide-reference-and-example-doc-patterns.md
   - docs/research/sources/lexical/markdown-package-and-shortcuts-doc-patterns.md
   - docs/research/sources/slate/walkthrough-concepts-and-api-doc-patterns.md
-  - docs/solutions/style.md
-  - .agents/rules/docs-plugin.mdc
+  - .agents/rules/docs-creator.mdc
 related:
   - docs/research/systems/plugin-input-rule-doc-pattern-landscape.md
 ---
@@ -40,8 +39,8 @@ Use this order:
 - Lexical proves package wiring should stay explicit and scannable.
 - ProseMirror proves the exact primitive definitions belong in a final
   reference section, not in the opening.
-- Plate's own `style.md` and `docs-plugin.mdc` favor tutorial-first,
-  approachable, example-led documentation.
+- Plate's own `docs-creator.mdc` favors tutorial-first, approachable,
+  example-led documentation.
 
 ## Consequences
 

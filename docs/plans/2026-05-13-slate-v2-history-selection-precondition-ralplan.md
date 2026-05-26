@@ -7,7 +7,7 @@ Status: `done`
 Owner: `slate-ralplan`
 
 Completion:
-`.tmp/019e1fc0-dba0-7de1-9236-b484a144cda6/completion-check.md`
+`active goal state`
 
 ## Ralph Execution Ledger
 

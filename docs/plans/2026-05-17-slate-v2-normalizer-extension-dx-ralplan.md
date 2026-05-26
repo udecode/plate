@@ -5,10 +5,10 @@ Status: done
 Runtime id: `019e362b-c486-7372-84c1-1c04fef96ff6`
 
 Completion file:
-`.tmp/019e362b-c486-7372-84c1-1c04fef96ff6/completion-check.md`
+`active goal state`
 
 Continuation file:
-`.tmp/019e362b-c486-7372-84c1-1c04fef96ff6/continue.md`
+`active goal state`
 
 Current pass: editor-node-normalizer-split, complete
 
@@ -59,7 +59,7 @@ Likely touchpoints:
 - `.tmp/slate-v2/site/examples/ts/forced-layout.tsx`
 
 Execution state: active under Ralph as of 2026-05-17. Completion state is
-`.tmp/019e362b-c486-7372-84c1-1c04fef96ff6/completion-check.md` and stays
+`active goal state` and stays
 `pending` until implementation, proofs, reference docs, and closeout pass
 accounting are complete.
 

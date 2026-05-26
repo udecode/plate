@@ -24,7 +24,7 @@
 
 ## Progress
 
-- [x] Skill analysis loaded: `continue-perf`, `continue`, `vercel-react-best-practices`, `planning-with-files`, `learnings-researcher`, `major-task`.
+- [x] Skill analysis loaded: `continue-perf`, `continue`, `vercel-react-best-practices`, `goal workflow`, `learnings-researcher`, `major-task`.
 - [x] Located prior Slate v2 plan docs and relevant solution docs.
 - [x] Read required source-of-truth docs.
 - [x] Inspect current and legacy huge-document runtime code.

@@ -66,7 +66,7 @@ No blind repo-wide coverage push in this phase. No e2e or browser work.
 - Replaced hyperscript fixtures in `mergeDeepToNodes` with plain object fixtures and one real editor object for the editor-root cases where `NodeApi` and `ElementApi` semantics differ.
 - Upgraded the old source-factory coverage from a trivial single-node case to a multi-node assertion that proves the factory runs once per matched node.
 - Refactored `packages/autoformat/src/lib/__tests__/withAutoformat/trigger.spec.tsx` to use `createSlateEditor`, `it.each`, and behavior titles instead of the old repeated `createPlateEditor` setup.
-- Loaded the `planning-with-files` skill and added planning-memory notes so pass history, findings, and verification live on disk outside the chat transcript too. Those notes are consolidated in this plan file.
+- Loaded the `goal workflow` skill and added planning-memory notes so pass history, findings, and verification live on disk outside the chat transcript too. Those notes are consolidated in this plan file.
 
 ### Pass 7
 
@@ -574,7 +574,7 @@ Complete
 | 2026-03-06 | `streamInsertChunk.spec.tsx` helper triggered `noMisplacedAssertion`                                                                          | 1       | Moved the assertion back into each `it()`                                                                                        |
 | 2026-03-06 | `mergeDeepToNodes.spec.ts` editor-root cases compared whole editor objects                                                                    | 1       | Used a real editor and asserted on `children` plus root boundaries                                                               |
 | 2026-03-06 | `autoformat` typecheck failed on unresolved imports from `@platejs/basic-nodes/react` and `@platejs/link/react` in existing specs             | 1       | Removed the React-only `.key` imports from the hotspot specs and typecheck passed                                                |
-| 2026-03-06 | `planning-with-files` catchup script pointed at a missing `~/.codex/skills/planning-with-files` path                                          | 1       | Used the existing planning notes directly and later consolidated them into this plan file                                        |
+| 2026-03-06 | `goal workflow` catchup script pointed at a missing `~/.codex/skills/goal workflow` path                                          | 1       | Used the existing planning notes directly and later consolidated them into this plan file                                        |
 | 2026-03-06 | `bun test -u` left dead snapshot keys in markdown after title renames                                                                         | 1       | Deleted the affected snapshot files and regenerated them from scratch                                                            |
 | 2026-03-06 | Markdown serializer snapshots contained meaningful trailing spaces, so `git diff --check` flagged them                                        | 1       | Replaced those two cases with explicit string assertions instead of snapshots                                                    |
 | 2026-03-06 | `moveSelection` and `shiftSelection` looked like easy seam reductions but failed when switched to `createSlateEditor`                         | 1       | Kept them on Plate and documented the exception instead of cargo-culting the rule                                                |

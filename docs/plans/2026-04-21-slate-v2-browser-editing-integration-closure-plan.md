@@ -37,7 +37,7 @@ Latest full gate:
 - command: `bun test:integration-local`
 - result: `179 passed`, `49 skipped`, `38 failed`, `2 flaky`
 
-The previous completion state is invalid. `.tmp/<session-id>/completion-check.md` must stay
+The previous completion state is invalid. `active goal state` must stay
 `status: pending`.
 
 ## Failure Clusters
@@ -254,7 +254,7 @@ This must be green, or every remaining row must be explicitly classified:
 - Do not call selective Chromium rows full browser proof.
 - Do not revive child-count chunking.
 - Do not move back to legacy `decorate` as the overlay story.
-- Do not set `.tmp/<session-id>/completion-check.md` to `done` while
+- Do not set `active goal state` to `done` while
   `bun test:integration-local` is red without explicit accepted/deferred
   classifications.
 - Do not patch `slate-history` or `slate-hyperscript` unless a focused failing
@@ -298,7 +298,7 @@ The browser-editing lane is complete only when:
   rationale.
 - `bun test:integration-local` is green, or every remaining row is classified
   and accepted/deferred in this plan.
-- `.tmp/<session-id>/completion-check.md` is updated to `status: done` or `status: blocked`.
+- `active goal state` is updated to `status: done` or `status: blocked`.
 - `bun completion-check` passes.
 
 ## Current Next Owner
@@ -567,7 +567,7 @@ Rejected tactics:
 
 Next action:
 
-- Mark `.tmp/<session-id>/completion-check.md` as `status: done` and run
+- Mark `active goal state` as `status: done` and run
   `bun completion-check`.
 
 ### 2026-04-21 - Full integration rerun after Chromium closure

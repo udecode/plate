@@ -14,7 +14,7 @@
 status: done
 owner_skill: .agents/skills/editor-test-harvester/SKILL.md
 report: docs/editor-test-harvester/yjs-collaboration/report.md
-completion: .tmp/019e1c53-3e25-78c0-9083-355925be3817/completion-check.md
+completion: active goal state
 
 ## Goal
 

@@ -995,7 +995,7 @@ This plan is not done until:
 - implementation phases are batchable by `ralph`
 - final closure pass records implementation readiness or the exact remaining
   proof gap
-- `.tmp/continue.md` points to the next review/implementation pass
+- `active goal state` points to the next review/implementation pass
 
 ## 2026-05-04 Lexical-consistency addendum: all `Editor.replace`-like APIs
 

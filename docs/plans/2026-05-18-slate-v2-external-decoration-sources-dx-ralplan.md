@@ -398,8 +398,8 @@ Notes:
 
 | Pass                             | Status   | Evidence                                                                                                                                                                    |
 | -------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Skill reload                     | complete | Reloaded `slate-ralplan`, `ce-review`, `learnings-researcher`, and `planning-with-files` after compaction.                                                                  |
-| Completion reset                 | complete | Reset `.tmp/019e3627-238b-7993-a8cf-26be45504c47/completion-check.md` to pending for this activation.                                                                       |
+| Skill reload                     | complete | Reloaded `slate-ralplan`, `ce-review`, `learnings-researcher`, and `goal workflow` after compaction.                                                                  |
+| Completion reset                 | complete | Reset `active goal state` to pending for this activation.                                                                       |
 | Live source review               | complete | Read the live example plus `use-slate-decoration-source.ts` and `decoration-source.ts` from `.tmp/slate-v2`.                                                                |
 | Institutional knowledge          | complete | Read the relevant projection/range and stable-reference solution notes.                                                                                                     |
 | Ecosystem comparison             | complete | Checked current Context7 docs for Lexical, ProseMirror, and Tiptap decoration/plugin patterns.                                                                              |

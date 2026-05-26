@@ -14,7 +14,7 @@ The job is not to clone their framework. The job is to extract portable editor
 behavior proof and route it to the right owner: raw Slate v2 substrate or Plate
 packages, kits, examples, and docs.
 
-This follows the ClawSweeper method and the ralplan confidence model:
+This follows the ClawSweeper method and the goal-plan confidence model:
 source-first, exhaustive inventory, explicit skip reasons, evidence rows, scored
 passes, narrow claims, license-aware invariant extraction, then implementation
 only when asked.
@@ -139,26 +139,39 @@ from the invariant, not pasted or mechanically ported from upstream source.
   only after the closure score passes or when the user explicitly asked for a
   quick/first-pass report and the report says so in the verdict.
 
-## Completion State
+## Goal And Report State
 
-For a normal harvest, create or update a completion file:
+Use an agent-native goal for comprehensive harvests, long-running reruns, and
+apply runs. Always call `get_goal` first. Call `create_goal` only when no active
+matching goal exists. There can be only one active goal per thread.
 
-```text
-.tmp/editor-test-harvest-<repo>/completion-check.md
+Create the harvest goal plan from the project template:
+
+```bash
+node .agents/rules/autogoal/scripts/create-goal-scratchpad.mjs \
+  --template editor-test-harvester \
+  --title "<Repo> Editor Test Harvest"
 ```
 
-The completion file is always under `.tmp`, even for permissive targets. The
-report path inside it depends on license mode:
+The generated `docs/plans` file is the durable pass-state ledger, scratch log,
+decision record, verification ledger, and completion checklist. Do not create
+hook state.
+
+The harvest report itself still lives in the license-selected report directory:
 
 - `permissive`: `docs/editor-test-harvester/<repo>/report.md`
 - `behavior-only`: `.tmp/editor-test-harvester/<repo>/report.md`
 
-Use:
+Record this state in the active goal plan:
 
 ```md
-status: pending
+target_repo: <path>
+repo_key: <repo>
 license_mode: permissive|behavior-only
-plan: <docs/editor-test-harvester/<repo>/report.md or .tmp/editor-test-harvester/<repo>/report.md>
+output_mode: durable|scratch
+report_path: <docs/.../report.md or .tmp/.../report.md>
+inventory_path: <report_dir>/inventory.md
+test_index_path: <report_dir>/test-index.md
 current_pass: <pass-name>
 current_pass_status: in_progress
 current_pass_skill: .agents/skills/editor-test-harvester/SKILL.md
@@ -181,9 +194,9 @@ Set `done` only when:
 - the report has a full inventory appendix or a linked inventory file.
 
 If any gate fails but more work is possible, keep `pending` and write the active
-continuation prompt with the next harvest pass. Use `blocked` only when the
-target repo, Slate v2 checkout, required browser/device tooling, or a user
-decision is missing and no useful autonomous pass remains.
+goal plan with the next harvest pass. Use `blocked` only when the target repo,
+Slate v2 checkout, required browser/device tooling, or a user decision is
+missing and no useful autonomous pass remains.
 
 ## Confidence Score
 
@@ -647,7 +660,7 @@ rg --files <target> | rg '<test inventory pattern>' | wc -l
 rg -n "License Gate|Confidence Score|Pass-State Ledger|Matrix|Skips|Next Slice|Full Inventory Appendix" "$report_dir/report.md"
 test -f "$report_dir/inventory.md"
 test -f "$report_dir/test-index.md"
-bun run completion-check -- --id editor-test-harvest-<repo>
+node .agents/rules/autogoal/scripts/check-complete.mjs docs/plans/<goal-plan>.md
 ```
 
 Versioned-output hygiene check for behavior-only sources:

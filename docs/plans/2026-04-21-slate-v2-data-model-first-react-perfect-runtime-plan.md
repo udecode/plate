@@ -717,7 +717,7 @@ Commands:
 Decision:
 
 - keep the capability-gated DOM-owned plain text lane
-- keep `.tmp/<session-id>/completion-check.md` as `status: pending`
+- keep `active goal state` as `status: pending`
 
 Next move:
 
@@ -834,7 +834,7 @@ Commands:
 Decision:
 
 - keep shell keyboard activation and focus behavior
-- keep `.tmp/<session-id>/completion-check.md` as `status: pending`
+- keep `active goal state` as `status: pending`
 
 Next move:
 
@@ -922,7 +922,7 @@ Decision:
 - keep the explicit DOM-owned plain text lane capability
 - keep shell focus, keyboard, and mouse activation behavior
 - keep shell-backed fragment paste path
-- keep `.tmp/<session-id>/completion-check.md` as `status: pending`
+- keep `active goal state` as `status: pending`
 
 Next move:
 
@@ -1002,7 +1002,7 @@ Commands:
 Decision:
 
 - keep live read and operation dirtiness API direction
-- keep `.tmp/<session-id>/completion-check.md` as `status: pending`
+- keep `active goal state` as `status: pending`
 
 Next move:
 
@@ -1088,7 +1088,7 @@ Commands:
 Decision:
 
 - keep the explicit DOM-owned text capability and shell/paste safety direction
-- keep `.tmp/<session-id>/completion-check.md` as `status: pending`
+- keep `active goal state` as `status: pending`
 
 Next move:
 
@@ -1154,7 +1154,7 @@ Commands:
 Decision:
 
 - treat Phase 8 browser editing proof as closed for Chromium desktop
-- keep `.tmp/<session-id>/completion-check.md` as `status: pending`
+- keep `active goal state` as `status: pending`
 
 Next move:
 
@@ -1197,7 +1197,7 @@ Actions:
   - `/Users/zbeyens/git/plate-2/docs/slate-v2/release-readiness-decision.md`
   - `/Users/zbeyens/git/plate-2/docs/slate-v2/true-slate-rc-proof-ledger.md`
   - `/Users/zbeyens/git/plate-2/docs/research/decisions/slate-v2-data-model-first-react-perfect-runtime.md`
-  - `/Users/zbeyens/git/plate-2/.tmp/<session-id>/completion-check.md`
+  - `/Users/zbeyens/git/plate-2/active goal state`
 
 Commands:
 
@@ -1224,7 +1224,7 @@ Commands:
 - `bun run lint`
   - pass
 - `bun completion-check`
-  - pass after `.tmp/<session-id>/completion-check.md` was set to `status: done`
+  - pass after `active goal state` was set to `status: done`
 
 Decision:
 

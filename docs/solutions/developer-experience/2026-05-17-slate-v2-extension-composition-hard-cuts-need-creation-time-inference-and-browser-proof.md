@@ -170,7 +170,7 @@ The browser rows matter because hard-cutting public roots can still leave stale
 internal calls. Typecheck did not catch the stale undo path; the editable-voids
 row did.
 
-Keeping `.tmp/<session-id>/completion-check.md` pending until the final gate is
+Keeping `active goal state` pending until the final gate is
 not bureaucracy. It prevents the stop hook from becoming a fake green light.
 
 ## Prevention

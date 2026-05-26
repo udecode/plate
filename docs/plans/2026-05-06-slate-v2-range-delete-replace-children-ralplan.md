@@ -614,7 +614,7 @@ This ralplan is done only when:
 - benchmark target is explicit;
 - issue ledgers and PR reference are synced if claims/API target changed;
 - score is `>= 0.92`, no dimension below `0.85`;
-- `.tmp/continue.md` points to the accepted next owner.
+- `active goal state` points to the accepted next owner.
 
 Current status: done for ralplan. Next owner: `ralph` execution of this plan,
 starting with the red op-contract/benchmark proof.

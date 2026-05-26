@@ -640,7 +640,7 @@ The proof map should remain, but as maintainer/contributor support material.
 - Phase completed: Slate maintainer objection ledger.
 - Files changed:
   `docs/plans/2026-04-29-slate-v2-docs-maintainer-reorg-review-plan.md`,
-  `.tmp/<session-id>/completion-check.md`, and `.tmp/continue.md`.
+  `active goal state`, and `active goal state`.
 - Claims verified against source: legacy `Transforms` nav, current v2
   repeated-warning lines, current v2 proof-map nav, source-exposed primitive
   editor write methods, write-boundary tests, style guidance, and compiled
@@ -664,13 +664,13 @@ The proof map should remain, but as maintainer/contributor support material.
 - Phase completed: Ecosystem maintainer pass.
 - Files changed:
   `docs/plans/2026-04-29-slate-v2-docs-maintainer-reorg-review-plan.md`,
-  `.tmp/<session-id>/completion-check.md`, and `.tmp/continue.md`.
+  `active goal state`, and `active goal state`.
 - Claims verified against source: extension `state`/`tx` docs, raw extension
   slots, collaboration commit/operation replay docs, adapter ownership docs,
   local runtime id docs, proof-map rows, and migration-backbone contract tests.
 - Commands run:
   `sed` and `nl -ba` reads over the active plan, slate-review skill,
-  planning-with-files skill, memory registry, current Slate v2 plugin docs,
+  goal workflow skill, memory registry, current Slate v2 plugin docs,
   collaboration docs, docs proof map, and migration-backbone tests; targeted
   `rg` over plugin/collab/proof-map/docs surfaces.
 - Stale terms remaining: current `.tmp/slate-v2/docs` still contains the
@@ -686,7 +686,7 @@ The proof map should remain, but as maintainer/contributor support material.
 - Phase completed: Revision pass.
 - Files changed:
   `docs/plans/2026-04-29-slate-v2-docs-maintainer-reorg-review-plan.md`,
-  `.tmp/<session-id>/completion-check.md`, and `.tmp/continue.md`.
+  `active goal state`, and `active goal state`.
 - Claims verified against source: active plan, slate-review skill completion
   rules, completion-check state, continuation prompt, and repo memory rule that
   pending means runnable work remains.
@@ -706,7 +706,7 @@ The proof map should remain, but as maintainer/contributor support material.
 - Phase completed: Closure score and final gates.
 - Files changed:
   `docs/plans/2026-04-29-slate-v2-docs-maintainer-reorg-review-plan.md`,
-  `.tmp/<session-id>/completion-check.md`, and `.tmp/continue.md`.
+  `active goal state`, and `active goal state`.
 - Claims verified against source: active plan score, dimension floors,
   pass-state ledger, objection ledger verdicts, implementation checklist, final
   gates, slate-review completion rules, and completion-check state.
@@ -1142,7 +1142,7 @@ contract. The fourth gate must prove provider/editable prop ownership.
 - Phase completed: API/runtime/docs hard-cut review.
 - Files changed:
   `docs/plans/2026-04-29-slate-v2-docs-maintainer-reorg-review-plan.md`,
-  `.tmp/<session-id>/completion-check.md`, and `.tmp/continue.md`.
+  `active goal state`, and `active goal state`.
 - Claims verified against source: instance schema predicates and aliases,
   static `Editor.*` helpers, opinionated `block-format` helpers,
   `withTransaction`, `<Slate>` callback behavior, duplicated projection props,
@@ -1150,7 +1150,7 @@ contract. The fourth gate must prove provider/editable prop ownership.
   bundled-source walkthrough, current normalizing docs, and legacy normalizing
   docs.
 - Commands run:
-  `sed` over the active plan, slate-review skill, planning-with-files skill,
+  `sed` over the active plan, slate-review skill, goal workflow skill,
   completion file, continuation prompt, current/legacy docs, and relevant live
   source snippets; targeted `rg` over `.tmp/slate-v2/packages/slate/src`,
   `.tmp/slate-v2/packages/slate-react/src`, and `.tmp/slate-v2/docs`; `bun run
@@ -1172,7 +1172,7 @@ completion-check`.
 - Phase completed: Closure refresh and final handoff.
 - Files changed:
   `docs/plans/2026-04-29-slate-v2-docs-maintainer-reorg-review-plan.md`,
-  `.tmp/<session-id>/completion-check.md`, and `.tmp/continue.md`.
+  `active goal state`, and `active goal state`.
 - Claims verified against source: Pass 8 accepted decisions, pass-state ledger,
   final gates, score threshold, callback contract target, provider/editable
   prop ownership target, and the remaining `projectionStore` decision.
@@ -1223,7 +1223,7 @@ compromise and tightens the already-accepted hard-cut direction.
   `.tmp/slate-v2/docs/Summary.md`,
   `.tmp/slate-v2/docs/general/contributing.md`,
   `docs/plans/2026-04-29-slate-v2-docs-maintainer-reorg-review-plan.md`,
-  `.tmp/<session-id>/completion-check.md`, and `.tmp/continue.md`.
+  `active goal state`, and `active goal state`.
 - Claims verified against source: public Summary uses `Transforms` for both
   concept and API pages; public Summary no longer lists `Docs Proof Map`;
   contributor docs link the proof map.
@@ -1245,7 +1245,7 @@ compromise and tightens the already-accepted hard-cut direction.
 - Files changed:
   `.tmp/slate-v2/docs/concepts/04-transforms.md`,
   `docs/plans/2026-04-29-slate-v2-docs-maintainer-reorg-review-plan.md`,
-  `.tmp/<session-id>/completion-check.md`, and `.tmp/continue.md`.
+  `active goal state`, and `active goal state`.
 - Claims verified against source: the concept page teaches `editor.update`,
   `tx.nodes`, `tx.text`, `tx.selection`, `tx.marks`, and `tx.operations`;
   operation replay is documented as `tx.operations.replay(...)`; stale public
@@ -1269,7 +1269,7 @@ compromise and tightens the already-accepted hard-cut direction.
 - Files changed:
   `.tmp/slate-v2/docs/api/transforms.md`,
   `docs/plans/2026-04-29-slate-v2-docs-maintainer-reorg-review-plan.md`,
-  `.tmp/<session-id>/completion-check.md`, and `.tmp/continue.md`.
+  `active goal state`, and `active goal state`.
 - Claims verified against source: the API page is a terse `tx` reference;
   it documents `tx.nodes`, `tx.text`, `tx.selection`, `tx.marks`, and
   `tx.operations.replay(...)`; stale public paths like `Editor.*`,
@@ -1291,7 +1291,7 @@ compromise and tightens the already-accepted hard-cut direction.
 - Files changed:
   `.tmp/slate-v2/docs/api/nodes/editor.md`,
   `docs/plans/2026-04-29-slate-v2-docs-maintainer-reorg-review-plan.md`,
-  `.tmp/<session-id>/completion-check.md`, and `.tmp/continue.md`.
+  `active goal state`, and `active goal state`.
 - Claims verified against source: the editor API page documents a small public
   boundary object, `editor.read`, `editor.update`, `editor.subscribe`,
   `editor.extend`, `state.*`, and `tx.*`; stale public paths like public
@@ -1315,7 +1315,7 @@ compromise and tightens the already-accepted hard-cut direction.
   `.tmp/slate-v2/docs/walkthroughs/05-executing-commands.md`,
   `.tmp/slate-v2/docs/walkthroughs/08-using-the-bundled-source.md`,
   `docs/plans/2026-04-29-slate-v2-docs-maintainer-reorg-review-plan.md`,
-  `.tmp/<session-id>/completion-check.md`, and `.tmp/continue.md`.
+  `active goal state`, and `active goal state`.
 - Claims verified against source: commands walkthrough uses plain functions
   with `editor.read(...)` and `editor.update(...)`; it does not teach
   `CustomEditor`, public `Editor.*`, `Transforms.*`, `withTransaction`, or
@@ -1350,7 +1350,7 @@ compromise and tightens the already-accepted hard-cut direction.
   `.tmp/slate-v2/packages/slate/test/**`,
   `.tmp/slate-v2/docs/**`,
   `docs/plans/2026-04-29-slate-v2-docs-maintainer-reorg-review-plan.md`,
-  `.tmp/<session-id>/completion-check.md`, and `.tmp/continue.md`.
+  `active goal state`, and `active goal state`.
 - Claims verified against source: public `Editor.*` editor-state query helpers
   are absent from the namespace, type surface, and editor barrel; instance
   schema predicates and read aliases are absent from `BaseEditor` and runtime
@@ -1493,8 +1493,8 @@ compromise and tightens the already-accepted hard-cut direction.
 - Phase completed: Final docs gates.
 - Files changed:
   final verification covered the Phase 1-9 code and docs changes in
-  `.tmp/slate-v2`, plus this plan, `.tmp/<session-id>/completion-check.md`, and
-  `.tmp/continue.md`.
+  `.tmp/slate-v2`, plus this plan, `active goal state`, and
+  `active goal state`.
 - Claims verified against source: repeated warning prose is gone; public
   Summary no longer exposes `Editor Methods` or `Docs Proof Map`; public docs
   do not teach removed `Editor.*` state queries, mutable editor fields,
@@ -1703,4 +1703,4 @@ Final handoff grouped by surface:
   footguns.
 - The plan keeps proof artifacts findable without making them public learning
   pages.
-- `.tmp/<session-id>/completion-check.md` says `done`.
+- `active goal state` says `done`.

@@ -1,15 +1,16 @@
 # Slate v2 Non-Node Editor State Architecture Ralplan
 
-status: complete
+status: done
 created: 2026-05-20
 closed: 2026-05-21
 reopened: 2026-05-21
 completion_id: 019e3627-238b-7993-a8cf-26be45504c47
-current_pass: header-focus-regression
+current_pass: verification-sweep-pass-selection-lifecycle-frame
 current_pass_status: complete
 next_pass: none
 previous_score: 0.92
-score: 0.92
+score: 0.86
+target_score: 0.94
 final_handoff_status: complete
 ralplan_lane_status: complete
 
@@ -86,6 +87,31 @@ name at most.
 
 This is a public API and data-model change. It needs a real plan before
 implementation.
+
+Cursor-selection drift reopen, 2026-05-21: the state/runtime direction remains
+right, but the selection architecture is not yet absolute-best. The live source
+has good concepts, yet root stamping, DOM import, DOM export, repair ownership,
+history focus policy, and browser proof are still distributed across too many
+owners. The next architecture target is a focused selection-authority
+consolidation, not a whole-editor rewrite and not a pivot to ProseMirror,
+Lexical, or Tiptap.
+
+React lifecycle amendment, 2026-05-21: after comparing `../react-prosemirror`,
+the selection-authority target also needs a React lifecycle access gate. Slate
+should not let arbitrary render/effect code read a stale view or DOM selection
+and then import it into model state. React-side selection access must happen
+through runtime-owned event callbacks or post-commit layout effects.
+
+Multi-root history regression amendment, 2026-05-21: content undo/redo must
+preserve root identity while preparing `batch.selectionBefore`, but selection
+restore is scoped to the invoking view root. If the active body view undoes a
+header-owned batch, header content changes and the body caret stays where it is.
+If the active header view undoes a header-owned batch, the header selection is
+restored. The fix is not an example-only focus hack: `slate-history` must keep
+rooted batch selections, then skip cross-root selection replay instead of
+projecting that selection into the active root. Example toolbar history runs
+through the active root view and refocuses that editable while preserving its
+DOM range; title/state-only history keeps opting out of DOM focus changes.
 
 ## Final Architecture Authority
 
@@ -1726,7 +1752,7 @@ Weighted total: 0.92. The plan is closed as implementation-complete.
 
 ## Pass State Ledger
 
-Stop-hook note: `.tmp/019e3627-238b-7993-a8cf-26be45504c47/completion-check.md`
+Stop-hook note: `active goal state`
 is `status: done` for this lane. A future reopened pass must set it back to
 `pending` before doing work.
 
@@ -1773,6 +1799,16 @@ is `status: done` for this lane. A future reopened pass must set it back to
 | ralph multi-root-example-browser-proof | complete | `PLAYWRIGHT_RETRIES=0 bun playwright playwright/integration/examples/multi-root-document.test.ts --project=chromium`; `dev-browser --connect http://127.0.0.1:9222` against `http://localhost:3100/examples/multi-root-document` | added the multi-root document example, active-root editing model, root-local selection ownership, rooted `set_selection`, inactive-root export guards, and route/sidebar wiring | none | final-gate-sync-runtime-provider |
 | final-gate-sync-runtime-provider | complete | `bun check`, focused multi-root Playwright, focused provider/core tests, focused slate-react regression tests, `bun lint:fix`, and `dev-browser` proof | synced plan top, completion state, and continuation prompt to implementation-complete; no issue count change | none | none |
 | header-focus-regression | complete | red then green: `PLAYWRIGHT_RETRIES=0 bun playwright playwright/integration/examples/multi-root-document.test.ts --project=chromium -g "focuses the header editor"`; green full file: `PLAYWRIGHT_RETRIES=0 bun playwright playwright/integration/examples/multi-root-document.test.ts --project=chromium`; green `bun lint:fix`; green `bun typecheck:site`; green `dev-browser --connect http://127.0.0.1:9222` label-click proof; learning captured in `docs/solutions/ui-bugs/2026-05-21-slate-v2-multi-root-chrome-clicks-must-activate-root-before-focus.md` | root chrome clicks now activate the root, make the root editable before focus handling, focus the editable, and put follow-up typing in the header | none | none |
+| header-text-surface-caret-regression | complete | red then green: `PLAYWRIGHT_RETRIES=0 bun playwright playwright/integration/examples/multi-root-document.test.ts --project=chromium -g "inactive header text surface"`; green full file: `PLAYWRIGHT_RETRIES=0 bun playwright playwright/integration/examples/multi-root-document.test.ts --project=chromium`; green `bun lint:fix`; green `bun typecheck:site`; green Browser plugin proof with `selectionAnchorInHeader: true` and header-only typing | removed the inactive-root `readOnly` toggle so all root text surfaces stay natively editable; kept chrome-click activation/focus handoff for non-editable labels/badges | none | none |
+| header-sequential-key-order-regression | complete | Browser plugin reproduced the bug by clicking the header and pressing ordered keys `h`, `e`, `l`, `l`, `o`, yielding `ollehConfidential quarterly plan`; green: `bun -e` Playwright probe against `http://localhost:3100/examples/multi-root-document` yielded `Confidential quarterly planhello`; green: `bun test ./packages/slate/test/rooted-operation-contract.ts ./packages/slate/test/create-editor-value-contract.ts ./packages/slate/test/state-tx-public-api-contract.ts ./packages/slate/test/editor-runtime-view-contract.ts`; green: `bun --filter slate typecheck`; green: `bun typecheck:site`; green: `bun lint:fix`; green after lint: `PLAYWRIGHT_RETRIES=0 bun playwright playwright/integration/examples/multi-root-document.test.ts --project=chromium` | root-bound views now stamp rootless imported selection points onto the view root; the multi-root browser row presses ordered keys and asserts `hello` is present while `olleh` is absent; learning note updated | none | none |
+| cursor-selection-drift-current-state-read | complete | live source read: core rooted operations and view root scoping in `.tmp/slate-v2/packages/slate/src/interfaces/operation.ts:13`, `.tmp/slate-v2/packages/slate/src/core/public-state.ts:456`, `.tmp/slate-v2/packages/slate/src/core/public-state.ts:2079`, `.tmp/slate-v2/packages/slate/src/editor-runtime-view.ts:52`; React selection import/export and provenance in `.tmp/slate-v2/packages/slate-react/src/editable/selection-controller.ts:533`, `.tmp/slate-v2/packages/slate-react/src/editable/runtime-selection-engine.ts:30`, `.tmp/slate-v2/packages/slate-react/src/editable/editing-kernel.ts:265`; regression rows in `.tmp/slate-v2/packages/slate/test/editor-runtime-view-contract.ts:89` and `.tmp/slate-v2/playwright/integration/examples/multi-root-document.test.ts:155`; ecosystem evidence in `../prosemirror/state/src/transaction.ts:26`, `../prosemirror/view/src/selection.ts:9`, `../lexical/packages/lexical/src/LexicalEditorState.ts:105`, and `../lexical/packages/lexical/src/LexicalUpdates.ts:616` | current architecture is good but not absolute-best; accepted a targeted selection-authority consolidation: internal rooted selection invariant, single event-frame import/export boundary, root/provenance dev asserts, authority inventory guards, and generated browser gauntlets | no issue/reference sync in this activation; next pass must classify the related selection/focus/history issue surface | related-issue-discovery |
+| related-issue-discovery | complete | cache-first reads: `docs/slate-v2/ledgers/fork-issue-dossier.md`, `docs/slate-v2/ledgers/issue-coverage-matrix.md`, `docs/slate-issues/gitcrawl-v2-sync-ledger.md`, and `docs/slate-issues/gitcrawl-live-open-ledger.md`; focused rows covered selection, cursor, focus, undo/redo/history, multi-root, browser, beforeinput, composition, paste, and drop pressure | selection drift rewrite is issue-backed by recurring families, not just the multi-root demo bug; no new fixed/improved claim is justified without exact browser/device proof | synced non-claim cluster note in `docs/slate-issues/gitcrawl-v2-sync-ledger.md`; no PR reference count change | closure-score-final-gates-cursor-selection-drift |
+| closure-score-final-gates-cursor-selection-drift | complete | audited plan top state, cursor-selection architecture section, related issue discovery section, pass ledger, completion state, continuation prompt, and sync ledger note; ran `node tooling/scripts/completion-check.mjs` after state sync | closed the Ralplan review as Ralph-ready; selection-authority consolidation remains an implementation target, not a completed Slate v2 source/browser claim | none for this planning lane | Ralph only when user invokes it |
+| react-prosemirror-lifecycle-amendment | complete | read `../react-prosemirror/src/hooks/useEditor.ts:33`, `../react-prosemirror/src/hooks/useEditorEffect.ts:12`, `../react-prosemirror/src/hooks/useEditorEventCallback.ts:25`, and `../react-prosemirror/src/ReactEditorView.ts:124` / `:275` | added React lifecycle access as part of `SelectionFrame`: lifecycle phase, view/commit epoch, runtime-owned event callback access, post-commit layout-effect access, static guard against stale render/effect DOM selection imports, and proof row | none; no implementation or issue-count claim | none |
+| ralph-selection-lifecycle-frame-contract | complete | red: `bun test:vitest -- editing-kernel-contract.test.ts` failed because editable event frames lacked lifecycle/epoch metadata and non-event lifecycle frames could import DOM selection; green: same focused Vitest passed; `bun --filter slate-react typecheck` passed; `bun lint:fix` passed; focused Vitest passed again after lint | added `EditableReactLifecyclePhase`, frame `lifecyclePhase`, `viewEpoch`, `commitEpoch`, and a dev/test transition guard rejecting DOM selection import from non-event lifecycle frames | no issue/reference claim change; ClawSweeper already swept this selection/focus/history surface | diff-review-pass |
+| diff-review-pass-selection-lifecycle-frame | complete | reviewed `packages/slate-react/src/editable/editing-kernel.ts` and `packages/slate-react/test/editing-kernel-contract.ts` diff | fixed the gap where missing frames still allowed `import-dom`; added frame `root` ownership defaulting to `state.view.root()`; no remaining P0/P1/P2 findings | no issue/reference claim change | verification-sweep-pass |
+| verification-sweep-pass-selection-lifecycle-frame | complete | green: `bun test:vitest -- editing-kernel-contract.test.ts`; green: `bun --filter slate-react typecheck`; green: `bun --filter slate-react test:vitest`; green: `bun lint:fix`; green browser regression: `PLAYWRIGHT_RETRIES=0 bun playwright playwright/integration/examples/multi-root-document.test.ts --project=chromium`; green: `bun test:vitest -- kernel-authority-audit-contract.test.ts`; green: `node tooling/scripts/completion-check.mjs` after state sync | closed the lifecycle/root-frame implementation slice; this does not claim the whole future generated matrix or absolute browser robustness | none | none |
+| cross-root-history-caret-regression | complete | red: `bun test ./packages/slate/test/editor-runtime-view-contract.ts` failed because undoing the second, header-owned batch restored header selection through a main-view command; red browser row reproduced stacked header/body edits where the second toolbar undo moved the body caret; green: `bun --filter slate-history build && bun test ./packages/slate-history/test ./packages/slate/test/editor-runtime-view-contract.ts`; green: `PLAYWRIGHT_RETRIES=0 bun playwright playwright/integration/examples/multi-root-document.test.ts --project=chromium`; green: `bun --filter slate-history typecheck && bun --filter slate typecheck && bun typecheck:site`; green: `bun lint:fix` | view-scoped history restore now skips cross-root selection replay; toolbar history executes through the active root view and refocuses that editable while preserving the DOM range | no fixed/improved issue claim change | none |
 
 ## Ralph-Ready Handoff
 
@@ -2094,8 +2130,8 @@ Evidence read:
 - active plan top, current verdict, runtime-provider decision, scorecard, pass
   ledger, Ralph-ready handoff, issue sync, required commands, stop rules, and
   completion-state files.
-- `.tmp/019e3627-238b-7993-a8cf-26be45504c47/completion-check.md`.
-- `.tmp/019e3627-238b-7993-a8cf-26be45504c47/continue.md`.
+- `active goal state`.
+- `active goal state`.
 - `docs/slate-issues/gitcrawl-v2-sync-ledger.md`.
 - `docs/slate-v2/ledgers/issue-coverage-matrix.md`.
 - `docs/slate-v2/ledgers/fork-issue-dossier.md`.
@@ -2224,6 +2260,438 @@ Decision:
 - The multi-root example must treat the visible root chrome as part of the
   editor activation target.
 - No fixed/improved issue count changes.
+
+## Header Text Surface Caret Regression Pass - 2026-05-21
+
+Status: complete.
+
+Evidence:
+
+- video/frame proof showed the click path was inside the header text surface,
+  not only on the `Header editor` label.
+- Browser plugin proof before the final fix reproduced the failure:
+  `activeElement` was `#multi-root-header`, but `window.getSelection()` was not
+  anchored inside the header.
+- red: `PLAYWRIGHT_RETRIES=0 bun playwright playwright/integration/examples/multi-root-document.test.ts --project=chromium -g "inactive header text surface"`.
+- green: `PLAYWRIGHT_RETRIES=0 bun playwright playwright/integration/examples/multi-root-document.test.ts --project=chromium -g "inactive header text surface"`.
+- green: `PLAYWRIGHT_RETRIES=0 bun playwright playwright/integration/examples/multi-root-document.test.ts --project=chromium`.
+- green: `bun lint:fix`.
+- green: `bun typecheck:site`.
+- green: Browser plugin in-app browser against
+  `http://localhost:3100/examples/multi-root-document`; clicking inside the
+  header text surface produced `selectionAnchorInHeader: true`, and typing
+  inserted only into the header.
+
+Implementation:
+
+- Removed the inactive-root `readOnly` toggle from the multi-root example.
+- All root text surfaces remain natively editable so first-click caret placement
+  is handled by the browser.
+- Kept root activation on editable mouse down.
+- Kept explicit focus-at-end handoff for chrome clicks where the target is a
+  label or badge, not editable text.
+
+Decision:
+
+- Multi-root examples should not simulate active-root ownership by making
+  inactive roots `contenteditable=false`; that breaks native caret placement.
+- Root-local selection ownership is the right isolation layer.
+- No fixed/improved issue count changes.
+
+## Header Sequential Key Order Regression Pass - 2026-05-21
+
+Status: complete.
+
+Evidence:
+
+- Browser plugin in-app browser reproduced the user-reported failure without
+  cheating: click the header text surface, then press `h`, `e`, `l`, `l`, `o`.
+  The header rendered `ollehConfidential quarterly plan`.
+- The Browser plugin `type` API could not be used because its virtual clipboard
+  integration is missing; its keypress/locator-press route is useful
+  reproduction evidence but not the final product oracle.
+- Standard Playwright against the same `http://localhost:3100` page produced
+  `Confidential quarterly planhello` with ordered key presses.
+- green: `bun test ./packages/slate/test/rooted-operation-contract.ts ./packages/slate/test/create-editor-value-contract.ts ./packages/slate/test/state-tx-public-api-contract.ts ./packages/slate/test/editor-runtime-view-contract.ts`.
+- green: `bun --filter slate typecheck`.
+- green: `bun typecheck:site`.
+- green: `bun lint:fix`.
+- green after lint: `PLAYWRIGHT_RETRIES=0 bun playwright playwright/integration/examples/multi-root-document.test.ts --project=chromium`.
+
+Implementation:
+
+- `setCurrentSelection` now normalizes selection roots. A rootless selection
+  imported through the header view is stored as a header selection; main-root
+  selections keep the legacy rootless point shape.
+- Added a core contract proving repeated view-local inserts after rootless
+  selection import produce `hello...`, not `olleh...`.
+- Updated the multi-root browser row to press ordered keys and assert the
+  forbidden reversed string is absent.
+
+Decision:
+
+- Do not fake typing-order regressions with direct reversed text insertion.
+- The invariant is selection-transform ownership: the active root must advance
+  the caret after each root-local insert.
+- No fixed/improved issue count changes.
+
+## Cursor Selection Drift Architecture Pass - 2026-05-21
+
+Status: current pass complete. Lane remains pending.
+
+Hard verdict: no, the current cursor/selection architecture is not the absolute
+best drift-prevention architecture yet.
+
+The direction is right: Slate v2 has rooted operations, root-bound views,
+transactional writes, event frames, model-vs-DOM ownership, repair traces, and
+browser rows that assert focus, DOM selection, model state, and follow-up
+typing. The problem is that selection authority is still assembled from several
+cooperating pieces instead of one hard runtime boundary. That is why the recent
+bugs were real even though the architecture looked mostly correct.
+
+Intent and boundary:
+
+- intent: prevent recurring user-visible cursor/selection drift that only
+  appears under real browser timing, native caret placement, root switching,
+  undo/redo, or repair-induced selectionchange.
+- outcome: keep the existing Slate v2 direction, but add a focused
+  selection-authority consolidation target before claiming the architecture is
+  release-hard.
+- in scope: core selection root semantics, view-root selection scoping, DOM
+  import/export, beforeinput/key/input repair, history focus policy, browser
+  proof, issue-ledger classification, and tests.
+- non-goals: no implementation edit from this Ralplan pass, no pivot to
+  ProseMirror/Lexical/Tiptap, no product-level Plate API, no exact new
+  `Fixes #...` claim, and no raw-device mobile closure.
+- decision boundary: DOM selection is IO, not the canonical source. The model
+  selection is canonical only after it is imported through an owned event frame.
+
+Live current shape:
+
+- core operations carry optional `root` fields at
+  `.tmp/slate-v2/packages/slate/src/interfaces/operation.ts:13`, and core stamps
+  a default operation root at
+  `.tmp/slate-v2/packages/slate/src/core/public-state.ts:456`.
+- root-bound views filter selection and stamp update root through
+  `createEditorView` at
+  `.tmp/slate-v2/packages/slate/src/editor-runtime-view.ts:52`.
+- the recent key-order fix normalizes rootless imported selections in
+  `setCurrentSelection` at
+  `.tmp/slate-v2/packages/slate/src/core/public-state.ts:2079`.
+- React selection import/export lives in
+  `.tmp/slate-v2/packages/slate-react/src/editable/selection-controller.ts:533`
+  and `.tmp/slate-v2/packages/slate-react/src/editable/selection-controller.ts:707`.
+- runtime selectionchange provenance and repair-induced model ownership live in
+  `.tmp/slate-v2/packages/slate-react/src/editable/runtime-selection-engine.ts:30`.
+- the editing kernel already models selection policy and repair policy at
+  `.tmp/slate-v2/packages/slate-react/src/editable/editing-kernel.ts:265`, and
+  selectionchange ownership at
+  `.tmp/slate-v2/packages/slate-react/src/editable/editing-kernel.ts:447`.
+- current tests cover the exact rootless import bug in
+  `.tmp/slate-v2/packages/slate/test/editor-runtime-view-contract.ts:89` and
+  the human click/ordered key path in
+  `.tmp/slate-v2/playwright/integration/examples/multi-root-document.test.ts:155`.
+
+Diagnosis:
+
+- Root identity is present, but still optional at too many internal edges.
+  `Range` can enter core as rootless and rely on view context to stamp it.
+  That preserved main-root ergonomics, but it is too forgiving for a runtime
+  that now supports multiple roots.
+- Selection authority is spread across core state, editor views, React
+  selection controller, runtime selection engine, beforeinput sync, DOM repair,
+  browser handle, and example focus choreography.
+- The current architecture is traceable, but not fully illegal-state-proof. The
+  Browser/Playwright rows caught a mismatch after the fact; the runtime did not
+  make the mismatch impossible enough.
+- Tests are improving, but they are still mostly example-shaped. The real
+  contract should be generated from event-family and root/view matrices, so a
+  fix for header clicks automatically protects paste, undo, modifier keys,
+  native selection movement, composition, and remote import paths.
+
+Ecosystem comparison:
+
+- ProseMirror has the clean precedent: transactions track document changes,
+  selection changes, stored marks, metadata, and UI event context together.
+  Its transaction selection maps through steps, and its view has explicit
+  `selectionFromDOM` / `selectionToDOM` owners. See
+  `../prosemirror/state/src/transaction.ts:26`,
+  `../prosemirror/state/src/transaction.ts:67`,
+  `../prosemirror/view/src/selection.ts:9`, and
+  `../prosemirror/view/src/selection.ts:55`.
+- Lexical proves the modern lifecycle side: `EditorState` contains selection,
+  `$setSelection` mutates only inside the active update context, update tags can
+  skip DOM selection/focus side effects, and reconciliation owns DOM selection
+  export. See `../lexical/packages/lexical/src/LexicalEditorState.ts:105`,
+  `../lexical/packages/lexical/src/LexicalUtils.ts:633`,
+  `../lexical/packages/lexical/src/LexicalUpdateTags.ts:49`, and
+  `../lexical/packages/lexical/src/LexicalUpdates.ts:616`.
+- React-ProseMirror is the missing React wrapper precedent. It is not a better
+  selection engine than ProseMirror itself; its lesson is lifecycle authority:
+  the `EditorView` produced by `useEditor` should only be accessed through
+  event/effect hooks, layout effects run after the view has the latest state and
+  decorations, event callbacks receive the current view, composition pauses
+  React-driven selection updates, and commit effects own DOM selection
+  correction. See `../react-prosemirror/src/hooks/useEditor.ts:33`,
+  `../react-prosemirror/src/hooks/useEditorEffect.ts:12`,
+  `../react-prosemirror/src/hooks/useEditorEventCallback.ts:25`,
+  `../react-prosemirror/src/ReactEditorView.ts:124`, and
+  `../react-prosemirror/src/ReactEditorView.ts:275`.
+- Tiptap is not the architecture winner here. It mostly confirms DX pressure:
+  extension storage and React selectors should be pleasant, while the engine
+  selection discipline comes from ProseMirror. See
+  `../tiptap/packages/core/src/ExtensionManager.ts:367` and
+  `../tiptap/packages/react/src/useEditorState.ts:118`.
+
+Rewrite recommendation:
+
+Do a targeted selection-authority rewrite. Do not rewrite the whole editor.
+
+1. Make runtime selection internally root-explicit. A rootless `Range` may exist
+   only at public single-root API edges. Inside runtime state, commits,
+   selection transforms, view reads, history batches, and collab/local replay,
+   every point is a rooted point. Main-root elision is a serializer/DX layer,
+   not an internal invariant.
+2. Introduce a single `SelectionFrame` or equivalent internal object for every
+   event that can read, import, export, repair, or mutate selection:
+   `id`, `root`, `eventFamily`, `inputIntent`, `targetOwner`, `provenance`,
+   `modelBefore`, `domBefore`, `policy`, `modelAfter`, lifecycle phase,
+   view/commit epoch, and side-effect policy for focus/scroll/DOM selection.
+3. Route all DOM selection imports through one runtime boundary:
+   `selectionRuntime.importDOM(frame)` or equivalent. It returns a rooted model
+   range or `null`, stamps provenance, and is the only place allowed to convert
+   DOM selection into `tx.selection.set(...)`.
+4. Route all DOM exports/repairs through the paired boundary:
+   `selectionRuntime.exportDOM(frame)` or equivalent. Programmatic export,
+   repair-induced selectionchange, shell-backed selection, skip-scroll, and
+   external focus preservation become frame policy, not scattered flags.
+5. Add React lifecycle accessors around the runtime boundary. Event handlers
+   that read/write/import selection should use a runtime-owned callback shape
+   like `useSlateEventCallback((editor, event) => ...)`. Layout, geometry, and
+   DOM export work should use a post-commit layout effect shape like
+   `useSlateLayoutEffect((editor) => ...)`. Direct `window.getSelection()` plus
+   `tx.selection.set(...)` from arbitrary React render/effect/userland code is
+   forbidden because it can pair a stale React view with current DOM selection.
+6. Add dev/test invariants:
+   - a content operation root and current model-selection root must match, or
+     selection must be null/cross-root-explicit;
+   - no root-bound view may commit rootless selection internally;
+   - no DOM import may happen without a frame root and provenance;
+   - no DOM import/export may run from a stale React render/effect phase or
+     stale view/commit epoch;
+   - repair-induced selectionchange cannot switch from model-owned to
+     `dom-current`;
+   - external controls/title inputs cannot focus or scroll the editor unless the
+     frame explicitly asks for it.
+7. Add static authority inventory guards. The runtime should fail tests when
+   code outside the selection authority directly pairs `getSelection(...)` /
+   `ReactEditor.resolveSlateRange(...)` with `tx.selection.set(...)`, exports
+   DOM selection directly, toggles model-selection preference without a frame,
+   or reads DOM selection from React component code outside the approved event
+   callback / layout-effect accessors.
+8. Generate browser gauntlets from the matrix, not from one example. Each row
+   asserts active element, DOM selection owner, model selection root/offset,
+   commit root/provenance, rendered text, forbidden text, focus/scroll side
+   effects, and follow-up typing.
+
+Proposed minimum proof matrix:
+
+| Surface | Required proof |
+| --- | --- |
+| Core/rooted selection | rootless public selection imported through a root-bound view becomes internal rooted selection; root mismatch throws in dev/test; `Point`/`Range` transforms ignore unrelated roots. |
+| Key/native movement | native vertical movement followed by model-owned horizontal movement imports the DOM selection first and does not snap back. |
+| Beforeinput/text | native `insertText`, model fallback, and DOM repair all commit through one frame and keep ordered typing. |
+| Undo/redo/history | title input undo/redo, root-local undo/redo, and body undo/redo do not steal focus or replay stale selection roots. |
+| Composition/IME | composition-owned selection cannot be overwritten by repair-induced selectionchange or root activation. |
+| Clipboard/drag/drop | select-all/copy/paste/drop are root-local unless a cross-root selection is explicitly supported. |
+| Multi-root UI | header/body/footer chrome clicks, text-surface clicks, modifier keys, placeholder state, and follow-up typing stay root-local. |
+| Remote/import | remote state or collab patches default to preserve DOM selection/focus/scroll unless explicit policy says otherwise. |
+| React lifecycle access | render-time and stale-effect selection reads cannot import DOM selection; event callbacks and post-commit layout effects see the current root/view/selection; composition pauses React-driven selection updates. |
+| Browser proof | focused Playwright rows plus persistent-browser or Browser-plugin rows for the exact user surface, with ordered keypresses when typing order matters. |
+| Static drift guard | ownership inventory fails if selection import/export or repair policy escapes the selection runtime. |
+
+Steelman objection:
+
+"This is yet another abstraction. You just fixed the bug with one root
+normalizer; why add a bigger subsystem?"
+
+Fair objection. The answer is that this is not a new product API and not a
+cosmetic refactor. The existing code already has the subsystem: event frames,
+selection source, selectionchange origin, selection policy, repair policy,
+model preference, root-bound views, and root stamping. The rewrite consolidates
+those facts behind one boundary so future fixes do not require remembering
+which of eight modules also needs the same root/provenance/focus rule.
+
+Decision:
+
+- Keep Slate model + operations + `editor.read` / `editor.update`.
+- Keep rooted operations and multi-root views.
+- Revise selection internals so rooted selection is an invariant, not a repair.
+- Revise browser proof so event families are generated from contracts, not
+  handwritten only when a user finds a video-class bug.
+- Do not claim absolute browser robustness until this rewrite and proof matrix
+  land.
+
+Score for current selection drift architecture:
+
+| Dimension | Score | Evidence |
+| --- | ---: | --- |
+| React 19.2 runtime performance | 0.88 | runtime has selector dispatch, throttled/debounced selectionchange, and model-backed full-document selection guards; hot-path risk remains if richer frame objects allocate on every selectionchange. |
+| Slate-close unopinionated DX | 0.86 | public rootless single-root ergonomics are good, but internal rootless tolerance leaked into multi-root behavior. |
+| Plate/slate-yjs migration backbone | 0.87 | rooted operations and selection side-effect metadata help, but collab/remote import needs frame-level focus/scroll/DOM policy. |
+| Regression-proof testing | 0.76 | current focused rows are strong, yet they are still example-local and missed the Browser-plugin key-order path until reported. |
+| Research evidence completeness | 0.91 | ProseMirror, Lexical, Tiptap, research notes, solution notes, issue ledgers, and live source were re-read. |
+| shadcn-style composability/minimalism | 0.85 | `<SlateRuntime>` / `<Slate root>` stay clean; the React lifecycle accessors keep selection authority internal instead of leaking a new product API, but internals still need fewer escape hatches and better owner boundaries. |
+
+Weighted current score: `0.86`.
+
+Target score after selection-authority consolidation, React lifecycle access
+gate, and generated browser gauntlets: `0.94`.
+
+Follow-up pass:
+
+- `related-issue-discovery`: classify the related selection/focus/history
+  surface without new fixed/improved claims unless exact proof exists. Start
+  cache-first from `docs/slate-v2/ledgers/fork-issue-dossier.md`,
+  `docs/slate-v2/ledgers/issue-coverage-matrix.md`,
+  `docs/slate-issues/gitcrawl-v2-sync-ledger.md`, and
+  `docs/slate-issues/gitcrawl-live-open-ledger.md`. This pass is now recorded
+  below.
+
+## Cursor Selection Drift Related Issue Discovery - 2026-05-21
+
+Status: current pass complete. Lane remains pending.
+
+This pass is cache-first and does not add a new issue-count claim. The current
+rewrite recommendation is supported by live issue pressure, but exact closure
+still belongs to future browser/device rows.
+
+Reviewed sources:
+
+- `docs/slate-v2/ledgers/fork-issue-dossier.md`
+- `docs/slate-v2/ledgers/issue-coverage-matrix.md`
+- `docs/slate-issues/gitcrawl-v2-sync-ledger.md`
+- `docs/slate-issues/gitcrawl-live-open-ledger.md`
+
+Issue pressure map:
+
+| Surface | Related rows | Decision |
+| --- | --- | --- |
+| Multi-root/view ownership | `#5537`, `#5117`, `#6016` | Supports one shared runtime with root-bound views, view-local focus/input ownership, and view-local DOM state. No exact closure claim from this architecture pass. |
+| Focus and scroll ownership | `#5867`, `#5826`, `#5538`, `#4995`, `#5088`, `#5473`, `#3893`, `#1769`, `#3412`, `#4376`, `#5171` | Fold into selection-frame focus/scroll policy. Programmatic focus, blur, external controls, and refocus autoscroll must be frame-owned, not scattered DOM side effects. |
+| Selection gesture/native movement | `#5689`, `#5559`, `#5524`, `#5632`, `#5806`, `#5690`, `#5274`, `#3585` | Fold into generated browser gauntlets. These are not solved by one header-click row; they need event-family proof for click, shift-click, triple-click, vertical movement, and inline/void boundaries. |
+| History and undo selection replay | `#5515`, `#3705`, `#3756`, `#3921`, `#5587`, `#5364`, `#3534`, `udecode/slate#9`, `udecode/slate#11`, `udecode/slate#12` | Keep existing exact claims narrow. The rewrite must make history focus/selection restore policy explicit so title inputs and root views do not steal focus on undo/redo. |
+| Beforeinput, composition, and typed order | `#6022`, `#4232`, `#5398`, `#5433`, `#5883`, `#4400`, `#5653`, `#4543`, `#5371` | Treat as input-runtime and selection-frame interaction pressure. Android/iOS/IME rows need raw-device or browser proof before closure. |
+| Clipboard, paste, drop, and external DOM | `#4888`, `#5749`, `#4806`, `#4268`, `#5479`, `#5376`, `#5328`, `#4857` | Clipboard/drop ingress should carry selection frame provenance when it mutates model selection or DOM ownership; existing clipboard fixes remain scoped. |
+| Explicit non-goals | `#5550`, `#5551`, `#5924`, `#2558` | Do not broaden the rewrite into arbitrary Web Component selection drag, table-range selection modeling, or a public ignore-cursor API. |
+
+Already fixed or accounted rows stay narrow:
+
+- `#6034`: exact table-end ArrowDown caret row is already fixed in the current
+  issue matrix.
+- `#3534`: undo after Enter with a multi-block selection is already fixed in
+  the current issue matrix.
+- Existing `udecode/slate` history/undo rows remain limited to their current
+  browser proof. They do not prove general multi-root/title-input focus policy.
+
+Decision:
+
+- New fixed claims: `0`.
+- New improved claims: `0`.
+- Related issue matrix changes: `0`.
+- Sync ledger note: added.
+- PR reference update: skipped because no claim count or release narrative
+  changed.
+
+Architecture impact:
+
+The issue corpus strengthens the targeted rewrite. The selection runtime should
+own these cross-cutting facts in one place:
+
+1. active root and model selection root;
+2. DOM import provenance and event family;
+3. focus, scroll, and DOM export policy;
+4. history/undo selection restore ownership;
+5. composition/input ownership;
+6. browser proof row generation.
+
+Next pass:
+
+- `closure-score-final-gates-cursor-selection-drift`: verify plan consistency,
+  completion state, sync ledger note, and whether the Ralplan can close as
+  Ralph-ready without implementation edits.
+
+## Cursor Selection Drift Final Gates - 2026-05-21
+
+Status: complete. Lane is Ralph-ready.
+
+Final gate audit:
+
+| Gate | Result |
+| --- | --- |
+| Plan top state | At the original closeout: `status: done`, `current_pass: closure-score-final-gates-cursor-selection-drift`, `next_pass: none`, `final_handoff_status: complete`, `ralplan_lane_status: complete`. The later lifecycle amendment updates `current_pass` without reopening the lane. |
+| Source edit boundary | No `.tmp/slate-v2` implementation edit belongs to this Ralplan closeout. The rewrite remains a later Ralph implementation target. |
+| Architecture verdict | Current architecture is good but not absolute-best. The accepted target is targeted selection-authority consolidation, not a whole-editor rewrite. |
+| Evidence | Live source, local ecosystem source, regression rows, solution notes, and issue ledgers are recorded in the current-state and related-issue passes. |
+| Issue accounting | New fixed claims: `0`. New improved claims: `0`. Existing issue classifications remain scoped. |
+| PR reference | Skipped because no fixed/improved count or release narrative changed. |
+| Score | Current selection-drift architecture stays `0.86`; target after implementation, React lifecycle access gate, and generated browser gauntlets is `0.94`. The lower score is intentional and records the rewrite need. |
+| Handoff | Existing Ralph-ready handoff remains the implementation owner; this closeout adds the selection-authority rewrite as the next architecture target. |
+| Completion hook | Scoped completion state is `done` and no pending pass remains. |
+
+Final decision:
+
+- Close this Ralplan lane.
+- Do not claim the selection-authority rewrite is implemented.
+- Do not claim absolute browser robustness yet.
+- The next concrete owner is Ralph execution for the targeted rewrite:
+  rooted internal selection, single selection-frame import/export/repair
+  boundary, React lifecycle access gate, dev/test invariants, authority
+  inventory guards, and generated browser gauntlets.
+
+## Cursor Selection React Lifecycle Amendment - 2026-05-21
+
+Status: complete. Lane stays closed.
+
+This amendment updates the target after comparing `../react-prosemirror`. It
+does not reopen implementation and does not add a fixed/improved issue claim.
+
+Decision:
+
+- Keep the ProseMirror/Lexical-inspired selection authority rewrite.
+- Add React lifecycle authority as a first-class part of `SelectionFrame`.
+- Track `lifecyclePhase` and a view/commit epoch so stale React render/effect
+  reads cannot import DOM selection into current model state.
+- Add internal React accessors equivalent to `useSlateEventCallback` and
+  `useSlateLayoutEffect`; make them public only if userland truly needs direct
+  lifecycle-safe editor/view access.
+- Forbid direct DOM selection import from arbitrary React render/effect code.
+
+Why this matters:
+
+React-ProseMirror's key lesson is boring and correct: React wrappers must make
+stale editor/view access hard. Slate v2 should copy that lifecycle discipline,
+not its architecture wholesale. Otherwise Playwright/browser-only drift bugs
+will keep slipping through whenever a component reads the DOM selection from one
+React phase and commits it in another.
+
+Updated Ralph target:
+
+1. Rooted internal model selection.
+2. One `SelectionFrame` for import/export/repair/mutation.
+3. Frame-owned focus, scroll, DOM selection, provenance, and lifecycle policy.
+4. Runtime-owned event callback and post-commit layout-effect access.
+5. Static guards for DOM selection import/export outside the runtime boundary.
+6. Generated browser gauntlets that include React lifecycle and composition
+   rows, not just the currently reported header/body example.
+
+Final state:
+
+- `status: done`
+- `current_pass: react-prosemirror-lifecycle-amendment`
+- `next_pass: none`
+- `score: 0.86`
+- `target_score: 0.94`
 
 ## Previous Store-Based Handoff
 
@@ -2406,8 +2874,8 @@ Evidence read:
 
 - active plan top, verdict, API target, runtime target, policy sections,
   proof matrix, pass ledger, and Ralph-ready handoff.
-- `.tmp/019e3627-238b-7993-a8cf-26be45504c47/completion-check.md`.
-- `.tmp/019e3627-238b-7993-a8cf-26be45504c47/continue.md`.
+- `active goal state`.
+- `active goal state`.
 - `docs/slate-v2/references/pr-description.md`.
 - `docs/slate-issues/gitcrawl-v2-sync-ledger.md`.
 - `docs/slate-v2/ledgers/issue-coverage-matrix.md`.
@@ -2466,8 +2934,8 @@ Evidence read:
 
 - active plan top, final authority, public API target, proof matrix, high-risk
   proof plan, maintainer objection ledger, pass ledger, and Ralph-ready handoff.
-- `.tmp/019e3627-238b-7993-a8cf-26be45504c47/completion-check.md`.
-- `.tmp/019e3627-238b-7993-a8cf-26be45504c47/continue.md`.
+- `active goal state`.
+- `active goal state`.
 - `docs/slate-v2/references/pr-description.md`.
 - `docs/slate-issues/gitcrawl-v2-sync-ledger.md`.
 - `docs/slate-v2/ledgers/issue-coverage-matrix.md`.
@@ -2503,8 +2971,8 @@ Evidence read:
 - `docs/slate-v2/references/pr-description.md`.
 - `docs/slate-issues/gitcrawl-v2-sync-ledger.md`.
 - `docs/slate-v2/ledgers/issue-coverage-matrix.md`.
-- `.tmp/019e3627-238b-7993-a8cf-26be45504c47/completion-check.md`.
-- `.tmp/019e3627-238b-7993-a8cf-26be45504c47/continue.md`.
+- `active goal state`.
+- `active goal state`.
 
 Decisions:
 

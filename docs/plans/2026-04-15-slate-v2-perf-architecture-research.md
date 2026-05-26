@@ -40,7 +40,7 @@ specific question:
 
 - `research-wiki`
 - `major-task`
-- `planning-with-files`
+- `goal workflow`
 - `learnings-researcher`
 - `repo-research-analyst`
 

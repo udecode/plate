@@ -18,7 +18,7 @@ by making the breaking migration story explicit in the docs.
 
 - `ralph`
 - `major-task`
-- `planning-with-files`
+- `goal workflow`
 - `learnings-researcher`
 
 # Constraints

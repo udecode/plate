@@ -7,7 +7,7 @@ Status: `done`
 Owner: `slate-ralplan`
 
 Completion:
-`.tmp/019e1c53-3e25-78c0-9083-355925be3817/completion-check.md`
+`active goal state`
 
 ## Current Verdict
 
@@ -434,7 +434,7 @@ Implementation status: `done`.
 | Decision brief                       | complete | options and rejected alternatives                                                                                                                                                                                                                                                                                               | chose lazy resolver                                                              | none                                                                         | none            |
 | Regression proof plan                | complete | leading-insert tests named                                                                                                                                                                                                                                                                                                      | red tests are execution gates                                                    | implementation tests                                                         | ralph           |
 | Closure score                        | complete | weighted score `0.93`                                                                                                                                                                                                                                                                                                           | plan ready for user review and Ralph execution                                   | none for planning                                                            | ralph           |
-| Ralph execution start                | complete | `.tmp/019e1c53-3e25-78c0-9083-355925be3817/completion-check.md`; `.tmp/019e1c53-3e25-78c0-9083-355925be3817/continue.md`                                                                                                                                                                                                        | reopened scoped completion state as pending; started red contracts and hard cut  | none                                                                         | ralph           |
+| Ralph execution start                | complete | `active goal state`; `active goal state`                                                                                                                                                                                                        | reopened scoped completion state as pending; started red contracts and hard cut  | none                                                                         | ralph           |
 | Ralph hard cut                       | complete | `RenderElementProps` no longer exposes `path` / `index`; `RenderVoidProps` no longer exposes `path`; `DOMEditor.findPath` is runtime-id-first; touched examples resolve paths at event time; `.tmp/slate-v2/.changeset/slate-react-render-path-props.md` and `.tmp/slate-v2/.changeset/slate-dom-runtime-id-find-path.md` added | public render contract cut, lazy `useElementPath()` added, docs/reference synced | check-list Backspace browser row still fails independently of this migration | done            |
 
 ## Ralph Execution Gates

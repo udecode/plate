@@ -17,8 +17,8 @@ another external reviewer/model. The external reviewer has no repo, terminal,
 browser, or local file access, so the prompt must include enough current,
 source-backed context to reason independently.
 
-This skill borrows the rigor of `ralplan-creator`, but its output is a prompt,
-not a local execution plan.
+This skill uses the same self-contained evidence standard as goal templates,
+but its output is a prompt, not a local execution plan.
 
 ## Use When
 
@@ -34,7 +34,7 @@ not a local execution plan.
 ## Do Not Use When
 
 - The user asks to implement the plan locally.
-- The user wants a normal `ralplan`, `ralph`, code review, or bug fix.
+- The user wants normal accepted-plan execution, code review, or bug fix work.
 - A short answer in chat is enough.
 - The external reviewer already has direct repo access.
 

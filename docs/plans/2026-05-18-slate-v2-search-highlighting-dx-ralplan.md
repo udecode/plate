@@ -1256,8 +1256,8 @@ Status: `complete`
 Started by: `ralph`
 Current owner: none
 Current slice: complete
-Completion file: `.tmp/019e3627-238b-7993-a8cf-26be45504c47/completion-check.md`
-Continue file: `.tmp/019e3627-238b-7993-a8cf-26be45504c47/continue.md`
+Completion file: `active goal state`
+Continue file: `active goal state`
 
 Completed slice:
 

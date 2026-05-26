@@ -34,7 +34,7 @@
 
 ## Progress
 
-- 2026-03-26: Fetched issue and loaded task, planning-with-files, learnings-researcher, and testing skills.
+- 2026-03-26: Fetched issue and loaded task, goal workflow, learnings-researcher, and testing skills.
 - 2026-03-26: Added `packages/table/type-tests/table-plugin-contracts.ts` to pin the public `@platejs/table/react` contract against `any` collapse.
 - 2026-03-26: Added `platejs: workspace:^` back to `packages/table/package.json` devDependencies so the build graph includes the `platejs` package before emitting bundled table declarations.
 - 2026-03-26: Verified `pnpm install`, `pnpm turbo build --filter=./packages/table`, `pnpm turbo typecheck --filter=./packages/table`, isolated compile of the new type-test, and local pack inspection.

@@ -46,7 +46,7 @@ Land the next Phase 8 batch from
 
 ## Progress
 
-- loaded `task`, `planning-with-files`, `learnings-researcher`, `tdd`, and
+- loaded `task`, `goal workflow`, `learnings-researcher`, `tdd`, and
   `react`
 - checked `.tmp/slate-v2` for deeper AGENTS/CLAUDE files: none found
 - read current `paste-html` example, runtime seam, browser test, and legacy

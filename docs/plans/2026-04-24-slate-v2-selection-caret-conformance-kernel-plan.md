@@ -1041,7 +1041,7 @@ Stop only when:
 
 Start with Remaining Batch A:
 
-1. keep `.tmp/<session-id>/completion-check.md` pending for the reopened timing layer
+1. keep `active goal state` pending for the reopened timing layer
 2. add the generated warm no-refresh richtext row:
    select word -> bold on -> bold off -> ArrowLeft/Right -> repeat without
    reload -> follow-up type
@@ -1059,7 +1059,7 @@ Status: complete.
 
 Actions:
 
-- reopened `.tmp/<session-id>/completion-check.md` to `status: pending` for active
+- reopened `active goal state` to `status: pending` for active
   Selection/Caret Conformance Kernel execution
 - added a shared `selectDOM` scenario step to `slate-browser`
 - added a shared `doubleClickTextOffset` scenario step to `slate-browser`

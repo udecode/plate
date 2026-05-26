@@ -1,101 +1,157 @@
 ---
-title: Slate v2 multi-root chrome clicks must activate the root before focus
+title: Slate v2 multi-root roots must stay natively editable for caret clicks
 date: 2026-05-21
+last_updated: 2026-05-21
 category: docs/solutions/ui-bugs
 module: Slate v2 multi-root examples
 problem_type: ui_bug
 component: testing_framework
 symptoms:
   - "Clicking the visible Header editor label did not focus the header root."
-  - "The header root stayed contenteditable=false after a header chrome click."
+  - "Clicking inside the inactive header text surface focused the element without putting the native selection in the header."
+  - "Typing h/e/l/l/o after a header text-surface click could render olleh because the caret did not advance in the header root."
   - "Playwright passed when it clicked the editable directly, missing the human click path."
 root_cause: logic_error
 resolution_type: code_fix
 severity: high
-tags: [slate-v2, multi-root, focus, playwright, contenteditable]
+tags: [slate-v2, multi-root, focus, selection, playwright, contenteditable]
 ---
 
-# Slate v2 multi-root chrome clicks must activate the root before focus
+# Slate v2 multi-root roots must stay natively editable for caret clicks
 
 ## Problem
 
-The multi-root document example made only the active root editable. Direct
-editable clicks passed, but clicking the visible header chrome did not activate
-or focus the header, so the human path was broken.
+The multi-root document example made only the active root editable, and the
+runtime accepted rootless selection points imported through a root-bound view.
+Direct editable clicks passed in the test harness, but real clicks on inactive
+root text could focus the header without durable header-root selection.
 
 ## Symptoms
 
-- `#multi-root-header` stayed inactive and `contenteditable="false"` after
-  clicking the `Header editor` label.
+- `#multi-root-header` became the active element, but `window.getSelection()`
+  stayed outside the header after a text-surface click.
 - Typing after that click could not land in the header.
+- Sequential key presses could insert each character at the same original
+  header offset, turning typed `hello` into rendered `olleh`.
 - The existing Playwright row was green because it clicked `#multi-root-header`
-  directly instead of the visible root label/chrome.
+  directly without asserting native selection ownership.
 
 ## What Didn't Work
 
 - Relying on direct editable clicks. That does not cover the root chrome a user
   naturally clicks.
-- Trusting `autoFocus` during active-root changes. It is not a full substitute
-  for owning the mouse-down path before browser focus runs.
+- Making inactive roots `readOnly`. That flips the DOM to
+  `contenteditable=false`, so the browser cannot perform a native caret
+  placement on the first click.
+- Trusting focus alone. `document.activeElement` can be correct while the
+  native selection still belongs to no editable root.
+- Faking the regression with `insertText('olleh')`. That proves nothing; the
+  test must send ordered `h`, `e`, `l`, `l`, `o` key presses and fail if the
+  editor reverses them.
 
 ## Solution
 
-Add a browser row that clicks visible root chrome, asserts the header is focused,
-then proves typing lands in the header only:
+Add a browser row that clicks the inactive header text surface, asserts the
+native selection is inside the header, then proves typing lands in the header
+only:
 
 ```ts
-await page.getByText('Header editor').click()
-await expect(header).toBeFocused()
+const box = await header.boundingBox()
 
-await page.keyboard.insertText('Header chrome click ')
-await expect(header).toContainText('Header chrome click ')
-await expect(main).not.toContainText('Header chrome click ')
+await page.mouse.click(box.x + 230, box.y + 24)
+await expect(header).toBeFocused()
+await expect
+  .poll(() =>
+    page.evaluate(() => {
+      const headerElement = document.getElementById('multi-root-header')
+      const selection = window.getSelection()
+
+      return Boolean(
+        headerElement &&
+          selection?.anchorNode &&
+          headerElement.contains(selection.anchorNode)
+      )
+    })
+  )
+  .toBe(true)
+
+await page.keyboard.insertText('Surface caret ')
+await expect(header).toContainText('Surface caret ')
+await expect(main).not.toContainText('Surface caret ')
 ```
 
-Then make the root section activate on mouse-down capture. Use `flushSync` so
-the inactive root becomes editable before the browser continues focus handling.
-If the click is on chrome instead of the editable, focus the editable and place
-the caret at the end:
+Then keep all root editables natively editable. The active-root state can still
+drive labels, `autoFocus`, and chrome-click handoff, but it must not turn the
+inactive editor text surface into `contenteditable=false`:
 
 ```tsx
-const activateRoot = () => {
-  if (activeRoot === rootKey) return
+<Editable
+  onMouseDown={activateRoot}
+  readOnly={false}
+/>
+```
 
-  flushSync(() => {
-    setActiveRoot(rootKey)
-  })
+Chrome clicks still need a handoff because labels and badges are not caret
+targets. The section capture path activates the root and focuses the editable at
+the end only when the click target is outside the editable.
+
+Also stamp rootless selection points when a root-bound view imports them. A
+selection imported through the header view must be stored as a header selection,
+otherwise header `insert_text` operations do not transform it and repeated keys
+reuse the old offset:
+
+```ts
+const normalizeSelectionRoot = (selection: Selection, root: string) => {
+  if (!selection) return selection
+
+  const normalizePointRoot = (point: Point) => {
+    const { root: _root, ...pointWithoutRoot } = point
+
+    return root === 'main' ? pointWithoutRoot : { ...pointWithoutRoot, root }
+  }
+
+  return {
+    anchor: normalizePointRoot(selection.anchor),
+    focus: normalizePointRoot(selection.focus),
+  }
+}
+```
+
+Lock the browser example with ordered key presses, not direct text insertion:
+
+```ts
+await page.mouse.click(box.x + 230, box.y + 24)
+await expect(header).toBeFocused()
+
+for (const key of ['h', 'e', 'l', 'l', 'o']) {
+  await header.press(key)
 }
 
-<section
-  onMouseDownCapture={(event) => {
-    activateRoot()
-
-    const editorElement = document.getElementById(id)
-
-    if (editorElement?.contains(event.target as globalThis.Node)) {
-      return
-    }
-
-    event.preventDefault()
-    requestAnimationFrame(focusRoot)
-  }}
->
+await expect(header).toContainText('hello')
+await expect(header).not.toContainText('olleh')
 ```
 
 ## Why This Works
 
-Inactive roots intentionally render read-only, so their editable DOM may be
-`contenteditable=false` at the start of a click. Activating the root during
-capture updates that state before normal editable clicks continue. Chrome clicks
-do not have a native caret target, so they need an explicit focus/caret handoff
-to the root editable.
+Content text needs native browser caret placement. If inactive roots render
+read-only, the first click cannot create a DOM selection in that root, even if
+React later focuses the element. Keeping each root contenteditable lets normal
+text clicks set the caret, while root-local selection ownership keeps edits
+scoped to the clicked root.
+
+Stamping the root onto imported selection points makes `PointApi.transform`
+compare the selection against later header-root operations correctly. After the
+first `h`, the header selection advances to offset 1; the next key inserts after
+`h` instead of back at offset 0.
 
 ## Prevention
 
-- For multi-root examples, test both direct editable clicks and visible root
-  chrome clicks.
-- A focus test should assert `document.activeElement`, `contenteditable`, and
-  follow-up typing ownership.
+- For multi-root examples, test direct text-surface clicks, visible root chrome
+  clicks, and follow-up typing.
+- A focus test should assert `document.activeElement`, native selection
+  ownership, and follow-up typing ownership.
+- For typing-order regressions, press keys in order and assert the forbidden
+  reversed string is absent.
 - Do not call a browser example done from locator clicks that skip the visual
   area a user actually clicks.
 

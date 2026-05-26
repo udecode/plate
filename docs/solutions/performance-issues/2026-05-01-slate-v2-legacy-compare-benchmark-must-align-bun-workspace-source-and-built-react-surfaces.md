@@ -1,7 +1,7 @@
 ---
 title: Slate v2 legacy compare benchmark must align Bun workspace source and built React surfaces
 date: 2026-05-01
-last_updated: 2026-05-09
+last_updated: 2026-05-23
 category: docs/solutions/performance-issues
 module: Slate v2 React benchmark tooling
 problem_type: performance_issue
@@ -11,6 +11,7 @@ symptoms:
   - "`bench:core:normalization:compare:local` and `bench:core:huge-document:compare:local` failed before producing current-vs-legacy core comparison artifacts"
   - "The compare script only measured legacy chunking on/off plus v2 island mode, so it could not answer v2 island on/off questions"
   - "Switching current imports blindly between source and dist created runtime singleton mismatches under Bun workspace resolution"
+  - "The React huge-document compare runner failed after `withReact` was intentionally removed from the public surface"
 root_cause: config_error
 resolution_type: code_fix
 severity: medium
@@ -38,6 +39,10 @@ The huge-document legacy comparison benchmark was stale after the Slate v2 hard 
 - Rendering source `slate-react` through Bun hit JSX runtime failures such as `React is not defined`.
 - Importing built `slate` with built `slate-react` caused transform-registry singleton mismatches because Bun still resolved `slate-react`'s bare workspace imports to source.
 - The artifact had `legacyChunkOff`, `legacyChunkOn`, and `v2LargeDocument`, but no `v2NoIsland`.
+- After the `withReact` cut, the current benchmark runner failed with
+  `Export named 'withReact' not found in module .../packages/slate-react/dist/index.js`.
+- The same runner also referenced `shellEnabled` after the shell/island rename,
+  so current-only runs could fail before emitting trace artifacts.
 
 ## What Didn't Work
 
@@ -59,6 +64,13 @@ Keep the current benchmark runner on one runtime identity:
 - for core compare runners, dynamically try source imports from
   `../../packages/slate/src/index.ts` and `../../packages/slate/src/internal/index.ts`
   first, then fall back to package imports for legacy checkouts
+- after the public `withReact` cut, current React benchmark rows should import
+  `createReactEditor` from `../../packages/slate-react/dist/index.js` and
+  replace every current-side `withReact(createEditor())` fixture with
+  `createReactEditor()`
+- keep stale trace aliases explicit; if a variable like `shellEnabled` still
+  names the old concept, derive it locally from the current strategy flag before
+  the trace is emitted
 
 Kept file:
 
@@ -90,6 +102,10 @@ and legacy `Transforms`.
   `Editor.getSnapshot`/`Editor.getChildren`/`editor.children` for reads, and
   `tx.text.insert`/`tx.selection.set`/`tx.fragment.insert` versus legacy
   `Transforms` for writes.
+- When a public React constructor is hard-cut, grep benchmark template strings
+  too. They do not fail typecheck, but they are still executable source.
+- Treat exit-code `0` benchmark JSON as "command ran", not "claim passed".
+  Inspect threshold fields and stress-row numbers before updating issue claims.
 
 ## Related Issues
 

@@ -499,8 +499,8 @@ No runnable in-scope owner remains for this plan.
 
 ### 2026-04-29 Ralph Activation
 
-- Set `.tmp/<session-id>/completion-check.md` to `pending`.
-- Regenerated `.tmp/continue.md` for the active execution lane.
+- Set `active goal state` to `pending`.
+- Regenerated `active goal state` for the active execution lane.
 - Started Phase 1: red public-surface and state/tx contracts in
   `.tmp/slate-v2/packages/slate`.
 

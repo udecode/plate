@@ -95,7 +95,7 @@
 
 ## Progress
 
-- 2026-04-04: loaded `task`, `learnings-researcher`, `planning-with-files`, and `major-task`.
+- 2026-04-04: loaded `task`, `learnings-researcher`, `goal workflow`, and `major-task`.
 - 2026-04-04: inspected current `docs/` vs the former internal docs tree to map overlap before migration.
 - 2026-04-04: moved the former internal docs tree into `docs/` and rewrote stale internal path references.
 - 2026-04-04: re-read the requested Slate v2 / `slate-browser` docs, learning docs, package files, and example tests.

@@ -444,7 +444,7 @@
 ## Progress
 
 - 2026-04-04: resumed after compaction and reloaded the required workflow:
-  `learnings-researcher`, `planning-with-files`, `tdd`, `debug`, `react`.
+  `learnings-researcher`, `goal workflow`, `tdd`, `debug`, `react`.
 - 2026-04-04: re-read the active proof test, placeholder example, bridge code,
   and the existing `slate-browser` plan file to recover exact state.
 - 2026-04-04: reproduced the red proof on a fresh local server and confirmed

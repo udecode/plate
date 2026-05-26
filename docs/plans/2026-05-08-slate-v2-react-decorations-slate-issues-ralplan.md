@@ -1488,7 +1488,7 @@ Files changed:
 - `docs/slate-v2/references/pr-description.md`
 - `docs/plans/2026-05-08-slate-v2-react-decorations-slate-issues-ralplan.md`
 - `.tmp/completion-checks/slate-v2-react-decorations-slate-issues-ralplan.md`
-- `.tmp/continue.md`
+- `active goal state`
 
 Decision:
 
@@ -1519,7 +1519,7 @@ Files changed:
 
 - `docs/plans/2026-05-08-slate-v2-react-decorations-slate-issues-ralplan.md`
 - `.tmp/completion-checks/slate-v2-react-decorations-slate-issues-ralplan.md`
-- `.tmp/continue.md`
+- `active goal state`
 
 Live source owner:
 
@@ -1561,7 +1561,7 @@ Files changed:
 
 - `docs/plans/2026-05-08-slate-v2-react-decorations-slate-issues-ralplan.md`
 - `.tmp/completion-checks/slate-v2-react-decorations-slate-issues-ralplan.md`
-- `.tmp/continue.md`
+- `active goal state`
 
 Live source owner:
 
@@ -1603,7 +1603,7 @@ Files changed:
 - `docs/slate-v2/references/pr-description.md`
 - `docs/plans/2026-05-08-slate-v2-react-decorations-slate-issues-ralplan.md`
 - `.tmp/completion-checks/slate-v2-react-decorations-slate-issues-ralplan.md`
-- `.tmp/continue.md`
+- `active goal state`
 
 Live source owner:
 
@@ -1646,7 +1646,7 @@ Files changed:
 
 - `docs/plans/2026-05-08-slate-v2-react-decorations-slate-issues-ralplan.md`
 - `.tmp/completion-checks/slate-v2-react-decorations-slate-issues-ralplan.md`
-- `.tmp/continue.md`
+- `active goal state`
 
 Live source owner:
 
@@ -1685,7 +1685,7 @@ Files changed:
 - `.tmp/slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx`
 - `docs/plans/2026-05-08-slate-v2-react-decorations-slate-issues-ralplan.md`
 - `.tmp/completion-checks/slate-v2-react-decorations-slate-issues-ralplan.md`
-- `.tmp/continue.md`
+- `active goal state`
 
 Live source owner:
 
@@ -1722,7 +1722,7 @@ Files changed:
 
 - `docs/plans/2026-05-08-slate-v2-react-decorations-slate-issues-ralplan.md`
 - `.tmp/completion-checks/slate-v2-react-decorations-slate-issues-ralplan.md`
-- `.tmp/continue.md`
+- `active goal state`
 
 Browser proof covered:
 
@@ -1770,7 +1770,7 @@ Files changed:
 - `docs/plans/2026-05-08-slate-v2-react-decorations-slate-issues-ralplan.md`
 - `docs/slate-v2/references/pr-description.md`
 - `.tmp/completion-checks/slate-v2-react-decorations-slate-issues-ralplan.md`
-- `.tmp/continue.md`
+- `active goal state`
 
 Live source owner:
 
@@ -1825,7 +1825,7 @@ Files changed:
 - `docs/plans/2026-05-08-slate-v2-react-decorations-slate-issues-ralplan.md`
 - `docs/slate-v2/references/pr-description.md`
 - `.tmp/completion-checks/slate-v2-react-decorations-slate-issues-ralplan.md`
-- `.tmp/continue.md`
+- `active goal state`
 
 Live source owner:
 

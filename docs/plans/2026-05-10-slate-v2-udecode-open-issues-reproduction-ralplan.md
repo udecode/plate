@@ -639,7 +639,7 @@ No upstream PR-facing issue claim changes. Fork-local accounting is synced in
   the full issue set accounted.
 - `clawsweeper`: applied. All 11 open issues are classified with fork-local
   claim safety; no upstream PR-facing closure claims were written.
-- `planning-with-files`: applied through this `docs/plans` file per repo
+- `goal workflow`: applied through this `docs/plans` file per repo
   override.
 - `learnings-researcher`: applied. Prior docs/solutions reinforce that browser
   IME and clipboard rows need honest browser proof and that Playwright can miss

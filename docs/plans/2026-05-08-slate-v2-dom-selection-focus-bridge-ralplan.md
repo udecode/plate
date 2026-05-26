@@ -1248,7 +1248,7 @@ Owner:
 
 - `docs/plans/2026-05-08-slate-v2-dom-selection-focus-bridge-ralplan.md`
 - `.tmp/completion-checks/slate-v2-dom-selection-focus-bridge-ralplan.md`
-- `.tmp/continue.md`
+- `active goal state`
 - `.tmp/slate-v2`
 
 Scope:

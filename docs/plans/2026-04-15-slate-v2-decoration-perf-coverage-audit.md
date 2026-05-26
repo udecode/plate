@@ -24,7 +24,7 @@ Answer the blunt perf question for the decoration / annotation lane:
 
 - `major-task`
 - `learnings-researcher`
-- `planning-with-files`
+- `goal workflow`
 - `performance-oracle`
 - `task`
 

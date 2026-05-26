@@ -28,7 +28,7 @@
 
 ## Progress
 
-- 2026-04-01: Loaded `task`, `planning-with-files`, `learnings-researcher`, and `tdd`.
+- 2026-04-01: Loaded `task`, `goal workflow`, `learnings-researcher`, and `tdd`.
 - 2026-04-01: Fetched issue `#4935`, inspected the TOC hook, found the explicit `: any`, and checked relevant learnings.
 - 2026-04-01: Added `IsAny` compile assertions to `packages/toc/src/react/hooks/useTocSideBar.spec.tsx`.
 - 2026-04-01: Reproduced the regression with `pnpm install`, `pnpm turbo build --filter=./packages/toc`, and `pnpm turbo typecheck --filter=./packages/toc`; the new assertions failed while `useTocSideBarState` returned `any`.

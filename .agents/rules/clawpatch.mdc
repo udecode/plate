@@ -14,7 +14,7 @@ forced re-review of existing Clawpatch feature records.
 - Docs: `https://clawpatch.ai/`
 - GitHub docs: `https://github.com/openclaw/clawpatch`
 - In this repo pair, the active Slate v2 Clawpatch project usually lives at
-  `.tmp/slate-v2`, not `/Users/zbeyens/git/slate-v2`.
+  `.tmp/slate-v2`
 - Clawpatch state is local runtime state. Keep `.clawpatch/` out of git unless
   the user explicitly asks to preserve it as an artifact.
 
@@ -66,6 +66,8 @@ Core commands:
 
 - `clawpatch init`: initialize `.clawpatch/`.
 - `clawpatch map`: build semantic feature records.
+- `clawpatch ci`: initialize, map, review, write a report, and append a GitHub
+  Actions step summary in one CI-friendly command.
 - `clawpatch status`: summarize project state.
 - `clawpatch review`: review queued or selected features.
 - `clawpatch report`: render finding reports.
@@ -73,6 +75,8 @@ Core commands:
 - `clawpatch next`: pick the next finding, defaulting to `open`.
 - `clawpatch triage`: change a finding status with a note.
 - `clawpatch fix`: apply one explicit fix attempt.
+- `clawpatch open-pr`: turn an applied patch attempt into an explicit GitHub
+  pull request.
 - `clawpatch revalidate`: re-check finding validity after changes.
 - `clawpatch doctor`: check local setup.
 - `clawpatch clean-locks`: clear stale feature locks.
@@ -109,6 +113,30 @@ clawpatch --version
 codex --version
 clawpatch doctor
 ```
+
+## Providers
+
+Default provider is local Codex. Current provider surface also includes:
+
+- `codex`: default local Codex CLI provider.
+- `claude`: routes map, review, fix, and revalidate through local Claude Code
+  CLI print mode.
+- `pi`: routes review, fix, revalidate, and agent map through pi.dev.
+- `cursor`: experimental Cursor Agent CLI provider. Treat it as opt-in only;
+  do not use it unless the user explicitly asks or the target config already
+  chooses it.
+
+Useful provider controls:
+
+```bash
+clawpatch review --provider claude --json
+clawpatch review --reasoning-effort high --json
+CLAWPATCH_REASONING_EFFORT=high clawpatch review --json
+CLAWPATCH_CODEX_SANDBOX=workspace-write clawpatch review --json
+```
+
+Use provider-specific flags only when they are relevant. Do not turn a normal
+Clawpatch pass into a provider experiment.
 
 ## Initialize And Map
 
@@ -157,6 +185,60 @@ Hard rule: `clawpatch review --json` reviews the eligible queue, not
 necessarily every feature record on disk. `reviewed: 0` can be correct when
 `clawpatch review --dry-run --json` says `wouldReview: 0`, even if
 `clawpatch status --json` reports many feature records.
+
+Review controls added in current Clawpatch:
+
+```bash
+clawpatch review --include-dirty --json
+clawpatch review --prompt-file review-guidance.md --json
+clawpatch review --prompt-file - --json
+clawpatch review --export-tribunal-ledger .clawpatch/runs/review-ledger.jsonl --json
+clawpatch review --jobs 4 --json
+clawpatch review --rate-limit-per-minute 20 --json
+CLAWPATCH_RPM=20 clawpatch review --json
+CLAWPATCH_REVIEW_RETRIES=2 clawpatch review --json
+clawpatch review --prompt-retries 2 --json
+```
+
+Rules for these controls:
+
+- Use `--include-dirty` when the point is to audit uncommitted local changes.
+- Use `--prompt-file` for extra reviewer law instead of pasting huge guidance
+  into chat.
+- Use `--export-tribunal-ledger` only when downstream ingestion is explicitly
+  useful.
+- Leave `--jobs` unset unless local resources or provider limits demand it;
+  Clawpatch defaults to a CPU-aware value capped at 10.
+- Use `--rate-limit-per-minute` / `CLAWPATCH_RPM` for provider quota pressure,
+  not as a substitute for narrowing scope.
+- Use retry controls only for transient malformed-provider output. Do not retry
+  deterministic auth, quota, unsupported-provider, refusal, or cancellation
+  failures as if they are flaky findings.
+
+Current review output is stricter than older runs: provider findings must cite
+included files, valid line ranges, and matching evidence quotes. A run can
+complete while dropping invalid individual findings into `run.errors` with
+`schema-drop` or `validation-drop`. Always inspect `run.errors` before claiming
+the review was clean.
+
+Prompt provenance and budget accounting are now part of review output. When a
+review looks oddly small or noisy, inspect included files, omitted files,
+prompt bytes, and approximate token counts before blaming the reviewer model.
+
+## CI
+
+Use CI mode when the user asks for a one-command automation path or a GitHub
+Actions summary:
+
+```bash
+clawpatch ci --json
+clawpatch ci --since HEAD~1 --json
+clawpatch ci --include-dirty --json
+clawpatch ci --jobs 4 --rate-limit-per-minute 20 --json
+```
+
+`clawpatch ci --since` can legitimately report `reviewed: 0` on an empty
+filtered diff. Treat that as an empty queue, not a failed run.
 
 ## Force Re-Review All Features
 
@@ -226,6 +308,9 @@ A report may include old findings with non-open statuses. Do not count the
 whole Markdown report as current work. Use `report --status open --json` and
 `status --json` for the live queue.
 
+For JSON reports, prefer `total` and `items` as the stable shape. `results` is
+an alias, and the legacy `findings` key is a count, not the finding array.
+
 False positives should be recorded in Clawpatch, not silently ignored:
 
 ```bash
@@ -263,6 +348,17 @@ before handoff. Record this in the plan.
 Never let Clawpatch commit, push, or open PRs in this repo unless the user
 explicitly asks for that behavior.
 
+Patch-to-PR is explicit:
+
+```bash
+clawpatch open-pr --patch <patchId> --json
+```
+
+In `plate-2`, do not use `clawpatch open-pr` just because a patch exists. It
+creates git state and remote side effects. Use it only when the user explicitly
+asks for Clawpatch to open the PR; otherwise keep patches local and report the
+finding/patch ids.
+
 ## Revalidate
 
 Use revalidation after manual fixes, Clawpatch patches, or upstream changes:
@@ -278,6 +374,7 @@ clawpatch revalidate --all --status open --json
 clawpatch revalidate --feature <featureId> --json
 clawpatch revalidate --since HEAD~1 --json
 clawpatch revalidate --limit 10 --status open --json
+clawpatch revalidate --include-dirty --json
 ```
 
 Trust revalidation scope. If source is fixed but the finding remains open
@@ -310,15 +407,30 @@ clawpatch clean-locks --json
 Do not delete lock files manually unless `clean-locks` is unavailable and the
 process is proven dead.
 
+## Mapping Notes
+
+Current Clawpatch has broader mapper coverage than older local habits:
+
+- Node app roots under `apps/*` and `packages/*` can map even without a local
+  package file when positive source/framework signals exist.
+- Bun text lockfiles are detected as `bun.lock`.
+- Node route mapping preserves literal Express, Hono, Flask, Django include,
+  FastAPI router, Laravel group, Fastify, and Rails route prefixes more
+  reliably.
+- Maven/Spring projects have dedicated root, nested, and multi-module mapping.
+- Large flat directories are split by repeated filename families into more
+  coherent review slices.
+
+Do not paper over a weird map by assuming the old mapper limits still apply.
+Run `clawpatch map --json` or inspect the feature record first.
+
 ## Slate V2 Operating Rules
 
 - Default target: `.tmp/slate-v2` from the `plate-2` root when the user says
   the Slate v2 Clawpatch state moved there.
-- The sibling `/Users/zbeyens/git/slate-v2` path may be stale, partial, or only
-  contain one feature. Verify before using it.
 - Keep `.clawpatch/` ignored. The state can be huge and local.
-- Use `docs/plans/**` plus `.tmp/<session-id>/completion-check.md` for
-  restartable progress when the run spans many commands.
+- Use the active goal plus one `docs/plans/**` goal plan for restartable
+  progress when the run spans many commands. Do not create hook fallback state.
 - `pending` means more autonomous work remains.
 - `done` means the active Clawpatch target is met.
 - `blocked` means the target cannot continue without restored state, missing
@@ -331,7 +443,7 @@ For review-only work:
 ```bash
 clawpatch status --json
 clawpatch report --status open --json
-node tooling/scripts/completion-check.mjs
+node .agents/rules/autogoal/scripts/check-complete.mjs docs/plans/<goal-plan>.md
 ```
 
 For fix work, run the configured Clawpatch validation plus the repo's relevant

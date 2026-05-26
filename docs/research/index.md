@@ -90,6 +90,7 @@ This is the entrypoint for the compiled agent research layer.
   - [slate-v2-overlay-superiority-vs-legacy-and-field.md](docs/research/decisions/slate-v2-overlay-superiority-vs-legacy-and-field.md)
   - [react-19-2-external-store-and-background-ui.md](docs/research/sources/editor-architecture/react-19-2-external-store-and-background-ui.md)
   - [tanstack-virtual-and-github-large-surface-virtualization.md](docs/research/sources/editor-architecture/tanstack-virtual-and-github-large-surface-virtualization.md)
+  - [pretext-pagination-page-virtualization.md](docs/research/sources/editor-architecture/pretext-pagination-page-virtualization.md)
   - [slate-v2-react-19-2-perf-architecture-vs-field.md](docs/research/decisions/slate-v2-react-19-2-perf-architecture-vs-field.md)
   - [source-scoped-overlay-invalidation.md](docs/research/concepts/source-scoped-overlay-invalidation.md)
   - [slate-v2-source-scoped-overlay-invalidation.md](docs/research/decisions/slate-v2-source-scoped-overlay-invalidation.md)

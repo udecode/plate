@@ -1,9 +1,9 @@
 ---
-date: 2026-05-04
+date: 2026-05-23
 topic: slate-issues-gitcrawl-recluster-map
 status: active
 source:
-  - .tmp/gitcrawl/2026-05-04T145301Z-clusters.json
+  - .tmp/gitcrawl/2026-05-23T091840Z-clusters.json
   - docs/slate-issues/gitcrawl-clusters.md
 ---
 
@@ -23,14 +23,21 @@ claim decisions.
 
 | Metric                       | Count |
 | ---------------------------- | ----: |
-| Live open issues             |   630 |
-| Live open PRs                |    29 |
-| Live open threads            |   659 |
-| Gitcrawl clusters            |   617 |
+| Live open issues             |   631 |
+| Live open PRs                |    33 |
+| Live open threads            |   664 |
+| Gitcrawl clusters            |   620 |
 | Multi-member clusters        |    28 |
-| Singleton clusters           |   589 |
-| Multi-member covered threads |    70 |
+| Singleton clusters           |   592 |
+| Multi-member covered threads |    72 |
 | Largest multi-member cluster |     7 |
+
+## 2026-05-23 Live Refresh Delta
+
+- Previous live run: `2026-05-04T145301Z`.
+- Current live run: `2026-05-23T091840Z`.
+- Live issue delta: `630 -> 631`; new issue `#6061` needs ClawSweeper triage.
+- No machine cluster is promoted to a v2 fix/improves claim by this refresh alone.
 
 ## Human Families
 
@@ -38,19 +45,19 @@ claim decisions.
 | ----------------------------------------- | -------------------------- | --------------- | ------------------------------------------------------ | -------- | --------------------------------------------------------- |
 | dom-point-resolution-crashes              | v2-dom-selection           | 1               | #4564, #3723, #4789, #3836, #5711, #3834, #4984        | reviewed | Dossier sections appended; no exact closure claims        |
 | inline-boundary-cursor-movement           | v2-dom-selection           | 5, 25           | #4074, #4618, #3429, #3148, #3150                      | reviewed | Dossier sections appended; no exact closure claims        |
-| inline-void-and-void-selection            | v2-dom-selection           | 12, 17, 21      | #5183, #5391, #3991, #4301, #4802, #4806               | reviewed | Dossier sections appended; no exact closure claims        |
+| inline-void-and-void-selection            | v2-dom-selection           | 12, 17, 21      | #5183, #5391, #3991, #4301, #4802, #4806               | reviewed | Browser proof now fixes #4806; #4802 stays improves       |
 | history-and-undo-selection-state          | v2-core-engine             | 6, 27           | #3705, #3756, #3921, #3534, #3551                      | reviewed | Dossier sections appended; no exact closure claims        |
 | react-focus-subscription-runtime          | v2-react-runtime           | 3, 7            | #3478, #3497, #3634, #5537, #4961                      | split    | Clusters 3/7 reviewed; #3777 routed to input runtime      |
 | android-ime-and-beforeinput               | v2-input-runtime           | 9, 11, 13, 18   | #6022, #6027, #5983, #6020, #4400, #5883, #4994, #5026 | reviewed | Dossier sections appended; no exact closure claims        |
 | mobile-and-browser-selection-quirks       | v2-dom-selection           | 14, 19, 20, 22  | #5826, #5882, #5088, #5473, #4376, #5171, #5095, #5096 | reviewed | Dossier sections appended; no exact closure claims        |
-| async-decoration-and-projection-stability | v2-react-runtime           | 10              | #5987, #6033                                           | keep     | Cluster 10 reviewed                                       |
+| async-decoration-and-projection-stability | v2-react-runtime           | 10              | #5987, #6033                                           | keep     | Cluster 10 processed: `Fixes #5987`                      |
 | input-event-boundary-semantics            | v2-input-runtime           | 16              | #5603, #5669                                           | reviewed | Dossier sections appended; no exact closure claims        |
 | triple-click-and-block-selection          | v2-dom-selection           | 23              | #3871, #5847                                           | reviewed | Dossier sections appended; no exact closure claims        |
 | docs-jsdoc-examples-api-ergonomics        | docs-examples              | 4, 15, 24       | #6045, #5350, #5520, #4956, #5172, #3780, #3781        | reviewed | Docs/examples only; no raw runtime claim                  |
 | dependency-and-duplicate-pr-noise         | skip-maintainer-noise      | 2, 8            | #6032, #6049, #6025, #5869, #6026, #5861, #6054        | reviewed | PR-only dependency/export noise; no issue claim           |
 | stale-legacy-browser-support              | skip-stale                 | 26, 28          | #3800, #4111, #3112, #3313                             | reviewed | Stale legacy browser/mobile support; needs current repro  |
 | large-document-performance-virtualization | v2-performance-benchmark   | singleton sweep | #4056, #2051, #790, #5992, #5945                       | reviewed | Singleton candidates routed; benchmark proof still needed |
-| clipboard-html-fragment-serialization     | v2-clipboard-serialization | singleton sweep | #4802, #4806, #4056, #5089                             | reviewed | Inline void clipboard routed; exact proof still needed    |
+| clipboard-html-fragment-serialization     | v2-clipboard-serialization | singleton sweep | #4802, #4806, #4056, #5089                             | reviewed | #4806 fixed; #4802/#4056 remain improves                 |
 | table-selection-and-arrow-navigation      | v2-dom-selection           | singleton sweep | #4658, #5355, #6034                                    | reviewed | Singleton candidates routed; exact browser proof needed   |
 
 ## Batch 1 Seeds
@@ -80,7 +87,7 @@ Start with these high-signal clusters:
 
 ### Cluster 1: DOM point resolution crashes
 
-Status: reviewed.
+Status: processed.
 
 Raw evidence:
 
@@ -197,11 +204,21 @@ Raw evidence:
 
 Decision:
 
-- #5987: `improves-claimed`
-- #6033: linked upstream PR evidence only
+- #5987: `fixes-claimed`
+- #6033: linked upstream PR evidence plus matching fork proof
 
-No `Fixes #...` claim is justified from this cluster. The owner is projection
-and decoration source stability under async React updates.
+`Fixes #5987` is justified by the exact async `Editable.decorate` browser
+proof. The fork reproduces the delayed decoration callback identity change,
+types matching text at the document end, waits for the delayed highlight to
+restructure the DOM, and verifies both Slate selection and browser DOM caret
+remain at the typed end.
+
+Proof:
+
+- `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
+- `.tmp/slate-v2/site/examples/ts/decorations-async.tsx`
+- `.tmp/slate-v2/playwright/integration/examples/decorations-async.test.ts`
+- `docs/plans/2026-05-23-slate-v2-async-decoration-caret-cluster-proof.md`
 
 ### Cluster 11: Android empty-node voice input duplication
 

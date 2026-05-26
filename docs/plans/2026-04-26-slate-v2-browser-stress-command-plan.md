@@ -39,7 +39,7 @@ human-like browser sweep, release proof, or replay for a reported editing bug.
 4. Write replay artifacts under `.tmp/stress-artifacts`.
 5. Add `test:stress` and `test:stress:replay` scripts.
 6. Run focused verification for the stress tests and replay path.
-7. Keep `.tmp/<session-id>/completion-check.md` synchronized.
+7. Keep `active goal state` synchronized.
 
 ## Evidence Log
 

@@ -366,9 +366,9 @@ Revise:
 - 2026-05-14T04:20:21Z: `ralph` execution finished implementation and moved
   to ledger/checkpoint closeout.
 - Active completion state:
-  `.tmp/019e1fc0-dba0-7de1-9236-b484a144cda6/completion-check.md`.
+  `active goal state`.
 - Active continuation prompt:
-  `.tmp/019e1fc0-dba0-7de1-9236-b484a144cda6/continue.md`.
+  `active goal state`.
 - Current owner: `.tmp/slate-v2/packages/slate-react`.
 - Current next pass: completion verification.
 - Execution result: semantic `onCommand`, raw `onDOMBeforeInput`

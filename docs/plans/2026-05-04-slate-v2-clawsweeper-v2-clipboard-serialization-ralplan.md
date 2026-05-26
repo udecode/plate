@@ -794,8 +794,8 @@ Unchanged:
 
 - `clawsweeper`: applied. Related issue pass ran through the active issue
   matrix, live gitcrawl representative threads, and fork ledger updates.
-- `planning-with-files`: applied through `docs/plans`, checkpoint, and
-  `.tmp/continue.md`.
+- `goal workflow`: applied through `docs/plans`, checkpoint, and
+  `active goal state`.
 - `learnings-researcher`: applied. Relevant solution notes confirm the split:
   core fragment meaning, DOM transport, React delegation, app-owned rich HTML.
   The expected `docs/solutions/patterns/critical-patterns.md` file is absent in

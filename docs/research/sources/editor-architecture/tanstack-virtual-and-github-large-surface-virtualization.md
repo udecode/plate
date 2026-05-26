@@ -17,6 +17,64 @@ Sources:
   pasted by the user on 2026-05-03.
 - TanStack Virtual official docs queried through Context7 on 2026-05-03.
 - Live `.tmp/slate-v2` source read on 2026-05-03.
+- TanStack Blog, "TanStack Virtual just got a lot faster, and finally handles
+  iOS", published 2026-05-19 and read on 2026-05-23.
+- TanStack Virtual latest Virtualizer API docs, read on 2026-05-23.
+
+## 2026-05-23 TanStack Virtual Perf And iOS Update
+
+Latest upstream facts:
+
+- `@tanstack/react-virtual@3.13.25` depends on
+  `@tanstack/virtual-core@3.15.0`.
+- The 2026-05-19 release keeps the public `VirtualItem[]` shape but moves the
+  common single-lane hot path onto flat `Float64Array` storage with lazy
+  `VirtualItem` materialization.
+- `resizeItem` / dynamic-measurement storms are fixed by internal cache version
+  tracking instead of cloning the whole size cache.
+- iOS WebKit momentum scroll is now handled inside TanStack Virtual by
+  deferring scroll position writes while touch/momentum/elastic overscroll is
+  active.
+- Backward-scroll jank for dynamic heights is fixed by default: above-viewport
+  size adjustments are skipped while scrolling backward unless the consumer
+  overrides `shouldAdjustScrollPositionOnItemSizeChange`.
+- `takeSnapshot()` plus `initialMeasurementsCache` and `initialOffset` is the
+  upstream restoration path for remounting a measured virtual list without
+  throwing away known item sizes.
+
+Current live Slate v2 facts on 2026-05-23:
+
+- `slate-react` depends on `@tanstack/react-virtual` with range
+  `^3.13.24`.
+- The lockfile currently resolves `@tanstack/react-virtual@3.13.24` and
+  `@tanstack/virtual-core@3.14.0`, so the latest iOS/backward-scroll/core
+  fast-path release is not actually installed yet.
+- `useVirtualizedRootPlan` uses the single-lane path, stable runtime-id item
+  keys, `rangeExtractor`, `measureElement`, and Slate-owned missing-range /
+  DOM coverage policy.
+- `useVirtualizedRootPlan.scrollToTopLevelIndex` bypasses TanStack for
+  layout-backed targets by calling `rootElement.scrollTo(...)` directly. That
+  loses the new iOS scroll-write deferral path for that branch.
+
+Slate decision update:
+
+- Upgrade `@tanstack/react-virtual` in `.tmp/slate-v2` so the lockfile reaches
+  `3.13.25` / `virtual-core@3.15.0`.
+- Do not expose TanStack options in public Slate API. The existing Slate-shaped
+  `domStrategy={{ type: 'virtualized', threshold, overscan,
+  estimatedBlockSize }}` boundary remains correct.
+- Do not override `shouldAdjustScrollPositionOnItemSizeChange` by default. The
+  new upstream default is the behavior Slate wants for dynamic-height backward
+  scroll.
+- Keep `lanes` unused. Slate's top-level block virtualization wants the
+  single-lane fast path.
+- Route internal programmatic virtualized scroll writes through
+  `virtualizer.scrollToOffset` / `virtualizer.scrollToIndex` where practical,
+  rather than direct `rootElement.scrollTo`, so Slate inherits upstream iOS
+  scroll semantics.
+- Consider `takeSnapshot()` only as an internal remount/restoration
+  optimization for large docs. Do not add a public Slate API until a real
+  remount-jump problem is proven.
 
 ## GitHub Diff Lessons
 

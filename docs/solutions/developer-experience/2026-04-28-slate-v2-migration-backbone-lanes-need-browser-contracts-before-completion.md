@@ -26,7 +26,7 @@ commit metadata, local runtime targets, and replayable browser contracts.
 
 ## Symptoms
 
-- `.tmp/<session-id>/completion-check.md` correctly stayed `pending` after the public API and
+- `active goal state` correctly stayed `pending` after the public API and
   React DX cuts because migration-backbone proof still had runnable work.
 - The plan needed a hard correction: do not support current Plate or slate-yjs
   adapters in raw Slate. Prove only the substrate those libraries can migrate

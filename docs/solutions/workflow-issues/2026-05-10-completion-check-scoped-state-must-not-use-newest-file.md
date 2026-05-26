@@ -36,7 +36,7 @@ session had a newer pending plan.
 
 - Guessing the active plan from file modification time. A newer file only proves
   recent writes, not ownership by the current session.
-- Storing more context in `.tmp/continue.md`. That file is repo-global, so it
+- Storing more context in `active goal state`. That file is repo-global, so it
   cannot safely identify the current session when multiple sessions run.
 - Falling back to an unscoped state file after seeing `CODEX_THREAD_ID` but not
   finding a matching scoped file. That makes the hook inherit another session's
@@ -49,8 +49,8 @@ session had a newer pending plan.
 
 Make scoped completion files opt-in and co-locate session artifacts:
 
-- `.tmp/<session-id>/completion-check.md`
-- `.tmp/<session-id>/continue.md`
+- `active goal state`
+- `active goal state`
 
 The checker should read a scoped file when `COMPLETION_CHECK_ID`,
 `CODEX_THREAD_ID`, `CODEX_SESSION_ID`, `--id`, or `--file` selects it. With no
@@ -59,7 +59,7 @@ and use the same scoped layout. When an inherited session id has no matching
 scoped file, the hook should exit successfully with a skip message instead of
 reading another session's file. Legacy `.tmp/completion-checks/<id>.md` files
 can remain readable as a compatibility fallback, but new state should use
-`.tmp/<session-id>/completion-check.md`.
+`active goal state`.
 
 Cover the main scoped path:
 
@@ -67,7 +67,7 @@ Cover the main scoped path:
 test('prefers a matching CODEX_THREAD_ID state', async () => {
   await mkdir(path.join(cwd, '.tmp/session-a'), { recursive: true });
   await writeFile(
-    path.join(cwd, '.tmp/session-a/completion-check.md'),
+    path.join(cwd, 'active goal state'),
     'status: done\n'
   );
 
@@ -101,7 +101,7 @@ Keep the no-selector guard too:
 test('skips unselected scoped states when no session id is available', async () => {
   await mkdir(path.join(cwd, '.tmp/other-session'), { recursive: true });
   await writeFile(
-    path.join(cwd, '.tmp/other-session/completion-check.md'),
+    path.join(cwd, 'active goal state'),
     'status: pending\n'
   );
 
@@ -117,7 +117,7 @@ test('skips unselected scoped states when no session id is available', async () 
 
 Update the generated skill rules at the same time so future `ralph` and
 Ralplan prompts stop documenting newest-file fallback behavior and stop writing
-the repo-global `.tmp/continue.md`.
+the repo-global `active goal state`.
 
 Some Codex Desktop child processes expose `CODEX_THREAD_ID`, but Stop-hook
 commands may only provide the session through hook JSON on stdin. Keep the UI
@@ -129,7 +129,7 @@ node tooling/scripts/completion-check-hook.mjs
 
 The wrapper maps hook stdin `session_id` into `CODEX_THREAD_ID` when the env var
 is absent, then runs `bun run completion-check`. The checker resolves that to
-`.tmp/<CODEX_THREAD_ID>/completion-check.md` when the file exists. If the file
+`active goal state` when the file exists. If the file
 does not exist, the hook passes because this session has no active completion
 gate. If no session id is visible, workflow docs should create an explicit
 completion id before starting a lane. That gives each parallel session its own
@@ -141,7 +141,7 @@ file:
 ```md
 status: pending
 plan: docs/plans/current-plan.md
-continue_file: .tmp/<session-id>/continue.md
+continue_file: active goal state
 ```
 
 The checker prints `continue_file` before failing so the Stop hook output points
@@ -153,8 +153,8 @@ A scoped plan id is authority. Modification time is not. The checker can still
 block the correct scoped plan when an id is provided, but an unscoped Stop hook
 no longer gets hijacked by unrelated active work.
 
-`.tmp/continue.md` has the same ownership bug as root completion state. Moving
-continuation prompts to `.tmp/<session-id>/continue.md` gives the checker and
+`active goal state` has the same ownership bug as root completion state. Moving
+continuation prompts to `active goal state` gives the checker and
 human operator the same session key.
 
 ## Prevention
@@ -165,8 +165,8 @@ human operator the same session key.
   `bun run completion-check -- --id <session-id>`.
 - Do not document an unscoped completion fallback. Use a session id or explicit
   plan id.
-- Do not write `.tmp/continue.md` or new `.tmp/continue/<id>.md` files; use
-  `.tmp/<session-id>/continue.md` and record it as `continue_file` in the
+- Do not write `active goal state` or new `.tmp/continue/<id>.md` files; use
+  `active goal state` and record it as `continue_file` in the
   completion state.
 - Add a regression whenever a workflow selector has both scoped and shared
   fallback behavior.

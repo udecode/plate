@@ -9,7 +9,7 @@ agent/team orchestration layer.
 ## Decisions
 
 - `complete-plan` owns scheduling and Stop-hook continuation.
-- `.tmp/<session-id>/completion-check.md` stores lane status and current-pass state.
+- `active goal state` stores lane status and current-pass state.
 - Pass skills are small conditional units, not always-on reviewers.
 - Pass evidence belongs in the active plan or ledger; completion state stores
   concise pointers only.

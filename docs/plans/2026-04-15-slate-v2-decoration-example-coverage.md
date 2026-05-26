@@ -22,7 +22,7 @@ examples site.
 
 - `major-task`
 - `task`
-- `planning-with-files`
+- `goal workflow`
 - `learnings-researcher`
 - `react`
 - `components`

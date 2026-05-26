@@ -150,7 +150,7 @@ Execution target:
 1. Run `clawpatch review --json --limit 50` in `.tmp/slate-v2`.
 2. Inspect the generated report and `clawpatch status --json`.
 3. Record new findings, or record a zero-open result if the review produces none.
-4. Keep `.tmp/019e362b-c486-7372-84c1-1c04fef96ff6/completion-check.md` pending until this review batch is closed.
+4. Keep `active goal state` pending until this review batch is closed.
 
 Result:
 

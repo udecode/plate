@@ -19,7 +19,7 @@ it.
 
 - `ralph`
 - `major-task`
-- `planning-with-files`
+- `goal workflow`
 - `learnings-researcher`
 - `performance-oracle`
 - `react`

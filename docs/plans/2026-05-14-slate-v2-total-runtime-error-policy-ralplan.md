@@ -3,7 +3,7 @@ date: 2026-05-14
 topic: slate-v2-total-runtime-error-policy
 status: done
 score: 0.98
-completion: .tmp/019e24a3-51de-7203-8b05-54d3914c394a/completion-check.md
+completion: active goal state
 supersedes: docs/plans/2026-05-14-slate-v2-production-safe-dom-error-policy-ralplan.md
 current_pass: hard-cut-suppress-throw-shim
 current_pass_status: complete
@@ -1206,7 +1206,7 @@ Closure checks:
 | Issue/reference sync             | Checked in pass 11; no ledger or PR-reference edits required.                                                                                                                                                                                                                                                                                     |
 | Slate v2 implementation boundary | Preserved. This plan pass did not edit `.tmp/slate-v2` source, tests, examples, package files, or config.                                                                                                                                                                                                                                         |
 | Execution handoff                | Ready for a later `ralph` execution. This ralplan does not execute code.                                                                                                                                                                                                                                                                          |
-| Completion state                 | Scoped file `.tmp/019e24a3-51de-7203-8b05-54d3914c394a/completion-check.md` can move to `done`.                                                                                                                                                                                                                                                   |
+| Completion state                 | Scoped file `active goal state` can move to `done`.                                                                                                                                                                                                                                                   |
 
 Final score: `0.97`.
 
@@ -1242,9 +1242,9 @@ Execution request:
 Control state:
 
 - Scoped completion state moved back to `pending` at
-  `.tmp/019e24a3-51de-7203-8b05-54d3914c394a/completion-check.md`.
+  `active goal state`.
 - Continuation prompt regenerated at
-  `.tmp/019e24a3-51de-7203-8b05-54d3914c394a/continue.md`.
+  `active goal state`.
 - Existing thread goal is complete for the planning-only lane; execution now
   proceeds from the explicit Ralph request and this plan's accepted target.
 
@@ -1883,7 +1883,7 @@ Evidence added:
 - Verified issue/reference sync is complete and unchanged from pass 11.
 - Verified the Slate v2 implementation-edit boundary was preserved.
 - Verified the scoped completion state uses the active runtime id:
-  `.tmp/019e24a3-51de-7203-8b05-54d3914c394a/completion-check.md`.
+  `active goal state`.
 
 Plan delta:
 

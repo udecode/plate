@@ -3,7 +3,7 @@ date: 2026-05-14
 topic: slate-v2-production-safe-dom-error-policy
 status: done
 score: 0.93
-completion: .tmp/019e24a3-51de-7203-8b05-54d3914c394a/completion-check.md
+completion: active goal state
 superseded_by: docs/plans/2026-05-14-slate-v2-total-runtime-error-policy-ralplan.md
 current_pass: closure-score-and-final-gates
 current_pass_status: complete
@@ -596,7 +596,7 @@ bun run completion-check
 ```
 
 Result after closure: passed. The active completion file is
-`.tmp/019e24a3-51de-7203-8b05-54d3914c394a/completion-check.md` with
+`active goal state` with
 `status: done`.
 
 Focused Slate v2 execution gates:

@@ -595,8 +595,8 @@ Add the inventory guard, then use it to drive the extraction.
 Actions:
 
 - Activated this plan.
-- Refreshed `.tmp/<session-id>/completion-check.md` for the Editable event runtime lane.
-- Wrote `.tmp/continue.md`.
+- Refreshed `active goal state` for the Editable event runtime lane.
+- Wrote `active goal state`.
 - Started Phase 0.
 
 Commands:
@@ -607,8 +607,8 @@ Commands:
 
 Artifacts:
 
-- `.tmp/<session-id>/completion-check.md`
-- `.tmp/continue.md`
+- `active goal state`
+- `active goal state`
 - this plan
 
 Evidence:
@@ -637,8 +637,8 @@ Owner classification:
 
 Changed files:
 
-- `.tmp/<session-id>/completion-check.md`
-- `.tmp/continue.md`
+- `active goal state`
+- `active goal state`
 - `docs/plans/2026-04-27-slate-v2-editable-event-runtime-hard-cut-plan.md`
 
 Rejected tactics:
@@ -972,8 +972,8 @@ Changed files:
 - `.tmp/slate-v2/packages/slate-react/src/editable/runtime-selection-engine.ts`
 - `.tmp/slate-v2/packages/slate-react/src/editable/runtime-target-bridge.ts`
 - `.tmp/slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts`
-- `.tmp/<session-id>/completion-check.md`
-- `.tmp/continue.md`
+- `active goal state`
+- `active goal state`
 
 Decision:
 

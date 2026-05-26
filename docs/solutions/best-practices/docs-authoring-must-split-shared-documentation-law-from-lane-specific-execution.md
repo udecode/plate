@@ -12,7 +12,7 @@ symptoms:
 root_cause: inadequate_documentation
 resolution_type: documentation_update
 severity: medium
-tags: [documentation, docs-authoring, docs-plugin, docs-creator, ownership, skills]
+tags: [documentation, docs-authoring, docs-creator, plugin-pages, ownership, skills]
 ---
 
 # Docs authoring must split shared documentation law from lane-specific execution
@@ -41,8 +41,9 @@ too many pages drifting into a half-guide, half-reference blob.
 
 ## Solution
 
-Create a shared `docs-creator` rule that owns repo-wide documentation law, then
-keep `docs-plugin` as the narrow companion for plugin-page specifics.
+Use `docs-creator` as the single docs authoring rule. It owns repo-wide
+documentation law and keeps plugin-page specifics as a lane inside the same
+skill.
 
 The split should be explicit:
 
@@ -52,8 +53,8 @@ The split should be explicit:
   - ownership clarity
   - tutorial-first ordering
   - anti-slop rules
-- `docs-plugin`
-  - plugin-page section order
+- plugin-page rules inside `docs-creator`
+  - section order
   - kit/manual guidance
   - plugin-specific component and transform patterns
 
@@ -84,10 +85,10 @@ Once shared law and lane-specific execution are split:
 
 - install docs stop copying plugin-page structure
 - system guides can lead with mental model and ownership
-- plugin pages can stay headless and concrete without over-owning every docs
-  concern
-- future skills have one place to update tone and one place to update
-  lane-specific mechanics
+- plugin pages can stay headless and concrete without creating a second docs
+  authority
+- future edits have one skill to update for both tone and lane-specific
+  mechanics
 
 This also matches a broader rule that showed up elsewhere in the repo:
 constitutional doctrine should live in one source of truth, and narrower
@@ -106,7 +107,5 @@ execution skills should stay subordinate.
 
 ## Related Issues
 
-- [docs/solutions/style.md](../../style.md)
 - [docs-creator.mdc](../../../.agents/rules/docs-creator.mdc)
-- [docs-plugin.mdc](../../../.agents/rules/docs-plugin.mdc)
 - [constitutional-skill-must-own-doctrine-while-execution-skill-stays-subordinate.md](./constitutional-skill-must-own-doctrine-while-execution-skill-stays-subordinate.md)

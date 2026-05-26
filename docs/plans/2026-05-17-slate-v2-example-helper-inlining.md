@@ -2,7 +2,7 @@
 
 Status: done
 Runtime id: 019e3627-238b-7993-a8cf-26be45504c47
-Completion file: `.tmp/019e3627-238b-7993-a8cf-26be45504c47/completion-check.md`
+Completion file: `active goal state`
 
 ## Goal
 

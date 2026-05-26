@@ -22,7 +22,7 @@ readiness and can be trusted as perf evidence.
 
 - `major-task`
 - `task`
-- `planning-with-files`
+- `goal workflow`
 - `learnings-researcher`
 - `performance-oracle`
 - `debug`

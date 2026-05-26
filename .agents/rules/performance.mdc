@@ -159,9 +159,9 @@ each entry describes the performance lane question it owns.
 8. Instrument interactions.
 9. Record trace and dashboard requirements.
 
-## Slate Ralplan Performance Pass
+## Slate Plan Performance Pass
 
-When used inside `slate-ralplan`, record this lens in the applicable
+When used inside `slate-plan`, record this lens in the applicable
 implementation review matrix.
 
 Must answer:

@@ -477,7 +477,7 @@ Focused evidence:
 - `bun check`: pass. It includes Biome, ESLint, package/site/root typecheck,
   Bun tests, and Slate React Vitest.
 - `bun run completion-check`: pass against
-  `.tmp/019e2695-bb53-7f13-aecf-17e30265a140/completion-check.md`.
+  `active goal state`.
 
 Broad-gate cleanup:
 
@@ -510,4 +510,4 @@ Changed reference/state files:
 
 - `docs/slate-v2/references/pr-description.md`
 - `docs/research/decisions/slate-v2-node-query-api-should-keep-lazy-entries-and-add-first-match-helpers.md`
-- `.tmp/019e2695-bb53-7f13-aecf-17e30265a140/completion-check.md`
+- `active goal state`

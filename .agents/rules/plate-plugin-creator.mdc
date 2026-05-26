@@ -14,7 +14,7 @@ execution companion, not the constitutional source of truth.
 Use this skill for Plate-specific plugin authorship: semantic ownership,
 authoring order, type-contract fidelity, and React/Plate wrapper boundaries.
 
-Use [docs-plugin](../docs-plugin/SKILL.md) for public plugin docs.
+Use [docs-creator](../docs-creator/SKILL.md) for public plugin docs.
 
 ## North-Star Gate
 
@@ -200,7 +200,7 @@ export const BasicBlocksPlugin = createPlatePlugin({
    - merged editor API/transforms
    - nested child plugins
 5. Apply the typing rules before adding explicit annotations.
-6. Add docs only by handing off to [docs-plugin](../docs-plugin/SKILL.md).
+6. Add docs only by handing off to [docs-creator](../docs-creator/SKILL.md).
 7. Verify the smallest honest surface:
    - package tests for semantic/plugin behavior
    - type tests or targeted typecheck when public contract changed

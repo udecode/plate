@@ -300,7 +300,7 @@ bun --filter slate-browser test:selection
 
 | Pass                                 | Status   | Evidence                                                                                                                    | Next owner |
 | ------------------------------------ | -------- | --------------------------------------------------------------------------------------------------------------------------- | ---------- |
-| Skill reload                         | complete | Loaded `slate-ralplan`, `editor-test-harvester`, `clawsweeper`, `ralph`, `planning-with-files`, and `learnings-researcher`. | n/a        |
+| Skill reload                         | complete | Loaded `slate-ralplan`, `editor-test-harvester`, `clawsweeper`, `ralph`, `goal workflow`, and `learnings-researcher`. | n/a        |
 | Current-state read and initial score | complete | Read ProseMirror harvest, current done plans, focused live `.tmp/slate-v2` owner probes, and IME learnings.                 | n/a        |
 | Related issue revalidation           | complete | Existing ledgers already preserve conservative statuses; fork dossier audit section appended.                               | n/a        |
 | Exact live-source row reads          | complete | Read package/browser owner rows for all five PM slices.                                                                     | n/a        |

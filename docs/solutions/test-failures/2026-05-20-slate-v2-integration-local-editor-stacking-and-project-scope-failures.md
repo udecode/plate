@@ -1,6 +1,7 @@
 ---
 title: Slate v2 integration-local editor stacking and project scope failures
 date: 2026-05-20
+last_updated: 2026-05-23
 category: docs/solutions/test-failures
 module: Slate v2 browser proof
 problem_type: test_failure
@@ -13,7 +14,7 @@ symptoms:
 root_cause: logic_error
 resolution_type: code_fix
 severity: high
-tags: [slate-v2, playwright, integration-local, stacking-context, beforeinput, browser-projects]
+tags: [slate-v2, playwright, integration-local, stacking-context, editable-defaults, beforeinput, browser-projects]
 ---
 
 # Slate v2 integration-local editor stacking and project scope failures
@@ -37,20 +38,38 @@ tags: [slate-v2, playwright, integration-local, stacking-context, beforeinput, b
 
 ## Solution
 
-Create a local stacking context around examples that contain an `Editable` with the runtime's negative `z-index` selection workaround:
-
-```css
-.example-content {
-  position: relative;
-  z-index: 0;
-}
-```
-
-Apply the same ownership locally when the editor lives outside the normal page wrapper:
+Slate React owns the default stacking on the public `Editable` root:
 
 ```tsx
-<Editable placeholder="..." style={{ zIndex: 0 }} />
+style={{
+  ...(disableDefaultStyles
+    ? {}
+    : {
+        position: 'relative',
+        whiteSpace: 'pre-wrap',
+        wordWrap: 'break-word',
+        zIndex: 0,
+      }),
+  ...userStyle,
+}}
 ```
+
+Package tests should pin the actual contract:
+
+```tsx
+expect(editable.style.zIndex).toBe('0')
+
+render(
+  <Slate editor={editor}>
+    <Editable style={{ zIndex: 2 }} />
+  </Slate>
+)
+expect(editable.style.zIndex).toBe('2')
+```
+
+Keep `disableDefaultStyles` as the opt-out for hosts that fully own root CSS.
+Do not spread `style={{ zIndex: 0 }}` through examples to compensate for Slate
+internals.
 
 When a user `onDOMBeforeInput` handler returns a truthy non-null value, prevent the native default before reporting the event as handled:
 
@@ -75,7 +94,15 @@ Then narrow project coverage to what each row actually proves:
 
 ## Why This Works
 
-Slate's `Editable` uses a negative `z-index` workaround for browser selection behavior. Without a parent stacking context, Playwright can hit the visible wrapper instead of the editor text. Giving each example root its own stacking context keeps the workaround local and restores pointer ownership without changing editor behavior.
+The public `Editable` root is the element users style, click, test, and pass
+IDs/classes to. A negative default root z-index makes normal app code pay for an
+internal selection workaround. Keeping the root visible and hittable by default
+fixes comment-mode and removes repeated example-local z-index patches without a
+new public prop.
+
+If a browser selection case still needs a stacking workaround, fix that named
+case in the selection/decorations runtime. Do not reintroduce a negative public
+root default.
 
 The beforeinput change matches the API contract: returning `true` says the handler owns the event. Ownership must include cancelling the browser default, otherwise Slate records the event as handled while the DOM still mutates natively.
 
@@ -83,11 +110,19 @@ The project skips make the integration suite honest. A row should prove one supp
 
 ## Prevention
 
-- When a visible Slate editor cannot be clicked in Playwright, inspect stacking context and hit testing before changing timeouts.
+- When a visible Slate editor cannot be clicked in Playwright, inspect stacking
+  context and hit testing before changing timeouts.
+- The normal Slate example call site should stay plain:
+  `<Editable className={editorCss} id="editor" />`.
+- Do not keep per-example `style={{ zIndex: 0 }}` patches for default
+  visibility. That is package-owned behavior.
 - Keep `onDOMBeforeInput` boolean-return tests tied to both command trace and native default cancellation.
 - Add browser-project skips with a reason that names the unsupported browser primitive, not a vague flake label.
 - For CSS computed values in WebKit, compare parsed numeric values with tolerance.
 - Run the previously failing row matrix before the full integration gate, then rerun full `bun test:integration-local` with a local worker cap.
+- A separate toolbar/control focus row can still fail if an external button
+  reads model-backed selection after focus leaves the editor. Treat that as a
+  toolbar DX issue, not an `Editable` root stacking issue.
 
 ## Related Issues
 

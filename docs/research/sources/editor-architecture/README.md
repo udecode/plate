@@ -66,6 +66,7 @@ Current pages:
 - [node-text-mark-render-dx-corpus-ledger.md](docs/research/sources/editor-architecture/node-text-mark-render-dx-corpus-ledger.md)
 - [scroll-selection-visibility-runtime.md](docs/research/sources/editor-architecture/scroll-selection-visibility-runtime.md)
 - [yjs-collaboration-bindings.md](docs/research/sources/editor-architecture/yjs-collaboration-bindings.md)
+- [pretext-pagination-page-virtualization.md](docs/research/sources/editor-architecture/pretext-pagination-page-virtualization.md)
 
 This directory should not turn into a dump of one-off notes.
 

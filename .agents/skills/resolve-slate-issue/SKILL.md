@@ -1,5 +1,5 @@
 ---
-description: Resolve one Slate or Slate v2 GitHub issue end to end, using task-style issue intake plus Slate Ralplan proof discipline, then post the verified no-PR issue comment with gh.
+description: Resolve one Slate or Slate v2 GitHub issue end to end, using task-style issue intake plus Slate Plan proof discipline, then post the verified no-PR issue comment with gh.
 argument-hint: <issue number | issue URL>
 disable-model-invocation: true
 name: resolve-slate-issue
@@ -14,7 +14,7 @@ Handle $ARGUMENTS.
 
 Use this for one issue at a time when the goal is to prove, fix or classify the
 issue, then comment directly on the issue. This combines `task` issue-first
-execution with Slate Ralplan's live-source, issue-ledger, and Slate v2
+execution with Slate Plan's live-source, issue-ledger, and Slate v2
 verification discipline.
 
 ## Hard Rules
@@ -40,7 +40,7 @@ verification discipline.
   real owner, then verify.
 - Do not claim manual IME/mobile/device closure from synthetic browser rows.
 - `plate-2` commands prove planning/docs state only. Slate behavior proof must
-  run in `/Users/zbeyens/git/slate-v2`.
+  run in `.tmp/slate-v2`.
 
 ## Intake
 
@@ -97,7 +97,7 @@ For `red-current`:
    - manual/browser note only when automation cannot honestly cover it.
 2. Fix the durable owner in `.tmp/slate-v2`.
 3. Avoid example-local patches unless the bug is truly example-local.
-4. Run focused verification from `/Users/zbeyens/git/slate-v2`.
+4. Run focused verification from `.tmp/slate-v2`.
 5. Run broader Slate v2 gate when the touched surface justifies it.
 6. Update any local plan or fork dossier only when useful for issue accounting.
 7. If verification gives `95%+` confidence, close the issue after posting the
@@ -130,7 +130,7 @@ Record exact commands with cwd.
 Common Slate v2 gates:
 
 ```bash
-cd /Users/zbeyens/git/slate-v2
+cd .tmp/slate-v2
 bun --filter slate-react typecheck
 bun check
 PLAYWRIGHT_BASE_URL=http://localhost:3100 bun playwright <test-file> --project=chromium --grep "<issue row>"

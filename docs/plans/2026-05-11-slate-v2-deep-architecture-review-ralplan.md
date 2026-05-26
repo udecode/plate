@@ -3,8 +3,8 @@ date: 2026-05-11
 topic: slate-v2-deep-architecture-review
 status: done
 source_skill: slate-ralplan
-completion_file: .tmp/019e1249-8cb3-7421-b7cd-4e289b9723ab/completion-check.md
-continue_file: .tmp/019e1249-8cb3-7421-b7cd-4e289b9723ab/continue.md
+completion_file: active goal state
+continue_file: active goal state
 ---
 
 # Slate v2 Deep Architecture Review Ralplan

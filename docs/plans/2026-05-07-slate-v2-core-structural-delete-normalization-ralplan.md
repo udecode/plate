@@ -350,7 +350,7 @@ cd .tmp/slate-v2 && bun test ./packages/slate/test/delete-contract.ts ./packages
   for #4121/#5811 plus related issue pressure.
 - `learnings-researcher`: applied. The table-backspace solution note blocks
   broad nested-block cleanup.
-- `planning-with-files`: applied through this `docs/plans` file.
+- `goal workflow`: applied through this `docs/plans` file.
 - `tdd`: required for Ralph execution. This lane must begin red.
 - `performance`: skipped. This lane is correctness-first; #5992 remains an
   improved performance row from the range-delete plan.

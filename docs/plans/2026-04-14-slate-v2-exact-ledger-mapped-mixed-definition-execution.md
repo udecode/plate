@@ -17,7 +17,7 @@ the live tranche-7 row classifications.
 
 - `ralph`
 - `major-task`
-- `planning-with-files`
+- `goal workflow`
 - `learnings-researcher`
 
 # Constraints

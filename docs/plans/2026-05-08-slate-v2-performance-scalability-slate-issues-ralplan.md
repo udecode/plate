@@ -11,7 +11,7 @@ Current score: `0.95`
 Completion file:
 `.tmp/completion-checks/slate-v2-performance-scalability-slate-issues-ralplan.md`
 
-Continuation prompt: `.tmp/continue.md`
+Continuation prompt: `active goal state`
 
 ## Ralph Execution Slice 1
 

@@ -23,7 +23,7 @@ the lane is fixable or should be deleted.
 
 - `major-task`
 - `task`
-- `planning-with-files`
+- `goal workflow`
 - `learnings-researcher`
 - `performance-oracle`
 - `debug`

@@ -1064,7 +1064,7 @@ This review plan is done only when:
 - Public API keep/cut decisions are written: yes.
 - Runtime perf model keep/cut decisions are written: yes.
 - Generated stress/parity acceptance criteria are written: yes.
-- `.tmp/<session-id>/completion-check.md` says `done`: yes.
+- `active goal state` says `done`: yes.
 
 The review lane is complete. The next move is implementation via
 `complete-plan`, not another review pass.

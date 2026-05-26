@@ -755,7 +755,7 @@ This review can move from `pending` to `done` only when:
 - public API surface has no "maybe" language
 - legacy regression proof has a generated browser parity answer and named first
   slice
-- `.tmp/<session-id>/completion-check.md` points to this plan and says `done`
+- `active goal state` points to this plan and says `done`
 
 Current status: `done`.
 

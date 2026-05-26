@@ -370,8 +370,8 @@ all autonomous progress.
 Actions:
 
 - Activated this plan through `complete-plan`.
-- Set `.tmp/<session-id>/completion-check.md` to `status: pending`.
-- Refreshed `.tmp/continue.md` for this lane.
+- Set `active goal state` to `status: pending`.
+- Refreshed `active goal state` for this lane.
 - Confirmed prior `EditableDOMRoot` / root selector review findings are stale
   for this lane because the root-runtime selector guard lane is already done.
 
@@ -386,8 +386,8 @@ Evidence:
 
 Changed files:
 
-- `.tmp/<session-id>/completion-check.md`
-- `.tmp/continue.md`
+- `active goal state`
+- `active goal state`
 - `docs/plans/2026-04-28-slate-v2-runtime-owned-void-shell-render-api-plan.md`
 
 Decision:
@@ -536,7 +536,7 @@ Changed files:
 - `.tmp/slate-v2/playwright/stress/stress-utils.ts`
 - `.tmp/slate-v2/playwright/integration/examples/embeds.test.ts`
 - `.tmp/slate-v2/site/examples/ts/large-document-runtime.tsx`
-- `.tmp/<session-id>/completion-check.md`
+- `active goal state`
 - `docs/plans/2026-04-28-slate-v2-runtime-owned-void-shell-render-api-plan.md`
 
 Decision:

@@ -27,7 +27,7 @@ Need a new plugin?
 |          +- no  -> `createPlatePlugin`
 |
 +- Need docs?
-   +- hand off to `docs-plugin`
+   +- hand off to `docs-creator`
 ```
 
 ## Default Paths

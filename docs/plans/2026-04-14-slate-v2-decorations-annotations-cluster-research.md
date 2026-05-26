@@ -49,7 +49,7 @@ The output should separate:
 
 ## Progress
 
-- Created this merged plan file per repo override for `planning-with-files`.
+- Created this merged plan file per repo override for `goal workflow`.
 - Loaded workspace instructions, OMX state, and skill guidance.
 - Indexed local `docs/slate-issues/**` files and grep hits for `decorat|annotat`.
 - Read `issue-clusters.md`, `requirements-from-issues.md`, key ledger rows, and targeted open-issue dossiers covering cross-node decorate, IME/decorated selection failures, and async decorate caret jumps.

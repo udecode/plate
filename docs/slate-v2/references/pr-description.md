@@ -24,8 +24,8 @@ Full ledger:
 
 Current summary:
 
-- Fixed issue claims: `32`
-- Related issue matrix rows: `192`
+- Fixed issue claims: `36`
+- Related issue matrix rows: `190`
 - Live corpus accounting: `630` open issues, `29` open PRs, `659` open
   threads, and `617` gitcrawl clusters from the 2026-05-04 refresh. This is
   corpus accounting, not an auto-close claim.
@@ -70,6 +70,51 @@ Current summary:
   typecheck, lint, and markdown-shortcuts browser proof passed; raw Android
   device proof is still required before any exact `#4532` claim. New exact
   fixed or improved claims from that sync: `0`.
+- Editable-island / multi-root child-root planning sync changes the target
+  example architecture only: native/app controls stay inside
+  `editable-island`, rich editable island content should use same-runtime child
+  roots, scalar document-owned fields should use state fields, and
+  `renderVoid` stays content-only. New exact fixed or improved claims from that
+  sync: `0`.
+- Void roots / content-root API execution keeps ordinary voids atomic, keeps
+  `editable-island` for mixed native/app controls with optional child roots,
+  and adds the public API/lifecycle plus scoped browser baseline for pure
+  editor-flow child content: `EditorElementSpec.contentRoot`,
+  `tx.roots.create/replace/delete`, `useSlateContentRoot`, and editable-voids
+  keyboard/browser proof. Owner/root payload remap, copy/cut/move
+  serialization, mobile/raw-device behavior, slate-yjs mapping, repeated-root
+  performance, and release-gate verification remain unclaimed. New exact fixed
+  or improved claims from that sync: `0`.
+- Vertical content-root keyboard navigation planning keeps `contentRoot` as the
+  public surface and targets a lazy geometry-aware `ArrowUp` / `ArrowDown`
+  bridge across same-runtime roots. It preserves the existing `#6034` table
+  ArrowDown fixed claim as exact, keeps `#5524` soft-break navigation related
+  but unclaimed, and reuses the prior `#5212` / `#2072` content-root accounting.
+  New exact fixed or improved claims from that sync: `0`.
+- Vertical content-root revision sync freezes the user-review architecture:
+  one internal runtime bridge over existing `contentRoot: { slot }`, same-x
+  browser geometry proof, no-content-root perf proof, no public vertical prop,
+  no default void traversal, no mobile/raw-device or IME claim, and no current
+  slate-yjs collaboration claim. It keeps `#6034` exact and `#5524`, `#5212`,
+  and `#2072` related but unclaimed. New exact fixed or improved claims from
+  that sync: `0`.
+- Synced Blocks / content-root projection planning sync freezes the user-review
+  architecture for repeated shared roots: canonical
+  `props.slots.contentRoot('body', options)` DX, one-runtime focus/selection/
+  history, runtime-local active projection identity, route-local duplicate and
+  unsync, no default void traversal change, and no current slate-yjs support
+  claim. Related issue rows stay related/non-claim until the route and browser /
+  package proof land. New exact fixed or improved claims from that sync: `0`.
+- Hidden/offscreen block API execution sync adds the runtime and example surface
+  for model-present content whose editable DOM is absent: internal
+  `DOMCoverage`, stable `slots.contentBoundary`, optional `boundaryId`,
+  object-shaped `onMaterialize({ boundary, reason, range })`, local app-owned
+  accordion/tab state, shadcn-shaped examples only, no raw Slate UI kits, and
+  explicit native degradation while DOM is absent. Focused package tests and the
+  `hidden-content-blocks` browser route cover the execution surface, while
+  related issue rows stay related/non-claim until exact external repros are
+  proven end to end.
+  New exact fixed or improved claims from that sync: `0`.
 
 Current fixed issue claims:
 
@@ -105,6 +150,13 @@ Current fixed issue claims:
 - Fixes #4789: A native selection that starts outside the editor and ends inside
   the editor is ignored without a DOM point crash, and the editor remains usable
   after refocus.
+- Fixes #5826: In a long editor, clicking the top block, blurring, scrolling to
+  the final block, and clicking back into the editor keeps the clicked
+  final-block selection visible instead of restoring the stale top selection.
+- Fixes #4376: WebKit blur/refocus keeps the Slate model selection and follow-up
+  typing lands at the preserved point.
+- Fixes #5171: Firefox unfocused editor updates preserve the inactive editor
+  selection instead of importing an external input selection.
 - Fixes #4984: A parent-editor selection that crosses into a nested editor is
   ignored without a DOM point crash, and input remains owned by the parent or
   nested editor that actually has focus.
@@ -134,6 +186,8 @@ Current fixed issue claims:
   the inserted content.
 - Fixes #5089: Rich multi-block fragment paste into the middle of a paragraph
   preserves block separation instead of flattening into the current paragraph.
+- Fixes #4806: Selected inline void copy, paste, and cut work through the
+  native browser clipboard path with model-owned caret repair.
 - Fixes #5080: `state.nodes.entries({ reverse: true })` returns the exact reverse
   of the forward matched entry order for nested matching entries.
 - Fixes #6053: `useElementSelected()` does not throw when a selected rendered
@@ -206,6 +260,41 @@ Accepted current shape:
 - Workspace dependencies stay local and source-first during development.
 - Public barrels expose only the v2-supported surface.
 - Dead compatibility exports do not stay public just to reduce diff size.
+- Raw Slate does not ship Markdown or table product packages. Markdown syntax
+  policy, parsing/serialization, input rules, table maps, table commands, cell
+  selection UX, and GFM table hooks belong in Plate or app-level feature
+  packages.
+- Raw Slate owns the substrate those features need: schema/spec policy,
+  transforms, selection primitives, normalization, clipboard/input hooks, and
+  layout projection primitives.
+- `slate-layout` extracts leaf-level layout runs with block offsets and Slate
+  leaf paths while preserving the existing block text fallback. Page projection
+  exposes placed runs, visual text rects, native hit rects, decoration ranges,
+  and generic block-local box metadata.
+- Markdown and table examples, Plate, or app-level packages supply the
+  schema-specific adapters and fixtures for code lines, images, thematic
+  breaks, tables, and table cells.
+- The experimental pagination example composes the layout helpers from
+  `slate-layout` directly: geometry, projection, decorations, line hit rects,
+  page frames, and mixed Markdown-shaped content stay in the example as proof,
+  not as app-owned projection math.
+- Open architecture target: `slate-layout` should become the generic derived
+  layout service for continuous and paged snapshots, with a built-in Pretext
+  engine behind an internal boundary and `slate-react` consuming layout through
+  a DOM materialization policy instead of treating pagination or virtualization
+  as product rendering modes.
+- Pagination planning target: public beta API should stay small:
+  `useSlateLayout(editor, { page, root, typography, nodeLayout, pageBreaks })`
+  is the layout entrypoint, `nodeLayout({ element, path, defaults,
+  pageSettings, measurementProfile })` describes text fallback, fixed/avoid
+  boxes, or provider-owned units, and `PagedEditable` exposes pathless
+  `useSlateLayoutFragments()` for renderers. Tools can still use
+  `layout.getFragments(path)`. Public `boxes`, public `RenderElementProps.path`,
+  raw Slate TableKit, and AST table splitting stay out of the beta target.
+  `pageView` groups page display settings, virtualized `domStrategy` drives
+  internal page/spread mounting, `measurementProfile` is snapshot metadata, and
+  `pageBreaks` remains opt-in strict-fidelity metadata. This planning target
+  adds no fixed/improved issue claim.
 
 Why it belongs in the PR:
 
@@ -217,6 +306,9 @@ Proof references:
 - `docs/slate-v2/final-api-hard-cuts-status.md`
 - `docs/slate-v2/references/live-shape-register.md`
 - `docs/slate-v2/replacement-gates-scoreboard.md`
+- `.tmp/slate-v2/packages/slate-layout/test/page-layout-contract.test.ts`
+- `.tmp/slate-v2/site/examples/ts/pagination.tsx`
+- `.tmp/slate-v2/playwright/integration/examples/pagination.test.ts`
 
 ## 3. Core Editor API Reset
 
@@ -333,10 +425,15 @@ Open debt:
   focused performance/release proof covers editor-store, history-retained
   memory, collab-readiness, React rerender-breadth, and root `bun check`; two
   field/root-specific benchmark script names remain missing harness coverage,
-  not passed proof. A later React runtime-provider slice is planned for
-  optional `SlateRuntime`, `<Slate root="...">`, `useSlateRuntimeState`, and
-  `useSlateViewState`; this is a non-claim API target for multi-root/header-
-  footer examples, not an added issue count.
+  not passed proof. The multi-root React DX target is one canonical
+  `<Slate editor={editor}>` provider with multiple `<Editable root="...">`
+  surfaces. `SlateRuntime`, `<Slate root="...">`, `createEditorView`,
+  `useSlateRuntimeState`, and `useSlateViewState` remain advanced substrate
+  APIs for custom hosts. This is a non-claim API target for multi-root/header-
+  footer examples, not an added issue count. A follow-up non-claim API target
+  adds package-owned `useSlateHistory` and `useSlateRootChrome` so the canonical
+  example does not teach app-owned history shortcut parsing, stack reads,
+  selection metadata, active-root command routing, or RAF focus repair.
 - Structural delete and normalization now have focused core package proof for
   #4121/#2500/#3965/#3950. #5811 is improved by deterministic normalization
   loop detection. #1654 is improved by wiring existing `isIsolating` schema
@@ -498,9 +595,10 @@ Accepted current shape:
   `tx.operations.replay(...)`; CRDT/Yjs-style adapters lower it at their own
   boundary if their transport cannot represent child-window replacement
   atomically.
-- Selected inline void export must not assume block-void spacer DOM; copy,
-  paste round-trip, and cut ordering keep the model fragment at the DOM
-  clipboard boundary.
+- Selected inline void export must not assume block-void spacer DOM. Browser
+  clipboard proof keeps deterministic HTML/text payloads, embeds the Slate
+  fragment, avoids FEFF and neighboring text leakage, pastes into an external
+  contenteditable target, and repairs the caret after cut.
 - Selected block void cut writes clipboard data, removes the void block once,
   and requests model-owned DOM repair.
 - Core model fragment extraction keeps whole-list wrappers, and delete across a
@@ -518,8 +616,8 @@ Performance status:
   `Fixes #5945` closure still needs a 10,000-line browser artifact for the
   plaintext example flow.
 - Improves #4056: the issue-size benchmark now covers populated-editor large
-  copy and large middle paste. The latest run reports `12.16ms` for copying
-  10,000 populated blocks and `185.49ms` for pasting 10,000 plaintext lines
+  copy and large middle paste. The latest run reports `49.35ms` for copying
+  10,000 populated blocks and `235.22ms` for pasting 10,000 plaintext lines
   into a 10,000-block populated editor with one logical operation. Exact
   `Fixes #4056` closure still needs the historical browser repro.
 - Improves #5992: the 50,000-block two-node cut benchmark now lowers exact
@@ -1179,8 +1277,8 @@ Accepted current shape:
 
 Why it belongs in the PR:
 
-- This is the missing-DOM substrate needed for collapse, staged mounting, shell
-  modes, and virtualization.
+- This is the missing-DOM substrate needed for collapse, staged mounting,
+  app-owned preview surfaces, and virtualization.
 - It prevents the old `Cannot resolve a Slate node from DOM node` failure class
   from becoming a permanent v2 footgun.
 
@@ -1218,8 +1316,9 @@ Accepted current shape:
 - Full-document replacement must not leave stale far DOM exposed.
 - Virtualized rendering is explicit and experimental. The API exposes it only
   through object form, `{ type: 'virtualized' }`; stable string strategies stay
-  `auto`, `full`, `staged`, and `shell`.
-- Rendering strategy option objects normalize by primitive fields inside
+  `auto`, `full`, and `staged`. Public `shell` / `preview-shell` is cut before
+  beta; preview or collapse UI belongs above Slate and must use DOM coverage.
+- DOM strategy option objects normalize by primitive fields inside
   `Editable`, so examples do not need caller-side `useMemo` just to stabilize
   option identity.
 
@@ -1231,16 +1330,22 @@ Why it belongs in the PR:
 
 Open gates:
 
-- The 5000-block huge-document typing/select superiority gate is not a final
-  release claim yet.
+- The 5000-block huge-document DOM-present/default gate is scoped as current
+  release proof.
+- The 10000-block immediate far-selection stress row is not claimed as fixed.
 - Virtualized editing needs stricter caret, IME, mobile, copy, and find proof
   before production positioning.
+- The Pretext layout target hard-cuts public `renderingStrategy` to
+  `domStrategy` before beta because the current name conflates layout,
+  pagination, preview surfaces, and viewport virtualization. Any temporary
+  alias is implementation-only and must not appear in public examples or docs.
 
 Proof references:
 
 - `docs/slate-v2/references/chunking-review.md`
 - `docs/plans/2026-05-03-slate-v2-dom-present-large-doc-phase-6-plan.md`
 - `docs/plans/2026-05-03-slate-v2-experimental-virtualized-rendering-boundary.md`
+- `docs/plans/2026-05-23-slate-v2-large-document-performance-virtualization-ralplan.md`
 - `docs/slate-v2/replacement-gates-scoreboard.md`
 - `.tmp/slate-v2/packages/slate-react/test/surface-contract.test.tsx`
 - `.tmp/slate-v2/site/examples/ts/rendering-strategy-runtime.tsx`
@@ -1285,7 +1390,9 @@ out:
 - Full `bun test:integration-local` closure.
 - RC ledger closure.
 - Completion-check status.
-- Huge-doc typing/select superiority against the current comparator.
+- Huge-doc performance scope declaration: 5000-block default proof is in scope;
+  10000-block immediate far-selection stress is not claimed unless a later
+  artifact closes it.
 - Raw-device mobile proof, unless the PR explicitly scopes mobile to semantic or
   Playwright-device proof.
 - Stable public DOM coverage slot API.

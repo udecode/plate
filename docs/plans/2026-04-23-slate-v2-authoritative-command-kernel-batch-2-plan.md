@@ -509,7 +509,7 @@ Defer these unless Batch 2 evidence proves they are immediate blockers:
 
 ## Completion Check
 
-`.tmp/<session-id>/completion-check.md` should be:
+`active goal state` should be:
 
 - `status: pending` while Batch 2 work remains
 - `status: done` only when Phase 7 closure criteria pass
@@ -526,7 +526,7 @@ Status: complete.
 
 Actions:
 
-- Set `.tmp/<session-id>/completion-check.md` to `status: pending` for Batch 2 execution.
+- Set `active goal state` to `status: pending` for Batch 2 execution.
 - Inventoried current kernel authority leaks in slate-react.
 - Inventoried remaining runtime bypasses and example/plugin surfaces that can
   bypass the command/kernel discipline.
@@ -2289,7 +2289,7 @@ Actions:
   gauntlets, broad browser suite, React locality, 5000-block huge-doc compare,
   and lint.
 - Classified remaining broad-suite red rows instead of hiding them.
-- Kept `.tmp/<session-id>/completion-check.md` ready to mark done for Batch 2 scope.
+- Kept `active goal state` ready to mark done for Batch 2 scope.
 
 Evidence:
 

@@ -1,5 +1,5 @@
 ---
-description: Build new shadcn-style components for Plate's registry and editor surfaces. Use when authoring or refactoring registry UI/components, deciding what belongs in packages vs app-local component files, or creating new base/live kits and registry wiring.
+description: Build new shadcn-style components for Plate's registry and editor surfaces. Use when authoring or refactoring registry UI/components, deciding what belongs in packages vs app-local component files, creating base/live kits and registry wiring, or applying React Compiler, Effects, accessibility, polymorphism, data-slot, data-state, and composable-component rules to Plate UI work.
 name: plate-ui
 metadata:
   skiller:
@@ -176,6 +176,13 @@ const {
 ## Audit References
 
 - [component-audit.md](./references/component-audit.md) — concrete good patterns and anti-patterns from this repo
+
+## Comprehensive References
+
+Load these only when the task needs the detail:
+
+- `.agents/rules/plate-ui/references/components.md` — comprehensive component architecture reference: accessibility, `asChild`, composition, data attributes, artifact taxonomy, polymorphism, controlled/uncontrolled state, and component typing.
+- `.agents/rules/plate-ui/references/react.md` — comprehensive React reference: React Compiler, manual memoization escape hatches, Effects, `useEffectEvent`, ref access, derived state, Tailwind v4 syntax, data attributes, and UI constraints.
 
 ## Detailed References
 

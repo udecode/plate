@@ -26,6 +26,325 @@ Rules:
   multi-member clusters.
 - Keep issue refs unescaped when auto-linking matters.
 
+## Hidden/Offscreen Block API Surface Review - 2026-05-26
+
+Status: execution-sync
+Source plan:
+`docs/plans/2026-05-26-slate-v2-hidden-dom-blocks-api-plan.md`
+
+Reviewed surface:
+The implementation defines the hidden/offscreen block API surface:
+internal `DOMCoverage`, public `slots.contentBoundary`, optional `boundaryId`,
+object-shaped `onMaterialize({ boundary, reason, range })`, local app-owned
+accordion/tab state, shadcn-shaped examples only, and explicit native
+degradation while editable DOM is absent.
+
+Decision:
+This is implementation/accounting only. It adds no fixed issue claims and no
+improved issue claims. Stable API behavior, handler coexistence, shadcn browser
+proof, and native degradation are covered by focused `.tmp/slate-v2` tests, but
+the exact external issue repros remain unclaimed.
+
+Issue decisions:
+
+| Issue | Decision text |
+| --- | --- |
+| #2072 | Related architecture pressure. Hidden/offscreen blocks strengthen the library-owned boundary story, but the old Island request remains broader than this content-boundary target. |
+| #1769, #3893 | Related focus pressure. Native/app controls inside shadcn-shaped shells require browser focus proof; no exact external-focus or HTML-button closure is claimed. |
+| #5211 | Stale/no claim. Whole-editor hide/show persistence is adjacent React lifecycle pressure, not the same contract as model-present hidden descendants behind a Slate boundary. |
+| #5355 | Not claimed. Raw app-rendered `colgroup` / `col` omissions stay unsupported unless a Slate-owned DOM coverage boundary declares the missing model content. |
+| #5924 | Not claimed. Structural DOM exclusion routes through DOM coverage and mount policy, not a public ignore-cursor or render-prop path API. |
+| #790 | Related proof-route backlog. Hidden/offscreen blocks share dynamic-rendering pressure, but need mount/edit/scroll benchmark proof, mounted-count proof, DOM coverage proof, and browser native-behavior proof before any claim. |
+| #2793, #2572 | Release guard / policy non-claim. Missing-DOM modes must expose native degradation and cannot claim screen-reader or accessibility parity without assistive-tech proof. |
+| #3892 | Policy non-claim. Generic custom-layout surfaces remain ecosystem/product territory; raw Slate exposes only the boundary primitive. |
+
+PR-description text:
+No new `Fixes #...` or `Improves #...` claim. Keep current PR fixed/improved
+counts unchanged.
+
+## Synced Blocks / Content-Root Projection Surface Review - 2026-05-26
+
+Status: planning-sync
+Source plan:
+`docs/plans/2026-05-26-slate-v2-synced-content-roots.md`
+
+Reviewed surface:
+The plan defines the user-review-ready Synced Blocks architecture: a root-editor
+block projects an editor-owned content root through
+`props.slots.contentRoot('body', options)`, multiple owner blocks may point at
+the same root key, focus/selection/history remain one-runtime, and projection
+identity is runtime-local DOM focus state. The Notion-like chrome, duplicate,
+and unsync actions belong to the example.
+
+Decision:
+This is planning/accounting only. It adds no fixed issue claims and no improved
+issue claims. The plan is a substrate and proof-gate decision, not an
+implementation or release claim.
+
+Issue decisions:
+
+| Issue | Decision text |
+| --- | --- |
+| #5212 | Related example/DX pressure. Synced Blocks is the planned clean teaching route, but no fixed or improved claim is legal until the route exists and proves shared editing, navigation, focus, and source DX. |
+| #2072 | Related architecture pressure. The old island request remains broader than document-flow content-root blocks; mixed islands and pure editor-rooted blocks stay separate. |
+| #5524 | Related/no claim. Soft-break ArrowDown is a different failure family unless later proof shows same-runtime root crossing. |
+| #6034 | Existing fixed claim unchanged. The table-last-node ArrowDown proof is a regression floor only; this plan must not broaden it. |
+| #5874, #4309 | Related identity guardrail. Synced Blocks share root keys inside one runtime, not Slate node object identity across positions or editor runtimes. |
+| #6016 | Triage-closed/non-fix unchanged. Shared node object graphs across independent editor runtimes remain unsupported. |
+| #5537, #5117 | Related multi-view focus and DOM-state pressure. Active projection identity and root-local DOM state are required execution proof, not current closure. |
+| #3482, #3367 | Related model-shape pressure. Default voids stay atomic and rich content belongs in child/content roots. |
+| #3435, #3884, #4301 | Related navigation guardrails. Content-root Arrow/Enter behavior must not change selected-void behavior; existing #4301 fixed floor stays exact. |
+| #3991, #3868, #5582, #5477, #4896, #4350, #4328, #5630 | Delete/selection guardrails. Owner deletion, range delete, select-all, paste/delete, and root restore remain future proof gates. |
+| #4984, #4842, #3909 | Nested/contenteditable guardrails. Same-runtime root projections remain the architecture answer; only existing #4984 fixed floor is preserved. |
+| #4806, #4802, #4104, #3926, #4888, #4623 | Clipboard/drop/move guardrails. Shared-root payload, copy, move, and remap behavior need targeted execution proof. |
+| #1769, #3893 | Related focus pressure. Click-outside and native/external focus behavior are browser proof gates. |
+| #5183, #5391, #5087, #4839, #5130, #5559 | Mobile/IME/inline-boundary statuses unchanged. The plan makes no raw-device or IME claim. |
+| #5131, #2051, #2195, #2405, #790 | Performance guardrails. Repeated projections need selector fanout, dirty-path, and stress proof before any perf claim. |
+| #5771, #5533, #1770, #3741 | Collaboration/history guardrails. Current slate-yjs support is not claimed; root-keyed shared types and root-qualified cursor/history proof remain future work. |
+| #3177, #3222, #3283 | Render/API/example pressure. Raw Slate exposes the primitive and keeps product sync UI out of core. |
+
+PR-description text:
+No new `Fixes #...` or `Improves #...` claim. Keep current PR fixed/improved
+counts unchanged.
+
+## Vertical ContentRoot Keyboard Navigation Surface Review - 2026-05-25
+
+Status: planning-sync
+Source plan:
+`docs/plans/2026-05-25-slate-v2-vertical-content-root-navigation.md`
+
+Reviewed surface:
+The plan narrows content-root keyboard work to plain `ArrowUp` / `ArrowDown`
+movement across same-runtime content roots. It reuses the closed
+void-root/content-root API execution, the horizontal editable-void navigation
+proof, and the mouse-unfocus proof. The target is a lazy geometry-aware bridge
+inside runtime navigation, not document-order jumps, app-level handlers, or a
+new public prop.
+
+Decision:
+This is planning/accounting only. It adds no fixed issue claims and no improved
+issue claims. It keeps `#6034` as an exact table-boundary fixed floor, routes
+`#5524` to soft-break caret/navigation proof unless future evidence shows a
+DOM root-crossing failure, and reuses the previous content-root accounting for
+`#5212` and `#2072`.
+
+Issue decisions:
+
+| Issue | Decision text |
+| --- | --- |
+| #5524 | Related/no claim. Down-arrow selection drift across soft breaks is the closest vertical-navigation issue, but this content-root plan does not claim it because same-runtime root crossing is a different failure mode. |
+| #6034 | Existing fixed claim unchanged. The table-last-node ArrowDown proof is a regression floor only; this plan must not turn it into a general ArrowDown/content-root claim. |
+| #5212 | Related example/DX pressure unchanged. A vertical content-root bridge may make the editable-voids example feel complete after execution proof, but no fixed or improved issue claim is earned here. |
+| #2072 | Related architecture pressure unchanged. Same-runtime content roots answer part of the island boundary direction, but the original island request stays broader than vertical keyboard movement. |
+| #5924, #5550, #5551 | Not claimed. Structural DOM exclusion, Web Component selection boundaries, and table-selection semantics are outside this same-runtime content-root surface. |
+
+PR-description text:
+No new fixed or improved issue claim. The PR reference may mention the vertical
+content-root plan as pending architecture, with focused Playwright and perf
+proof required before any runtime or issue claim changes.
+
+## Vertical ContentRoot Keyboard Navigation Revision Sync - 2026-05-25
+
+Status: planning-sync
+Source plan:
+`docs/plans/2026-05-25-slate-v2-vertical-content-root-navigation.md`
+
+Reviewed surface:
+The revision pass freezes the user-review spec: one internal Slate
+React/runtime bridge over the existing `contentRoot: { slot }` contract. Normal
+in-root `ArrowUp` / `ArrowDown` stays browser-native; cross-root vertical
+movement is attempted only at a visual content-root boundary with a mounted
+adjacent root; geometry must preserve approximate x; unresolved geometry falls
+back to native/no-op instead of a model-order jump.
+
+Decision:
+No new fixed or improved issue claim. The revision narrows future execution
+proof: no public vertical-navigation prop, no default void traversal, no
+mobile/raw-device or IME claim, no current slate-yjs collaboration claim, and
+no broad ArrowDown issue closure.
+
+Issue decisions:
+
+| Issue | Decision text |
+| --- | --- |
+| #5524 | Related/no claim. It remains soft-break vertical selection pressure, not proven same-runtime root crossing. |
+| #6034 | Existing fixed claim unchanged. Table-last-node ArrowDown remains exact and acts only as a regression floor. |
+| #5212 | Related example/DX pressure unchanged. The future vertical bridge may improve editable-void ergonomics, but this planning revision earns no fixed/improved claim. |
+| #2072 | Related architecture pressure unchanged. Same-runtime content roots are still the substrate, but the original island request is broader than this vertical-navigation plan. |
+| #5924, #5550, #5551 | Not claimed. Structural DOM exclusion, Web Component selection, and table-selection semantics stay outside this surface. |
+
+PR-description text:
+No new fixed or improved issue claim. The PR reference should say the frozen
+plan keeps `contentRoot` as the public surface, requires red-first same-x
+Playwright and no-content-root perf proof before implementation claims, and
+preserves #6034 as exact while leaving #5524/#5212/#2072 related but unclaimed.
+
+## Void Roots / ContentRoot API Execution Sync - 2026-05-25
+
+Status: implementation-sync
+Source plan:
+`docs/plans/2026-05-25-slate-v2-void-roots-and-editable-islands.md`
+
+Reviewed surface:
+The accepted execution implements the public API/lifecycle baseline and scoped
+keyboard/browser proof for the closed void roots / editable islands plan.
+`.tmp/slate-v2` now exposes `EditorElementSpec.contentRoot`,
+`tx.roots.create/replace/delete`, and `useSlateContentRoot`; the editable-voids
+example uses `tx.roots.create` for child-root creation and includes an
+editor-only content-root row with browser proof.
+
+Decision:
+This is API/browser substrate progress, not a fixed/improved issue claim.
+Default voids remain atomic, `editable-island` remains the mixed
+native/app-control surface, and owner/root payload remap plus release-gate
+verification remain unclaimed.
+
+Issue decisions:
+
+| Issue | Decision text |
+| --- | --- |
+| #5212 | Related/planned example and DX candidate. Root creation DX and scoped content-root browser proof improved the example route, but no exact fixed/improved claim is made. |
+| #2072 | Related architecture target strengthened. The content-root API and scoped keyboard/browser baseline exist; no exact closure claim is made without owner-root payload and release-gate proof. |
+| #3482, #3367 | Related model-shape pressure. Default voids stay atomic; the implementation does not make normal void descendants traversable. |
+| #3435, #3884, #4301 | Related navigation guardrails. Scoped editable-voids keyboard proof landed; no broad arrow/Enter claim; existing #4301 fixed floor remains exact. |
+| #3991, #3868, #5582, #5477, #4896, #4350, #4328, #5630 | Delete/selection guardrails. Root lifecycle helpers landed, but delete/select/remap closure still needs targeted proof. |
+| #4984, #4842, #3909 | Nested/contenteditable guardrails. Same-runtime roots remain the answer; only existing #4984 fixed floor is preserved. |
+| #4806, #4802, #4104, #3926, #4888, #4623 | Clipboard/drop/move guardrails. Root payload serialization and remap policy remain future proof gates. |
+
+PR-description text:
+No new fixed or improved issue claim. The PR reference should describe the
+public API/lifecycle and scoped editable-voids browser slice as implemented and
+keep owner-root payload, mobile/raw-device, slate-yjs, repeated-root perf, and
+release-gate claims gated.
+
+## Void Roots / Editor-only Rooted Flow Surface Review - 2026-05-25
+
+Status: planning-sync
+Source plan:
+`docs/plans/2026-05-25-slate-v2-void-roots-and-editable-islands.md`
+
+Reviewed surface:
+The target is no longer "editable island solves everything." The long-term
+shape is three surfaces: default voids remain atomic; `editable-island` handles
+mixed native/app controls with optional same-runtime child roots; editor-only
+rooted flow is a separate planned target expressed as object-only
+`contentRoot: { slot: string }` schema metadata for elements whose only content
+is a child editor/root and whose keyboard navigation should feel like sibling
+document blocks.
+
+Current live-source correction:
+The 2026-05-24 dossier text says the canonical editable-voids example still
+embedded an independent nested editor. That is stale for the current checkout:
+the example now uses same-runtime child roots. The unresolved gaps are public
+root creation DX and editor-only rooted-flow navigation proof.
+
+Decision:
+This is architecture and issue-accounting pressure, not a fixed/improved issue
+claim. Do not make default voids traversable. Do not store rich content under
+normal void element `children`. Do not overload mixed-control islands with the
+pure editor-flow contract unless later passes prove one policy can handle both
+without native-focus and keyboard-navigation footguns.
+
+Issue decisions:
+
+| Issue | Decision text |
+| --- | --- |
+| #5212 | Related/planned example and DX candidate. The example row remains in scope because same-runtime child roots exist but root creation is still noisy and editor-only rooted flow is not taught. No fixed or improved claim yet. |
+| #2072 | Related architecture target strengthened. The old `<Island>` pressure should split into mixed island and planned object-only `contentRoot: { slot: string }` rooted-flow primitives; no closure until final API and navigation proof exist. |
+| #3482, #3367 | Related model-shape pressure. Void children/arbitrary void text requests are answered by atomic default voids plus child roots/rooted elements, not by making normal void descendants navigable. |
+| #3435, #3884, #4301 | Related arrow/Enter/void-selection guardrails. Editor-only rooted flow needs explicit cross-root arrow/Enter behavior while preserving selected-void behavior. |
+| #3991, #3868, #5582, #5477, #4896, #4350, #4328, #5630 | Related delete/selection guardrails. Root-backed surfaces must preserve void delete, range delete, select-all paste/delete, and root restore semantics before any related status changes. |
+| #4984, #4842, #3909 | Nested/contenteditable ownership guardrails. Same-runtime child roots preserve the direction for nested-editor split-brain, but only the existing #4984 fixed claim is preserved. Exact offset or CodeMirror/void-node closure is not claimed. |
+| #4806, #4802, #4104, #3926, #4888, #4623 | Clipboard/drop/move guardrails. Root payload serialization and root remap policy are future proof gates; no clipboard, paste, or drag/drop closure is added here. |
+| #5183, #5391, #5559, #4839, #5087, #5411, #3611 | Inline/mobile/spacer/cursor guardrails. Editor-only rooted flow must not widen mobile inline-void, shift-click, cursor, spacer, highlighting, or IME claims. |
+| #1769, #3893 | External/native focus pressure. Mixed islands keep native-control focus ownership; editor-only rooted flow must not steal/import external selections. No exact focus issue closure. |
+
+PR-description text:
+No new fixed or improved issue claim. The PR reference may name
+`contentRoot: { slot: string }` only as planned architecture until execution
+proof changes claim scope.
+
+## Editable Islands / Multi-root Child Root Surface Review - 2026-05-24
+
+Status: planning-sync
+Source plan:
+`docs/plans/2026-05-24-slate-v2-editable-islands-multi-root-ralplan.md`
+
+Reviewed surface:
+The canonical editable-voids example still embeds an independent nested Slate
+editor for rich content. With multi-root support, that is no longer the right
+teaching architecture. The accepted target is `editable-island` for native/app
+controls and same-runtime child roots for rich editable content inside the
+island.
+
+Decision:
+This is public API/example architecture pressure, not a new fixed/improved
+issue claim. Existing native-control and nested-editor crash rows stay useful
+regression proof. New closure requires package-owned child-root lifecycle,
+selection, history, clipboard, delete/undo, move, and browser proof.
+
+Issue decisions:
+
+| Issue | Decision text |
+| --- | --- |
+| #5212 | Related/planned example candidate. The current canonical editable-voids example still embeds an independent nested editor for rich content, so the issue is directly in scope for the example rewrite. No fixed or improved claim is allowed until a same-runtime child-root example and proof exist. |
+| #2072 | Related architecture target strengthened. The `<Island>` request should become a library-owned island boundary plus optional same-runtime child roots; no closure claim until the example and proof exist. |
+| #4984 | Preserve existing fixed claim. The child-root architecture must keep parent-selection-across-nested-editor DOM point crash proof green, but adds no broader claim. |
+| #4842 | Preserve related status. Child roots reduce split-brain nested-editor offset pressure, but exact historical toSlatePoint offset closure is not claimed. |
+| #3909 | Related target ownership pressure. Nested contenteditable should route through same-runtime root ownership, but exact CodeMirror/void-node closure is not claimed. |
+| #4110 | Related native-control/browser-selection pressure. Inputs inside islands must keep Firefox caret/selection stable; no closure without browser proof. |
+| #4623 | Related void drag/drop pressure. Island move/drop semantics need proof, but this planning pass does not claim the drag-to-start duplicate bug fixed. |
+| #3858 | Related stale-descendant pressure. Child-root deletion/undo proof is required before changing this status. |
+| #3482, #3367 | Related model-shape pressure. Void children and arbitrary void text requests are answered by atomic parent islands plus same-runtime child roots, not by putting rich content directly under void element children. |
+| #5183, #5391 | Mobile inline-void pressure only. Child roots inside editable islands do not close Android/iOS inline-void keyboard or cursor-placement reports; keep raw device/browser proof as the gate. |
+| #4806, #4802, #4104, #3926 | Clipboard/copy/paste guardrails. Child-root serialization policy must be explicit, but this planning sync does not broaden existing inline-void copy/paste/cut or Safari paste claims. |
+| #4888, #4623 | Drop/drag lifecycle guardrails. Same-runtime child roots make wrong drop ownership more dangerous, so future implementation needs drop/move proof before any closure claim. |
+| #5582, #5477, #4896, #4350, #4328, #3991, #4301, #3868 | Void delete/selection guardrails. Existing fixed claims stay fixed floors; child-root delete/undo proof is a new regression gate, not a new issue claim. |
+| #5087, #5411, #3611, #3435, #3449, #4839 | Spacer/cursor/insert-break guardrails. The plan must not rely on spacer text hacks or widen inline-void cursor claims while introducing child roots. |
+| #1769, #3893 | External/non-editable focus pressure. Islands and native controls need coherent focus ownership, but this plan makes no exact external-focus closure claim. |
+
+PR-description text:
+No new fixed or improved issue claim. The plan changes the canonical editable
+void architecture target from nested independent editors to same-runtime child
+roots.
+
+## Library-Owned Multi-root History / Focus DX Surface Review - 2026-05-23
+
+Status: planning-sync
+Source plan:
+`docs/plans/2026-05-23-slate-v2-library-owned-multi-root-history-dx-ralplan.md`
+
+Reviewed surface:
+The canonical multi-root example still carried app-owned `getHistoryShortcut`,
+`getHistoryBatchCount`, `updateHistory`, `applyDocumentHistory`, and
+`requestAnimationFrame` focus repair. The accepted target is package-owned
+`useSlateHistory` and `useSlateRootChrome`.
+
+Decision:
+This is public API and browser-proof pressure, not a new fixed/improved issue
+claim. The hook work should preserve existing history-selection fixes while
+adding no broad Undo/Redo All, multi-editor focus, placeholder, or HTML button
+closure claim.
+
+Issue decisions:
+
+| Issue | Decision text |
+| --- | --- |
+| #6016 | Keep triage-closed/non-fix. One editor/runtime with root-bound editable surfaces is the supported answer; shared node graphs across independent editors stay unsupported. |
+| #5537 | Related focus/input pressure. Root chrome/focus proof helps the owner, but exact multi-editor programmatic focus closure is not claimed. |
+| #5117 | Related example/browser pressure. Root-local DOM state remains required; placeholder measurement closure is not claimed. |
+| #5515 | Related history-scope pressure. `useSlateHistory` is active-root history, not Undo/Redo All. |
+| #3893 | Related external-control focus pressure. Exact HTML button focus closure is not claimed. |
+| #3634, #4961 | Related programmatic focus pressure. Exact focus-after-programmatic-change closure still needs browser proof. |
+| #3705, #3756, #3921 | Preserve existing history-selection/refocus classifications. No broader partial `set_selection` or refocus claim. |
+| #3534, #3551, #4559, #3499 | Preserve existing fixed claims. Hook-level UI must keep these history guarantees green. |
+| #3460 | API pressure only for toolbar/command access outside the editor subtree. No issue closure claim. |
+
+PR-description text:
+No new fixed or improved issue claim. The plan targets package-owned
+`useSlateHistory` and `useSlateRootChrome` so examples do not teach app-owned
+history/focus plumbing.
+
 ## Udecode Open Issues Phase 4 Target Ownership Sync - 2026-05-10
 
 Status: fork-local synced
@@ -130,7 +449,7 @@ claimed.
 
 ## #4716 Table copy error
 
-Status: cluster-synced
+Status: fixes-claimed
 Bucket: v2-clipboard-serialization
 Confidence: medium
 
@@ -282,19 +601,28 @@ Evidence:
 - current v2 proof:
   `.tmp/slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts`,
   `.tmp/slate-v2/packages/slate-react/src/editable/runtime-android-engine.ts`,
+  `.tmp/slate-v2/packages/slate-react/test/android-input-manager-contract.test.ts`,
   `.tmp/slate-v2/packages/slate-react/test/with-react-contract.tsx`, and
   `.tmp/slate-v2/packages/slate-browser/test/core/release-proof.test.ts`.
+- 2026-05-23 no-Appium proof: package contract reproduced the stale selection
+  sub-bug from the #6027 root-cause class. Before the fix, marked collapsed
+  Android typing inserted the marked leaf correctly but restored selection to
+  raw `[0,0]@2`; after the fix, selection normalizes to the inserted marked
+  leaf at `[0,1]@1`.
+- video evidence transcript: issue recording shows keyboard dismissal after the
+  bold toolbar action and repeated refocus attempts on Android.
 
 Decision:
-Keep as `cluster-synced`, not `fixes-claimed`. The current fork has the right
-Android/input runtime owner, but the exact mark-toggle collapsed-selection
-behavior needs Android/device proof before closure. Treat #6027 as root-cause
-evidence and a later fix candidate, not as a fork claim.
+Keep as `related`, not `fixes-claimed`. The current fork fixes the stale
+selection owner for marked collapsed Android input, matching the #6027 root
+cause class. The exact user-visible keyboard dismissal still needs Android
+Chrome/WebView device proof before closure.
 
 PR-description text:
 Related #6022: Slate v2 input/composition runtime targets the Android
-mark-toggle selection/keyboard class, but this PR does not auto-close without
-matching device proof.
+mark-toggle selection/keyboard class and now has package proof for the stale
+selection sub-bug, but this PR does not auto-close without matching device
+proof.
 
 ## #5987 Caret jumps to wrong position when decorate callback changes from async state update
 
@@ -317,19 +645,21 @@ Evidence:
 - live GitHub checked: yes, via Batch 0 gitcrawl refresh and
   `.tmp/gitcrawl/2026-05-04T145301Z-cluster-10-detail.json`.
 - current v2 proof:
-  `.tmp/slate-v2/packages/slate-react/src/decoration-source.ts`,
-  `.tmp/slate-v2/packages/slate-react/src/hooks/use-decoration-selector.ts`,
-  `.tmp/slate-v2/packages/slate-react/test/app-owned-customization.tsx`, and
-  `.tmp/slate-v2/packages/slate-react/test/annotation-store-contract.tsx`.
+  `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`,
+  `.tmp/slate-v2/site/examples/ts/decorations-async.tsx`,
+  `.tmp/slate-v2/playwright/integration/examples/decorations-async.test.ts`,
+  and
+  `docs/plans/2026-05-23-slate-v2-async-decoration-caret-cluster-proof.md`.
 
 Decision:
-Keep as `improves-claimed`. Projection/source-owned decoration state reduces
-the async-decoration caret pressure, but the exact async app repro is not a
-closure claim.
+Promote to `fixes-claimed`. The browser proof mirrors the upstream repro: a
+delayed async `Editable.decorate` callback identity change adds a highlight
+after typing matching text at the document end, and both Slate selection and
+the browser DOM caret stay at the typed end after the DOM is restructured.
 
 PR-description text:
-Improves #5987: projection-owned decoration state addresses async decoration
-caret instability; no exact auto-close.
+Fixes #5987: async `Editable.decorate` updates can restructure text DOM without
+moving the browser caret away from the current Slate selection.
 
 ## #5983 When the content is empty, the first voice input on Android repeats
 
@@ -509,16 +839,20 @@ Evidence:
 - live GitHub checked: yes, via Batch 0 gitcrawl refresh and
   `.tmp/gitcrawl/2026-05-04T145301Z-threads-batch1-9-14.json`.
 - current v2 proof:
+  `.tmp/slate-v2/playwright/integration/examples/huge-document.test.ts`,
   `.tmp/slate-v2/packages/slate-react/test/app-owned-customization.tsx`,
   `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`, and
   `.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts`.
 
 Decision:
-Keep as `cluster-synced`. Selection repair and scroll forwarding are represented,
-but the exact long-editor refocus scroll behavior is not closed.
+Claim `Fixes #5826`. The huge-document browser row follows the reported flow:
+click the top block, blur, scroll to the final block, click back into the
+editor, and keep the clicked final-block selection visible instead of restoring
+the stale top selection.
 
 PR-description text:
-Related #5826: refocus/selection-scroll family; no exact closure.
+Fixes #5826: long-editor refocus keeps the clicked final-block selection visible
+instead of restoring the stale top selection.
 
 ## #6016 Displaying 2 Slate components with the same initialValue breaks the page
 
@@ -1921,22 +2255,25 @@ Evidence:
 - live GitHub checked: yes, via Batch 0 gitcrawl refresh and
   `.tmp/gitcrawl/2026-05-04T145301Z-cluster-20-detail.json`.
 - current v2 proof:
+  `.tmp/slate-v2/playwright/integration/examples/document-state.test.ts`,
   `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`,
   `.tmp/slate-v2/packages/slate-react/src/editable/runtime-selection-engine.ts`,
   and `.tmp/slate-v2/packages/slate-react/test/selection-runtime-contract.test.ts`.
 
 Decision:
-Keep as `cluster-synced`. The owner is cross-browser focus/selection import,
-but Safari blur proof is not claimed.
+Claim `Fixes #4376`. WebKit browser proof preserves the Slate model selection
+when focus leaves the editor, keeps it through editor refocus, and inserts
+follow-up text at the preserved point.
 
 PR-description text:
-Related #4376: Safari blur selection family; no exact closure.
+Fixes #4376: WebKit blur/refocus keeps the Slate model selection and follow-up
+typing lands at the preserved point.
 
 ## #5171 Firefox triggers an invalid selection update on editor change when it's not focused
 
-Status: cluster-synced
+Status: fixes-claimed
 Bucket: v2-dom-selection
-Confidence: medium
+Confidence: high
 
 Issue summary:
 Firefox can emit an invalid DOM selection update when editor content changes
@@ -1951,15 +2288,19 @@ Evidence:
 - live GitHub checked: yes, via Batch 0 gitcrawl refresh and
   `.tmp/gitcrawl/2026-05-04T145301Z-cluster-20-detail.json`.
 - current v2 proof:
+  `.tmp/slate-v2/playwright/integration/examples/document-state.test.ts`,
   `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`,
   `.tmp/slate-v2/packages/slate-react/src/editable/runtime-selection-engine.ts`,
   and `.tmp/slate-v2/packages/slate-react/test/selection-runtime-contract.test.ts`.
 
 Decision:
-Keep as `cluster-synced`. Exact Firefox unfocused-change proof is not claimed.
+Claim `Fixes #5171`. Firefox browser proof changes editor content while the
+editor is unfocused and an external input selection is active, without importing
+that external selection into the editor model.
 
 PR-description text:
-Related #5171: Firefox unfocused selection update family; no exact closure.
+Fixes #5171: Firefox unfocused editor updates preserve the inactive editor
+selection instead of importing an external input selection.
 
 ## #5095 Spell check does not work correctly on iOS Safari with Cyrillic characters
 
@@ -2111,16 +2452,19 @@ Evidence:
 - live GitHub checked: yes, via Batch 0 gitcrawl refresh and
   `.tmp/gitcrawl/2026-05-04T145301Z-cluster-16-detail.json`.
 - current v2 proof:
+  `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`,
   `.tmp/slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts`,
   `.tmp/slate-v2/packages/slate-react/src/editable/runtime-input-events.ts`, and
   `.tmp/slate-v2/packages/slate-react/test/model-input-strategy-contract.ts`.
 
 Decision:
 Keep as `cluster-synced`. The owner is model-owned beforeinput/input handling,
-but exact native event proof is not claimed.
+and the browser row proves start-of-content typing through `beforeinput`, but
+native `input` parity is not claimed.
 
 PR-description text:
-Related #5603: input/beforeinput boundary family; no exact closure.
+Related #5603: input/beforeinput boundary family; native `input` parity is not
+claimed.
 
 ## #5669 `input` event is not fired when deleting text or typing numbers in <Editable> component
 
@@ -2140,16 +2484,19 @@ Evidence:
 - live GitHub checked: yes, via Batch 0 gitcrawl refresh and
   `.tmp/gitcrawl/2026-05-04T145301Z-cluster-16-detail.json`.
 - current v2 proof:
+  `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`,
   `.tmp/slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts`,
   `.tmp/slate-v2/packages/slate-react/src/editable/runtime-input-events.ts`, and
   `.tmp/slate-v2/packages/slate-react/test/model-input-strategy-contract.ts`.
 
 Decision:
-Keep as `cluster-synced`. The owner is native event routing, but exact browser
-event proof is not claimed.
+Keep as `cluster-synced`. Number typing is proven through `beforeinput`, and
+Backspace is proven as a model-owned keydown delete command, but native
+delete/number `input` parity is not claimed.
 
 PR-description text:
-Related #5669: input/beforeinput boundary family; no exact closure.
+Related #5669: input/beforeinput boundary family; native delete/number `input`
+parity is not claimed.
 
 ## #3991 Improve void node delete behavior
 
@@ -2299,22 +2646,27 @@ Evidence:
   longer assumes block-void `data-slate-spacer` DOM when exporting a selected
   inline void; `.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts`
   proves the Slate fragment payload is preserved and external text output does
-  not leak FEFF or neighboring text.
+  not leak FEFF or neighboring text. Browser proof in
+  `.tmp/slate-v2/playwright/integration/examples/mentions.test.ts` selects a
+  mention-shaped inline void, confirms deterministic native `text/html` and
+  `text/plain`, decodes the embedded Slate fragment, and pastes visible content
+  into an external contenteditable target.
 
 Decision:
-Move to `improves-claimed`. Selected inline void export is covered at the DOM
-clipboard boundary. Exact inter-editor clipboard behavior still needs browser
-payload proof against the original report.
+Keep as `improves-claimed`. Selected inline void export is covered at the DOM
+clipboard boundary and through a real browser clipboard payload. Exact named
+other-editor app behavior is still not claimed.
 
 PR-description text:
-Improves #4802: selected inline void export keeps the Slate fragment payload
-without assuming block-void spacer DOM; no exact inter-editor closure.
+Improves #4802: selected inline void export keeps deterministic browser
+clipboard payloads without FEFF or neighboring text leakage; no exact named
+other-editor closure.
 
 ## #4806 Not able to copy-paste inline void
 
-Status: improves-claimed
+Status: fixes-claimed
 Bucket: v2-clipboard-serialization
-Confidence: medium
+Confidence: high
 
 Issue summary:
 Inline void content cannot be copied/pasted correctly.
@@ -2332,14 +2684,19 @@ Evidence:
   selected inline void through a safe attach node when no block spacer exists;
   `.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts` proves copy,
   paste round-trip, and cut ordering for a selected mention-shaped inline void.
+  `.tmp/slate-v2/playwright/integration/examples/mentions.test.ts` proves the
+  same path through Chromium's native clipboard: copy exposes the selected
+  inline void as deterministic HTML/text plus Slate fragment, paste inserts a
+  second mention, and cut removes one mention node with model-owned caret
+  repair.
 
 Decision:
-Move to `improves-claimed`. Focused DOM clipboard proof covers the selected
-inline void copy/paste/cut contract. Exact browser repro closure is not claimed.
+Move to `fixes-claimed`. Focused DOM clipboard proof and browser clipboard
+proof cover the selected inline void copy/paste/cut repro shape.
 
 PR-description text:
-Improves #4806: selected inline void copy/paste/cut keeps the model fragment;
-no exact browser repro closure.
+Fixes #4806: selected inline void copy/paste/cut works through the native
+browser clipboard path and keeps model-owned caret repair.
 
 ## #3148 Chrome & Safari cannot select end of inline DOM elements
 
@@ -3707,12 +4064,12 @@ Evidence:
 Decision:
 Current v2 improves the populated-editor large paste/copy workload with a dedicated issue-size benchmark. Exact `Fixes #...` closure is still not justified without the historical full-book/browser repro.
 
-Slice 6 benchmark:
+Slice 6 benchmark, refreshed 2026-05-23:
 `.tmp/slate-v2/tmp/slate-clipboard-large-payload-benchmark.json` records a
 populated-editor benchmark lane. The latest issue-size run reports
-`25.13ms` for copying 10,000 populated blocks and `194.55ms` for pasting
+`49.35ms` for copying 10,000 populated blocks and `235.22ms` for pasting
 10,000 plaintext lines into a 10,000-block populated editor, with one
-`replace_fragment` operation. The DOM plaintext fallback now builds a model
+logical operation. The DOM plaintext fallback now builds a model
 fragment for populated text-block paste, and core fits top-level multi
 text-block fragments as one replacement while preserving surrounding target
 text and selection. Exact full-book browser closure remains unclaimed.
@@ -6963,7 +7320,7 @@ Evidence:
 | ----- | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
 | #4483 | Improves, unchanged | PM-12 strengthens local projection runtime-bucket mapping, but the legacy dynamic-decoration API proposal remains unclaimed.                          |
 | #4477 | Improves, unchanged | Runtime-id node widgets now have structural move/remove proof, but product collaborative comments remain outside raw Slate closure.                   |
-| #5987 | Improves, unchanged | Structural projection mapping reduces decoration/caret pressure, but the exact async app repro is not closed.                                         |
+| #5987 | Fixes, upgraded     | Exact async `Editable.decorate` browser proof keeps Slate selection and the DOM caret at the typed end after delayed decoration restructuring.        |
 | #4392 | Improves, unchanged | Nested moved-node projection mapping strengthens cross-node decoration pressure, but full legacy decorate API parity is not claimed.                  |
 | #3382 | Improves, unchanged | Projection slices stay keyed to runtime text ranges through structural moves; legacy `Text.decorations` API behavior remains outside the v2 contract. |
 | #3352 | Improves, unchanged | Cross-node projection is still represented by range-to-text-slice projection; decorator callback API parity is not claimed.                           |
@@ -7181,6 +7538,43 @@ Claim result:
 
 - New fixed claims: `0`.
 - New improved claims: `0`.
+
+## TanStack Virtual iOS / Performance Refresh - 2026-05-23
+
+Planning source:
+
+- `docs/plans/2026-05-23-slate-v2-tanstack-virtual-ios-perf-ralplan.md`
+
+Reviewed surface:
+
+- TanStack blog `https://tanstack.com/blog/tanstack-virtual-perf-and-ios`
+- TanStack Virtual latest API docs
+- `.tmp/slate-v2/packages/slate-react/package.json`
+- `.tmp/slate-v2/bun.lock`
+- `.tmp/slate-v2/packages/slate-react/src/dom-strategy/use-virtualized-root-plan.ts`
+- `.tmp/slate-v2/docs/libraries/slate-react/experimental-virtualized-rendering.md`
+- `docs/research/sources/editor-architecture/tanstack-virtual-and-github-large-surface-virtualization.md`
+
+Decision:
+
+Adopt the latest TanStack Virtual release as an internal viewport/range engine
+upgrade for experimental virtualized mode, keep the Slate public API unchanged,
+and route internal layout-backed virtualized scroll writes through TanStack
+where practical. This is not an issue closure slice.
+
+Issue accounting:
+
+| Issue | Classification | Reason |
+| --- | --- | --- |
+| `#790` | Related, proof-route backlog | Latest TanStack Virtual improves the internal path, but Slate still needs mount/edit/scroll benchmark and browser proof before claiming dynamic rendering. |
+| `#5826` | Fixes | Exact huge-document browser proof covers the long-editor refocus autoscroll report. |
+| `#5538`, `#4995`, `#5088`, `#5473` | Related, unchanged | Upstream iOS momentum scroll deferral supports the scroll-routing implementation route, but exact Slate focus/selection scroll issues still need targeted repro proof. |
+| `#5391`, `#5095`, `#4751`, `#4354`, `#3760` | Related/non-claimed, unchanged | TanStack's iOS scroll fix is not proof for Slate iOS selection, IME, spellcheck, or toolbar behavior. |
+
+Claim result:
+
+- New fixed claims: `0`.
+- New improved claims: `0`.
 - Fixed/improved counts remain unchanged.
 
 ## Table Transform Boundary Ralplan - 2026-05-18
@@ -7309,3 +7703,85 @@ Claim result:
 - New improved claims: `0`.
 - Existing `Related`, `Fixes`, and `Improves` rows remain at their current
   classification.
+
+## Pretext Layout / DOM Strategy Architecture Sync - 2026-05-22
+
+Planning source:
+
+- `docs/plans/2026-05-22-slate-v2-pretext-layout-rendering-architecture-ralplan.md`
+
+Reviewed surface:
+
+- `.tmp/slate-v2/packages/slate-layout/src/index.ts`
+- `.tmp/slate-v2/packages/slate-layout/src/react.tsx`
+- `.tmp/slate-v2/packages/slate-layout-pretext/src/index.ts`
+- `.tmp/slate-v2/packages/slate-react/src/rendering-strategy/create-segment-plan.ts`
+- `.tmp/slate-v2/packages/slate-react/src/dom-strategy/use-virtualized-root-plan.ts`
+- `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-coverage.ts`
+- `docs/slate-issues/gitcrawl-v2-sync-ledger.md`
+- `docs/slate-v2/ledgers/issue-coverage-matrix.md`
+- `docs/slate-v2/references/pr-description.md`
+
+Decision:
+
+The right architecture is a generic `slate-layout` derived layout service,
+Pretext as the default layout-aware engine, `domStrategy` as the Slate React DOM
+materialization policy, and layout-driven virtualization. This is not an issue
+closure slice. It is a boundary rewrite plan for later implementation proof.
+
+Issue accounting:
+
+| Issue | Classification | Reason |
+| --- | --- | --- |
+| `#790` | Related, proof-route backlog | Layout-driven virtualization directly targets dynamic rendering pressure, but needs benchmark and browser proof before any claim. |
+| `#4141` | Existing `Improves` unchanged | Layout subscriptions must preserve current rerender-breadth wins; no new proof is added here. |
+| `#5944` | Related, issue-reviewed | Stable per-line pagination is in scope for the layout target, but needs current page-boundary browser proof. |
+| `#5924` | Not claimed, unchanged | Structural DOM should use DOM coverage and mount-plan policy; this plan does not add a public ignore-cursor API. |
+| `#3892` | Policy non-claim, unchanged | Generic layout substrate helps custom surfaces, but product custom editor surfaces remain outside raw Slate closure. |
+| `#2572` | Policy non-claim, unchanged | Accessibility is a release gate for missing-DOM modes, not an architecture-doc issue fix. |
+| `#5131`, `#2051` | Guardrail rows, unchanged | Future layout snapshot consumers must prove narrow invalidation and avoid broad editor subscriptions. |
+
+Claim result:
+
+- New fixed claims: `0`.
+- New improved claims: `0`.
+- PR prose sync: architecture target and open gates updated, with no claim-count
+  change.
+
+## Pretext Pagination / Page Virtualization Feedback Planning Sync - 2026-05-25
+
+Source plan:
+
+- `docs/plans/2026-05-25-slate-v2-pretext-pagination-virtualization-feedback.md`
+
+Decision:
+
+Pretext remains the default layout engine target, but the plan explicitly refuses
+to claim cross-client/server page-break determinism while `prepare()` still
+depends on canvas measurement. Final planning wording keeps `measurementProfile`
+as snapshot metadata, groups page display settings under `pageView`, cuts public
+`pageVirtualization`, virtualizes pages/spreads internally behind virtualized
+`domStrategy`, keeps `pageBreaks` opt-in for strict collaboration/export
+fidelity, and routes table/media/BFC pagination through generic provider/split
+protocols. Default editing stays locally derived layout.
+
+Issue accounting:
+
+| Issue | Classification | Reason |
+| --- | --- | --- |
+| `#5944` | Related, issue-reviewed | Stable per-line pagination is the direct issue, but needs current browser proof for page-boundary flicker, caret mapping, and page-break stability before any claim. |
+| `#790` | Related, proof-route backlog | Internal page/spread virtualization directly targets dynamic rendering pressure, but needs mount/edit/scroll benchmark, mounted-count proof, DOM coverage, and browser native-behavior proof before any claim. |
+| `#5924` | Not claimed, unchanged | Page frames, table structure, and debug DOM should route through DOM coverage, mount policy, and provider/split protocols; this plan does not add a public ignore-cursor API. |
+| `#4141` | Existing `Improves` unchanged | Layout/page subscriptions must preserve nested rerender-breadth proof and avoid widening affected ranges. |
+| `#5131`, `#2051` | Guardrail rows, unchanged | Layout snapshot consumers and page virtualization must prove narrow subscriptions and rerender breadth. |
+| `#2793` | Release guard, unchanged | Missing-DOM/page-virtualized modes cannot claim native screen-reader equivalence without assistive-tech proof or explicit degradation docs. |
+| `#2572` | Policy non-claim, unchanged | Accessibility remains a release guard, not a planning-doc issue fix. |
+| `#3892` | Policy non-claim, unchanged | Generic layout substrate helps custom surfaces, but product custom layout engines stay outside raw Slate closure. |
+| `#5945`, `#4056`, `#5992` | Existing `Improves` unchanged | Large-document operation/clipboard benchmark claims remain owned by their existing proof rows; this pagination plan does not promote them. |
+
+Claim result:
+
+- New fixed claims: `0`.
+- New improved claims: `0`.
+- PR prose sync: planning target wording synced; fixed/improved claim counts
+  remain unchanged.

@@ -500,7 +500,7 @@ Run this loop after every Item 1 or Item 2 slice.
 - `docs/slate-issues/gitcrawl-clusters.md`
 - active plan under `docs/plans/`
 - active completion file under `.tmp/completion-checks/`
-- `.tmp/continue.md`
+- `active goal state`
 
 ### Rules
 

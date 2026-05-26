@@ -18,7 +18,7 @@ finished overlay architecture.
 
 - `ralph`
 - `major-task`
-- `planning-with-files`
+- `goal workflow`
 - `learnings-researcher`
 
 # Constraints
