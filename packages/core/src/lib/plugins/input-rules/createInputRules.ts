@@ -446,17 +446,15 @@ const getTextSubstitutionMatchRange = ({
   match: string;
   trigger?: readonly string[] | string;
 }) => {
-  const start = match;
-  const reversed = start.split('').reverse().join('');
   const triggers = trigger
     ? Array.isArray(trigger)
       ? [...trigger]
       : [trigger]
-    : [reversed.slice(-1)];
+    : [match.slice(-1)];
 
   return {
-    end: trigger ? reversed : reversed.slice(0, -1),
-    start,
+    end: trigger ? match : match.slice(0, -1),
+    start: match,
     triggers,
   };
 };
@@ -507,38 +505,22 @@ const getTextSubstitutionMatchPoints = (
   };
 };
 
-const getTextSubstitutionTriggers = (patterns: TextSubstitutionPattern[]) =>
-  Array.from(
-    new Set(
-      patterns.flatMap((pattern) => {
-        const matches = Array.isArray(pattern.match)
-          ? [...pattern.match]
-          : [pattern.match];
+type CompiledPattern = {
+  end: string;
+  pattern: TextSubstitutionPattern;
+  start: string;
+};
 
-        return matches.flatMap(
-          (match) =>
-            getTextSubstitutionMatchRange({
-              match,
-              trigger: pattern.trigger,
-            }).triggers
-        );
-      })
-    )
-  );
+const compilePatternsByTrigger = (
+  patterns: TextSubstitutionPattern[]
+): Map<string, CompiledPattern[]> => {
+  const byTrigger = new Map<string, CompiledPattern[]>();
 
-const resolveTextSubstitution = ({
-  editor,
-  patterns,
-  text,
-}: {
-  editor: SlateEditor;
-  patterns: TextSubstitutionPattern[];
-  text: string;
-}): TextSubstitutionMatch | undefined => {
   for (const pattern of patterns) {
     const matches = Array.isArray(pattern.match)
-      ? [...pattern.match]
+      ? pattern.match
       : [pattern.match];
+    const isPaired = Array.isArray(pattern.format);
 
     for (const match of matches) {
       const { end, start, triggers } = getTextSubstitutionMatchRange({
@@ -546,21 +528,45 @@ const resolveTextSubstitution = ({
         trigger: pattern.trigger,
       });
 
-      if (!triggers.includes(text)) continue;
-
-      const points = getTextSubstitutionMatchPoints(editor, {
-        end: Array.isArray(pattern.format) ? '' : end,
-        start,
-      });
-
-      if (!points) continue;
-
-      return {
-        end: Array.isArray(pattern.format) ? '' : end,
+      const compiled: CompiledPattern = {
+        end: isPaired ? '' : end,
         pattern,
-        points,
+        start: isPaired ? start : '',
       };
+
+      for (const trigger of triggers) {
+        let list = byTrigger.get(trigger);
+
+        if (!list) {
+          list = [];
+          byTrigger.set(trigger, list);
+        }
+
+        list.push(compiled);
+      }
     }
+  }
+
+  return byTrigger;
+};
+
+const resolveTextSubstitution = ({
+  candidates,
+  editor,
+}: {
+  candidates: CompiledPattern[];
+  editor: SlateEditor;
+}): TextSubstitutionMatch | undefined => {
+  for (const { end, pattern, start } of candidates) {
+    const points = getTextSubstitutionMatchPoints(editor, { end, start });
+
+    if (!points) continue;
+
+    return {
+      end,
+      pattern,
+      points,
+    };
   }
 };
 
@@ -610,21 +616,25 @@ export const createTextSubstitutionInputRule = ({
   enabled,
   patterns,
   priority,
-}: TextSubstitutionInputRuleConfig) =>
-  defineInputRule({
+}: TextSubstitutionInputRuleConfig) => {
+  const patternsByTrigger = compilePatternsByTrigger(patterns);
+  const triggers = Array.from(patternsByTrigger.keys());
+
+  return defineInputRule({
     enabled,
     priority,
     target: 'insertText',
-    trigger: getTextSubstitutionTriggers(patterns),
+    trigger: triggers,
     resolve: ({ editor, text }) => {
       if (!editor.selection || !editor.api.isCollapsed()) return;
 
-      return resolveTextSubstitution({
-        editor,
-        patterns,
-        text,
-      });
+      const candidates = patternsByTrigger.get(text);
+
+      if (!candidates) return;
+
+      return resolveTextSubstitution({ candidates, editor });
     },
     apply: ({ editor }, match: TextSubstitutionMatch) =>
       applyTextSubstitution(editor, match),
   });
+};
