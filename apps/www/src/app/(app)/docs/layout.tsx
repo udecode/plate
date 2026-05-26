@@ -20,7 +20,10 @@ export default function DocsLayout({ children }: DocsLayoutProps) {
         )}
       >
         <aside className="fixed top-14 z-30 hidden h-[calc(100vh-3.5rem)] w-full shrink-0 md:sticky md:block">
-          <div className="scrollbar-hide h-full overflow-auto">
+          <div
+            className="scrollbar-hide h-full overflow-auto"
+            data-docs-sidebar-scroll
+          >
             <Suspense fallback={null}>
               <DocsNav sidebarNav={sidebarNav} />
             </Suspense>

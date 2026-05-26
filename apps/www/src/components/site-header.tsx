@@ -29,8 +29,8 @@ export function SiteHeader() {
     {
       href: siteConfig.links.platePro,
       external: true,
-      title: 'Plate Plus',
-      titleCn: 'Plate Plus',
+      title: 'Templates',
+      titleCn: 'Templates',
     },
   ];
 

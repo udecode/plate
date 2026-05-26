@@ -23,6 +23,11 @@ const codeTagStyle = {
   textShadow: 'none',
 };
 
+const lineNumberStyle: React.CSSProperties = {
+  color: 'var(--color-code-number)',
+  userSelect: 'none',
+};
+
 const codeCustomStyle = {
   background: 'transparent',
   margin: 0,
@@ -40,6 +45,7 @@ const CodeBlock: FC<{
 }> = memo(({ className, fixedHeight, language, npm, value }) => {
   const code = npm ? `npm install ${value}` : value;
   const effectiveLanguage = npm ? 'bash' : language;
+  const showLineNumbers = !npm && code.includes('\n');
 
   return (
     <div
@@ -70,8 +76,9 @@ const CodeBlock: FC<{
         codeTagProps={{ style: codeTagStyle }}
         customStyle={codeCustomStyle}
         language={effectiveLanguage}
+        lineNumberStyle={lineNumberStyle}
         PreTag="div"
-        showLineNumbers={false}
+        showLineNumbers={showLineNumbers}
       >
         {code}
       </ThemedSyntaxHighlighter>

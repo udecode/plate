@@ -1,5 +1,5 @@
 // Pre expects MDX code metadata, so this wrapper keeps install snippets copyable.
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 
 import { CopyButton, CopyNpmCommandButton } from '@/components/copy-button';
 import { ThemedSyntaxHighlighter } from '@/components/themed-syntax-highlighter';
@@ -18,6 +18,11 @@ const codeTagStyle = {
   fontSize: '0.9rem',
 };
 
+const lineNumberStyle: CSSProperties = {
+  color: 'var(--color-code-number)',
+  userSelect: 'none',
+};
+
 export function InstallationCode({
   bash,
   children,
@@ -28,6 +33,7 @@ export function InstallationCode({
   children?: ReactNode;
 }) {
   const npmCommand = code.startsWith('npm install');
+  const showLineNumbers = !npmCommand && code.includes('\n');
 
   return (
     <div>
@@ -39,7 +45,8 @@ export function InstallationCode({
           codeTagProps={{ style: codeTagStyle }}
           customStyle={codeCustomStyle}
           language={bash ? 'bash' : 'typescript'}
-          showLineNumbers={false}
+          lineNumberStyle={lineNumberStyle}
+          showLineNumbers={showLineNumbers}
         >
           {code}
         </ThemedSyntaxHighlighter>

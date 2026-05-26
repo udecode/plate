@@ -14,10 +14,10 @@ import { Icons } from './icons';
 
 const i18n = {
   cn: {
-    platePlus: 'Plate Plus',
+    templates: 'Templates',
   },
   en: {
-    platePlus: 'Plate Plus',
+    templates: 'Templates',
   },
 };
 
@@ -66,7 +66,7 @@ export function MainNav({
         className="relative gap-0.5 font-normal"
       >
         <Link href={siteConfig.links.platePro}>
-          {content.platePlus}
+          {content.templates}
           <Icons.arrowUpRight className="-mt-2.5 size-2.5 text-muted-foreground" />
         </Link>
       </Button>

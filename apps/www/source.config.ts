@@ -18,6 +18,37 @@ import { rehypeNpmCommand } from './src/lib/rehype-npm-command';
 import 'dotenv/config';
 
 const EVENT_META_REGEX = /event="([^"]*)"/;
+const COMMAND_CODE_REGEX = /^(bun|npm|npx|pnpm|yarn)\s/;
+const WHITESPACE_REGEX = /\s+/;
+
+function addMetaToken(meta: string | undefined, token: string) {
+  if (meta?.split(WHITESPACE_REGEX).includes(token)) {
+    return meta;
+  }
+
+  return [meta, token].filter(Boolean).join(' ');
+}
+
+function getCodeMeta(codeEl: any) {
+  return typeof codeEl.data?.meta === 'string'
+    ? codeEl.data.meta
+    : typeof codeEl.properties?.metastring === 'string'
+      ? codeEl.properties.metastring
+      : undefined;
+}
+
+function setCodeMeta(codeEl: any, meta: string | undefined) {
+  codeEl.data ??= {};
+  codeEl.properties ??= {};
+
+  if (meta) {
+    codeEl.data.meta = meta;
+    codeEl.properties.metastring = meta;
+  } else {
+    codeEl.data.meta = undefined;
+    codeEl.properties.metastring = undefined;
+  }
+}
 
 const docPropertiesSchema = z.object({
   route: z.string().optional(),
@@ -58,19 +89,31 @@ export default defineConfig({
               if (codeEl?.tagName !== 'code') {
                 return;
               }
-              if (codeEl.data?.meta) {
-                const match = codeEl.data?.meta.match(EVENT_META_REGEX);
+              let codeMeta = getCodeMeta(codeEl);
+
+              if (codeMeta) {
+                const match = codeMeta.match(EVENT_META_REGEX);
 
                 if (match) {
                   node.__event__ = match ? match[1] : null;
-                  codeEl.data.meta = codeEl.data.meta.replace(
-                    EVENT_META_REGEX,
-                    ''
-                  );
+                  codeMeta = codeMeta.replace(EVENT_META_REGEX, '').trim();
+                  setCodeMeta(codeEl, codeMeta);
                 }
               }
 
-              node.__rawString__ = codeEl.children?.[0].value;
+              const rawString = codeEl.children?.[0].value ?? '';
+              const showLineNumbers =
+                codeMeta?.split(WHITESPACE_REGEX).includes('showLineNumbers') ||
+                (rawString.includes('\n') &&
+                  !COMMAND_CODE_REGEX.test(rawString.trimStart()));
+
+              if (showLineNumbers) {
+                codeMeta = addMetaToken(codeMeta, 'showLineNumbers');
+                setCodeMeta(codeEl, codeMeta);
+              }
+
+              node.__showLineNumbers__ = showLineNumbers;
+              node.__rawString__ = rawString;
               node.__src__ = node.properties?.__src__;
               node.__style__ = node.properties?.__style__;
             }
@@ -91,6 +134,8 @@ export default defineConfig({
               node.properties.className = ['word--highlighted'];
             },
             onVisitLine(node: any) {
+              node.properties['data-line'] = '';
+
               if (node.children.length === 0) {
                 node.children = [{ type: 'text', value: ' ' }];
               }
@@ -114,6 +159,16 @@ export default defineConfig({
                 preElement.properties.__withMeta__ = hasMeta;
                 preElement.properties.__rawString__ = node.__rawString__;
 
+                if (node.__showLineNumbers__) {
+                  const codeElement = preElement.children?.find(
+                    (child: any) => child.tagName === 'code'
+                  );
+
+                  if (codeElement) {
+                    codeElement.properties ??= {};
+                    codeElement.properties['data-line-numbers'] = '';
+                  }
+                }
                 if (node.__src__) {
                   preElement.properties.__src__ = node.__src__;
                 }

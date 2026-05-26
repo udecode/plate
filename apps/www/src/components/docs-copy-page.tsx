@@ -1,5 +1,7 @@
 'use client';
 
+import type { ComponentPropsWithoutRef, Ref } from 'react';
+
 import {
   Bot,
   Check,
@@ -73,17 +75,26 @@ const menuItems = [
 
 function DocsCopyPageItem({
   item,
+  ref,
   url,
-}: {
+  ...props
+}: ComponentPropsWithoutRef<'a'> & {
   item: (typeof menuItems)[number];
+  ref?: Ref<HTMLAnchorElement>;
   url: string;
 }) {
   const Icon = item.icon;
 
   return (
-    <a href={item.getHref(url)} target="_blank" rel="noopener noreferrer">
+    <a
+      {...props}
+      ref={ref}
+      href={item.getHref(url)}
+      target="_blank"
+      rel="noopener noreferrer"
+    >
       <Icon />
-      {item.label}
+      <span>{item.label}</span>
     </a>
   );
 }
