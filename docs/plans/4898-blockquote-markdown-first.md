@@ -62,7 +62,7 @@
 
 ## Progress
 
-- 2026-04-01: Loaded `major-task`, `planning-with-files`, `learnings-researcher`, `repo-research-analyst`, and `architecture-strategist`.
+- 2026-04-01: Loaded `major-task`, `goal workflow`, `learnings-researcher`, `repo-research-analyst`, and `architecture-strategist`.
 - 2026-04-01: Fetched `#4898` and related issue `#4831`.
 - 2026-04-01: Read the markdown blockquote rule, list deserializer tests, and blockquote normalization tests.
 - 2026-04-01: Confirmed the public docs and transform layer currently define blockquote as a block-type toggle, while the generic editor API already supports a wrap-based container alternative.

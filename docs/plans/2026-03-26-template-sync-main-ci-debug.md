@@ -46,7 +46,7 @@
 
 ## Progress
 
-- 2026-03-26: Loaded `debug`, `learnings-researcher`, `planning-with-files`, and `tdd`.
+- 2026-03-26: Loaded `debug`, `learnings-researcher`, `goal workflow`, and `tdd`.
 - 2026-03-26: Switched to `main`; branch was already up to date with `origin/main`.
 - 2026-03-26: Confirmed the failing main-branch tombstone message comes from `.github/workflows/release.yml` after the template-sync phase.
 - 2026-03-26: Reproduced the real failure from the generated template sync PR state with `bun run build -- --debug-prerender`; `/editor` crashes on `useSelectionFragmentProp(...)`.

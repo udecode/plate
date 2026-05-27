@@ -1,8 +1,13 @@
- # Tiptap Sources
+# Tiptap Sources
 
-This directory contains compiled research summaries derived from the official
-Tiptap docs repo at `/Users/zbeyens/git/tiptap-docs` plus the live docs
-entrypoints on `https://tiptap.dev`.
+This directory contains compiled research summaries derived from the normalized
+Tiptap raw source family under `../raw/tiptap`.
+
+Raw entrypoints:
+
+- docs: `../raw/tiptap/docs`
+- source/packages: `../raw/tiptap/repo`
+- catalog: `../raw/tiptap/catalog.md`
 
 Current pages:
 

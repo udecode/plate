@@ -29,7 +29,7 @@ Find the real cause of the `/blocks/code-block-demo` regression where typing tri
 ## Progress
 
 - Recovered prior context from the last session and active edits.
-- Loaded `learnings-researcher`, `debug`, `testing`, `tdd`, `browser-use`, and `planning-with-files`.
+- Loaded `learnings-researcher`, `debug`, `testing`, `tdd`, `browser-use`, and `goal workflow`.
 - Searched `docs/solutions/` for hydration, registry, and code-block failures before touching more code.
 - Rebuilt registry output, wiped `apps/www/.next`, and restarted `apps/www` to get one clean repro surface.
 - Reverted speculative demo-only changes after proving they were not the fix.

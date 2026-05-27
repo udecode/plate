@@ -32,5 +32,5 @@
 ## Progress
 
 - Fetched the issue and comments.
-- Read repo instructions, task skill, planning-with-files, learnings-researcher, and tdd skill docs.
+- Read repo instructions, task skill, goal workflow, learnings-researcher, and tdd skill docs.
 - Read recent local learnings for code-block redecorate and structural line regressions.

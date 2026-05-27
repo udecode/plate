@@ -1,10 +1,11 @@
 ---
-description: Create or update Plate docs with conversational voice, lane-aware structure, explicit ownership, and code-backed accuracy. North star is `docs/solutions/style.md`. Use for plugin pages, guides, install docs, serialization docs, API docs, and specs — anywhere both humans and agents need a clear, readable source of truth.
+description: Create or update Plate docs with conversational voice, lane-aware structure, explicit ownership, and code-backed accuracy. This is the source of truth for Plate docs style and workflow. Use for plugin pages, guides, install docs, serialization docs, API docs, and specs — anywhere both humans and agents need a clear, readable source of truth.
 ---
 
 # Docs Creator
 
-North star: `docs/solutions/style.md`. Required reading. Every rule below collapses to "docs that teach humans AND parse cleanly for agents."
+This skill is the source of truth for Plate docs style and workflow. Every rule
+below collapses to "docs that teach humans AND parse cleanly for agents."
 
 Most bad Plate docs fail the same way: reference dump instead of a working path, blurred ownership, missing "why", vibes instead of code. This skill kills that drift.
 
@@ -18,13 +19,51 @@ Most bad Plate docs fail the same way: reference dump instead of a working path,
 - ownership clarity
 - anti-slop rules
 - agent affordances
+- plugin-page section order, kit/manual structure, component/API checks, and
+  plugin-specific examples
 
-`docs-plugin` owns plugin-page execution only:
+Plugin pages are a lane inside `docs-creator`, not a separate skill.
 
-- kit/manual section order
-- plugin/component/tooling scaffolding
+## Goal Template
 
-Plugin pages: load both. `docs-creator` first, `docs-plugin` second.
+Use the docs goal template for non-trivial docs work:
+
+```bash
+node .agents/rules/autogoal/scripts/create-goal-scratchpad.mjs \
+  --template docs \
+  --title "<short docs title>"
+```
+
+Use it when the task creates or rewrites a page, changes public behavior docs,
+touches plugin/API/spec/serialization docs, moves routes, changes examples, or
+could leave stale imports, links, previews, ownership claims, or API claims.
+
+When docs are only a supporting surface under another dominant task, do not
+switch the primary template to `docs`. Add the docs pack to the owning plan:
+
+```bash
+node .agents/rules/autogoal/scripts/create-goal-scratchpad.mjs \
+  --template task \
+  --with docs \
+  --title "<short task title>"
+```
+
+For heavyweight architecture or proposal work that also changes docs, use the
+major primary template plus packs, for example:
+
+```bash
+node .agents/rules/autogoal/scripts/create-goal-scratchpad.mjs \
+  --template major-task \
+  --with docs \
+  --title "<short major task title>"
+```
+
+Do not use it for tiny copy edits, typo fixes, or one-line link repairs unless
+the caller explicitly asks for a goal-backed docs task.
+
+`docs-creator` owns docs doctrine and routing. The docs goal template owns the
+closeout contract: lane classification, source-backed claims, ownership map,
+link/demo checks, content build, and anti-slop audit.
 
 ## Read First
 
@@ -33,7 +72,6 @@ Before writing, read only what actually grounds the page:
 - the target doc
 - nearest sibling docs in the same lane
 - the source code for the behavior or API being documented
-- `docs/solutions/style.md` — non-negotiable
 - strongest baselines:
   - `content/docs/index.mdx`
   - `content/docs/installation.mdx`
@@ -50,15 +88,20 @@ Start from code plus the best baseline doc. Not from old prose alone.
 
 ## Voice
 
-Write the way `style.md` writes. This is where docs usually go wrong.
+This is where docs usually go wrong.
 
 - **Conversational.** Use "you" and "we". "Let's start with...", "We'll pass...", "You can now...".
 - **Progressive.** One new idea per paragraph. Never land an advanced pattern before the fundamentals.
 - **Why before what.** Every non-obvious choice gets a one-line reason.
 - **Guide, don't just show.** One sentence of context before every code block. Code is never a substitute for prose.
+- **Build progressively.** Start with the simple path, then add complexity only
+  after the reader has a working model.
 - **Celebrate completion.** End a section with a landing: "Done.", "That's it.", or one line on what the reader now has.
 - **Real code.** Never write placeholder comments (`// your logic here`). Write what the reader would actually write.
 - **Reinforce in tiers.** Concept in prose → example in code → recap in a table if it's an enum or option matrix.
+- **Highlight real gotchas.** Use callouts for environment constraints,
+  security warnings, explicit-not-automatic behavior, or other points readers
+  will actually hit.
 
 Shadcn-terse vs conversational: **the tension resolves cleanly.** Prose is conversational. Code blocks and API reference sections are shadcn-terse. Don't mix the two tones within a section.
 
@@ -242,16 +285,35 @@ Voice moves:
 
 ### Plugin / Feature
 
-Feature pages. Pair with `docs-plugin`.
+Plugin and feature pages are headless first. The package/plugin owns the
+feature; Plate UI components are render examples unless the source proves they
+own behavior.
 
 Required shape:
 
-1. Short opening or preview.
-2. What the feature does (one paragraph, not a brag list).
-3. Fastest setup path (kit).
-4. Manual / headless path.
-5. Real configuration details.
-6. API or transforms only if they exist and earn their keep.
+1. Short opening or a real `<ComponentPreview name="..." />` if the demo exists.
+2. `<PackageInfo>` with features derived from source, not marketing bullets.
+3. `## Kit Usage` when a kit exists:
+   - wrap procedural setup in `<Steps>`
+   - use `### Installation` and `### Add Kit`
+   - include `<ComponentSource name="actual-kit-name" />`
+   - list relevant kit components from `apps/www/src/registry/registry-kits.ts`
+   - show `createPlateEditor({ plugins: [...RelevantKit] })`
+4. `## Manual Usage`:
+   - show the package install command
+   - import plugin APIs from the actual `platejs` or `@platejs/*` path
+   - add the plugin to `createPlateEditor`
+   - use `.withComponent()` when only assigning a component
+   - use `.configure()` when options, shortcuts, injection, or extra behavior
+     are part of the example
+5. Style plugins without distinct components should emphasize
+   `inject.nodeProps`, defaults, and `inject.targetPlugins`.
+6. Toolbar sections only when the toolbar affordance exists. Check kit
+   dependencies before writing about `*ToolbarButton`, Turn Into, or Insert
+   controls.
+7. `## Plugins` for actual plugin objects.
+8. `## API Reference` and `## Transforms` only for real
+   `editor.api.<plugin>.*` and `editor.tf.<plugin>.*` surfaces.
 
 Voice moves:
 
@@ -259,6 +321,10 @@ Voice moves:
 - Keep the headless package contract explicit even when the fast path uses UI.
 - Components are render examples, not the feature itself.
 - Never document plugin APIs or transforms the source does not actually ship.
+- Preserve existing `<APIOptions>`, `<APIParameters>`, and `<APIReturns>`
+  formatting when editing a working page.
+- Use `content/(plugins)/(functionality)/dnd.mdx` as the primary plugin-page
+  structure baseline when the target page has no better sibling.
 
 ### Serialization / Conversion
 

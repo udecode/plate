@@ -33,7 +33,7 @@ Fix `#4111` so table border toggles target the correct adjacent cell after merge
 - Current `setSelectedCellsBorder` integration coverage does not cover merged-cell adjacency.
 - Recent table-border regression from `2026-03-29` was a different bug in `withTableCellSelection`; that fix should stay intact.
 - Existing merge helper `findCellByIndexes` already provides the right primitive for span-aware lookup.
-- `.claude/docs/solutions/patterns/critical-patterns.md` does not exist in this repo.
+- `docs/solutions/patterns/critical-patterns.md` does not exist in this repo.
 - The red regression was clean once the fixture targeted the real `c22` cell: top-border toggle wrote to `c13` instead of the spanning `c11`.
 - Shared helper `getAdjacentTableCell` is the right seam; both `getTopTableCell` and `getLeftTableCell` now delegate there.
 

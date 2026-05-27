@@ -34,7 +34,7 @@ Remove or neutralize `js-video-url-parser` CVE-2026-5986 exposure from `@platejs
 
 ## Progress
 
-- Loaded `task`, `planning-with-files`, `learnings-researcher`, `tdd`, and `changeset`.
+- Loaded `task`, `goal workflow`, `learnings-researcher`, `tdd`, and `changeset`.
 - Checked `docs/solutions`; no direct `js-video-url-parser` solution found.
 - Reproduced ReDoS shape: `bun test packages/media/src/lib/media-embed/parseVideoUrl.spec.ts` failed at ~360ms against a 25-digit invalid `t=` value.
 - Replaced dependency-backed parser with URL API parsing for YouTube, Vimeo, Dailymotion, Youku, and Coub.

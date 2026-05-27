@@ -1,0 +1,72 @@
+---
+date: 2026-05-23
+topic: slate-issues-gitcrawl-clusters
+status: active
+source: .tmp/gitcrawl/2026-05-23T091840Z-clusters.json
+---
+
+# Slate Issues Gitcrawl Clusters
+
+## Summary
+
+`gitcrawl refresh` produced `620` total clusters for `664` open threads. Only `28` clusters have more than one member. That is useful for duplicate discovery but too conservative for the Slate v2 architecture taxonomy.
+
+| Cluster ID | Human family | Decision | Members | Representative | Members | Notes |
+| ---: | --- | --- | ---: | --- | --- | --- |
+| 1 | dom-point-resolution-crashes | keep | 7 | [#4564](https://github.com/ianstormtaylor/slate/issues/4564) | [#4564](https://github.com/ianstormtaylor/slate/issues/4564) 1.00, [#3723](https://github.com/ianstormtaylor/slate/issues/3723) 0.83, [#4789](https://github.com/ianstormtaylor/slate/issues/4789) 0.83, [#3836](https://github.com/ianstormtaylor/slate/issues/3836) 0.81, [#5711](https://github.com/ianstormtaylor/slate/issues/5711) 0.80, [#3834](https://github.com/ianstormtaylor/slate/issues/3834), [#4984](https://github.com/ianstormtaylor/slate/issues/4984) | Strong real cluster. Maps directly to DOM bridge / selection import-export failure class. |
+| 2 | dependency-bump-pr-noise | pr-only | 7 | [#6032](https://github.com/ianstormtaylor/slate/pull/6032) | [#6032](https://github.com/ianstormtaylor/slate/pull/6032) 1.00, [#6049](https://github.com/ianstormtaylor/slate/pull/6049) 0.86, [#6062](https://github.com/ianstormtaylor/slate/pull/6062) 0.85, [#6025](https://github.com/ianstormtaylor/slate/pull/6025) 0.84, [#5869](https://github.com/ianstormtaylor/slate/pull/5869) 0.84, [#6026](https://github.com/ianstormtaylor/slate/pull/6026) 0.81, [#6060](https://github.com/ianstormtaylor/slate/pull/6060) | PR-only dependency/update cluster; exclude from issue architecture. |
+| 3 | mixed-react-input-focus-crashes | weak | 4 | [#3478](https://github.com/ianstormtaylor/slate/issues/3478) | [#3478](https://github.com/ianstormtaylor/slate/issues/3478) 1.00, [#4001](https://github.com/ianstormtaylor/slate/issues/4001) 0.83, [#3497](https://github.com/ianstormtaylor/slate/issues/3497) 0.81, [#3777](https://github.com/ianstormtaylor/slate/issues/3777) | Weak/mixed: Redux crash, keyboard input, focus loss, Firefox accented input. Needs manual split. |
+| 4 | docs-jsdoc-and-docs-ux | docs | 3 | [#6045](https://github.com/ianstormtaylor/slate/pull/6045) | [#6045](https://github.com/ianstormtaylor/slate/pull/6045) 1.00, [#5350](https://github.com/ianstormtaylor/slate/issues/5350) 0.94, [#5520](https://github.com/ianstormtaylor/slate/issues/5520) 0.94 | Docs/JSDoc/docs-site family; not core architecture. |
+| 5 | inline-boundary-cursor-movement | keep | 3 | [#4074](https://github.com/ianstormtaylor/slate/issues/4074) | [#4074](https://github.com/ianstormtaylor/slate/issues/4074) 1.00, [#4618](https://github.com/ianstormtaylor/slate/issues/4618) 0.94, [#3429](https://github.com/ianstormtaylor/slate/issues/3429) 0.83 | Inline cursor movement and padded inline boundary family. |
+| 6 | history-set-selection-errors | keep | 3 | [#3705](https://github.com/ianstormtaylor/slate/issues/3705) | [#3705](https://github.com/ianstormtaylor/slate/issues/3705) 1.00, [#3756](https://github.com/ianstormtaylor/slate/issues/3756) 0.94, [#3921](https://github.com/ianstormtaylor/slate/issues/3921) 0.81 | History set_selection and undo selection grouping family. |
+| 7 | react-editor-focus-after-programmatic-change | keep | 3 | [#3634](https://github.com/ianstormtaylor/slate/issues/3634) | [#3634](https://github.com/ianstormtaylor/slate/issues/3634) 1.00, [#5537](https://github.com/ianstormtaylor/slate/issues/5537) 0.81, [#4961](https://github.com/ianstormtaylor/slate/issues/4961) 0.81 | ReactEditor.focus/input after programmatic focus or insert family. |
+| 8 | duplicate-rendertextprops-prs | pr-only | 2 | [#5861](https://github.com/ianstormtaylor/slate/pull/5861) | [#5861](https://github.com/ianstormtaylor/slate/pull/5861) 1.00, [#6054](https://github.com/ianstormtaylor/slate/pull/6054) 0.94 | Duplicate PR cluster, not issue triage. |
+| 9 | android-mark-toggle-keyboard-dismissal | keep | 2 | [#6022](https://github.com/ianstormtaylor/slate/issues/6022) | [#6022](https://github.com/ianstormtaylor/slate/issues/6022) 1.00, [#6027](https://github.com/ianstormtaylor/slate/pull/6027) 0.94 | Issue plus matching PR; good direct fix-chain candidate. |
+| 10 | async-decoration-caret-jump | keep | 2 | [#5987](https://github.com/ianstormtaylor/slate/issues/5987) | [#5987](https://github.com/ianstormtaylor/slate/issues/5987) 1.00, [#6033](https://github.com/ianstormtaylor/slate/pull/6033) 0.94 | Issue plus matching PR; direct decoration/runtime cluster. |
+| 11 | android-empty-node-voice-input-duplication | keep | 2 | [#5983](https://github.com/ianstormtaylor/slate/issues/5983) | [#5983](https://github.com/ianstormtaylor/slate/issues/5983) 1.00, [#6020](https://github.com/ianstormtaylor/slate/pull/6020) 0.94 | Issue plus matching PR; direct Android IME cluster. |
+| 12 | mobile-inline-void-selection-keyboard | keep | 2 | [#5183](https://github.com/ianstormtaylor/slate/issues/5183) | [#5183](https://github.com/ianstormtaylor/slate/issues/5183) 1.00, [#5391](https://github.com/ianstormtaylor/slate/issues/5391) 0.81 | Android/iOS inline void keyboard and cursor placement family. |
+| 13 | android-ime-empty-node-composition | keep | 2 | [#4400](https://github.com/ianstormtaylor/slate/issues/4400) | [#4400](https://github.com/ianstormtaylor/slate/issues/4400) 1.00, [#5883](https://github.com/ianstormtaylor/slate/issues/5883) 0.94 | AndroidEditable / empty text node composition family. |
+| 14 | refocus-autoscroll | keep | 2 | [#5826](https://github.com/ianstormtaylor/slate/issues/5826) | [#5826](https://github.com/ianstormtaylor/slate/issues/5826) 1.00, [#5882](https://github.com/ianstormtaylor/slate/pull/5882) 0.94 | Issue plus PR for unexpected auto-scroll on refocus. |
+| 15 | example-packaging-improvements | docs | 2 | [#4956](https://github.com/ianstormtaylor/slate/issues/4956) | [#4956](https://github.com/ianstormtaylor/slate/issues/4956) 1.00, [#5172](https://github.com/ianstormtaylor/slate/issues/5172) 0.94 | Examples/product packaging family; docs/example lane. |
+| 16 | input-event-missing-at-boundaries | keep | 2 | [#5603](https://github.com/ianstormtaylor/slate/issues/5603) | [#5603](https://github.com/ianstormtaylor/slate/issues/5603) 1.00, [#5669](https://github.com/ianstormtaylor/slate/issues/5669) 0.81 | Input event missing at contenteditable boundary/deletion/number input. |
+| 17 | void-delete-selection-regressions | keep | 2 | [#3991](https://github.com/ianstormtaylor/slate/issues/3991) | [#3991](https://github.com/ianstormtaylor/slate/issues/3991) 1.00, [#4301](https://github.com/ianstormtaylor/slate/issues/4301) 0.94 | Void delete and selection regression family. |
+| 18 | android-readonly-change-input-ops | keep | 2 | [#4994](https://github.com/ianstormtaylor/slate/issues/4994) | [#4994](https://github.com/ianstormtaylor/slate/issues/4994) 1.00, [#5026](https://github.com/ianstormtaylor/slate/issues/5026) 0.85 | Android readOnly state change and operation emission family. |
+| 19 | scroll-selection-into-view-regressions | keep | 2 | [#5088](https://github.com/ianstormtaylor/slate/issues/5088) | [#5088](https://github.com/ianstormtaylor/slate/issues/5088) 1.00, [#5473](https://github.com/ianstormtaylor/slate/issues/5473) 0.94 | scrollSelectionIntoView not firing after update/delete family. |
+| 20 | blur-invalid-selection-updates | keep | 2 | [#4376](https://github.com/ianstormtaylor/slate/issues/4376) | [#4376](https://github.com/ianstormtaylor/slate/issues/4376) 1.00, [#5171](https://github.com/ianstormtaylor/slate/issues/5171) 0.81 | Safari/Firefox blur or unfocused invalid selection update family. |
+| 21 | inline-void-copy-paste | keep | 2 | [#4802](https://github.com/ianstormtaylor/slate/issues/4802) | [#4802](https://github.com/ianstormtaylor/slate/issues/4802) 1.00, [#4806](https://github.com/ianstormtaylor/slate/issues/4806) 0.85 | Inline void copy/paste family. |
+| 22 | safari-cyrillic-spellcheck | keep | 2 | [#5095](https://github.com/ianstormtaylor/slate/issues/5095) | [#5095](https://github.com/ianstormtaylor/slate/issues/5095) 1.00, [#5096](https://github.com/ianstormtaylor/slate/issues/5096) 0.91 | iOS/macOS Safari Cyrillic spellcheck family. |
+| 23 | triple-click-block-selection | keep | 2 | [#3871](https://github.com/ianstormtaylor/slate/issues/3871) | [#3871](https://github.com/ianstormtaylor/slate/issues/3871) 1.00, [#5847](https://github.com/ianstormtaylor/slate/issues/5847) 0.94 | Triple-click block selection/deletion behavior family. |
+| 24 | placeholder-data-attribute-types | docs | 2 | [#3780](https://github.com/ianstormtaylor/slate/issues/3780) | [#3780](https://github.com/ianstormtaylor/slate/issues/3780) 1.00, [#3781](https://github.com/ianstormtaylor/slate/issues/3781) 0.94 | Placeholder prop/type API ergonomics; docs/API lane. |
+| 25 | inline-dom-end-selection | keep | 2 | [#3148](https://github.com/ianstormtaylor/slate/issues/3148) | [#3148](https://github.com/ianstormtaylor/slate/issues/3148) 1.00, [#3150](https://github.com/ianstormtaylor/slate/issues/3150) 0.94 | Chrome/Safari inline DOM end selection known upstream family. |
+| 26 | ie11-selection-onchange | stale | 2 | [#3800](https://github.com/ianstormtaylor/slate/issues/3800) | [#3800](https://github.com/ianstormtaylor/slate/issues/3800) 1.00, [#4111](https://github.com/ianstormtaylor/slate/issues/4111) 0.94 | IE11-specific selection/onChange family; stale/non-v2 unless explicitly supported. |
+| 27 | undo-selection-state-corruption | keep | 2 | [#3534](https://github.com/ianstormtaylor/slate/issues/3534) | [#3534](https://github.com/ianstormtaylor/slate/issues/3534) 1.00, [#3551](https://github.com/ianstormtaylor/slate/issues/3551) 0.94 | Undo selection and move_node wrong-state family. |
+| 28 | android-legacy-support | stale | 2 | [#3112](https://github.com/ianstormtaylor/slate/issues/3112) | [#3112](https://github.com/ianstormtaylor/slate/issues/3112) 1.00, [#3313](https://github.com/ianstormtaylor/slate/issues/3313) 0.94 | Legacy Android support family; stale unless reproduced on current supported Android. |
+
+## Decision Legend
+
+| Decision | Meaning |
+| --- | --- |
+| keep | Real issue family. Use as evidence in the live ledger and v2 cluster map. |
+| weak | Machine cluster is mixed. Split manually before making architecture claims. |
+| docs | Docs/examples/API ergonomics lane. Useful, but not core runtime architecture. |
+| stale | Legacy/browser support lane. Needs current repro before v2 work. |
+| pr-only | Open PR/dependency/update cluster. Keep for linkage, exclude from issue corpus counts. |
+
+## Strongest Keep Clusters
+
+- `dom-point-resolution-crashes`: repeated `Cannot resolve ... point` failures around DOM bridge, nested editors, outside selections, iOS deletion, and stale DOM mappings.
+- `android-mark-toggle-keyboard-dismissal`, `android-empty-node-voice-input-duplication`, `android-ime-empty-node-composition`, `android-readonly-change-input-ops`, and `android-legacy-support`: Android remains a single large runtime pressure area even when gitcrawl splits it into small clusters.
+- `inline-void-copy-paste`, `mobile-inline-void-selection-keyboard`, `inline-dom-end-selection`, and `void-delete-selection-regressions`: inline/void boundary behavior is still one of the central DOM bridge families.
+- `history-set-selection-errors` and `undo-selection-state-corruption`: history and selection state still need transaction-level proof.
+- `async-decoration-caret-jump`: current open PR linkage makes this a high-signal runtime/projection cluster.
+
+## Weak Or Excluded Clusters
+
+- Cluster 2 and 8 are PR-only; exclude from open issue counts.
+- Cluster 3 is too mixed to trust directly. First ClawSweeper split: `#3478` belongs to external-store controlled-value feedback, `#3497` belongs to parent-rerender focus loss, and `#4001` belongs to placeholder/IME DOM point desync. `#3777` still needs the same treatment.
+- Cluster 26 and 28 are legacy-support rows. They should not drive v2 architecture unless reproduced on supported browsers/devices.
+
+## V2 Sync Notes
+
+- 2026-05-07 Mobile/IME macro Ralplan keeps Android/input clusters `9`, `11`, `12`, `13`, `16`, and `18` as real runtime pressure, with adjacent DOM/focus clusters `1`, `7`, and `19` accounted as related proof-route pressure.
+- No cluster is promoted to an exact fixed/improved claim by the live refresh. Synthetic mobile proof remains synthetic; exact mobile/IME closure requires matching raw-device or browser artifacts for the reported environment.

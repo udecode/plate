@@ -39,7 +39,7 @@ Fix GitHub issue `#4798` so toggling the left border for a multi-row table selec
 
 ## Progress Log
 
-- Loaded `task`, `planning-with-files`, `learnings-researcher`, `reproduce-bug`, and `tdd`.
+- Loaded `task`, `goal workflow`, `learnings-researcher`, `reproduce-bug`, and `tdd`.
 - Re-fetched issue `#4798`.
 - Identified likely implementation file and existing spec file.
 - Added `packages/table/src/react/components/TableCellElement/setSelectedCellsBorder.integration.spec.tsx`.

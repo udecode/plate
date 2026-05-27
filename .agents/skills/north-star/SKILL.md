@@ -185,7 +185,7 @@ Examples:
 
 - [plate-plugin-creator](../plate-plugin-creator/SKILL.md)
   - plugin-authoring execution companion
-- [docs-plugin](../docs-plugin/SKILL.md)
+- [docs-creator](../docs-creator/SKILL.md)
   - public docs companion
 - [react](../react/SKILL.md)
   - React implementation companion
