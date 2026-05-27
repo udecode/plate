@@ -49,7 +49,7 @@ const menuItems = [
     getHref: (url: string) =>
       getPlateLLMPromptUrl({
         baseUrl: 'https://chatgpt.com',
-        docUrl: url,
+        docUrl: getMarkdownUrl(url),
       }),
     icon: Bot,
     key: 'chatgpt',
@@ -59,7 +59,7 @@ const menuItems = [
     getHref: (url: string) =>
       getPlateLLMPromptUrl({
         baseUrl: 'https://claude.ai/new',
-        docUrl: url,
+        docUrl: getMarkdownUrl(url),
       }),
     icon: Sparkles,
     key: 'claude',
