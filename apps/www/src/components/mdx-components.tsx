@@ -1,14 +1,18 @@
 import * as React from 'react';
 import type { HTMLAttributes, ReactNode } from 'react';
 
-import { cva } from 'class-variance-authority';
-import { CircleCheck, CircleX, Info, TriangleAlert } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
 
 import { Card, Cards } from '@/components/cards';
 import { CodeTabs } from '@/components/code-tabs';
 import { ComponentInstallation } from '@/components/component-installation';
+import {
+  type CalloutType,
+  type CalloutVariant,
+  getCalloutVariant,
+  getCalloutVariantClassName,
+} from '@/lib/callout-variants';
 import { cn } from '@/lib/utils';
 
 import {
@@ -46,6 +50,7 @@ import {
 } from './ui/accordion';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
 import { AspectRatio } from './ui/aspect-ratio';
+import { Button } from './ui/button';
 import {
   Table,
   TableBody,
@@ -88,6 +93,7 @@ export const mdxComponents = {
   BadgeList,
   BadgePopover,
   blockquote: Typography.Blockquote,
+  Button,
   Callout,
   Card,
   Cards,
@@ -163,7 +169,7 @@ export const mdxComponents = {
   LinkedCard: ({ className, ...props }: React.ComponentProps<typeof Link>) => (
     <Link
       className={cn(
-        'flex h-auto w-full flex-col items-center rounded-xl border bg-card p-6 text-card-foreground shadow-sm transition-colors *:shrink-0 hover:bg-muted/50 sm:p-10',
+        'flex w-full flex-col items-center rounded-xl bg-surface p-6 text-surface-foreground transition-colors hover:bg-surface/80 sm:p-10',
         className
       )}
       {...props}
@@ -258,72 +264,37 @@ function Accordion({
   );
 }
 
-const calloutVariants = cva(
-  cn(
-    'my-4 flex gap-2 rounded-lg border border-s-2 bg-neutral-50 p-3 text-sm shadow-md first:mt-0 dark:bg-neutral-900',
-    '**:[[data-slot="mdx-link"]]:hover:after:bottom-0'
-  ),
-  {
-    variants: {
-      type: {
-        error: 'border-s-red-500/50',
-        info: 'border-s-blue-500/50',
-        success: 'border-s-green-500/50',
-        warn: 'border-s-orange-500/50',
-      },
-    },
-  }
-);
-
-// Fumadocs
 function Callout({
   children,
   className,
   icon,
   title,
-  type = 'info',
+  type,
+  variant = 'default',
   ...props
 }: Omit<HTMLAttributes<HTMLDivElement>, 'icon' | 'title' | 'type'> & {
-  /** Force an icon */
   icon?: ReactNode;
   title?: ReactNode;
-  /** @defaultValue info */
-  type?:
-    | 'destructive'
-    | 'error'
-    | 'info'
-    | 'note'
-    | 'success'
-    | 'warn'
-    | 'warning';
+  type?: CalloutType;
+  variant?: CalloutVariant;
 }) {
-  if (type === 'warning') type = 'warn';
-  if (type === 'note') type = 'info';
-  if (type === 'destructive') type = 'error';
+  const resolvedVariant = getCalloutVariant({ type, variant });
 
   return (
-    <div
+    <Alert
+      data-variant={resolvedVariant}
       className={cn(
-        calloutVariants({
-          type,
-        }),
+        'md:-mx-1 mt-6 w-auto rounded-xl border-surface bg-surface text-surface-foreground **:[code]:border',
+        getCalloutVariantClassName(resolvedVariant),
         className
       )}
       {...props}
     >
-      {icon ??
-        {
-          error: <CircleX className="size-5 text-red-500" />,
-          info: <Info className="size-5 text-blue-500" />,
-          success: <CircleCheck className="size-5 text-green-500" />,
-          warn: <TriangleAlert className="size-5 text-orange-500" />,
-        }[type]}
-      <div className="flex min-w-0 flex-1 flex-col gap-2">
-        {title ? <p className="!my-0 font-medium">{title}</p> : null}
-        <div className="prose-no-margin text-neutral-600 **:leading-[calc(1.25/.875)] empty:hidden dark:text-neutral-400">
-          {children}
-        </div>
-      </div>
-    </div>
+      {icon}
+      {title && <AlertTitle>{title}</AlertTitle>}
+      <AlertDescription className="text-card-foreground/80">
+        {children}
+      </AlertDescription>
+    </Alert>
   );
 }
