@@ -1,5 +1,15 @@
 # @platejs/core
 
+## 53.0.6
+
+### Patch Changes
+
+- [#4983](https://github.com/udecode/plate/pull/4983) by [@bbyiringiro](https://github.com/bbyiringiro) – Fix `.configure({ inputRules })` losing rules on subsequent editor instances
+
+  The user's config object was shared across resolutions via closure; clearing `inputRules` on the first resolve left later editors (StrictMode remounts, HMR, multi-editor pages) with no configured rules.
+
+- [#4983](https://github.com/udecode/plate/pull/4983) by [@bbyiringiro](https://github.com/bbyiringiro) – Fix `createTextSubstitutionInputRule` not firing on the final character of flat matches (e.g. `->` → `→`, `(c)` → `©`)
+
 ## 53.0.5
 
 ## 53.0.0
