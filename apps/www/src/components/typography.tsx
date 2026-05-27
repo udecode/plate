@@ -213,6 +213,7 @@ export const Pre = ({
   __npmCommand__,
   __pnpmCommand__,
   __rawString__,
+  __showLineNumbers__,
   __src__,
   __withMeta__,
   className,
@@ -220,6 +221,7 @@ export const Pre = ({
 }: {
   __event__?: Event['name'];
   __rawString__?: string;
+  __showLineNumbers__?: boolean;
   __src__?: string;
   __withMeta__?: boolean;
 } & NpmCommands &
@@ -243,6 +245,22 @@ export const Pre = ({
     );
   }
 
+  const showLineNumbers =
+    __showLineNumbers__ ?? Boolean(__rawString__?.includes('\n'));
+  const children = showLineNumbers
+    ? React.Children.map(props.children, (child) => {
+        if (!React.isValidElement(child) || child.type !== 'code') {
+          return child;
+        }
+
+        return React.cloneElement(
+          child as React.ReactElement<React.HTMLAttributes<HTMLElement>>,
+          { 'data-line-numbers': '' } as React.HTMLAttributes<HTMLElement> &
+            Record<'data-line-numbers', string>
+        );
+      })
+    : props.children;
+
   return (
     <pre
       className={cn(
@@ -251,7 +269,7 @@ export const Pre = ({
       )}
       {...props}
     >
-      {props.children}
+      {children}
 
       {__rawString__ && (
         <CopyButton

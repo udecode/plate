@@ -158,6 +158,8 @@ export default defineConfig({
               )) {
                 preElement.properties.__withMeta__ = hasMeta;
                 preElement.properties.__rawString__ = node.__rawString__;
+                preElement.properties.__showLineNumbers__ =
+                  node.__showLineNumbers__;
 
                 if (node.__showLineNumbers__) {
                   const codeElement = preElement.children?.find(
