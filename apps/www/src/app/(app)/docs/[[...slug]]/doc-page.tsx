@@ -45,7 +45,11 @@ const DEMO_SUFFIX_REGEX = /-demo$/;
 async function getDocFromParams({ params }: DocPageProps, locale: DocsLocale) {
   const slugParam = (await params).slug;
 
-  return source.getPage(slugParam ?? [], locale) ?? null;
+  return (
+    source.getPage(slugParam ?? [], locale) ??
+    (locale === 'cn' ? source.getPage(slugParam ?? [], 'en') : null) ??
+    null
+  );
 }
 
 function getDocsPath(slug: string[] | undefined, locale: DocsLocale) {
@@ -161,8 +165,13 @@ export async function generateDocMetadata(
 }
 
 export function generateDocStaticParams(locale: DocsLocale) {
+  const pages =
+    locale === 'cn'
+      ? [...source.getPages('cn'), ...source.getPages('en')]
+      : source.getPages(locale);
+
   return [
-    ...source.getPages(locale).map((doc) => ({
+    ...pages.map((doc) => ({
       slug: doc.slugs,
     })),
     ...getRegistryStaticParams(),

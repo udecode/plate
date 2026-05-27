@@ -5,7 +5,7 @@ import { registryComponents } from '../src/registry/registry-components';
 import { registryExamples } from '../src/registry/registry-examples';
 import { registryHooks } from '../src/registry/registry-hooks';
 import { registryLib } from '../src/registry/registry-lib';
-import { registryInit } from '../src/registry/registry';
+import { registry, registryInit } from '../src/registry/registry';
 import { registryStyles } from '../src/registry/registry-styles';
 import { registryUI } from '../src/registry/registry-ui';
 import { toRegistryDependencySpecifier } from './registry-dependencies.mts';
@@ -38,6 +38,9 @@ const normalizedRegistry = registrySchema.parse({
 const itemsByName = new Map(
   normalizedRegistry.items.map((item) => [item.name, item])
 );
+const runtimeItemsByName = new Map(
+  registry.items.map((item) => [item.name, item])
+);
 
 function assert(condition: unknown, message: string) {
   if (!condition) {
@@ -50,8 +53,16 @@ assert(itemsByName.has('editor-basic'), 'Expected editor-basic registry item');
 
 const editorBasic = itemsByName.get('editor-basic');
 assert(
-  editorBasic?.registryDependencies?.includes('@plate/plate-ui'),
-  'Expected editor-basic to depend on @plate/plate-ui after normalization'
+  editorBasic?.registryDependencies?.includes(
+    'https://platejs.org/r/plate-ui.json'
+  ),
+  'Expected editor-basic to depend on standalone plate-ui registry URL after normalization'
+);
+
+const runtimeEditorBasic = runtimeItemsByName.get('editor-basic');
+assert(
+  runtimeEditorBasic?.registryDependencies?.includes('plate-ui'),
+  'Expected runtime editor-basic to depend on plate-ui'
 );
 
 const excalidrawNode = itemsByName.get('excalidraw-node');

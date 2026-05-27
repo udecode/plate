@@ -1,8 +1,13 @@
 import { notFound } from 'next/navigation';
 import { NextResponse, type NextRequest } from 'next/server';
 
-import { getPlateLLMPageMarkdown, processMdxForLLMs } from '@/lib/llm';
+import {
+  getPlateLLMPageMarkdown,
+  processMdxForLLMs,
+  stripMarkdownSuffixFromSlug,
+} from '@/lib/llm';
 import { source } from '@/lib/source';
+import { hrefWithLocale } from '@/lib/withLocale';
 
 export const revalidate = false;
 export const dynamic = 'force-static';
@@ -13,7 +18,8 @@ export async function GET(
   { params }: { params: Promise<{ slug?: string[] }> }
 ) {
   const { slug } = await params;
-  const page = source.getPage(slug ?? [], 'cn');
+  const pageSlug = stripMarkdownSuffixFromSlug(slug);
+  const page = source.getPage(pageSlug, 'cn') ?? source.getPage(pageSlug, 'en');
 
   if (!page) {
     notFound();
@@ -21,7 +27,7 @@ export async function GET(
 
   const content = getPlateLLMPageMarkdown({
     content: processMdxForLLMs(await page.data.getText('raw')),
-    docUrl: `https://platejs.org${page.url}`,
+    docUrl: `https://platejs.org${hrefWithLocale(page.url, 'cn')}`,
     title: page.data.title,
   });
 

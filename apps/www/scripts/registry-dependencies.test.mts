@@ -6,10 +6,12 @@ import {
 } from './registry-dependencies.mts';
 
 describe('registry dependency specifiers', () => {
-  it('uses the @plate namespace for Plate registry item names', () => {
-    expect(toRegistryDependencySpecifier('toolbar')).toBe('@plate/toolbar');
+  it('uses standalone Plate registry URLs for Plate registry item names', () => {
+    expect(toRegistryDependencySpecifier('toolbar')).toBe(
+      'https://platejs.org/r/toolbar.json'
+    );
     expect(toRegistryDependencySpecifier('editor-base-kit')).toBe(
-      '@plate/editor-base-kit'
+      'https://platejs.org/r/editor-base-kit.json'
     );
   });
 
@@ -37,5 +39,8 @@ describe('registry dependency specifiers', () => {
     expect(
       toLocalRegistryDependency('http://127.0.0.1:3000/rd/editor.json')
     ).toBe('editor.json');
+    expect(toLocalRegistryDependency('https://platejs.org/r/editor.json')).toBe(
+      'editor.json'
+    );
   });
 });

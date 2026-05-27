@@ -264,7 +264,8 @@ export const Pre = ({
   return (
     <pre
       className={cn(
-        'relative mt-6 mb-4 max-h-[650px] overflow-x-auto rounded-lg bg-code py-4 text-code-foreground *:[code]:bg-inherit',
+        'max-h-[650px] overflow-x-auto bg-code py-4 text-code-foreground *:[code]:bg-inherit',
+        __withMeta__ ? 'mb-0 rounded-none' : 'relative mt-6 mb-4 rounded-lg',
         className
       )}
       {...props}
@@ -273,6 +274,7 @@ export const Pre = ({
 
       {__rawString__ && (
         <CopyButton
+          data-slot="copy-button"
           variant="ghost"
           className={cn(
             'absolute top-3 right-2 size-7 bg-code text-code-foreground opacity-70 hover:bg-muted-foreground/15 hover:text-code-foreground hover:opacity-100 focus-visible:opacity-100'

@@ -1,3 +1,5 @@
+import { siteConfig } from '@/config/site';
+
 const absoluteUrlPattern = /^https?:\/\//;
 
 export function getRegistryItemSpecifier(name: string) {
@@ -13,7 +15,7 @@ export function getRegistryItemSpecifier(name: string) {
     return item;
   }
 
-  return `@plate/${item}`;
+  return `${siteConfig.registryUrl}${item}`;
 }
 
 export function getRegistryInstallCommand(name: string) {

@@ -1,7 +1,11 @@
 import { notFound } from 'next/navigation';
 import { NextResponse, type NextRequest } from 'next/server';
 
-import { getPlateLLMPageMarkdown, processMdxForLLMs } from '@/lib/llm';
+import {
+  getPlateLLMPageMarkdown,
+  processMdxForLLMs,
+  stripMarkdownSuffixFromSlug,
+} from '@/lib/llm';
 import { source } from '@/lib/source';
 
 export const revalidate = false;
@@ -13,7 +17,7 @@ export async function GET(
   { params }: { params: Promise<{ slug?: string[] }> }
 ) {
   const { slug } = await params;
-  const page = source.getPage(slug ?? [], 'en');
+  const page = source.getPage(stripMarkdownSuffixFromSlug(slug), 'en');
 
   if (!page) {
     notFound();

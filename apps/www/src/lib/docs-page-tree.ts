@@ -115,6 +115,7 @@ export function getPagerForDoc(
   },
   locale = 'en'
 ) {
+  // Fumadocs i18n page trees keep docs node URLs unlocalized; links are localized after lookup.
   const href = normalizeDocsHref(doc.slug ?? '');
   const tree = source.getPageTree(locale);
   const neighbours = findNeighbour(tree, href);

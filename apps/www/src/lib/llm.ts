@@ -34,6 +34,16 @@ export const getPlateLLMPromptUrl = ({
 Help me understand how to use it. Be ready to explain concepts, give examples, or help debug based on it.`,
   })}`;
 
+export const stripMarkdownSuffixFromSlug = (slug: string[] = []) => {
+  if (slug.length === 0) return slug;
+
+  const last = slug.at(-1);
+
+  if (!last?.endsWith('.md')) return slug;
+
+  return [...slug.slice(0, -1), last.slice(0, -3)];
+};
+
 export const processMdxForLLMs = (content: string) =>
   content.replace(
     /<Component(?:Preview|Source)[\s\S]*?name="([^"]+)"[\s\S]*?\/>/g,

@@ -1,7 +1,5 @@
 'use client';
 
-import React from 'react';
-
 import type { SidebarNavItem } from '@/types/nav';
 
 import { castArray } from 'lodash';
@@ -15,6 +13,16 @@ import {
 } from '@/lib/docs-nav-metadata';
 import { cn } from '@/lib/utils';
 import { hrefWithLocale } from '@/lib/withLocale';
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+} from '@/components/ui/sidebar';
 
 function getLabelValues(label: SidebarNavItem['label']) {
   return castArray(label).filter(Boolean);
@@ -62,55 +70,18 @@ function getSectionTitle(
 export function DocsNav({ sidebarNav }: { sidebarNav: SidebarNavItem[] }) {
   const locale = useLocale();
   const pathname = usePathname();
-  const navRef = React.useRef<HTMLElement | null>(null);
-
-  const normalizedPathname = React.useMemo(
-    () => normalizeDocsHref(pathname ?? ''),
-    [pathname]
-  );
-
-  React.useEffect(() => {
-    const navElement = navRef.current;
-
-    const frame = requestAnimationFrame(() => {
-      const activeElement = navElement?.querySelector<HTMLAnchorElement>(
-        'a[aria-current="page"]'
-      );
-
-      if (!activeElement) return;
-
-      const scrollArea = activeElement.closest<HTMLElement>(
-        '[data-docs-sidebar-scroll]'
-      );
-
-      if (!scrollArea) return;
-
-      const areaRect = scrollArea.getBoundingClientRect();
-      const itemRect = activeElement.getBoundingClientRect();
-      const offset =
-        itemRect.top -
-        areaRect.top -
-        scrollArea.clientHeight / 2 +
-        itemRect.height / 2;
-
-      scrollArea.scrollTo({
-        top: Math.max(0, scrollArea.scrollTop + offset),
-      });
-    });
-
-    return () => cancelAnimationFrame(frame);
-  }, [normalizedPathname]);
+  const normalizedPathname = normalizeDocsHref(pathname ?? '');
 
   return sidebarNav.length > 0 ? (
-    <nav
+    <Sidebar
       aria-label={locale === 'cn' ? '文档导航' : 'Docs navigation'}
-      className="relative h-full w-[calc(100%-1rem)] pl-4"
-      ref={navRef}
+      className="sticky top-[calc(var(--header-height)+0.6rem)] z-30 hidden h-[calc(100svh-10rem)] overscroll-none bg-transparent [--sidebar-menu-width:--spacing(56)] lg:flex"
+      collapsible="none"
     >
-      <div className="absolute top-12 right-0 bottom-0 hidden w-px bg-linear-to-b from-transparent via-border to-transparent md:block" />
-      <div className="pointer-events-none sticky top-0 z-10 h-8 bg-linear-to-b from-background via-background/90 to-transparent" />
-
-      <div className="flex flex-col gap-4 pr-4 pb-12">
+      <div className="h-9" />
+      <div className="absolute top-8 z-10 h-8 w-(--sidebar-menu-width) shrink-0 bg-linear-to-b from-background via-background/80 to-background/50 blur-xs" />
+      <div className="absolute top-12 right-2 bottom-0 hidden h-full w-px bg-linear-to-b from-transparent via-border to-transparent lg:flex" />
+      <SidebarContent className="no-scrollbar w-(--sidebar-menu-width) overflow-x-hidden px-2.5">
         {sidebarNav.map((section, index) => (
           <DocsNavGroup
             key={section.href ?? section.title ?? index}
@@ -119,10 +90,9 @@ export function DocsNav({ sidebarNav }: { sidebarNav: SidebarNavItem[] }) {
             section={section}
           />
         ))}
-      </div>
-
-      <div className="pointer-events-none sticky bottom-0 z-10 h-12 bg-linear-to-t from-background via-background/90 to-transparent" />
-    </nav>
+        <div className="-bottom-1 sticky z-10 h-16 shrink-0 bg-linear-to-t from-background via-background/80 to-background/50 blur-xs" />
+      </SidebarContent>
+    </Sidebar>
   ) : null;
 }
 
@@ -138,48 +108,57 @@ function DocsNavGroup({
   const locale = useLocale();
 
   return (
-    <section className="flex flex-col gap-1">
-      <div className="px-2 font-medium text-muted-foreground text-xs leading-7">
+    <SidebarGroup className={index === 0 ? 'pt-6' : undefined}>
+      <SidebarGroupLabel className="font-medium text-muted-foreground">
         {getSectionTitle(section, index, locale)}
-      </div>
+      </SidebarGroupLabel>
 
       {section.items?.length ? (
-        <DocsNavItems items={section.items} pathname={pathname} />
+        <SidebarGroupContent>
+          <DocsNavItems
+            dense={index > 0}
+            items={section.items}
+            pathname={pathname}
+          />
+        </SidebarGroupContent>
       ) : null}
-    </section>
+    </SidebarGroup>
   );
 }
 
 function DocsNavItems({
+  dense,
   depth = 0,
   items,
   pathname,
 }: {
+  dense?: boolean;
   items: SidebarNavItem[];
   pathname: string;
   depth?: number;
 }) {
   return items.length ? (
-    <ul className={cn('flex flex-col gap-0.5', depth > 0 && 'pt-0.5')}>
+    <SidebarMenu className={cn(dense && 'gap-0.5', depth > 0 && 'pt-1')}>
       {items.map((item, index) => {
         const active = isNavItemActive(item, pathname);
         const key = item.href ?? `${item.title}:${index}`;
 
         return (
-          <li key={key} className={cn(depth > 0 && 'pl-3')}>
+          <SidebarMenuItem key={key} className={cn(depth > 0 && 'pl-3')}>
             <DocsNavItem active={active} item={item} pathname={pathname} />
 
             {item.items?.length ? (
               <DocsNavItems
+                dense={dense}
                 depth={depth + 1}
                 items={item.items}
                 pathname={pathname}
               />
             ) : null}
-          </li>
+          </SidebarMenuItem>
         );
       })}
-    </ul>
+    </SidebarMenu>
   ) : null;
 }
 
@@ -197,71 +176,60 @@ function DocsNavItem({
   const textLabels = getTextLabels(item.label);
   const statusLabel = getStatusLabel(item.label);
   const current = item.href && normalizeDocsHref(item.href) === pathname;
+  const buttonClassName =
+    'relative h-[30px] w-fit overflow-visible border border-transparent text-[0.8rem] font-medium after:absolute after:inset-x-0 after:-inset-y-1 after:z-0 after:rounded-md data-[active=true]:border-accent data-[active=true]:bg-accent 3xl:fixed:w-full 3xl:fixed:max-w-48';
 
   if (item.disabled || !item.href) {
     return (
-      <span className="flex min-h-7 w-full items-center">
+      <SidebarMenuButton className={buttonClassName} disabled>
         <DocsNavItemContent
-          active={false}
-          disabled={item.disabled}
           label={item.label}
           statusLabel={statusLabel}
           textLabels={textLabels}
           title={title}
         />
-      </span>
+      </SidebarMenuButton>
     );
   }
 
   return (
-    <Link
-      aria-current={current ? 'page' : undefined}
-      className="group flex min-h-7 w-full items-center rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
-      href={hrefWithLocale(item.href, locale)}
-      rel={item.external ? 'noreferrer' : undefined}
-      target={item.external ? '_blank' : undefined}
-    >
-      <DocsNavItemContent
-        active={active}
-        label={item.label}
-        statusLabel={statusLabel}
-        textLabels={textLabels}
-        title={title}
-      />
-    </Link>
+    <SidebarMenuButton asChild className={buttonClassName} isActive={active}>
+      <Link
+        aria-current={current ? 'page' : undefined}
+        href={hrefWithLocale(item.href, locale)}
+        rel={item.external ? 'noreferrer' : undefined}
+        target={item.external ? '_blank' : undefined}
+      >
+        <DocsNavItemContent
+          label={item.label}
+          statusLabel={statusLabel}
+          textLabels={textLabels}
+          title={title}
+        />
+      </Link>
+    </SidebarMenuButton>
   );
 }
 
 function DocsNavItemContent({
-  active,
-  disabled,
   label,
   statusLabel,
   textLabels,
   title,
 }: {
-  active: boolean;
   title?: string;
-  disabled?: boolean;
   label?: SidebarNavItem['label'];
   statusLabel?: string;
   textLabels: string[];
 }) {
   return (
-    <span
-      className={cn(
-        'inline-flex min-h-7 max-w-full items-center gap-2 rounded-md border border-transparent px-2 font-medium text-[0.8rem] leading-5 transition-colors',
-        disabled
-          ? 'cursor-not-allowed text-muted-foreground/35'
-          : 'text-foreground group-hover:bg-accent/70 group-hover:text-accent-foreground',
-        active && 'border-accent bg-accent text-accent-foreground'
-      )}
-    >
-      <span className="truncate">{title}</span>
+    <>
+      <span className="absolute inset-0 flex w-(--sidebar-menu-width) bg-transparent" />
+      {title}
 
       {hasNewStatus(label) ? (
         <span
-          className="size-2 shrink-0 rounded-full bg-blue-500"
+          className="flex size-2 rounded-full bg-blue-500"
           title={statusLabel}
         />
       ) : null}
@@ -278,6 +246,6 @@ function DocsNavItemContent({
           ))}
         </span>
       ) : null}
-    </span>
+    </>
   );
 }

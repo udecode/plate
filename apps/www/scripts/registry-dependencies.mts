@@ -1,5 +1,9 @@
 const ABSOLUTE_URL_REGEX = /^https?:\/\//;
 const PLATE_REGISTRY_NAMESPACE = '@plate';
+const plateRegistryUrl =
+  process.env.NODE_ENV === 'development'
+    ? 'http://localhost:3000/rd/{name}.json'
+    : 'https://platejs.org/r/{name}.json';
 
 function isDirectDependencySpecifier(dependency: string) {
   return (
@@ -16,7 +20,7 @@ export function toRegistryDependencySpecifier(dependency: string) {
     return dependency;
   }
 
-  return `${PLATE_REGISTRY_NAMESPACE}/${dependency}`;
+  return plateRegistryUrl.replace('{name}', dependency);
 }
 
 export function toLocalRegistryDependency(dependency: string) {
@@ -28,7 +32,9 @@ export function toLocalRegistryDependency(dependency: string) {
     const url = new URL(dependency);
 
     if (
-      (url.hostname === 'localhost' || url.hostname === '127.0.0.1') &&
+      (url.hostname === 'localhost' ||
+        url.hostname === '127.0.0.1' ||
+        url.hostname === 'platejs.org') &&
       url.pathname.endsWith('.json')
     ) {
       return url.pathname.split('/').at(-1) ?? dependency;

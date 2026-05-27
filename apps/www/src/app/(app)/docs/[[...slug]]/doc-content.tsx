@@ -78,23 +78,24 @@ export function DocContent({
   const hasToc = doc?.toc && toc;
 
   return (
-    <div className="relative flex items-stretch lg:w-full" data-slot="docs">
+    <div
+      className="flex scroll-mt-24 items-stretch pb-8 text-[1.05rem] sm:text-[15px] xl:w-full"
+      data-slot="docs"
+    >
       <div className="flex min-w-0 flex-1 flex-col">
         <div className="h-(--top-spacing) shrink-0" />
         <div
           className={cn(
-            'mx-auto flex w-full min-w-0 flex-1 flex-col gap-8 px-4 py-6 text-neutral-800 lg:px-0 lg:py-8 dark:text-neutral-300'
-            // v4
-            // 'max-w-3xl'
+            'mx-auto flex w-full min-w-0 max-w-[40rem] flex-1 flex-col gap-6 px-4 py-6 text-neutral-800 md:px-0 lg:py-8 dark:text-neutral-300'
           )}
         >
           <div className="flex flex-col gap-2">
             <div className="flex flex-col gap-2">
-              <div className="flex items-start justify-between">
-                <h1 className="scroll-m-20 font-semibold text-4xl tracking-tight sm:text-3xl lg:text-4xl">
+              <div className="flex items-center justify-between md:items-start">
+                <h1 className="scroll-m-24 font-semibold text-3xl tracking-tight sm:text-3xl">
                   {title}
                 </h1>
-                <div className="flex shrink-0 items-center gap-2 pt-1.5">
+                <div className="docs-nav flex items-center gap-2">
                   {doc?.slug && doc?.copyMarkdown && (
                     <div className="hidden sm:block">
                       <DocsCopyPage
@@ -132,7 +133,7 @@ export function DocContent({
                 </div>
               </div>
               {doc.description && (
-                <p className="text-balance text-[1.05rem] text-muted-foreground sm:text-base">
+                <p className="text-[1.05rem] text-muted-foreground sm:text-balance sm:text-base md:max-w-[80%]">
                   {doc.description}
                 </p>
               )}
@@ -204,16 +205,14 @@ export function DocContent({
               </div>
             ) : null}
           </div>
-          <div className="w-full flex-1 *:data-[slot=alert]:first:mt-0">
+          <div className="w-full flex-1 pb-16 *:data-[slot=alert]:first:mt-0 sm:pb-0">
             {/* <MDX components={mdxComponents} /> */}
             {children}
           </div>
         </div>
         <div
           className={cn(
-            'mx-auto flex h-16 w-full items-center gap-2 px-4 lg:px-0',
-            // v4
-            // 'max-w-2xl',
+            'mx-auto hidden h-16 w-full max-w-[40rem] items-center gap-2 px-4 sm:flex sm:px-0',
             // no footer
             'mb-12'
           )}
@@ -246,15 +245,14 @@ export function DocContent({
       </div>
 
       {hasToc && (
-        <div className="sticky top-[calc(var(--header-height)+1px)] z-30 ml-auto hidden h-[calc(100svh-var(--header-height)-var(--footer-height))] w-72 flex-col gap-4 overflow-hidden overscroll-none pb-8 lg:flex">
+        <div className="sticky top-[calc(var(--header-height)+1px)] z-30 ml-auto hidden h-[90svh] w-(--sidebar-width) flex-col gap-4 overflow-hidden overscroll-none pb-8 xl:flex">
           <div className="h-(--top-spacing) shrink-0" />
           {toc?.length ? (
-            <div className="no-scrollbar overflow-y-auto px-8">
+            <div className="no-scrollbar flex flex-col gap-8 overflow-y-auto px-8">
               <DocsTableOfContents toc={toc} />
-              <div className="h-12" />
             </div>
           ) : null}
-          <div className="flex flex-1 flex-col gap-12 px-6">
+          <div className="hidden flex-1 flex-col gap-6 px-6 xl:flex">
             <OpenInPlus />
           </div>
         </div>

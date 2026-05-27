@@ -4,14 +4,22 @@ import matter from 'gray-matter';
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 
+import { hrefWithLocale } from '@/lib/withLocale';
 import { registryExamples } from '@/registry/registry-examples';
 import { registryUI } from '@/registry/registry-ui';
 
 import { createDocsRegistry } from './build-docs-registry.mts';
 
 const DOCS_HREF_REGEX = /^\/docs(?:\/|$)/;
+const INSTALLED_DOCS_HREF_REGEX = /^\/docs\/plate(?:\/|$)/;
+const CN_DOCS_PREFIX_REGEX = /^\/cn(?=\/docs)/;
+const PLATE_REGISTRY_URL_PREFIX = 'https://platejs.org/r/';
 const HASH_OR_QUERY_REGEX = /[#?].*$/;
 const META_PAGE_HREF_REGEX = /\]\(([^)]+)\)$/;
+const UNSCOPED_DOCS_MARKDOWN_LINK_REGEX =
+  /\]\(\/docs(?!\/plate(?:\/|#|\?|\)))(?=\/|#|\?|\))/;
+const UNSCOPED_DOCS_HREF_ATTRIBUTE_REGEX =
+  /\bhref=(["'])\/docs(?!\/plate(?:\/|#|\?|\1))(?=\/|#|\?|\1)/;
 const TRAILING_SLASH_REGEX = /\/$/;
 const DEMO_SUFFIX_REGEX = /-demo$/;
 const MDX_EXTENSION_REGEX = /\.mdx$/;
@@ -47,7 +55,7 @@ type DocsMeta = {
   pages?: string[];
 };
 
-function assert(condition: unknown, message: string) {
+function assert(condition: unknown, message: string): asserts condition {
   if (!condition) {
     throw new Error(message);
   }
@@ -86,6 +94,19 @@ function collectMetaPageHrefs(pages: string[] = []) {
   }
 
   return hrefs;
+}
+
+function collectInstalledDocsRegistryHrefs(meta: DocsMeta) {
+  return new Set([
+    ...collectMetaPageHrefs(meta.pages),
+    ...collectDocsHrefs(meta._plate?.docSections ?? []),
+    ...Object.values(meta._plate?.categoryGroups ?? {}).flatMap((items) => [
+      ...collectDocsHrefs(items),
+    ]),
+    ...Object.keys(meta._plate?.items ?? {}).filter((href) =>
+      DOCS_HREF_REGEX.test(href)
+    ),
+  ]);
 }
 
 async function countCnMdxFiles(dir: string): Promise<number> {
@@ -254,6 +275,30 @@ async function checkChineseRoutes(sourceRoutes: {
   );
 }
 
+function checkChineseFallbackDocRoutes(sourceRoutes: {
+  cn: Set<string>;
+  en: Set<string>;
+}) {
+  const cnRouteParams = new Set([
+    ...sourceRoutes.cn,
+    ...[...sourceRoutes.en].map((route) => hrefWithLocale(route, 'cn')),
+  ]);
+
+  assert(
+    cnRouteParams.has('/cn/docs/plugin-input-rules'),
+    'Expected CN static params to include English-only docs fallback routes'
+  );
+}
+
+function checkChinesePagerHrefLookup() {
+  const lookupHref = '/cn/docs/table'.replace(CN_DOCS_PREFIX_REGEX, '');
+
+  assert(
+    lookupHref === '/docs/table',
+    'Expected CN pager lookup href to match Fumadocs page tree URLs'
+  );
+}
+
 async function checkDocsRegistry() {
   const docsRegistry = await createDocsRegistry();
   const itemsByName = new Map(
@@ -267,36 +312,60 @@ async function checkDocsRegistry() {
 
   const docsItem = itemsByName.get('docs');
   assert(
-    docsItem?.registryDependencies?.includes('@plate/docs-meta'),
-    'Expected docs aggregate item to depend on @plate/docs-meta'
+    docsItem?.registryDependencies?.includes(
+      `${PLATE_REGISTRY_URL_PREFIX}docs-meta.json`
+    ),
+    'Expected docs aggregate item to depend on standalone docs-meta registry URL'
   );
   assert(
-    docsItem?.registryDependencies?.includes('@plate/table-docs'),
-    'Expected docs aggregate item to depend on @plate/table-docs'
+    docsItem?.registryDependencies?.includes(
+      `${PLATE_REGISTRY_URL_PREFIX}table-docs.json`
+    ),
+    'Expected docs aggregate item to depend on standalone table-docs registry URL'
   );
   assert(
     docsItem?.registryDependencies?.every((dependency) =>
-      dependency.startsWith('@plate/')
+      dependency.startsWith(PLATE_REGISTRY_URL_PREFIX)
     ),
-    'Expected docs aggregate dependencies to use the @plate namespace'
+    'Expected docs aggregate dependencies to use standalone registry URLs'
   );
 
   const fumadocsItem = itemsByName.get('fumadocs');
   assert(
-    fumadocsItem?.registryDependencies?.includes('@plate/docs'),
-    'Expected fumadocs item to depend on @plate/docs'
+    fumadocsItem?.registryDependencies?.includes(
+      `${PLATE_REGISTRY_URL_PREFIX}docs.json`
+    ),
+    'Expected fumadocs item to depend on standalone docs registry URL'
   );
 
   const docsMeta = itemsByName.get('docs-meta');
-  assert(
-    docsMeta?.files?.some(
-      (file) =>
-        typeof file !== 'string' &&
-        file.path === '../../content/docs/meta.json' &&
-        file.target === 'content/docs/plate/meta.json'
-    ),
-    'Expected docs-meta to publish Fumadocs meta.json'
+  const docsMetaFile = docsMeta?.files?.find(
+    (file) =>
+      typeof file !== 'string' &&
+      file.path === '../../content/docs/meta.json' &&
+      file.target === 'content/docs/plate/meta.json'
   );
+
+  assert(docsMetaFile, 'Expected docs-meta to publish Fumadocs meta.json');
+
+  if (typeof docsMetaFile !== 'string') {
+    assert(
+      docsMetaFile.content,
+      'Expected docs-meta to inline rewritten Fumadocs meta.json content'
+    );
+
+    const installedDocsMeta = JSON.parse(docsMetaFile.content!) as DocsMeta;
+    const misplacedHrefs = [
+      ...collectInstalledDocsRegistryHrefs(installedDocsMeta),
+    ].filter((href) => !INSTALLED_DOCS_HREF_REGEX.test(href));
+
+    assert(
+      misplacedHrefs.length === 0,
+      `Expected installed docs meta hrefs to stay under /docs/plate:\n${misplacedHrefs
+        .map((href) => `- ${href}`)
+        .join('\n')}`
+    );
+  }
 
   const tableDocs = itemsByName.get('table-docs');
   assert(
@@ -306,6 +375,30 @@ async function checkDocsRegistry() {
         file.path === '../../content/docs/(plugins)/(elements)/table.mdx'
     ),
     'Expected table-docs to publish the source table MDX file'
+  );
+
+  const docsMdxFiles = docsRegistry.items.flatMap(
+    (item) =>
+      item.files?.filter(
+        (file) =>
+          typeof file !== 'string' &&
+          file.target?.startsWith('content/docs/plate/') &&
+          file.target.endsWith('.mdx')
+      ) ?? []
+  );
+  const docsMdxFilesWithRootLinks = docsMdxFiles.filter(
+    (file) =>
+      typeof file !== 'string' &&
+      (!file.content ||
+        UNSCOPED_DOCS_MARKDOWN_LINK_REGEX.test(file.content) ||
+        UNSCOPED_DOCS_HREF_ATTRIBUTE_REGEX.test(file.content))
+  );
+
+  assert(
+    docsMdxFilesWithRootLinks.length === 0,
+    `Expected installed docs MDX files to inline content with /docs/plate links:\n${docsMdxFilesWithRootLinks
+      .map((file) => (typeof file === 'string' ? file : `- ${file.target}`))
+      .join('\n')}`
   );
 
   const translatedFiles = docsRegistry.items.flatMap(
@@ -329,6 +422,8 @@ try {
   checkNavRoutes(docsMeta, sourceRoutes.en);
   await checkCnAppOnlyDocsRoutes();
   await checkChineseRoutes(sourceRoutes);
+  checkChineseFallbackDocRoutes(sourceRoutes);
+  checkChinesePagerHrefLookup();
   await checkDocsRegistry();
   console.info('Docs source parity check passed.');
 } catch (error) {

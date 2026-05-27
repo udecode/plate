@@ -23,6 +23,12 @@ const TARGET_DIR = isDev ? 'public/rd' : 'public/r';
 const TARGET = `${TARGET_DIR}/${TARGET_FILE}`;
 
 const DIRECTORY_PATTERN_REGEX = /\(([^)]*)\)\//g;
+const DOCS_ROUTE_PREFIX = '/docs';
+const INSTALLED_DOCS_ROUTE_PREFIX = `${DOCS_ROUTE_PREFIX}/${NAME}`;
+const DOCS_MARKDOWN_LINK_REGEX = /\]\(\/docs(?=\/|#|\?|\))/g;
+const DOCS_HREF_ATTRIBUTE_REGEX = /\bhref=(["'])\/docs(?=\/|#|\?|\1)/g;
+
+type JsonRecord = Record<string, unknown>;
 
 async function getFiles(dir: string): Promise<string[]> {
   const entries = await fs.readdir(dir, { withFileTypes: true });
@@ -54,17 +60,76 @@ function pathToTitle(filePath: string): string {
     .join(' ');
 }
 
-async function getFrontmatter(filePath: string) {
+function rewriteInstalledDocsContent(content: string) {
+  return rewriteDocsHref(content)
+    .replace(DOCS_MARKDOWN_LINK_REGEX, `](${INSTALLED_DOCS_ROUTE_PREFIX}`)
+    .replace(
+      DOCS_HREF_ATTRIBUTE_REGEX,
+      (_match, quote: string) => `href=${quote}${INSTALLED_DOCS_ROUTE_PREFIX}`
+    );
+}
+
+async function getDocFile(filePath: string) {
   const source = await fs.readFile(filePath, 'utf8');
   const { data } = matter(source);
   return {
+    content: rewriteInstalledDocsContent(source),
     description: data.description,
     title: data.title,
   };
 }
 
+function isRecord(value: unknown): value is JsonRecord {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function rewriteDocsHref(value: string) {
+  if (value === DOCS_ROUTE_PREFIX) {
+    return INSTALLED_DOCS_ROUTE_PREFIX;
+  }
+
+  if (
+    value.startsWith(`${DOCS_ROUTE_PREFIX}/`) ||
+    value.startsWith(`${DOCS_ROUTE_PREFIX}#`) ||
+    value.startsWith(`${DOCS_ROUTE_PREFIX}?`)
+  ) {
+    return `${INSTALLED_DOCS_ROUTE_PREFIX}${value.slice(DOCS_ROUTE_PREFIX.length)}`;
+  }
+
+  return value;
+}
+
+function rewriteInstalledDocsMetaValue(value: unknown): unknown {
+  if (typeof value === 'string') {
+    return rewriteInstalledDocsContent(value);
+  }
+
+  if (Array.isArray(value)) {
+    return value.map(rewriteInstalledDocsMetaValue);
+  }
+
+  if (isRecord(value)) {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, entry]) => [
+        rewriteDocsHref(key),
+        rewriteInstalledDocsMetaValue(entry),
+      ])
+    );
+  }
+
+  return value;
+}
+
+async function createInstalledDocsMetaContent() {
+  const source = await fs.readFile(path.join(SOURCE_DIR, META_FILE), 'utf8');
+  const meta = rewriteInstalledDocsMetaValue(JSON.parse(source));
+
+  return `${JSON.stringify(meta, null, 2)}\n`;
+}
+
 export async function createDocsRegistry(): Promise<Registry> {
   const files = await getFiles(SOURCE_DIR);
+  const docsMetaContent = await createInstalledDocsMetaContent();
 
   const items = await Promise.all(
     files.map(async (filePath) => {
@@ -78,7 +143,7 @@ export async function createDocsRegistry(): Promise<Registry> {
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, '-')}-docs`;
 
-      const { description, title } = await getFrontmatter(filePath);
+      const { content, description, title } = await getDocFile(filePath);
 
       const targetPath = `content/docs/${NAME}/${pathWithoutExt}.mdx`;
 
@@ -87,6 +152,7 @@ export async function createDocsRegistry(): Promise<Registry> {
           description || `Documentation for ${title || pathToTitle(filePath)}`,
         files: [
           {
+            content,
             path: `${RELATIVE_SOURCE_DIR}/${relativePath}`,
             target: targetPath,
             type: 'registry:file',
@@ -103,6 +169,7 @@ export async function createDocsRegistry(): Promise<Registry> {
     description: `Fumadocs metadata for ${NAME} documentation`,
     files: [
       {
+        content: docsMetaContent,
         path: `${RELATIVE_SOURCE_DIR}/${META_FILE}`,
         target: `content/docs/${NAME}/${META_FILE}`,
         type: 'registry:file',

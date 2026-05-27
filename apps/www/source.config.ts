@@ -14,6 +14,7 @@ import { z } from 'zod/v4';
 
 import { rehypeComponent } from './src/lib/rehype-component';
 import { rehypeNpmCommand } from './src/lib/rehype-npm-command';
+import { getCodeTitleIconLabel } from './src/lib/code-title-icon';
 
 import 'dotenv/config';
 
@@ -152,6 +153,20 @@ export default defineConfig({
               const hasMeta = node.children.some(
                 (child: any) => child.tagName === 'div'
               );
+
+              for (const titleElement of node.children.filter(
+                (child: any) =>
+                  child.tagName === 'div' &&
+                  'data-rehype-pretty-code-title' in child.properties
+              )) {
+                const iconLabel = getCodeTitleIconLabel(
+                  titleElement.properties?.['data-language']
+                );
+
+                if (iconLabel) {
+                  titleElement.properties['data-file-icon-label'] = iconLabel;
+                }
+              }
 
               for (const preElement of node.children.filter(
                 (child: any) => child.tagName === 'pre'
