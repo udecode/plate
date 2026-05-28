@@ -1,5 +1,22 @@
 [
   {
+    "changelogUrl": "https://github.com/udecode/plate/blob/2d995b48090bcff8fdc8552d57b950ada6dbf902/packages/plate/CHANGELOG.md",
+    "content": "`@platejs/core`\n\n### Bug Fixes\n\n- Fix `.configure({ inputRules })` losing rules on subsequent editor instances ([#4983](https://github.com/udecode/plate/pull/4983))\n\n    The user's config object was shared across resolutions via closure; clearing `inputRules` on the first resolve left later editors (StrictMode remounts, HMR, multi-editor pages) with no configured rules.\n\n- Fix `createTextSubstitutionInputRule` not firing on the final character of flat matches (e.g. `->` → `→`, `(c)` → `©`) ([#4983](https://github.com/udecode/plate/pull/4983))\n\n`platejs`\n\n### Bug Fixes\n\n- Updated `@platejs/core`, `@platejs/utils`.\n\n`@platejs/utils`\n\n### Bug Fixes\n\n- Updated `@platejs/core`.\n\n[`v53.0.5...v53.0.6`](https://github.com/udecode/plate/compare/v53.0.5...v53.0.6) · By [@bbyiringiro](https://github.com/bbyiringiro)",
+    "contributors": [
+      {
+        "url": "https://github.com/bbyiringiro",
+        "username": "@bbyiringiro"
+      }
+    ],
+    "date": "2026-05-27",
+    "packageTag": "platejs@53.0.6",
+    "tag": "v53.0.6",
+    "title": "v53.0.6",
+    "type": "patch",
+    "versionPackagePrUrl": "https://github.com/udecode/plate/pull/4984",
+    "url": "https://github.com/udecode/plate/releases/tag/v53.0.6"
+  },
+  {
     "changelogUrl": "https://github.com/udecode/plate/blob/d09298282dd3af8022052e51c212eb6cdcdd3843/packages/plate/CHANGELOG.md",
     "content": "`platejs`\n\n### Bug Fixes\n\n- Updated `@platejs/core`, `@platejs/slate`, `@platejs/utils`.\n\n`@platejs/slate`\n\n### Bug Fixes\n\n- Updated `slate-react`. ([`ce9ec87`](https://github.com/udecode/plate/commit/ce9ec871c9547a8a3c78ded13a93049ef9fe049c))\n\n`@platejs/utils`\n\n### Bug Fixes\n\n- Updated `@platejs/core`, `@platejs/slate`.\n\n[`v53.0.4...v53.0.5`](https://github.com/udecode/plate/compare/%40platejs%2Fai%4053.0.4...platejs%4053.0.5) · By [@github-actions\\[bot\\]](https://github.com/github-actions%5Bbot%5D)",
     "contributors": [

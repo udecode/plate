@@ -41,6 +41,10 @@ Boundaries:
 - Tracker sync: TODO.
 - Non-goals: TODO.
 
+Output budget strategy:
+- TODO: Record how command/search output will be scoped, capped, counted, or
+  saved as artifacts before broad exploration.
+
 Blocked condition:
 - TODO: Name the missing source context, transcript, repro, access, command, or
   user decision that stops autonomous work.
@@ -83,6 +87,7 @@ Start Gates:
 | Browser tool decision for browser surface | pending | pending |
 | PR expectation decision | pending | pending |
 | Tracker sync expectation decision | pending | pending |
+| Output budget strategy recorded | pending | pending |
 
 Work Checklist:
 - [ ] Objective includes outcome, completion threshold, verification surface,
@@ -112,6 +117,9 @@ Work Checklist:
       implementation work, or marked N/A with reason.
 - [ ] Agent-native review decision recorded for `.agents/**`, `.claude/**`,
       `.codex/**`, skills, hooks, commands, prompts, or user-action tooling.
+- [ ] Output budget discipline recorded and followed: broad searches are
+      scoped, capped, counted, or artifacted instead of streamed into goal
+      context.
 
 Completion Gates:
 | Gate | Applies | Required action | Evidence |
@@ -135,11 +143,12 @@ Completion Gates:
 | Local install corruption suspected | pending | Run `pnpm run reinstall` once, rerun the exact failing command, or record N/A | pending |
 | Autoreview for non-trivial implementation changes | pending | Load `.agents/skills/autoreview/SKILL.md`; use dirty local `--mode local`, branch/PR `--mode branch --base <base>`, or committed slice `--mode commit --commit <ref>` until no accepted/actionable findings, or record N/A for docs-only/trivial/no local patch | pending |
 | PR create or update | pending | Run `check` before PR work and sync PR body to the task-style final handoff | pending |
-| Task-style PR body verified | pending | Verify the PR body with `gh pr view --json body`; it must preserve auto-release blocks when applicable, must not include a current-PR self-link, and must include an issue/tracker/fix line when applicable, confidence, Reproduced/Verified table, Outcome, Caveat, Design, and Verified sections as applicable | pending |
+| Task-style PR body verified | pending | Verify the PR body with `gh pr view --json body`; it must preserve auto-release blocks when applicable, must not include a current-PR self-link, and must use the kitcn PR #270 emoji format: `🐛 Fixes ...`, `🟢 95-100% confidence`, `Phase / 🧪 Tests / 🌐 Browser` table, and bold emoji Outcome/Caveat/Design/Verified sections | pending |
 | PR proof image hosting | pending | If PR body needs browser proof, replace local image paths with hosted GitHub URLs or record N/A | pending |
 | Tracker sync-back | pending | Post concise issue/Linear sync after PR exists, or record N/A/blocker | pending |
 | Final handoff contract | pending | Fill the final handoff fields below with exact PR/issue/confidence/tests/browser/outcome/caveats/design/verification content or N/A reason | pending |
 | Final lint | pending | Run `pnpm lint:fix` or scoped equivalent | pending |
+| Output budget discipline | pending | Verify no unbounded high-volume command output was streamed, or record the accidental output and recovery | pending |
 | Goal plan complete | yes | Run `node .agents/rules/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` | pending |
 
 Phase / pass table:
@@ -191,14 +200,20 @@ Final handoff contract:
 Task-style PR body contract:
 - Preserve any existing `<!-- auto-release:start -->` block. If a changeset is
   part of the diff and repo policy expects auto release, include that block.
-- Use the final handoff fields in this order: issue, tracker, or fix line when
-  applicable; confidence line; Reproduced / Verified table; Outcome; Caveat;
-  Design; and Verified.
+- Use the accepted kitcn PR #270 visual format. The body starts with an emoji
+  issue/tracker/fix line, for example `🐛 Fixes #123` or `🐛 Fixes ➖ N/A`, then
+  an emoji confidence line like `🟢 95-100% confidence`.
+- Use this exact table header: `| Phase | 🧪 Tests | 🌐 Browser |`.
+- Use `Reproduced` and `Verified` rows. Mark passing proof with `🟢`, repro or
+  failing proof with `🔴`, and non-applicable cells with `➖ N/A`.
+- Use bold emoji section headings: `**✅ Outcome**`, `**⚠️ Caveat**`,
+  `**🏗️ Design**`, and `**🧪 Verified**`.
 - Never include a line that links to the current PR itself. The current PR URL
   belongs in the final response, not in its own description.
 - Do not replace this with a generic `Summary` / `Verification` PR body, an
-  adaptive prose body from a git helper skill, or an unrelated generated badge
-  footer unless the caller or repo template explicitly asks for it.
+  adaptive prose body from a git helper skill, plain `## Outcome` sections, or
+  an unrelated generated badge footer unless the caller or repo template
+  explicitly asks for it.
 - Proof is `gh pr view --json body` output or a concise source-backed summary
   of that output.
 
