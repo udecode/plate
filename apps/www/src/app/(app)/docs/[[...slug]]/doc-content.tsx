@@ -76,6 +76,7 @@ export function DocContent({
 } & Partial<RegistryItem>) {
   const title = doc?.title ?? getRegistryTitle(file);
   const hasToc = doc?.toc && toc;
+  const isWideContent = category === 'component' || category === 'example';
 
   return (
     <div
@@ -86,16 +87,36 @@ export function DocContent({
         <div className="h-(--top-spacing) shrink-0" />
         <div
           className={cn(
-            'mx-auto flex w-full min-w-0 max-w-[40rem] flex-1 flex-col gap-6 px-4 py-6 text-neutral-800 md:px-0 lg:py-8 dark:text-neutral-300'
+            'mx-auto flex w-full min-w-0 flex-1 flex-col px-4 py-6 text-neutral-800 lg:py-8 dark:text-neutral-300',
+            isWideContent
+              ? 'max-w-[64rem] gap-8 lg:px-0'
+              : 'max-w-[56rem] gap-6 md:px-0'
           )}
         >
           <div className="flex flex-col gap-2">
             <div className="flex flex-col gap-2">
-              <div className="flex items-center justify-between md:items-start">
-                <h1 className="scroll-m-24 font-semibold text-3xl tracking-tight sm:text-3xl">
+              <div
+                className={cn(
+                  'flex justify-between',
+                  isWideContent ? 'items-start' : 'items-center md:items-start'
+                )}
+              >
+                <h1
+                  className={cn(
+                    'font-semibold tracking-tight sm:text-3xl',
+                    isWideContent
+                      ? 'scroll-m-20 text-4xl lg:text-4xl'
+                      : 'scroll-m-24 text-3xl'
+                  )}
+                >
                   {title}
                 </h1>
-                <div className="docs-nav flex items-center gap-2">
+                <div
+                  className={cn(
+                    'docs-nav flex items-center gap-2',
+                    isWideContent && 'pt-1.5'
+                  )}
+                >
                   {doc?.slug && doc?.copyMarkdown && (
                     <div className="hidden sm:block">
                       <DocsCopyPage
@@ -212,7 +233,8 @@ export function DocContent({
         </div>
         <div
           className={cn(
-            'mx-auto hidden h-16 w-full max-w-[40rem] items-center gap-2 px-4 sm:flex sm:px-0',
+            'mx-auto hidden h-16 w-full items-center gap-2 px-4 sm:flex',
+            isWideContent ? 'max-w-[64rem] lg:px-0' : 'max-w-[56rem] sm:px-0',
             // no footer
             'mb-12'
           )}
