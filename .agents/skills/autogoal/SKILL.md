@@ -563,9 +563,13 @@ Gate closure rules:
    threshold, verification surface, constraints, boundaries, blocked condition,
    flow mode, and goal plan path; resolve generated gates as yes/no/N/A instead
    of deleting or replacing the template output.
-10. Use that exact path for
+10. Record the output-budget strategy before exploratory commands: which
+    searches or reads are allowed, which high-volume paths are excluded, and
+    how large results will be capped, counted, or saved as artifacts instead of
+    streamed into the goal context.
+11. Use that exact path for
    `check-complete.mjs`.
-11. Do not start durable work until the goal is set, verified as already matching,
+12. Do not start durable work until the goal is set, verified as already matching,
    or the user explicitly resolves the missing-goal path.
 
 Set the goal before mutable lane state when the workflow depends on a goal. For
@@ -787,6 +791,9 @@ Constraints:
 Boundaries:
 - <allowed files/packages/tools>
 
+Output budget strategy:
+- <how command/search output will be scoped, capped, counted, or artifacted>
+
 Blocked condition:
 - <condition that stops autonomous work>
 
@@ -994,6 +1001,35 @@ Attempted:
 ## Budget Handling
 
 Budget exhaustion is not success.
+
+## Output Budget Discipline
+
+Goal token budgets are real work budgets, not decorative counters. A goal run
+that burns its budget on tool output has failed the workflow even when no app
+code was touched.
+
+Before running exploratory commands inside an active goal:
+
+- Prefer narrow reads over broad scans: exact files, focused `rg -n` patterns,
+  targeted globs, and short `sed -n` ranges.
+- Treat `tmp/**`, logs, binaries, generated output, build artifacts,
+  `node_modules`, `.next`, `.turbo`, and coverage folders as excluded by
+  default. Include them only when they are the named source of truth.
+- Set explicit tool output caps for commands likely to return more than a
+  screenful. Keep ordinary source reads around a few thousand tokens, and
+  justify any larger cap in the plan.
+- For broad audits, first ask for counts, filenames, or top matches
+  (`rg --count`, `rg --files-with-matches`, `--max-count`, `wc`, `head`) before
+  printing matching lines.
+- If a result may be large but still matters, write it to a local artifact and
+  inspect slices from that artifact. Do not stream the full result into the
+  conversation.
+- Never run unbounded `rg` across the whole repo plus `tmp/api`, logs, or binary
+  outputs during a budgeted goal. Split the search by owner or exclude the noisy
+  trees first.
+- After any accidental large output, stop broad exploration immediately, record
+  the miss in the error-attempts row, and continue only with constrained
+  commands.
 
 If the system stops or warns because a goal budget is reached:
 

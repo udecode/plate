@@ -19,6 +19,10 @@ Constraints:
 Boundaries:
 - TODO: List allowed files, packages, tools, repos, routes, or data.
 
+Output budget strategy:
+- TODO: Record how command/search output will be scoped, capped, counted, or
+  saved as artifacts before broad exploration.
+
 Blocked condition:
 - TODO: Name the condition that stops autonomous work.
 
@@ -40,6 +44,7 @@ Start Gates:
 | `docs/solutions` checked for non-trivial existing-code work | pending | pending |
 | TDD decision before behavior change or bug fix | pending | pending |
 | Browser tool decision for browser surface | pending | pending |
+| Output budget strategy recorded | pending | pending |
 
 Work Checklist:
 - [ ] Objective, threshold, verification surface, constraints, boundaries, and
@@ -52,6 +57,9 @@ Work Checklist:
 - [ ] High-risk note recorded for public API, runtime, package-boundary,
       browser behavior, agent-action, or command-contract changes, or marked
       N/A with reason.
+- [ ] Output budget discipline recorded and followed: broad searches are
+      scoped, capped, counted, or artifacted instead of streamed into goal
+      context.
 - [ ] Findings, decisions/tradeoffs, error attempts, and timeline reflect the
       actual work performed.
 
@@ -71,6 +79,7 @@ Completion Gates:
 | Autoreview for non-trivial implementation changes | pending | Load `.agents/skills/autoreview/SKILL.md`; use dirty local `--mode local`, branch/PR `--mode branch --base <base>`, or committed slice `--mode commit --commit <ref>` until no accepted/actionable findings, or record N/A for docs-only/planning-only/trivial/no local patch | pending |
 | PR create or update | pending | Run `check` before PR work | pending |
 | Final lint | pending | Run `pnpm lint:fix` or scoped equivalent | pending |
+| Output budget discipline | pending | Verify no unbounded high-volume command output was streamed, or record the accidental output and recovery | pending |
 | Goal plan complete | yes | Run `node .agents/rules/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` | pending |
 
 Phase / pass table:

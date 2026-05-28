@@ -287,20 +287,28 @@ task final handoff. Do not use a generic `Summary` / `Verification` PR body, an
 adaptive prose body from `git-commit-push-pr`, or a generated badge footer
 unless the caller or repo template explicitly asks for it.
 
-Use this order:
+Use the accepted task PR format from kitcn PR #270. The shape is not optional:
 
 1. Preserve any existing `<!-- auto-release:start -->` block. If a changeset is
    part of the diff and repo policy expects auto release, include that block.
-2. Issue, tracker, or fix line when applicable. Never include a line that links
-   to the current PR itself; the current PR URL belongs in the final response,
-   not in its own description.
-3. Confidence line.
-4. Reproduced / Verified table with test and browser columns.
-5. `Outcome`, `Caveat`, `Design`, and `Verified` sections.
+2. Use an emoji-prefixed issue/tracker/fix line, for example
+   `🐛 Fixes #123` or `🐛 Fixes ➖ N/A`. Never include a line that links to the
+   current PR itself; the current PR URL belongs in the final response, not in
+   its own description.
+3. Use an emoji confidence line, for example `🟢 95-100% confidence`.
+4. Use this exact table header:
+   `| Phase | 🧪 Tests | 🌐 Browser |`
+5. Use `Reproduced` and `Verified` rows. Mark passing proof with `🟢`, repro or
+   failing proof with `🔴`, and non-applicable browser/test cells with `➖ N/A`.
+6. Use bold emoji section headings exactly in this family:
+   `**✅ Outcome**`, `**⚠️ Caveat**`, `**🏗️ Design**`, and
+   `**🧪 Verified**`.
 
 The body should tell QA/reviewers what was fixed, how it was reproduced, how it
-was verified, and why the chosen ownership boundary is right. After editing,
-verify it with `gh pr view --json body` before final handoff.
+was verified, and why the chosen ownership boundary is right. It must not use
+plain `Fix:`, plain `Confidence:`, `## Outcome`, `## Verified`, or a generic
+`Summary` / `Verification` shape for task-run PRs. After editing, verify it
+with `gh pr view --json body` before final handoff.
 
 ## Success Criteria
 
@@ -319,4 +327,6 @@ verify it with `gh pr view --json body` before final handoff.
 - Only necessary skills were loaded.
 - Batch work did not sprawl without explicit instruction.
 - Verification matched change scope.
+- PR descriptions created by task runs used the kitcn PR #270 emoji task-style
+  body and were verified with `gh pr view --json body`.
 - Final handoff matched the task type and any task-template gate evidence.
