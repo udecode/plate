@@ -1,5 +1,3 @@
-import Balance from 'react-wrap-balancer';
-
 import { cn } from '@/lib/utils';
 
 function PageHeader({
@@ -40,7 +38,7 @@ function PageHeaderDescription({
   ...props
 }: React.HTMLAttributes<HTMLParagraphElement>) {
   return (
-    <Balance
+    <p
       className={cn(
         'max-w-2xl text-balance font-light text-foreground text-lg',
         className
