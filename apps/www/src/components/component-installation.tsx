@@ -79,7 +79,7 @@ export function ComponentInstallation({
           <CodeBlock
             className="mt-6 mb-4"
             value={installCommand}
-            language="bash"
+            language="text"
           />
         </TabsContent>
         <TabsContent value="manual">

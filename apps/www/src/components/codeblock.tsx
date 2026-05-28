@@ -44,7 +44,7 @@ const CodeBlock: FC<{
   npm?: boolean;
 }> = memo(({ className, fixedHeight, language, npm, value }) => {
   const code = npm ? `npm install ${value}` : value;
-  const effectiveLanguage = npm ? 'bash' : language;
+  const effectiveLanguage = npm ? 'text' : language;
   const showLineNumbers = !npm && code.includes('\n');
 
   return (
