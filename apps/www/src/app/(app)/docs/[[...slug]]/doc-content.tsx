@@ -265,7 +265,6 @@ export function DocContent({
           )}
         </div>
       </div>
-
       {hasToc && (
         <div className="sticky top-[calc(var(--header-height)+1px)] z-30 ml-auto hidden h-[90svh] w-(--sidebar-width) flex-col gap-4 overflow-hidden overscroll-none pb-8 xl:flex">
           <div className="h-(--top-spacing) shrink-0" />

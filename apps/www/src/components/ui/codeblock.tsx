@@ -3,7 +3,7 @@
 
 'use client';
 
-import React, { type FC, memo } from 'react';
+import React, { type FC } from 'react';
 
 import { Icons } from '@/components/icons';
 import { ThemedSyntaxHighlighter } from '@/components/themed-syntax-highlighter';
@@ -75,7 +75,7 @@ export const generateRandomString = (length: number, lowercase = false) => {
   return lowercase ? result.toLowerCase() : result;
 };
 
-const CodeBlock: FC<Props> = memo(({ language, value }) => {
+const CodeBlock: FC<Props> = ({ language, value }) => {
   const { copyToClipboard, isCopied } = useCopyToClipboard({ timeout: 2000 });
 
   const downloadAsFile = () => {
@@ -115,7 +115,7 @@ const CodeBlock: FC<Props> = memo(({ language, value }) => {
       <div className="flex w-full items-center justify-between border-b px-4 py-1 text-code-foreground">
         <span className="text-xs lowercase">{language}</span>
 
-        <div className="flex items-center space-x-1">
+        <div className="flex items-center gap-x-1">
           <Button
             size="icon"
             variant="ghost"
@@ -153,7 +153,7 @@ const CodeBlock: FC<Props> = memo(({ language, value }) => {
       </ThemedSyntaxHighlighter>
     </div>
   );
-});
+};
 CodeBlock.displayName = 'CodeBlock';
 
 export { CodeBlock };

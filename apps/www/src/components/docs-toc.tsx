@@ -62,10 +62,7 @@ export function DocsTableOfContents({
   variant?: 'dropdown' | 'list';
 }) {
   const [open, setOpen] = React.useState(false);
-  const itemIds = React.useMemo(
-    () => toc.map((item) => item.url.replace('#', '')),
-    [toc]
-  );
+  const itemIds = toc.map((item) => item.url.replace('#', ''));
   const activeHeading = useActiveItem(itemIds);
 
   if (!toc?.length) {

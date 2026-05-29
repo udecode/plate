@@ -198,11 +198,18 @@ function ReleaseBody({
   );
 }
 
+const releaseDateFormatter = new Intl.DateTimeFormat('en-US', {
+  day: 'numeric',
+  month: 'short',
+  timeZone: 'UTC',
+  year: 'numeric',
+});
+
 function MarkdownContent({ content }: { content: string }) {
   return (
     <ReactMarkdown
       components={{
-        a: ({ className, ...props }) => (
+        a: ({ children, className, ...props }) => (
           <a
             className={cn(
               'font-medium text-foreground underline decoration-dashed underline-offset-4 transition-colors hover:text-primary',
@@ -211,7 +218,9 @@ function MarkdownContent({ content }: { content: string }) {
             rel="noreferrer"
             target="_blank"
             {...props}
-          />
+          >
+            {children}
+          </a>
         ),
         blockquote: ({ className, ...props }) => (
           <blockquote
@@ -353,12 +362,7 @@ function MarkdownContent({ content }: { content: string }) {
 }
 
 function formatReleaseDate(date: string) {
-  return new Intl.DateTimeFormat('en-US', {
-    day: 'numeric',
-    month: 'short',
-    timeZone: 'UTC',
-    year: 'numeric',
-  }).format(new Date(date));
+  return releaseDateFormatter.format(new Date(date));
 }
 
 function formatReleaseHeading(children: ReactNode) {

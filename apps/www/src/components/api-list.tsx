@@ -211,7 +211,6 @@ export function APIList({
   const defaultValues = collapsed ? [] : newValues;
 
   const [values, setValues] = useState<string[]>(defaultValues);
-  const [expanded, setExpanded] = useState(!collapsed);
 
   if (listType === 'returns' && !childCount) return null;
 
@@ -276,7 +275,6 @@ export function APIList({
                     } else {
                       setValues(newValues);
                     }
-                    setExpanded(!expanded);
                   }}
                 >
                   {values.length === childCount ? 'Collapse all' : 'Expand all'}

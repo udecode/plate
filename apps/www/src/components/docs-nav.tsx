@@ -2,7 +2,7 @@
 
 import type { SidebarNavItem } from '@/types/nav';
 
-import { castArray } from 'lodash';
+import castArray from 'lodash/castArray.js';
 import { ChevronRightIcon } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -242,9 +242,7 @@ function DocsNavGroup({
               <button
                 type="button"
                 aria-label={
-                  open
-                    ? `Collapse ${sectionTitle}`
-                    : `Expand ${sectionTitle}`
+                  open ? `Collapse ${sectionTitle}` : `Expand ${sectionTitle}`
                 }
               >
                 <span>{sectionTitle}</span>
@@ -268,7 +266,7 @@ function DocsNavGroup({
               className={cn(
                 'pr-1',
                 scrollable
-                  ? 'no-scrollbar min-h-0 overflow-x-hidden overflow-y-auto overscroll-contain'
+                  ? 'no-scrollbar min-h-0 overflow-y-auto overflow-x-hidden overscroll-contain'
                   : 'overflow-visible'
               )}
             >

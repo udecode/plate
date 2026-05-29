@@ -10,7 +10,14 @@ import type {
 import type { DialogProps } from '@radix-ui/react-dialog';
 
 import { useDocsSearch as useFumadocsSearch } from 'fumadocs-core/search/client';
-import { Circle, File, Laptop, Moon, SunMedium } from 'lucide-react';
+import {
+  ArrowRight,
+  Circle,
+  CornerDownLeft,
+  Laptop,
+  Moon,
+  SunMedium,
+} from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { useRouter } from 'next/navigation';
 
@@ -31,6 +38,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Spinner } from '@/components/ui/spinner';
+import { useMutationObserver } from '@/hooks/use-mutation-observer';
 import { useLocale } from '@/hooks/useLocale';
 import { cn } from '@/lib/utils';
 import { hrefWithLocale } from '@/lib/withLocale';
@@ -39,15 +47,17 @@ const ABSOLUTE_HREF_REGEX = /^[a-z][a-z\d+\-.]*:/i;
 const WHITESPACE_REGEX = /\s+/;
 
 type Query = Awaited<ReturnType<typeof useFumadocsSearch>>['query'];
-type Router = ReturnType<typeof useRouter>;
+type Push = ReturnType<typeof useRouter>['push'];
 
 const i18n = {
   cn: {
     dark: '深色',
     light: '浅色',
     links: '链接',
+    pages: '页面',
+    goToPage: '打开页面',
     noResults: '没有结果。',
-    placeholder: '输入命令或搜索...',
+    runCommand: '运行命令',
     search: '搜索',
     searchDescription: '搜索文档。',
     searchDocumentation: '搜索文档...',
@@ -61,8 +71,10 @@ const i18n = {
     dark: 'Dark',
     light: 'Light',
     links: 'Links',
+    pages: 'Pages',
+    goToPage: 'Go to Page',
     noResults: 'No results found.',
-    placeholder: 'Type a command or search...',
+    runCommand: 'Run Command',
     search: 'Search',
     searchDescription: 'Search documentation.',
     searchDocumentation: 'Search documentation...',
@@ -95,38 +107,43 @@ function getItemKeywords(item: NavItemWithChildren, parentTitle = '') {
   ].filter(isString);
 }
 
-function navigateToHref(router: Router, href: string) {
+function navigateToHref(push: Push, href: string) {
   if (ABSOLUTE_HREF_REGEX.test(href)) {
     window.open(href, '_blank', 'noopener,noreferrer');
     return;
   }
 
-  router.push(href);
+  push(href);
 }
 
 function CommandItems({
+  content,
   item,
   locale,
+  onHighlight,
   parentTitle = '',
   runCommand,
 }: {
+  content: (typeof i18n)['en'];
   item: NavItemWithChildren;
   locale: string;
+  onHighlight: (label: string) => void;
   runCommand: (command: () => unknown) => void;
   parentTitle?: string;
 }) {
-  const router = useRouter();
+  const { push } = useRouter();
   const title = getNavTitle(item, locale);
   const keywords = getItemKeywords(item, parentTitle);
 
   return (
     <>
       {item.href && (
-        <CommandItem
+        <CommandMenuItem
           key={item.href}
+          onHighlight={() => onHighlight(content.goToPage)}
           onSelect={() => {
             runCommand(() =>
-              navigateToHref(router, hrefWithLocale(item.href!, locale))
+              navigateToHref(push, hrefWithLocale(item.href!, locale))
             );
           }}
           keywords={keywords}
@@ -138,13 +155,15 @@ function CommandItems({
             <Circle />
           </div>
           {title}
-        </CommandItem>
+        </CommandMenuItem>
       )}
       {item.items?.map((child) => (
         <CommandItems
           key={child.href ?? `${item.title}:${child.title}`}
+          content={content}
           item={child}
           locale={locale}
+          onHighlight={onHighlight}
           parentTitle={title ?? parentTitle}
           runCommand={runCommand}
         />
@@ -154,11 +173,15 @@ function CommandItems({
 }
 
 function CommandMenuGroup({
+  content,
   locale,
+  onHighlight,
   runCommand,
   ...group
 }: {
+  content: (typeof i18n)['en'];
   locale: string;
+  onHighlight: (label: string) => void;
   runCommand: (command: () => unknown) => void;
 } & SidebarNavItem) {
   if (!group.items?.length) return null;
@@ -166,12 +189,14 @@ function CommandMenuGroup({
   const title = getNavTitle(group, locale);
 
   return (
-    <CommandGroup heading={title}>
+    <CommandGroup heading={title} className={commandMenuGroupClassName}>
       {group.items.map((navItem) => (
         <CommandItems
           key={navItem.href ?? `${group.title}:${navItem.title}`}
+          content={content}
           item={navItem}
           locale={locale}
+          onHighlight={onHighlight}
           parentTitle={title}
           runCommand={runCommand}
         />
@@ -185,15 +210,17 @@ function SearchResults({
   locale,
   query,
   search,
+  onHighlight,
   setOpen,
 }: {
   content: (typeof i18n)['en'];
   locale: string;
   query: Query;
   search: string;
+  onHighlight: (label: string) => void;
   setOpen: (open: boolean) => void;
 }) {
-  const router = useRouter();
+  const { push } = useRouter();
 
   const uniqueResults = React.useMemo(() => {
     if (!query.data || !Array.isArray(query.data)) {
@@ -219,22 +246,77 @@ function SearchResults({
   }
 
   return (
-    <CommandGroup heading={content.searchResults}>
+    <CommandGroup
+      heading={content.searchResults}
+      className={commandMenuGroupClassName}
+    >
       {uniqueResults.map((item) => (
-        <CommandItem
+        <CommandMenuItem
           key={item.id}
           data-type={item.type}
+          onHighlight={() => onHighlight(content.goToPage)}
           onSelect={() => {
-            router.push(hrefWithLocale(item.url, locale));
+            push(hrefWithLocale(item.url, locale));
             setOpen(false);
           }}
           keywords={[item.content]}
           value={`${item.content} ${item.type}`}
         >
           <div className="line-clamp-1 text-sm">{item.content}</div>
-        </CommandItem>
+        </CommandMenuItem>
       ))}
     </CommandGroup>
+  );
+}
+
+const commandMenuGroupClassName =
+  'p-0! **:[[cmdk-group-heading]]:scroll-mt-16 **:[[cmdk-group-heading]]:p-3! **:[[cmdk-group-heading]]:pb-1!';
+
+function CommandMenuItem({
+  children,
+  className,
+  onHighlight,
+  ...props
+}: React.ComponentProps<typeof CommandItem> & {
+  onHighlight?: () => void;
+}) {
+  const ref = React.useRef<HTMLDivElement>(null);
+
+  useMutationObserver(ref, (mutations) => {
+    mutations.forEach((mutation) => {
+      if (
+        mutation.type === 'attributes' &&
+        mutation.attributeName === 'aria-selected' &&
+        ref.current?.getAttribute('aria-selected') === 'true'
+      ) {
+        onHighlight?.();
+      }
+    });
+  });
+
+  return (
+    <CommandItem
+      ref={ref}
+      className={cn(
+        'h-9 rounded-md border border-transparent px-3! font-medium data-[selected=true]:border-input data-[selected=true]:bg-input/50',
+        className
+      )}
+      {...props}
+    >
+      {children}
+    </CommandItem>
+  );
+}
+
+function CommandMenuKbd({ className, ...props }: React.ComponentProps<'kbd'>) {
+  return (
+    <kbd
+      className={cn(
+        "pointer-events-none flex h-5 select-none items-center justify-center gap-1 rounded border bg-background px-1 font-medium font-sans text-[0.7rem] text-muted-foreground [&_svg:not([class*='size-'])]:size-3",
+        className
+      )}
+      {...props}
+    />
   );
 }
 
@@ -246,12 +328,31 @@ export function CommandMenu({
   navItems: MainNavItem[];
   sidebarNav: SidebarNavItem[];
 }) {
-  const router = useRouter();
+  const { push } = useRouter();
   const locale = useLocale();
   const content = i18n[locale as keyof typeof i18n];
   const [open, setOpen] = React.useState(false);
+  const [renderDelayedGroups, setRenderDelayedGroups] = React.useState(false);
+  const [selectedAction, setSelectedAction] = React.useState(content.goToPage);
   const { setTheme } = useTheme();
   const { search, setSearch, query } = useFumadocsSearch({ type: 'fetch' });
+
+  React.useEffect(() => {
+    setSelectedAction(content.goToPage);
+  }, [content.goToPage, open]);
+
+  React.useEffect(() => {
+    if (!open) {
+      setRenderDelayedGroups(false);
+      return;
+    }
+
+    const frame = requestAnimationFrame(() => {
+      setRenderDelayedGroups(true);
+    });
+
+    return () => cancelAnimationFrame(frame);
+  }, [open]);
 
   React.useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -275,21 +376,22 @@ export function CommandMenu({
     return () => document.removeEventListener('keydown', down);
   }, []);
 
-  const runCommand = React.useCallback((command: () => unknown) => {
+  const runCommand = (command: () => unknown) => {
     setOpen(false);
     command();
-  }, []);
+  };
 
-  const commandFilter = React.useCallback(
-    (value: string, searchValue: string, keywords?: string[]) => {
-      const searchableValue = `${value} ${keywords?.join(' ') ?? ''}`;
+  const commandFilter = (
+    value: string,
+    searchValue: string,
+    keywords?: string[]
+  ) => {
+    const searchableValue = `${value} ${keywords?.join(' ') ?? ''}`;
 
-      return searchableValue.toLowerCase().includes(searchValue.toLowerCase())
-        ? 1
-        : 0;
-    },
-    []
-  );
+    return searchableValue.toLowerCase().includes(searchValue.toLowerCase())
+      ? 1
+      : 0;
+  };
 
   return (
     <>
@@ -308,13 +410,13 @@ export function CommandMenu({
       </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="overflow-hidden p-0">
+        <DialogContent className="top-[15%]! max-w-[calc(100%-2rem)] translate-y-0! overflow-hidden rounded-xl border-none bg-clip-padding p-2 pb-11 shadow-2xl ring-4 ring-neutral-200/80 sm:max-w-lg dark:bg-neutral-900 dark:ring-neutral-800 [&>button]:hidden">
           <DialogHeader className="sr-only">
             <DialogTitle>{content.search}</DialogTitle>
             <DialogDescription>{content.searchDescription}</DialogDescription>
           </DialogHeader>
           <Command
-            className="**:data-[slot=command-input-wrapper]:h-12 [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-muted-foreground [&_[cmdk-group]:not([hidden])_~[cmdk-group]]:pt-0 [&_[cmdk-group]]:px-2 [&_[cmdk-input-wrapper]_svg]:h-5 [&_[cmdk-input-wrapper]_svg]:w-5 [&_[cmdk-input]]:h-12 [&_[cmdk-item]]:px-2 [&_[cmdk-item]]:py-3 [&_[cmdk-item]_svg]:h-5 [&_[cmdk-item]_svg]:w-5"
+            className="rounded-none bg-transparent **:data-[slot=command-input-wrapper]:mb-0 **:data-[slot=command-input-wrapper]:h-9! **:data-[slot=command-input]:h-9! **:data-[slot=command-input-wrapper]:rounded-md **:data-[slot=command-input-wrapper]:border **:data-[slot=command-input-wrapper]:border-input **:data-[slot=command-input-wrapper]:bg-input/50 **:data-[slot=command-input]:py-0 [&_[cmdk-item]_svg]:size-5"
             filter={commandFilter}
           >
             <div className="relative">
@@ -322,7 +424,7 @@ export function CommandMenu({
                 onValueChange={(value) => {
                   React.startTransition(() => setSearch(value));
                 }}
-                placeholder={content.placeholder}
+                placeholder={content.searchDocumentation}
               />
               {query.isLoading && (
                 <div className="-translate-y-1/2 pointer-events-none absolute top-1/2 right-3 flex items-center justify-center">
@@ -330,90 +432,121 @@ export function CommandMenu({
                 </div>
               )}
             </div>
-            <CommandEmpty>
+            <CommandEmpty className="py-12 text-center text-muted-foreground text-sm">
               {query.isLoading ? content.searching : content.noResults}
             </CommandEmpty>
-            <CommandList>
-              <CommandGroup heading={content.links}>
+            <CommandList className="no-scrollbar min-h-80 scroll-pt-2 scroll-pb-1.5">
+              <CommandGroup
+                heading={content.pages}
+                className={commandMenuGroupClassName}
+              >
                 {navItems
-                  .filter((navItem) => !navItem.external)
+                  .filter((navItem) => navItem.href)
                   .map((navItem) => {
                     const title = getNavTitle(navItem, locale);
 
                     return (
-                      <CommandItem
+                      <CommandMenuItem
                         key={navItem.href}
+                        onHighlight={() => setSelectedAction(content.goToPage)}
                         onSelect={() => {
                           runCommand(() =>
                             navigateToHref(
-                              router,
+                              push,
                               hrefWithLocale(navItem.href!, locale)
                             )
                           );
                         }}
-                        value={`Link ${title ?? ''} ${
-                          navItem.titleCn ?? ''
-                        } ${navItem.href ?? ''}`}
+                        keywords={[
+                          'nav',
+                          'navigation',
+                          title ?? '',
+                          navItem.titleCn ?? '',
+                        ]}
+                        value={`Page ${title ?? ''} ${navItem.titleCn ?? ''} ${
+                          navItem.href ?? ''
+                        }`}
                       >
-                        <File />
+                        <ArrowRight />
                         {title}
-                      </CommandItem>
+                      </CommandMenuItem>
                     );
                   })}
               </CommandGroup>
 
-              {sidebarNav.map((group) =>
-                group.title === 'API' ? null : (
-                  <CommandMenuGroup
-                    key={`${group.title}:sidebar`}
+              {renderDelayedGroups ? (
+                <>
+                  {sidebarNav.map((group) =>
+                    group.title === 'API' ? null : (
+                      <CommandMenuGroup
+                        key={`${group.title}:sidebar`}
+                        content={content}
+                        locale={locale}
+                        onHighlight={setSelectedAction}
+                        runCommand={runCommand}
+                        {...group}
+                      />
+                    )
+                  )}
+
+                  <SearchResults
+                    content={content}
                     locale={locale}
-                    runCommand={runCommand}
-                    {...group}
+                    query={query}
+                    search={search}
+                    onHighlight={setSelectedAction}
+                    setOpen={setOpen}
                   />
-                )
-              )}
 
-              <SearchResults
-                content={content}
-                locale={locale}
-                query={query}
-                search={search}
-                setOpen={setOpen}
-              />
+                  <CommandGroup
+                    heading={content.theme}
+                    className={commandMenuGroupClassName}
+                  >
+                    <CommandMenuItem
+                      onHighlight={() => setSelectedAction(content.runCommand)}
+                      onSelect={() => runCommand(() => setTheme('light'))}
+                    >
+                      <SunMedium />
+                      {content.light}
+                    </CommandMenuItem>
+                    <CommandMenuItem
+                      onHighlight={() => setSelectedAction(content.runCommand)}
+                      onSelect={() => runCommand(() => setTheme('dark'))}
+                    >
+                      <Moon />
+                      {content.dark}
+                    </CommandMenuItem>
+                    <CommandMenuItem
+                      onHighlight={() => setSelectedAction(content.runCommand)}
+                      onSelect={() => runCommand(() => setTheme('system'))}
+                    >
+                      <Laptop />
+                      {content.system}
+                    </CommandMenuItem>
+                  </CommandGroup>
 
-              <CommandGroup heading={content.theme}>
-                <CommandItem
-                  onSelect={() => runCommand(() => setTheme('light'))}
-                >
-                  <SunMedium />
-                  {content.light}
-                </CommandItem>
-                <CommandItem
-                  onSelect={() => runCommand(() => setTheme('dark'))}
-                >
-                  <Moon />
-                  {content.dark}
-                </CommandItem>
-                <CommandItem
-                  onSelect={() => runCommand(() => setTheme('system'))}
-                >
-                  <Laptop />
-                  {content.system}
-                </CommandItem>
-              </CommandGroup>
-
-              {sidebarNav.map((group) =>
-                group.title !== 'API' ? null : (
-                  <CommandMenuGroup
-                    key={group.title}
-                    locale={locale}
-                    runCommand={runCommand}
-                    {...group}
-                  />
-                )
-              )}
+                  {sidebarNav.map((group) =>
+                    group.title !== 'API' ? null : (
+                      <CommandMenuGroup
+                        key={group.title}
+                        content={content}
+                        locale={locale}
+                        onHighlight={setSelectedAction}
+                        runCommand={runCommand}
+                        {...group}
+                      />
+                    )
+                  )}
+                </>
+              ) : null}
             </CommandList>
           </Command>
+          <div className="absolute inset-x-0 bottom-0 z-20 flex h-10 items-center gap-2 rounded-b-xl border-t border-t-neutral-100 bg-neutral-50 px-4 font-medium text-muted-foreground text-xs dark:border-t-neutral-700 dark:bg-neutral-800">
+            <CommandMenuKbd>
+              <CornerDownLeft />
+            </CommandMenuKbd>
+            {selectedAction}
+          </div>
         </DialogContent>
       </Dialog>
     </>

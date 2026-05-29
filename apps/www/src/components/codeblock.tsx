@@ -3,7 +3,7 @@
 
 'use client';
 
-import React, { type FC, memo } from 'react';
+import React, { type FC } from 'react';
 
 import { cn } from '@/lib/utils';
 
@@ -42,7 +42,7 @@ const CodeBlock: FC<{
   fixedHeight?: boolean;
   name?: string;
   npm?: boolean;
-}> = memo(({ className, fixedHeight, language, npm, value }) => {
+}> = ({ className, fixedHeight, language, npm, value }) => {
   const code = npm ? `npm install ${value}` : value;
   const effectiveLanguage = npm ? 'text' : language;
   const showLineNumbers = !npm && code.includes('\n');
@@ -84,7 +84,7 @@ const CodeBlock: FC<{
       </ThemedSyntaxHighlighter>
     </div>
   );
-});
+};
 CodeBlock.displayName = 'CodeBlock';
 
 export { CodeBlock };

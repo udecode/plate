@@ -11,6 +11,13 @@ import { Icons } from './icons';
 
 const BlockExamples = new Set(['markdown-streaming-demo']);
 
+const loadingPreview = (
+  <div className="preview flex size-full min-h-[350px] items-center justify-center p-0 text-muted-foreground text-sm">
+    <Icons.spinner className="mr-2 size-4 animate-spin" />
+    Loading&hellip;
+  </div>
+);
+
 interface ComponentPreviewProps extends React.HTMLAttributes<HTMLDivElement> {
   name: string;
   __dependencies__?: string;
@@ -44,33 +51,21 @@ export function ComponentPreview({
   type,
   ...props
 }: ComponentPreviewProps) {
-  const Preview = React.useMemo(() => {
-    const Component = Index[name]?.component;
+  const Component = Index[name]?.component;
 
-    if (!Component) {
-      return (
-        <p className="text-muted-foreground text-sm">
-          Component{' '}
-          <code className="relative rounded bg-muted px-[0.3rem] py-[0.2rem] font-mono text-sm">
-            {name}
-          </code>{' '}
-          not found in registry.
-        </p>
-      );
-    }
-
-    // DIFF
-    return <Component {...props} id={props.id ?? name.replace('-demo', '')} />;
-  }, [name, props]);
+  const Preview = Component ? (
+    <Component {...props} id={props.id ?? name.replace('-demo', '')} />
+  ) : (
+    <p className="text-muted-foreground text-sm">
+      Component{' '}
+      <code className="relative rounded bg-muted px-[0.3rem] py-[0.2rem] font-mono text-sm">
+        {name}
+      </code>{' '}
+      not found in registry.
+    </p>
+  );
 
   const mounted = useMounted();
-
-  const loadingPreview = (
-    <div className="preview flex size-full min-h-[350px] items-center justify-center p-0 text-muted-foreground text-sm">
-      <Icons.spinner className="mr-2 size-4 animate-spin" />
-      Loading...
-    </div>
-  );
 
   let item = props.item ?? JSON.parse(props.__item__ ?? '[]');
 

@@ -25,7 +25,8 @@ export function CodeBlockWrapper({
   open = false,
   ...props
 }: CodeBlockProps) {
-  const [isOpened, setIsOpened] = React.useState(open);
+  const [internalOpen, setInternalOpen] = React.useState<boolean | null>(null);
+  const isOpened = internalOpen ?? open;
 
   if (full) {
     return (
@@ -36,7 +37,7 @@ export function CodeBlockWrapper({
   }
 
   return (
-    <Collapsible open={isOpened} onOpenChange={setIsOpened}>
+    <Collapsible open={isOpened} onOpenChange={setInternalOpen}>
       <div className={cn('relative overflow-hidden', className)} {...props}>
         <CollapsibleContent
           className={cn('overflow-hidden', !isOpened && 'max-h-72')}

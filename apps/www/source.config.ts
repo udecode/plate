@@ -177,9 +177,14 @@ export default defineConfig({
                   node.__showLineNumbers__;
 
                 if (node.__showLineNumbers__) {
-                  const codeElement = preElement.children?.find(
-                    (child: any) => child.tagName === 'code'
-                  );
+                  let codeElement: any;
+
+                  for (const child of preElement.children ?? []) {
+                    if (child.tagName === 'code') {
+                      codeElement = child;
+                      break;
+                    }
+                  }
 
                   if (codeElement) {
                     codeElement.properties ??= {};

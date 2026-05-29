@@ -63,14 +63,12 @@ export function DocBreadcrumb({
   placeholder?: string;
   value?: string;
 }) {
-  const router = useRouter();
+  const { push } = useRouter();
   const locale = useLocale();
   const [open, setOpen] = React.useState(false);
 
-  const flatItems = React.useMemo(
-    () =>
-      items.flatMap((group) => (group.items ? flattenItems(group.items) : [])),
-    [items]
+  const flatItems = items.flatMap((group) =>
+    group.items ? flattenItems(group.items) : []
   );
 
   const selectedItem = flatItems.find(
@@ -128,7 +126,7 @@ export function DocBreadcrumb({
                         className="flex items-center gap-2"
                         value={item.value ?? item.href}
                         onSelect={() => {
-                          router.push(hrefWithLocale(item.href!, locale));
+                          push(hrefWithLocale(item.href!, locale));
                           setOpen(false);
                         }}
                       >

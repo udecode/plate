@@ -99,10 +99,8 @@ function DocsCopyPageItem({
   );
 }
 
-export function DocsCopyPage({ page, url }: { page: string; url: string }) {
-  const { copyToClipboard, isCopied } = useCopyToClipboard();
-
-  const trigger = (
+function DocsCopyPageTrigger() {
+  return (
     <Button
       size="sm"
       variant="secondary"
@@ -112,6 +110,10 @@ export function DocsCopyPage({ page, url }: { page: string; url: string }) {
       <span className="sr-only">Open page options</span>
     </Button>
   );
+}
+
+export function DocsCopyPage({ page, url }: { page: string; url: string }) {
+  const { copyToClipboard, isCopied } = useCopyToClipboard();
 
   return (
     <Popover>
@@ -128,7 +130,7 @@ export function DocsCopyPage({ page, url }: { page: string; url: string }) {
         </Button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild className="hidden sm:flex">
-            {trigger}
+            <DocsCopyPageTrigger />
           </DropdownMenuTrigger>
           <DropdownMenuContent
             align="end"
@@ -146,7 +148,7 @@ export function DocsCopyPage({ page, url }: { page: string; url: string }) {
           className="absolute top-1 right-8 z-0 h-6! bg-foreground/5! peer-focus-visible:opacity-0 sm:right-7 sm:h-5!"
         />
         <PopoverTrigger asChild className="flex sm:hidden">
-          {trigger}
+          <DocsCopyPageTrigger />
         </PopoverTrigger>
         <PopoverContent
           align="start"

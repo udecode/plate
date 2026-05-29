@@ -49,9 +49,13 @@ export function CopyButton({
   const [hasCopied, setHasCopied] = React.useState(false);
 
   React.useEffect(() => {
-    setTimeout(() => {
+    if (!hasCopied) return;
+
+    const timeout = setTimeout(() => {
       setHasCopied(false);
     }, 2000);
+
+    return () => clearTimeout(timeout);
   }, [hasCopied]);
 
   return (
@@ -94,15 +98,19 @@ export function CopyWithClassNames({
   const [hasCopied, setHasCopied] = React.useState(false);
 
   React.useEffect(() => {
-    setTimeout(() => {
+    if (!hasCopied) return;
+
+    const timeout = setTimeout(() => {
       setHasCopied(false);
     }, 2000);
+
+    return () => clearTimeout(timeout);
   }, [hasCopied]);
 
-  const copyToClipboard = React.useCallback((_value: string) => {
+  const copyToClipboard = (_value: string) => {
     copyToClipboardWithMeta(_value);
     setHasCopied(true);
-  }, []);
+  };
 
   return (
     <DropdownMenu>
@@ -148,24 +156,25 @@ export function CopyNpmCommandButton({
   const [hasCopied, setHasCopied] = React.useState(false);
 
   React.useEffect(() => {
-    setTimeout(() => {
+    if (!hasCopied) return;
+
+    const timeout = setTimeout(() => {
       setHasCopied(false);
     }, 2000);
+
+    return () => clearTimeout(timeout);
   }, [hasCopied]);
 
-  const copyCommand = React.useCallback(
-    (value: string, pm: 'bun' | 'npm' | 'pnpm') => {
-      void copyToClipboardWithMeta(value, {
-        name: 'copy_npm_command',
-        properties: {
-          command: value,
-          pm,
-        },
-      });
-      setHasCopied(true);
-    },
-    []
-  );
+  const copyCommand = (value: string, pm: 'bun' | 'npm' | 'pnpm') => {
+    void copyToClipboardWithMeta(value, {
+      name: 'copy_npm_command',
+      properties: {
+        command: value,
+        pm,
+      },
+    });
+    setHasCopied(true);
+  };
 
   return (
     <DropdownMenu>

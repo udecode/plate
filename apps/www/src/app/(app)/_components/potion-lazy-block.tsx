@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 
 import type { RegistryItem } from 'shadcn/schema';
 
@@ -26,7 +26,7 @@ const i18n = {
   },
 };
 
-export function PotionLazyBlock() {
+function PotionLazyBlockContent() {
   const searchParams = useSearchParams();
 
   const [locale, setLocale] = useState<keyof typeof i18n>('en');
@@ -34,13 +34,13 @@ export function PotionLazyBlock() {
   const [shouldRender, setShouldRender] = useState(false);
 
   useEffect(() => {
-    const getLocale = async () => {
-      const resolvedLocale = (searchParams?.get('locale') ||
-        'en') as keyof typeof i18n;
-      setLocale(resolvedLocale);
-    };
+    const localeParam = searchParams?.get('locale');
+    const resolvedLocale =
+      localeParam && localeParam in i18n
+        ? (localeParam as keyof typeof i18n)
+        : 'en';
 
-    void getLocale();
+    setLocale(resolvedLocale);
   }, [searchParams]);
 
   useEffect(() => {
@@ -51,7 +51,7 @@ export function PotionLazyBlock() {
       }
     };
 
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
 
     // Check initial scroll position
     handleScroll();
@@ -86,5 +86,13 @@ export function PotionLazyBlock() {
         />
       )}
     </div>
+  );
+}
+
+export function PotionLazyBlock() {
+  return (
+    <Suspense fallback={null}>
+      <PotionLazyBlockContent />
+    </Suspense>
   );
 }

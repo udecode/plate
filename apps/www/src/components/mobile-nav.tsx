@@ -131,7 +131,7 @@ export function MobileNav({
         side="bottom"
         sideOffset={12}
       >
-        <div className="flex flex-col gap-12 overflow-auto px-6 py-6">
+        <div className="flex flex-col gap-12 overflow-auto p-6">
           <div className="flex flex-col gap-4">
             <div className="font-medium text-muted-foreground text-sm">
               {content.menu}
@@ -212,7 +212,7 @@ function MobileLink({
   onOpenChange,
   ...props
 }: MobileLinkProps) {
-  const router = useRouter();
+  const { push } = useRouter();
   const hrefString = href.toString();
   const external = isExternalHref(hrefString);
 
@@ -225,7 +225,7 @@ function MobileLink({
         if (external) return;
 
         event.preventDefault();
-        router.push(hrefString);
+        push(hrefString);
       }}
       href={href}
       {...props}

@@ -79,8 +79,7 @@ export async function BlockPreviewPage({
         item.meta?.containerClassName ?? 'size-full'
       )}
     >
-      {/* eslint-disable-next-line react-hooks/static-components -- Dynamic block component loading is intentional */}
-      <Component id={name.replace('-demo', '')} />
+      {React.createElement(Component, { id: name.replace('-demo', '') })}
     </div>
   );
 }

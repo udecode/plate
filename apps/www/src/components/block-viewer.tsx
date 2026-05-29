@@ -83,6 +83,19 @@ type BlockViewerContext = {
 
 const BlockViewerContext = React.createContext<BlockViewerContext | null>(null);
 
+async function fetchRegistryFiles(itemName: string) {
+  const response = await fetch(
+    `/api/registry-source/${encodeURIComponent(itemName)}`
+  );
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.error || 'Failed to fetch files');
+  }
+
+  return data.files as BlockViewerContext['highlightedFiles'];
+}
+
 function useBlockViewer() {
   const context = React.useContext(BlockViewerContext);
 
@@ -119,14 +132,14 @@ function BlockViewerProvider({
     BlockViewerContext['activeFile']
   >(files[0]?.target ?? null);
   const [isLoading, setIsLoading] = React.useState(false);
-  const [isSettled, setIsSettled] = React.useState(false);
-  const [hasError, setHasError] = React.useState(false);
   const resizablePanelRef = React.useRef<ImperativePanelHandle>(null);
 
   const activeFile =
     files.find((file) => file.target === activeFileState)?.target ??
     files[0]?.target ??
     null;
+  const hasErrorRef = React.useRef(false);
+  const isSettledRef = React.useRef(false);
 
   React.useEffect(() => {
     if (
@@ -134,47 +147,33 @@ function BlockViewerProvider({
       files[1] &&
       !files[1].content &&
       !isLoading &&
-      !hasError &&
-      !isSettled
+      !hasErrorRef.current &&
+      !isSettledRef.current
     ) {
       const loadFiles = async () => {
         setIsLoading(true);
 
         try {
-          const response = await fetch(
-            `/api/registry-source/${encodeURIComponent(item.name)}`
-          );
-          const data = await response.json();
+          const files = await fetchRegistryFiles(item.name);
 
-          if (!response.ok) {
-            throw new Error(data.error || 'Failed to fetch files');
-          }
-          if (data.files) {
-            setHighlightedFiles(data.files);
+          if (files) {
+            setHighlightedFiles(files);
 
-            if (!activeFileState && data.files?.length) {
-              setActiveFile(data.files[0].target ?? null);
+            if (!activeFileState && files.length) {
+              setActiveFile(files[0].target ?? null);
             }
           }
         } catch (error) {
           console.error('Failed to load files:', error);
-          setHasError(true);
+          hasErrorRef.current = true;
         } finally {
           setIsLoading(false);
-          setIsSettled(true);
+          isSettledRef.current = true;
         }
       };
       void loadFiles();
     }
-  }, [
-    activeFileState,
-    hasError,
-    highlightedFiles,
-    isLoading,
-    isSettled,
-    item.name,
-    view,
-  ]);
+  }, [activeFileState, highlightedFiles, isLoading, item.name, view]);
 
   return (
     <BlockViewerContext.Provider
@@ -428,10 +427,7 @@ function BlockViewerCode({ size }: { size?: 'default' | 'sm' }) {
     useBlockViewer();
   const deps = dependencies.join(' ');
 
-  const file = React.useMemo(
-    () => highlightedFiles?.find((file) => file.target === activeFile),
-    [highlightedFiles, activeFile]
-  );
+  const file = highlightedFiles?.find((file) => file.target === activeFile);
 
   if (!file?.content && isLoading) {
     return (
@@ -585,10 +581,7 @@ function BlockCopyCodeButton() {
   const { activeFile, highlightedFiles } = useBlockViewer();
   const { copyToClipboard, isCopied } = useCopyToClipboard();
 
-  const file = React.useMemo(
-    () => highlightedFiles?.find((file) => file.target === activeFile),
-    [activeFile, highlightedFiles]
-  );
+  const file = highlightedFiles?.find((file) => file.target === activeFile);
 
   const content = file?.content;
 

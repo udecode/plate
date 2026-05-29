@@ -34,15 +34,12 @@ export function CodeBlockCommand({
     }
   }, [hasCopied]);
   const packageManager = config.packageManager || 'pnpm';
-  const tabs = React.useMemo(
-    () => ({
-      bun: __bunCommand__,
-      npm: __npmCommand__,
-      pnpm: __pnpmCommand__,
-    }),
-    [__npmCommand__, __pnpmCommand__, __bunCommand__]
-  );
-  const copyCommand = React.useCallback(() => {
+  const tabs = {
+    bun: __bunCommand__,
+    npm: __npmCommand__,
+    pnpm: __pnpmCommand__,
+  };
+  const copyCommand = () => {
     const command = tabs[packageManager];
     if (!command) {
       return;
@@ -55,7 +52,7 @@ export function CodeBlockCommand({
       },
     });
     setHasCopied(true);
-  }, [packageManager, tabs]);
+  };
   return (
     <div
       className={cn(

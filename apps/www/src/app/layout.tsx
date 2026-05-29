@@ -2,6 +2,7 @@ import React from 'react';
 
 import { Agentation } from 'agentation';
 import type { Metadata, Viewport } from 'next';
+import Script from 'next/script';
 
 import { NuqsAdapter } from 'nuqs/adapters/next/app';
 
@@ -88,7 +89,9 @@ export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <script
+        <Script
+          id="theme-color-script"
+          strategy="beforeInteractive"
           dangerouslySetInnerHTML={{
             __html: `
               try {
