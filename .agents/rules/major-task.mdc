@@ -218,6 +218,7 @@ Apply this section only when the task source is a tracker item.
    - use `ProseMirror` and `Lexical` when questioning deeper runtime or architecture direction
    - use `Tiptap` more for product-layer or packaging cost than raw engine performance
    - use `Pretext` or `Premirror` when the question is pagination, composition, or layout-aware editing
+   - use `Portable Text` when the question is schema/profile design, behavior authoring, portability, or behavior-test standards
 9. If no measurement exists yet, say so plainly and provide the smallest honest measurement plan.
 
 ### Framework Comparison Or Migration

@@ -91,6 +91,7 @@ This is the entrypoint for the compiled agent research layer.
   - [react-19-2-external-store-and-background-ui.md](docs/research/sources/editor-architecture/react-19-2-external-store-and-background-ui.md)
   - [tanstack-virtual-and-github-large-surface-virtualization.md](docs/research/sources/editor-architecture/tanstack-virtual-and-github-large-surface-virtualization.md)
   - [pretext-pagination-page-virtualization.md](docs/research/sources/editor-architecture/pretext-pagination-page-virtualization.md)
+  - [portable-text-schema-behavior-and-portability.md](docs/research/sources/editor-architecture/portable-text-schema-behavior-and-portability.md)
   - [slate-v2-react-19-2-perf-architecture-vs-field.md](docs/research/decisions/slate-v2-react-19-2-perf-architecture-vs-field.md)
   - [source-scoped-overlay-invalidation.md](docs/research/concepts/source-scoped-overlay-invalidation.md)
   - [slate-v2-source-scoped-overlay-invalidation.md](docs/research/decisions/slate-v2-source-scoped-overlay-invalidation.md)
@@ -122,6 +123,7 @@ This is the entrypoint for the compiled agent research layer.
     [Tiptap](docs/research/entities/tiptap.md),
     [Premirror](docs/research/entities/premirror.md),
     [Pretext](docs/research/entities/pretext.md),
+    [Portable Text](docs/research/entities/portable-text.md),
     [Slate](docs/research/entities/slate.md),
     [edix](docs/research/entities/edix.md),
     [use-editable](docs/research/entities/use-editable.md),

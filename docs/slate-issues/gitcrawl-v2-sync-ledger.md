@@ -13,6 +13,200 @@ Do not add manual classifications to `gitcrawl-live-open-ledger.md`; that file i
 
 Rows: 631 live open issues from `docs/slate-issues/gitcrawl-live-open-ledger.md`.
 
+## 2026-05-29 Command Behavior Pipeline Architecture Planning Sync
+
+Source plan:
+`docs/plans/2026-05-29-slate-v2-command-behavior-pipeline-architecture.md`
+
+This planning sync records the command/behavior pipeline architecture review
+only. It adds no fixed issue claims, no improved issue claims, no runtime/API
+behavior, and no PR claim text. The current direction is: keep public writes
+transaction-first through `editor.update`/`tx`/`afterCommit`; keep command
+registry internals internal; reject public `Editor.*` command registration and
+default `editor.commands.on`; and continue evaluating an extension-owned
+semantic native-input policy only where browser input, paste/drop, keyboard,
+history, or app-editable intent needs deterministic guard/handle/forward
+semantics.
+
+Classification notes for this reviewed surface:
+
+| Issue / surface | Effective sync status | Note |
+| --- | --- | --- |
+| `#5050` | related/input guardrail unchanged | Text insertion accept/reject belongs to beforeinput/input command policy. No fix claim until execution proof covers the matching browser behavior. |
+| `#3568`, `#3586`, `#4681`, `#5181`, `#4317` | related/native input and format statuses unchanged | Native beforeinput/format/listener pressure reinforces runtime-owned command taxonomy and the public `onCommand` cut. No exact DOMPoint, paste, stale callback, or render-callback closure is added. |
+| `#4613`, `#4569` | existing clipboard statuses unchanged | Existing typed `insertData` and docs claims stay scoped. This plan may refine paste/drop policy later, but it does not broaden `insertData` into product paste rules or output serialization. |
+| `#5233`, `#3486`, `#4806`, `#4802` | existing clipboard fixed/improved floors unchanged | Custom fragment key and inline-void clipboard proof remain exact floors. No new clipboard claim is added by the architecture plan. |
+| `#4888`, `#4104`, `#3926`, `#4623`, `#1024`, `#2694`, `#3304` | clipboard/drop/native-event guardrails unchanged | Paste/drop/drag/cut/MIME rows remain proof pressure for a future scenario matrix. No closure claim in planning. |
+| `#6022`, `#5989`, `#5984`, `#5931`, `#5603`, `#5669`, `#5883`, `#4400` | mobile/IME statuses unchanged | Input command policy must preserve IME/composition ownership, but exact mobile/IME closure still requires browser or raw-device proof. |
+| `#3991`, `#3868`, `#5582`, `#5477`, `#4896`, `#4350`, `#4328`, `#5630` | delete/selection statuses unchanged | Delete and selection commands are candidate taxonomy rows. Existing fixed floors stay exact; broader delete/range/select-all behavior remains scenario-proof gated. |
+| `#2405`, `#790`, `#5131`, `#2051` | performance statuses unchanged | Command-scoped normalization and subscription cost are benchmark/proof pressure only. No performance claim is promoted. |
+| `#1770`, `#5771`, `#5533`, `#3741` | collaboration/history statuses unchanged | Commands may annotate commits, but operations/commits remain the replay truth. No slate-yjs or operation-composition claim is added. |
+
+Final issue-sync check:
+
+- Date: 2026-05-29.
+- Source plan pass:
+  `docs/plans/2026-05-29-slate-v2-command-behavior-pipeline-architecture.md`.
+- Claim change: none. The command/behavior pipeline review is architecture
+  planning and proof design, not a fixed or improved issue claim.
+- Direct sync result: no `Fixes`, no `Improves`, no PR description change, no
+  issue-coverage matrix change, and no new fork dossier section is needed.
+- Guardrails unchanged: input/beforeinput, native format, clipboard/drop,
+  delete/selection, mobile/IME, performance, history, and collaboration rows
+  keep their existing statuses.
+- Reference sync: this ledger section is the required current manual sync. PR
+  description, coverage matrix, and fork dossier remain unchanged because no
+  claim text changed and existing dossier sections already cover the reviewed
+  surfaces.
+
+## 2026-05-28 Portable Text Architecture Steal Review Planning Sync
+
+Source plan:
+`docs/plans/2026-05-28-portable-text-architecture-steal-review.md`
+
+This planning sync records Portable Text as architecture evidence only. It adds
+no fixed issue claims, no improved issue claims, no PR claim text, and no Slate
+v2 runtime/API/example/browser behavior. The accepted direction is: steal
+Portable Text's spec/profile discipline, schema-applicability selectors,
+behavior event/action vocabulary, scenario-test posture, and adapter-shaped
+patch output; reject its raw value format, CMS schema categories, XState actor
+runtime, and patch strings as collaboration truth.
+
+Classification notes for this reviewed surface:
+
+| Issue / surface | Effective sync status | Note |
+| --- | --- | --- |
+| Portable Text evidence lane | no issue claim | Planning/research/rule evidence only. No live gitcrawl issue row is fixed, improved, or newly related by adding Portable Text to the candidate/rule evidence set. |
+| `#6022`, `#5989`, `#5984`, `#5931`, `#5603`, `#5669` | related/input guardrails unchanged | Portable Text scenario tests are useful proof style for input policy, but this review changes no input runtime and has no raw device/browser IME artifact. |
+| `#5894` | not-claimed unchanged | Link-exit behavior remains plugin/presentation policy. Portable Text behavior vocabulary must not become raw Slate link policy. |
+| `#5806` | related selection guardrail unchanged | Custom inline drag selection remains a future browser-selection proof target. No DOM selection import/export implementation changed. |
+| `#5987`, `#4483`, `#4477`, `#2465`, `#2564` | decorations/marks/annotations statuses unchanged | Portable Text marks/annotations sharpen spec and projection standards only. No annotation store, decorator projection API, or render subscription claim is added. |
+| `#5233`, `#3486`, `#4569`, `#1024`, `#3155`, `#5634`, `#4802`, `#4806`, `#5328` | clipboard/external-format statuses unchanged | Portable Text portability reinforces adapter/export discipline. Existing custom fragment, `insertData`, and inline-void clipboard claims remain exact; no Portable Text serializer/import/export claim is added. |
+| `#5977`, `#5874` | custom-operation/identity statuses unchanged | Portable Text patch adapters do not reopen custom operation validation or shared node-object identity. Slate operations and commits remain canonical. |
+| `#5771`, `#1770`, `#3741` | collaboration statuses unchanged | Portable Text/Sanity patches stay derived adapter output. Slate operations, commits, snapshots, metadata, and slate-yjs proof gates remain the collaboration truth. |
+| `#6038`, `#5945`, `#4056`, `#5992`, `#5131`, `#790` | performance statuses unchanged | Portable Text's runtime shape is not a Slate performance proof. Any future behavior/profile adapter must prove hot-path cost through existing benchmark/browser lanes before a claim changes. |
+| `#5813` and docs/example/support noise | not-claimed unchanged | Portable Text testing discipline does not promote weak debugger/example/support reports into architecture claims. |
+
+Final issue-sync check:
+
+- Date: 2026-05-28.
+- Source plan pass:
+  `docs/plans/2026-05-28-portable-text-architecture-steal-review.md`.
+- Claim change: none. The Portable Text review is a user-review-ready
+  architecture/proof plan, not a fixed or improved issue claim.
+- Direct sync result: no `Fixes`, no `Improves`, no new PR line, no fork dossier
+  section, and no issue-coverage matrix row is needed.
+- Guardrails unchanged: input/IME, plugin/presentation policy, inline
+  selection, decorations/annotations, clipboard/external formats, custom
+  operation validation, node identity, collaboration, and performance rows keep
+  their existing statuses.
+- Reference sync: no PR description, coverage matrix, fork dossier, or cluster
+  file edit is needed; those surfaces already keep the relevant implementation
+  and exact issue closures unclaimed.
+
+## 2026-05-28 Pagination Fast-Scroll Virtualization Planning Sync
+
+Source plan:
+`docs/plans/2026-05-28-pagination-fast-scroll-virtualization.md`
+
+This planning sync records the fast-scroll pagination virtualization test and
+runtime target only. It adds no fixed issue claims and no improved issue claims.
+The accepted direction remains page/spread virtualization behind virtualized
+`domStrategy`, a separate content-unit corridor for expensive multi-page blocks
+such as tables, no AST table splitting, and browser proof that replays real
+wheel/trackpad-like scroll instead of only assigning `scrollTop`.
+
+Classification notes for this reviewed surface:
+
+| Issue | Effective sync status | Note |
+| --- | --- | --- |
+| `#5944` | issue-reviewed, unchanged | Direct pagination pressure. Keep as related until current browser proof covers page-boundary flicker, caret mapping, and stable edits across page fragments. |
+| `#790` | proof-route backlog, unchanged | Dynamic rendering cannot be claimed from a one-jump test. It needs mount/edit/scroll benchmarks, mounted-count proof, DOM coverage proof, browser native-behavior proof, and continuous fast-scroll replay. |
+| `#5131`, `#2051` | unchanged | Keep as subscription/rerender guardrails for layout snapshots, page windows, fragment hooks, selection changes, and simple typing. |
+| `#4141`, `#3656`, `#4210`, `#5349` | unchanged | Rerender-performance neighbors stay proof pressure only; this plan owns paged scroll and materialization proof, not broad React rerender closure. |
+| `#5992`, `#5945`, `#4056` | improves-claimed, unchanged | Existing large-document operation/clipboard benchmark claims remain owned by their current proof rows and are not promoted by fast-scroll pagination work. |
+| `#2195`, `#2405` | unchanged | Dirty-path and normalization performance remain guardrails; no schema or dirty-tracking closure is claimed. |
+| `#5826` | fixes-claimed, unchanged | Long-editor refocus autoscroll remains an exact fixed floor. Fast-scroll pagination must not broaden or regress it. |
+| `#4995`, `#5088`, `#5473`, `#4590`, `#4837`, `#4844`, `#5639` | unchanged | Scroll-selection and mobile/native scroll reports need targeted browser or device proof before any claim. |
+| `#5924`, `#2793`, `#2572`, `#3892` | unchanged | Missing-DOM, accessibility, and custom-surface rows stay policy or release-guard non-claims. |
+
+Final revision issue-sync check:
+
+- Date: 2026-05-28.
+- Source plan pass:
+  `docs/plans/2026-05-28-pagination-fast-scroll-virtualization.md`.
+- Claim change: none. The final planning architecture remains a
+  user-review-ready architecture/proof plan, not a fixed or improved issue
+  claim.
+- Direct related issues: `#5944` stable pagination and `#790` dynamic rendering
+  stay related/proof-route backlog. No `Fixes` or `Improves` promotion.
+- Guardrails unchanged: rerender breadth (`#5131`, `#2051`, `#4141`, `#3656`,
+  `#4210`, `#5349`), dirty/normalization (`#2195`, `#2405`),
+  large-document operation rows (`#5992`, `#5945`, `#4056`), scroll/mobile
+  rows (`#4995`, `#5088`, `#5473`, `#4590`, `#4837`, `#4844`, `#5639`), and
+  DOM/a11y/custom-surface policy rows (`#5924`, `#2793`, `#2572`, `#3892`)
+  remain non-claims, guardrails, or preserved prior claims.
+- Reference sync: no PR description, coverage matrix, or fork dossier edit is
+  needed; those surfaces already keep production-ready virtualization and exact
+  browser/native behavior unclaimed.
+
+## 2026-05-27 Frontier Family Architecture Review Planning Sync
+
+Source plan:
+`docs/plans/2026-05-27-frontier-family-architecture-review.md`
+
+This planning sync records the Frontier-family architecture review only. It
+does not implement a Slate v2 runtime slice, does not add a public API, and
+does not change the PR body. The accepted plan shape keeps Slate operations,
+roots, selection, history, and collaboration first-party; evaluates a compact
+state-field patch helper and replay/profile tooling as Slate-owned follow-up
+work; routes mutation-plan DX to Plate; and rejects Frontier CRDT/richtext as
+Slate runtime substrates.
+
+This adds no fixed issue claims, no improved issue claims, and no new related
+issue rows. Existing state-field, performance, content-root, projection,
+history, collaboration, and Plate/product-boundary rows remain the current
+issue accounting.
+
+Classification notes for this reviewed surface:
+
+| Issue surface | Effective sync status | Note |
+| --- | --- | --- |
+| state-field / non-node document state rows | unchanged | Existing non-node state-field accounting remains the owner for `statePatches`, `dirtyStateKeys`, history, React hooks, and collab export/import proof. This Frontier review adds no new claim until an execution slice proves helper behavior in `.tmp/slate-v2`. |
+| `#6038`, `#5992`, `#5945`, `#4056`, `#3752`, `#5131`, `#2051`, `#2195`, `#2405`, `#790` | unchanged | Performance rows keep their existing `Improves`, `Related`, or `Not claimed` statuses. Frontier codec/router/profile ideas are dev/proof inspiration only and cannot promote a benchmark or browser claim. |
+| `#5212`, `#2072`, projected-root, and hidden-content rows | unchanged | Content-root and projection issue accounting already owns same-runtime root UX, native behavior, serialization, repeated-root performance, and release proof. This review does not broaden those claims. |
+| `#5771`, `#5533`, `#1770`, `#3741` | unchanged | slate-yjs/Yjs remains the collaboration owner. Frontier CRDT is rejected for Slate runtime; replay/model-check ideas are proof tooling only. |
+| Plate mutation-plan DX | no raw Slate issue claim | Mutation plans remain a possible Plate product layer over existing transforms, not a raw Slate issue closure or PR claim. |
+
+## 2026-05-26 Comment Mode Focus Ownership Cleanup Planning Sync
+
+Source plan:
+`docs/plans/2026-05-26-slate-v2-focus-ownership-cleanup.md`
+
+This planning sync records the focus-boundary cleanup target for Slate React:
+remove the read-only-only outside-click listener from `EditableDOMRoot`, keep
+public `Editable` DX unchanged, and centralize read-only/editable outside
+interactions in the runtime focus owner. The live `comment-mode` route currently
+shows the edit-mode bug across Chromium, Firefox, and WebKit: clicking the
+editor, then clicking the header, leaves `#comment-mode-document` focused.
+
+This adds no fixed issue claims and no improved issue claims. Exact claim
+changes require implementation proof for edit-mode blur, ordinary external
+button/header focus state, read-only selection/Add Comment preservation,
+read-only outside click, follow-up typing after blur/refocus, and #4376/#5171
+non-regression.
+
+Classification notes for this reviewed surface:
+
+| Issue | Effective sync status | Note |
+| --- | --- | --- |
+| `#3893` | related focus pressure | Ordinary external UI must update Slate focus state, but exact HTML button focus closure is not claimed until button-specific browser proof lands. |
+| `#5004` | related focus-lifecycle pressure | Stale focus after outside click is adjacent to spurious focus-event ordering; exact `onFocus` closure needs event-counter proof. |
+| `#4376`, `#5171` | fixes-claimed, unchanged | Existing fixed claims become guardrails only. The cleanup must preserve inactive editable model selection and Firefox unfocused-update behavior without broadening either claim. |
+| `#5537` | related multi-view focus/input pressure | Comment mode and future content roots strengthen the same focus owner, but multi-editor programmatic focus closure is not claimed. |
+| `#5034` | mobile/readOnly pressure, unchanged | Android readOnly selection-null remains in the mobile/IME lane; this web focus-boundary plan has no raw-device Android proof. |
+| `#5826`, `#5538`, `#5568` | focus/scroll/initialization statuses unchanged | The cleanup must not restore stale selection, scroll unexpectedly, or weaken focus initialization; no new closure is claimed. |
+
 ## 2026-05-26 Hidden/Offscreen Block API Execution Sync
 
 Source plan:
@@ -21,13 +215,14 @@ Source plan:
 This sync records the hidden/offscreen block API surface: internal
 `DOMCoverage`, stable `slots.contentBoundary`, optional `boundaryId`,
 object-shaped `onMaterialize({ boundary, reason, range })`, local app-owned
-accordion/tab open state, shadcn-shaped examples only, and explicit native
-degradation while editable DOM is absent.
+accordion/collapsible/tab open state, real shadcn source components in the
+example app only, and explicit native degradation while editable DOM is absent.
 
 This adds no fixed issue claims and no improved issue claims. Focused package
 tests and the `hidden-content-blocks` browser route prove the new API and
-example surface, but related issue rows stay related/non-claim because none of
-the original external repros are closed end to end.
+example surface across Accordion, Collapsible, and Tabs, but related issue rows
+stay related/non-claim because none of the original external repros are closed
+end to end.
 
 Classification notes for this reviewed surface:
 
@@ -53,9 +248,10 @@ root-editor block projects an editor-owned content root through
 the same root key, focus/selection/history stay in one runtime, and duplicate /
 unsync stay example-local commands.
 
-This adds no fixed issue claims and no improved issue claims. The route,
-browser rows, selector fanout, root lifecycle, and slate-yjs adapter work remain
-execution proof gates.
+This adds no fixed issue claims and no improved issue claims. The Synced Blocks
+route and projected selection browser rows now cover the execution queue for
+this plan; issue-specific closure still needs exact external-repro mapping
+before any claim changes.
 
 Classification notes for this reviewed surface:
 
@@ -70,14 +266,47 @@ Classification notes for this reviewed surface:
 | `#5537`, `#5117` | related multi-view focus/DOM-state pressure | Active projection identity and root-local DOM state are execution proof gates, not current fixed/improved claims. |
 | `#3482`, `#3367` | related model-shape pressure | Default voids stay atomic; rich content belongs in child/content roots, not normal void descendants. |
 | `#3435`, `#3884`, `#4301` | related navigation guardrails | Cross-root Arrow/Enter behavior must be explicit for content roots and must preserve existing selected-void behavior. Existing `#4301` fixed floor stays exact. |
-| `#3991`, `#3868`, `#5582`, `#5477`, `#4896`, `#4350`, `#4328`, `#5630` | delete/selection statuses unchanged | Owner deletion, range delete, select-all, paste/delete, and root restore remain route/package proof gates. |
+| `#3991`, `#3868`, `#5582`, `#5477`, `#4896`, `#4350`, `#4328`, `#5630` | delete/selection statuses unchanged | Projected delete/type proof landed for the Synced Blocks route; broader issue-specific range/delete/select-all/root-restore closure is still unclaimed. |
 | `#4984`, `#4842`, `#3909` | nested/contenteditable ownership guardrails | Same-runtime root projections remain the architecture answer; only existing `#4984` fixed floor is preserved. |
-| `#4806`, `#4802`, `#4104`, `#3926`, `#4888`, `#4623` | clipboard/drop/move statuses unchanged | Shared-root copy, move, unsync, payload remap, and drag/drop behavior need targeted execution proof. |
+| `#4806`, `#4802`, `#4104`, `#3926`, `#4888`, `#4623` | clipboard/drop/move statuses unchanged | Projected copy serialization proof landed, including custom clipboard format keys; move, unsync payload remap, drag/drop, and exact issue repro closure are still unclaimed. |
 | `#1769`, `#3893` | related focus pressure | Click-outside and native/external focus behavior are browser proof gates; no exact focus issue closure is claimed. |
 | `#5183`, `#5391`, `#5087`, `#4839`, `#5130`, `#5559` | mobile/IME/inline-boundary statuses unchanged | The Synced Blocks route is desktop/browser architecture proof only unless later raw-device or IME rows are added. |
-| `#5131`, `#2051`, `#2195`, `#2405`, `#790` | performance guardrails unchanged | Repeated projections need selector fanout, dirty-path, large-document, and 20/100 projection stress proof before any performance claim. |
-| `#5771`, `#5533`, `#1770`, `#3741` | collaboration/history guardrails unchanged | Current slate-yjs support is not claimed. Root-keyed shared types and root-qualified cursor/history proof remain future adapter work. |
+| `#5131`, `#2051`, `#2195`, `#2405`, `#790` | performance guardrails unchanged | Deterministic 20/100 projection stress proof landed for the projection graph; broader browser benchmark and issue-specific performance claims remain unclaimed. |
+| `#5771`, `#5533`, `#1770`, `#3741` | collaboration/history guardrails unchanged | Root lifecycle/collab substrate proof landed, but current slate-yjs support is not claimed. Root-keyed shared types and root-qualified cursor/history adapter proof remain future work. |
 | `#3177`, `#3222`, `#3283` | render/API/example pressure unchanged | The plan narrows raw Slate to a content-root slot and keeps product sync UI out of core. |
+
+## 2026-05-26 Projection Selection Architecture Execution Sync
+
+Source plan:
+`docs/plans/2026-05-26-slate-v2-projection-selection-architecture.md`
+
+This execution sync implements the remaining post-Synced-Blocks architecture:
+one runtime editor, one internal projection graph, internal cross-root
+`ViewSelection`, projection-owned command targets, runtime-local projection
+owner identity, root-keyed collaboration substrate, repeated-projection
+performance budgets, and explicit browser-native affordance contracts.
+
+This adds no fixed issue claims and no improved issue claims. The accepted
+execution queue now has package/browser proof for expanded selection,
+delete/type replacement, copy, history restoration, native affordance
+classification, root lifecycle/collab substrate, and repeated-root stress.
+Exact issue claim changes still require issue-specific repro mapping and
+release-scope proof.
+
+Classification notes for this reviewed surface:
+
+| Issue | Effective sync status | Note |
+| --- | --- | --- |
+| `#5212` | related example/DX pressure, unchanged | Projection selection keeps Synced Blocks as the clean teaching route, but no editable-void/example fixed or improved claim is legal until source, route, and browser proof land. |
+| `#2072` | related architecture pressure, unchanged | Internal projection graph and `ViewSelection` strengthen the same-runtime content-root substrate; the old Island request remains broader than pure document-flow projected roots. |
+| `#5524` | related, not claimed | Cross-root projected selection is adjacent vertical-selection pressure, but soft-break ArrowDown remains a different failure family unless future browser proof identifies the same root-crossing owner. |
+| `#5874`, `#4309` | related identity guardrail | Repeated projections use root keys plus runtime-local owner identity, not shared Slate node-object identity across positions or editor runtimes. |
+| `#6016` | triage-closed/non-fix, unchanged | The supported route remains one runtime with many root views. Shared object graphs across independent editor runtimes stay unsupported. |
+| `#5537`, `#5117` | related multi-view focus/DOM-state pressure | Active projection identity and focus have route-level proof; no multi-editor focus, placeholder, or DOM-state issue closure is claimed. |
+| `#3991`, `#3868`, `#5582`, `#5477`, `#4896`, `#4350`, `#4328`, `#5630` | delete/selection statuses unchanged | Projected commands have route-level proof for cross-root range behavior. Existing exact fixed floors stay exact; no projected-root delete, select-all, paste/delete, or root-restore issue closure is claimed. |
+| `#4806`, `#4802`, `#4104`, `#3926`, `#4888`, `#4623` | clipboard/drop/move statuses unchanged | Existing exact clipboard fixed floors stay exact. Projected copy serialization has route-level proof, including custom clipboard format keys; move, unsync payload remap, drag/drop, and exact issue closure remain unclaimed. |
+| `#5131`, `#2051`, `#2195`, `#2405`, `#790` | performance guardrails unchanged | Deterministic 20/100 repeated-root stress proof landed; broader browser benchmark and issue-specific performance claims remain unclaimed. |
+| `#5771`, `#5533`, `#1770`, `#3741` | collaboration/history guardrails unchanged | Existing `#5771` readiness accounting is not upgraded or broadened here. Root lifecycle/collab substrate proof landed; current slate-yjs projected-root support is not claimed. |
 
 ## 2026-05-25 Vertical ContentRoot Navigation Planning Sync
 

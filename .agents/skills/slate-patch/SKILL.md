@@ -1,0 +1,283 @@
+---
+description: Fix Slate v2 bugs in one pass with reproduction, behavior tests, architecture/DX/perf pressure, proactive rearchitecture when the patch is not the cleanest long-term shape, and final autoreview.
+argument-hint: <Slate v2 bug report, route, issue, or regression cluster>
+disable-model-invocation: true
+name: slate-patch
+metadata:
+  skiller:
+    source: .agents/rules/slate-patch.mdc
+---
+
+# Slate Patch
+
+Handle $ARGUMENTS.
+
+Use this for Slate v2 bug fixes where the agent should fix the bug now, then
+challenge its own patch with Slate Plan-level architecture pressure before
+handoff. This is the implementation lane for "fix it, but do not ship a dirty
+local patch".
+
+One pass means: reproduce, test, fix, re-architect if the first patch is not
+the right long-term shape, verify, autoreview, hand off. It does not mean
+"smallest diff wins".
+
+## Use When
+
+- The user invokes `slate-patch`.
+- The user reports a Slate v2 browser/editor bug and wants a fix, not a plan.
+- Multiple recent bugs share a category: selection, focus, history, undo,
+  multi-root, content roots, void roots, DOM coverage, hidden DOM, rendering,
+  schema, normalization, clipboard, IME, or browser event ownership.
+- A prior local patch fixed the symptom but smells like example-only glue,
+  caller-specific branching, or test appeasement.
+
+## Do Not Use When
+
+- The user asks only for an architecture plan or proposal. Use `slate-plan`.
+- The user asks for a normal diff review. Use `autoreview`.
+- The target is not Slate v2 or `.tmp/slate-v2`.
+- The only honest next step is a multi-pass public API RFC with user review.
+  Say that and route to `slate-plan`.
+
+## Hard Rules
+
+- Current `.tmp/slate-v2` source wins over memory, old plans, and prior
+  diagnosis.
+- Run Slate v2 commands from `.tmp/slate-v2`. `plate-2` commands do not prove
+  Slate v2 behavior.
+- Evidence Kit runs from `plate-2` and is benchmark control-plane sync only. It
+  can route next work, expose gaps, and refresh dashboards, but it never replaces
+  `.tmp/slate-v2` reproduction, tests, or browser proof.
+- Reproduce first whenever practical. For browser routes, use the real route and
+  behavior-level interaction, not only model-state calls.
+- Add a behavior-level regression test when sane. Prefer tests that cover the
+  bug class, not only the exact screenshot.
+- Fix the ownership boundary. Package/runtime fixes beat example patches when
+  the bug is systemic. Example patches are valid only when the example contract
+  is wrong.
+- Breaking changes are allowed when they produce the best long-term
+  architecture/API/DX/perf result. Do not preserve bad compatibility by reflex.
+- If the first patch is not the cleanest long-term shape, rework it before
+  verification. Do not hand off "works but dirty".
+- When multiple bugs in the same category appear, assume the subsystem is not
+  robust enough. Search adjacent owners and add class-level coverage before
+  calling the slice done.
+- Do not create issue-ledger or PR-reference ceremony unless the prompt is
+  issue-backed or explicitly asks for issue accounting.
+- Final checklist item is always `autoreview` for non-trivial implementation
+  changes.
+
+## Goal Setup
+
+Use `autogoal` for non-trivial Slate Patch work.
+
+Goal shape:
+
+```txt
+Slate Patch fixes <bug/cluster> in `.tmp/slate-v2`: reproduce current failure,
+add behavior coverage, implement the cleanest long-term architecture/API/DX/perf
+fix even if breaking changes are required, verify focused Slate v2 gates, run
+autoreview from the `.tmp/slate-v2` checkout until no accepted/actionable
+findings remain, and hand off root cause plus proof.
+```
+
+Do not create a Slate Plan pass schedule. This skill is one implementation
+slice, not a planning lane.
+
+## Workflow
+
+### 1. Reproduce And Bound
+
+1. Read the latest user report, attached media, route, issue, or failing test.
+2. Inspect the live owner in `.tmp/slate-v2`.
+3. Reproduce with the narrowest honest path:
+   - browser route and real keyboard/mouse input for UI bugs;
+   - package/unit test for pure model behavior;
+   - both when DOM import/export and model mutation can disagree.
+4. Capture:
+   - actual behavior;
+   - expected behavior;
+   - current model selection/value when relevant;
+   - DOM/native selection when relevant;
+   - owning package/example/test.
+
+### 2. Classify The Bug Class
+
+Name the class before patching:
+
+- selection import/export
+- focus ownership
+- history/undo
+- DOM coverage / hidden content
+- multi-root / content root / void root
+- synced/root state
+- normalization / schema
+- rendering/projection
+- clipboard/paste
+- IME/mobile/browser event ownership
+- performance/scalability
+
+If the class appeared recently in the thread or adjacent tests, broaden the
+fix. Search for sibling examples, package helpers, and tests that likely share
+the same broken assumption.
+
+### 3. Red Test
+
+Add or update the smallest behavior test that fails for the current bug:
+
+- Playwright for browser-visible selection, focus, hidden DOM, mouse, keyboard,
+  clipboard, and route regressions.
+- Package tests for model transforms, schema, operation, history, normalization,
+  and deterministic state behavior.
+- Both when the browser symptom is caused by a model transform.
+
+The test should assert the user-visible invariant and the model invariant when
+both matter.
+
+### 4. Fix The Owner
+
+Patch the owner that makes the behavior generally true.
+
+Use this ownership ladder:
+
+1. core package/runtime architecture;
+2. shared DOM/react bridge;
+3. schema/API contract;
+4. shared example/component pattern;
+5. one example only, when the example is the contract owner.
+
+Prefer:
+
+- fewer public concepts;
+- narrower subscriptions and dirty scopes;
+- deterministic model operations;
+- schema-owned behavior over renderer guesses;
+- root/content identity over DOM/index inference;
+- stable browser proof over timing waits;
+- deleting workaround code after the real owner is fixed.
+
+Do not prefer:
+
+- caller-specific branches;
+- example-only masking of package bugs;
+- compatibility shims for unreleased bad APIs;
+- tests that assert implementation trivia;
+- helper extraction when inline code is clearer and used once.
+
+### 5. Architecture Pressure Review
+
+After the first green patch, stop and review it like a harsh Slate maintainer.
+If any answer is weak, rework the patch before final verification.
+
+Checklist:
+
+- **Architecture:** Is this the cleanest long-term owner, or did we patch a
+  symptom?
+- **API/DX:** Would a raw Slate user or plugin author understand the contract
+  without reading this bug thread?
+- **Unopinionated core:** Did we keep Plate/product policy out of Slate core?
+- **Performance:** Are hot paths bounded? Any global scans, broad rerenders,
+  stale DOM reads, or repeated layout work?
+- **Data/model:** Are paths, runtime ids, root ids, schema, and operation
+  semantics deterministic after edits, undo, and remote-ish replay?
+- **Browser:** Does DOM selection/focus/hidden content behavior match the model
+  contract?
+- **Regression coverage:** Does the test catch the class, including the sibling
+  case that is likely to fail next?
+- **Breaking changes:** If the clean fix needs a break, did we take it instead
+  of keeping a bad shape alive?
+- **Simplicity:** Can any helper, branch, option, shim, or test fixture be
+  deleted?
+
+Verdict must be one of:
+
+- `keep`: patch is the right long-term shape.
+- `rework`: fix before final verification.
+- `escalate`: stop and route to `slate-plan` because the right fix is a broader
+  public architecture decision.
+
+### 6. Verify
+
+Run focused gates from `.tmp/slate-v2`.
+
+Pick the relevant set:
+
+- changed package unit tests;
+- changed package typecheck;
+- changed site typecheck for examples;
+- focused Playwright route tests;
+- browser repro script when Playwright is not enough;
+- `bun check` only when the touched surface justifies a broader fast gate;
+- `bun check:full` only for release-quality browser claims or when explicitly
+  requested.
+
+If a gate fails for unrelated existing debt, record the exact command and why it
+is unrelated. Do not hide a relevant failure.
+
+### 7. Evidence Kit Control-Plane Sync
+
+After Slate v2 proof is done, decide whether the patch needs benchmark
+control-plane sync.
+
+Run this step when the bug class or patch touches performance/scalability,
+rendering/projection, React rerender behavior, huge documents, history,
+clipboard, collaboration, browser traces, operation replay, Slate-vs-Slate-v2
+parity, or any family already registered in
+`benchmarks/editor/research/benchmark-registry.json`.
+
+Workflow:
+
+1. Read `benchmarks/editor/research/benchmark-registry.json`.
+2. Read `benchmarks/editor/benchmarks/results/benchmark-health-latest.json`.
+3. If the changed behavior maps to a registered family, refresh from `plate-2`:
+
+   ```bash
+   npm run bench:editor:refresh
+   ```
+
+4. Record the relevant health delta, stale/missing/over-budget rows, and next
+   action owner in the handoff.
+5. If no registered artifact covers the patch class, record
+   `Evidence Kit: candidate benchmark needed - <behavior>` or
+   `Evidence Kit: N/A - <reason>`.
+
+Do not run this as a tax on tiny model-only fixes with no benchmark family.
+Also do not skip it for perf-sensitive editor behavior just because focused
+tests passed. Tests prove correctness; Evidence Kit keeps the benchmark backlog
+honest.
+
+### 8. Autoreview
+
+Final checklist item for non-trivial implementation changes:
+
+1. Load `.agents/skills/autoreview/SKILL.md`.
+2. Run the helper from the checkout that owns the patch.
+3. For `.tmp/slate-v2` patches, cwd must be `.tmp/slate-v2`:
+
+```bash
+/Users/zbeyens/git/plate-2/.agents/skills/autoreview/scripts/autoreview --mode local
+```
+
+4. Verify every accepted/actionable finding against source.
+5. Fix valid findings.
+6. Rerun focused proof and autoreview until no accepted/actionable findings
+   remain.
+
+Do not run dirty-local autoreview from `plate-2` for `.tmp/slate-v2` patches.
+That reviews the wrong checkout.
+
+## Final Response
+
+Keep it short. Include:
+
+- root cause;
+- architectural decision and whether anything was reworked after pressure
+  review;
+- tests/proof run with cwd when not obvious;
+- Evidence Kit result when applicable: refreshed, candidate benchmark needed,
+  or N/A with reason;
+- autoreview result;
+- any relevant unresolved gate or unrelated existing failure.
+
+If the architecture pressure verdict is `escalate`, say exactly why and name the
+`slate-plan` surface to open next.

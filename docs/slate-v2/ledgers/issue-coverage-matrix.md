@@ -77,6 +77,34 @@ Current fixed issue claims:
 - Fixes #6053: `useElementSelected()` does not throw when a selected rendered element removes itself, and `useElementSelected(path)` returns `false` after the watched path is removed.
 - Fixes #5400: Public helper value namespaces use `*Api`, so importing Slate helpers no longer shadows DOM globals such as `Node`.
 
+## Comment Mode Focus Ownership Cleanup Planning Sync - 2026-05-26
+
+This is planning/accounting sync for
+`docs/plans/2026-05-26-slate-v2-focus-ownership-cleanup.md`. It adds no fixed
+issue claims and no improved issue claims.
+
+The target is a Slate React focus-boundary cleanup: remove the read-only-only
+outside-click listener from `EditableDOMRoot`, keep public `Editable` DX
+unchanged, and move read-only/editable outside-interaction handling into one
+runtime owner that classifies editor roots, internal controls, external command
+controls, and inert page chrome. The live `comment-mode` route currently proves
+the edit-mode bug: after clicking `#comment-mode-document`, clicking the header
+leaves the editor as `document.activeElement` in Chromium, Firefox, and WebKit.
+
+Execution must prove the RED edit-mode blur row, the existing read-only
+selection/Add Comment row, read-only outside click, ordinary button/header focus
+state, follow-up typing after blur/refocus, and #4376/#5171 guardrails before
+any issue claim changes.
+
+| Issue | Claim policy |
+| --- | --- |
+| `#3893` | Direct related focus pressure. Ordinary external UI must update Slate focus state, but exact HTML button closure is not claimed until button-specific browser proof lands. |
+| `#5004` | Direct related focus-lifecycle pressure. Stale focus after outside click is adjacent to spurious focus-event ordering, but exact `onFocus` closure needs event-counter proof. |
+| `#4376`, `#5171` | Existing fixed claims stay exact and become guardrails. The cleanup must preserve inactive editable model selection and Firefox unfocused-update behavior; it does not broaden either claim. |
+| `#5537` | Related multi-view focus/input pressure. Comment mode and future content roots strengthen the same owner, but multi-editor programmatic focus closure is not claimed. |
+| `#5034` | Adjacent Android/readOnly pressure only. This web focus-boundary plan has no raw-device Android proof and makes no readOnly mobile-selection claim. |
+| `#5826`, `#5538`, `#5568` | Preserve existing focus/scroll/initialization statuses. The cleanup must not restore stale selection, scroll unexpectedly, or weaken focus initialization, but no new closure is claimed. |
+
 ## Hidden/Offscreen Block API Execution Sync - 2026-05-26
 
 This is execution/accounting sync for
@@ -86,14 +114,14 @@ fixed issue claims and no improved issue claims.
 The shipped surface is a narrow hidden/offscreen content primitive: internal
 `DOMCoverage`, public `slots.contentBoundary`, optional `boundaryId`,
 object-shaped `onMaterialize({ boundary, reason, range })`, local app-owned
-accordion/tab state, shadcn-shaped examples only, and explicit native
-degradation while editable DOM is absent.
+accordion/collapsible/tab state, real shadcn source components in the example
+app only, and explicit native degradation while editable DOM is absent.
 
 Focused package tests prove stable API behavior and handler coexistence with
 staged and virtualized strategies. The `hidden-content-blocks` browser route
-proves shadcn-shaped Accordion/Tabs behavior, mounted boundary counts,
-model-backed copy, and native degradation. No issue claim changes follow from
-that proof alone.
+proves shadcn Accordion, Collapsible, and Tabs behavior, mounted boundary
+counts, model-backed copy, and native degradation. No issue claim changes
+follow from that proof alone.
 
 | Issue | Claim policy |
 | --- | --- |
@@ -117,10 +145,11 @@ The target is a first-class content-root block model for a Notion-style
 blocks projecting the same root, runtime-local active projection identity, and
 canonical React DX through `props.slots.contentRoot('body', options)`.
 
-Execution must prove the new route, shared editing, active-copy focus,
-ArrowUp/Down flow, click-outside behavior, placeholder isolation,
-copy/unsync/move, delete/range delete, selector fanout, repeated-root stress,
-and editable-void regressions before any issue claim changes.
+The accepted execution queue now proves the route-level projected selection,
+shared editing, active-copy focus/history, ArrowUp/Down flow, click-outside
+behavior, projected copy/delete/type, native affordance classification,
+root-lifecycle substrate, and repeated-root stress rows. Issue claim changes
+still require exact external-repro mapping and release-scope proof.
 
 | Issue | Claim policy |
 | --- | --- |
@@ -130,17 +159,47 @@ and editable-void regressions before any issue claim changes.
 | `#6034` | Existing `Fixes #6034` claim unchanged. Table-last-node ArrowDown remains exact and is only a regression floor. |
 | `#5874`, `#4309` | Related identity guardrail. Synced Blocks share root keys in one runtime, not Slate node object identity across positions or editors. |
 | `#6016` | Triage-closed/non-fix unchanged. Shared node-object graphs across independent editor runtimes stay unsupported. |
-| `#5537`, `#5117` | Related multi-view focus/DOM-state pressure. Active projection identity and root-local DOM state need execution proof. |
+| `#5537`, `#5117` | Related multi-view focus/DOM-state pressure. Active projection identity and root-local DOM state have route-level proof, but exact issue closure remains unclaimed. |
 | `#3482`, `#3367` | Related model-shape pressure. Default void descendants do not become traversable. |
 | `#3435`, `#3884`, `#4301` | Related navigation guardrails. Existing selected-void behavior and `#4301` fixed floor must stay exact. |
-| `#3991`, `#3868`, `#5582`, `#5477`, `#4896`, `#4350`, `#4328`, `#5630` | Preserve delete/selection statuses. Shared roots add proof gates, not current closure. |
+| `#3991`, `#3868`, `#5582`, `#5477`, `#4896`, `#4350`, `#4328`, `#5630` | Preserve delete/selection statuses. Projected delete/type proof landed for the route, but exact issue closure remains unclaimed. |
 | `#4984`, `#4842`, `#3909` | Preserve nested/contenteditable statuses. Same-runtime projections are the direction; only existing `#4984` remains fixed. |
-| `#4806`, `#4802`, `#4104`, `#3926`, `#4888`, `#4623` | Preserve clipboard/drop/move statuses. Shared-root payload and remap behavior are future proof gates. |
+| `#4806`, `#4802`, `#4104`, `#3926`, `#4888`, `#4623` | Preserve clipboard/drop/move statuses. Projected copy serialization proof landed, including custom clipboard format keys; move/drop/remap issue closure remains unclaimed. |
 | `#1769`, `#3893` | Keep related. Click-outside and native/external focus need route-specific proof. |
 | `#5183`, `#5391`, `#5087`, `#4839`, `#5130`, `#5559` | Preserve mobile/IME/inline-boundary statuses. No raw-device or IME claim from this plan. |
-| `#5131`, `#2051`, `#2195`, `#2405`, `#790` | Preserve performance statuses. Repeated projection perf needs benchmark/stress proof. |
-| `#5771`, `#5533`, `#1770`, `#3741` | Preserve collaboration/history statuses. Current slate-yjs support is not claimed. |
+| `#5131`, `#2051`, `#2195`, `#2405`, `#790` | Preserve performance statuses. Deterministic repeated-projection stress proof landed; broader browser benchmark claims remain unclaimed. |
+| `#5771`, `#5533`, `#1770`, `#3741` | Preserve collaboration/history statuses. Root lifecycle/collab substrate proof landed, but current slate-yjs support is not claimed. |
 | `#3177`, `#3222`, `#3283` | Keep related API/example pressure. Raw Slate exposes the primitive; product sync UI belongs later. |
+
+## Projection Selection Architecture Execution Sync - 2026-05-26
+
+This is planning/accounting sync for
+`docs/plans/2026-05-26-slate-v2-projection-selection-architecture.md`. It adds
+no fixed issue claims and no improved issue claims.
+
+The target is the remaining architecture after Synced Blocks/content roots:
+one internal projection graph, internal cross-root `ViewSelection`,
+projection-owned command targets, runtime-local owner identity, root-keyed
+collaboration substrate, repeated-projection performance budgets, and explicit
+browser-native affordance contracts.
+
+Accepted-plan execution proves expanded selection, delete/type replacement,
+copy, history restoration, focus/click-outside behavior, repeated-root stress,
+native affordance classification, and collaboration substrate behavior. Issue
+claim changes still need exact external-repro mapping and release-scope proof.
+
+| Issue | Claim policy |
+| --- | --- |
+| `#5212` | Related, not claimed. Projection selection keeps Synced Blocks as the clean teaching route, but source, route, and browser proof must land before any editable-void/example fixed or improved claim. |
+| `#2072` | Related architecture pressure unchanged. Internal projection graph and `ViewSelection` strengthen same-runtime content roots, but the original Island request remains broader. |
+| `#5524` | Related, not claimed. Cross-root projected selection is adjacent vertical-selection pressure, but soft-break ArrowDown is not claimed without future proof of the same root-crossing owner. |
+| `#5874`, `#4309` | Related identity guardrail. Repeated projections use root keys plus runtime-local owner identity, not shared Slate node objects. |
+| `#6016` | Triage-closed/non-fix unchanged. One runtime with many root views remains the supported answer; shared object graphs across independent editors stay unsupported. |
+| `#5537`, `#5117` | Related multi-view focus/DOM-state pressure. Active projection identity and focus have route-level proof; placeholder/DOM-state issue closure remains unclaimed. |
+| `#3991`, `#3868`, `#5582`, `#5477`, `#4896`, `#4350`, `#4328`, `#5630` | Preserve delete/selection statuses. Existing exact fixed floors stay exact; projected commands have route-level proof, not external issue closure. |
+| `#4806`, `#4802`, `#4104`, `#3926`, `#4888`, `#4623` | Preserve clipboard/drop/move statuses. Existing exact clipboard fixed floors stay exact; projected copy serialization has route-level proof, while move, unsync payload remap, drag/drop, and exact issue closure remain unclaimed. |
+| `#5131`, `#2051`, `#2195`, `#2405`, `#790` | Preserve performance statuses. 20/100 repeated-root stress has deterministic package proof; broader benchmark claims remain unclaimed. |
+| `#5771`, `#5533`, `#1770`, `#3741` | Preserve collaboration/history statuses. Existing `#5771` readiness accounting is not upgraded or broadened here; root lifecycle/collab substrate proof landed, but current slate-yjs adapter support remains unclaimed. |
 
 ## Vertical ContentRoot Navigation Planning Sync - 2026-05-25
 

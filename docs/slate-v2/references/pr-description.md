@@ -105,16 +105,34 @@ Current summary:
   unsync, no default void traversal change, and no current slate-yjs support
   claim. Related issue rows stay related/non-claim until the route and browser /
   package proof land. New exact fixed or improved claims from that sync: `0`.
+- Projection-selection architecture execution sync implements the post-Synced-
+  Blocks target: one internal projection graph, internal cross-root
+  `ViewSelection`, projection-owned command targets, runtime-local projection
+  owner identity, root-keyed collaboration substrate, repeated-projection
+  performance budgets, and explicit browser-native affordance contracts.
+  Related issue rows stay related/non-claim, while existing fixed floors and the
+  existing `#5771` readiness accounting are not broadened. Route-level proof now
+  covers expanded selection, commands, projected copy, history/focus, native
+  affordance classification, root lifecycle/collab substrate, and deterministic
+  repeated-root stress; exact projected-root issue claims remain unclaimed until
+  issue-specific repro mapping and release-scope proof land. New exact fixed or
+  improved claims from that sync: `0`.
 - Hidden/offscreen block API execution sync adds the runtime and example surface
   for model-present content whose editable DOM is absent: internal
   `DOMCoverage`, stable `slots.contentBoundary`, optional `boundaryId`,
   object-shaped `onMaterialize({ boundary, reason, range })`, local app-owned
-  accordion/tab state, shadcn-shaped examples only, no raw Slate UI kits, and
-  explicit native degradation while DOM is absent. Focused package tests and the
-  `hidden-content-blocks` browser route cover the execution surface, while
-  related issue rows stay related/non-claim until exact external repros are
-  proven end to end.
+  accordion/collapsible/tab state, real shadcn source components in the example
+  app only, no raw Slate UI kits, and explicit native degradation while DOM is
+  absent. Focused package tests and the `hidden-content-blocks` browser route
+  cover Accordion, Collapsible, and Tabs, while related issue rows stay
+  related/non-claim until exact external repros are proven end to end.
   New exact fixed or improved claims from that sync: `0`.
+- Comment-mode focus ownership cleanup planning sync targets one Slate React
+  focus-boundary owner for read-only and editable outside interactions, removes
+  the read-only-only `EditableDOMRoot` listener, keeps public `Editable` DX
+  unchanged, and treats `#3893` / `#5004` as related proof gates while
+  preserving `#4376` / `#5171` as exact fixed guardrails. New exact fixed or
+  improved claims from that sync: `0`.
 
 Current fixed issue claims:
 

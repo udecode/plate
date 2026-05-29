@@ -1,5 +1,17 @@
 # Research Log
 
+## [2026-05-28] maintain | Portable Text architecture evidence bootstrap
+
+- added Portable Text to the editor-architecture candidate lane as a
+  spec/schema/behavior/test benchmark:
+  [portable-text-schema-behavior-and-portability.md](docs/research/sources/editor-architecture/portable-text-schema-behavior-and-portability.md)
+- compared local `../portabletext` source for schema compilation, behavior
+  events/actions, selectors, toolbar hooks, patch bridging, and real-browser
+  behavior specs
+- recorded the hard split: steal spec discipline, schema applicability,
+  behavior action vocabulary, and scenario tests; reject Portable Text as raw
+  Slate's value format or runtime engine
+
 ## [2026-05-18] maintain | slate-yjs collaboration binding refresh
 
 - compiled a dedicated editor-architecture source summary for Slate v2

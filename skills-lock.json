@@ -4,7 +4,7 @@
     "autoreview": {
       "source": "openclaw/agent-skills",
       "sourceType": "github",
-      "computedHash": "b65c6f42c3f6cc87c993666796c2e79f978e89e34430ebd594d678c98a30a86e"
+      "computedHash": "4113c11173fbba2bc570de19ebe57b4bb9bdbbd09a7c3f66a20679f3a741b876"
     },
     "debug": {
       "source": "udecode/dotai",

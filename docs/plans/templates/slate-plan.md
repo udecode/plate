@@ -102,7 +102,7 @@ Completion Gates:
 | Named verification threshold | pending | Run the command, proof, source audit, or artifact check named in this plan | pending |
 | Slate v2 source, runtime, browser, package, public API, or issue-fix claim | pending | Record live `.tmp/slate-v2` command/proof or mark as planning-only with reason | pending |
 | Issue ledger or PR reference changed | pending | Sync the relevant ledger/reference row or record why no sync applies | pending |
-| Autoreview for uncommitted implementation changes | pending | Load `.agents/skills/autoreview/SKILL.md` and follow its dirty-local target selection until no accepted/actionable findings, or record N/A for planning-only/no local patch | pending |
+| Autoreview for uncommitted implementation changes | pending | Load `.agents/skills/autoreview/SKILL.md`; run the helper from the git checkout that owns the implementation diff (`.tmp/slate-v2` for Slate v2 patches) until no accepted/actionable findings, or record N/A for planning-only/no local patch | pending |
 | Final user-review handoff | pending | Emit final handoff or keep the plan pending with the next pass | pending |
 | Goal plan complete | yes | Run `node .agents/rules/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` | pending |
 
@@ -213,6 +213,11 @@ Verification workspace gate:
 |-------|-----------|---------|--------|-------|
 | pending | pending | pending | pending | pending |
 
+Autoreview workspace gate:
+| Reviewed patch owner | Cwd | Command | Result | Notes |
+|----------------------|-----|---------|--------|-------|
+| pending | pending | pending | pending | pending |
+
 Applicable implementation-skill review matrix:
 | Lens | Applies | Status | Findings | Plan delta |
 |------|---------|--------|----------|------------|
@@ -273,7 +278,7 @@ Final completion gates:
 | issue/reference sync closed | issue-ledger sync status closed | pending |
 | live source grounding complete | source-backed rows cite current owners | pending |
 | workspace verification recorded | verification workspace gate closed | pending |
-| autoreview clean or N/A | `.agents/skills/autoreview/SKILL.md` loaded and clean for non-trivial uncommitted implementation changes, or N/A with reason | pending |
+| autoreview clean or N/A | `.agents/skills/autoreview/SKILL.md` loaded and clean from the git checkout that owns non-trivial uncommitted implementation changes (`.tmp/slate-v2` for Slate v2 patches), or N/A with reason | pending |
 | final handoff emitted or lane remains pending | final response / next pass recorded | pending |
 | `check-complete` passes | `node .agents/rules/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` | pending |
 

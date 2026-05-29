@@ -26,6 +26,43 @@ Rules:
   multi-member clusters.
 - Keep issue refs unescaped when auto-linking matters.
 
+## Comment Mode Focus Ownership Cleanup Surface Review - 2026-05-26
+
+Status: execution-sync
+Source plan:
+`docs/plans/2026-05-26-slate-v2-focus-ownership-cleanup.md`
+
+Reviewed surface:
+The plan targets Slate React focus-boundary ownership for `comment-mode` and
+future content-root views: remove the read-only-only outside-click listener from
+`EditableDOMRoot`, keep public `Editable` DX unchanged, and centralize
+read-only/editable outside-interaction handling in one runtime owner. The live
+route proves the current edit-mode bug across Chromium, Firefox, and WebKit:
+after clicking `#comment-mode-document`, clicking the header leaves the editor
+as `document.activeElement`.
+
+Decision:
+This is planning/accounting only. It adds no fixed issue claims and no improved
+issue claims. Exact closure requires implementation proof for edit-mode blur,
+ordinary external button/header focus state, read-only selection/Add Comment
+preservation, read-only outside click, follow-up typing after blur/refocus, and
+#4376/#5171 non-regression.
+
+Issue decisions:
+
+| Issue | Decision text |
+| --- | --- |
+| #3893 | Related focus pressure. Ordinary external UI must update Slate focus state, but exact HTML button focus closure is not claimed until button-specific browser proof lands. |
+| #5004 | Related focus-lifecycle pressure. Stale focus after outside click is adjacent to spurious focus-event ordering, but exact `onFocus` closure needs event-counter proof. |
+| #4376, #5171 | Existing fixed claims stay exact and become guardrails only. The cleanup must preserve inactive editable model selection and Firefox unfocused-update behavior; it does not broaden either claim. |
+| #5537 | Related multi-view focus/input pressure. Comment mode and future content roots strengthen the same focus owner, but multi-editor programmatic focus closure is not claimed. |
+| #5034 | Adjacent Android/readOnly pressure only. This web focus-boundary plan has no raw-device Android proof and makes no readOnly mobile-selection claim. |
+| #5826, #5538, #5568 | Preserve existing focus/scroll/initialization statuses. The cleanup must not restore stale selection, scroll unexpectedly, or weaken focus initialization, but no new closure is claimed. |
+
+PR-description text:
+No new `Fixes #...` or `Improves #...` claim. Keep current PR fixed/improved
+counts unchanged.
+
 ## Hidden/Offscreen Block API Surface Review - 2026-05-26
 
 Status: execution-sync
@@ -36,14 +73,15 @@ Reviewed surface:
 The implementation defines the hidden/offscreen block API surface:
 internal `DOMCoverage`, public `slots.contentBoundary`, optional `boundaryId`,
 object-shaped `onMaterialize({ boundary, reason, range })`, local app-owned
-accordion/tab state, shadcn-shaped examples only, and explicit native
-degradation while editable DOM is absent.
+accordion/collapsible/tab state, real shadcn source components in the example
+app only, and explicit native degradation while editable DOM is absent.
 
 Decision:
 This is implementation/accounting only. It adds no fixed issue claims and no
 improved issue claims. Stable API behavior, handler coexistence, shadcn browser
-proof, and native degradation are covered by focused `.tmp/slate-v2` tests, but
-the exact external issue repros remain unclaimed.
+proof for Accordion, Collapsible, and Tabs, and native degradation are covered
+by focused `.tmp/slate-v2` tests, but the exact external issue repros remain
+unclaimed.
 
 Issue decisions:
 
@@ -57,6 +95,45 @@ Issue decisions:
 | #790 | Related proof-route backlog. Hidden/offscreen blocks share dynamic-rendering pressure, but need mount/edit/scroll benchmark proof, mounted-count proof, DOM coverage proof, and browser native-behavior proof before any claim. |
 | #2793, #2572 | Release guard / policy non-claim. Missing-DOM modes must expose native degradation and cannot claim screen-reader or accessibility parity without assistive-tech proof. |
 | #3892 | Policy non-claim. Generic custom-layout surfaces remain ecosystem/product territory; raw Slate exposes only the boundary primitive. |
+
+PR-description text:
+No new `Fixes #...` or `Improves #...` claim. Keep current PR fixed/improved
+counts unchanged.
+
+## Projection Selection Architecture Surface Review - 2026-05-26
+
+Status: planning-sync
+Source plan:
+`docs/plans/2026-05-26-slate-v2-projection-selection-architecture.md`
+
+Reviewed surface:
+The accepted plan implements the remaining architecture after Synced
+Blocks/content roots: one runtime editor, one internal projection graph,
+internal cross-root `ViewSelection`, projection-owned command targets,
+runtime-local projection owner identity, root-keyed collaboration substrate,
+repeated-projection performance budgets, and explicit browser-native affordance
+contracts.
+
+Decision:
+This is execution/accounting only. It adds no fixed issue claims and no improved
+issue claims. The implemented route has package/browser proof, but exact
+external issue closures remain unclaimed without issue-specific repro mapping
+and release-scope proof.
+
+Issue decisions:
+
+| Issue | Decision text |
+| --- | --- |
+| #5212 | Related example/DX pressure unchanged. Projection selection keeps Synced Blocks as the clean teaching route, but no fixed or improved editable-void/example claim is legal until source, route, and browser proof land. |
+| #2072 | Related architecture pressure unchanged. Internal projection graph and `ViewSelection` strengthen same-runtime content roots, but the old Island request remains broader than pure document-flow projected roots. |
+| #5524 | Related/no claim. Cross-root projected selection is adjacent vertical-selection pressure, but soft-break ArrowDown remains a different failure family unless future browser proof identifies the same root-crossing owner. |
+| #5874, #4309 | Related identity guardrail. Repeated projections use root keys plus runtime-local owner identity, not shared Slate node-object identity across positions or editor runtimes. |
+| #6016 | Triage-closed/non-fix unchanged. One runtime with many root views is the supported answer; shared object graphs across independent editor runtimes remain unsupported. |
+| #5537, #5117 | Related multi-view focus and DOM-state pressure. Active projection identity and focus have route-level proof, but placeholder/DOM-state issue closure remains unclaimed. |
+| #3991, #3868, #5582, #5477, #4896, #4350, #4328, #5630 | Delete/selection guardrails. Existing exact fixed floors stay exact; projected commands have route-level proof for cross-root range behavior, not external issue closure. |
+| #4806, #4802, #4104, #3926, #4888, #4623 | Clipboard/drop/move guardrails. Existing exact clipboard fixed floors stay exact. Projected copy serialization has route-level proof, including custom clipboard format keys; move/drop/remap issue closure remains unclaimed. |
+| #5131, #2051, #2195, #2405, #790 | Performance guardrails. Deterministic 20/100 repeated-root stress proof landed; broader browser benchmark claims remain unclaimed. |
+| #5771, #5533, #1770, #3741 | Collaboration/history guardrails. Existing #5771 readiness accounting is not upgraded or broadened here. Root lifecycle/collab substrate proof landed, but current slate-yjs adapter support remains unclaimed. |
 
 PR-description text:
 No new `Fixes #...` or `Improves #...` claim. Keep current PR fixed/improved

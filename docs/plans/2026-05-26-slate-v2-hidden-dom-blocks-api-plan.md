@@ -955,18 +955,86 @@ Verification evidence:
   for remote history skip/rebase policy; `.tmp/slate-v2/tmp/slate-collab-readiness-benchmark.json`
   for calibration-only collab benchmark invariants.
 
+Execution correction - real shadcn coverage:
+- User correction: replace the hand-rolled shadcn-shaped route with real shadcn
+  source components and cover the minimum editor-relevant hidden-content
+  components with maximum useful shadcn signal.
+- Decision: install shadcn in the existing `.tmp/slate-v2/site` Pages app, not
+  a nested demo app. Keep raw Slate unopinionated: shadcn components are
+  example-local source files under `.tmp/slate-v2/site/components/ui/**`.
+- Component scope: Accordion, Collapsible, and Tabs are the editor-relevant
+  hidden-content shells because they can hide document-flow editor descendants.
+  Dialog, Sheet, Popover, menus, and HoverCard hide overlay UI, not normal
+  model-present document blocks, so they stay out of this route.
+- Installed shadcn surface: `site/components.json`, `site/styles/shadcn.css`,
+  `site/postcss.config.mjs`, `site/utils/cn.ts`, and UI files for `accordion`,
+  `collapsible`, `tabs`, `button`, `badge`, `separator`, and `card`.
+- Example delta: `.tmp/slate-v2/site/examples/ts/hidden-content-blocks.tsx`
+  now uses real shadcn Accordion/Collapsible/Tabs shells with `forceMount`
+  Content and `slots.contentBoundary` owning hidden editable descendants. Trigger
+  and tab-list chrome is explicitly `contentEditable={false}`.
+- Browser delta: `.tmp/slate-v2/playwright/integration/examples/hidden-content-blocks.test.ts`
+  now proves Accordion, Collapsible, and Tabs hidden text stays absent from the
+  DOM until opened, boundary count starts at 3, tab switching leaves one hidden
+  boundary, model-backed copy works for all three hidden surfaces, and native
+  surface status is degraded while boundaries exist.
+- Reference sync: hidden/offscreen execution rows in
+  `docs/slate-issues/gitcrawl-v2-sync-ledger.md`,
+  `docs/slate-v2/ledgers/issue-coverage-matrix.md`,
+  `docs/slate-v2/ledgers/fork-issue-dossier.md`, and
+  `docs/slate-v2/references/pr-description.md` now say real shadcn source
+  components cover Accordion, Collapsible, and Tabs with zero fixed/improved
+  issue claims.
+- Verification:
+  - `.tmp/slate-v2`: `bunx --bun shadcn@latest info --json --cwd site` passed
+    and reported Next Pages, Tailwind v4, import alias `@`, and installed
+    components `tabs`, `card`, `accordion`, `badge`, `separator`, `button`, and
+    `collapsible`.
+  - `.tmp/slate-v2`: `bun typecheck:site` passed.
+  - `.tmp/slate-v2`: `bun lint` passed.
+  - `.tmp/slate-v2`: `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/hidden-content-blocks.test.ts --project=chromium`
+    passed, 2 tests.
+  - `.tmp/slate-v2`: `bun test ./packages/slate-dom/test/dom-coverage.ts`
+    passed, 17 tests.
+  - `.tmp/slate-v2/packages/slate-react`: `bun test:vitest -- dom-coverage-boundary-contract.test.tsx dom-coverage-native-bridge-contract.test.ts`
+    passed, 2 files and 26 tests.
+  - `.tmp/slate-v2`: `bun --filter slate-dom typecheck` passed.
+  - `.tmp/slate-v2`: `bun --filter slate-react typecheck` passed.
+- Autoreview corrections:
+  - Moved shadcn `cn` helper out of ignored `site/lib/**` into tracked
+    `site/utils/cn.ts`.
+  - Hardened read-only `contentEditable=true` roots so IME composition,
+    triple-click, leaked native input, keyboard editing fallbacks, paste/cut,
+    drop, and outside-click cleanup do not mutate Slate state or sibling-root
+    selections.
+  - Extended regression coverage for read-only composition, pointer,
+    input-router, keyboard, clipboard/drop, split decorated strings, and
+    outside-click behavior.
+- Final verification after accepted autoreview fixes:
+  - `.tmp/slate-v2`: `/Users/zbeyens/git/plate-2/.agents/skills/autoreview/scripts/autoreview --mode local`
+    passed clean with no accepted/actionable findings.
+  - `.tmp/slate-v2`: `bun lint` passed.
+  - `.tmp/slate-v2`: `bun typecheck:site` passed.
+  - `.tmp/slate-v2`: `bun --filter slate-dom typecheck` passed.
+  - `.tmp/slate-v2`: `bun --filter slate-react typecheck` passed.
+  - `.tmp/slate-v2`: `bunx --bun shadcn@latest info --json --cwd site` passed
+    and reported installed components `tabs`, `card`, `accordion`, `badge`,
+    `separator`, `button`, and `collapsible`.
+  - `.tmp/slate-v2`: `bun test ./packages/slate-dom/test/dom-coverage.ts`
+    passed, 17 tests.
+  - `.tmp/slate-v2/packages/slate-react`: `bun test:vitest -- dom-coverage-boundary-contract.test.tsx dom-coverage-native-bridge-contract.test.ts composition-state-contract.test.ts selection-reconciler-contract.test.tsx input-router-contract.test.tsx slate-runtime-provider-contract.test.tsx keyboard-input-strategy-contract.test.ts`
+    passed, 7 files and 82 tests.
+  - `.tmp/slate-v2`: `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/hidden-content-blocks.test.ts --project=chromium`
+    passed, 2 tests.
+
 Reboot status:
 | Question | Answer |
 |----------|--------|
-| Where am I? | Planning lane complete and ready for user review |
-| Where am I going? | Await explicit user acceptance before execution mode starts |
-| What is the goal? | Produce a user-review-ready Slate Plan for hidden content block API/DX/perf |
-| What have I learned? | The best long-term architecture is revise-not-replace: keep `DOMCoverage`, publish `contentBoundary`, make materialization composable, keep product UI out of raw Slate, and require browser proof during execution |
-| What have I done? | Created goal-backed plan, grounded current code, ran focused tests, completed related issue discovery by reuse, completed issue-ledger pass, completed intent/decision pass, completed research/ecosystem/live-source refresh, completed pressure passes, completed the maintainer objection ledger, completed high-risk deliberate mode, completed ecosystem maintainer pass, completed revision pass, completed issue-sync accounting, and completed closure/final gates |
+| Where am I? | Execution correction implemented and autoreview clean |
+| Where am I going? | Run completion audit, then close the execution handoff |
+| What is the goal? | Implement and prove the hidden/offscreen content API with real shadcn hidden-content coverage and zero false issue claims |
+| What have I learned? | The right shadcn coverage is Accordion, Collapsible, and Tabs; read-only `contentEditable=true` roots require explicit native-default cancellation and DOM reset |
+| What have I done? | Installed shadcn/Tailwind wiring in `.tmp/slate-v2/site`, converted the example to real shadcn source components, extended browser proof to Accordion/Collapsible/Tabs, hardened read-only fallback input paths from autoreview, reran focused package/type/lint/browser gates, and synced issue/reference wording |
 
 Open risks:
-- Planning risks: none blocking.
-- Execution risks: per-boundary materialization must not clobber
-  virtualized/staged handlers; browser/a11y/native-find limitations must remain
-  explicit; current benchmark artifacts are substrate evidence, not final
-  Accordion/Tabs hidden-block proof.
+- None for this execution lane.
