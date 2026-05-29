@@ -13,8 +13,8 @@
   "lastSyncedCommit": "4a4dc8eb0fc793d8e9225e780183ad605f15d2c2",
   "lastSyncedAt": "2026-05-28",
   "lastSyncPlan": "docs/plans/2026-05-24-shadcn-base-migration-progress.md",
-  "lastPlannedCommit": "360e8a19c3ee13ac78b656027462007c8bdaa6d5",
-  "lastPlan": "docs/sync/shadcn/runs/2026-05-29-4a4dc8e-to-360e8a1-home-page/plan.md",
+  "lastPlannedCommit": "efdec3ca4523e5edd8a714f633002a7addc203a1",
+  "lastPlan": "docs/sync/shadcn/runs/2026-05-29-4a4dc8e-to-efdec3c-editors-blocks-style/plan.md",
   "baselineNotes": [
     "Initial tracker seeded from the current codex/fumadocs-migration branch and the local ../shadcn origin/main checkout.",
     "The original migration plan did not record an exact upstream SHA; future syncs must not advance this value without a complete range plan and verification."
@@ -69,7 +69,7 @@
       "plan": "docs/sync/shadcn/runs/2026-05-29-4a4dc8e-to-360e8a1-home-page/plan.md",
       "baselineAdvanced": false,
       "slices": [
-        "Home layout polish only: adopted shadcn-style centered PageHeader wrapper, centered home typography/actions, muted demo background, and wider/contained editor preview on English and CN home routes while preserving Plate copy, CTAs, editor preview, and Pro/Potion path"
+        "Home layout polish only: adopted shadcn-style centered PageHeader wrapper, centered single docs CTA, muted announcement badge, full-bleed muted preview field with max-w-screen-2xl centered preview content, upstream-style demo gradient overlays, and muted background through the home page footer on English and CN home routes while preserving Plate copy, editor preview, and Pro/Potion path"
       ],
       "deferred": [
         "Default full sync lane remains pending for out-of-scope rows"
@@ -77,16 +77,18 @@
       "excluded": [
         "Upstream home CardsDemo/card mosaic files",
         "Upstream /create?preset homepage CTA",
+        "Home GitHub CTA because GitHub is already in the shared header",
         "Rhea/style/theme/create product surfaces"
       ],
       "verification": [
-        "pnpm --filter www exec eslint src/app/(app)/page.tsx src/app/cn/page.tsx src/components/page-header.tsx --fix",
+        "pnpm --filter www exec eslint src/app/(app)/page.tsx src/app/cn/page.tsx src/app/(app)/_components/announcement-button.tsx --fix",
         "pnpm --filter www typecheck",
-        "Browser proof on http://localhost:3003/ and http://localhost:3003/cn: centered hero/actions, muted preview background, no horizontal overflow on desktop/mobile, no console/page errors, Plate headings preserved"
+        "Screenshot proof in docs/sync/shadcn/runs/2026-05-29-4a4dc8e-to-360e8a1-home-page/screenshots comparing upstream shadcn and Plate home pages",
+        "Browser proof on http://localhost:3003/ and http://localhost:3003/cn: centered hero/actions with only docs CTA, header GitHub still present, muted announcement badge, 2 gradient nodes on the retained Plate preview surface, full-bleed muted lower wrapper/footer background, max-w-screen-2xl container computed at 1536px on 2048px desktop with no centered gray slab, no horizontal overflow on desktop/mobile, no console/page errors, Plate headings preserved"
       ]
     }
   ],
   "lastPlannedAt": "2026-05-29",
   "lastFullPlan": "docs/sync/shadcn/runs/2026-05-28-4a4dc8e-to-360e8a1/plan.md",
-  "lastPlannedScope": "home page"
+  "lastPlannedScope": "editors blocks style"
 }

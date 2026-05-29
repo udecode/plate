@@ -4,13 +4,16 @@ import { Suspense, useEffect, useRef, useState } from 'react';
 
 import type { RegistryItem } from 'shadcn/schema';
 
+import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 
 import { BlockViewer } from '@/components/block-viewer';
+import { Button } from '@/components/ui/button';
 import { siteConfig } from '@/config/site';
 
 const i18n = {
   cn: {
+    browseMoreEditors: 'Browse more editors',
     buildYourRichTextEditor: '构建你的富文本编辑器',
     description: '框架 · 插件 · 组件 · 主题',
     getStarted: '开始使用',
@@ -18,6 +21,7 @@ const i18n = {
     potionDescription: '一个类似 Notion 的 AI 模板。',
   },
   en: {
+    browseMoreEditors: 'Browse more editors',
     buildYourRichTextEditor: 'Build your rich-text editor',
     description: 'Framework · Plugins · Components · Themes',
     getStarted: 'Get Started',
@@ -78,12 +82,19 @@ function PotionLazyBlockContent() {
   return (
     <div ref={ref}>
       {shouldRender && (
-        <BlockViewer
-          dependencies={[]}
-          highlightedFiles={[]}
-          item={block}
-          tree={[]}
-        />
+        <>
+          <BlockViewer
+            dependencies={[]}
+            highlightedFiles={[]}
+            item={block}
+            tree={[]}
+          />
+          <div className="flex justify-center py-6">
+            <Button asChild variant="outline">
+              <Link href="/editors">{content.browseMoreEditors}</Link>
+            </Button>
+          </div>
+        </>
       )}
     </div>
   );

@@ -19,6 +19,45 @@ Recommendation: keep Plate's home page as the product surface. Do not import ups
 
 This scoped plan cannot advance `lastSyncedCommit`; it accounts only for the home-page rows in the already planned `4a4dc8e..360e8a1` range.
 
+## Visual Evidence
+
+Screenshots are saved under `screenshots/`:
+
+- `shadcn-home-desktop-before.png`
+- `shadcn-home-mobile-before.png`
+- `plate-home-desktop-before.png`
+- `plate-home-mobile-before.png`
+- `plate-home-desktop-after.png`
+- `plate-home-mobile-after.png`
+- `plate-cn-home-desktop-after.png`
+- `plate-cn-home-mobile-after.png`
+- `plate-home-gray-to-bottom-desktop-top.png`
+- `plate-home-gray-to-bottom-desktop-bottom.png`
+- `plate-home-gray-to-bottom-mobile-top.png`
+- `plate-home-gray-to-bottom-mobile-bottom.png`
+- `plate-cn-home-gray-to-bottom-desktop-top.png`
+- `plate-cn-home-gray-to-bottom-desktop-bottom.png`
+- `plate-cn-home-gray-to-bottom-mobile-top.png`
+- `plate-cn-home-gray-to-bottom-mobile-bottom.png`
+- `plate-home-no-github-cta-desktop.png`
+- `plate-home-no-github-cta-mobile.png`
+- `plate-cn-home-no-github-cta-desktop.png`
+- `plate-cn-home-no-github-cta-mobile.png`
+- `plate-home-fullbleed-muted-desktop.png`
+- `plate-home-fullbleed-muted-mobile.png`
+- `plate-cn-home-fullbleed-muted-desktop.png`
+- `plate-cn-home-fullbleed-muted-mobile.png`
+
+Visible deltas from the screenshot comparison:
+
+- Upstream home uses a muted badge announcement; Plate had bare black link text. Smart-merged as a muted Plate announcement badge.
+- Upstream home demo surface contains two gradient overlays around the retained product demo. Smart-merged those overlay tokens onto Plate's editor preview surface.
+- Upstream demo container clips overflow deliberately. Smart-merged the overflow containment while keeping Plate's editor preview and CN route.
+- Plate keeps a full-bleed muted lower field through the retained preview area and home footer so the gray reads as page background instead of a centered slab.
+- Plate keeps one primary home CTA to docs; the GitHub CTA is intentionally removed from the hero because GitHub is already present in the shared header.
+- Plate caps the retained preview content with a centered `max-w-screen-2xl` container; at a 2048px viewport this computes to 1536px with equal side margins while the muted lower field remains full bleed.
+- Upstream cards/create/Rhea surfaces remain excluded.
+
 ## Complete Upstream Inventory
 
 Full table: [inventory.md](./inventory.md)
@@ -46,7 +85,7 @@ Full table: [inventory.md](./inventory.md)
 
 | Order | Slice | Class | Files | Why | Verification |
 | ---: | --- | --- | --- | --- | --- |
-| 1 | Home layout polish only | `smart-merge` | `apps/www/src/app/(app)/page.tsx`, `apps/www/src/app/cn/page.tsx`, maybe `apps/www/src/components/page-header.tsx` if the local primitive needs a scoped class hook | Best take: keep Plate's editor/product content; borrow only the useful spacing/preview-container treatment from upstream. | Browser proof on `/` and `/cn`, plus `pnpm --filter www typecheck`. |
+| 1 | Home layout polish only | `smart-merge` | `apps/www/src/app/(app)/page.tsx`, `apps/www/src/app/cn/page.tsx`, `apps/www/src/app/(app)/_components/announcement-button.tsx`, maybe `apps/www/src/components/page-header.tsx` if the local primitive needs a scoped class hook | Best take: keep Plate's editor/product content; borrow only the useful spacing, preview-container, muted badge, and gradient treatment from upstream. | Screenshot comparison, browser proof on `/` and `/cn`, plus `pnpm --filter www typecheck`. |
 | 2 | Home theme/create residue audit | `delete-plate-residue` | `apps/www/src/app/(app)/_components/potion-lazy-block.tsx`, `apps/www/src/components/playground-preview.tsx`, `apps/www/src/app/globals.css` | Remove dead homepage wording/state that still says themes/customizer if it is not used by retained preview code. Do not touch shared preview theme wrappers that are still required. | `rg -n "Themes|customizer|useProject|liftMode|radius" apps/www/src/app apps/www/src/components apps/www/src/hooks apps/www/src/lib`; browser proof on `/`. |
 | 3 | Upstream cards/create exclusion | `exclude-upstream` | `apps/v4/app/(app)/(root)/cards/**`, `apps/v4/app/(app)/(root)/page.tsx` CTA hunk | The card mosaic is shadcn product marketing tied to `/create`; Plate should not ship it. | Source audit only; no Plate patch unless accidental imports are found. |
 
@@ -54,6 +93,7 @@ Full table: [inventory.md](./inventory.md)
 
 - Do not import upstream `CardsDemo` or any `apps/v4/app/(app)/(root)/cards/**` files.
 - Do not import the `Build Your Own` CTA or `/create?preset=b27GcrRo` link.
+- Do not keep a separate home GitHub CTA; GitHub is header-owned.
 - Do not import Rhea/style/theme/generated registry output as part of home-page work. That belongs to the excluded create/theming product surface.
 - Do not replace Plate's editor preview with shadcn dashboard/card screenshots.
 
@@ -72,6 +112,11 @@ Take from upstream only if implementation confirms it improves the current page:
 - tighter header bottom padding on the home route
 - less horizontal padding around the large preview area on medium/large screens
 - overflow containment for the primary demo so the first viewport feels deliberate
+- muted badge treatment for the announcement
+- top and bottom gradient overlays on the retained Plate editor preview surface
+- full-bleed muted lower wrapper and home-only footer background so the gray continues to page bottom without a centered gray panel
+- single docs CTA in the hero actions; no duplicate GitHub CTA
+- centered `max-w-screen-2xl` container for the retained editor preview content
 
 Keep Plate-owned:
 

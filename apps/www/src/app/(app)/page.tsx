@@ -12,7 +12,6 @@ import {
 } from '@/components/page-header';
 import { PlaygroundPreview } from '@/components/playground-preview';
 import { Button } from '@/components/ui/button';
-import { siteConfig } from '@/config/site';
 
 import { AnnouncementButton } from './_components/announcement-button';
 import { PotionLazyBlock } from './_components/potion-lazy-block';
@@ -22,14 +21,12 @@ const i18n = {
     buildYourRichTextEditor: '构建你的富文本编辑器',
     description: '框架 · 插件 · 组件',
     getStarted: '开始使用',
-    github: 'GitHub',
     potionDescription: '一个类似 Notion 的 AI 模板。',
   },
   en: {
     buildYourRichTextEditor: 'Build your rich-text editor',
     description: 'Framework · Plugins · Components',
     getStarted: 'Get Started',
-    github: 'GitHub',
     potionDescription: 'A Notion-like AI template.',
   },
 };
@@ -68,7 +65,7 @@ export default async function IndexPage() {
   const content = i18n.en;
 
   return (
-    <div className="flex flex-1 flex-col">
+    <div className="flex flex-1 flex-col" data-home-page>
       <PageHeader className="md:**:[.container]:pb-8 lg:**:[.container]:pb-12">
         <AnnouncementButton />
 
@@ -82,30 +79,23 @@ export default async function IndexPage() {
           <Button asChild size="sm" className="h-[31px] rounded-lg text-xs">
             <Link href="/docs">{content.getStarted}</Link>
           </Button>
-          <Button
-            asChild
-            size="sm"
-            variant="ghost"
-            className="rounded-lg text-xs"
-          >
-            <Link
-              href={siteConfig.links.github}
-              rel="noreferrer"
-              target="_blank"
-            >
-              {content.github}
-            </Link>
-          </Button>
         </PageActions>
       </PageHeader>
 
-      <div className="container-wrapper flex-1 pb-6 md:px-0">
-        <div className="container md:px-0 lg:max-w-none">
-          <section className="relative overflow-hidden bg-muted p-2 pb-0 md:p-6 md:pb-0 dark:bg-background">
-            <PlaygroundPreview />
+      <div className="container-wrapper relative flex-1 overflow-hidden bg-muted pb-6 md:px-0 dark:bg-background">
+        <div className="pointer-events-none absolute inset-x-0 top-0 z-0 h-120 bg-linear-to-b from-background via-muted to-transparent dark:hidden" />
+        <div className="container relative z-10 max-w-screen-2xl overflow-hidden md:px-0">
+          <section
+            className="theme-neutral relative overflow-hidden p-2 pb-0 md:p-6 md:pb-0"
+            data-home-preview
+          >
+            <div className="relative z-10">
+              <PlaygroundPreview />
+            </div>
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-48 bg-linear-to-t from-muted via-muted/80 to-transparent lg:h-80 xl:h-64 dark:from-background dark:via-background/80" />
           </section>
 
-          <div className="relative mt-12 scroll-m-16 pb-48 md:mt-24 lg:mt-36">
+          <div className="relative mt-12 scroll-m-16 px-2 pb-48 md:mt-24 md:px-6 lg:mt-36">
             <PotionLazyBlock />
           </div>
         </div>

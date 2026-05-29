@@ -33,7 +33,7 @@ Verification surface:
 - `git -C ../shadcn merge-base --is-ancestor 4a4dc8eb0fc793d8e9225e780183ad605f15d2c2 360e8a19c3ee13ac78b656027462007c8bdaa6d5`
 - `docs/sync/shadcn/runs/2026-05-29-4a4dc8e-to-360e8a1-home-page/upstream-name-status.tsv`
 - `docs/sync/shadcn/runs/2026-05-29-4a4dc8e-to-360e8a1-home-page/home-scope-name-status.tsv`
-- `docs/sync/shadcn/runs/2026-05-29-4a4dc8e-to-360e8a1-home-page/home-root.patch`
+- focused upstream route diff evidence inspected on demand; `.patch` artifacts are intentionally not committed
 - `docs/sync/shadcn/runs/2026-05-29-4a4dc8e-to-360e8a1-home-page/inventory.md`
 - `docs/sync/shadcn/runs/2026-05-29-4a4dc8e-to-360e8a1-home-page/plan.md`
 - `node -e` JSON parse for `docs/sync/shadcn/status.json`
@@ -124,7 +124,7 @@ Completion Gates:
 | CI-controlled generated output | N/A | No registry/template generated output edited | planning-only artifacts only |
 | Baseline advancement | N/A | Do not advance baseline for scoped plan | `lastSyncedCommit` unchanged |
 | User review boundary | yes | Stop and ask user to review plan | final response will ask for accepted slice |
-| Output budget discipline | yes | Broad output artifacted/capped | full patch saved in `docs/sync/shadcn/runs/2026-05-29-4a4dc8e-to-360e8a1-home-page/home-root.patch` |
+| Output budget discipline | yes | Broad output artifacted/capped | focused upstream route diff evidence summarized in the sync run inventory and plan; `.patch` artifacts intentionally not committed |
 | Goal plan complete | yes | Run check-complete | pending command after file write |
 
 Phase / pass table:

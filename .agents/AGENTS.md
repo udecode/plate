@@ -45,7 +45,7 @@ Use those skills when relevant:
   threshold
 - `task` for normal repo task execution
 - `major-task` for heavyweight architecture, framework comparison, migration, benchmark, or proposal work
-- `clawsweeper` for Slate issue-ledger triage, duplicate/stale/invalid classification, small high-confidence issue processing, and exact claim sync
+- `clawsweeper` f[text](cid:f_mpqm0jua0)or Slate issue-ledger triage, duplicate/stale/invalid classification, small high-confidence issue processing, and exact claim sync
 - `clawpatch` for Clawpatch init/map/review/report/fix/revalidate workflows
 - `editor-test-harvester` for mining external editor repositories for portable editor-behavior tests, Slate v2 coverage gaps, and copy/refactor/create decisions
 - `editor-harvest-plan` for turning an `editor-test-harvester` result into a lane-specific Slate v2 or Plate execution plan
