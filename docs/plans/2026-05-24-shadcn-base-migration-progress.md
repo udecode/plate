@@ -6,7 +6,7 @@ Continue the docs restart from `docs/plans/2026-05-23-shadcn-docs-restart-compar
 
 ## Current Slice
 
-Status: thirty-eighth slice complete
+Status: thirty-ninth slice complete
 
 1. Make Fumadocs metadata/pageTree the docs navigation authority.
 2. Move sidebar and pager reads off direct `docsConfig` runtime access.
@@ -24,7 +24,7 @@ Status: thirty-eighth slice complete
 14. Move runtime docs navigation overlays out of `docsConfig` and into committed Fumadocs-adjacent metadata.
 15. Move Plate docs content under the upstream-style `content/docs/**` Fumadocs source root.
 16. Move category grid/breadcrumb metadata out of runtime `docsConfig` imports and add CN app-only docs routes for localized category links.
-17. Remove the lazy `/api/registry/[name]` highlighted-source route and dead v0 open button residue.
+17. Remove the public-shaped `/api/registry/[name]` highlighted-source route and dead v0 open button residue.
 18. Remove public `/dev` debug routes from the docs app restart surface.
 19. Move docs route parity checks off `docsConfig` and onto committed Fumadocs metadata pages.
 20. Add the upstream-style `/view/[name]` block preview renderer and route default block iframes through it.
@@ -46,6 +46,7 @@ Status: thirty-eighth slice complete
 36. Remove two remaining active-source TODO/FIXME residues by wiring Excalidraw component metadata to its existing demo and making the media preview download control functional.
 37. Add the upstream-style RSS route and metadata alternate using Plate's generated release index as the feed source.
 38. Align the BlockViewer code surface with upstream shadcn's tokenized code viewer styling while preserving Plate registry install controls.
+39. Keep lazy code-view source loading for bandwidth, but rename it from `/api/registry/[name]` to `/api/registry-source/[name]` so it is not confused with the public registry contract.
 
 ## Findings
 
@@ -93,6 +94,7 @@ Status: thirty-eighth slice complete
 - `apps/www/next.config.ts` still traced assets for `/api/registry/[name]` after that App Router endpoint was deleted. Keeping tracing for a deleted route is harmless until it isn't; it advertises an API surface the restarted app intentionally removed.
 - `content/docs/meta.json` now carries 265 Fumadocs page entries, 257 `_plate.items` overlays, localized section labels, category switcher metadata, and category groups. The old `sync-docs-meta.mts` generator was no longer needed as a transitional bridge.
 - Keeping `docsConfig` after runtime navigation, parity, and registry docs export all read committed Fumadocs metadata would recreate the exact competing-source problem the migration plan warned about. The metadata file is now edited as source, like upstream shadcn `content/docs/**/meta.json`.
+- Plate registry examples can include enough source files that shadcn's eager highlighted-source model is wasteful for users who never open the Code tab. The final compromise is lazy source hydration through `/api/registry-source/[name]`, scoped to docs code-view payloads only. Public registry installs remain `/r`, `/rd`, `@plate/*`, and `/init`.
 - The comparison doc calls out create/v0/project/theme surfaces as discard-all unless they directly serve Plate's kept product routes. `ProjectAddButton`, `useProject`, `ThemeComponent`, and `useLiftMode` had no active consumers after the preview/view/init cleanup. The homepage playground only needed the preview shell and package-manager install config, not project storage, lift-mode storage, or customizer radius storage.
 - `/cn/docs/[[...slug]]` still duplicated the English docs catch-all route logic after the Fumadocs i18n cutover. That duplication made registry fallback pages, related-doc links, metadata, and pager behavior easy to drift between locales.
 - The docs catch-all route should keep thin Next route files per locale, but route discovery, metadata generation, Fumadocs page rendering, registry fallback rendering, related docs, and highlighted source loading belong in one shared server helper parameterized by locale.
@@ -125,12 +127,12 @@ Status: thirty-eighth slice complete
 - If docs nav metadata changes, regenerate `content/docs/meta.json`, verify the parity script asserts the metadata overlay, and run `www` typecheck.
 - If the docs source root changes, verify `build:source`, docs source parity, docs registry source paths, and English/CN rendered routes.
 - If category grid or breadcrumb metadata changes, verify `content/docs/meta.json` carries `_plate.categoryGroups` and `_plate.docSections`, run docs source parity, and smoke `/cn/docs/components`, `/cn/docs/plugins`, `/cn/docs/examples`, `/cn/docs/api`, plus app-only special example routes.
-- If block/source preview loading changes, verify registry pages receive full highlighted files without `/api/registry/[name]`, run `www` typecheck, and smoke at least one block/code-view surface.
+- If block/source preview loading changes, verify the lazy `/api/registry-source/[name]` route returns highlighted files, run `www` typecheck, and smoke at least one block/code-view surface.
 - If public debug routes are removed, verify `/dev` and `/dev/table-perf` are no longer routable while docs/home routes still render.
 - If route parity changes, verify `check-docs-source-parity.mts` reads `content/docs/meta.json` pages and run `www` typecheck.
 - If block preview routing changes, verify `/view/[name]`, `/blocks/[name]`, and a registry docs page that embeds `BlockViewer`.
 - If init/bootstrap routing changes, verify `/init` returns a valid `registry:base` item, `/init.md` rewrites to markdown instructions, `/init/v0` is absent, and MCP docs use `@plate`.
-- If legacy API cleanup changes routes, verify `/api/components` and `/api/registry/[name]` are absent while `/init`, docs pages, and block previews still render.
+- If legacy API cleanup changes routes, verify `/api/components` and `/api/registry/[name]` are absent while `/api/registry-source/[name]`, `/init`, docs pages, and block previews still render.
 - If docs metadata authority changes, verify no active source imports `docsConfig`, run docs source parity, and smoke English/CN docs navigation surfaces.
 - If homepage preview state cleanup changes client components, verify no active imports remain for removed hooks/components, run `www` typecheck and lint, and smoke `/` plus `/cn` if a dev server is available.
 - If docs catch-all route logic changes, verify English and CN MDX docs, English and CN registry fallback docs, editors, view preview, and deleted legacy APIs.
@@ -251,3 +253,4 @@ Status: thirty-eighth slice complete
 - 2026-05-25: Verification passed for the BlockViewer code visual alignment slice: `pnpm install`, `pnpm --filter www typecheck`, and `pnpm lint:fix` passed. Browser Use on existing `localhost:3001/docs/components/table-node` clicked the Code tab and confirmed the code shell uses `bg-code text-code-foreground`, the pretty-code figure exists, the file tree exists, dependency/copy controls use tokenized button classes, no scoped `zinc-*`/old fragment nodes remain, and browser error/warn logs are empty. Browser screenshot capture hit a `Page.captureScreenshot` timeout, so DOM/style inspection was used as the browser evidence.
 - 2026-05-25: Follow-up fixed the right-side code pane by changing `highlight-code.ts` from single dark Shiki output to light/dark themes with transparent `pre` backgrounds and per-file language detection. Browser Use on `localhost:3001/editors` verified the AI editor Code tab now computes the code `pre` background as transparent over the `bg-code` shell.
 - 2026-05-25: Follow-up restored the original left-aligned hero style by reverting shared `PageHeader` spacing/typography/actions to Plate's pre-centering layout and moving `EditorDescription` back to `items-start`.
+- 2026-05-28: Renamed the lazy code-view route from `/api/registry/[name]` to `/api/registry-source/[name]`, updated `BlockViewer`, output tracing, and route tests, and recorded the final bandwidth-driven decision: keep lazy source loading, but do not expose it as the public registry API.

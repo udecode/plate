@@ -35,7 +35,7 @@ export async function GET(_: Request, { params }: any) {
   } catch (error) {
     if (error instanceof z.ZodError) {
       console.error(
-        'Failed to get registry files:',
+        'Failed to get registry source files:',
         name,
         error.issues[0].message
       );
@@ -46,10 +46,10 @@ export async function GET(_: Request, { params }: any) {
       );
     }
 
-    console.error('Failed to get registry files:', name, error);
+    console.error('Failed to get registry source files:', name, error);
 
     return NextResponse.json(
-      { error: `Failed to get registry files: ${name}` },
+      { error: `Failed to get registry source files: ${name}` },
       { status: 500 }
     );
   }

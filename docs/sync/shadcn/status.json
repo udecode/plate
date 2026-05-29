@@ -1,0 +1,47 @@
+{
+  "upstream": {
+    "repo": "shadcn-ui/ui",
+    "clonePath": "../shadcn",
+    "appPath": "apps/v4",
+    "remote": "origin",
+    "branch": "main"
+  },
+  "plate": {
+    "docsApp": "apps/www",
+    "docsContent": "content/docs"
+  },
+  "lastSyncedCommit": "4a4dc8eb0fc793d8e9225e780183ad605f15d2c2",
+  "lastSyncedAt": "2026-05-28",
+  "lastSyncPlan": "docs/plans/2026-05-24-shadcn-base-migration-progress.md",
+  "lastPlannedCommit": "360e8a19c3ee13ac78b656027462007c8bdaa6d5",
+  "lastPlan": "docs/sync/shadcn/runs/2026-05-28-4a4dc8e-to-360e8a1/plan.md",
+  "baselineNotes": [
+    "Initial tracker seeded from the current codex/fumadocs-migration branch and the local ../shadcn origin/main checkout.",
+    "The original migration plan did not record an exact upstream SHA; future syncs must not advance this value without a complete range plan and verification."
+  ],
+  "partialSyncs": [
+    {
+      "range": "4a4dc8eb0fc793d8e9225e780183ad605f15d2c2..360e8a19c3ee13ac78b656027462007c8bdaa6d5",
+      "implementedAt": "2026-05-28",
+      "plan": "docs/sync/shadcn/runs/2026-05-28-4a4dc8e-to-360e8a1/plan.md",
+      "baselineAdvanced": false,
+      "slices": [
+        "Docs shell parity polish: adopted docs foreground text tokens and removed sidebar divider; command-menu deferred",
+        "Package bump: adopted shadcn 4.8.2"
+      ],
+      "deferred": [
+        "/r/registries.json registry directory route"
+      ],
+      "excluded": [
+        "Rhea/style/theme/create/homepage upstream surfaces"
+      ],
+      "verification": [
+        "pnpm install",
+        "pnpm --filter www exec tsx --tsconfig ./scripts/tsconfig.scripts.json scripts/check-registry-source.mts",
+        "pnpm --filter www typecheck",
+        "pnpm lint:fix"
+      ]
+    }
+  ],
+  "lastPlannedAt": "2026-05-28"
+}

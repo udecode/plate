@@ -1,0 +1,877 @@
+---
+description: Autogoal-backed planning, status, review, and tracking for upstream shadcn docs syncs into Plate docs. Use when the user asks for `sync-shadcn`, `sync-shadcn status`, `sync-shadcn review`, a scoped `sync-shadcn <feature>` lane, to sync shadcn docs, audit newer shadcn docs changes, compare `../shadcn/apps/v4` with `apps/www`, update the shadcn sync baseline, or decide what to adopt, fork, or exclude from upstream shadcn.
+---
+
+# Sync Shadcn
+
+Handle $ARGUMENTS.
+
+Goal: compare the tracked upstream shadcn docs baseline with the current
+`../shadcn/apps/v4` target, inventory every added/modified/deleted upstream
+change, map each change to Plate's docs app, classify the merge decision, write
+a reviewable plan under `docs/sync/shadcn`, then stop for user review. A later
+explicit user acceptance starts implementation mode for a named plan and slice.
+
+If $ARGUMENTS starts with a command name, dispatch to that command before the
+default planning/implementation flow. If $ARGUMENTS names a feature, product
+surface, or slice, run a scoped planning lane for that scope. The default
+full-range planning lane applies only when no command or scope is mentioned.
+
+This skill exists because Plate's docs app is a forked product surface, not a
+generic shadcn mirror. Upstream owns the Fumadocs/shadcn docs architecture.
+Plate owns Plate docs content, editor demos, registry content, API MDX, CN docs,
+MCP, Plate Plus hooks, GA, and a small set of intentional forks.
+
+## Autogoal Dependency
+
+This skill depends on
+[$autogoal](/Users/zbeyens/git/plate/.agents/skills/autogoal/SKILL.md). Load
+`autogoal` before mutable sync state, upstream pull/fetch, run artifact writes,
+status JSON edits, or implementation delegation.
+
+`sync-shadcn` is a derived `autogoal` workflow and a two-phase lane:
+
+- Planning mode is the default. It writes the range plan, updates
+  `lastPlannedCommit`, asks the user to review the plan, and stops.
+- Implementation mode starts only after the user explicitly accepts a plan and
+  slice in a later instruction. Do not use the planning goal as permission to
+  patch `apps/www`.
+- Default flow mode: one-shot execution for planning mode and one-shot
+  execution for accepted implementation mode. They are separate activations.
+- Use collaborative planning only when the user is explicitly deciding policy
+  before a range plan is written.
+- Primary template:
+  `docs/plans/templates/sync-shadcn.md`.
+- Default packs: none. Add `docs` if docs/content pages are edited during an
+  accepted implementation, `browser` if visible docs UI is edited, and
+  `agent-native` if `.agents/**`, `.claude/**`, `.codex/**`, skills, commands,
+  prompts, or user-action tooling are edited.
+- Required evidence types: `command`, `source-audit`, `artifact`, and `N/A`
+  rows. Add `browser` evidence only when an accepted implementation touches
+  visible docs UI.
+- `autogoal` owns goal lifecycle, blocked/completion semantics, active-goal
+  conflict handling, plan instantiation, output-budget discipline, and
+  `check-complete.mjs`.
+- `sync-shadcn` owns shadcn range policy, commit accounting, upstream inventory
+  classification, Plate fork/exclusion decisions, status JSON semantics, and
+  merge-slice handoff.
+
+## Commands
+
+Supported commands:
+
+- `status`: summarize current shadcn sync state, partial syncs, deferred
+  decisions, and recommended next step without writing sync artifacts.
+- `review`: re-audit the current tracked shadcn range against `../shadcn` and
+  the current Plate checkout before trusting an existing plan.
+
+Feature-scoped planning:
+
+- Any non-command $ARGUMENTS value is a user-named scope. Treat the full
+  argument string as the scope label instead of hardcoding allowed feature names.
+- Scope labels can describe UI surfaces, routes, product areas, registry
+  groups, content families, or implementation slices.
+- If the scope is too vague to map to upstream and Plate files, ask one focused
+  question before writing artifacts.
+
+Command parsing:
+
+- The first $ARGUMENTS token is the command when it matches a supported command.
+- The full $ARGUMENTS string is the scope when the first token is not a
+  supported command.
+- If no command or scope is present, use the default full-range
+  planning/implementation flow.
+- Reserved commands are `status` and `review`; do not treat them as scope
+  labels.
+- Scopes are planning lanes, not implementation permission. A scoped
+  plan still stops for user review before patching `apps/www`.
+
+### Scoped Planning
+
+Use `sync-shadcn <scope>` when the user wants to sync only one named surface
+before reviewing broader docs sync work.
+
+Purpose:
+
+- compare the tracked upstream range, but inventory and classify only changes
+  that affect the named scope
+- write a reviewable scope-specific plan under `docs/sync/shadcn`
+- avoid the default full-range lane unless the user invokes `sync-shadcn`
+  without a command or scope
+
+Scope discovery:
+
+- Translate the user-named scope into likely upstream files under
+  `../shadcn/apps/v4` and likely Plate files under `apps/www`.
+- Search names, route paths, component names, config keys, registry names, and
+  docs paths that match the scope.
+- Include all matching hunks that directly affect the scope.
+- Exclude adjacent changes that only share a file but belong to another surface;
+  classify those as out-of-scope.
+
+Scoped planning rules:
+
+- Save artifacts in a scope-named run directory or plan name, for example
+  `docs/sync/shadcn/runs/<date>-<base>-to-<target>-<scope-slug>/`.
+- Use upstream diffs/logs for the same baseline and target as the default lane,
+  but filter inventory rows to scope-matching files and patch hunks.
+- Also record an out-of-scope count for upstream rows in the range so it is
+  clear the scoped plan cannot advance `lastSyncedCommit` alone.
+- Do not update `lastSyncedCommit` from a scoped plan. Scoped sync can add a
+  `partialSyncs` entry after accepted implementation, but the baseline advances
+  only when the full range is accounted for.
+- The plan's recommended slices must stay inside the named scope. If a file also
+  contains unrelated changes, classify the scope hunk as `smart-merge` and the
+  unrelated hunks as out-of-scope for this lane.
+- Final planning output must say that the default full sync lane remains
+  pending for the out-of-scope rows.
+
+### `status`
+
+Use `sync-shadcn status` when the user wants a quick checkpoint before choosing
+the next sync step.
+
+Purpose:
+
+- show the current baseline, latest planned target, current upstream target, and
+  whether the tracked plan looks fresh enough for decision-making
+- list accepted partial syncs already landed
+- list deferred decisions so the user can choose what to do next
+- recommend the next command or decision
+
+Status mode may:
+
+- read `docs/sync/shadcn/status.json`
+- read `lastPlan`, the linked `inventory.md`, and the latest run directory when
+  present
+- resolve `../shadcn` refs and fetch `origin main --tags` when the user asks for
+  current upstream freshness; if fetch fails, report freshness as unverified
+- count upstream commits and file-status rows for
+  `lastPlannedCommit..origin/main`
+- summarize `partialSyncs[*].slices`, `partialSyncs[*].deferred`,
+  and plan `Questions`
+
+Status mode must not:
+
+- patch `apps/www`
+- write `docs/sync/shadcn/runs/**`
+- write review artifacts
+- change `lastSyncedCommit`, `lastPlannedCommit`, `lastPlan`, or
+  `partialSyncs`
+- delegate implementation to `task`
+- treat listed deferred items as accepted decisions
+- list settled exclusions or preserved Plate forks; those belong in `review`
+  evidence or the plan, not routine status output
+
+Deferred item sources, in order:
+
+1. `docs/sync/shadcn/status.json` `partialSyncs[*].deferred`
+2. the selected plan's `Questions` section
+3. recommended merge slices marked `defer`, `needs-question`, or not yet
+   implemented
+4. status update notes that say `lastSyncedCommit` cannot advance
+
+Collapse upstream product/theme/style noise into its owning deferred decision.
+For example, Rhea/style/theme/generated style registry rows are part of the
+upstream create/theming product surface; do not list them as separate status
+items unless the user explicitly asks to review that product surface.
+
+Status checks:
+
+```bash
+node -e '
+const fs = require("fs");
+const status = JSON.parse(fs.readFileSync("docs/sync/shadcn/status.json", "utf8"));
+console.log(JSON.stringify({
+  lastSyncedCommit: status.lastSyncedCommit,
+  lastPlannedCommit: status.lastPlannedCommit,
+  lastPlan: status.lastPlan,
+  partialSyncs: status.partialSyncs ?? []
+}, null, 2));
+'
+
+git -C ../shadcn fetch origin main --tags
+TARGET=$(git -C ../shadcn rev-parse origin/main)
+PLANNED=$(node -e 'console.log(JSON.parse(require("fs").readFileSync("docs/sync/shadcn/status.json", "utf8")).lastPlannedCommit || "")')
+git -C ../shadcn log --oneline --decorate "$PLANNED..$TARGET" -- apps/v4
+git -C ../shadcn diff --name-status --find-renames "$PLANNED..$TARGET" -- apps/v4
+```
+
+Status output shape:
+
+```md
+Status: <fresh | upstream-ahead | no-plan | blocked-ref | unverified>
+Baseline: <lastSynced-short>
+Planned: <lastPlanned-short>
+Current upstream: <target-short>
+Plan: <path or none>
+
+Partial syncs:
+- <date/range>: <landed slices>
+
+Deferred decisions:
+- <item>
+
+Next: <run review | rerun planning | decide deferred item | implement accepted slice | advance baseline>
+```
+
+Keep status concise. If the user wants full evidence, tell them to run
+`sync-shadcn review`.
+
+### `review`
+
+Use `sync-shadcn review` when the user asks whether the latest sync plan is
+still fresh, whether a previously written plan can still be implemented, or
+whether current `apps/www` drift changed the merge posture.
+
+Purpose:
+
+- prove whether `docs/sync/shadcn/status.json`, the latest plan artifacts, the
+  current `../shadcn/apps/v4` target, and the current Plate docs checkout still
+  describe the same sync problem
+- find new upstream commits since `lastPlannedCommit`
+- find stale inventory artifacts for the `lastSyncedCommit..target` range
+- re-run local Plate owner/source evidence for actionable rows before
+  implementation
+
+Inputs:
+
+- optional plan path or run directory; default to `lastPlan` from
+  `docs/sync/shadcn/status.json`
+- optional target ref; default to `origin/main` in `../shadcn`
+- baseline from `lastSyncedCommit`
+- planned target from `lastPlannedCommit`
+
+Review mode may:
+
+- fetch `../shadcn` and resolve exact refs
+- read `docs/sync/shadcn/status.json`, the selected plan, `inventory.md`, and
+  `upstream-name-status.tsv`
+- recompute upstream name-status/numstat/log data into a temporary review file
+  under the same run directory or under `docs/sync/shadcn/reviews/`
+- compare recomputed inventories with the stored run artifacts
+- re-run scoped `rg`/file-existence checks for Plate owner paths, explicit
+  exclusions, preserved forks, partial sync entries, and recommended slices
+- write a dated `review.md` artifact with the verdict and evidence
+
+Review mode must not:
+
+- patch `apps/www`
+- change `lastSyncedCommit`, `lastPlannedCommit`, `lastPlan`, or
+  `partialSyncs`
+- delegate implementation to `task`
+- create a new implementation plan or advance the baseline
+- treat a fresh review as user acceptance to implement
+
+Review checks:
+
+```bash
+git -C ../shadcn fetch origin main --tags
+
+node -e '
+const fs = require("fs");
+const status = JSON.parse(fs.readFileSync("docs/sync/shadcn/status.json", "utf8"));
+console.log(JSON.stringify({
+  lastSyncedCommit: status.lastSyncedCommit,
+  lastPlannedCommit: status.lastPlannedCommit,
+  lastPlan: status.lastPlan,
+  partialSyncs: status.partialSyncs?.length ?? 0
+}, null, 2));
+'
+
+BASE=$(node -e 'console.log(JSON.parse(require("fs").readFileSync("docs/sync/shadcn/status.json", "utf8")).lastSyncedCommit || "")')
+PLANNED=$(node -e 'console.log(JSON.parse(require("fs").readFileSync("docs/sync/shadcn/status.json", "utf8")).lastPlannedCommit || "")')
+TARGET=$(git -C ../shadcn rev-parse origin/main)
+
+git -C ../shadcn merge-base --is-ancestor "$BASE" "$TARGET"
+git -C ../shadcn log --oneline --decorate "$PLANNED..$TARGET" -- apps/v4
+git -C ../shadcn diff --name-status --find-renames "$BASE..$TARGET" -- apps/v4
+```
+
+Staleness verdicts:
+
+- `fresh`: current upstream target equals `lastPlannedCommit`, recomputed
+  upstream inventory matches the selected run artifact, required Plate owner
+  paths/source evidence still exist, and no partial-sync/status contradiction is
+  found.
+- `stale-upstream`: `origin/main` has newer `apps/v4` commits than
+  `lastPlannedCommit` or the recomputed upstream inventory differs from the
+  selected run artifact.
+- `stale-local`: Plate owner paths or local search evidence used by the plan no
+  longer match the current checkout.
+- `stale-status`: `status.json` contradicts the selected plan, for example the
+  selected plan target differs from `lastPlannedCommit` without an explicit
+  override, or `partialSyncs` claim work that the local checkout no longer
+  shows.
+- `blocked-ref`: the baseline, planned target, selected target, or ancestry
+  cannot be proven.
+
+The review artifact must include:
+
+- selected plan/run directory
+- base, planned target, and current target SHAs
+- upstream commit count and file-status count for `PLANNED..TARGET`
+- inventory comparison result for `BASE..TARGET`
+- local Plate owner/source evidence summary
+- explicit exclusions and preserved forks checked
+- status semantics checked
+- verdict and the next action
+
+Review output shape:
+
+```md
+Review: <fresh | stale-upstream | stale-local | stale-status | blocked-ref>
+Range: <base-short>..<target-short>
+Plan: <path>
+Report: <path>
+
+| Check | Result | Evidence |
+| --- | --- | --- |
+| upstream target | ... | ... |
+| inventory | ... | ... |
+| Plate owners | ... | ... |
+| status semantics | ... | ... |
+
+Next: <use the existing plan | rerun planning | fix local drift | resolve refs>
+```
+
+Before substantive work:
+
+```bash
+node .agents/rules/autogoal/scripts/create-goal-scratchpad.mjs \
+  --template sync-shadcn \
+  --title "sync shadcn <short range or target>"
+```
+
+Fill the generated plan immediately. It must name the objective, flow mode,
+completion threshold, verification surface, constraints, boundaries, output
+budget strategy, blocked condition, and planned run directory. Do not replace it
+with a smaller ad hoc plan.
+
+Completion requires the named sync evidence plus:
+
+```bash
+node .agents/rules/autogoal/scripts/check-complete.mjs <docs/plans/path>
+```
+
+Never mark the active goal complete just because a range plan was written if
+the goal also required implementation, baseline advancement, or user acceptance.
+
+## User Review Boundary
+
+This mirrors the important part of `slate-plan`: plan first, stop, then execute
+only after explicit acceptance.
+
+Planning mode may:
+
+- fetch/pull `../shadcn`
+- create the active goal plan
+- write `docs/sync/shadcn/runs/<range>/` artifacts
+- update `lastPlannedCommit` and `lastPlan`
+- ask one review/decision question
+
+Planning mode must not:
+
+- patch `apps/www`
+- delegate to `task`
+- advance `lastSyncedCommit`
+- treat "recommended first slice" as accepted
+- combine plan creation and implementation in the same activation
+
+The final planning response must say:
+
+```md
+Review the plan. To implement it, invoke `sync-shadcn` again with the accepted
+plan path and slice.
+```
+
+Implementation mode requires a later user message that names or clearly accepts
+the plan/slice. Then create or continue an implementation-shaped goal for that
+accepted slice and proceed through `task`.
+
+## Hard Rules
+
+- Use evidence, not vibes. Read upstream commits, file status, patches, local
+  Plate files, prior decisions, and relevant solution notes.
+- Track exact commits. Never say "latest shadcn" without recording the target
+  SHA.
+- Treat `docs/sync/shadcn/status.json` as the durable baseline. Do not advance
+  `lastSyncedCommit` until every upstream change in the planned range is
+  accounted for as adopted, smart-merged, intentionally forked, or explicitly
+  excluded.
+- Planning is the default output. Do not patch `apps/www` unless the user
+  accepts a merge slice in a later instruction after reviewing a written plan.
+- Do not edit generated registry output, templates output, or generated skill
+  mirrors by hand.
+- Do not run `build:registry`; local registry generation is CI-owned in this
+  repo.
+- Do not delegate to `task` in the same activation that creates or materially
+  updates a sync plan. The user-review boundary is real.
+- Keep the active `sync-shadcn` goal plan current after every meaningful
+  decision, artifact write, classification pass, status JSON edit, accepted
+  implementation slice, verification run, or blocker.
+- Prefer deleting old Plate fork residue over preserving compatibility layers
+  when upstream already owns the better model.
+- Prefer upstream docs infrastructure unless Plate has a real product or
+  registry reason to diverge.
+- Keep output comprehensive. If a diff is too large for the chat, save complete
+  TSV/patch inventories under `docs/sync/shadcn/runs/<range>/` and summarize
+  the artifact paths in the response.
+
+## Start Gates
+
+These gates must be resolved in the active `sync-shadcn` goal plan before broad
+exploration:
+
+- `autogoal` loaded and active goal checked or created.
+- `docs/sync/shadcn/status.json` read.
+- `docs/sync/shadcn/decisions.md` read.
+- Prior migration plans and solution notes checked when relevant.
+- Output budget strategy recorded before running upstream diff/log commands.
+- `../shadcn` clone state known and fetched/pulled intentionally.
+- Base and target refs resolved to exact SHAs.
+- Base ancestry proven, or the ref problem recorded before stopping.
+- Planning-only versus implementation mode decided.
+- User-review boundary recorded: planning mode stops, implementation mode
+  requires later explicit acceptance.
+
+## Completion Gates
+
+These gates belong in `docs/plans/templates/sync-shadcn.md` and must be closed
+in the instantiated goal plan:
+
+- Upstream range artifacts exist and are non-empty, or a target-only bootstrap
+  exception is recorded.
+- `inventory.md` accounts for every row in `upstream-name-status.tsv`.
+- Decision counts cover every upstream row.
+- Source-backed Plate mapping exists for every actionable adoption, fork,
+  exclusion, or question group.
+- `docs/sync/shadcn/status.json` parses and its `lastPlannedCommit` /
+  `lastSyncedCommit` semantics match the work actually completed.
+- Planning-only runs prove no `apps/www` implementation patch was made.
+- Accepted implementation runs include focused verification for the touched
+  Plate surface.
+- Browser proof exists only when browser-visible docs UI changed.
+- `lastSyncedCommit` advances only after full-row accounting, verification, and
+  user acceptance.
+- Planning-mode final handoff asks the user to review the plan and invoke
+  `sync-shadcn` again with the accepted plan path and slice.
+- `check-complete.mjs` passes for the active goal plan.
+
+## Durable Policy
+
+Read these before making decisions:
+
+- `docs/sync/shadcn/status.json`
+- `docs/sync/shadcn/decisions.md`
+- `docs/plans/2026-05-23-shadcn-docs-restart-comparison.md`
+- `docs/plans/2026-05-24-shadcn-base-migration-progress.md`
+- `.agents/rules/shadcn-parity.mdc`
+- `docs/solutions/best-practices/2026-05-23-shadcn-docs-restart-comparison.md`
+- `docs/solutions/developer-experience/2026-05-27-shadcn-docs-sidebar-parity-needs-source-and-dom-metrics.md`
+- `docs/solutions/developer-experience/2026-05-24-plate-init-routes-should-return-shadcn-registry-base-items.md`
+- `docs/solutions/developer-experience/2026-05-24-shadcn-v4-registry-schema-needs-source-only-validation.md`
+- `docs/solutions/developer-experience/2026-05-24-shadcn-registry-install-commands-should-use-configured-namespaces.md`
+- `docs/solutions/developer-experience/2026-05-24-fumadocs-page-tree-search-needs-locale-safe-metadata.md`
+
+Default durable decisions:
+
+- Discard upstream v0 surfaces.
+- Discard upstream `/create`, `/charts`, `/colors`, and public directory-style
+  product pages unless the user explicitly asks for a Plate version.
+- Discard Plate theme/customizer/project/lift-mode residue.
+- Keep Plate docs content under `content/docs/**`.
+- Keep committed Fumadocs metadata as the docs navigation authority.
+- Keep Plate API MDX vocabulary and generated API docs support.
+- Keep Plate registry content and docs-registry generation, aligned to shadcn v4
+  schema/resolver semantics.
+- Keep Plate editor demos, `/view/[name]`, and registry preview/source display.
+- Keep lazy code-view source loading through `/api/registry-source/[name]` for
+  bandwidth, but do not treat it as a public registry API.
+- Keep CN docs, MCP docs/dialog, Plate Plus/Pro hooks, GA, Plate home page, and
+  the Slate-to-HTML special page.
+- Keep Plate's sidebar accordion/filter UX only as an intentional fork rebuilt
+  on Fumadocs/upstream sidebar primitives.
+
+## 1. Establish Upstream Clone And Refs
+
+Do this only after the `autogoal` start gates are satisfied and the active
+`sync-shadcn` plan records the output budget strategy.
+
+Use `../shadcn` as the upstream clone. Create it only if missing:
+
+```bash
+test -d ../shadcn/.git || gh repo clone shadcn-ui/ui ../shadcn
+git -C ../shadcn fetch origin main --tags
+test -d ../shadcn/apps/v4
+```
+
+Read the tracked baseline:
+
+```bash
+node -e '
+const fs = require("fs");
+const status = JSON.parse(fs.readFileSync("docs/sync/shadcn/status.json", "utf8"));
+console.log(JSON.stringify(status, null, 2));
+'
+```
+
+Resolve refs:
+
+```bash
+BASE=$(node -e 'console.log(JSON.parse(require("fs").readFileSync("docs/sync/shadcn/status.json", "utf8")).lastSyncedCommit || "")')
+TARGET=$(git -C ../shadcn rev-parse origin/main)
+git -C ../shadcn log -1 --format='%H%n%ci%n%s' "$TARGET"
+```
+
+If $ARGUMENTS names a base or target ref, prove it exists and use it:
+
+```bash
+git -C ../shadcn rev-parse <base-or-target-ref>
+```
+
+If `BASE` is empty, run a bootstrap audit:
+
+- compare the whole `../shadcn/apps/v4` source against Plate
+- write a plan
+- ask the user before setting `lastSyncedCommit`
+- do not silently set the baseline
+
+If `BASE` is present, prove ancestry when possible:
+
+```bash
+git -C ../shadcn merge-base --is-ancestor "$BASE" "$TARGET"
+git -C ../shadcn log --oneline --decorate "$BASE..$TARGET" -- apps/v4
+```
+
+If `BASE` is not an ancestor of `TARGET`, stop and explain the ref problem
+before planning. Do not produce a misleading change list.
+
+## 2. Create A Run Artifact Directory
+
+Use a range-keyed directory so the full evidence survives beyond chat context:
+
+```bash
+RUN_DIR="docs/sync/shadcn/runs/$(date +%Y-%m-%d)-${BASE:0:7}-to-${TARGET:0:7}"
+mkdir -p "$RUN_DIR"
+```
+
+Save complete inventories:
+
+```bash
+git -C ../shadcn diff --name-status --find-renames "$BASE..$TARGET" -- apps/v4 \
+  > "$RUN_DIR/upstream-name-status.tsv"
+
+git -C ../shadcn diff --numstat "$BASE..$TARGET" -- apps/v4 \
+  > "$RUN_DIR/upstream-numstat.tsv"
+
+git -C ../shadcn log --oneline --decorate "$BASE..$TARGET" -- apps/v4 \
+  > "$RUN_DIR/upstream-commits.txt"
+```
+
+For bootstrap audits without a base ref, use `target-only` in the directory
+name and save a full current upstream file list instead:
+
+```bash
+git -C ../shadcn ls-files apps/v4 > "$RUN_DIR/upstream-files.txt"
+```
+
+Do not stream huge patches into chat. Save focused patches by subsystem:
+
+```bash
+git -C ../shadcn diff "$BASE..$TARGET" -- apps/v4/app apps/v4/components apps/v4/lib \
+  > "$RUN_DIR/app-components-lib.patch"
+git -C ../shadcn diff "$BASE..$TARGET" -- apps/v4/registry apps/v4/scripts apps/v4/registry.json \
+  > "$RUN_DIR/registry-scripts.patch"
+git -C ../shadcn diff "$BASE..$TARGET" -- apps/v4/content apps/v4/source.config.ts apps/v4/mdx-components.tsx \
+  > "$RUN_DIR/docs-mdx-source.patch"
+```
+
+If a patch is too large, split it by path group and record the split.
+
+## 3. Classify Upstream Changes
+
+Every upstream changed file must be assigned to one subsystem:
+
+- `docs-engine`: Fumadocs source, page tree, MDX compilation, raw markdown
+- `routing`: Next routes, rewrites, metadata, layout groups
+- `shell-nav-sidebar`: header, footer, sidebar, mobile nav, command/search UI
+- `mdx-code`: MDX components, code blocks, copy-page, source viewer, RSS/OG
+- `registry-contract`: shadcn schema, resolver semantics, namespace behavior,
+  init/base item, local-file install
+- `registry-build`: registry scripts, generated source indexes, validation
+- `preview-view`: block/component preview routes and iframe/source display
+- `product-page`: create, charts, colors, blocks gallery, directory, examples
+  pages that are shadcn product surfaces
+- `theme-style`: global CSS, theme providers, tokens, active theme, customizer
+- `deps-config`: package, lock, tsconfig, eslint, Next config
+- `tests`: upstream app tests and fixtures
+- `assets`: public assets, manifest, images, fonts
+- `other`: only with an explanation
+
+For each file, record:
+
+- upstream status: added, modified, deleted, renamed
+- upstream path
+- subsystem
+- nearest Plate owner path, or `none`
+- local search evidence
+- default decision
+- confidence
+
+Useful local mapping heuristics:
+
+| Upstream path | Plate path to inspect |
+| --- | --- |
+| `apps/v4/app/**` | `apps/www/src/app/**` |
+| `apps/v4/components/**` | `apps/www/src/components/**` |
+| `apps/v4/lib/**` | `apps/www/src/lib/**` |
+| `apps/v4/hooks/**` | `apps/www/src/hooks/**` |
+| `apps/v4/content/docs/**` | `content/docs/**` |
+| `apps/v4/registry/**` | `apps/www/src/registry/**` |
+| `apps/v4/scripts/**` | `apps/www/scripts/**` |
+| `apps/v4/styles/**` | `apps/www/src/app/globals.css`, `apps/www/src/styles/**` |
+| `apps/v4/package.json` | `apps/www/package.json` |
+| `apps/v4/next.config.mjs` | `apps/www/next.config.ts` |
+
+Search Plate by component/function names from upstream patches:
+
+```bash
+rg -n "<ComponentOrFunctionName>|<route-segment>|<registry-key>" apps/www content/docs docs/sync/shadcn
+```
+
+Also search deleted/discarded vocabulary when upstream or Plate removes a
+surface:
+
+```bash
+rg -n "v0|OpenInV0|create|charts|colors|themes|customizer|useProject|liftMode|docsConfig|Contentlayer|/api/registry/\\[name\\]" apps/www content/docs docs
+```
+
+Classify each row with one decision:
+
+- `adopt-upstream`: upstream owns the better generic docs infrastructure and
+  Plate has no durable reason to diverge.
+- `smart-merge`: apply the upstream architecture or fix, but retain a named
+  Plate product requirement.
+- `plate-fork`: keep Plate's implementation intentionally; upstream change is
+  useful as context but not directly adopted.
+- `exclude-upstream`: do not bring this upstream product surface to Plate.
+- `delete-plate-residue`: upstream direction confirms local fork code should be
+  removed.
+- `no-op`: upstream changed content or product surface irrelevant to Plate.
+- `needs-question`: user decision required before planning implementation.
+
+## 4. Produce The Sync Plan
+
+Write a Markdown plan:
+
+```bash
+PLAN="docs/sync/shadcn/runs/$(date +%Y-%m-%d)-${BASE:0:7}-to-${TARGET:0:7}/plan.md"
+```
+
+The plan must include these sections:
+
+```md
+# Sync Shadcn <base-short>..<target-short>
+
+## Range
+
+- Upstream repo: `shadcn-ui/ui`
+- Upstream app: `../shadcn/apps/v4`
+- Base: `<sha> <date> <subject>`
+- Target: `<sha> <date> <subject>`
+- Plate app: `apps/www`
+- Status source: `docs/sync/shadcn/status.json`
+
+## Summary
+
+Short factual summary of the changed subsystems and the recommended merge
+posture.
+
+## Complete Upstream Inventory
+
+| Status | Upstream file | Subsystem | Plate owner | Decision | Evidence |
+| --- | --- | --- | --- | --- | --- |
+| M | `apps/v4/...` | `shell-nav-sidebar` | `apps/www/src/...` | `smart-merge` | patch + rg evidence |
+
+This table must include every row from `upstream-name-status.tsv`.
+
+## Added Files
+
+All upstream added files with decision.
+
+## Modified Files
+
+All upstream modified files with decision.
+
+## Deleted Files
+
+All upstream deleted files with decision.
+
+## Recommended Merge Slices
+
+| Order | Slice | Class | Files | Why | Verification |
+| --- | --- | --- | --- | --- | --- |
+
+## Explicit Exclusions
+
+List upstream changes not to import, especially v0/create/charts/colors/theme
+surfaces, with the local Plate policy evidence.
+
+## Plate Forks To Preserve
+
+List intentional forks, including sidebar accordion/filter UX,
+`/api/registry-source/[name]`, API MDX, CN docs, MCP, Plus hooks, GA, Plate home,
+editor demos, workspace aliases, and package integration tests when touched.
+
+## Smart Merge Details
+
+For every `smart-merge` row, state what comes from upstream and what remains
+Plate-owned.
+
+## Questions
+
+Only include real user decisions. Do not ask about settled policy.
+
+## Status Update Rule
+
+State whether this plan can advance `lastSyncedCommit` after implementation. If
+not, identify the remaining groups.
+```
+
+If the inventory is very large, the plan still needs every row. Put the full row
+table in `inventory.md` in the same run directory and link it from `plan.md`.
+
+## 5. Stop For User Review
+
+Default stop point:
+
+```md
+Range: <base-short>..<target-short>
+Plan: <path>
+
+| Decision | Count | Notes |
+| --- | ---: | --- |
+| adopt-upstream | ... | ... |
+| smart-merge | ... | ... |
+| plate-fork | ... | ... |
+| exclude-upstream | ... | ... |
+| delete-plate-residue | ... | ... |
+| needs-question | ... | ... |
+
+Recommended first slice: <slice>
+
+Question: Review the plan. Should any decision change before implementation?
+To implement it, invoke `sync-shadcn` again with the accepted plan path and
+slice.
+```
+
+Ask one pointed question when there are `needs-question` rows. Do not ask about
+settled exclusions.
+
+Then stop. Do not delegate implementation to `task` from the same planning
+activation, even if the recommended slice looks obvious.
+
+## 6. Delegate Accepted Implementation Through `task`
+
+Only after a later user message accepts a plan/slice, load
+[$task](/Users/zbeyens/git/plate/.agents/skills/task/SKILL.md) with this prompt:
+
+```md
+Implement this shadcn docs sync slice.
+
+Upstream: shadcn-ui/ui `../shadcn/apps/v4`
+Range: <base-sha>..<target-sha>
+Plan: <docs/sync/shadcn/runs/.../plan.md>
+Slice: <one-sentence selected slice>
+Class: <adopt-upstream | smart-merge | plate-fork cleanup | delete-plate-residue>
+
+Evidence:
+- Upstream commits: <short commit list or artifact path>
+- Upstream files: <file rows from the plan>
+- Upstream patches: <artifact paths>
+- Plate evidence: <local files and solution notes>
+- Explicit exclusions: <v0/create/charts/colors/themes/etc. if relevant>
+
+Implementation:
+- <specific files or surfaces to inspect first>
+- <what should come from upstream>
+- <what must stay Plate-owned>
+- <what must be deleted instead of carried forward>
+
+Acceptance:
+- <focused typecheck/test/source audit>
+- `pnpm install` only if package, lock, or agent generated output needs it
+- `pnpm lint:fix`
+- browser proof only if the slice changes browser-visible docs UI
+- do not run `build:registry`
+- update `docs/sync/shadcn/status.json` only if the whole target range is fully
+  accounted for; otherwise record a partial sync note and keep
+  `lastSyncedCommit` unchanged
+
+Do not preserve obsolete Plate fork residue if the upstream change removes the
+need for it. Hard cut the residue.
+```
+
+Then follow `task` until the implementation is verified or a real blocker is
+proven. This is implementation mode, not the planning run that wrote the plan.
+
+## 7. Status Updates
+
+`docs/sync/shadcn/status.json` has three meanings:
+
+- `lastSyncedCommit`: every upstream change through this commit has been
+  adopted, smart-merged, intentionally forked, or explicitly excluded.
+- `lastPlannedCommit`: latest target commit with a written sync plan.
+- `partialSyncs`: accepted slices that landed before the whole range was fully
+  accounted for.
+
+Plan generation may update `lastPlannedCommit` and `lastPlan`.
+
+Only update `lastSyncedCommit` when:
+
+1. the plan covers every row in the upstream range
+2. all selected implementation slices for that range are complete
+3. all excluded/forked rows are recorded in the plan
+4. verification for touched surfaces passed
+5. the user accepted the final accounting
+
+When advancing the baseline, include:
+
+```json
+{
+  "lastSyncedCommit": "<target-sha>",
+  "lastSyncedAt": "YYYY-MM-DD",
+  "lastSyncPlan": "docs/sync/shadcn/runs/.../plan.md",
+  "lastVerification": ["<commands or proof>"]
+}
+```
+
+Do not delete older run artifacts. They are the audit trail.
+
+## Output
+
+For planning-only runs, end with:
+
+```md
+Range: <base-short>..<target-short>
+Plan: <path>
+
+| Decision | Count | Notes |
+| --- | ---: | --- |
+| adopt-upstream | ... | ... |
+| smart-merge | ... | ... |
+| plate-fork | ... | ... |
+| exclude-upstream | ... | ... |
+| delete-plate-residue | ... | ... |
+| needs-question | ... | ... |
+
+Recommended first slice: <slice>
+Question: Review the plan. Should any decision change before implementation?
+
+To implement it, invoke `sync-shadcn` again with the accepted plan path and
+slice.
+```
+
+For implementation runs, use `task`'s final handoff format and include whether
+`docs/sync/shadcn/status.json` was advanced or left unchanged.

@@ -33,7 +33,7 @@ mock.module('@/registry/registry', () => ({
 
 const { GET, generateStaticParams } = await import('./route');
 
-describe('/api/registry/[name]', () => {
+describe('/api/registry-source/[name]', () => {
   it('returns highlighted content for non-initial files', async () => {
     const response = await GET(new Request('http://localhost'), {
       params: Promise.resolve({ name: 'basic-marks-demo' }),

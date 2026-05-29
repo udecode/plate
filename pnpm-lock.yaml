@@ -630,8 +630,8 @@ importers:
         specifier: 1.89.2
         version: 1.89.2
       shadcn:
-        specifier: 4.8.0
-        version: 4.8.0(@types/node@24.12.0)(typescript@6.0.2)
+        specifier: 4.8.2
+        version: 4.8.2(@types/node@24.12.0)(typescript@6.0.2)
       shadcn-prose:
         specifier: 1.0.8
         version: 1.0.8
@@ -5214,7 +5214,6 @@ packages:
 
   bun@1.3.9:
     resolution: {integrity: sha512-v5hkh1us7sMNjfimWE70flYbD5I1/qWQaqmJ45q2qk5H/7muQVa478LSVRSFyGTBUBog2LsPQnfIRdjyWJRY+A==}
-    cpu: [arm64, x64]
     os: [darwin, linux, win32]
     hasBin: true
 
@@ -8945,8 +8944,8 @@ packages:
     resolution: {integrity: sha512-Llpz/dC+ZTqLzh8qrIZM5p5ggbHQ4MKP90NkfXvV1CF5Hdg8uFO+IAiF1P5mSqMHqnPW0XT9ZkqqgXR7fNSVig==}
     deprecated: 'You can now install this as a shadcn component with: npx kibo-ui add typography'
 
-  shadcn@4.8.0:
-    resolution: {integrity: sha512-LAm3I/1FdoU/zu5GVG8Hbna4X9zlzEG5TeeCPXqsopkjvGk8QUF9OFhqeRN8oM6Oh/ynUI/yQHZxQAO3Ymcqsg==}
+  shadcn@4.8.2:
+    resolution: {integrity: sha512-pt3KneOg6LGYKNAdoTVf/lpVcf7t2MlV+Ll2Xc3lIIYN3ph4ajrjU+CcG6OVSgO5ubbLZj+9j5oMA9Lqg7o8KA==}
     hasBin: true
 
   sharp@0.34.5:
@@ -18107,7 +18106,7 @@ snapshots:
 
   shadcn-prose@1.0.8: {}
 
-  shadcn@4.8.0(@types/node@24.12.0)(typescript@6.0.2):
+  shadcn@4.8.2(@types/node@24.12.0)(typescript@6.0.2):
     dependencies:
       '@babel/core': 7.29.0
       '@babel/parser': 7.29.0

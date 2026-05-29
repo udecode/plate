@@ -142,7 +142,7 @@ function BlockViewerProvider({
 
         try {
           const response = await fetch(
-            `/api/registry/${encodeURIComponent(item.name)}`
+            `/api/registry-source/${encodeURIComponent(item.name)}`
           );
           const data = await response.json();
 

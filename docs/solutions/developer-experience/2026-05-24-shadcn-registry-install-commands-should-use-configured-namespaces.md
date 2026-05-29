@@ -122,7 +122,7 @@ For source preview, keep compiled MDX small and hydrate full code only when the 
 const item = await getRegistryItem(name, true);
 ```
 
-Use the prefetched item for the initial preview, then let `BlockViewer` fetch `/api/registry/[name]` when later files have no `content`. The route calls `getRegistryItem(name)` and `highlightFiles(item.files)`, so copy buttons and non-initial code tabs receive the full highlighted payload without putting that payload into every MDX chunk.
+Use the prefetched item for the initial preview, then let `BlockViewer` fetch `/api/registry-source/[name]` when later files have no `content`. The route calls `getRegistryItem(name)` and `highlightFiles(item.files)`, so copy buttons and non-initial code tabs receive the full highlighted payload without putting that payload into every MDX chunk. Keep this route scoped to docs code-view source; public registry install surfaces stay on `/r`, `/rd`, `@plate/*`, and `/init`.
 
 Delete v0-only UI instead of keeping commented code. Plate owns a registry around the shadcn contract; it does not need upstream's v0 open flow.
 

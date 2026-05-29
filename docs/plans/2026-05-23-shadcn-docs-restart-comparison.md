@@ -165,7 +165,7 @@ Primary files:
 - `apps/www/src/app/(app)/editors/page.tsx`
 - `apps/www/src/app/(blocks)/blocks/[name]/page.tsx`
 - `apps/www/src/app/(blocks)/blocks/playground/page.tsx`
-- `apps/www/src/app/api/registry/[name]/route.ts`
+- `apps/www/src/app/api/registry-source/[name]/route.ts`
 - `apps/www/src/app/cn/docs/[[...slug]]/page.tsx`
 - `apps/www/src/app/dev/**`
 
@@ -496,13 +496,13 @@ Files:
 - `apps/www/src/components/component-preview.tsx`
 - `apps/www/src/components/component-installation.tsx`
 - `apps/www/src/components/component-source.tsx`
-- `apps/www/src/app/api/registry/[name]/route.ts`
+- `apps/www/src/app/api/registry-source/[name]/route.ts`
 - `apps/www/src/app/(blocks)/blocks/[name]/page.tsx`
 
 Plate `BlockViewer`:
 
 - Uses `/blocks/[name]` or `item.meta.src` instead of upstream `/view`.
-- Lazy-fetches highlighted code from `/api/registry/[name]` when switching to code view.
+- Lazy-fetches highlighted code from `/api/registry-source/[name]` when switching to code view.
 - Handles Pro examples through `item.meta.isPro`.
 - Copies `npx shadcn@latest add ${siteConfig.registryUrl}${item.name}`.
 - Shows dependency install commands inside manual install flow.
@@ -524,7 +524,7 @@ Adopt:
 
 Throw:
 
-- The extra `/api/registry/[name]` lazy code route unless the new Fumadocs page cannot get highlighted files statically.
+- A public-shaped `/api/registry/[name]` lazy code route. If lazy source loading stays, keep it under an internal docs-code route such as `/api/registry-source/[name]`.
 - Stale commented image fallback blocks in Plate `block-viewer.tsx`.
 
 ## Search And Navigation
@@ -975,7 +975,7 @@ Read these before phase two implementation:
 | Plate registry build | `apps/www/scripts/build-registry.mts` | Rewrite | Keep Plate content rules, adopt upstream v4 registry model. |
 | Plate docs registry build | `apps/www/scripts/build-docs-registry.mts` | Keep concept | Generate Fumadocs-ready docs registry. |
 | Upstream registry v4 pipeline | `../ui/apps/v4/scripts/build-registry.mts` | Adopt patterns | Use schema/resolver/base/style behavior as source of truth. |
-| `/api/registry/[name]` | `apps/www/src/app/api/registry/[name]/route.ts` | Maybe throw | Keep only if static docs cannot carry highlighted source. |
+| Lazy registry source route | `apps/www/src/app/api/registry-source/[name]/route.ts` | Keep internal | Keep only for code-view bandwidth. Do not treat it as a public registry API. |
 | Plate component install UI | `apps/www/src/components/component-installation.tsx` | Keep | Reapply for Plate registry items. |
 | Plate previews | `apps/www/src/components/component-preview.tsx`, `block-viewer.tsx` | Keep selectively | Combine with upstream `/view` model. |
 | Upstream `/view` route | `../ui/apps/v4/app/(view)/view/[style]/[name]/page.tsx` | Adopt if style previews stay | Prefer over Plate-only block preview route. |
@@ -1014,8 +1014,8 @@ This is the recommended default for confirmation. "Discard upstream" means do no
 | Registry build | Upstream v4 build design, style/base transforms, schema validation, generated output discipline | Upstream styles/components that Plate does not ship | Plate docs-registry generation and local `public/r`/`public/rd` delivery needs | Old shadcn `2.6.3` assumptions | Rewrite Plate build from upstream v4 patterns |
 | Generated registry output | Upstream rule: generated output comes from source pipeline | Hand-copied upstream public output | Plate `public/r`, `public/rd`, `src/__registry__/index.tsx` as regenerated artifacts | Manual edits to generated output | Regenerate only |
 | Template/local install sync | Upstream local-file install semantics | Any upstream template workflow not used by Plate | Plate template sync tooling and `@plate` install entrypoint | Generated-template hand edits | Keep Plate sync, align with upstream installer |
-| Source code preview | Upstream highlighted code/file tree design | v0-specific copy/open actions | Plate dependency-aware manual install and registry URL copy command | Lazy registry API if static files can replace it | Keep install/source UX, drop v0 |
-| `/api/registry/[name]` | None unless needed | None | Maybe keep only for lazy highlighted files | Prefer static highlighted files in Fumadocs | Default discard after replacement |
+| Source code preview | Upstream highlighted code/file tree design | v0-specific copy/open actions | Plate dependency-aware manual install and registry URL copy command | Public-shaped lazy registry API | Keep lazy source loading for bandwidth, drop v0 |
+| Lazy registry source route | None unless needed | None | `/api/registry-source/[name]` for code-view payloads | `/api/registry/[name]` as a public-looking registry API | Keep internal docs source endpoint only |
 | Blocks route | Upstream `/view/[style]/[name]` renderer pattern | Upstream block gallery categories as public Plate pages | Plate editor block demo routes | Plate duplicate route shape if upstream `/view` can cover it | Keep renderer, not gallery |
 | Charts pages | Maybe chart component implementation if registry needs it | `/charts/**` public product pages | None obvious | None | Discard from Plate public docs |
 | Colors pages | Maybe color utilities/tokens if style system needs them | `/colors` public product page | None obvious | Plate old color/theme pages | Discard page |
@@ -1090,7 +1090,7 @@ This is the recommended default for confirmation. "Discard upstream" means do no
 - Homepage: keep Plate homepage, centered, no themes.
 - Slate-to-HTML: keep special route/page.
 - Init route: keep non-v0 `@plate` bootstrap only if directly useful.
-- `/api/registry/[name]`: probably throw after static highlighted files work in Fumadocs.
+- `/api/registry/[name]`: throw as a public-shaped route. Keep `/api/registry-source/[name]` for lazy code-view bandwidth if large registry payloads require it.
 - `docsConfig` files: use as migration data, not the new architecture.
 
 ## Verification
