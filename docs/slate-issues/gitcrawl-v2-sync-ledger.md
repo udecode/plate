@@ -23,8 +23,8 @@ only. It adds no fixed issue claims, no improved issue claims, no runtime/API
 behavior, and no PR claim text. The current direction is: keep public writes
 transaction-first through `editor.update`/`tx`/`afterCommit`; keep command
 registry internals internal; reject public `Editor.*` command registration and
-default `editor.commands.on`; and continue evaluating an extension-owned
-semantic native-input policy only where browser input, paste/drop, keyboard,
+default `editor.commands.on`; and keep semantic native-input taxonomy private
+to the `slate-react` runtime where browser input, paste/drop, keyboard,
 history, or app-editable intent needs deterministic guard/handle/forward
 semantics.
 
