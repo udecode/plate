@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "topic": "source-pass",
+  "generatedBy": "@shapeshift-labs/evidence-kit",
+  "sources": [
+    {
+      "name": "hard-cut-scope",
+      "type": "inline",
+      "fileName": "hard-cut-scope.txt",
+      "text": "The old Next/Vite editor benchmark app lab is intentionally replaced by an Evidence Kit evidence package. Future editor comparisons should add target-owned adapters and benchmark rows instead of restoring apps/templates blindly.",
+      "why": "Keeps the generic source-pass workflow non-empty and documents the destructive replacement boundary."
+    }
+  ]
+}

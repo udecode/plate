@@ -1,0 +1,41 @@
+{
+  "name": "editor-evidence-core",
+  "generatedAt": "2026-05-28T22:02:06.558Z",
+  "node": "v24.14.1",
+  "rows": [
+    {
+      "category": "evidence-readiness",
+      "fixture": "editor-framework-source-map",
+      "library": "plate-editor-evidence",
+      "status": "ok",
+      "ops": 2,
+      "note": "2 configured source entries for 2 target editors"
+    },
+    {
+      "category": "evidence-readiness",
+      "fixture": "local-editor-targets",
+      "library": "plate-editor-evidence",
+      "status": "ok",
+      "ops": 2,
+      "note": "2 local target roots currently exist"
+    },
+    {
+      "category": "hard-cut",
+      "fixture": "legacy-app-surface-removed",
+      "library": "plate-editor-evidence",
+      "status": "ok",
+      "ops": 0,
+      "note": "old app/template benchmark lab paths are absent"
+    },
+    {
+      "category": "contract",
+      "fixture": "benchmark-row-normalization",
+      "library": "plate-editor-evidence",
+      "status": "ok",
+      "medianUs": 0.129,
+      "p95Us": 0.464,
+      "ops": 15,
+      "note": "normalizes Evidence Kit benchmark rows into required schema fields"
+    }
+  ]
+}

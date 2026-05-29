@@ -1,0 +1,14 @@
+node_modules/
+test/fixtures/repro-latest.json
+
+research/repos/*
+!research/repos/.gitkeep
+!research/repos/**/
+!research/repos/**/manifest.json
+
+benchmarks/data/*
+!benchmarks/data/.gitkeep
+!benchmarks/data/**/
+!benchmarks/data/**/*.json
+!benchmarks/data/**/*.txt
+!benchmarks/data/**/*.md

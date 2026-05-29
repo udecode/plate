@@ -1,0 +1,277 @@
+{
+  "name": "slate-v2-legacy-compare",
+  "generatedAt": "2026-05-28T22:02:06.611Z",
+  "node": "v24.14.1",
+  "rows": [
+    {
+      "category": "slate-react-huge-document-legacy-compare",
+      "fixture": "5000-blocks/combined-selection/insertFragmentFullDocumentMs",
+      "library": "slate-v2:default-render-auto",
+      "status": "ok",
+      "medianUs": 31400,
+      "p95Us": 31650,
+      "ops": 3,
+      "note": "surface=v2DefaultRenderAuto; source=../../.tmp/slate-v2/tmp/slate-react-huge-document-legacy-compare-benchmark-compare-all-blocks-5000-iters-3-ops-20-combined-selection-no-profile.json; current=../../.tmp/slate-v2; legacy=../../../slate; iterations=3; typeOps=20"
+    },
+    {
+      "category": "slate-react-huge-document-legacy-compare",
+      "fixture": "5000-blocks/combined-selection/middleBlockPromoteThenTypeMs",
+      "library": "slate-v2:default-render-auto",
+      "status": "ok",
+      "medianUs": 204610,
+      "p95Us": 298300,
+      "ops": 3,
+      "note": "surface=v2DefaultRenderAuto; source=../../.tmp/slate-v2/tmp/slate-react-huge-document-legacy-compare-benchmark-compare-all-blocks-5000-iters-3-ops-20-combined-selection-no-profile.json; current=../../.tmp/slate-v2; legacy=../../../slate; iterations=3; typeOps=20"
+    },
+    {
+      "category": "slate-react-huge-document-legacy-compare",
+      "fixture": "5000-blocks/combined-selection/middleBlockSelectThenTypeMs",
+      "library": "slate-v2:default-render-auto",
+      "status": "ok",
+      "medianUs": 224240,
+      "p95Us": 233450,
+      "ops": 3,
+      "note": "surface=v2DefaultRenderAuto; source=../../.tmp/slate-v2/tmp/slate-react-huge-document-legacy-compare-benchmark-compare-all-blocks-5000-iters-3-ops-20-combined-selection-no-profile.json; current=../../.tmp/slate-v2; legacy=../../../slate; iterations=3; typeOps=20"
+    },
+    {
+      "category": "slate-react-huge-document-legacy-compare",
+      "fixture": "5000-blocks/combined-selection/middleBlockTypeMs",
+      "library": "slate-v2:default-render-auto",
+      "status": "ok",
+      "medianUs": 242070,
+      "p95Us": 256080,
+      "ops": 3,
+      "note": "surface=v2DefaultRenderAuto; source=../../.tmp/slate-v2/tmp/slate-react-huge-document-legacy-compare-benchmark-compare-all-blocks-5000-iters-3-ops-20-combined-selection-no-profile.json; current=../../.tmp/slate-v2; legacy=../../../slate; iterations=3; typeOps=20"
+    },
+    {
+      "category": "slate-react-huge-document-legacy-compare",
+      "fixture": "5000-blocks/combined-selection/readyMs",
+      "library": "slate-v2:default-render-auto",
+      "status": "ok",
+      "medianUs": 23630,
+      "p95Us": 25490,
+      "ops": 3,
+      "note": "surface=v2DefaultRenderAuto; source=../../.tmp/slate-v2/tmp/slate-react-huge-document-legacy-compare-benchmark-compare-all-blocks-5000-iters-3-ops-20-combined-selection-no-profile.json; current=../../.tmp/slate-v2; legacy=../../../slate; iterations=3; typeOps=20"
+    },
+    {
+      "category": "slate-react-huge-document-legacy-compare",
+      "fixture": "5000-blocks/combined-selection/replaceFullDocumentWithTextMs",
+      "library": "slate-v2:default-render-auto",
+      "status": "ok",
+      "medianUs": 28120,
+      "p95Us": 50010,
+      "ops": 3,
+      "note": "surface=v2DefaultRenderAuto; source=../../.tmp/slate-v2/tmp/slate-react-huge-document-legacy-compare-benchmark-compare-all-blocks-5000-iters-3-ops-20-combined-selection-no-profile.json; current=../../.tmp/slate-v2; legacy=../../../slate; iterations=3; typeOps=20"
+    },
+    {
+      "category": "slate-react-huge-document-legacy-compare",
+      "fixture": "5000-blocks/combined-selection/selectAllMs",
+      "library": "slate-v2:default-render-auto",
+      "status": "ok",
+      "medianUs": 513140,
+      "p95Us": 578530,
+      "ops": 3,
+      "note": "surface=v2DefaultRenderAuto; source=../../.tmp/slate-v2/tmp/slate-react-huge-document-legacy-compare-benchmark-compare-all-blocks-5000-iters-3-ops-20-combined-selection-no-profile.json; current=../../.tmp/slate-v2; legacy=../../../slate; iterations=3; typeOps=20"
+    },
+    {
+      "category": "slate-react-huge-document-legacy-compare",
+      "fixture": "5000-blocks/combined-selection/startBlockSelectThenTypeMs",
+      "library": "slate-v2:default-render-auto",
+      "status": "ok",
+      "medianUs": 218950,
+      "p95Us": 226480,
+      "ops": 3,
+      "note": "surface=v2DefaultRenderAuto; source=../../.tmp/slate-v2/tmp/slate-react-huge-document-legacy-compare-benchmark-compare-all-blocks-5000-iters-3-ops-20-combined-selection-no-profile.json; current=../../.tmp/slate-v2; legacy=../../../slate; iterations=3; typeOps=20"
+    },
+    {
+      "category": "slate-react-huge-document-legacy-compare",
+      "fixture": "5000-blocks/combined-selection/startBlockTypeMs",
+      "library": "slate-v2:default-render-auto",
+      "status": "ok",
+      "medianUs": 453220,
+      "p95Us": 1611550,
+      "ops": 3,
+      "note": "surface=v2DefaultRenderAuto; source=../../.tmp/slate-v2/tmp/slate-react-huge-document-legacy-compare-benchmark-compare-all-blocks-5000-iters-3-ops-20-combined-selection-no-profile.json; current=../../.tmp/slate-v2; legacy=../../../slate; iterations=3; typeOps=20"
+    },
+    {
+      "category": "slate-react-huge-document-legacy-compare",
+      "fixture": "5000-blocks/combined-selection/insertFragmentFullDocumentMs",
+      "library": "slate-v2:dom-present",
+      "status": "ok",
+      "medianUs": 18870,
+      "p95Us": 44940,
+      "ops": 3,
+      "note": "surface=v2DomPresent; source=../../.tmp/slate-v2/tmp/slate-react-huge-document-legacy-compare-benchmark-compare-all-blocks-5000-iters-3-ops-20-combined-selection-no-profile.json; current=../../.tmp/slate-v2; legacy=../../../slate; iterations=3; typeOps=20"
+    },
+    {
+      "category": "slate-react-huge-document-legacy-compare",
+      "fixture": "5000-blocks/combined-selection/middleBlockPromoteThenTypeMs",
+      "library": "slate-v2:dom-present",
+      "status": "ok",
+      "medianUs": 458230,
+      "p95Us": 469990,
+      "ops": 3,
+      "note": "surface=v2DomPresent; source=../../.tmp/slate-v2/tmp/slate-react-huge-document-legacy-compare-benchmark-compare-all-blocks-5000-iters-3-ops-20-combined-selection-no-profile.json; current=../../.tmp/slate-v2; legacy=../../../slate; iterations=3; typeOps=20"
+    },
+    {
+      "category": "slate-react-huge-document-legacy-compare",
+      "fixture": "5000-blocks/combined-selection/middleBlockSelectThenTypeMs",
+      "library": "slate-v2:dom-present",
+      "status": "ok",
+      "medianUs": 305190,
+      "p95Us": 2601250,
+      "ops": 3,
+      "note": "surface=v2DomPresent; source=../../.tmp/slate-v2/tmp/slate-react-huge-document-legacy-compare-benchmark-compare-all-blocks-5000-iters-3-ops-20-combined-selection-no-profile.json; current=../../.tmp/slate-v2; legacy=../../../slate; iterations=3; typeOps=20"
+    },
+    {
+      "category": "slate-react-huge-document-legacy-compare",
+      "fixture": "5000-blocks/combined-selection/middleBlockTypeMs",
+      "library": "slate-v2:dom-present",
+      "status": "ok",
+      "medianUs": 2945790,
+      "p95Us": 2990280,
+      "ops": 3,
+      "note": "surface=v2DomPresent; source=../../.tmp/slate-v2/tmp/slate-react-huge-document-legacy-compare-benchmark-compare-all-blocks-5000-iters-3-ops-20-combined-selection-no-profile.json; current=../../.tmp/slate-v2; legacy=../../../slate; iterations=3; typeOps=20"
+    },
+    {
+      "category": "slate-react-huge-document-legacy-compare",
+      "fixture": "5000-blocks/combined-selection/readyMs",
+      "library": "slate-v2:dom-present",
+      "status": "ok",
+      "medianUs": 24370,
+      "p95Us": 25430,
+      "ops": 3,
+      "note": "surface=v2DomPresent; source=../../.tmp/slate-v2/tmp/slate-react-huge-document-legacy-compare-benchmark-compare-all-blocks-5000-iters-3-ops-20-combined-selection-no-profile.json; current=../../.tmp/slate-v2; legacy=../../../slate; iterations=3; typeOps=20"
+    },
+    {
+      "category": "slate-react-huge-document-legacy-compare",
+      "fixture": "5000-blocks/combined-selection/replaceFullDocumentWithTextMs",
+      "library": "slate-v2:dom-present",
+      "status": "ok",
+      "medianUs": 18790,
+      "p95Us": 35570,
+      "ops": 3,
+      "note": "surface=v2DomPresent; source=../../.tmp/slate-v2/tmp/slate-react-huge-document-legacy-compare-benchmark-compare-all-blocks-5000-iters-3-ops-20-combined-selection-no-profile.json; current=../../.tmp/slate-v2; legacy=../../../slate; iterations=3; typeOps=20"
+    },
+    {
+      "category": "slate-react-huge-document-legacy-compare",
+      "fixture": "5000-blocks/combined-selection/selectAllMs",
+      "library": "slate-v2:dom-present",
+      "status": "ok",
+      "medianUs": 602030,
+      "p95Us": 641300,
+      "ops": 3,
+      "note": "surface=v2DomPresent; source=../../.tmp/slate-v2/tmp/slate-react-huge-document-legacy-compare-benchmark-compare-all-blocks-5000-iters-3-ops-20-combined-selection-no-profile.json; current=../../.tmp/slate-v2; legacy=../../../slate; iterations=3; typeOps=20"
+    },
+    {
+      "category": "slate-react-huge-document-legacy-compare",
+      "fixture": "5000-blocks/combined-selection/startBlockSelectThenTypeMs",
+      "library": "slate-v2:dom-present",
+      "status": "ok",
+      "medianUs": 3900330,
+      "p95Us": 4066720,
+      "ops": 3,
+      "note": "surface=v2DomPresent; source=../../.tmp/slate-v2/tmp/slate-react-huge-document-legacy-compare-benchmark-compare-all-blocks-5000-iters-3-ops-20-combined-selection-no-profile.json; current=../../.tmp/slate-v2; legacy=../../../slate; iterations=3; typeOps=20"
+    },
+    {
+      "category": "slate-react-huge-document-legacy-compare",
+      "fixture": "5000-blocks/combined-selection/startBlockTypeMs",
+      "library": "slate-v2:dom-present",
+      "status": "ok",
+      "medianUs": 269590,
+      "p95Us": 293690,
+      "ops": 3,
+      "note": "surface=v2DomPresent; source=../../.tmp/slate-v2/tmp/slate-react-huge-document-legacy-compare-benchmark-compare-all-blocks-5000-iters-3-ops-20-combined-selection-no-profile.json; current=../../.tmp/slate-v2; legacy=../../../slate; iterations=3; typeOps=20"
+    },
+    {
+      "category": "slate-react-huge-document-legacy-compare",
+      "fixture": "5000-blocks/combined-selection/insertFragmentFullDocumentMs",
+      "library": "slate",
+      "status": "ok",
+      "medianUs": 126830,
+      "p95Us": 166970,
+      "ops": 3,
+      "note": "surface=legacyChunkOn; source=../../.tmp/slate-v2/tmp/slate-react-huge-document-legacy-compare-benchmark-compare-all-blocks-5000-iters-3-ops-20-combined-selection-no-profile.json; current=../../.tmp/slate-v2; legacy=../../../slate; iterations=3; typeOps=20"
+    },
+    {
+      "category": "slate-react-huge-document-legacy-compare",
+      "fixture": "5000-blocks/combined-selection/middleBlockPromoteThenTypeMs",
+      "library": "slate",
+      "status": "ok",
+      "medianUs": 65750,
+      "p95Us": 75360,
+      "ops": 3,
+      "note": "surface=legacyChunkOn; source=../../.tmp/slate-v2/tmp/slate-react-huge-document-legacy-compare-benchmark-compare-all-blocks-5000-iters-3-ops-20-combined-selection-no-profile.json; current=../../.tmp/slate-v2; legacy=../../../slate; iterations=3; typeOps=20"
+    },
+    {
+      "category": "slate-react-huge-document-legacy-compare",
+      "fixture": "5000-blocks/combined-selection/middleBlockSelectThenTypeMs",
+      "library": "slate",
+      "status": "ok",
+      "medianUs": 67630,
+      "p95Us": 72510,
+      "ops": 3,
+      "note": "surface=legacyChunkOn; source=../../.tmp/slate-v2/tmp/slate-react-huge-document-legacy-compare-benchmark-compare-all-blocks-5000-iters-3-ops-20-combined-selection-no-profile.json; current=../../.tmp/slate-v2; legacy=../../../slate; iterations=3; typeOps=20"
+    },
+    {
+      "category": "slate-react-huge-document-legacy-compare",
+      "fixture": "5000-blocks/combined-selection/middleBlockTypeMs",
+      "library": "slate",
+      "status": "ok",
+      "medianUs": 68820,
+      "p95Us": 114290,
+      "ops": 3,
+      "note": "surface=legacyChunkOn; source=../../.tmp/slate-v2/tmp/slate-react-huge-document-legacy-compare-benchmark-compare-all-blocks-5000-iters-3-ops-20-combined-selection-no-profile.json; current=../../.tmp/slate-v2; legacy=../../../slate; iterations=3; typeOps=20"
+    },
+    {
+      "category": "slate-react-huge-document-legacy-compare",
+      "fixture": "5000-blocks/combined-selection/readyMs",
+      "library": "slate",
+      "status": "ok",
+      "medianUs": 332160,
+      "p95Us": 340170,
+      "ops": 3,
+      "note": "surface=legacyChunkOn; source=../../.tmp/slate-v2/tmp/slate-react-huge-document-legacy-compare-benchmark-compare-all-blocks-5000-iters-3-ops-20-combined-selection-no-profile.json; current=../../.tmp/slate-v2; legacy=../../../slate; iterations=3; typeOps=20"
+    },
+    {
+      "category": "slate-react-huge-document-legacy-compare",
+      "fixture": "5000-blocks/combined-selection/replaceFullDocumentWithTextMs",
+      "library": "slate",
+      "status": "ok",
+      "medianUs": 110470,
+      "p95Us": 132420,
+      "ops": 3,
+      "note": "surface=legacyChunkOn; source=../../.tmp/slate-v2/tmp/slate-react-huge-document-legacy-compare-benchmark-compare-all-blocks-5000-iters-3-ops-20-combined-selection-no-profile.json; current=../../.tmp/slate-v2; legacy=../../../slate; iterations=3; typeOps=20"
+    },
+    {
+      "category": "slate-react-huge-document-legacy-compare",
+      "fixture": "5000-blocks/combined-selection/selectAllMs",
+      "library": "slate",
+      "status": "ok",
+      "medianUs": 830,
+      "p95Us": 1010,
+      "ops": 3,
+      "note": "surface=legacyChunkOn; source=../../.tmp/slate-v2/tmp/slate-react-huge-document-legacy-compare-benchmark-compare-all-blocks-5000-iters-3-ops-20-combined-selection-no-profile.json; current=../../.tmp/slate-v2; legacy=../../../slate; iterations=3; typeOps=20"
+    },
+    {
+      "category": "slate-react-huge-document-legacy-compare",
+      "fixture": "5000-blocks/combined-selection/startBlockSelectThenTypeMs",
+      "library": "slate",
+      "status": "ok",
+      "medianUs": 69910,
+      "p95Us": 103960,
+      "ops": 3,
+      "note": "surface=legacyChunkOn; source=../../.tmp/slate-v2/tmp/slate-react-huge-document-legacy-compare-benchmark-compare-all-blocks-5000-iters-3-ops-20-combined-selection-no-profile.json; current=../../.tmp/slate-v2; legacy=../../../slate; iterations=3; typeOps=20"
+    },
+    {
+      "category": "slate-react-huge-document-legacy-compare",
+      "fixture": "5000-blocks/combined-selection/startBlockTypeMs",
+      "library": "slate",
+      "status": "ok",
+      "medianUs": 63900,
+      "p95Us": 67410,
+      "ops": 3,
+      "note": "surface=legacyChunkOn; source=../../.tmp/slate-v2/tmp/slate-react-huge-document-legacy-compare-benchmark-compare-all-blocks-5000-iters-3-ops-20-combined-selection-no-profile.json; current=../../.tmp/slate-v2; legacy=../../../slate; iterations=3; typeOps=20"
+    }
+  ]
+}

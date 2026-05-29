@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "topic": "editor-frameworks",
+  "generatedAt": "2026-05-28T20:36:05.364Z",
+  "configPath": "research/editor-frameworks-sources.json",
+  "cacheRoot": "research/repos/editor-frameworks",
+  "dataRoot": "benchmarks/data/editor-frameworks",
+  "sources": [
+    {
+      "name": "slate-v2-package",
+      "type": "file",
+      "status": "ok",
+      "bytes": 9055,
+      "sha256": "0a01664f3d4f357cd07ec1d1368dffaee268ccbfcf6c6840aca5bdc60e6d7a6a",
+      "localPath": "benchmarks/data/editor-frameworks/slate-v2-package.json"
+    },
+    {
+      "name": "slate-package",
+      "type": "file",
+      "status": "ok",
+      "bytes": 5449,
+      "sha256": "2a52d559661a0341d0f0933a1fb6bea1302099ab8606800f9ab9a72991b60f8d",
+      "localPath": "benchmarks/data/editor-frameworks/slate-package.json"
+    }
+  ]
+}

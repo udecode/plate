@@ -1,0 +1,82 @@
+{
+  "generatedAt": "2026-05-29T09:08:14.410Z",
+  "name": "benchmark-health",
+  "nextActions": [
+    {
+      "id": "optional-core-transaction-current",
+      "priority": 5,
+      "reason": "Optional active artifact is missing: ../../.tmp/slate-v2/tmp/slate-transaction-benchmark.json",
+      "title": "Decide whether core-transaction-current should stay optional"
+    },
+    {
+      "id": "optional-history-retained-memory",
+      "priority": 5,
+      "reason": "Optional active artifact is missing: ../../.tmp/slate-v2/tmp/slate-history-retained-memory-benchmark.json",
+      "title": "Decide whether history-retained-memory should stay optional"
+    },
+    {
+      "id": "discard-unregistered-artifacts",
+      "priority": 6,
+      "reason": "35 unregistered benchmark JSON files are ignored by the active Evidence Kit flow.",
+      "title": "Delete or ignore historical unregistered artifacts"
+    }
+  ],
+  "node": "v24.14.1",
+  "registry": {
+    "activeArtifacts": 23,
+    "discardedUnregisteredArtifacts": 35,
+    "ignoredUnregisteredArtifacts": [
+      "../../.tmp/slate-v2/tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-defaultAuto-blocks-20-iters-1-ops-3.json",
+      "../../.tmp/slate-v2/tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-defaultAuto-stagedDomPresent-blocks-5000-iters-1-ops-3.json",
+      "../../.tmp/slate-v2/tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-stagedDomPresent-blocks-20-iters-1-ops-3.json",
+      "../../.tmp/slate-v2/tmp/slate-react-huge-document-browser-trace-benchmark.json",
+      "../../.tmp/slate-v2/tmp/slate-react-huge-document-legacy-compare-benchmark-10000-dynamic-group-smoke.json",
+      "../../.tmp/slate-v2/tmp/slate-react-huge-document-legacy-compare-benchmark-10000-group50-coalesced-stress.json",
+      "../../.tmp/slate-v2/tmp/slate-react-huge-document-legacy-compare-benchmark-10000-group50-stress.json",
+      "../../.tmp/slate-v2/tmp/slate-react-huge-document-legacy-compare-benchmark-10000-split-group25-smoke.json",
+      "../../.tmp/slate-v2/tmp/slate-react-huge-document-legacy-compare-benchmark-10000-split-group50-background-delay0-smoke.json",
+      "../../.tmp/slate-v2/tmp/slate-react-huge-document-legacy-compare-benchmark-10000-split-group50-coalesced-no-eager-persist-smoke.json",
+      "../../.tmp/slate-v2/tmp/slate-react-huge-document-legacy-compare-benchmark-10000-split-group50-coalesced-profile-after-revert.json",
+      "../../.tmp/slate-v2/tmp/slate-react-huge-document-legacy-compare-benchmark-10000-split-group50-coalesced-profile.json",
+      "../../.tmp/slate-v2/tmp/slate-react-huge-document-legacy-compare-benchmark-10000-split-group50-coalesced-smoke.json",
+      "../../.tmp/slate-v2/tmp/slate-react-huge-document-legacy-compare-benchmark-10000-split-group50-smoke.json",
+      "../../.tmp/slate-v2/tmp/slate-react-huge-document-legacy-compare-benchmark-5000-median-model-beforeinput-renamed.json",
+      "../../.tmp/slate-v2/tmp/slate-react-huge-document-legacy-compare-benchmark-5000-model-beforeinput-renamed.json",
+      "../../.tmp/slate-v2/tmp/slate-react-huge-document-legacy-compare-benchmark-5000-split-group50-coalesced-median.json",
+      "../../.tmp/slate-v2/tmp/slate-react-huge-document-legacy-compare-benchmark-5000-split-group50-coalesced-smoke.json",
+      "../../.tmp/slate-v2/tmp/slate-react-huge-document-legacy-compare-benchmark-5000-split-selection-g100.json",
+      "../../.tmp/slate-v2/tmp/slate-react-huge-document-legacy-compare-benchmark-5000-split-selection-g250.json"
+    ],
+    "missingOptionalArtifacts": [
+      {
+        "ageDays": null,
+        "command": "bun run bench:core:transaction:local",
+        "cwd": "../../.tmp/slate-v2",
+        "id": "core-transaction-current",
+        "path": "../../.tmp/slate-v2/tmp/slate-transaction-benchmark.json"
+      },
+      {
+        "ageDays": null,
+        "command": "bun run bench:core:history-retained-memory:local",
+        "cwd": "../../.tmp/slate-v2",
+        "id": "history-retained-memory",
+        "path": "../../.tmp/slate-v2/tmp/slate-history-retained-memory-benchmark.json"
+      }
+    ],
+    "missingRequiredArtifacts": [],
+    "optionalArtifacts": 2,
+    "registeredPath": "research/benchmark-registry.json",
+    "requiredArtifacts": 21,
+    "staleActiveArtifacts": []
+  },
+  "result": {
+    "path": "benchmarks/results/rich-text-editors-latest.json",
+    "rowCount": 801,
+    "statusCounts": {
+      "coverage-gap": 130,
+      "ok": 663,
+      "optional-missing-artifact": 2,
+      "unsupported": 6
+    }
+  }
+}
