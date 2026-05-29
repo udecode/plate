@@ -87,7 +87,7 @@ export function DocContent({
         <div className="h-(--top-spacing) shrink-0" />
         <div
           className={cn(
-            'mx-auto flex w-full min-w-0 flex-1 flex-col px-4 py-6 text-neutral-800 lg:py-8 dark:text-neutral-300',
+            'mx-auto flex w-full min-w-0 flex-1 flex-col px-4 py-6 text-foreground lg:py-8 dark:text-foreground',
             isWideContent
               ? 'max-w-[64rem] gap-8 lg:px-0'
               : 'max-w-[56rem] gap-6 md:px-0'

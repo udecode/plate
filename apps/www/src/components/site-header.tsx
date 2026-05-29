@@ -1,5 +1,6 @@
 import Link from 'next/link';
 
+import { GitHubLink } from '@/components/github-link';
 import { ModeSwitcher } from '@/components/mode-switcher';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -11,7 +12,6 @@ import { Icons } from './icons';
 import { LanguagesDropdownMenu } from './languages-dropdown-menu';
 import { Logo } from './logo';
 import { MainNav } from './main-nav';
-import { SetupMCPDialog } from './mcp-dialog';
 import { MobileNav } from './mobile-nav';
 
 export function SiteHeader() {
@@ -35,11 +35,6 @@ export function SiteHeader() {
     },
   ];
   const desktopNavItems = [
-    {
-      href: '/',
-      label: 'Home',
-      labelCn: '首页',
-    },
     ...siteConfig.navItems,
     {
       external: true,
@@ -72,19 +67,12 @@ export function SiteHeader() {
               className="ml-2 hidden lg:block"
             />
 
-            <Button size="icon" variant="ghost" className="size-8 px-0">
-              <Link
-                className="inline"
-                href={siteConfig.links.github}
-                rel="noreferrer"
-                target="_blank"
-              >
-                <Icons.gitHub className="size-4" />
-                <span className="sr-only">GitHub</span>
-              </Link>
-            </Button>
+            <GitHubLink />
+
+            <Separator orientation="vertical" />
 
             <Button
+              asChild
               size="icon"
               variant="ghost"
               className="size-8 px-0 max-md:hidden"
@@ -102,8 +90,6 @@ export function SiteHeader() {
             <Separator orientation="vertical" />
             <LanguagesDropdownMenu />
             <ModeSwitcher />
-
-            <SetupMCPDialog />
           </div>
         </div>
       </div>

@@ -74,7 +74,7 @@ export function ReleaseIndex({
   return (
     <section
       aria-label="Releases"
-      className={cn('not-prose relative my-8 flex flex-col', className)}
+      className={cn('not-prose relative mt-6 flex flex-col', className)}
     >
       <ReleaseSeparator className="top-0" />
 
@@ -102,7 +102,7 @@ function getContentLineCount(content: string) {
 
 function ReleaseRow({ release }: { release: ReleaseIndexMessage }) {
   return (
-    <article className="group relative pt-12 pb-10 first:pt-8">
+    <article className="group relative pt-10 pb-8 first:pt-6">
       <header className="mb-4 flex flex-wrap items-baseline gap-x-4 gap-y-2">
         <a
           className="font-heading font-medium text-2xl text-foreground tracking-tight transition-colors hover:text-foreground/75"
@@ -265,7 +265,10 @@ function MarkdownContent({ content }: { content: string }) {
         ),
         li: ({ className, ...props }) => (
           <li
-            className={cn('text-muted-foreground text-sm leading-7', className)}
+            className={cn(
+              'mt-2 text-muted-foreground text-sm leading-7',
+              className
+            )}
             {...props}
           />
         ),
@@ -335,7 +338,7 @@ function MarkdownContent({ content }: { content: string }) {
         ul: ({ className, ...props }) => (
           <ul
             className={cn(
-              'my-3 space-y-1.5 [&>li]:relative [&>li]:pl-5 [&>li]:before:absolute [&>li]:before:left-0 [&>li]:before:text-muted-foreground [&>li]:before:content-["-"]',
+              'my-4 ml-6 list-disc space-y-1.5',
               className
             )}
             {...props}

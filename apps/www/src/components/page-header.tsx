@@ -6,14 +6,12 @@ function PageHeader({
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <section
-      className={cn(
-        'flex flex-col items-start gap-2 py-8 md:py-10 lg:py-12',
-        className
-      )}
-      {...props}
-    >
-      <div className="container">{children}</div>
+    <section className={cn('border-grid', className)} {...props}>
+      <div className="container-wrapper">
+        <div className="container flex flex-col items-center gap-2 px-6 py-8 text-center md:py-16 lg:py-20 xl:gap-4">
+          {children}
+        </div>
+      </div>
     </section>
   );
 }

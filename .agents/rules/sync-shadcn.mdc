@@ -47,8 +47,11 @@ status JSON edits, or implementation delegation.
   `agent-native` if `.agents/**`, `.claude/**`, `.codex/**`, skills, commands,
   prompts, or user-action tooling are edited.
 - Required evidence types: `command`, `source-audit`, `artifact`, and `N/A`
-  rows. Add `browser` evidence only when an accepted implementation touches
-  visible docs UI.
+  rows. Add `browser` evidence when a planning scope or accepted
+  implementation touches visible docs UI.
+- Visual sync scopes must capture comparable screenshots of the upstream
+  shadcn page and the Plate page before making or closing a visual parity call.
+  Save only screenshots and notes, not broad upstream patch files.
 - `autogoal` owns goal lifecycle, blocked/completion semantics, active-goal
   conflict handling, plan instantiation, output-budget discipline, and
   `check-complete.mjs`.
@@ -117,6 +120,10 @@ Scoped planning rules:
   but filter inventory rows to scope-matching files and patch hunks.
 - Also record an out-of-scope count for upstream rows in the range so it is
   clear the scoped plan cannot advance `lastSyncedCommit` alone.
+- If the scope is visual or route-owned, capture upstream and Plate screenshots
+  for the matching route(s) at the same viewport before finalizing the plan.
+  Use `docs/sync/shadcn/runs/<range>/screenshots/` for committed evidence, and
+  include screenshot paths plus the visible deltas in the plan.
 - Do not update `lastSyncedCommit` from a scoped plan. Scoped sync can add a
   `partialSyncs` entry after accepted implementation, but the baseline advances
   only when the full range is accounted for.
@@ -391,8 +398,9 @@ accepted slice and proceed through `task`.
 
 ## Hard Rules
 
-- Use evidence, not vibes. Read upstream commits, file status, patches, local
-  Plate files, prior decisions, and relevant solution notes.
+- Use evidence, not vibes. Read upstream commits, file status, focused diffs,
+  local Plate files, prior decisions, screenshots for visual surfaces, and
+  relevant solution notes.
 - Track exact commits. Never say "latest shadcn" without recording the target
   SHA.
 - Treat `docs/sync/shadcn/status.json` as the durable baseline. Do not advance
@@ -415,8 +423,12 @@ accepted slice and proceed through `task`.
 - Prefer upstream docs infrastructure unless Plate has a real product or
   registry reason to diverge.
 - Keep output comprehensive. If a diff is too large for the chat, save complete
-  TSV/patch inventories under `docs/sync/shadcn/runs/<range>/` and summarize
-  the artifact paths in the response.
+  TSV inventories under `docs/sync/shadcn/runs/<range>/` and summarize the
+  artifact paths in the response.
+- Do not persist `.patch` files in the repo. Inspect focused diffs on demand
+  with capped `git diff` commands, summarize the relevant hunks in
+  `inventory.md` or `plan.md`, and leave broad upstream patches out of
+  committed sync artifacts.
 
 ## Start Gates
 
@@ -451,7 +463,12 @@ in the instantiated goal plan:
 - Planning-only runs prove no `apps/www` implementation patch was made.
 - Accepted implementation runs include focused verification for the touched
   Plate surface.
-- Browser proof exists only when browser-visible docs UI changed.
+- Browser proof exists when browser-visible docs UI changed, or when a
+  planning scope is visual and needs Plate-vs-shadcn parity evidence.
+- Visual sync scopes include screenshots of both upstream shadcn and Plate
+  pages at matching viewport(s), plus written deltas such as background,
+  spacing, disabled/gray controls, nav/header items, and first-viewport
+  framing.
 - `lastSyncedCommit` advances only after full-row accounting, verification, and
   user acceptance.
 - Planning-mode final handoff asks the user to review the plan and invoke
@@ -576,18 +593,17 @@ name and save a full current upstream file list instead:
 git -C ../shadcn ls-files apps/v4 > "$RUN_DIR/upstream-files.txt"
 ```
 
-Do not stream huge patches into chat. Save focused patches by subsystem:
+Do not stream huge diffs into chat and do not write `.patch` files. Inspect
+focused diffs on demand with capped commands, then summarize only the relevant
+hunks in `inventory.md` or `plan.md`:
 
 ```bash
-git -C ../shadcn diff "$BASE..$TARGET" -- apps/v4/app apps/v4/components apps/v4/lib \
-  > "$RUN_DIR/app-components-lib.patch"
-git -C ../shadcn diff "$BASE..$TARGET" -- apps/v4/registry apps/v4/scripts apps/v4/registry.json \
-  > "$RUN_DIR/registry-scripts.patch"
-git -C ../shadcn diff "$BASE..$TARGET" -- apps/v4/content apps/v4/source.config.ts apps/v4/mdx-components.tsx \
-  > "$RUN_DIR/docs-mdx-source.patch"
+git -C ../shadcn diff --stat "$BASE..$TARGET" -- apps/v4/app apps/v4/components apps/v4/lib
+git -C ../shadcn diff "$BASE..$TARGET" -- apps/v4/app/(app)/(root)/page.tsx | sed -n '1,220p'
 ```
 
-If a patch is too large, split it by path group and record the split.
+If the focused diff is still too large, narrow by path/function/search term and
+record the command plus summary instead of saving the diff body.
 
 ## 3. Classify Upstream Changes
 
@@ -634,7 +650,7 @@ Useful local mapping heuristics:
 | `apps/v4/package.json` | `apps/www/package.json` |
 | `apps/v4/next.config.mjs` | `apps/www/next.config.ts` |
 
-Search Plate by component/function names from upstream patches:
+Search Plate by component/function names from upstream diffs:
 
 ```bash
 rg -n "<ComponentOrFunctionName>|<route-segment>|<registry-key>" apps/www content/docs docs/sync/shadcn
@@ -692,7 +708,7 @@ posture.
 
 | Status | Upstream file | Subsystem | Plate owner | Decision | Evidence |
 | --- | --- | --- | --- | --- | --- |
-| M | `apps/v4/...` | `shell-nav-sidebar` | `apps/www/src/...` | `smart-merge` | patch + rg evidence |
+| M | `apps/v4/...` | `shell-nav-sidebar` | `apps/www/src/...` | `smart-merge` | focused diff summary + rg evidence |
 
 This table must include every row from `upstream-name-status.tsv`.
 
@@ -723,6 +739,12 @@ surfaces, with the local Plate policy evidence.
 List intentional forks, including sidebar accordion/filter UX,
 `/api/registry-source/[name]`, API MDX, CN docs, MCP, Plus hooks, GA, Plate home,
 editor demos, workspace aliases, and package integration tests when touched.
+
+## Visual Evidence
+
+For visual scopes or browser-visible slices, include upstream and Plate
+screenshot paths, viewport, route, and the visible deltas that still need work.
+Do not rely on source diffs alone for visual parity.
 
 ## Smart Merge Details
 
@@ -789,7 +811,7 @@ Class: <adopt-upstream | smart-merge | plate-fork cleanup | delete-plate-residue
 Evidence:
 - Upstream commits: <short commit list or artifact path>
 - Upstream files: <file rows from the plan>
-- Upstream patches: <artifact paths>
+- Upstream diff evidence: <focused command summaries, file rows, or hunk notes>
 - Plate evidence: <local files and solution notes>
 - Explicit exclusions: <v0/create/charts/colors/themes/etc. if relevant>
 
@@ -804,6 +826,8 @@ Acceptance:
 - `pnpm install` only if package, lock, or agent generated output needs it
 - `pnpm lint:fix`
 - browser proof only if the slice changes browser-visible docs UI
+- for visual slices, screenshot both upstream shadcn and Plate pages at the
+  same viewport before calling the slice done
 - do not run `build:registry`
 - update `docs/sync/shadcn/status.json` only if the whole target range is fully
   accounted for; otherwise record a partial sync note and keep

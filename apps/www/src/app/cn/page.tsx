@@ -58,12 +58,16 @@ export const dynamic = 'force-static';
 export default async function CNIndexPage() {
   return (
     <div className="flex flex-1 flex-col">
-      <PageHeader>
+      <PageHeader className="md:**:[.container]:pb-8 lg:**:[.container]:pb-12">
         <AnnouncementButton />
 
-        <PageHeaderHeading>{content.buildYourRichTextEditor}</PageHeaderHeading>
-        <PageHeaderDescription>{content.description}</PageHeaderDescription>
-        <PageActions>
+        <PageHeaderHeading className="max-w-4xl font-semibold text-primary text-balance xl:text-5xl">
+          {content.buildYourRichTextEditor}
+        </PageHeaderHeading>
+        <PageHeaderDescription className="max-w-4xl font-normal text-base sm:text-lg">
+          {content.description}
+        </PageHeaderDescription>
+        <PageActions className="justify-center **:data-[slot=button]:shadow-none">
           <Button asChild size="sm" className="h-[31px] rounded-lg text-xs">
             <Link href="/cn/docs">{content.getStarted}</Link>
           </Button>
@@ -84,13 +88,15 @@ export default async function CNIndexPage() {
         </PageActions>
       </PageHeader>
 
-      <div className="container py-6">
-        <section className="relative">
-          <PlaygroundPreview />
-        </section>
+      <div className="container-wrapper flex-1 pb-6 md:px-0">
+        <div className="container md:px-0 lg:max-w-none">
+          <section className="relative overflow-hidden bg-muted p-2 pb-0 md:p-6 md:pb-0 dark:bg-background">
+            <PlaygroundPreview />
+          </section>
 
-        <div className="relative mt-12 scroll-m-16 pb-48 md:mt-24 lg:mt-36">
-          <PotionLazyBlock />
+          <div className="relative mt-12 scroll-m-16 pb-48 md:mt-24 lg:mt-36">
+            <PotionLazyBlock />
+          </div>
         </div>
       </div>
     </div>

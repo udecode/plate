@@ -57,9 +57,9 @@ Source artifacts:
 - [`upstream-name-status.tsv`](./upstream-name-status.tsv)
 - [`upstream-numstat.tsv`](./upstream-numstat.tsv)
 - [`upstream-commits.txt`](./upstream-commits.txt)
-- [`app-components-lib.patch`](./app-components-lib.patch)
-- [`registry-scripts.patch`](./registry-scripts.patch)
-- [`docs-mdx-source.patch`](./docs-mdx-source.patch)
+- Broad patch artifacts removed; inspect focused upstream diffs on demand with
+  capped `git -C ../shadcn diff ...` commands instead of committing `.patch`
+  files.
 
 ## Added Files
 

@@ -1,0 +1,44 @@
+{
+  "rows": 739,
+  "statusCounts": {
+    "A": 561,
+    "D": 22,
+    "M": 156
+  },
+  "subsystemCounts": {
+    "product-page": 66,
+    "other": 4,
+    "shell-nav-sidebar": 7,
+    "theme-style": 623,
+    "routing": 2,
+    "docs-engine": 2,
+    "deps-config": 2,
+    "assets": 2,
+    "registry-build": 31
+  },
+  "decisionCounts": {
+    "exclude-upstream": 672,
+    "no-op": 62,
+    "smart-merge": 2,
+    "plate-fork": 3
+  },
+  "scopeCounts": {
+    "out-of-scope": 732,
+    "direct-header": 5,
+    "header-adjacent": 2
+  },
+  "directHeaderRows": [
+    "apps/v4/app/layout.tsx",
+    "apps/v4/components/command-menu.tsx",
+    "apps/v4/components/mobile-nav.tsx",
+    "apps/v4/components/site-header.tsx",
+    "apps/v4/lib/config.ts"
+  ],
+  "headerAdjacentRows": [
+    "apps/v4/components/announcement.tsx",
+    "apps/v4/components/docs-sidebar.tsx"
+  ],
+  "runDir": "docs/sync/shadcn/runs/2026-05-28-4a4dc8e-to-360e8a1-header",
+  "plan": "docs/sync/shadcn/runs/2026-05-28-4a4dc8e-to-360e8a1-header/plan.md",
+  "inventory": "docs/sync/shadcn/runs/2026-05-28-4a4dc8e-to-360e8a1-header/inventory.md"
+}

@@ -52,7 +52,8 @@ Verification surface:
 - `../shadcn` git commands for fetch/pull, base/target resolution, ancestry,
   upstream commit list, and `apps/v4` file status.
 - Run artifacts: `upstream-name-status.tsv`, `upstream-numstat.tsv`,
-  `upstream-commits.txt`, focused patch files, `inventory.md`, and `plan.md`.
+  `upstream-commits.txt`, `inventory.md`, `plan.md`, and screenshots for
+  visual scopes.
 - Source audits in `apps/www`, `content/docs`, `docs/sync/shadcn`, and relevant
   `docs/solutions/**` notes.
 - JSON parse and commit-semantics check for `docs/sync/shadcn/status.json`.
@@ -63,6 +64,8 @@ Constraints:
 - Do not run `build:registry`.
 - Do not edit generated registry output, template output, or generated skill
   mirrors by hand.
+- Do not write `.patch` files into sync run directories. Inspect focused diffs
+  on demand and summarize the relevant hunks in Markdown.
 - Do not patch `apps/www` during planning-only runs.
 - Do not advance `lastSyncedCommit` until every upstream row through the target
   is accounted for and the user accepts the final accounting.
@@ -82,12 +85,13 @@ Boundaries:
 
 Output budget strategy:
 - Do not stream broad upstream diffs or full generated registry output into
-  chat. Save complete TSVs and patches under the run directory.
+  chat. Save complete TSVs under the run directory. Do not save `.patch`
+  artifacts.
 - Use counts and focused slices first: `git diff --name-status`,
   `git diff --numstat`, `git log --oneline`, `wc -l`, and narrow `sed`/`rg`
   reads.
 - Cap command output for source reads. If output is still too large, write an
-  artifact and inspect exact ranges.
+  artifact summary and inspect exact ranges.
 
 Blocked condition:
 - Block only when the upstream clone/ref state is invalid, the target range
@@ -145,7 +149,10 @@ Work Checklist:
 - [ ] Run directory created under `docs/sync/shadcn/runs/`.
 - [ ] Complete upstream inventories saved: `upstream-name-status.tsv`,
       `upstream-numstat.tsv`, and `upstream-commits.txt`.
-- [ ] Focused patches saved or explicitly split/skipped with reason.
+- [ ] Focused diffs inspected on demand and summarized; no `.patch` files were
+      written into the repo.
+- [ ] For visual scopes, upstream shadcn and Plate screenshots were captured at
+      matching viewport(s), with visible deltas recorded in the plan.
 - [ ] Every changed upstream `apps/v4` row is classified in `inventory.md` with
       status, path, subsystem, Plate owner, decision, and evidence.
 - [ ] Decision counts reconcile to the upstream TSV row count.
@@ -172,9 +179,10 @@ Completion Gates:
 | Decision accounting | pending | Verify decision counts cover every upstream row and no `needs-question` row is hidden | pending |
 | Status JSON parse and semantics | pending | Parse `docs/sync/shadcn/status.json`; verify planned/synced commit semantics | pending |
 | Source-backed Plate mapping | pending | Record local `rg`/file evidence for every actionable adoption, fork, exclusion, or question group | pending |
+| Visual comparison screenshots | pending | For visual scopes, capture upstream shadcn and Plate screenshots at matching viewport(s), then record visible deltas; otherwise N/A | pending |
 | Planning-only no implementation edits | pending | Verify no `apps/www` implementation patch was made, or record accepted implementation scope | pending |
 | Accepted implementation verification | pending | If a slice was accepted, run its focused typecheck/test/lint/browser/source proof; otherwise N/A | pending |
-| Browser surface changed | pending | Capture Browser Use proof when accepted implementation touches visible docs UI; otherwise N/A | pending |
+| Browser surface changed | pending | Capture browser proof when accepted implementation touches visible docs UI or when visual planning needs parity evidence; otherwise N/A | pending |
 | Package manifests, lockfile, or install graph changed | pending | Run `pnpm install` and relevant package checks when touched; otherwise N/A | pending |
 | Agent rules or skills changed | pending | Run `pnpm install` and verify generated skill sync when touched; otherwise N/A | pending |
 | CI-controlled generated output | pending | Verify no generated registry/template output was manually edited, or record intentional owner | pending |

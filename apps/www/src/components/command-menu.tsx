@@ -296,18 +296,15 @@ export function CommandMenu({
       <Button
         variant="outline"
         className={cn(
-          'relative flex h-8 w-full items-center justify-start rounded-[0.5rem] bg-muted/50 font-normal text-muted-foreground text-sm shadow-none sm:pr-12 md:w-40 lg:w-56 xl:w-64'
+          'relative h-8 w-full justify-start rounded-lg border-none bg-muted pl-3 text-foreground shadow-none transition-colors hover:bg-muted/50 md:w-48 lg:w-40 xl:w-64 dark:bg-card'
         )}
         onClick={() => setOpen(true)}
         {...props}
       >
-        <span className="hidden lg:inline-flex">
+        <span className="hidden xl:inline-flex">
           {content.searchDocumentation}
         </span>
-        <span className="inline-flex lg:hidden">{content.searchShort}</span>
-        <kbd className="pointer-events-none absolute top-[0.3rem] right-[0.3rem] hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-medium font-mono text-[10px] opacity-100 sm:flex">
-          <span className="text-xs">⌘</span>K
-        </kbd>
+        <span className="inline-flex xl:hidden">{content.searchShort}</span>
       </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>
