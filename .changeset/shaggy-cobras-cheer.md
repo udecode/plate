@@ -10,3 +10,4 @@ Improve large-document mount and render performance across core element, mark, a
 - Cut duplicate-id paste cost from `20.06 ms` to `13.79 ms` (`31.2%`, `1.45x` faster)
 - Cut `10k` code-only mount time from `1500.30 ms` to `496.47 ms` (`66.9%`, `3.02x` faster) and shrink the code-only tax over core from `+280.75 ms` to `+27.89 ms` (`90.1%` smaller)
 - Bring the current `10k` core and basic large-document mount lanes to Slate parity or better (`core -3.5%`, `core + nodeId -1.6%`, `basic -1.2%`)
+- Preserve Slate children for void `render.as` tags and Slate attributes on simple leaf/text render paths

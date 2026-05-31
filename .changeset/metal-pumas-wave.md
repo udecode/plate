@@ -2,5 +2,4 @@
 "@platejs/core": patch
 ---
 
-Keep `normalizeInitialValue` as a deprecated alias for
-`transformInitialValue` and `nodeId.initialValueIds`
+Add `transformInitialValue` and `nodeId.initialValueIds` while keeping `normalizeInitialValue` as a deprecated alias

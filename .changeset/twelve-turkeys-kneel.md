@@ -1,5 +1,5 @@
 ---
-"@platejs/list": patch
+"@platejs/table": patch
 ---
 
-Add an opt-in unordered list fast path for benchmark-style surfaces without changing default native list rendering
+Speed up unmerged table range selection while preserving merged-cell handling
