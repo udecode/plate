@@ -1,6 +1,6 @@
 ---
 description: Fix Slate v2 bugs in one pass with reproduction, behavior tests, architecture/DX/perf pressure, proactive rearchitecture when the patch is not the cleanest long-term shape, and final autoreview.
-argument-hint: <Slate v2 bug report, route, issue, or regression cluster>
+argument-hint: '[repair <expectation> | <Slate v2 bug report, route, issue, or regression cluster>]'
 disable-model-invocation: true
 name: slate-patch
 metadata:
@@ -11,6 +11,9 @@ metadata:
 # Slate Patch
 
 Handle $ARGUMENTS.
+
+If the arguments start with `repair <expectation>`, run Repair Command. Otherwise
+run the normal Slate Patch workflow.
 
 Use this for Slate v2 bug fixes where the agent should fix the bug now, then
 challenge its own patch with Slate Plan-level architecture pressure before
@@ -30,12 +33,15 @@ the right long-term shape, verify, autoreview, hand off. It does not mean
   schema, normalization, clipboard, IME, or browser event ownership.
 - A prior local patch fixed the symptom but smells like example-only glue,
   caller-specific branching, or test appeasement.
+- The user invokes `slate-patch repair <expectation>` because future
+  `slate-patch` runs missed a recurring proof, workflow, or handoff standard.
 
 ## Do Not Use When
 
 - The user asks only for an architecture plan or proposal. Use `slate-plan`.
 - The user asks for a normal diff review. Use `autoreview`.
 - The target is not Slate v2 or `.tmp/slate-v2`.
+- The repair belongs to every goal-backed workflow. Use `autogoal repair`.
 - The only honest next step is a multi-pass public API RFC with user review.
   Say that and route to `slate-plan`.
 
@@ -62,10 +68,54 @@ the right long-term shape, verify, autoreview, hand off. It does not mean
 - When multiple bugs in the same category appear, assume the subsystem is not
   robust enough. Search adjacent owners and add class-level coverage before
   calling the slice done.
+- For selection/navigation bugs, use the generic editor navigation matrix. Do
+  not scope coverage to only content roots, hidden blocks, voids, synced blocks,
+  or the one route that exposed the failure.
 - Do not create issue-ledger or PR-reference ceremony unless the prompt is
   issue-backed or explicitly asks for issue accounting.
 - Final checklist item is always `autoreview` for non-trivial implementation
   changes.
+
+## Repair Command
+
+Trigger when `$ARGUMENTS` starts with:
+
+```txt
+repair <expectation>
+```
+
+Repair Command updates this workflow so future `slate-patch` runs do the right
+thing by default. It is for missed recurring behavior in the skill, not for
+fixing Slate runtime bugs.
+
+Use it for misses like:
+
+- future patches should include a recurring behavior matrix;
+- the skill forgot a required proof or handoff field;
+- the workflow reviewed the wrong checkout;
+- a recurring class of editor bugs was treated as a one-off local patch.
+
+Do not use it for:
+
+- runtime/product bugs in `.tmp/slate-v2`;
+- one-off wording preferences;
+- unrelated goal lifecycle misses that belong to `autogoal repair`;
+- hand-editing generated `.agents/skills/*/SKILL.md`.
+
+Repair workflow:
+
+1. Restate the missed expectation in one sentence.
+2. Patch the source owner, normally `.agents/rules/slate-patch.mdc`.
+3. If the expectation is too large for the skill body, add or update a small
+   reference doc and link it from the skill. For selection/navigation coverage,
+   use `docs/slate-v2/selection-navigation-coverage.md`.
+4. After changing `.agents/rules/**`, run `pnpm install` to regenerate
+   `.agents/skills/**`.
+5. Prove the repair with:
+   - `rg` for the new rule in `.agents/rules/slate-patch.mdc`;
+   - `rg` for the regenerated text in `.agents/skills/slate-patch/SKILL.md`;
+   - the relevant docs audit or syntax check when docs/scripts changed.
+6. Final response says: expectation, repaired owner, sync command, and proof.
 
 ## Goal Setup
 
@@ -133,6 +183,39 @@ Add or update the smallest behavior test that fails for the current bug:
 
 The test should assert the user-visible invariant and the model invariant when
 both matter.
+
+#### Editor Selection Navigation Coverage
+
+When the bug class touches selection, keyboard navigation, mouse selection,
+focus handoff, history focus, DOM coverage, hidden DOM, multi-root, content
+root, editable void, synced root, clipboard after selection, delete after
+selection, or insert break after selection, pick a relevant slice from
+`docs/slate-v2/selection-navigation-coverage.md` before writing the test.
+
+The red test must name:
+
+- command family: arrow, shift-arrow, option-arrow, shift-option-arrow,
+  command-arrow, shift-command-arrow, mouse drag, delete, backspace, insert
+  break, copy, undo, or redo;
+- direction: forward, backward, up, down, into boundary, out of boundary, or
+  across many boundaries;
+- topology: plain blocks, hidden DOM, DOM coverage boundary, multi-root,
+  content root, editable void, synced root, virtualized DOM, or mixed topology;
+- starting state: collapsed, expanded forward, expanded backward, edge of
+  block, multi-line, after focus handoff, or after history restore;
+- assertions: exact model selection/value plus DOM selection/focus/chrome
+  sanity when browser-visible behavior is involved.
+
+Do not claim "fully tested selection/navigation" unless the proof covers the
+relevant command x direction x topology x starting-state rows. If the bug only
+needs a narrower slice, record the intentionally skipped rows and why.
+
+For `selectionPolicy: 'materialize'` bugs, include the materialize-specific
+coverage rows from `docs/slate-v2/selection-navigation-coverage.md`: first
+vertical Shift+Arrow entry must open hidden DOM, and the next plain vertical
+Shift+Arrow after mount must not remain model-owned unless it enters another
+unmounted materialize boundary. Include a mid-line caret on the last rendered
+line before hidden content, not only block-edge positions.
 
 ### 4. Fix The Owner
 
@@ -273,6 +356,8 @@ Keep it short. Include:
 - root cause;
 - architectural decision and whether anything was reworked after pressure
   review;
+- selection/navigation matrix slice covered or intentionally skipped when
+  applicable;
 - tests/proof run with cwd when not obvious;
 - Evidence Kit result when applicable: refreshed, candidate benchmark needed,
   or N/A with reason;

@@ -38,6 +38,7 @@
     "dev:webrtc": "PORT=4444 node ./node_modules/y-webrtc/bin/server.js",
     "devt": "pnpm --filter www devt",
     "docs:build": "cd docs && pnpm install && pnpm build",
+    "docs:slate-v2:audit": "node tooling/scripts/check-slate-v2-docs.mjs",
     "docs:start": "cd docs && pnpm install && pnpm start",
     "e2e": "pnpm exec playwright test --config tooling/config/playwright.config.ts",
     "g:brl": "turbo --filter \"./packages/**\" brl",

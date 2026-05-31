@@ -239,8 +239,9 @@ export type TransformInitialValue<C extends AnyPluginConfig = PluginConfig> = (
 ) => Value;
 
 /** @deprecated Use {@link TransformInitialValue} instead. */
-export type NormalizeInitialValue<C extends AnyPluginConfig = PluginConfig> =
-  TransformInitialValue<C>;
+export type NormalizeInitialValue<C extends AnyPluginConfig = PluginConfig> = (
+  ctx: PlatePluginContext<C> & { value: Value }
+) => Value | void;
 
 // -----------------------------------------------------------------------------
 

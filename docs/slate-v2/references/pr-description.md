@@ -311,8 +311,10 @@ Accepted current shape:
   raw Slate TableKit, and AST table splitting stay out of the beta target.
   `pageView` groups page display settings, virtualized `domStrategy` drives
   internal page/spread mounting, `measurementProfile` is snapshot metadata, and
-  `pageBreaks` remains opt-in strict-fidelity metadata. This planning target
-  adds no fixed/improved issue claim.
+  `pageBreaks` remains opt-in strict-fidelity metadata. Apps or export
+  pipelines own authoritative writer policy for collaboration/export; raw Slate
+  owns only the protocol and accepted/stale status. This planning target adds no
+  fixed/improved issue claim.
 
 Why it belongs in the PR:
 
@@ -683,9 +685,10 @@ Accepted current shape:
 - React reads from editor snapshots and commit-local dirty data.
 - Selector hooks expose editor-typed operations and commit facts, including
   `EditorSelectorOptions<TEditor>` for `useEditorSelector`.
-- `decorate` stays the simple transient range API.
-- `decorationSources` and `createDecorationSource` are the scalable path for
-  external or high-churn overlays.
+- `decorate` is not the primary overlay API. The compatibility adapter stays
+  narrow.
+- `decorationSources` and `createDecorationSource` are the primary scalable
+  path for external or high-churn overlays.
 - Annotation stores and widget stores are durable overlay substrates, not
   product comment workflows.
 - Projection stores, projection selectors, and projection metrics are advanced

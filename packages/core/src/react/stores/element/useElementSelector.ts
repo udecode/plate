@@ -20,7 +20,7 @@ export const useElementSelector = <T>(
   const [memoizedSelector, memoizedEqualityFn] = React.useMemo(
     () => [selector, equalityFn],
     // eslint-disable-next-line react-hooks/exhaustive-deps -- Caller-provided deps intentionally control selector/equality memoization here.
-    deps.length > 0 ? deps : [selector, equalityFn]
+    deps
   );
   const cacheRef = React.useRef<{
     entry: NodeEntry<any> | null;

@@ -1,9 +1,7 @@
 {
   "name": "slate-packages",
   "private": true,
-  "workspaces": [
-    "packages/*"
-  ],
+  "workspaces": ["packages/*"],
   "scripts": {
     "build": "bun build:packages && bun build:next",
     "build:next": "cd ./site && next build",

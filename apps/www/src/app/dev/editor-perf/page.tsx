@@ -75,13 +75,6 @@ import {
 import { createEditor, Editor, Transforms } from 'slate';
 
 import { Button } from '@/components/ui/button';
-import {
-  HUGE_DOCUMENT_DEFAULT_BENCHMARK_CONFIG,
-  getInitialHugeDocumentBenchmarkConfig,
-  HUGE_DOCUMENT_BLOCK_OPTIONS,
-  HUGE_DOCUMENT_CHUNK_SIZE_OPTIONS,
-  writeHugeDocumentBenchmarkSearchParams,
-} from '@/lib/huge-document-config';
 import { cn } from '@/lib/utils';
 
 import {
@@ -109,6 +102,128 @@ type BenchmarkConfig = {
   contentVisibility: 'chunk' | 'element' | 'none';
   scenarioWorkload: ScenarioWorkloadId;
 };
+
+const DEFAULT_HUGE_DOCUMENT_CHUNK_SIZE = 1000;
+const HUGE_DOCUMENT_BENCHMARK_SCENARIO_WORKLOAD =
+  'huge-mixed-block' satisfies ScenarioWorkloadId;
+
+const HUGE_DOCUMENT_BLOCK_OPTIONS = [
+  2, 1000, 2500, 5000, 7500, 10_000, 15_000, 20_000, 25_000, 30_000, 40_000,
+  50_000, 100_000, 200_000,
+];
+
+const HUGE_DOCUMENT_CHUNK_SIZE_OPTIONS = [3, 10, 100, 1000];
+
+const HUGE_DOCUMENT_DEFAULT_BENCHMARK_CONFIG: BenchmarkConfig = {
+  blocks: 5000,
+  chunking: true,
+  chunkSize: DEFAULT_HUGE_DOCUMENT_CHUNK_SIZE,
+  contentVisibility: 'chunk',
+  scenarioWorkload: HUGE_DOCUMENT_BENCHMARK_SCENARIO_WORKLOAD,
+};
+
+function getDocumentSearchParams() {
+  if (typeof document === 'undefined') return null;
+
+  return new URLSearchParams(document.location.search);
+}
+
+function parseNumber({
+  defaultValue,
+  key,
+  searchParams,
+}: {
+  defaultValue: number;
+  key: string;
+  searchParams: URLSearchParams | null;
+}) {
+  return Number.parseInt(searchParams?.get(key) ?? '', 10) || defaultValue;
+}
+
+function parseBoolean({
+  defaultValue,
+  key,
+  searchParams,
+}: {
+  defaultValue: boolean;
+  key: string;
+  searchParams: URLSearchParams | null;
+}) {
+  const value = searchParams?.get(key);
+
+  if (value) return value === 'true';
+
+  return defaultValue;
+}
+
+function parseEnum<T extends string>({
+  defaultValue,
+  key,
+  options,
+  searchParams,
+}: {
+  defaultValue: T;
+  key: string;
+  options: readonly T[];
+  searchParams: URLSearchParams | null;
+}) {
+  const value = searchParams?.get(key) as T | null | undefined;
+
+  if (value && options.includes(value)) return value;
+
+  return defaultValue;
+}
+
+function replaceSearchParams(searchParams: URLSearchParams) {
+  history.replaceState({}, '', `?${searchParams.toString()}`);
+}
+
+function getInitialHugeDocumentBenchmarkConfig(): BenchmarkConfig {
+  const searchParams = getDocumentSearchParams();
+
+  return {
+    blocks: parseNumber({
+      defaultValue: HUGE_DOCUMENT_DEFAULT_BENCHMARK_CONFIG.blocks,
+      key: 'blocks',
+      searchParams,
+    }),
+    chunking: parseBoolean({
+      defaultValue: HUGE_DOCUMENT_DEFAULT_BENCHMARK_CONFIG.chunking,
+      key: 'chunking',
+      searchParams,
+    }),
+    chunkSize: parseNumber({
+      defaultValue: HUGE_DOCUMENT_DEFAULT_BENCHMARK_CONFIG.chunkSize,
+      key: 'chunk_size',
+      searchParams,
+    }),
+    contentVisibility: parseEnum({
+      defaultValue: HUGE_DOCUMENT_DEFAULT_BENCHMARK_CONFIG.contentVisibility,
+      key: 'content_visibility',
+      options: ['none', 'element', 'chunk'],
+      searchParams,
+    }),
+    scenarioWorkload: parseEnum({
+      defaultValue: HUGE_DOCUMENT_DEFAULT_BENCHMARK_CONFIG.scenarioWorkload,
+      key: 'scenario_workload',
+      options: SCENARIO_WORKLOADS.map(({ id }) => id),
+      searchParams,
+    }),
+  };
+}
+
+function writeHugeDocumentBenchmarkSearchParams(config: BenchmarkConfig) {
+  const searchParams = getDocumentSearchParams();
+
+  if (!searchParams) return;
+
+  searchParams.set('blocks', config.blocks.toString());
+  searchParams.set('chunking', config.chunking ? 'true' : 'false');
+  searchParams.set('chunk_size', config.chunkSize.toString());
+  searchParams.set('content_visibility', config.contentVisibility);
+  searchParams.set('scenario_workload', config.scenarioWorkload);
+  replaceSearchParams(searchParams);
+}
 
 type RunnerBenchmarkName =
   | 'construction'
@@ -228,8 +343,8 @@ type NodeIdFragmentCase = {
 };
 
 type NodeIdFragmentMetrics = {
-  duplicateLookupCalls: BenchmarkResult | null;
-  duplicateLookupTime: BenchmarkResult | null;
+  duplicateScanCalls: BenchmarkResult | null;
+  duplicateScanTime: BenchmarkResult | null;
   fragmentBlocks: number | null;
   idsAssigned: BenchmarkResult | null;
   insertFragment: BenchmarkResult | null;
@@ -1066,9 +1181,9 @@ const CORE_MOUNT_CASES: CoreMountCase[] = [
   },
   {
     description:
-      'Static Editable baseline plus a local clone of the current MountedBlockElement branch. This isolates the exact useEditorMounted() gate that the seeded nodeId fast path now pays.',
+      'Static Editable baseline plus the old mounted block-id branch. This isolates the useEditorMounted() gate without putting it back on the seeded nodeId fast path.',
     id: 'editable-element-benchmark-mounted-block-element',
-    label: 'Editable + bench mounted block-id',
+    label: 'Editable + bench mounted block-id old',
   },
   {
     description:
@@ -1611,18 +1726,29 @@ function getScenarioPlugins(plugins: BenchmarkPlugins): any[] {
 
 function getNodeIdOption({
   counter,
+  duplicateScanStats,
   mode,
 }: {
   counter?: { count: number };
+  duplicateScanStats?: { count: number; time: number };
   mode?: boolean | DissectionCase['nodeId'];
 }): any {
   if (mode === false) return false;
 
-  const baseOptions = counter
-    ? {
-        idCreator: createBenchIdFactory(counter),
-      }
-    : undefined;
+  const baseOptions =
+    counter || duplicateScanStats
+      ? {
+          ...(counter ? { idCreator: createBenchIdFactory(counter) } : {}),
+          ...(duplicateScanStats
+            ? {
+                onDuplicateIdScan: ({ duration }: { duration: number }) => {
+                  duplicateScanStats.count += 1;
+                  duplicateScanStats.time += duration;
+                },
+              }
+            : {}),
+        }
+      : undefined;
 
   if (mode === 'skip-initial-normalize') {
     return {
@@ -4635,7 +4761,7 @@ function DissectionCard({
           </span>
         </div>
         <div className="flex justify-between">
-          <span className="text-muted-foreground">setNodes calls</span>
+          <span className="text-muted-foreground">node-id write calls</span>
           <span>
             {metrics.setNodesCalls
               ? metrics.setNodesCalls.mean.toFixed(0)
@@ -4643,7 +4769,7 @@ function DissectionCard({
           </span>
         </div>
         <div className="flex justify-between">
-          <span className="text-muted-foreground">setNodes time</span>
+          <span className="text-muted-foreground">node-id write time</span>
           <span>
             {metrics.setNodesTime
               ? `${metrics.setNodesTime.mean.toFixed(2)} ms`
@@ -4691,18 +4817,18 @@ function NodeIdFragmentCard({
           </span>
         </div>
         <div className="flex justify-between">
-          <span className="text-muted-foreground">duplicate lookups</span>
+          <span className="text-muted-foreground">duplicate scans</span>
           <span>
-            {metrics.duplicateLookupCalls
-              ? metrics.duplicateLookupCalls.mean.toFixed(0)
+            {metrics.duplicateScanCalls
+              ? metrics.duplicateScanCalls.mean.toFixed(0)
               : 'No data'}
           </span>
         </div>
         <div className="flex justify-between">
-          <span className="text-muted-foreground">duplicate lookup time</span>
+          <span className="text-muted-foreground">duplicate scan time</span>
           <span>
-            {metrics.duplicateLookupTime
-              ? `${metrics.duplicateLookupTime.mean.toFixed(2)} ms`
+            {metrics.duplicateScanTime
+              ? `${metrics.duplicateScanTime.mean.toFixed(2)} ms`
               : 'No data'}
           </span>
         </div>
@@ -4805,8 +4931,8 @@ export default function EditorPerfPage() {
         NODE_ID_FRAGMENT_CASES.map((caseItem) => [
           caseItem.id,
           {
-            duplicateLookupCalls: null,
-            duplicateLookupTime: null,
+            duplicateScanCalls: null,
+            duplicateScanTime: null,
             fragmentBlocks: null,
             idsAssigned: null,
             insertFragment: null,
@@ -5487,6 +5613,8 @@ export default function EditorPerfPage() {
           const originalNode = initEditor.api.node.bind(initEditor.api);
           const originalSetNodes: (...args: any[]) => any =
             initEditor.tf.setNodes.bind(initEditor.tf);
+          const originalSetNodesBatch: (...args: any[]) => any =
+            initEditor.tf.setNodesBatch.bind(initEditor.tf);
           const wrappedSetNodes = ((...args: any[]) => {
             const setNodesStart = performance.now();
 
@@ -5497,6 +5625,16 @@ export default function EditorPerfPage() {
               initSetNodesStats.time += performance.now() - setNodesStart;
             }
           }) as typeof initEditor.tf.setNodes;
+          const wrappedSetNodesBatch = ((...args: any[]) => {
+            const setNodesStart = performance.now();
+
+            try {
+              return originalSetNodesBatch(...args);
+            } finally {
+              initSetNodesStats.count += 1;
+              initSetNodesStats.time += performance.now() - setNodesStart;
+            }
+          }) as typeof initEditor.tf.setNodesBatch;
 
           initEditor.api.node = ((...args: Parameters<typeof originalNode>) => {
             const nodeLookupStart = performance.now();
@@ -5509,7 +5647,9 @@ export default function EditorPerfPage() {
             }
           }) as typeof initEditor.api.node;
           initEditor.tf.setNodes = wrappedSetNodes;
+          initEditor.tf.setNodesBatch = wrappedSetNodesBatch;
           initEditor.transforms.setNodes = wrappedSetNodes;
+          initEditor.transforms.setNodesBatch = wrappedSetNodesBatch;
 
           const initStart = performance.now();
 
@@ -5601,8 +5741,8 @@ export default function EditorPerfPage() {
 
     try {
       for (const caseItem of NODE_ID_FRAGMENT_CASES) {
-        const duplicateLookupCallSamples: number[] = [];
-        const duplicateLookupTimeSamples: number[] = [];
+        const duplicateScanCallSamples: number[] = [];
+        const duplicateScanTimeSamples: number[] = [];
         const idsAssignedSamples: number[] = [];
         const insertFragmentSamples: number[] = [];
         const insertNodeOpSamples: number[] = [];
@@ -5615,29 +5755,19 @@ export default function EditorPerfPage() {
             caseItem,
             config.blocks
           );
+          const duplicateScanStats = { count: 0, time: 0 };
           const editor = createPlateEditor({
             chunking: config.chunking ? { chunkSize: config.chunkSize } : false,
             nodeId: getNodeIdOption({
               counter: idCounter,
+              duplicateScanStats,
               mode: caseItem.nodeId,
             }) as any,
             value,
           }) as any;
-          const duplicateLookupStats = { count: 0, time: 0 };
           const insertNodeStats = { count: 0 };
           const idCountBeforeInsert = idCounter.count;
-          const originalSome = editor.api.some.bind(editor.api);
           const originalApply = editor.apply.bind(editor);
-
-          editor.api.some = ((...args: any[]) => {
-            const start = performance.now();
-            const result = originalSome(...args);
-
-            duplicateLookupStats.count += 1;
-            duplicateLookupStats.time += performance.now() - start;
-
-            return result;
-          }) as typeof editor.api.some;
 
           editor.apply = ((operation: any) => {
             if (operation.type === 'insert_node') {
@@ -5653,13 +5783,12 @@ export default function EditorPerfPage() {
           editor.tf.insertFragment(fragment as any);
           const insertDuration = performance.now() - insertStart;
 
-          editor.api.some = originalSome;
           editor.apply = originalApply;
 
           if (!isWarmup) {
             fragmentBlocks = fragment.length;
-            duplicateLookupCallSamples.push(duplicateLookupStats.count);
-            duplicateLookupTimeSamples.push(duplicateLookupStats.time);
+            duplicateScanCallSamples.push(duplicateScanStats.count);
+            duplicateScanTimeSamples.push(duplicateScanStats.time);
             idsAssignedSamples.push(idCounter.count - idCountBeforeInsert);
             insertFragmentSamples.push(insertDuration);
             insertNodeOpSamples.push(insertNodeStats.count);
@@ -5673,8 +5802,8 @@ export default function EditorPerfPage() {
         setNodeIdFragmentResults((current) => ({
           ...current,
           [caseItem.id]: {
-            duplicateLookupCalls: calculateStats(duplicateLookupCallSamples),
-            duplicateLookupTime: calculateStats(duplicateLookupTimeSamples),
+            duplicateScanCalls: calculateStats(duplicateScanCallSamples),
+            duplicateScanTime: calculateStats(duplicateScanTimeSamples),
             fragmentBlocks,
             idsAssigned: calculateStats(idsAssignedSamples),
             insertFragment: calculateStats(insertFragmentSamples),

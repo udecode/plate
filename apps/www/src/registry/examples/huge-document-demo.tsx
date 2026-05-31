@@ -28,16 +28,6 @@ import { createEditor as slateCreateEditor } from 'slate';
 
 import { createHugeDocumentValue } from '@/registry/examples/values/huge-document-value';
 import { Button } from '@/components/ui/button';
-import {
-  createHugeDocumentBenchmarkHref,
-  getInitialHugeDocumentConfig,
-  getMountedEngines,
-  HUGE_DOCUMENT_BLOCK_OPTIONS,
-  HUGE_DOCUMENT_CHUNK_SIZE_OPTIONS,
-  type HugeDocumentConfig as Config,
-  type HugeDocumentEngineKind as EngineKind,
-  writeHugeDocumentSearchParams,
-} from '@/lib/huge-document-config';
 
 const SUPPORTS_EVENT_TIMING =
   typeof window !== 'undefined' && 'PerformanceEventTiming' in window;
@@ -59,6 +49,220 @@ const defaultStatistics: EngineStatistics = {
   lastKeyPressDuration: null,
   lastLongAnimationFrameDuration: null,
 };
+
+const DEFAULT_HUGE_DOCUMENT_BLOCKS = 10_000;
+const DEFAULT_HUGE_DOCUMENT_CHUNK_SIZE = 1000;
+const HUGE_DOCUMENT_BENCHMARK_SCENARIO_WORKLOAD = 'huge-mixed-block';
+
+const HUGE_DOCUMENT_BLOCK_OPTIONS = [
+  2, 1000, 2500, 5000, 7500, 10_000, 15_000, 20_000, 25_000, 30_000, 40_000,
+  50_000, 100_000, 200_000,
+];
+
+const HUGE_DOCUMENT_CHUNK_SIZE_OPTIONS = [3, 10, 100, 1000];
+
+type EngineKind = 'plate' | 'slate';
+type ContentVisibilityMode = 'none' | 'element' | 'chunk';
+type MountedEngines = 'both' | EngineKind;
+
+type Config = {
+  blocks: number;
+  chunking: boolean;
+  chunkSize: number;
+  chunkDivs: boolean;
+  chunkOutlines: boolean;
+  contentVisibilityMode: ContentVisibilityMode;
+  mountedEngines: MountedEngines;
+  showSelectedHeadings: boolean;
+  strictMode: boolean;
+};
+
+type BenchmarkConfig = {
+  blocks: number;
+  chunking: boolean;
+  chunkSize: number;
+  contentVisibility: ContentVisibilityMode;
+  scenarioWorkload: string;
+};
+
+const DEFAULT_CONFIG: Config = {
+  blocks: DEFAULT_HUGE_DOCUMENT_BLOCKS,
+  chunking: true,
+  chunkSize: DEFAULT_HUGE_DOCUMENT_CHUNK_SIZE,
+  chunkDivs: true,
+  chunkOutlines: false,
+  contentVisibilityMode: 'chunk',
+  mountedEngines: 'both',
+  showSelectedHeadings: false,
+  strictMode: false,
+};
+
+function getDocumentSearchParams() {
+  if (typeof document === 'undefined') return null;
+
+  return new URLSearchParams(document.location.search);
+}
+
+function parseNumber({
+  defaultValue,
+  key,
+  searchParams,
+}: {
+  defaultValue: number;
+  key: string;
+  searchParams: URLSearchParams | null;
+}) {
+  return Number.parseInt(searchParams?.get(key) ?? '', 10) || defaultValue;
+}
+
+function parseBoolean({
+  defaultValue,
+  key,
+  searchParams,
+}: {
+  defaultValue: boolean;
+  key: string;
+  searchParams: URLSearchParams | null;
+}) {
+  const value = searchParams?.get(key);
+
+  if (value) return value === 'true';
+
+  return defaultValue;
+}
+
+function parseEnum<T extends string>({
+  defaultValue,
+  key,
+  options,
+  searchParams,
+}: {
+  defaultValue: T;
+  key: string;
+  options: readonly T[];
+  searchParams: URLSearchParams | null;
+}) {
+  const value = searchParams?.get(key) as T | null | undefined;
+
+  if (value && options.includes(value)) return value;
+
+  return defaultValue;
+}
+
+function replaceSearchParams(searchParams: URLSearchParams) {
+  history.replaceState({}, '', `?${searchParams.toString()}`);
+}
+
+function getInitialHugeDocumentConfig() {
+  const searchParams = getDocumentSearchParams();
+
+  return {
+    blocks: parseNumber({
+      defaultValue: DEFAULT_CONFIG.blocks,
+      key: 'blocks',
+      searchParams,
+    }),
+    chunking: parseBoolean({
+      defaultValue: DEFAULT_CONFIG.chunking,
+      key: 'chunking',
+      searchParams,
+    }),
+    chunkSize: parseNumber({
+      defaultValue: DEFAULT_CONFIG.chunkSize,
+      key: 'chunk_size',
+      searchParams,
+    }),
+    chunkDivs: parseBoolean({
+      defaultValue: DEFAULT_CONFIG.chunkDivs,
+      key: 'chunk_divs',
+      searchParams,
+    }),
+    chunkOutlines: parseBoolean({
+      defaultValue: DEFAULT_CONFIG.chunkOutlines,
+      key: 'chunk_outlines',
+      searchParams,
+    }),
+    contentVisibilityMode: parseEnum({
+      defaultValue: DEFAULT_CONFIG.contentVisibilityMode,
+      key: 'content_visibility',
+      options: ['none', 'element', 'chunk'],
+      searchParams,
+    }),
+    mountedEngines: parseEnum({
+      defaultValue: DEFAULT_CONFIG.mountedEngines,
+      key: 'engines',
+      options: ['both', 'plate', 'slate'],
+      searchParams,
+    }),
+    showSelectedHeadings: parseBoolean({
+      defaultValue: DEFAULT_CONFIG.showSelectedHeadings,
+      key: 'selected_headings',
+      searchParams,
+    }),
+    strictMode: parseBoolean({
+      defaultValue: DEFAULT_CONFIG.strictMode,
+      key: 'strict',
+      searchParams,
+    }),
+  } satisfies Config;
+}
+
+function writeHugeDocumentSearchParams(config: Config) {
+  const searchParams = getDocumentSearchParams();
+
+  if (!searchParams) return;
+
+  searchParams.set('blocks', config.blocks.toString());
+  searchParams.set('chunking', config.chunking ? 'true' : 'false');
+  searchParams.set('chunk_size', config.chunkSize.toString());
+  searchParams.set('chunk_divs', config.chunkDivs ? 'true' : 'false');
+  searchParams.set('chunk_outlines', config.chunkOutlines ? 'true' : 'false');
+  searchParams.set('content_visibility', config.contentVisibilityMode);
+  searchParams.set('engines', config.mountedEngines);
+  searchParams.set(
+    'selected_headings',
+    config.showSelectedHeadings ? 'true' : 'false'
+  );
+  searchParams.set('strict', config.strictMode ? 'true' : 'false');
+  replaceSearchParams(searchParams);
+}
+
+function getMountedEngines({ mountedEngines }: Pick<Config, 'mountedEngines'>) {
+  return mountedEngines === 'both'
+    ? (['plate', 'slate'] as const)
+    : [mountedEngines];
+}
+
+function toBenchmarkConfig({
+  blocks,
+  chunkSize,
+  chunking,
+  contentVisibilityMode,
+}: Pick<
+  Config,
+  'blocks' | 'chunkSize' | 'chunking' | 'contentVisibilityMode'
+>): BenchmarkConfig {
+  return {
+    blocks,
+    chunking,
+    chunkSize,
+    contentVisibility: contentVisibilityMode,
+    scenarioWorkload: HUGE_DOCUMENT_BENCHMARK_SCENARIO_WORKLOAD,
+  };
+}
+
+function createHugeDocumentBenchmarkHref(config: Config) {
+  const searchParams = new URLSearchParams();
+  const benchmarkConfig = toBenchmarkConfig(config);
+
+  searchParams.set('blocks', benchmarkConfig.blocks.toString());
+  searchParams.set('chunking', benchmarkConfig.chunking ? 'true' : 'false');
+  searchParams.set('chunk_size', benchmarkConfig.chunkSize.toString());
+  searchParams.set('content_visibility', benchmarkConfig.contentVisibility);
+  searchParams.set('scenario_workload', benchmarkConfig.scenarioWorkload);
+
+  return `/dev/editor-perf?${searchParams.toString()}`;
+}
 
 const createEditor = ({
   config,

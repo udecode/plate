@@ -11,14 +11,60 @@ Handle $ARGUMENTS.
 Use this for repeated "harsh honest, absolute best Slate v2 architecture/DX"
 review prompts where the failure mode is death by incremental suggestions.
 
+## Mode Selection
+
+Slate Plan has three modes. Pick the smallest mode that protects the decision.
+
+### `--quick`
+
+Use for "what do you think?", "should we?", "is this good DX?", and other
+single-turn architecture questions.
+
+Output a one-page verdict:
+
+- current owner or source gap;
+- best decision;
+- rejected alternatives;
+- risk/proof needed;
+- next action.
+
+Do not create a plan file, issue-ledger pass, ClawSweeper pass, Evidence Kit
+refresh, or goal unless the user explicitly asks for durable planning or an
+active governing goal already requires it. Still ground current-state claims in
+live `.tmp/slate-v2` source when the answer depends on current code.
+
+### `--standard`
+
+Use for a durable architecture/API plan that needs user review but is not a
+release-wide or issue-ledger-heavy lane.
+
+Create or continue a Slate Plan goal and plan file. Run the useful pass
+schedule: current-state read, intent/boundary, decision brief, focused
+research/live-source refresh, pressure review, verification plan, and final
+user-review handoff. Trigger issue/reference sync, ClawSweeper, Evidence Kit,
+and ecosystem maintainer passes only when the touched surface requires them.
+
+### `--deep`
+
+Use for release-grade, public API, collaboration, browser-runtime, issue-claim,
+benchmark, or maintainer-facing plans where stale claims would be expensive.
+
+Run the full pass schedule, scorecard, issue ledger, ClawSweeper, Evidence Kit,
+objection ledger, ecosystem maintainer pass, and closure gates described below.
+
+Default: `--quick` for lightweight question prompts, `--standard` for prompts
+asking to create/update a plan, and `--deep` only when requested or triggered
+by release/API/collaboration/issue-claim risk.
+
 This is a two-phase lane skill.
 
-Planning mode is the default. It creates or updates the execution-grade plan,
-scores it, and uses the active goal as the durable lane contract until every
-required pass, issue/reference sync gate, verification gate, and closure score
-gate is complete. Score is only one input. A high score never permits goal
-completion by itself; planning completion means the full pass schedule is
-closed and the plan is ready for user review.
+Planning mode is the default for `--standard` and `--deep`. It creates or
+updates the execution-grade plan, scores it, and uses the active goal as the
+durable lane contract until every required pass, triggered issue/reference sync
+gate, verification gate, and closure score gate is complete. Score is only one
+input. A high score never permits goal completion by itself; planning
+completion means the required pass schedule for the selected mode is closed and
+the plan is ready for user review.
 
 Execution mode starts only after the user explicitly accepts a ready plan and
 invokes `slate-plan` again for that plan. Execution mode creates or continues a
@@ -67,6 +113,8 @@ as the execution goal. The user-review boundary is real.
 - Score is not completion. A passing score with any pending pass, issue sync,
   reference sync, verification gate, named next owner, or runnable next action
   keeps the goal active.
+- In `--quick`, do not create durable state by reflex. The point is to reduce
+  orchestration tax for frequent architecture calls.
 - The active goal is the lane status. The plan is the evidence ledger.
 - Never write contradictory closeout state. If the plan says
   `slate_plan_lane_status: pending`, `final_handoff_status: pending`, a non-`none`
@@ -125,6 +173,10 @@ as the execution goal. The user-review boundary is real.
 
 ## Required Artifacts
 
+Required artifacts apply to `--standard` and `--deep`. In `--quick`, create no
+artifact unless the user explicitly asks or the answer discovers that a durable
+plan is required.
+
 - Plan file under `docs/plans/`.
 - Create the plan from the Slate Plan goal template:
 
@@ -169,13 +221,15 @@ as the execution goal. The user-review boundary is real.
   relevant latest benchmark result JSON under
   `benchmarks/editor/benchmarks/results/`. Missing coverage must be recorded as
   a candidate benchmark or explicit non-goal.
-- Issue-ledger accounting in the active plan: fixed issue claims, related issue
+- Issue-ledger accounting in the active plan for `--deep` or triggered
+  `--standard` lanes: fixed issue claims, related issue
   classifications, cluster coverage, and explicit non-claim decisions grounded
   in `docs/slate-issues`.
-- ClawSweeper related-issue pass in the active plan whenever the plan changes
-  Slate v2 public API, runtime behavior, browser behavior, examples, issue
-  claims, or PR narrative. Run it once per related surface, not after every v2
-  edit. Re-run only when the touched issue surface changes materially.
+- ClawSweeper related-issue pass in the active plan whenever a `--deep` plan or
+  triggered `--standard` plan changes Slate v2 public API, runtime behavior,
+  browser behavior, examples, issue claims, or PR narrative. Run it once per
+  related surface, not after every v2 edit. Re-run only when the touched issue
+  surface changes materially.
 - Issue discovery is ledger/cache-first. Reuse existing ClawSweeper output in
   `docs/slate-v2/ledgers/fork-issue-dossier.md`,
   `docs/slate-v2/ledgers/issue-coverage-matrix.md`,
@@ -230,6 +284,9 @@ as the execution goal. The user-review boundary is real.
   owners, plus the active plan ledger.
 
 ## Goal Setup
+
+Skip this section in `--quick` unless a goal already exists or the user asks
+for durable state.
 
 Before creating or resuming a Slate Plan:
 

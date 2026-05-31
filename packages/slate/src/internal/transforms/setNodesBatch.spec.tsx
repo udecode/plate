@@ -42,6 +42,42 @@ describe('setNodesBatch', () => {
     ]);
   });
 
+  it('routes generated operations through apply wrappers', () => {
+    const editor = createEditor({
+      children: [
+        { children: [{ text: 'one' }], type: 'p' },
+        { children: [{ text: 'two' }], type: 'p' },
+      ] as any,
+    });
+    const apply = editor.apply as (op: any) => void;
+    const seen: any[] = [];
+
+    editor.apply = ((op: any) => {
+      seen.push(op);
+      apply(op);
+    }) as typeof editor.apply;
+
+    editor.tf.setNodesBatch([
+      { at: [0], props: { id: 'a' } },
+      { at: [1], props: { id: 'b' } },
+    ]);
+
+    expect(seen).toEqual([
+      {
+        type: 'set_node',
+        path: [0],
+        properties: {},
+        newProperties: { id: 'a' },
+      },
+      {
+        type: 'set_node',
+        path: [1],
+        properties: {},
+        newProperties: { id: 'b' },
+      },
+    ]);
+  });
+
   it('rejects duplicate exact paths in one batch', () => {
     const editor = createEditor({
       children: [{ children: [{ text: 'one' }], type: 'p' }] as any,

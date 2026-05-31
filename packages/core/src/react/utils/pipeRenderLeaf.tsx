@@ -59,6 +59,7 @@ export const pipeRenderLeaf = (
     const plugin = editor.getPlugin({ key });
 
     if (plugin) {
+      const leafKey = plugin.node.type ?? key;
       const canUseSimpleLeaf =
         editor.meta.pluginCache.inject.nodeProps.length === 0 &&
         !plugin.render?.leaf &&
@@ -72,21 +73,21 @@ export const pipeRenderLeaf = (
         const entry = {
           className: plugin.node.type ? `slate-${plugin.node.type}` : undefined,
           editOnly: plugin.editOnly,
-          key,
+          key: leafKey,
           selectionAffinity: plugin.rules.selection?.affinity,
           tag: (plugin.render?.as ?? 'span') as keyof HTMLElementTagNameMap,
         };
 
         renderLeafEntries.push(entry);
-        renderLeafEntryByKey.set(key, true);
+        renderLeafEntryByKey.set(leafKey, true);
       } else {
         const entry = {
-          key,
+          key: leafKey,
           renderLeaf: pluginRenderLeaf(editor, plugin as any),
         };
 
         complexRenderLeafEntries.push(entry);
-        complexRenderLeafEntryByKey.set(key, entry.renderLeaf);
+        complexRenderLeafEntryByKey.set(leafKey, entry.renderLeaf);
       }
     }
   });

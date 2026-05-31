@@ -17,32 +17,32 @@ sources, and strict browser conformance proof.
 This is the public runtime shape:
 
 ```ts
-editor.read(() => {
-  const selection = editor.getSelection()
-  const children = editor.getChildren()
+editor.read((state) => {
+  const selection = state.selection.get()
+  const children = state.value.get().children
 })
 
-editor.update(() => {
-  editor.unwrapNodes({ match: isList })
-  editor.setNodes({ type: 'list-item' })
-  editor.wrapNodes({ type: 'bulleted-list', children: [] })
+editor.update((tx) => {
+  tx.nodes.unwrap({ match: isList })
+  tx.nodes.set({ type: 'list-item' })
+  tx.nodes.wrap({ type: 'bulleted-list', children: [] })
 })
 ```
 
-Primitive editor methods are the power API:
+Transaction primitive groups are the power API:
 
-- `editor.insertText`
-- `editor.delete`
-- `editor.insertNodes`
-- `editor.insertFragment`
-- `editor.setNodes`
-- `editor.removeNodes`
-- `editor.unwrapNodes`
-- `editor.wrapNodes`
-- `editor.select`
+- `tx.text.insert`
+- `tx.text.delete`
+- `tx.nodes.insert`
+- `tx.fragment.insert`
+- `tx.nodes.set`
+- `tx.nodes.remove`
+- `tx.nodes.unwrap`
+- `tx.nodes.wrap`
+- `tx.selection.set`
 
-Convenience methods are optional surface on top of primitives, not the runtime
-foundation.
+Convenience methods are optional surface on top of transaction primitives, not
+the runtime foundation.
 
 ## Runtime Contract
 

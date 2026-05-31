@@ -10,7 +10,11 @@ import { TestPlate as Plate } from '../../__tests__/TestPlate';
 import { createPlateEditor } from '../../editor';
 import { DebugPlugin } from '../../../lib/plugins/debug/DebugPlugin';
 import { useElement } from './useElement';
-import { ElementProvider, useElementStore } from './useElementStore';
+import {
+  ElementProvider,
+  useElementStore,
+  withElementContext,
+} from './useElementStore';
 import { usePath } from './usePath';
 
 describe('ElementProvider', () => {
@@ -162,6 +166,33 @@ describe('ElementProvider', () => {
     return <div>{label + age}</div>;
   };
 
+  const RenderContextConsumer = () => {
+    const ageElement = React.useMemo(() => makeAgeElement(42), []);
+    const ageEntry = React.useMemo(
+      () => [ageElement, [2]] as any,
+      [ageElement]
+    );
+
+    return withElementContext(
+      {
+        element: ageElement,
+        entry: ageEntry,
+        path: ageEntry[1],
+        scope: 'age',
+      },
+      () => {
+        const matchingName = useElement<TNameElement>('name');
+        const fallback = useElement();
+
+        return (
+          <div>
+            Name: {matchingName.name}; Fallback: {fallback.type}
+          </div>
+        );
+      }
+    );
+  };
+
   it('returns the first ancestor matching the element type', () => {
     const { getByText } = render(
       <PlateWrapper>
@@ -196,6 +227,18 @@ describe('ElementProvider', () => {
     );
 
     (expect(getByText('Type: name')) as any).toBeInTheDocument();
+  });
+
+  it('does not let render-time element context shadow a matching provider scope', () => {
+    const { getByText } = render(
+      <PlateWrapper>
+        <NameElementProvider name="John">
+          <RenderContextConsumer />
+        </NameElementProvider>
+      </PlateWrapper>
+    );
+
+    (expect(getByText('Name: John; Fallback: age')) as any).toBeInTheDocument();
   });
 
   it('returns the nearest matching scoped path and otherwise falls back to the nearest provider path', () => {

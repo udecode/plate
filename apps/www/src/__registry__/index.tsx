@@ -3314,7 +3314,7 @@ export const Index: Record<string, any> = {
     name: "huge-document-demo",
     description: "",
     type: "registry:example",
-    registryDependencies: undefined,
+    registryDependencies: ["@shadcn/button"],
     files: [{
       path: "src/registry/examples/huge-document-demo.tsx",
       type: "registry:example",

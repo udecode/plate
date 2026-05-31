@@ -1,7 +1,27 @@
+import { faker } from '@faker-js/faker';
+
+import { getHugeDocumentBlocks } from '@/registry/examples/values/huge-document-value';
+
 import {
   getDefaultNodeIdFragmentBlockCount,
   getNodeIdFragmentBenchmarkData,
 } from './workloads';
+
+describe('getHugeDocumentBlocks', () => {
+  it('extends the cache with the same sequence as a fresh larger build', () => {
+    faker.seed(1);
+
+    const expected = Array.from({ length: 120 }, (_, index) => ({
+      text:
+        index % 100 === 0 ? faker.lorem.sentence() : faker.lorem.paragraph(),
+      type: index % 100 === 0 ? 'heading-one' : 'paragraph',
+    }));
+
+    getHugeDocumentBlocks(2);
+
+    expect(getHugeDocumentBlocks(120)).toEqual(expected);
+  });
+});
 
 describe('getNodeIdFragmentBenchmarkData', () => {
   it('builds a raw import fragment without node ids', () => {

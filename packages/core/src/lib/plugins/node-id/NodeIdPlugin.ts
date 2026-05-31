@@ -59,6 +59,15 @@ export type NodeIdOptions = {
    */
   normalizeInitialValue?: boolean | null;
   /**
+   * Reports duplicate-id scan cost during inserted-node normalization.
+   */
+  onDuplicateIdScan?: (stats: {
+    candidateCount: number;
+    duration: number;
+    existingCount: number;
+    visitedCount: number;
+  }) => void;
+  /**
    * Reuse ids on undo/redo and copy/pasting if not existing in the document.
    * This is disabled by default to avoid duplicate ids across documents.
    *
@@ -88,6 +97,8 @@ type NormalizeNodeIdRuntimeOptions = NormalizeNodeIdOptions & {
   isBlock?: (node: Descendant) => boolean;
 };
 
+const defaultNodeIdFilter = () => true;
+
 const isDefaultNodeIdFastPath = ({
   allow,
   exclude,
@@ -97,7 +108,7 @@ const isDefaultNodeIdFastPath = ({
 }: NormalizeNodeIdRuntimeOptions) =>
   allow === undefined &&
   exclude === undefined &&
-  filter === undefined &&
+  (filter === undefined || filter === defaultNodeIdFilter) &&
   filterInline &&
   filterText;
 
@@ -316,7 +327,7 @@ export const NodeIdPlugin = createTSlatePlugin<NodeIdConfig>({
     filterInline: true,
     filterText: true,
     idKey: 'id',
-    filter: () => true,
+    filter: defaultNodeIdFilter,
     idCreator: () => nanoid(10),
   },
 })

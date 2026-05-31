@@ -3,6 +3,7 @@
 import React from 'react';
 
 import { render } from '@testing-library/react';
+import { renderToString } from 'react-dom/server';
 
 import { createPlateEditor } from '../editor';
 import { PlateStoreProvider } from '../stores';
@@ -59,15 +60,15 @@ describe('PlateElement', () => {
     expect(element).not.toHaveAttribute('data-block-id');
   });
 
-  it('renders data-block-id before the editor is mounted', () => {
+  it('does not render data-block-id in server output', () => {
     const editor = createPlateEditor({
       value: [createElement('block-1')],
     });
-    const { container } = renderWithStore({ editor, isMounted: false });
-    const element = container.querySelector('[data-slate-node="element"]');
+    const html = renderToString(
+      <PlateElement {...createProps(editor, 'block-1')} />
+    );
 
-    expect(element).toBeInTheDocument();
-    expect(element).toHaveAttribute('data-block-id', 'block-1');
+    expect(html).not.toContain('data-block-id');
   });
 
   it('renders data-block-id after the editor is mounted', () => {

@@ -59,6 +59,7 @@ export { elementStore };
 const ElementContext = React.createContext<ElementContextValue | null>(null);
 const ElementStoreContext =
   React.createContext<ElementStoreContextValue | null>(null);
+let currentElementContext: ElementContextValue | null = null;
 
 const syncElementStore = (
   store: ReturnType<typeof createStore>,
@@ -130,9 +131,10 @@ const createElementRuntimeStore = (
   };
 };
 
-export const useElementContext = (scope?: string) => {
-  const context = React.useContext(ElementContext);
-
+const findElementContext = (
+  context: ElementContextValue | null,
+  scope?: string
+) => {
   if (!context) return null;
   if (!scope) return context;
 
@@ -145,6 +147,62 @@ export const useElementContext = (scope?: string) => {
   }
 
   return context;
+};
+
+const findMatchingElementContext = (
+  context: ElementContextValue | null,
+  scope?: string
+) => {
+  if (!context || !scope) return context;
+
+  let current: ElementContextValue | null = context;
+
+  while (current) {
+    if (current.scope === scope) return current;
+
+    current = current.parent;
+  }
+
+  return null;
+};
+
+export const withElementContext = <T,>(
+  context: Omit<ElementContextValue, 'parent'>,
+  callback: () => T
+): T => {
+  const previousContext = currentElementContext;
+  const nextContext = {} as ElementContextValue;
+
+  Object.defineProperties(
+    nextContext,
+    Object.getOwnPropertyDescriptors(context)
+  );
+  nextContext.parent = previousContext;
+  currentElementContext = nextContext;
+
+  try {
+    return callback();
+  } finally {
+    currentElementContext = previousContext;
+  }
+};
+
+export const useElementContext = (scope?: string) => {
+  const context = React.useContext(ElementContext);
+  const renderContext = findMatchingElementContext(
+    currentElementContext,
+    scope
+  );
+
+  if (renderContext) return renderContext;
+
+  const providerContext = findMatchingElementContext(context, scope);
+
+  if (providerContext) return providerContext;
+
+  if (currentElementContext) return currentElementContext;
+
+  return findElementContext(context, scope);
 };
 
 export const useElementStoreContext = (scope?: string) => {
@@ -241,7 +299,7 @@ export function ElementProvider({
   );
 }
 
-function FirstBlockEffect() {
+export function FirstBlockEffect() {
   const editor = useEditorRef();
   const store = usePlateStore();
   const composing = useComposing();

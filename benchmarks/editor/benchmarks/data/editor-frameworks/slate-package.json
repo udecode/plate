@@ -1,9 +1,7 @@
 {
   "private": true,
   "name": "slate-packages",
-  "workspaces": [
-    "packages/*"
-  ],
+  "workspaces": ["packages/*"],
   "scripts": {
     "build": "yarn build:rollup && yarn build:next",
     "build:next": "cd ./site && next build",
@@ -125,10 +123,7 @@
     "pre-commit": "yarn lint-staged"
   },
   "lint-staged": {
-    "*.{css,md,js,jsx,json,ts,tsx}": [
-      "prettier --write",
-      "eslint --fix"
-    ]
+    "*.{css,md,js,jsx,json,ts,tsx}": ["prettier --write", "eslint --fix"]
   },
   "packageManager": "yarn@4.0.2"
 }

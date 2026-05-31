@@ -13,6 +13,8 @@ import cloneDeep from 'lodash/cloneDeep.js';
 import type { OverrideEditor } from '../../plugin';
 import type { NodeIdConfig } from './NodeIdPlugin';
 
+const now = () => globalThis.performance?.now() ?? Date.now();
+
 /** Enables support for inserting nodes with an id key. */
 export const withNodeId: OverrideEditor<NodeIdConfig> = ({
   editor,
@@ -86,8 +88,12 @@ export const withNodeId: OverrideEditor<NodeIdConfig> = ({
     }
 
     const existingIds = new Set<any>();
+    const start = now();
+    let visitedCount = 0;
 
     for (const [entryNode] of NodeApi.nodes(editor as any)) {
+      visitedCount += 1;
+
       const id = (entryNode as any)?.[idKey];
 
       if (id === undefined || !duplicateCandidateIds.has(id)) continue;
@@ -98,6 +104,13 @@ export const withNodeId: OverrideEditor<NodeIdConfig> = ({
         break;
       }
     }
+
+    getOptions().onDuplicateIdScan?.({
+      candidateCount: duplicateCandidateIds.size,
+      duration: now() - start,
+      existingCount: existingIds.size,
+      visitedCount,
+    });
 
     return existingIds;
   };

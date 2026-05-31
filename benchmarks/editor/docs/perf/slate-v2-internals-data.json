@@ -1,1 +1,2751 @@
-{"categoryCounts":{"slate-6038-transaction-execution":16,"slate-clipboard-large-payload":70,"slate-clipboard-large-payload-threshold":3,"slate-collab-readiness":28,"slate-collab-readiness-invariant":20,"slate-core-editor-store":5,"slate-core-node-transforms":10,"slate-core-normalization-current":3,"slate-core-query-ref-observation":15,"slate-core-refs-projection":5,"slate-core-text-selection":7,"slate-core-transaction-current":1,"slate-history-retained-memory":1,"slate-react-active-typing-breakdown":54,"slate-react-huge-document-overlays":30,"slate-react-rerender-breadth":58},"generatedAt":"2026-05-29T20:30:17.235Z","groups":[{"category":"slate-react-rerender-breadth","libraries":["slate-v2:react-rerender-breadth"],"rows":[{"cells":{"slate-v2:react-rerender-breadth":{"status":"ok","ops":3}},"fixture":"annotationWidgetBreadth/annotationProjectCount"},{"cells":{"slate-v2:react-rerender-breadth":{"status":"ok","ops":1}},"fixture":"annotationWidgetBreadth/annotationProjectionRecomputeCount"},{"cells":{"slate-v2:react-rerender-breadth":{"status":"ok","ops":1}},"fixture":"annotationWidgetBreadth/annotationProjectionRenders"},{"cells":{"slate-v2:react-rerender-breadth":{"status":"ok","ops":3}},"fixture":"annotationWidgetBreadth/annotationResolveCount"},{"cells":{"slate-v2:react-rerender-breadth":{"status":"ok","ops":1}},"fixture":"annotationWidgetBreadth/annotationRuntimeSubscriberWakeCount"},{"cells":{"slate-v2:react-rerender-breadth":{"status":"ok","ops":1}},"fixture":"annotationWidgetBreadth/annotationSidebarRenders"},{"cells":{"slate-v2:react-rerender-breadth":{"status":"ok","ops":1}},"fixture":"annotationWidgetBreadth/annotationWidgetRenders"},{"cells":{"slate-v2:react-rerender-breadth":{"status":"ok","medianUs":880,"p95Us":5310,"ops":5}},"fixture":"annotationWidgetBreadth/editMs"},{"cells":{"slate-v2:react-rerender-breadth":{"status":"ok","ops":1}},"fixture":"annotationWidgetBreadth/leftTextRenders"},{"cells":{"slate-v2:react-rerender-breadth":{"status":"ok","ops":0}},"fixture":"annotationWidgetBreadth/rightTextRenders"},{"cells":{"slate-v2:react-rerender-breadth":{"status":"ok","ops":2}},"fixture":"annotationWidgetBreadth/widgetRecomputeCount"},{"cells":{"slate-v2:react-rerender-breadth":{"status":"ok","ops":1}},"fixture":"decorationSourceToggleBreadth/leftOverlayRenders"},{"cells":{"slate-v2:react-rerender-breadth":{"status":"ok","ops":0}},"fixture":"decorationSourceToggleBreadth/leftTextRenders"},{"cells":{"slate-v2:react-rerender-breadth":{"status":"ok","ops":1}},"fixture":"decorationSourceToggleBreadth/projectionRecomputeCount"},{"cells":{"slate-v2:react-rerender-breadth":{"status":"ok","ops":0}},"fixture":"decorationSourceToggleBreadth/rightOverlayRenders"},{"cells":{"slate-v2:react-rerender-breadth":{"status":"ok","ops":0}},"fixture":"decorationSourceToggleBreadth/rightTextRenders"},{"cells":{"slate-v2:react-rerender-breadth":{"status":"ok","medianUs":880,"p95Us":5170,"ops":5}},"fixture":"decorationSourceToggleBreadth/toggleMs"},{"cells":{"slate-v2:react-rerender-breadth":{"status":"ok","ops":0}},"fixture":"deepAncestorBreadth/ancestorRenderEvents"},{"cells":{"slate-v2:react-rerender-breadth":{"status":"ok","ops":1}},"fixture":"deepAncestorBreadth/deepLeafRenders"},{"cells":{"slate-v2:react-rerender-breadth":{"status":"ok","medianUs":2780,"p95Us":7230,"ops":5}},"fixture":"deepAncestorBreadth/editMs"},{"cells":{"slate-v2:react-rerender-breadth":{"status":"ok","ops":0}},"fixture":"deepAncestorBreadth/rerenderedAncestorCount"},{"cells":{"slate-v2:react-rerender-breadth":{"status":"ok","ops":0}},"fixture":"deepAncestorBreadth/siblingBranchRenders"},{"cells":{"slate-v2:react-rerender-breadth":{"status":"ok","ops":0}},"fixture":"deepAncestorBreadth/siblingLeafRenders"},{"cells":{"slate-v2:react-rerender-breadth":{"status":"ok","medianUs":1020,"p95Us":1170,"ops":5}},"fixture":"hiddenPanelActivity/hiddenEditMs"},{"cells":{"slate-v2:react-rerender-breadth":{"status":"ok","ops":0}},"fixture":"hiddenPanelActivity/hiddenPanelRendersWhileHidden"},{"cells":{"slate-v2:react-rerender-breadth":{"status":"ok","ops":1}},"fixture":"hiddenPanelActivity/leftTextRendersWhileHidden"},{"cells":{"slate-v2:react-rerender-breadth":{"status":"ok","ops":1}},"fixture":"hiddenPanelActivity/preservedLocalCount"},{"cells":{"slate-v2:react-rerender-breadth":{"status":"ok","ops":1}},"fixture":"hiddenPanelActivity/resumedPanelRenders"},{"cells":{"slate-v2:react-rerender-breadth":{"status":"ok","ops":0}},"fixture":"hiddenPanelActivity/rightTextRendersWhileHidden"},{"cells":{"slate-v2:react-rerender-breadth":{"status":"ok","ops":35}},"fixture":"hiddenPanelActivity/visiblePanelStateLength"},{"cells":{"slate-v2:react-rerender-breadth":{"status":"ok","ops":0}},"fixture":"manyLeafBreadth/blockRenders"},{"cells":{"slate-v2:react-rerender-breadth":{"status":"ok","medianUs":7510,"p95Us":9650,"ops":5}},"fixture":"manyLeafBreadth/editMs"},{"cells":{"slate-v2:react-rerender-breadth":{"status":"ok","ops":1}},"fixture":"manyLeafBreadth/editedLeafRenders"},{"cells":{"slate-v2:react-rerender-breadth":{"status":"ok","ops":0}},"fixture":"manyLeafBreadth/rerenderedSiblingLeafCount"},{"cells":{"slate-v2:react-rerender-breadth":{"status":"ok","ops":0}},"fixture":"manyLeafBreadth/siblingLeafRenders"},{"cells":{"slate-v2:react-rerender-breadth":{"status":"ok","ops":0}},"fixture":"selectionBreadth/broadRenders"},{"cells":{"slate-v2:react-rerender-breadth":{"status":"ok","ops":0}},"fixture":"selectionBreadth/leftBlockRenders"},{"cells":{"slate-v2:react-rerender-breadth":{"status":"ok","ops":0}},"fixture":"selectionBreadth/rightBlockRenders"},{"cells":{"slate-v2:react-rerender-breadth":{"status":"ok","medianUs":12420,"p95Us":14530,"ops":5}},"fixture":"selectionBreadth/selectionOpsMs"},{"cells":{"slate-v2:react-rerender-breadth":{"status":"ok","ops":20}},"fixture":"selectionBreadth/selectionRenders"},{"cells":{"slate-v2:react-rerender-breadth":{"status":"ok","ops":1}},"fixture":"sourceScopedInvalidation/externalRefreshExternalLeftRenders"},{"cells":{"slate-v2:react-rerender-breadth":{"status":"ok","ops":1}},"fixture":"sourceScopedInvalidation/externalRefreshExternalRecomputeCount"},{"cells":{"slate-v2:react-rerender-breadth":{"status":"ok","ops":1}},"fixture":"sourceScopedInvalidation/externalRefreshExternalRightRenders"},{"cells":{"slate-v2:react-rerender-breadth":{"status":"ok","medianUs":180,"p95Us":5240,"ops":5}},"fixture":"sourceScopedInvalidation/externalRefreshMs"},{"cells":{"slate-v2:react-rerender-breadth":{"status":"ok","ops":0}},"fixture":"sourceScopedInvalidation/externalRefreshSelectionRecomputeCount"},{"cells":{"slate-v2:react-rerender-breadth":{"status":"ok","ops":0}},"fixture":"sourceScopedInvalidation/externalRefreshTextRecomputeCount"},{"cells":{"slate-v2:react-rerender-breadth":{"status":"ok","ops":0}},"fixture":"sourceScopedInvalidation/selectionChangeExternalRecomputeCount"},{"cells":{"slate-v2:react-rerender-breadth":{"status":"ok","medianUs":580,"p95Us":5060,"ops":5}},"fixture":"sourceScopedInvalidation/selectionChangeMs"},{"cells":{"slate-v2:react-rerender-breadth":{"status":"ok","ops":1}},"fixture":"sourceScopedInvalidation/selectionChangeSelectionLeftRenders"},{"cells":{"slate-v2:react-rerender-breadth":{"status":"ok","ops":1}},"fixture":"sourceScopedInvalidation/selectionChangeSelectionRecomputeCount"},{"cells":{"slate-v2:react-rerender-breadth":{"status":"ok","ops":1}},"fixture":"sourceScopedInvalidation/selectionChangeSelectionRightRenders"},{"cells":{"slate-v2:react-rerender-breadth":{"status":"ok","ops":0}},"fixture":"sourceScopedInvalidation/selectionChangeTextRecomputeCount"},{"cells":{"slate-v2:react-rerender-breadth":{"status":"ok","ops":0}},"fixture":"sourceScopedInvalidation/textEditExternalRecomputeCount"},{"cells":{"slate-v2:react-rerender-breadth":{"status":"ok","medianUs":640,"p95Us":820,"ops":5}},"fixture":"sourceScopedInvalidation/textEditMs"},{"cells":{"slate-v2:react-rerender-breadth":{"status":"ok","ops":0}},"fixture":"sourceScopedInvalidation/textEditSelectionRecomputeCount"},{"cells":{"slate-v2:react-rerender-breadth":{"status":"ok","ops":1}},"fixture":"sourceScopedInvalidation/textEditTextLeftRenders"},{"cells":{"slate-v2:react-rerender-breadth":{"status":"ok","ops":1}},"fixture":"sourceScopedInvalidation/textEditTextRecomputeCount"},{"cells":{"slate-v2:react-rerender-breadth":{"status":"ok","ops":1}},"fixture":"sourceScopedInvalidation/textEditTextRightRenders"}]},{"category":"slate-react-huge-document-overlays","libraries":["slate-v2:react-overlays"],"rows":[{"cells":{"slate-v2:react-overlays":{"status":"ok","ops":0}},"fixture":"activeEditAfterOverlay/activeElementRenders"},{"cells":{"slate-v2:react-overlays":{"status":"ok","ops":0}},"fixture":"activeEditAfterOverlay/activeProjectionRenders"},{"cells":{"slate-v2:react-overlays":{"status":"ok","ops":1}},"fixture":"activeEditAfterOverlay/activeTextRenders"},{"cells":{"slate-v2:react-overlays":{"status":"ok","medianUs":2440,"p95Us":4380,"ops":5}},"fixture":"activeEditAfterOverlay/editMs"},{"cells":{"slate-v2:react-overlays":{"status":"ok","ops":0}},"fixture":"activeEditAfterOverlay/farElementRenders"},{"cells":{"slate-v2:react-overlays":{"status":"ok","ops":0}},"fixture":"activeEditAfterOverlay/farProjectionRenders"},{"cells":{"slate-v2:react-overlays":{"status":"ok","ops":0}},"fixture":"activeEditAfterOverlay/farTextRenders"},{"cells":{"slate-v2:react-overlays":{"status":"ok","ops":40}},"fixture":"activeEditAfterOverlay/mountedTextAfter"},{"cells":{"slate-v2:react-overlays":{"status":"ok","ops":40}},"fixture":"activeEditAfterOverlay/mountedTextBefore"},{"cells":{"slate-v2:react-overlays":{"status":"ok","ops":8}},"fixture":"activeEditAfterOverlay/partialDOMCountAfter"},{"cells":{"slate-v2:react-overlays":{"status":"ok","ops":8}},"fixture":"activeEditAfterOverlay/partialDOMCountBefore"},{"cells":{"slate-v2:react-overlays":{"status":"ok","ops":0}},"fixture":"activeEditAfterOverlay/projectionRecomputeCount"},{"cells":{"slate-v2:react-overlays":{"status":"ok","ops":0}},"fixture":"overlayToggle/activeProjectionCount"},{"cells":{"slate-v2:react-overlays":{"status":"ok","ops":0}},"fixture":"overlayToggle/activeProjectionRenders"},{"cells":{"slate-v2:react-overlays":{"status":"ok","ops":1}},"fixture":"overlayToggle/farProjectionCount"},{"cells":{"slate-v2:react-overlays":{"status":"ok","ops":1}},"fixture":"overlayToggle/farProjectionRenders"},{"cells":{"slate-v2:react-overlays":{"status":"ok","ops":40}},"fixture":"overlayToggle/mountedTextAfter"},{"cells":{"slate-v2:react-overlays":{"status":"ok","ops":40}},"fixture":"overlayToggle/mountedTextBefore"},{"cells":{"slate-v2:react-overlays":{"status":"ok","medianUs":2830,"p95Us":3340,"ops":5}},"fixture":"overlayToggle/overlayToggleMs"},{"cells":{"slate-v2:react-overlays":{"status":"ok","ops":8}},"fixture":"overlayToggle/partialDOMCountAfter"},{"cells":{"slate-v2:react-overlays":{"status":"ok","ops":8}},"fixture":"overlayToggle/partialDOMCountBefore"},{"cells":{"slate-v2:react-overlays":{"status":"ok","ops":1}},"fixture":"overlayToggle/projectionRecomputeCount"},{"cells":{"slate-v2:react-overlays":{"status":"ok","ops":60}},"fixture":"partialDOMPromotion/mountedTextAfter"},{"cells":{"slate-v2:react-overlays":{"status":"ok","ops":40}},"fixture":"partialDOMPromotion/mountedTextBefore"},{"cells":{"slate-v2:react-overlays":{"status":"ok","ops":7}},"fixture":"partialDOMPromotion/partialDOMCountAfter"},{"cells":{"slate-v2:react-overlays":{"status":"ok","ops":8}},"fixture":"partialDOMPromotion/partialDOMCountBefore"},{"cells":{"slate-v2:react-overlays":{"status":"ok","ops":0}},"fixture":"partialDOMPromotion/projectionRecomputeCount"},{"cells":{"slate-v2:react-overlays":{"status":"ok","medianUs":14000,"p95Us":23090,"ops":5}},"fixture":"partialDOMPromotion/promotionMs"},{"cells":{"slate-v2:react-overlays":{"status":"ok","ops":2}},"fixture":"partialDOMPromotion/selectionAnchorPathLength"},{"cells":{"slate-v2:react-overlays":{"status":"ok","ops":100}},"fixture":"partialDOMPromotion/selectionAnchorTopLevel"}]},{"category":"slate-react-active-typing-breakdown","libraries":["slate-v2:react-active-typing"],"rows":[{"cells":{"slate-v2:react-active-typing":{"status":"ok","ops":200}},"fixture":"scenarios/middlePromoteThenType/beforePromotionMountedText"},{"cells":{"slate-v2:react-active-typing":{"status":"ok","ops":0}},"fixture":"scenarios/middlePromoteThenType/elementRenders"},{"cells":{"slate-v2:react-active-typing":{"status":"ok","ops":10}},"fixture":"scenarios/middlePromoteThenType/leafRenders"},{"cells":{"slate-v2:react-active-typing":{"status":"ok","ops":300}},"fixture":"scenarios/middlePromoteThenType/mountedTextAfterTyping"},{"cells":{"slate-v2:react-active-typing":{"status":"ok","medianUs":3310,"p95Us":3600,"ops":3}},"fixture":"scenarios/middlePromoteThenType/profilerActualMs"},{"cells":{"slate-v2:react-active-typing":{"status":"ok","ops":10}},"fixture":"scenarios/middlePromoteThenType/profilerCommitCount"},{"cells":{"slate-v2:react-active-typing":{"status":"ok","ops":300}},"fixture":"scenarios/middlePromoteThenType/promotedMountedText"},{"cells":{"slate-v2:react-active-typing":{"status":"ok","medianUs":213070,"p95Us":214820,"ops":3}},"fixture":"scenarios/middlePromoteThenType/promotionMs"},{"cells":{"slate-v2:react-active-typing":{"status":"ok","medianUs":0,"p95Us":0,"ops":3}},"fixture":"scenarios/middlePromoteThenType/selectionMs"},{"cells":{"slate-v2:react-active-typing":{"status":"ok","ops":10}},"fixture":"scenarios/middlePromoteThenType/textRenders"},{"cells":{"slate-v2:react-active-typing":{"status":"ok","medianUs":165890,"p95Us":169780,"ops":3}},"fixture":"scenarios/middlePromoteThenType/totalActMs"},{"cells":{"slate-v2:react-active-typing":{"status":"ok","medianUs":157160,"p95Us":162040,"ops":3}},"fixture":"scenarios/middlePromoteThenType/transformMs"},{"cells":{"slate-v2:react-active-typing":{"status":"ok","ops":200}},"fixture":"scenarios/middleSelectThenType/beforePromotionMountedText"},{"cells":{"slate-v2:react-active-typing":{"status":"ok","ops":0}},"fixture":"scenarios/middleSelectThenType/elementRenders"},{"cells":{"slate-v2:react-active-typing":{"status":"ok","ops":10}},"fixture":"scenarios/middleSelectThenType/leafRenders"},{"cells":{"slate-v2:react-active-typing":{"status":"ok","ops":300}},"fixture":"scenarios/middleSelectThenType/mountedTextAfterTyping"},{"cells":{"slate-v2:react-active-typing":{"status":"ok","medianUs":3040,"p95Us":3520,"ops":3}},"fixture":"scenarios/middleSelectThenType/profilerActualMs"},{"cells":{"slate-v2:react-active-typing":{"status":"ok","ops":10}},"fixture":"scenarios/middleSelectThenType/profilerCommitCount"},{"cells":{"slate-v2:react-active-typing":{"status":"ok","ops":200}},"fixture":"scenarios/middleSelectThenType/promotedMountedText"},{"cells":{"slate-v2:react-active-typing":{"status":"ok","medianUs":0,"p95Us":0,"ops":3}},"fixture":"scenarios/middleSelectThenType/promotionMs"},{"cells":{"slate-v2:react-active-typing":{"status":"ok","medianUs":129780,"p95Us":131240,"ops":3}},"fixture":"scenarios/middleSelectThenType/selectionMs"},{"cells":{"slate-v2:react-active-typing":{"status":"ok","ops":10}},"fixture":"scenarios/middleSelectThenType/textRenders"},{"cells":{"slate-v2:react-active-typing":{"status":"ok","medianUs":198160,"p95Us":206020,"ops":3}},"fixture":"scenarios/middleSelectThenType/totalActMs"},{"cells":{"slate-v2:react-active-typing":{"status":"ok","medianUs":191250,"p95Us":197090,"ops":3}},"fixture":"scenarios/middleSelectThenType/transformMs"},{"cells":{"slate-v2:react-active-typing":{"status":"ok","ops":200}},"fixture":"scenarios/middleShelledModelOnly/beforePromotionMountedText"},{"cells":{"slate-v2:react-active-typing":{"status":"ok","ops":0}},"fixture":"scenarios/middleShelledModelOnly/elementRenders"},{"cells":{"slate-v2:react-active-typing":{"status":"ok","ops":0}},"fixture":"scenarios/middleShelledModelOnly/leafRenders"},{"cells":{"slate-v2:react-active-typing":{"status":"ok","ops":200}},"fixture":"scenarios/middleShelledModelOnly/mountedTextAfterTyping"},{"cells":{"slate-v2:react-active-typing":{"status":"ok","medianUs":930,"p95Us":930,"ops":3}},"fixture":"scenarios/middleShelledModelOnly/profilerActualMs"},{"cells":{"slate-v2:react-active-typing":{"status":"ok","ops":10}},"fixture":"scenarios/middleShelledModelOnly/profilerCommitCount"},{"cells":{"slate-v2:react-active-typing":{"status":"ok","ops":200}},"fixture":"scenarios/middleShelledModelOnly/promotedMountedText"},{"cells":{"slate-v2:react-active-typing":{"status":"ok","medianUs":0,"p95Us":0,"ops":3}},"fixture":"scenarios/middleShelledModelOnly/promotionMs"},{"cells":{"slate-v2:react-active-typing":{"status":"ok","medianUs":0,"p95Us":0,"ops":3}},"fixture":"scenarios/middleShelledModelOnly/selectionMs"},{"cells":{"slate-v2:react-active-typing":{"status":"ok","ops":0}},"fixture":"scenarios/middleShelledModelOnly/textRenders"},{"cells":{"slate-v2:react-active-typing":{"status":"ok","medianUs":174710,"p95Us":189060,"ops":3}},"fixture":"scenarios/middleShelledModelOnly/totalActMs"},{"cells":{"slate-v2:react-active-typing":{"status":"ok","medianUs":170620,"p95Us":184550,"ops":3}},"fixture":"scenarios/middleShelledModelOnly/transformMs"},{"cells":{"slate-v2:react-active-typing":{"status":"ok","ops":0}},"fixture":"scenarios/selectAll/elementRenders"},{"cells":{"slate-v2:react-active-typing":{"status":"ok","ops":0}},"fixture":"scenarios/selectAll/leafRenders"},{"cells":{"slate-v2:react-active-typing":{"status":"ok","medianUs":1050,"p95Us":4840,"ops":3}},"fixture":"scenarios/selectAll/profilerActualMs"},{"cells":{"slate-v2:react-active-typing":{"status":"ok","ops":2}},"fixture":"scenarios/selectAll/profilerCommitCount"},{"cells":{"slate-v2:react-active-typing":{"status":"ok","medianUs":39910,"p95Us":40310,"ops":3}},"fixture":"scenarios/selectAll/selectAllMs"},{"cells":{"slate-v2:react-active-typing":{"status":"ok","ops":0}},"fixture":"scenarios/selectAll/textRenders"},{"cells":{"slate-v2:react-active-typing":{"status":"ok","ops":200}},"fixture":"scenarios/startActiveTyping/beforePromotionMountedText"},{"cells":{"slate-v2:react-active-typing":{"status":"ok","ops":0}},"fixture":"scenarios/startActiveTyping/elementRenders"},{"cells":{"slate-v2:react-active-typing":{"status":"ok","ops":10}},"fixture":"scenarios/startActiveTyping/leafRenders"},{"cells":{"slate-v2:react-active-typing":{"status":"ok","ops":200}},"fixture":"scenarios/startActiveTyping/mountedTextAfterTyping"},{"cells":{"slate-v2:react-active-typing":{"status":"ok","medianUs":3020,"p95Us":3190,"ops":3}},"fixture":"scenarios/startActiveTyping/profilerActualMs"},{"cells":{"slate-v2:react-active-typing":{"status":"ok","ops":10}},"fixture":"scenarios/startActiveTyping/profilerCommitCount"},{"cells":{"slate-v2:react-active-typing":{"status":"ok","ops":200}},"fixture":"scenarios/startActiveTyping/promotedMountedText"},{"cells":{"slate-v2:react-active-typing":{"status":"ok","medianUs":0,"p95Us":0,"ops":3}},"fixture":"scenarios/startActiveTyping/promotionMs"},{"cells":{"slate-v2:react-active-typing":{"status":"ok","medianUs":0,"p95Us":0,"ops":3}},"fixture":"scenarios/startActiveTyping/selectionMs"},{"cells":{"slate-v2:react-active-typing":{"status":"ok","ops":10}},"fixture":"scenarios/startActiveTyping/textRenders"},{"cells":{"slate-v2:react-active-typing":{"status":"ok","medianUs":189890,"p95Us":199100,"ops":3}},"fixture":"scenarios/startActiveTyping/totalActMs"},{"cells":{"slate-v2:react-active-typing":{"status":"ok","medianUs":182650,"p95Us":191270,"ops":3}},"fixture":"scenarios/startActiveTyping/transformMs"}]},{"category":"slate-core-normalization-current","libraries":["slate-v2:core-current"],"rows":[{"cells":{"slate-v2:core-current":{"status":"ok","medianUs":7450,"p95Us":11210,"ops":3}},"fixture":"current/explicitAdjacentTextNormalizeMs"},{"cells":{"slate-v2:core-current":{"status":"ok","medianUs":253460,"p95Us":267410,"ops":3}},"fixture":"current/explicitInlineFlattenNormalizeMs"},{"cells":{"slate-v2:core-current":{"status":"ok","medianUs":5200,"p95Us":8330,"ops":3}},"fixture":"current/observedInsertTextReadAfterEachMs"}]},{"category":"slate-core-query-ref-observation","libraries":["slate-v2:core-current"],"rows":[{"cells":{"slate-v2:core-current":{"status":"ok","medianUs":24980,"p95Us":27340,"ops":5}},"fixture":"allEntriesArrayMs"},{"cells":{"slate-v2:core-current":{"status":"ok","medianUs":24200,"p95Us":24560,"ops":5}},"fixture":"allEntriesMappedToArrayMs"},{"cells":{"slate-v2:core-current":{"status":"ok","medianUs":23270,"p95Us":23480,"ops":5}},"fixture":"allEntriesToArrayMs"},{"cells":{"slate-v2:core-current":{"status":"ok","medianUs":19370,"p95Us":24510,"ops":5}},"fixture":"firstMatchArrayMs"},{"cells":{"slate-v2:core-current":{"status":"ok","medianUs":340,"p95Us":560,"ops":5}},"fixture":"firstMatchFindMs"},{"cells":{"slate-v2:core-current":{"status":"ok","medianUs":380,"p95Us":390,"ops":5}},"fixture":"firstMatchSomeMs"},{"cells":{"slate-v2:core-current":{"status":"ok","medianUs":22340,"p95Us":24420,"ops":5}},"fixture":"firstMatchToArrayMs"},{"cells":{"slate-v2:core-current":{"status":"ok","medianUs":23360,"p95Us":23560,"ops":5}},"fixture":"lastMatchFindMs"},{"cells":{"slate-v2:core-current":{"status":"ok","medianUs":22720,"p95Us":24200,"ops":5}},"fixture":"noMatchFindMs"},{"cells":{"slate-v2:core-current":{"status":"ok","medianUs":7180,"p95Us":8900,"ops":5}},"fixture":"nodesReadAfterWriteMs"},{"cells":{"slate-v2:core-current":{"status":"ok","medianUs":20210,"p95Us":21860,"ops":5}},"fixture":"pathRefRebaseMs"},{"cells":{"slate-v2:core-current":{"status":"ok","medianUs":2460,"p95Us":7400,"ops":5}},"fixture":"positionsReadAfterWriteMs"},{"cells":{"slate-v2:core-current":{"status":"ok","medianUs":3260,"p95Us":3460,"ops":5}},"fixture":"rangeRefRebaseMs"},{"cells":{"slate-v2:core-current":{"status":"ok","medianUs":2710,"p95Us":6520,"ops":5}},"fixture":"rangeRefsInspectionMs"},{"cells":{"slate-v2:core-current":{"status":"ok","medianUs":2830,"p95Us":3940,"ops":5}},"fixture":"writeOnlyInsertTextMs"}]},{"category":"slate-core-node-transforms","libraries":["slate-v2:core-current"],"rows":[{"cells":{"slate-v2:core-current":{"status":"ok","medianUs":460,"p95Us":460,"ops":1}},"fixture":"insertFragmentMs"},{"cells":{"slate-v2:core-current":{"status":"ok","medianUs":150,"p95Us":150,"ops":1}},"fixture":"insertNodesMs"},{"cells":{"slate-v2:core-current":{"status":"ok","medianUs":190,"p95Us":190,"ops":1}},"fixture":"liftNodesMs"},{"cells":{"slate-v2:core-current":{"status":"ok","medianUs":390,"p95Us":390,"ops":1}},"fixture":"mergeNodesMs"},{"cells":{"slate-v2:core-current":{"status":"ok","medianUs":350,"p95Us":350,"ops":1}},"fixture":"moveNodesMs"},{"cells":{"slate-v2:core-current":{"status":"ok","medianUs":240,"p95Us":240,"ops":1}},"fixture":"removeNodesMs"},{"cells":{"slate-v2:core-current":{"status":"ok","medianUs":290,"p95Us":290,"ops":1}},"fixture":"setNodesMs"},{"cells":{"slate-v2:core-current":{"status":"ok","medianUs":430,"p95Us":430,"ops":1}},"fixture":"splitNodesMs"},{"cells":{"slate-v2:core-current":{"status":"ok","medianUs":390,"p95Us":390,"ops":1}},"fixture":"unwrapNodesMs"},{"cells":{"slate-v2:core-current":{"status":"ok","medianUs":380,"p95Us":380,"ops":1}},"fixture":"wrapNodesMs"}]},{"category":"slate-core-text-selection","libraries":["slate-v2:core-current"],"rows":[{"cells":{"slate-v2:core-current":{"status":"ok","medianUs":260,"p95Us":260,"ops":1}},"fixture":"collapseMs"},{"cells":{"slate-v2:core-current":{"status":"ok","medianUs":1140,"p95Us":1140,"ops":1}},"fixture":"deleteExpandedMs"},{"cells":{"slate-v2:core-current":{"status":"ok","medianUs":1020,"p95Us":1020,"ops":1}},"fixture":"insertTextMs"},{"cells":{"slate-v2:core-current":{"status":"ok","medianUs":370,"p95Us":370,"ops":1}},"fixture":"moveMs"},{"cells":{"slate-v2:core-current":{"status":"ok","medianUs":550,"p95Us":550,"ops":1}},"fixture":"selectMs"},{"cells":{"slate-v2:core-current":{"status":"ok","medianUs":290,"p95Us":290,"ops":1}},"fixture":"setPointMs"},{"cells":{"slate-v2:core-current":{"status":"ok","medianUs":280,"p95Us":280,"ops":1}},"fixture":"setSelectionMs"}]},{"category":"slate-core-editor-store","libraries":["slate-v2:core-current"],"rows":[{"cells":{"slate-v2:core-current":{"status":"ok","medianUs":15320,"p95Us":19510,"ops":5}},"fixture":"getSnapshotAfterEachWriteMs"},{"cells":{"slate-v2:core-current":{"status":"ok","medianUs":19470,"p95Us":20650,"ops":5}},"fixture":"replaceMs"},{"cells":{"slate-v2:core-current":{"status":"ok","medianUs":18160,"p95Us":18790,"ops":5}},"fixture":"resetMs"},{"cells":{"slate-v2:core-current":{"status":"ok","medianUs":7650,"p95Us":9920,"ops":5}},"fixture":"setChildrenAndGetChildrenMs"},{"cells":{"slate-v2:core-current":{"status":"ok","medianUs":2310,"p95Us":5170,"ops":5}},"fixture":"subscribeDispatchMs"}]},{"category":"slate-core-refs-projection","libraries":["slate-v2:core-current"],"rows":[{"cells":{"slate-v2:core-current":{"status":"ok","medianUs":1220,"p95Us":1480,"ops":5}},"fixture":"bookmarkResolveMs"},{"cells":{"slate-v2:core-current":{"status":"ok","medianUs":400,"p95Us":450,"ops":5}},"fixture":"projectRangeCrossBlockMs"},{"cells":{"slate-v2:core-current":{"status":"ok","medianUs":300,"p95Us":470,"ops":5}},"fixture":"projectRangeSameBlockMs"},{"cells":{"slate-v2:core-current":{"status":"ok","medianUs":6300,"p95Us":6860,"ops":5}},"fixture":"rangeRefStructuralRebaseMs"},{"cells":{"slate-v2:core-current":{"status":"ok","medianUs":1840,"p95Us":2570,"ops":5}},"fixture":"rangeRefTextRebaseMs"}]},{"category":"slate-clipboard-large-payload","libraries":["slate-v2:clipboard"],"rows":[{"cells":{"slate-v2:clipboard":{"status":"ok","medianUs":7380,"p95Us":9270,"ops":3}},"fixture":"cohorts/large/domFragmentInsertMs"},{"cells":{"slate-v2:clipboard":{"status":"ok","ops":3}},"fixture":"cohorts/large/domFragmentInsertMs/heapDeltaBytes"},{"cells":{"slate-v2:clipboard":{"status":"ok","medianUs":270,"p95Us":290,"ops":3}},"fixture":"cohorts/large/fragmentDecodeMs"},{"cells":{"slate-v2:clipboard":{"status":"ok","ops":3}},"fixture":"cohorts/large/fragmentDecodeMs/heapDeltaBytes"},{"cells":{"slate-v2:clipboard":{"status":"ok","medianUs":440,"p95Us":470,"ops":3}},"fixture":"cohorts/large/fragmentEncodeMs"},{"cells":{"slate-v2:clipboard":{"status":"ok","ops":3}},"fixture":"cohorts/large/fragmentEncodeMs/heapDeltaBytes"},{"cells":{"slate-v2:clipboard":{"status":"ok","medianUs":8170,"p95Us":9950,"ops":3}},"fixture":"cohorts/large/fragmentInsertMs"},{"cells":{"slate-v2:clipboard":{"status":"ok","ops":3}},"fixture":"cohorts/large/fragmentInsertMs/heapDeltaBytes"},{"cells":{"slate-v2:clipboard":{"status":"ok","medianUs":3650,"p95Us":3740,"ops":3}},"fixture":"cohorts/large/fullSelectionCopyMs"},{"cells":{"slate-v2:clipboard":{"status":"ok","ops":3}},"fixture":"cohorts/large/fullSelectionCopyMs/heapDeltaBytes"},{"cells":{"slate-v2:clipboard":{"status":"ok","medianUs":3910,"p95Us":6930,"ops":3}},"fixture":"cohorts/large/plainTextInsertMs"},{"cells":{"slate-v2:clipboard":{"status":"ok","ops":3}},"fixture":"cohorts/large/plainTextInsertMs/heapDeltaBytes"},{"cells":{"slate-v2:clipboard":{"status":"ok","medianUs":30,"p95Us":40,"ops":3}},"fixture":"cohorts/large/plainTextSplitMs"},{"cells":{"slate-v2:clipboard":{"status":"ok","ops":3}},"fixture":"cohorts/large/plainTextSplitMs/heapDeltaBytes"},{"cells":{"slate-v2:clipboard":{"status":"ok","medianUs":1500,"p95Us":1550,"ops":3}},"fixture":"cohorts/normal/domFragmentInsertMs"},{"cells":{"slate-v2:clipboard":{"status":"ok","ops":3}},"fixture":"cohorts/normal/domFragmentInsertMs/heapDeltaBytes"},{"cells":{"slate-v2:clipboard":{"status":"ok","medianUs":30,"p95Us":40,"ops":3}},"fixture":"cohorts/normal/fragmentDecodeMs"},{"cells":{"slate-v2:clipboard":{"status":"ok","ops":3}},"fixture":"cohorts/normal/fragmentDecodeMs/heapDeltaBytes"},{"cells":{"slate-v2:clipboard":{"status":"ok","medianUs":50,"p95Us":60,"ops":3}},"fixture":"cohorts/normal/fragmentEncodeMs"},{"cells":{"slate-v2:clipboard":{"status":"ok","ops":3}},"fixture":"cohorts/normal/fragmentEncodeMs/heapDeltaBytes"},{"cells":{"slate-v2:clipboard":{"status":"ok","medianUs":1390,"p95Us":1660,"ops":3}},"fixture":"cohorts/normal/fragmentInsertMs"},{"cells":{"slate-v2:clipboard":{"status":"ok","ops":3}},"fixture":"cohorts/normal/fragmentInsertMs/heapDeltaBytes"},{"cells":{"slate-v2:clipboard":{"status":"ok","medianUs":560,"p95Us":680,"ops":3}},"fixture":"cohorts/normal/fullSelectionCopyMs"},{"cells":{"slate-v2:clipboard":{"status":"ok","ops":3}},"fixture":"cohorts/normal/fullSelectionCopyMs/heapDeltaBytes"},{"cells":{"slate-v2:clipboard":{"status":"ok","medianUs":620,"p95Us":690,"ops":3}},"fixture":"cohorts/normal/plainTextInsertMs"},{"cells":{"slate-v2:clipboard":{"status":"ok","ops":3}},"fixture":"cohorts/normal/plainTextInsertMs/heapDeltaBytes"},{"cells":{"slate-v2:clipboard":{"status":"ok","medianUs":0,"p95Us":10,"ops":3}},"fixture":"cohorts/normal/plainTextSplitMs"},{"cells":{"slate-v2:clipboard":{"status":"ok","ops":3}},"fixture":"cohorts/normal/plainTextSplitMs/heapDeltaBytes"},{"cells":{"slate-v2:clipboard":{"status":"ok","medianUs":370,"p95Us":560,"ops":3}},"fixture":"cohorts/small/domFragmentInsertMs"},{"cells":{"slate-v2:clipboard":{"status":"ok","ops":3}},"fixture":"cohorts/small/domFragmentInsertMs/heapDeltaBytes"},{"cells":{"slate-v2:clipboard":{"status":"ok","medianUs":10,"p95Us":40,"ops":3}},"fixture":"cohorts/small/fragmentDecodeMs"},{"cells":{"slate-v2:clipboard":{"status":"ok","ops":3}},"fixture":"cohorts/small/fragmentDecodeMs/heapDeltaBytes"},{"cells":{"slate-v2:clipboard":{"status":"ok","medianUs":10,"p95Us":30,"ops":3}},"fixture":"cohorts/small/fragmentEncodeMs"},{"cells":{"slate-v2:clipboard":{"status":"ok","ops":3}},"fixture":"cohorts/small/fragmentEncodeMs/heapDeltaBytes"},{"cells":{"slate-v2:clipboard":{"status":"ok","medianUs":670,"p95Us":5740,"ops":3}},"fixture":"cohorts/small/fragmentInsertMs"},{"cells":{"slate-v2:clipboard":{"status":"ok","ops":3}},"fixture":"cohorts/small/fragmentInsertMs/heapDeltaBytes"},{"cells":{"slate-v2:clipboard":{"status":"ok","medianUs":270,"p95Us":1280,"ops":3}},"fixture":"cohorts/small/fullSelectionCopyMs"},{"cells":{"slate-v2:clipboard":{"status":"ok","ops":3}},"fixture":"cohorts/small/fullSelectionCopyMs/heapDeltaBytes"},{"cells":{"slate-v2:clipboard":{"status":"ok","medianUs":400,"p95Us":690,"ops":3}},"fixture":"cohorts/small/plainTextInsertMs"},{"cells":{"slate-v2:clipboard":{"status":"ok","ops":3}},"fixture":"cohorts/small/plainTextInsertMs/heapDeltaBytes"},{"cells":{"slate-v2:clipboard":{"status":"ok","medianUs":0,"p95Us":10,"ops":3}},"fixture":"cohorts/small/plainTextSplitMs"},{"cells":{"slate-v2:clipboard":{"status":"ok","ops":3}},"fixture":"cohorts/small/plainTextSplitMs/heapDeltaBytes"},{"cells":{"slate-v2:clipboard":{"status":"ok","medianUs":17660,"p95Us":19250,"ops":3}},"fixture":"cohorts/stress/domFragmentInsertMs"},{"cells":{"slate-v2:clipboard":{"status":"ok","ops":3}},"fixture":"cohorts/stress/domFragmentInsertMs/heapDeltaBytes"},{"cells":{"slate-v2:clipboard":{"status":"ok","medianUs":480,"p95Us":530,"ops":3}},"fixture":"cohorts/stress/fragmentDecodeMs"},{"cells":{"slate-v2:clipboard":{"status":"ok","ops":3}},"fixture":"cohorts/stress/fragmentDecodeMs/heapDeltaBytes"},{"cells":{"slate-v2:clipboard":{"status":"ok","medianUs":750,"p95Us":830,"ops":3}},"fixture":"cohorts/stress/fragmentEncodeMs"},{"cells":{"slate-v2:clipboard":{"status":"ok","ops":3}},"fixture":"cohorts/stress/fragmentEncodeMs/heapDeltaBytes"},{"cells":{"slate-v2:clipboard":{"status":"ok","medianUs":15850,"p95Us":16320,"ops":3}},"fixture":"cohorts/stress/fragmentInsertMs"},{"cells":{"slate-v2:clipboard":{"status":"ok","ops":3}},"fixture":"cohorts/stress/fragmentInsertMs/heapDeltaBytes"},{"cells":{"slate-v2:clipboard":{"status":"ok","medianUs":8380,"p95Us":12430,"ops":3}},"fixture":"cohorts/stress/fullSelectionCopyMs"},{"cells":{"slate-v2:clipboard":{"status":"ok","ops":3}},"fixture":"cohorts/stress/fullSelectionCopyMs/heapDeltaBytes"},{"cells":{"slate-v2:clipboard":{"status":"ok","medianUs":7040,"p95Us":12350,"ops":3}},"fixture":"cohorts/stress/plainTextInsertMs"},{"cells":{"slate-v2:clipboard":{"status":"ok","ops":3}},"fixture":"cohorts/stress/plainTextInsertMs/heapDeltaBytes"},{"cells":{"slate-v2:clipboard":{"status":"ok","medianUs":60,"p95Us":70,"ops":3}},"fixture":"cohorts/stress/plainTextSplitMs"},{"cells":{"slate-v2:clipboard":{"status":"ok","ops":3}},"fixture":"cohorts/stress/plainTextSplitMs/heapDeltaBytes"},{"cells":{"slate-v2:clipboard":{"status":"ok","ops":39.21}},"fixture":"issueTargets/largePlainTextPaste10000"},{"cells":{"slate-v2:clipboard":{"status":"ok","ops":1}},"fixture":"issueTargets/largePlainTextPaste10000/heapDeltaBytes"},{"cells":{"slate-v2:clipboard":{"status":"ok","ops":68.53}},"fixture":"issueTargets/populatedFullSelectionCopy10000"},{"cells":{"slate-v2:clipboard":{"status":"ok","ops":1}},"fixture":"issueTargets/populatedFullSelectionCopy10000/heapDeltaBytes"},{"cells":{"slate-v2:clipboard":{"status":"ok","ops":203.2}},"fixture":"issueTargets/populatedMiddlePlainTextPaste10000Into10000"},{"cells":{"slate-v2:clipboard":{"status":"ok","ops":1}},"fixture":"issueTargets/populatedMiddlePlainTextPaste10000Into10000/heapDeltaBytes"},{"cells":{"slate-v2:clipboard":{"status":"ok","medianUs":161340,"p95Us":161340,"ops":1}},"fixture":"pathological/cutTwoBlocksColdEditMs"},{"cells":{"slate-v2:clipboard":{"status":"ok","ops":1}},"fixture":"pathological/cutTwoBlocksColdEditMs/heapDeltaBytes"},{"cells":{"slate-v2:clipboard":{"status":"ok","medianUs":434450,"p95Us":434450,"ops":1}},"fixture":"pathological/cutTwoBlocksColdSetupMs"},{"cells":{"slate-v2:clipboard":{"status":"ok","ops":1}},"fixture":"pathological/cutTwoBlocksColdSetupMs/heapDeltaBytes"},{"cells":{"slate-v2:clipboard":{"status":"ok","medianUs":145740,"p95Us":145740,"ops":1}},"fixture":"pathological/cutTwoBlocksEditMs"},{"cells":{"slate-v2:clipboard":{"status":"ok","ops":1}},"fixture":"pathological/cutTwoBlocksEditMs/heapDeltaBytes"},{"cells":{"slate-v2:clipboard":{"status":"ok","medianUs":147100,"p95Us":147100,"ops":1}},"fixture":"pathological/cutTwoBlocksMs"},{"cells":{"slate-v2:clipboard":{"status":"ok","ops":1}},"fixture":"pathological/cutTwoBlocksMs/heapDeltaBytes"}]},{"category":"slate-clipboard-large-payload-threshold","libraries":["slate-v2:clipboard"],"rows":[{"cells":{"slate-v2:clipboard":{"status":"ok","medianUs":145740,"p95Us":145740,"ops":1}},"fixture":"cutTwoBlocksEditMsP50"},{"cells":{"slate-v2:clipboard":{"status":"ok","medianUs":147100,"p95Us":147100,"ops":1}},"fixture":"cutTwoBlocksMsP50"},{"cells":{"slate-v2:clipboard":{"status":"ok","ops":1}},"fixture":"operationCount"}]},{"category":"slate-collab-readiness","libraries":["slate-v2:collab-readiness"],"rows":[{"cells":{"slate-v2:collab-readiness":{"status":"ok","medianUs":13630,"p95Us":14080,"ops":3}},"fixture":"large/bookmarkRebaseMs"},{"cells":{"slate-v2:collab-readiness":{"status":"ok","medianUs":18060,"p95Us":19470,"ops":3}},"fixture":"large/canonicalReplaceMs"},{"cells":{"slate-v2:collab-readiness":{"status":"ok","ops":3}},"fixture":"large/connectDisconnectHeapDeltaBytes"},{"cells":{"slate-v2:collab-readiness":{"status":"ok","medianUs":10610,"p95Us":10670,"ops":3}},"fixture":"large/historySkipMs"},{"cells":{"slate-v2:collab-readiness":{"status":"ok","medianUs":10090,"p95Us":10210,"ops":3}},"fixture":"large/localExportCommitMs"},{"cells":{"slate-v2:collab-readiness":{"status":"ok","medianUs":15690,"p95Us":18460,"ops":3}},"fixture":"large/remoteReplayBatchMs"},{"cells":{"slate-v2:collab-readiness":{"status":"ok","medianUs":167220,"p95Us":171920,"ops":3}},"fixture":"large/remoteReplaySeparateMs"},{"cells":{"slate-v2:collab-readiness":{"status":"ok","medianUs":2630,"p95Us":2890,"ops":3}},"fixture":"normal/bookmarkRebaseMs"},{"cells":{"slate-v2:collab-readiness":{"status":"ok","medianUs":1370,"p95Us":1560,"ops":3}},"fixture":"normal/canonicalReplaceMs"},{"cells":{"slate-v2:collab-readiness":{"status":"ok","ops":3}},"fixture":"normal/connectDisconnectHeapDeltaBytes"},{"cells":{"slate-v2:collab-readiness":{"status":"ok","medianUs":2090,"p95Us":4470,"ops":3}},"fixture":"normal/historySkipMs"},{"cells":{"slate-v2:collab-readiness":{"status":"ok","medianUs":1930,"p95Us":2590,"ops":3}},"fixture":"normal/localExportCommitMs"},{"cells":{"slate-v2:collab-readiness":{"status":"ok","medianUs":3230,"p95Us":3430,"ops":3}},"fixture":"normal/remoteReplayBatchMs"},{"cells":{"slate-v2:collab-readiness":{"status":"ok","medianUs":14240,"p95Us":16120,"ops":3}},"fixture":"normal/remoteReplaySeparateMs"},{"cells":{"slate-v2:collab-readiness":{"status":"ok","medianUs":4930,"p95Us":6090,"ops":3}},"fixture":"pathological/bookmarkRebaseMs"},{"cells":{"slate-v2:collab-readiness":{"status":"ok","medianUs":50,"p95Us":60,"ops":3}},"fixture":"pathological/canonicalReplaceMs"},{"cells":{"slate-v2:collab-readiness":{"status":"ok","ops":3}},"fixture":"pathological/connectDisconnectHeapDeltaBytes"},{"cells":{"slate-v2:collab-readiness":{"status":"ok","medianUs":5030,"p95Us":6390,"ops":3}},"fixture":"pathological/historySkipMs"},{"cells":{"slate-v2:collab-readiness":{"status":"ok","medianUs":80,"p95Us":120,"ops":3}},"fixture":"pathological/localExportCommitMs"},{"cells":{"slate-v2:collab-readiness":{"status":"ok","medianUs":4690,"p95Us":5790,"ops":3}},"fixture":"pathological/remoteReplayBatchMs"},{"cells":{"slate-v2:collab-readiness":{"status":"ok","medianUs":263290,"p95Us":263540,"ops":3}},"fixture":"pathological/remoteReplaySeparateMs"},{"cells":{"slate-v2:collab-readiness":{"status":"ok","medianUs":91980,"p95Us":114720,"ops":3}},"fixture":"stress/bookmarkRebaseMs"},{"cells":{"slate-v2:collab-readiness":{"status":"ok","medianUs":130200,"p95Us":145970,"ops":3}},"fixture":"stress/canonicalReplaceMs"},{"cells":{"slate-v2:collab-readiness":{"status":"ok","ops":3}},"fixture":"stress/connectDisconnectHeapDeltaBytes"},{"cells":{"slate-v2:collab-readiness":{"status":"ok","medianUs":87840,"p95Us":94790,"ops":3}},"fixture":"stress/historySkipMs"},{"cells":{"slate-v2:collab-readiness":{"status":"ok","medianUs":87050,"p95Us":109500,"ops":3}},"fixture":"stress/localExportCommitMs"},{"cells":{"slate-v2:collab-readiness":{"status":"ok","medianUs":159380,"p95Us":160120,"ops":3}},"fixture":"stress/remoteReplayBatchMs"},{"cells":{"slate-v2:collab-readiness":{"status":"ok","medianUs":3055480,"p95Us":3071630,"ops":3}},"fixture":"stress/remoteReplaySeparateMs"}]},{"category":"slate-collab-readiness-invariant","libraries":["slate-v2:collab-readiness"],"rows":[{"cells":{"slate-v2:collab-readiness":{"status":"ok","ops":1}},"fixture":"large/batchAndSeparateConverge"},{"cells":{"slate-v2:collab-readiness":{"status":"ok","ops":1}},"fixture":"large/bookmarkResolutionChecked"},{"cells":{"slate-v2:collab-readiness":{"status":"ok","ops":1}},"fixture":"large/cleanupListenerChecked"},{"cells":{"slate-v2:collab-readiness":{"status":"ok","ops":1}},"fixture":"large/historySkipChecked"},{"cells":{"slate-v2:collab-readiness":{"status":"ok","ops":1}},"fixture":"large/remoteCommitMetadataChecked"},{"cells":{"slate-v2:collab-readiness":{"status":"ok","ops":1}},"fixture":"normal/batchAndSeparateConverge"},{"cells":{"slate-v2:collab-readiness":{"status":"ok","ops":1}},"fixture":"normal/bookmarkResolutionChecked"},{"cells":{"slate-v2:collab-readiness":{"status":"ok","ops":1}},"fixture":"normal/cleanupListenerChecked"},{"cells":{"slate-v2:collab-readiness":{"status":"ok","ops":1}},"fixture":"normal/historySkipChecked"},{"cells":{"slate-v2:collab-readiness":{"status":"ok","ops":1}},"fixture":"normal/remoteCommitMetadataChecked"},{"cells":{"slate-v2:collab-readiness":{"status":"ok","ops":1}},"fixture":"pathological/batchAndSeparateConverge"},{"cells":{"slate-v2:collab-readiness":{"status":"ok","ops":1}},"fixture":"pathological/bookmarkResolutionChecked"},{"cells":{"slate-v2:collab-readiness":{"status":"ok","ops":1}},"fixture":"pathological/cleanupListenerChecked"},{"cells":{"slate-v2:collab-readiness":{"status":"ok","ops":1}},"fixture":"pathological/historySkipChecked"},{"cells":{"slate-v2:collab-readiness":{"status":"ok","ops":1}},"fixture":"pathological/remoteCommitMetadataChecked"},{"cells":{"slate-v2:collab-readiness":{"status":"ok","ops":1}},"fixture":"stress/batchAndSeparateConverge"},{"cells":{"slate-v2:collab-readiness":{"status":"ok","ops":1}},"fixture":"stress/bookmarkResolutionChecked"},{"cells":{"slate-v2:collab-readiness":{"status":"ok","ops":1}},"fixture":"stress/cleanupListenerChecked"},{"cells":{"slate-v2:collab-readiness":{"status":"ok","ops":1}},"fixture":"stress/historySkipChecked"},{"cells":{"slate-v2:collab-readiness":{"status":"ok","ops":1}},"fixture":"stress/remoteCommitMetadataChecked"}]},{"category":"slate-6038-transaction-execution","libraries":["slate-v2:transaction-execution"],"rows":[{"cells":{"slate-v2:transaction-execution":{"status":"ok","medianUs":210,"p95Us":350,"ops":200}},"fixture":"separateUpdateMs"},{"cells":{"slate-v2:transaction-execution":{"status":"ok","medianUs":70,"p95Us":140,"ops":200}},"fixture":"updateReplayMs"},{"cells":{"slate-v2:transaction-execution":{"status":"ok","medianUs":30,"p95Us":40,"ops":200}},"fixture":"opFamilyLanes/insertNode/separateUpdateMs"},{"cells":{"slate-v2:transaction-execution":{"status":"ok","medianUs":30,"p95Us":40,"ops":200}},"fixture":"opFamilyLanes/insertNode/updateReplayMs"},{"cells":{"slate-v2:transaction-execution":{"status":"ok","medianUs":20,"p95Us":30,"ops":200}},"fixture":"opFamilyLanes/insertText/separateUpdateMs"},{"cells":{"slate-v2:transaction-execution":{"status":"ok","medianUs":20,"p95Us":30,"ops":200}},"fixture":"opFamilyLanes/insertText/updateReplayMs"},{"cells":{"slate-v2:transaction-execution":{"status":"ok","medianUs":210,"p95Us":350,"ops":200}},"fixture":"opFamilyLanes/mixedBatch/separateUpdateMs"},{"cells":{"slate-v2:transaction-execution":{"status":"ok","medianUs":70,"p95Us":140,"ops":200}},"fixture":"opFamilyLanes/mixedBatch/updateReplayMs"},{"cells":{"slate-v2:transaction-execution":{"status":"ok","medianUs":30,"p95Us":30,"ops":200}},"fixture":"opFamilyLanes/moveNode/separateUpdateMs"},{"cells":{"slate-v2:transaction-execution":{"status":"ok","medianUs":30,"p95Us":30,"ops":200}},"fixture":"opFamilyLanes/moveNode/updateReplayMs"},{"cells":{"slate-v2:transaction-execution":{"status":"ok","medianUs":20,"p95Us":30,"ops":200}},"fixture":"opFamilyLanes/removeText/separateUpdateMs"},{"cells":{"slate-v2:transaction-execution":{"status":"ok","medianUs":20,"p95Us":30,"ops":200}},"fixture":"opFamilyLanes/removeText/updateReplayMs"},{"cells":{"slate-v2:transaction-execution":{"status":"ok","medianUs":30,"p95Us":40,"ops":200}},"fixture":"opFamilyLanes/setNode/separateUpdateMs"},{"cells":{"slate-v2:transaction-execution":{"status":"ok","medianUs":30,"p95Us":40,"ops":200}},"fixture":"opFamilyLanes/setNode/updateReplayMs"},{"cells":{"slate-v2:transaction-execution":{"status":"ok","medianUs":30,"p95Us":40,"ops":200}},"fixture":"opFamilyLanes/splitNode/separateUpdateMs"},{"cells":{"slate-v2:transaction-execution":{"status":"ok","medianUs":30,"p95Us":40,"ops":200}},"fixture":"opFamilyLanes/splitNode/updateReplayMs"}]},{"category":"slate-core-transaction-current","libraries":["slate-v2:core-current"],"rows":[{"cells":{"slate-v2:core-current":{"status":"optional-missing-artifact","note":"missing artifact ../../.tmp/slate-v2/tmp/slate-transaction-benchmark.json"}},"fixture":"core-transaction-current"}]},{"category":"slate-history-retained-memory","libraries":["slate-v2:history-memory"],"rows":[{"cells":{"slate-v2:history-memory":{"status":"optional-missing-artifact","note":"missing artifact ../../.tmp/slate-v2/tmp/slate-history-retained-memory-benchmark.json"}},"fixture":"history-retained-memory"}]}],"libraries":["slate-v2:core-current","slate-v2:react-rerender-breadth","slate-v2:react-overlays","slate-v2:react-active-typing","slate-v2:clipboard","slate-v2:collab-readiness","slate-v2:transaction-execution","slate-v2:history-memory"],"missingRows":[{"category":"slate-core-transaction-current","fixture":"core-transaction-current","library":"slate-v2:core-current","medianUs":null,"note":"missing artifact ../../.tmp/slate-v2/tmp/slate-transaction-benchmark.json","ops":null,"p95Us":null,"status":"optional-missing-artifact"},{"category":"slate-history-retained-memory","fixture":"history-retained-memory","library":"slate-v2:history-memory","medianUs":null,"note":"missing artifact ../../.tmp/slate-v2/tmp/slate-history-retained-memory-benchmark.json","ops":null,"p95Us":null,"status":"optional-missing-artifact"}],"name":"slate-v2 internal proof results","rowCount":326,"statusCounts":{"ok":324,"optional-missing-artifact":2}}
+{
+  "categoryCounts": {
+    "slate-6038-transaction-execution": 16,
+    "slate-clipboard-large-payload": 70,
+    "slate-clipboard-large-payload-threshold": 3,
+    "slate-collab-readiness": 28,
+    "slate-collab-readiness-invariant": 20,
+    "slate-core-editor-store": 5,
+    "slate-core-node-transforms": 10,
+    "slate-core-normalization-current": 3,
+    "slate-core-query-ref-observation": 15,
+    "slate-core-refs-projection": 5,
+    "slate-core-text-selection": 7,
+    "slate-core-transaction-current": 1,
+    "slate-history-retained-memory": 1,
+    "slate-react-active-typing-breakdown": 54,
+    "slate-react-huge-document-overlays": 30,
+    "slate-react-rerender-breadth": 58
+  },
+  "generatedAt": "2026-05-29T22:32:11.758Z",
+  "groups": [
+    {
+      "category": "slate-react-rerender-breadth",
+      "libraries": ["slate-v2:react-rerender-breadth"],
+      "rows": [
+        {
+          "cells": {
+            "slate-v2:react-rerender-breadth": { "status": "ok", "ops": 3 }
+          },
+          "fixture": "annotationWidgetBreadth/annotationProjectCount"
+        },
+        {
+          "cells": {
+            "slate-v2:react-rerender-breadth": { "status": "ok", "ops": 1 }
+          },
+          "fixture": "annotationWidgetBreadth/annotationProjectionRecomputeCount"
+        },
+        {
+          "cells": {
+            "slate-v2:react-rerender-breadth": { "status": "ok", "ops": 1 }
+          },
+          "fixture": "annotationWidgetBreadth/annotationProjectionRenders"
+        },
+        {
+          "cells": {
+            "slate-v2:react-rerender-breadth": { "status": "ok", "ops": 3 }
+          },
+          "fixture": "annotationWidgetBreadth/annotationResolveCount"
+        },
+        {
+          "cells": {
+            "slate-v2:react-rerender-breadth": { "status": "ok", "ops": 1 }
+          },
+          "fixture": "annotationWidgetBreadth/annotationRuntimeSubscriberWakeCount"
+        },
+        {
+          "cells": {
+            "slate-v2:react-rerender-breadth": { "status": "ok", "ops": 1 }
+          },
+          "fixture": "annotationWidgetBreadth/annotationSidebarRenders"
+        },
+        {
+          "cells": {
+            "slate-v2:react-rerender-breadth": { "status": "ok", "ops": 1 }
+          },
+          "fixture": "annotationWidgetBreadth/annotationWidgetRenders"
+        },
+        {
+          "cells": {
+            "slate-v2:react-rerender-breadth": {
+              "status": "ok",
+              "medianUs": 880,
+              "p95Us": 5310,
+              "ops": 5
+            }
+          },
+          "fixture": "annotationWidgetBreadth/editMs"
+        },
+        {
+          "cells": {
+            "slate-v2:react-rerender-breadth": { "status": "ok", "ops": 1 }
+          },
+          "fixture": "annotationWidgetBreadth/leftTextRenders"
+        },
+        {
+          "cells": {
+            "slate-v2:react-rerender-breadth": { "status": "ok", "ops": 0 }
+          },
+          "fixture": "annotationWidgetBreadth/rightTextRenders"
+        },
+        {
+          "cells": {
+            "slate-v2:react-rerender-breadth": { "status": "ok", "ops": 2 }
+          },
+          "fixture": "annotationWidgetBreadth/widgetRecomputeCount"
+        },
+        {
+          "cells": {
+            "slate-v2:react-rerender-breadth": { "status": "ok", "ops": 1 }
+          },
+          "fixture": "decorationSourceToggleBreadth/leftOverlayRenders"
+        },
+        {
+          "cells": {
+            "slate-v2:react-rerender-breadth": { "status": "ok", "ops": 0 }
+          },
+          "fixture": "decorationSourceToggleBreadth/leftTextRenders"
+        },
+        {
+          "cells": {
+            "slate-v2:react-rerender-breadth": { "status": "ok", "ops": 1 }
+          },
+          "fixture": "decorationSourceToggleBreadth/projectionRecomputeCount"
+        },
+        {
+          "cells": {
+            "slate-v2:react-rerender-breadth": { "status": "ok", "ops": 0 }
+          },
+          "fixture": "decorationSourceToggleBreadth/rightOverlayRenders"
+        },
+        {
+          "cells": {
+            "slate-v2:react-rerender-breadth": { "status": "ok", "ops": 0 }
+          },
+          "fixture": "decorationSourceToggleBreadth/rightTextRenders"
+        },
+        {
+          "cells": {
+            "slate-v2:react-rerender-breadth": {
+              "status": "ok",
+              "medianUs": 880,
+              "p95Us": 5170,
+              "ops": 5
+            }
+          },
+          "fixture": "decorationSourceToggleBreadth/toggleMs"
+        },
+        {
+          "cells": {
+            "slate-v2:react-rerender-breadth": { "status": "ok", "ops": 0 }
+          },
+          "fixture": "deepAncestorBreadth/ancestorRenderEvents"
+        },
+        {
+          "cells": {
+            "slate-v2:react-rerender-breadth": { "status": "ok", "ops": 1 }
+          },
+          "fixture": "deepAncestorBreadth/deepLeafRenders"
+        },
+        {
+          "cells": {
+            "slate-v2:react-rerender-breadth": {
+              "status": "ok",
+              "medianUs": 2780,
+              "p95Us": 7230,
+              "ops": 5
+            }
+          },
+          "fixture": "deepAncestorBreadth/editMs"
+        },
+        {
+          "cells": {
+            "slate-v2:react-rerender-breadth": { "status": "ok", "ops": 0 }
+          },
+          "fixture": "deepAncestorBreadth/rerenderedAncestorCount"
+        },
+        {
+          "cells": {
+            "slate-v2:react-rerender-breadth": { "status": "ok", "ops": 0 }
+          },
+          "fixture": "deepAncestorBreadth/siblingBranchRenders"
+        },
+        {
+          "cells": {
+            "slate-v2:react-rerender-breadth": { "status": "ok", "ops": 0 }
+          },
+          "fixture": "deepAncestorBreadth/siblingLeafRenders"
+        },
+        {
+          "cells": {
+            "slate-v2:react-rerender-breadth": {
+              "status": "ok",
+              "medianUs": 1020,
+              "p95Us": 1170,
+              "ops": 5
+            }
+          },
+          "fixture": "hiddenPanelActivity/hiddenEditMs"
+        },
+        {
+          "cells": {
+            "slate-v2:react-rerender-breadth": { "status": "ok", "ops": 0 }
+          },
+          "fixture": "hiddenPanelActivity/hiddenPanelRendersWhileHidden"
+        },
+        {
+          "cells": {
+            "slate-v2:react-rerender-breadth": { "status": "ok", "ops": 1 }
+          },
+          "fixture": "hiddenPanelActivity/leftTextRendersWhileHidden"
+        },
+        {
+          "cells": {
+            "slate-v2:react-rerender-breadth": { "status": "ok", "ops": 1 }
+          },
+          "fixture": "hiddenPanelActivity/preservedLocalCount"
+        },
+        {
+          "cells": {
+            "slate-v2:react-rerender-breadth": { "status": "ok", "ops": 1 }
+          },
+          "fixture": "hiddenPanelActivity/resumedPanelRenders"
+        },
+        {
+          "cells": {
+            "slate-v2:react-rerender-breadth": { "status": "ok", "ops": 0 }
+          },
+          "fixture": "hiddenPanelActivity/rightTextRendersWhileHidden"
+        },
+        {
+          "cells": {
+            "slate-v2:react-rerender-breadth": { "status": "ok", "ops": 35 }
+          },
+          "fixture": "hiddenPanelActivity/visiblePanelStateLength"
+        },
+        {
+          "cells": {
+            "slate-v2:react-rerender-breadth": { "status": "ok", "ops": 0 }
+          },
+          "fixture": "manyLeafBreadth/blockRenders"
+        },
+        {
+          "cells": {
+            "slate-v2:react-rerender-breadth": {
+              "status": "ok",
+              "medianUs": 7510,
+              "p95Us": 9650,
+              "ops": 5
+            }
+          },
+          "fixture": "manyLeafBreadth/editMs"
+        },
+        {
+          "cells": {
+            "slate-v2:react-rerender-breadth": { "status": "ok", "ops": 1 }
+          },
+          "fixture": "manyLeafBreadth/editedLeafRenders"
+        },
+        {
+          "cells": {
+            "slate-v2:react-rerender-breadth": { "status": "ok", "ops": 0 }
+          },
+          "fixture": "manyLeafBreadth/rerenderedSiblingLeafCount"
+        },
+        {
+          "cells": {
+            "slate-v2:react-rerender-breadth": { "status": "ok", "ops": 0 }
+          },
+          "fixture": "manyLeafBreadth/siblingLeafRenders"
+        },
+        {
+          "cells": {
+            "slate-v2:react-rerender-breadth": { "status": "ok", "ops": 0 }
+          },
+          "fixture": "selectionBreadth/broadRenders"
+        },
+        {
+          "cells": {
+            "slate-v2:react-rerender-breadth": { "status": "ok", "ops": 0 }
+          },
+          "fixture": "selectionBreadth/leftBlockRenders"
+        },
+        {
+          "cells": {
+            "slate-v2:react-rerender-breadth": { "status": "ok", "ops": 0 }
+          },
+          "fixture": "selectionBreadth/rightBlockRenders"
+        },
+        {
+          "cells": {
+            "slate-v2:react-rerender-breadth": {
+              "status": "ok",
+              "medianUs": 12420,
+              "p95Us": 14530,
+              "ops": 5
+            }
+          },
+          "fixture": "selectionBreadth/selectionOpsMs"
+        },
+        {
+          "cells": {
+            "slate-v2:react-rerender-breadth": { "status": "ok", "ops": 20 }
+          },
+          "fixture": "selectionBreadth/selectionRenders"
+        },
+        {
+          "cells": {
+            "slate-v2:react-rerender-breadth": { "status": "ok", "ops": 1 }
+          },
+          "fixture": "sourceScopedInvalidation/externalRefreshExternalLeftRenders"
+        },
+        {
+          "cells": {
+            "slate-v2:react-rerender-breadth": { "status": "ok", "ops": 1 }
+          },
+          "fixture": "sourceScopedInvalidation/externalRefreshExternalRecomputeCount"
+        },
+        {
+          "cells": {
+            "slate-v2:react-rerender-breadth": { "status": "ok", "ops": 1 }
+          },
+          "fixture": "sourceScopedInvalidation/externalRefreshExternalRightRenders"
+        },
+        {
+          "cells": {
+            "slate-v2:react-rerender-breadth": {
+              "status": "ok",
+              "medianUs": 180,
+              "p95Us": 5240,
+              "ops": 5
+            }
+          },
+          "fixture": "sourceScopedInvalidation/externalRefreshMs"
+        },
+        {
+          "cells": {
+            "slate-v2:react-rerender-breadth": { "status": "ok", "ops": 0 }
+          },
+          "fixture": "sourceScopedInvalidation/externalRefreshSelectionRecomputeCount"
+        },
+        {
+          "cells": {
+            "slate-v2:react-rerender-breadth": { "status": "ok", "ops": 0 }
+          },
+          "fixture": "sourceScopedInvalidation/externalRefreshTextRecomputeCount"
+        },
+        {
+          "cells": {
+            "slate-v2:react-rerender-breadth": { "status": "ok", "ops": 0 }
+          },
+          "fixture": "sourceScopedInvalidation/selectionChangeExternalRecomputeCount"
+        },
+        {
+          "cells": {
+            "slate-v2:react-rerender-breadth": {
+              "status": "ok",
+              "medianUs": 580,
+              "p95Us": 5060,
+              "ops": 5
+            }
+          },
+          "fixture": "sourceScopedInvalidation/selectionChangeMs"
+        },
+        {
+          "cells": {
+            "slate-v2:react-rerender-breadth": { "status": "ok", "ops": 1 }
+          },
+          "fixture": "sourceScopedInvalidation/selectionChangeSelectionLeftRenders"
+        },
+        {
+          "cells": {
+            "slate-v2:react-rerender-breadth": { "status": "ok", "ops": 1 }
+          },
+          "fixture": "sourceScopedInvalidation/selectionChangeSelectionRecomputeCount"
+        },
+        {
+          "cells": {
+            "slate-v2:react-rerender-breadth": { "status": "ok", "ops": 1 }
+          },
+          "fixture": "sourceScopedInvalidation/selectionChangeSelectionRightRenders"
+        },
+        {
+          "cells": {
+            "slate-v2:react-rerender-breadth": { "status": "ok", "ops": 0 }
+          },
+          "fixture": "sourceScopedInvalidation/selectionChangeTextRecomputeCount"
+        },
+        {
+          "cells": {
+            "slate-v2:react-rerender-breadth": { "status": "ok", "ops": 0 }
+          },
+          "fixture": "sourceScopedInvalidation/textEditExternalRecomputeCount"
+        },
+        {
+          "cells": {
+            "slate-v2:react-rerender-breadth": {
+              "status": "ok",
+              "medianUs": 640,
+              "p95Us": 820,
+              "ops": 5
+            }
+          },
+          "fixture": "sourceScopedInvalidation/textEditMs"
+        },
+        {
+          "cells": {
+            "slate-v2:react-rerender-breadth": { "status": "ok", "ops": 0 }
+          },
+          "fixture": "sourceScopedInvalidation/textEditSelectionRecomputeCount"
+        },
+        {
+          "cells": {
+            "slate-v2:react-rerender-breadth": { "status": "ok", "ops": 1 }
+          },
+          "fixture": "sourceScopedInvalidation/textEditTextLeftRenders"
+        },
+        {
+          "cells": {
+            "slate-v2:react-rerender-breadth": { "status": "ok", "ops": 1 }
+          },
+          "fixture": "sourceScopedInvalidation/textEditTextRecomputeCount"
+        },
+        {
+          "cells": {
+            "slate-v2:react-rerender-breadth": { "status": "ok", "ops": 1 }
+          },
+          "fixture": "sourceScopedInvalidation/textEditTextRightRenders"
+        }
+      ]
+    },
+    {
+      "category": "slate-react-huge-document-overlays",
+      "libraries": ["slate-v2:react-overlays"],
+      "rows": [
+        {
+          "cells": { "slate-v2:react-overlays": { "status": "ok", "ops": 0 } },
+          "fixture": "activeEditAfterOverlay/activeElementRenders"
+        },
+        {
+          "cells": { "slate-v2:react-overlays": { "status": "ok", "ops": 0 } },
+          "fixture": "activeEditAfterOverlay/activeProjectionRenders"
+        },
+        {
+          "cells": { "slate-v2:react-overlays": { "status": "ok", "ops": 1 } },
+          "fixture": "activeEditAfterOverlay/activeTextRenders"
+        },
+        {
+          "cells": {
+            "slate-v2:react-overlays": {
+              "status": "ok",
+              "medianUs": 2440,
+              "p95Us": 4380,
+              "ops": 5
+            }
+          },
+          "fixture": "activeEditAfterOverlay/editMs"
+        },
+        {
+          "cells": { "slate-v2:react-overlays": { "status": "ok", "ops": 0 } },
+          "fixture": "activeEditAfterOverlay/farElementRenders"
+        },
+        {
+          "cells": { "slate-v2:react-overlays": { "status": "ok", "ops": 0 } },
+          "fixture": "activeEditAfterOverlay/farProjectionRenders"
+        },
+        {
+          "cells": { "slate-v2:react-overlays": { "status": "ok", "ops": 0 } },
+          "fixture": "activeEditAfterOverlay/farTextRenders"
+        },
+        {
+          "cells": { "slate-v2:react-overlays": { "status": "ok", "ops": 40 } },
+          "fixture": "activeEditAfterOverlay/mountedTextAfter"
+        },
+        {
+          "cells": { "slate-v2:react-overlays": { "status": "ok", "ops": 40 } },
+          "fixture": "activeEditAfterOverlay/mountedTextBefore"
+        },
+        {
+          "cells": { "slate-v2:react-overlays": { "status": "ok", "ops": 8 } },
+          "fixture": "activeEditAfterOverlay/partialDOMCountAfter"
+        },
+        {
+          "cells": { "slate-v2:react-overlays": { "status": "ok", "ops": 8 } },
+          "fixture": "activeEditAfterOverlay/partialDOMCountBefore"
+        },
+        {
+          "cells": { "slate-v2:react-overlays": { "status": "ok", "ops": 0 } },
+          "fixture": "activeEditAfterOverlay/projectionRecomputeCount"
+        },
+        {
+          "cells": { "slate-v2:react-overlays": { "status": "ok", "ops": 0 } },
+          "fixture": "overlayToggle/activeProjectionCount"
+        },
+        {
+          "cells": { "slate-v2:react-overlays": { "status": "ok", "ops": 0 } },
+          "fixture": "overlayToggle/activeProjectionRenders"
+        },
+        {
+          "cells": { "slate-v2:react-overlays": { "status": "ok", "ops": 1 } },
+          "fixture": "overlayToggle/farProjectionCount"
+        },
+        {
+          "cells": { "slate-v2:react-overlays": { "status": "ok", "ops": 1 } },
+          "fixture": "overlayToggle/farProjectionRenders"
+        },
+        {
+          "cells": { "slate-v2:react-overlays": { "status": "ok", "ops": 40 } },
+          "fixture": "overlayToggle/mountedTextAfter"
+        },
+        {
+          "cells": { "slate-v2:react-overlays": { "status": "ok", "ops": 40 } },
+          "fixture": "overlayToggle/mountedTextBefore"
+        },
+        {
+          "cells": {
+            "slate-v2:react-overlays": {
+              "status": "ok",
+              "medianUs": 2830,
+              "p95Us": 3340,
+              "ops": 5
+            }
+          },
+          "fixture": "overlayToggle/overlayToggleMs"
+        },
+        {
+          "cells": { "slate-v2:react-overlays": { "status": "ok", "ops": 8 } },
+          "fixture": "overlayToggle/partialDOMCountAfter"
+        },
+        {
+          "cells": { "slate-v2:react-overlays": { "status": "ok", "ops": 8 } },
+          "fixture": "overlayToggle/partialDOMCountBefore"
+        },
+        {
+          "cells": { "slate-v2:react-overlays": { "status": "ok", "ops": 1 } },
+          "fixture": "overlayToggle/projectionRecomputeCount"
+        },
+        {
+          "cells": { "slate-v2:react-overlays": { "status": "ok", "ops": 60 } },
+          "fixture": "partialDOMPromotion/mountedTextAfter"
+        },
+        {
+          "cells": { "slate-v2:react-overlays": { "status": "ok", "ops": 40 } },
+          "fixture": "partialDOMPromotion/mountedTextBefore"
+        },
+        {
+          "cells": { "slate-v2:react-overlays": { "status": "ok", "ops": 7 } },
+          "fixture": "partialDOMPromotion/partialDOMCountAfter"
+        },
+        {
+          "cells": { "slate-v2:react-overlays": { "status": "ok", "ops": 8 } },
+          "fixture": "partialDOMPromotion/partialDOMCountBefore"
+        },
+        {
+          "cells": { "slate-v2:react-overlays": { "status": "ok", "ops": 0 } },
+          "fixture": "partialDOMPromotion/projectionRecomputeCount"
+        },
+        {
+          "cells": {
+            "slate-v2:react-overlays": {
+              "status": "ok",
+              "medianUs": 14000,
+              "p95Us": 23090,
+              "ops": 5
+            }
+          },
+          "fixture": "partialDOMPromotion/promotionMs"
+        },
+        {
+          "cells": { "slate-v2:react-overlays": { "status": "ok", "ops": 2 } },
+          "fixture": "partialDOMPromotion/selectionAnchorPathLength"
+        },
+        {
+          "cells": {
+            "slate-v2:react-overlays": { "status": "ok", "ops": 100 }
+          },
+          "fixture": "partialDOMPromotion/selectionAnchorTopLevel"
+        }
+      ]
+    },
+    {
+      "category": "slate-react-active-typing-breakdown",
+      "libraries": ["slate-v2:react-active-typing"],
+      "rows": [
+        {
+          "cells": {
+            "slate-v2:react-active-typing": { "status": "ok", "ops": 200 }
+          },
+          "fixture": "scenarios/middlePromoteThenType/beforePromotionMountedText"
+        },
+        {
+          "cells": {
+            "slate-v2:react-active-typing": { "status": "ok", "ops": 0 }
+          },
+          "fixture": "scenarios/middlePromoteThenType/elementRenders"
+        },
+        {
+          "cells": {
+            "slate-v2:react-active-typing": { "status": "ok", "ops": 10 }
+          },
+          "fixture": "scenarios/middlePromoteThenType/leafRenders"
+        },
+        {
+          "cells": {
+            "slate-v2:react-active-typing": { "status": "ok", "ops": 300 }
+          },
+          "fixture": "scenarios/middlePromoteThenType/mountedTextAfterTyping"
+        },
+        {
+          "cells": {
+            "slate-v2:react-active-typing": {
+              "status": "ok",
+              "medianUs": 3310,
+              "p95Us": 3600,
+              "ops": 3
+            }
+          },
+          "fixture": "scenarios/middlePromoteThenType/profilerActualMs"
+        },
+        {
+          "cells": {
+            "slate-v2:react-active-typing": { "status": "ok", "ops": 10 }
+          },
+          "fixture": "scenarios/middlePromoteThenType/profilerCommitCount"
+        },
+        {
+          "cells": {
+            "slate-v2:react-active-typing": { "status": "ok", "ops": 300 }
+          },
+          "fixture": "scenarios/middlePromoteThenType/promotedMountedText"
+        },
+        {
+          "cells": {
+            "slate-v2:react-active-typing": {
+              "status": "ok",
+              "medianUs": 213070,
+              "p95Us": 214820,
+              "ops": 3
+            }
+          },
+          "fixture": "scenarios/middlePromoteThenType/promotionMs"
+        },
+        {
+          "cells": {
+            "slate-v2:react-active-typing": {
+              "status": "ok",
+              "medianUs": 0,
+              "p95Us": 0,
+              "ops": 3
+            }
+          },
+          "fixture": "scenarios/middlePromoteThenType/selectionMs"
+        },
+        {
+          "cells": {
+            "slate-v2:react-active-typing": { "status": "ok", "ops": 10 }
+          },
+          "fixture": "scenarios/middlePromoteThenType/textRenders"
+        },
+        {
+          "cells": {
+            "slate-v2:react-active-typing": {
+              "status": "ok",
+              "medianUs": 165890,
+              "p95Us": 169780,
+              "ops": 3
+            }
+          },
+          "fixture": "scenarios/middlePromoteThenType/totalActMs"
+        },
+        {
+          "cells": {
+            "slate-v2:react-active-typing": {
+              "status": "ok",
+              "medianUs": 157160,
+              "p95Us": 162040,
+              "ops": 3
+            }
+          },
+          "fixture": "scenarios/middlePromoteThenType/transformMs"
+        },
+        {
+          "cells": {
+            "slate-v2:react-active-typing": { "status": "ok", "ops": 200 }
+          },
+          "fixture": "scenarios/middleSelectThenType/beforePromotionMountedText"
+        },
+        {
+          "cells": {
+            "slate-v2:react-active-typing": { "status": "ok", "ops": 0 }
+          },
+          "fixture": "scenarios/middleSelectThenType/elementRenders"
+        },
+        {
+          "cells": {
+            "slate-v2:react-active-typing": { "status": "ok", "ops": 10 }
+          },
+          "fixture": "scenarios/middleSelectThenType/leafRenders"
+        },
+        {
+          "cells": {
+            "slate-v2:react-active-typing": { "status": "ok", "ops": 300 }
+          },
+          "fixture": "scenarios/middleSelectThenType/mountedTextAfterTyping"
+        },
+        {
+          "cells": {
+            "slate-v2:react-active-typing": {
+              "status": "ok",
+              "medianUs": 3040,
+              "p95Us": 3520,
+              "ops": 3
+            }
+          },
+          "fixture": "scenarios/middleSelectThenType/profilerActualMs"
+        },
+        {
+          "cells": {
+            "slate-v2:react-active-typing": { "status": "ok", "ops": 10 }
+          },
+          "fixture": "scenarios/middleSelectThenType/profilerCommitCount"
+        },
+        {
+          "cells": {
+            "slate-v2:react-active-typing": { "status": "ok", "ops": 200 }
+          },
+          "fixture": "scenarios/middleSelectThenType/promotedMountedText"
+        },
+        {
+          "cells": {
+            "slate-v2:react-active-typing": {
+              "status": "ok",
+              "medianUs": 0,
+              "p95Us": 0,
+              "ops": 3
+            }
+          },
+          "fixture": "scenarios/middleSelectThenType/promotionMs"
+        },
+        {
+          "cells": {
+            "slate-v2:react-active-typing": {
+              "status": "ok",
+              "medianUs": 129780,
+              "p95Us": 131240,
+              "ops": 3
+            }
+          },
+          "fixture": "scenarios/middleSelectThenType/selectionMs"
+        },
+        {
+          "cells": {
+            "slate-v2:react-active-typing": { "status": "ok", "ops": 10 }
+          },
+          "fixture": "scenarios/middleSelectThenType/textRenders"
+        },
+        {
+          "cells": {
+            "slate-v2:react-active-typing": {
+              "status": "ok",
+              "medianUs": 198160,
+              "p95Us": 206020,
+              "ops": 3
+            }
+          },
+          "fixture": "scenarios/middleSelectThenType/totalActMs"
+        },
+        {
+          "cells": {
+            "slate-v2:react-active-typing": {
+              "status": "ok",
+              "medianUs": 191250,
+              "p95Us": 197090,
+              "ops": 3
+            }
+          },
+          "fixture": "scenarios/middleSelectThenType/transformMs"
+        },
+        {
+          "cells": {
+            "slate-v2:react-active-typing": { "status": "ok", "ops": 200 }
+          },
+          "fixture": "scenarios/middleShelledModelOnly/beforePromotionMountedText"
+        },
+        {
+          "cells": {
+            "slate-v2:react-active-typing": { "status": "ok", "ops": 0 }
+          },
+          "fixture": "scenarios/middleShelledModelOnly/elementRenders"
+        },
+        {
+          "cells": {
+            "slate-v2:react-active-typing": { "status": "ok", "ops": 0 }
+          },
+          "fixture": "scenarios/middleShelledModelOnly/leafRenders"
+        },
+        {
+          "cells": {
+            "slate-v2:react-active-typing": { "status": "ok", "ops": 200 }
+          },
+          "fixture": "scenarios/middleShelledModelOnly/mountedTextAfterTyping"
+        },
+        {
+          "cells": {
+            "slate-v2:react-active-typing": {
+              "status": "ok",
+              "medianUs": 930,
+              "p95Us": 930,
+              "ops": 3
+            }
+          },
+          "fixture": "scenarios/middleShelledModelOnly/profilerActualMs"
+        },
+        {
+          "cells": {
+            "slate-v2:react-active-typing": { "status": "ok", "ops": 10 }
+          },
+          "fixture": "scenarios/middleShelledModelOnly/profilerCommitCount"
+        },
+        {
+          "cells": {
+            "slate-v2:react-active-typing": { "status": "ok", "ops": 200 }
+          },
+          "fixture": "scenarios/middleShelledModelOnly/promotedMountedText"
+        },
+        {
+          "cells": {
+            "slate-v2:react-active-typing": {
+              "status": "ok",
+              "medianUs": 0,
+              "p95Us": 0,
+              "ops": 3
+            }
+          },
+          "fixture": "scenarios/middleShelledModelOnly/promotionMs"
+        },
+        {
+          "cells": {
+            "slate-v2:react-active-typing": {
+              "status": "ok",
+              "medianUs": 0,
+              "p95Us": 0,
+              "ops": 3
+            }
+          },
+          "fixture": "scenarios/middleShelledModelOnly/selectionMs"
+        },
+        {
+          "cells": {
+            "slate-v2:react-active-typing": { "status": "ok", "ops": 0 }
+          },
+          "fixture": "scenarios/middleShelledModelOnly/textRenders"
+        },
+        {
+          "cells": {
+            "slate-v2:react-active-typing": {
+              "status": "ok",
+              "medianUs": 174710,
+              "p95Us": 189060,
+              "ops": 3
+            }
+          },
+          "fixture": "scenarios/middleShelledModelOnly/totalActMs"
+        },
+        {
+          "cells": {
+            "slate-v2:react-active-typing": {
+              "status": "ok",
+              "medianUs": 170620,
+              "p95Us": 184550,
+              "ops": 3
+            }
+          },
+          "fixture": "scenarios/middleShelledModelOnly/transformMs"
+        },
+        {
+          "cells": {
+            "slate-v2:react-active-typing": { "status": "ok", "ops": 0 }
+          },
+          "fixture": "scenarios/selectAll/elementRenders"
+        },
+        {
+          "cells": {
+            "slate-v2:react-active-typing": { "status": "ok", "ops": 0 }
+          },
+          "fixture": "scenarios/selectAll/leafRenders"
+        },
+        {
+          "cells": {
+            "slate-v2:react-active-typing": {
+              "status": "ok",
+              "medianUs": 1050,
+              "p95Us": 4840,
+              "ops": 3
+            }
+          },
+          "fixture": "scenarios/selectAll/profilerActualMs"
+        },
+        {
+          "cells": {
+            "slate-v2:react-active-typing": { "status": "ok", "ops": 2 }
+          },
+          "fixture": "scenarios/selectAll/profilerCommitCount"
+        },
+        {
+          "cells": {
+            "slate-v2:react-active-typing": {
+              "status": "ok",
+              "medianUs": 39910,
+              "p95Us": 40310,
+              "ops": 3
+            }
+          },
+          "fixture": "scenarios/selectAll/selectAllMs"
+        },
+        {
+          "cells": {
+            "slate-v2:react-active-typing": { "status": "ok", "ops": 0 }
+          },
+          "fixture": "scenarios/selectAll/textRenders"
+        },
+        {
+          "cells": {
+            "slate-v2:react-active-typing": { "status": "ok", "ops": 200 }
+          },
+          "fixture": "scenarios/startActiveTyping/beforePromotionMountedText"
+        },
+        {
+          "cells": {
+            "slate-v2:react-active-typing": { "status": "ok", "ops": 0 }
+          },
+          "fixture": "scenarios/startActiveTyping/elementRenders"
+        },
+        {
+          "cells": {
+            "slate-v2:react-active-typing": { "status": "ok", "ops": 10 }
+          },
+          "fixture": "scenarios/startActiveTyping/leafRenders"
+        },
+        {
+          "cells": {
+            "slate-v2:react-active-typing": { "status": "ok", "ops": 200 }
+          },
+          "fixture": "scenarios/startActiveTyping/mountedTextAfterTyping"
+        },
+        {
+          "cells": {
+            "slate-v2:react-active-typing": {
+              "status": "ok",
+              "medianUs": 3020,
+              "p95Us": 3190,
+              "ops": 3
+            }
+          },
+          "fixture": "scenarios/startActiveTyping/profilerActualMs"
+        },
+        {
+          "cells": {
+            "slate-v2:react-active-typing": { "status": "ok", "ops": 10 }
+          },
+          "fixture": "scenarios/startActiveTyping/profilerCommitCount"
+        },
+        {
+          "cells": {
+            "slate-v2:react-active-typing": { "status": "ok", "ops": 200 }
+          },
+          "fixture": "scenarios/startActiveTyping/promotedMountedText"
+        },
+        {
+          "cells": {
+            "slate-v2:react-active-typing": {
+              "status": "ok",
+              "medianUs": 0,
+              "p95Us": 0,
+              "ops": 3
+            }
+          },
+          "fixture": "scenarios/startActiveTyping/promotionMs"
+        },
+        {
+          "cells": {
+            "slate-v2:react-active-typing": {
+              "status": "ok",
+              "medianUs": 0,
+              "p95Us": 0,
+              "ops": 3
+            }
+          },
+          "fixture": "scenarios/startActiveTyping/selectionMs"
+        },
+        {
+          "cells": {
+            "slate-v2:react-active-typing": { "status": "ok", "ops": 10 }
+          },
+          "fixture": "scenarios/startActiveTyping/textRenders"
+        },
+        {
+          "cells": {
+            "slate-v2:react-active-typing": {
+              "status": "ok",
+              "medianUs": 189890,
+              "p95Us": 199100,
+              "ops": 3
+            }
+          },
+          "fixture": "scenarios/startActiveTyping/totalActMs"
+        },
+        {
+          "cells": {
+            "slate-v2:react-active-typing": {
+              "status": "ok",
+              "medianUs": 182650,
+              "p95Us": 191270,
+              "ops": 3
+            }
+          },
+          "fixture": "scenarios/startActiveTyping/transformMs"
+        }
+      ]
+    },
+    {
+      "category": "slate-core-normalization-current",
+      "libraries": ["slate-v2:core-current"],
+      "rows": [
+        {
+          "cells": {
+            "slate-v2:core-current": {
+              "status": "ok",
+              "medianUs": 7450,
+              "p95Us": 11210,
+              "ops": 3
+            }
+          },
+          "fixture": "current/explicitAdjacentTextNormalizeMs"
+        },
+        {
+          "cells": {
+            "slate-v2:core-current": {
+              "status": "ok",
+              "medianUs": 253460,
+              "p95Us": 267410,
+              "ops": 3
+            }
+          },
+          "fixture": "current/explicitInlineFlattenNormalizeMs"
+        },
+        {
+          "cells": {
+            "slate-v2:core-current": {
+              "status": "ok",
+              "medianUs": 5200,
+              "p95Us": 8330,
+              "ops": 3
+            }
+          },
+          "fixture": "current/observedInsertTextReadAfterEachMs"
+        }
+      ]
+    },
+    {
+      "category": "slate-core-query-ref-observation",
+      "libraries": ["slate-v2:core-current"],
+      "rows": [
+        {
+          "cells": {
+            "slate-v2:core-current": {
+              "status": "ok",
+              "medianUs": 24980,
+              "p95Us": 27340,
+              "ops": 5
+            }
+          },
+          "fixture": "allEntriesArrayMs"
+        },
+        {
+          "cells": {
+            "slate-v2:core-current": {
+              "status": "ok",
+              "medianUs": 24200,
+              "p95Us": 24560,
+              "ops": 5
+            }
+          },
+          "fixture": "allEntriesMappedToArrayMs"
+        },
+        {
+          "cells": {
+            "slate-v2:core-current": {
+              "status": "ok",
+              "medianUs": 23270,
+              "p95Us": 23480,
+              "ops": 5
+            }
+          },
+          "fixture": "allEntriesToArrayMs"
+        },
+        {
+          "cells": {
+            "slate-v2:core-current": {
+              "status": "ok",
+              "medianUs": 19370,
+              "p95Us": 24510,
+              "ops": 5
+            }
+          },
+          "fixture": "firstMatchArrayMs"
+        },
+        {
+          "cells": {
+            "slate-v2:core-current": {
+              "status": "ok",
+              "medianUs": 340,
+              "p95Us": 560,
+              "ops": 5
+            }
+          },
+          "fixture": "firstMatchFindMs"
+        },
+        {
+          "cells": {
+            "slate-v2:core-current": {
+              "status": "ok",
+              "medianUs": 380,
+              "p95Us": 390,
+              "ops": 5
+            }
+          },
+          "fixture": "firstMatchSomeMs"
+        },
+        {
+          "cells": {
+            "slate-v2:core-current": {
+              "status": "ok",
+              "medianUs": 22340,
+              "p95Us": 24420,
+              "ops": 5
+            }
+          },
+          "fixture": "firstMatchToArrayMs"
+        },
+        {
+          "cells": {
+            "slate-v2:core-current": {
+              "status": "ok",
+              "medianUs": 23360,
+              "p95Us": 23560,
+              "ops": 5
+            }
+          },
+          "fixture": "lastMatchFindMs"
+        },
+        {
+          "cells": {
+            "slate-v2:core-current": {
+              "status": "ok",
+              "medianUs": 22720,
+              "p95Us": 24200,
+              "ops": 5
+            }
+          },
+          "fixture": "noMatchFindMs"
+        },
+        {
+          "cells": {
+            "slate-v2:core-current": {
+              "status": "ok",
+              "medianUs": 7180,
+              "p95Us": 8900,
+              "ops": 5
+            }
+          },
+          "fixture": "nodesReadAfterWriteMs"
+        },
+        {
+          "cells": {
+            "slate-v2:core-current": {
+              "status": "ok",
+              "medianUs": 20210,
+              "p95Us": 21860,
+              "ops": 5
+            }
+          },
+          "fixture": "pathRefRebaseMs"
+        },
+        {
+          "cells": {
+            "slate-v2:core-current": {
+              "status": "ok",
+              "medianUs": 2460,
+              "p95Us": 7400,
+              "ops": 5
+            }
+          },
+          "fixture": "positionsReadAfterWriteMs"
+        },
+        {
+          "cells": {
+            "slate-v2:core-current": {
+              "status": "ok",
+              "medianUs": 3260,
+              "p95Us": 3460,
+              "ops": 5
+            }
+          },
+          "fixture": "rangeRefRebaseMs"
+        },
+        {
+          "cells": {
+            "slate-v2:core-current": {
+              "status": "ok",
+              "medianUs": 2710,
+              "p95Us": 6520,
+              "ops": 5
+            }
+          },
+          "fixture": "rangeRefsInspectionMs"
+        },
+        {
+          "cells": {
+            "slate-v2:core-current": {
+              "status": "ok",
+              "medianUs": 2830,
+              "p95Us": 3940,
+              "ops": 5
+            }
+          },
+          "fixture": "writeOnlyInsertTextMs"
+        }
+      ]
+    },
+    {
+      "category": "slate-core-node-transforms",
+      "libraries": ["slate-v2:core-current"],
+      "rows": [
+        {
+          "cells": {
+            "slate-v2:core-current": {
+              "status": "ok",
+              "medianUs": 460,
+              "p95Us": 460,
+              "ops": 1
+            }
+          },
+          "fixture": "insertFragmentMs"
+        },
+        {
+          "cells": {
+            "slate-v2:core-current": {
+              "status": "ok",
+              "medianUs": 150,
+              "p95Us": 150,
+              "ops": 1
+            }
+          },
+          "fixture": "insertNodesMs"
+        },
+        {
+          "cells": {
+            "slate-v2:core-current": {
+              "status": "ok",
+              "medianUs": 190,
+              "p95Us": 190,
+              "ops": 1
+            }
+          },
+          "fixture": "liftNodesMs"
+        },
+        {
+          "cells": {
+            "slate-v2:core-current": {
+              "status": "ok",
+              "medianUs": 390,
+              "p95Us": 390,
+              "ops": 1
+            }
+          },
+          "fixture": "mergeNodesMs"
+        },
+        {
+          "cells": {
+            "slate-v2:core-current": {
+              "status": "ok",
+              "medianUs": 350,
+              "p95Us": 350,
+              "ops": 1
+            }
+          },
+          "fixture": "moveNodesMs"
+        },
+        {
+          "cells": {
+            "slate-v2:core-current": {
+              "status": "ok",
+              "medianUs": 240,
+              "p95Us": 240,
+              "ops": 1
+            }
+          },
+          "fixture": "removeNodesMs"
+        },
+        {
+          "cells": {
+            "slate-v2:core-current": {
+              "status": "ok",
+              "medianUs": 290,
+              "p95Us": 290,
+              "ops": 1
+            }
+          },
+          "fixture": "setNodesMs"
+        },
+        {
+          "cells": {
+            "slate-v2:core-current": {
+              "status": "ok",
+              "medianUs": 430,
+              "p95Us": 430,
+              "ops": 1
+            }
+          },
+          "fixture": "splitNodesMs"
+        },
+        {
+          "cells": {
+            "slate-v2:core-current": {
+              "status": "ok",
+              "medianUs": 390,
+              "p95Us": 390,
+              "ops": 1
+            }
+          },
+          "fixture": "unwrapNodesMs"
+        },
+        {
+          "cells": {
+            "slate-v2:core-current": {
+              "status": "ok",
+              "medianUs": 380,
+              "p95Us": 380,
+              "ops": 1
+            }
+          },
+          "fixture": "wrapNodesMs"
+        }
+      ]
+    },
+    {
+      "category": "slate-core-text-selection",
+      "libraries": ["slate-v2:core-current"],
+      "rows": [
+        {
+          "cells": {
+            "slate-v2:core-current": {
+              "status": "ok",
+              "medianUs": 260,
+              "p95Us": 260,
+              "ops": 1
+            }
+          },
+          "fixture": "collapseMs"
+        },
+        {
+          "cells": {
+            "slate-v2:core-current": {
+              "status": "ok",
+              "medianUs": 1140,
+              "p95Us": 1140,
+              "ops": 1
+            }
+          },
+          "fixture": "deleteExpandedMs"
+        },
+        {
+          "cells": {
+            "slate-v2:core-current": {
+              "status": "ok",
+              "medianUs": 1020,
+              "p95Us": 1020,
+              "ops": 1
+            }
+          },
+          "fixture": "insertTextMs"
+        },
+        {
+          "cells": {
+            "slate-v2:core-current": {
+              "status": "ok",
+              "medianUs": 370,
+              "p95Us": 370,
+              "ops": 1
+            }
+          },
+          "fixture": "moveMs"
+        },
+        {
+          "cells": {
+            "slate-v2:core-current": {
+              "status": "ok",
+              "medianUs": 550,
+              "p95Us": 550,
+              "ops": 1
+            }
+          },
+          "fixture": "selectMs"
+        },
+        {
+          "cells": {
+            "slate-v2:core-current": {
+              "status": "ok",
+              "medianUs": 290,
+              "p95Us": 290,
+              "ops": 1
+            }
+          },
+          "fixture": "setPointMs"
+        },
+        {
+          "cells": {
+            "slate-v2:core-current": {
+              "status": "ok",
+              "medianUs": 280,
+              "p95Us": 280,
+              "ops": 1
+            }
+          },
+          "fixture": "setSelectionMs"
+        }
+      ]
+    },
+    {
+      "category": "slate-core-editor-store",
+      "libraries": ["slate-v2:core-current"],
+      "rows": [
+        {
+          "cells": {
+            "slate-v2:core-current": {
+              "status": "ok",
+              "medianUs": 15320,
+              "p95Us": 19510,
+              "ops": 5
+            }
+          },
+          "fixture": "getSnapshotAfterEachWriteMs"
+        },
+        {
+          "cells": {
+            "slate-v2:core-current": {
+              "status": "ok",
+              "medianUs": 19470,
+              "p95Us": 20650,
+              "ops": 5
+            }
+          },
+          "fixture": "replaceMs"
+        },
+        {
+          "cells": {
+            "slate-v2:core-current": {
+              "status": "ok",
+              "medianUs": 18160,
+              "p95Us": 18790,
+              "ops": 5
+            }
+          },
+          "fixture": "resetMs"
+        },
+        {
+          "cells": {
+            "slate-v2:core-current": {
+              "status": "ok",
+              "medianUs": 7650,
+              "p95Us": 9920,
+              "ops": 5
+            }
+          },
+          "fixture": "setChildrenAndGetChildrenMs"
+        },
+        {
+          "cells": {
+            "slate-v2:core-current": {
+              "status": "ok",
+              "medianUs": 2310,
+              "p95Us": 5170,
+              "ops": 5
+            }
+          },
+          "fixture": "subscribeDispatchMs"
+        }
+      ]
+    },
+    {
+      "category": "slate-core-refs-projection",
+      "libraries": ["slate-v2:core-current"],
+      "rows": [
+        {
+          "cells": {
+            "slate-v2:core-current": {
+              "status": "ok",
+              "medianUs": 1220,
+              "p95Us": 1480,
+              "ops": 5
+            }
+          },
+          "fixture": "bookmarkResolveMs"
+        },
+        {
+          "cells": {
+            "slate-v2:core-current": {
+              "status": "ok",
+              "medianUs": 400,
+              "p95Us": 450,
+              "ops": 5
+            }
+          },
+          "fixture": "projectRangeCrossBlockMs"
+        },
+        {
+          "cells": {
+            "slate-v2:core-current": {
+              "status": "ok",
+              "medianUs": 300,
+              "p95Us": 470,
+              "ops": 5
+            }
+          },
+          "fixture": "projectRangeSameBlockMs"
+        },
+        {
+          "cells": {
+            "slate-v2:core-current": {
+              "status": "ok",
+              "medianUs": 6300,
+              "p95Us": 6860,
+              "ops": 5
+            }
+          },
+          "fixture": "rangeRefStructuralRebaseMs"
+        },
+        {
+          "cells": {
+            "slate-v2:core-current": {
+              "status": "ok",
+              "medianUs": 1840,
+              "p95Us": 2570,
+              "ops": 5
+            }
+          },
+          "fixture": "rangeRefTextRebaseMs"
+        }
+      ]
+    },
+    {
+      "category": "slate-clipboard-large-payload",
+      "libraries": ["slate-v2:clipboard"],
+      "rows": [
+        {
+          "cells": {
+            "slate-v2:clipboard": {
+              "status": "ok",
+              "medianUs": 7380,
+              "p95Us": 9270,
+              "ops": 3
+            }
+          },
+          "fixture": "cohorts/large/domFragmentInsertMs"
+        },
+        {
+          "cells": { "slate-v2:clipboard": { "status": "ok", "ops": 3 } },
+          "fixture": "cohorts/large/domFragmentInsertMs/heapDeltaBytes"
+        },
+        {
+          "cells": {
+            "slate-v2:clipboard": {
+              "status": "ok",
+              "medianUs": 270,
+              "p95Us": 290,
+              "ops": 3
+            }
+          },
+          "fixture": "cohorts/large/fragmentDecodeMs"
+        },
+        {
+          "cells": { "slate-v2:clipboard": { "status": "ok", "ops": 3 } },
+          "fixture": "cohorts/large/fragmentDecodeMs/heapDeltaBytes"
+        },
+        {
+          "cells": {
+            "slate-v2:clipboard": {
+              "status": "ok",
+              "medianUs": 440,
+              "p95Us": 470,
+              "ops": 3
+            }
+          },
+          "fixture": "cohorts/large/fragmentEncodeMs"
+        },
+        {
+          "cells": { "slate-v2:clipboard": { "status": "ok", "ops": 3 } },
+          "fixture": "cohorts/large/fragmentEncodeMs/heapDeltaBytes"
+        },
+        {
+          "cells": {
+            "slate-v2:clipboard": {
+              "status": "ok",
+              "medianUs": 8170,
+              "p95Us": 9950,
+              "ops": 3
+            }
+          },
+          "fixture": "cohorts/large/fragmentInsertMs"
+        },
+        {
+          "cells": { "slate-v2:clipboard": { "status": "ok", "ops": 3 } },
+          "fixture": "cohorts/large/fragmentInsertMs/heapDeltaBytes"
+        },
+        {
+          "cells": {
+            "slate-v2:clipboard": {
+              "status": "ok",
+              "medianUs": 3650,
+              "p95Us": 3740,
+              "ops": 3
+            }
+          },
+          "fixture": "cohorts/large/fullSelectionCopyMs"
+        },
+        {
+          "cells": { "slate-v2:clipboard": { "status": "ok", "ops": 3 } },
+          "fixture": "cohorts/large/fullSelectionCopyMs/heapDeltaBytes"
+        },
+        {
+          "cells": {
+            "slate-v2:clipboard": {
+              "status": "ok",
+              "medianUs": 3910,
+              "p95Us": 6930,
+              "ops": 3
+            }
+          },
+          "fixture": "cohorts/large/plainTextInsertMs"
+        },
+        {
+          "cells": { "slate-v2:clipboard": { "status": "ok", "ops": 3 } },
+          "fixture": "cohorts/large/plainTextInsertMs/heapDeltaBytes"
+        },
+        {
+          "cells": {
+            "slate-v2:clipboard": {
+              "status": "ok",
+              "medianUs": 30,
+              "p95Us": 40,
+              "ops": 3
+            }
+          },
+          "fixture": "cohorts/large/plainTextSplitMs"
+        },
+        {
+          "cells": { "slate-v2:clipboard": { "status": "ok", "ops": 3 } },
+          "fixture": "cohorts/large/plainTextSplitMs/heapDeltaBytes"
+        },
+        {
+          "cells": {
+            "slate-v2:clipboard": {
+              "status": "ok",
+              "medianUs": 1500,
+              "p95Us": 1550,
+              "ops": 3
+            }
+          },
+          "fixture": "cohorts/normal/domFragmentInsertMs"
+        },
+        {
+          "cells": { "slate-v2:clipboard": { "status": "ok", "ops": 3 } },
+          "fixture": "cohorts/normal/domFragmentInsertMs/heapDeltaBytes"
+        },
+        {
+          "cells": {
+            "slate-v2:clipboard": {
+              "status": "ok",
+              "medianUs": 30,
+              "p95Us": 40,
+              "ops": 3
+            }
+          },
+          "fixture": "cohorts/normal/fragmentDecodeMs"
+        },
+        {
+          "cells": { "slate-v2:clipboard": { "status": "ok", "ops": 3 } },
+          "fixture": "cohorts/normal/fragmentDecodeMs/heapDeltaBytes"
+        },
+        {
+          "cells": {
+            "slate-v2:clipboard": {
+              "status": "ok",
+              "medianUs": 50,
+              "p95Us": 60,
+              "ops": 3
+            }
+          },
+          "fixture": "cohorts/normal/fragmentEncodeMs"
+        },
+        {
+          "cells": { "slate-v2:clipboard": { "status": "ok", "ops": 3 } },
+          "fixture": "cohorts/normal/fragmentEncodeMs/heapDeltaBytes"
+        },
+        {
+          "cells": {
+            "slate-v2:clipboard": {
+              "status": "ok",
+              "medianUs": 1390,
+              "p95Us": 1660,
+              "ops": 3
+            }
+          },
+          "fixture": "cohorts/normal/fragmentInsertMs"
+        },
+        {
+          "cells": { "slate-v2:clipboard": { "status": "ok", "ops": 3 } },
+          "fixture": "cohorts/normal/fragmentInsertMs/heapDeltaBytes"
+        },
+        {
+          "cells": {
+            "slate-v2:clipboard": {
+              "status": "ok",
+              "medianUs": 560,
+              "p95Us": 680,
+              "ops": 3
+            }
+          },
+          "fixture": "cohorts/normal/fullSelectionCopyMs"
+        },
+        {
+          "cells": { "slate-v2:clipboard": { "status": "ok", "ops": 3 } },
+          "fixture": "cohorts/normal/fullSelectionCopyMs/heapDeltaBytes"
+        },
+        {
+          "cells": {
+            "slate-v2:clipboard": {
+              "status": "ok",
+              "medianUs": 620,
+              "p95Us": 690,
+              "ops": 3
+            }
+          },
+          "fixture": "cohorts/normal/plainTextInsertMs"
+        },
+        {
+          "cells": { "slate-v2:clipboard": { "status": "ok", "ops": 3 } },
+          "fixture": "cohorts/normal/plainTextInsertMs/heapDeltaBytes"
+        },
+        {
+          "cells": {
+            "slate-v2:clipboard": {
+              "status": "ok",
+              "medianUs": 0,
+              "p95Us": 10,
+              "ops": 3
+            }
+          },
+          "fixture": "cohorts/normal/plainTextSplitMs"
+        },
+        {
+          "cells": { "slate-v2:clipboard": { "status": "ok", "ops": 3 } },
+          "fixture": "cohorts/normal/plainTextSplitMs/heapDeltaBytes"
+        },
+        {
+          "cells": {
+            "slate-v2:clipboard": {
+              "status": "ok",
+              "medianUs": 370,
+              "p95Us": 560,
+              "ops": 3
+            }
+          },
+          "fixture": "cohorts/small/domFragmentInsertMs"
+        },
+        {
+          "cells": { "slate-v2:clipboard": { "status": "ok", "ops": 3 } },
+          "fixture": "cohorts/small/domFragmentInsertMs/heapDeltaBytes"
+        },
+        {
+          "cells": {
+            "slate-v2:clipboard": {
+              "status": "ok",
+              "medianUs": 10,
+              "p95Us": 40,
+              "ops": 3
+            }
+          },
+          "fixture": "cohorts/small/fragmentDecodeMs"
+        },
+        {
+          "cells": { "slate-v2:clipboard": { "status": "ok", "ops": 3 } },
+          "fixture": "cohorts/small/fragmentDecodeMs/heapDeltaBytes"
+        },
+        {
+          "cells": {
+            "slate-v2:clipboard": {
+              "status": "ok",
+              "medianUs": 10,
+              "p95Us": 30,
+              "ops": 3
+            }
+          },
+          "fixture": "cohorts/small/fragmentEncodeMs"
+        },
+        {
+          "cells": { "slate-v2:clipboard": { "status": "ok", "ops": 3 } },
+          "fixture": "cohorts/small/fragmentEncodeMs/heapDeltaBytes"
+        },
+        {
+          "cells": {
+            "slate-v2:clipboard": {
+              "status": "ok",
+              "medianUs": 670,
+              "p95Us": 5740,
+              "ops": 3
+            }
+          },
+          "fixture": "cohorts/small/fragmentInsertMs"
+        },
+        {
+          "cells": { "slate-v2:clipboard": { "status": "ok", "ops": 3 } },
+          "fixture": "cohorts/small/fragmentInsertMs/heapDeltaBytes"
+        },
+        {
+          "cells": {
+            "slate-v2:clipboard": {
+              "status": "ok",
+              "medianUs": 270,
+              "p95Us": 1280,
+              "ops": 3
+            }
+          },
+          "fixture": "cohorts/small/fullSelectionCopyMs"
+        },
+        {
+          "cells": { "slate-v2:clipboard": { "status": "ok", "ops": 3 } },
+          "fixture": "cohorts/small/fullSelectionCopyMs/heapDeltaBytes"
+        },
+        {
+          "cells": {
+            "slate-v2:clipboard": {
+              "status": "ok",
+              "medianUs": 400,
+              "p95Us": 690,
+              "ops": 3
+            }
+          },
+          "fixture": "cohorts/small/plainTextInsertMs"
+        },
+        {
+          "cells": { "slate-v2:clipboard": { "status": "ok", "ops": 3 } },
+          "fixture": "cohorts/small/plainTextInsertMs/heapDeltaBytes"
+        },
+        {
+          "cells": {
+            "slate-v2:clipboard": {
+              "status": "ok",
+              "medianUs": 0,
+              "p95Us": 10,
+              "ops": 3
+            }
+          },
+          "fixture": "cohorts/small/plainTextSplitMs"
+        },
+        {
+          "cells": { "slate-v2:clipboard": { "status": "ok", "ops": 3 } },
+          "fixture": "cohorts/small/plainTextSplitMs/heapDeltaBytes"
+        },
+        {
+          "cells": {
+            "slate-v2:clipboard": {
+              "status": "ok",
+              "medianUs": 17660,
+              "p95Us": 19250,
+              "ops": 3
+            }
+          },
+          "fixture": "cohorts/stress/domFragmentInsertMs"
+        },
+        {
+          "cells": { "slate-v2:clipboard": { "status": "ok", "ops": 3 } },
+          "fixture": "cohorts/stress/domFragmentInsertMs/heapDeltaBytes"
+        },
+        {
+          "cells": {
+            "slate-v2:clipboard": {
+              "status": "ok",
+              "medianUs": 480,
+              "p95Us": 530,
+              "ops": 3
+            }
+          },
+          "fixture": "cohorts/stress/fragmentDecodeMs"
+        },
+        {
+          "cells": { "slate-v2:clipboard": { "status": "ok", "ops": 3 } },
+          "fixture": "cohorts/stress/fragmentDecodeMs/heapDeltaBytes"
+        },
+        {
+          "cells": {
+            "slate-v2:clipboard": {
+              "status": "ok",
+              "medianUs": 750,
+              "p95Us": 830,
+              "ops": 3
+            }
+          },
+          "fixture": "cohorts/stress/fragmentEncodeMs"
+        },
+        {
+          "cells": { "slate-v2:clipboard": { "status": "ok", "ops": 3 } },
+          "fixture": "cohorts/stress/fragmentEncodeMs/heapDeltaBytes"
+        },
+        {
+          "cells": {
+            "slate-v2:clipboard": {
+              "status": "ok",
+              "medianUs": 15850,
+              "p95Us": 16320,
+              "ops": 3
+            }
+          },
+          "fixture": "cohorts/stress/fragmentInsertMs"
+        },
+        {
+          "cells": { "slate-v2:clipboard": { "status": "ok", "ops": 3 } },
+          "fixture": "cohorts/stress/fragmentInsertMs/heapDeltaBytes"
+        },
+        {
+          "cells": {
+            "slate-v2:clipboard": {
+              "status": "ok",
+              "medianUs": 8380,
+              "p95Us": 12430,
+              "ops": 3
+            }
+          },
+          "fixture": "cohorts/stress/fullSelectionCopyMs"
+        },
+        {
+          "cells": { "slate-v2:clipboard": { "status": "ok", "ops": 3 } },
+          "fixture": "cohorts/stress/fullSelectionCopyMs/heapDeltaBytes"
+        },
+        {
+          "cells": {
+            "slate-v2:clipboard": {
+              "status": "ok",
+              "medianUs": 7040,
+              "p95Us": 12350,
+              "ops": 3
+            }
+          },
+          "fixture": "cohorts/stress/plainTextInsertMs"
+        },
+        {
+          "cells": { "slate-v2:clipboard": { "status": "ok", "ops": 3 } },
+          "fixture": "cohorts/stress/plainTextInsertMs/heapDeltaBytes"
+        },
+        {
+          "cells": {
+            "slate-v2:clipboard": {
+              "status": "ok",
+              "medianUs": 60,
+              "p95Us": 70,
+              "ops": 3
+            }
+          },
+          "fixture": "cohorts/stress/plainTextSplitMs"
+        },
+        {
+          "cells": { "slate-v2:clipboard": { "status": "ok", "ops": 3 } },
+          "fixture": "cohorts/stress/plainTextSplitMs/heapDeltaBytes"
+        },
+        {
+          "cells": { "slate-v2:clipboard": { "status": "ok", "ops": 39.21 } },
+          "fixture": "issueTargets/largePlainTextPaste10000"
+        },
+        {
+          "cells": { "slate-v2:clipboard": { "status": "ok", "ops": 1 } },
+          "fixture": "issueTargets/largePlainTextPaste10000/heapDeltaBytes"
+        },
+        {
+          "cells": { "slate-v2:clipboard": { "status": "ok", "ops": 68.53 } },
+          "fixture": "issueTargets/populatedFullSelectionCopy10000"
+        },
+        {
+          "cells": { "slate-v2:clipboard": { "status": "ok", "ops": 1 } },
+          "fixture": "issueTargets/populatedFullSelectionCopy10000/heapDeltaBytes"
+        },
+        {
+          "cells": { "slate-v2:clipboard": { "status": "ok", "ops": 203.2 } },
+          "fixture": "issueTargets/populatedMiddlePlainTextPaste10000Into10000"
+        },
+        {
+          "cells": { "slate-v2:clipboard": { "status": "ok", "ops": 1 } },
+          "fixture": "issueTargets/populatedMiddlePlainTextPaste10000Into10000/heapDeltaBytes"
+        },
+        {
+          "cells": {
+            "slate-v2:clipboard": {
+              "status": "ok",
+              "medianUs": 161340,
+              "p95Us": 161340,
+              "ops": 1
+            }
+          },
+          "fixture": "pathological/cutTwoBlocksColdEditMs"
+        },
+        {
+          "cells": { "slate-v2:clipboard": { "status": "ok", "ops": 1 } },
+          "fixture": "pathological/cutTwoBlocksColdEditMs/heapDeltaBytes"
+        },
+        {
+          "cells": {
+            "slate-v2:clipboard": {
+              "status": "ok",
+              "medianUs": 434450,
+              "p95Us": 434450,
+              "ops": 1
+            }
+          },
+          "fixture": "pathological/cutTwoBlocksColdSetupMs"
+        },
+        {
+          "cells": { "slate-v2:clipboard": { "status": "ok", "ops": 1 } },
+          "fixture": "pathological/cutTwoBlocksColdSetupMs/heapDeltaBytes"
+        },
+        {
+          "cells": {
+            "slate-v2:clipboard": {
+              "status": "ok",
+              "medianUs": 145740,
+              "p95Us": 145740,
+              "ops": 1
+            }
+          },
+          "fixture": "pathological/cutTwoBlocksEditMs"
+        },
+        {
+          "cells": { "slate-v2:clipboard": { "status": "ok", "ops": 1 } },
+          "fixture": "pathological/cutTwoBlocksEditMs/heapDeltaBytes"
+        },
+        {
+          "cells": {
+            "slate-v2:clipboard": {
+              "status": "ok",
+              "medianUs": 147100,
+              "p95Us": 147100,
+              "ops": 1
+            }
+          },
+          "fixture": "pathological/cutTwoBlocksMs"
+        },
+        {
+          "cells": { "slate-v2:clipboard": { "status": "ok", "ops": 1 } },
+          "fixture": "pathological/cutTwoBlocksMs/heapDeltaBytes"
+        }
+      ]
+    },
+    {
+      "category": "slate-clipboard-large-payload-threshold",
+      "libraries": ["slate-v2:clipboard"],
+      "rows": [
+        {
+          "cells": {
+            "slate-v2:clipboard": {
+              "status": "ok",
+              "medianUs": 145740,
+              "p95Us": 145740,
+              "ops": 1
+            }
+          },
+          "fixture": "cutTwoBlocksEditMsP50"
+        },
+        {
+          "cells": {
+            "slate-v2:clipboard": {
+              "status": "ok",
+              "medianUs": 147100,
+              "p95Us": 147100,
+              "ops": 1
+            }
+          },
+          "fixture": "cutTwoBlocksMsP50"
+        },
+        {
+          "cells": { "slate-v2:clipboard": { "status": "ok", "ops": 1 } },
+          "fixture": "operationCount"
+        }
+      ]
+    },
+    {
+      "category": "slate-collab-readiness",
+      "libraries": ["slate-v2:collab-readiness"],
+      "rows": [
+        {
+          "cells": {
+            "slate-v2:collab-readiness": {
+              "status": "ok",
+              "medianUs": 13630,
+              "p95Us": 14080,
+              "ops": 3
+            }
+          },
+          "fixture": "large/bookmarkRebaseMs"
+        },
+        {
+          "cells": {
+            "slate-v2:collab-readiness": {
+              "status": "ok",
+              "medianUs": 18060,
+              "p95Us": 19470,
+              "ops": 3
+            }
+          },
+          "fixture": "large/canonicalReplaceMs"
+        },
+        {
+          "cells": {
+            "slate-v2:collab-readiness": { "status": "ok", "ops": 3 }
+          },
+          "fixture": "large/connectDisconnectHeapDeltaBytes"
+        },
+        {
+          "cells": {
+            "slate-v2:collab-readiness": {
+              "status": "ok",
+              "medianUs": 10610,
+              "p95Us": 10670,
+              "ops": 3
+            }
+          },
+          "fixture": "large/historySkipMs"
+        },
+        {
+          "cells": {
+            "slate-v2:collab-readiness": {
+              "status": "ok",
+              "medianUs": 10090,
+              "p95Us": 10210,
+              "ops": 3
+            }
+          },
+          "fixture": "large/localExportCommitMs"
+        },
+        {
+          "cells": {
+            "slate-v2:collab-readiness": {
+              "status": "ok",
+              "medianUs": 15690,
+              "p95Us": 18460,
+              "ops": 3
+            }
+          },
+          "fixture": "large/remoteReplayBatchMs"
+        },
+        {
+          "cells": {
+            "slate-v2:collab-readiness": {
+              "status": "ok",
+              "medianUs": 167220,
+              "p95Us": 171920,
+              "ops": 3
+            }
+          },
+          "fixture": "large/remoteReplaySeparateMs"
+        },
+        {
+          "cells": {
+            "slate-v2:collab-readiness": {
+              "status": "ok",
+              "medianUs": 2630,
+              "p95Us": 2890,
+              "ops": 3
+            }
+          },
+          "fixture": "normal/bookmarkRebaseMs"
+        },
+        {
+          "cells": {
+            "slate-v2:collab-readiness": {
+              "status": "ok",
+              "medianUs": 1370,
+              "p95Us": 1560,
+              "ops": 3
+            }
+          },
+          "fixture": "normal/canonicalReplaceMs"
+        },
+        {
+          "cells": {
+            "slate-v2:collab-readiness": { "status": "ok", "ops": 3 }
+          },
+          "fixture": "normal/connectDisconnectHeapDeltaBytes"
+        },
+        {
+          "cells": {
+            "slate-v2:collab-readiness": {
+              "status": "ok",
+              "medianUs": 2090,
+              "p95Us": 4470,
+              "ops": 3
+            }
+          },
+          "fixture": "normal/historySkipMs"
+        },
+        {
+          "cells": {
+            "slate-v2:collab-readiness": {
+              "status": "ok",
+              "medianUs": 1930,
+              "p95Us": 2590,
+              "ops": 3
+            }
+          },
+          "fixture": "normal/localExportCommitMs"
+        },
+        {
+          "cells": {
+            "slate-v2:collab-readiness": {
+              "status": "ok",
+              "medianUs": 3230,
+              "p95Us": 3430,
+              "ops": 3
+            }
+          },
+          "fixture": "normal/remoteReplayBatchMs"
+        },
+        {
+          "cells": {
+            "slate-v2:collab-readiness": {
+              "status": "ok",
+              "medianUs": 14240,
+              "p95Us": 16120,
+              "ops": 3
+            }
+          },
+          "fixture": "normal/remoteReplaySeparateMs"
+        },
+        {
+          "cells": {
+            "slate-v2:collab-readiness": {
+              "status": "ok",
+              "medianUs": 4930,
+              "p95Us": 6090,
+              "ops": 3
+            }
+          },
+          "fixture": "pathological/bookmarkRebaseMs"
+        },
+        {
+          "cells": {
+            "slate-v2:collab-readiness": {
+              "status": "ok",
+              "medianUs": 50,
+              "p95Us": 60,
+              "ops": 3
+            }
+          },
+          "fixture": "pathological/canonicalReplaceMs"
+        },
+        {
+          "cells": {
+            "slate-v2:collab-readiness": { "status": "ok", "ops": 3 }
+          },
+          "fixture": "pathological/connectDisconnectHeapDeltaBytes"
+        },
+        {
+          "cells": {
+            "slate-v2:collab-readiness": {
+              "status": "ok",
+              "medianUs": 5030,
+              "p95Us": 6390,
+              "ops": 3
+            }
+          },
+          "fixture": "pathological/historySkipMs"
+        },
+        {
+          "cells": {
+            "slate-v2:collab-readiness": {
+              "status": "ok",
+              "medianUs": 80,
+              "p95Us": 120,
+              "ops": 3
+            }
+          },
+          "fixture": "pathological/localExportCommitMs"
+        },
+        {
+          "cells": {
+            "slate-v2:collab-readiness": {
+              "status": "ok",
+              "medianUs": 4690,
+              "p95Us": 5790,
+              "ops": 3
+            }
+          },
+          "fixture": "pathological/remoteReplayBatchMs"
+        },
+        {
+          "cells": {
+            "slate-v2:collab-readiness": {
+              "status": "ok",
+              "medianUs": 263290,
+              "p95Us": 263540,
+              "ops": 3
+            }
+          },
+          "fixture": "pathological/remoteReplaySeparateMs"
+        },
+        {
+          "cells": {
+            "slate-v2:collab-readiness": {
+              "status": "ok",
+              "medianUs": 91980,
+              "p95Us": 114720,
+              "ops": 3
+            }
+          },
+          "fixture": "stress/bookmarkRebaseMs"
+        },
+        {
+          "cells": {
+            "slate-v2:collab-readiness": {
+              "status": "ok",
+              "medianUs": 130200,
+              "p95Us": 145970,
+              "ops": 3
+            }
+          },
+          "fixture": "stress/canonicalReplaceMs"
+        },
+        {
+          "cells": {
+            "slate-v2:collab-readiness": { "status": "ok", "ops": 3 }
+          },
+          "fixture": "stress/connectDisconnectHeapDeltaBytes"
+        },
+        {
+          "cells": {
+            "slate-v2:collab-readiness": {
+              "status": "ok",
+              "medianUs": 87840,
+              "p95Us": 94790,
+              "ops": 3
+            }
+          },
+          "fixture": "stress/historySkipMs"
+        },
+        {
+          "cells": {
+            "slate-v2:collab-readiness": {
+              "status": "ok",
+              "medianUs": 87050,
+              "p95Us": 109500,
+              "ops": 3
+            }
+          },
+          "fixture": "stress/localExportCommitMs"
+        },
+        {
+          "cells": {
+            "slate-v2:collab-readiness": {
+              "status": "ok",
+              "medianUs": 159380,
+              "p95Us": 160120,
+              "ops": 3
+            }
+          },
+          "fixture": "stress/remoteReplayBatchMs"
+        },
+        {
+          "cells": {
+            "slate-v2:collab-readiness": {
+              "status": "ok",
+              "medianUs": 3055480,
+              "p95Us": 3071630,
+              "ops": 3
+            }
+          },
+          "fixture": "stress/remoteReplaySeparateMs"
+        }
+      ]
+    },
+    {
+      "category": "slate-collab-readiness-invariant",
+      "libraries": ["slate-v2:collab-readiness"],
+      "rows": [
+        {
+          "cells": {
+            "slate-v2:collab-readiness": { "status": "ok", "ops": 1 }
+          },
+          "fixture": "large/batchAndSeparateConverge"
+        },
+        {
+          "cells": {
+            "slate-v2:collab-readiness": { "status": "ok", "ops": 1 }
+          },
+          "fixture": "large/bookmarkResolutionChecked"
+        },
+        {
+          "cells": {
+            "slate-v2:collab-readiness": { "status": "ok", "ops": 1 }
+          },
+          "fixture": "large/cleanupListenerChecked"
+        },
+        {
+          "cells": {
+            "slate-v2:collab-readiness": { "status": "ok", "ops": 1 }
+          },
+          "fixture": "large/historySkipChecked"
+        },
+        {
+          "cells": {
+            "slate-v2:collab-readiness": { "status": "ok", "ops": 1 }
+          },
+          "fixture": "large/remoteCommitMetadataChecked"
+        },
+        {
+          "cells": {
+            "slate-v2:collab-readiness": { "status": "ok", "ops": 1 }
+          },
+          "fixture": "normal/batchAndSeparateConverge"
+        },
+        {
+          "cells": {
+            "slate-v2:collab-readiness": { "status": "ok", "ops": 1 }
+          },
+          "fixture": "normal/bookmarkResolutionChecked"
+        },
+        {
+          "cells": {
+            "slate-v2:collab-readiness": { "status": "ok", "ops": 1 }
+          },
+          "fixture": "normal/cleanupListenerChecked"
+        },
+        {
+          "cells": {
+            "slate-v2:collab-readiness": { "status": "ok", "ops": 1 }
+          },
+          "fixture": "normal/historySkipChecked"
+        },
+        {
+          "cells": {
+            "slate-v2:collab-readiness": { "status": "ok", "ops": 1 }
+          },
+          "fixture": "normal/remoteCommitMetadataChecked"
+        },
+        {
+          "cells": {
+            "slate-v2:collab-readiness": { "status": "ok", "ops": 1 }
+          },
+          "fixture": "pathological/batchAndSeparateConverge"
+        },
+        {
+          "cells": {
+            "slate-v2:collab-readiness": { "status": "ok", "ops": 1 }
+          },
+          "fixture": "pathological/bookmarkResolutionChecked"
+        },
+        {
+          "cells": {
+            "slate-v2:collab-readiness": { "status": "ok", "ops": 1 }
+          },
+          "fixture": "pathological/cleanupListenerChecked"
+        },
+        {
+          "cells": {
+            "slate-v2:collab-readiness": { "status": "ok", "ops": 1 }
+          },
+          "fixture": "pathological/historySkipChecked"
+        },
+        {
+          "cells": {
+            "slate-v2:collab-readiness": { "status": "ok", "ops": 1 }
+          },
+          "fixture": "pathological/remoteCommitMetadataChecked"
+        },
+        {
+          "cells": {
+            "slate-v2:collab-readiness": { "status": "ok", "ops": 1 }
+          },
+          "fixture": "stress/batchAndSeparateConverge"
+        },
+        {
+          "cells": {
+            "slate-v2:collab-readiness": { "status": "ok", "ops": 1 }
+          },
+          "fixture": "stress/bookmarkResolutionChecked"
+        },
+        {
+          "cells": {
+            "slate-v2:collab-readiness": { "status": "ok", "ops": 1 }
+          },
+          "fixture": "stress/cleanupListenerChecked"
+        },
+        {
+          "cells": {
+            "slate-v2:collab-readiness": { "status": "ok", "ops": 1 }
+          },
+          "fixture": "stress/historySkipChecked"
+        },
+        {
+          "cells": {
+            "slate-v2:collab-readiness": { "status": "ok", "ops": 1 }
+          },
+          "fixture": "stress/remoteCommitMetadataChecked"
+        }
+      ]
+    },
+    {
+      "category": "slate-6038-transaction-execution",
+      "libraries": ["slate-v2:transaction-execution"],
+      "rows": [
+        {
+          "cells": {
+            "slate-v2:transaction-execution": {
+              "status": "ok",
+              "medianUs": 210,
+              "p95Us": 350,
+              "ops": 200
+            }
+          },
+          "fixture": "separateUpdateMs"
+        },
+        {
+          "cells": {
+            "slate-v2:transaction-execution": {
+              "status": "ok",
+              "medianUs": 70,
+              "p95Us": 140,
+              "ops": 200
+            }
+          },
+          "fixture": "updateReplayMs"
+        },
+        {
+          "cells": {
+            "slate-v2:transaction-execution": {
+              "status": "ok",
+              "medianUs": 30,
+              "p95Us": 40,
+              "ops": 200
+            }
+          },
+          "fixture": "opFamilyLanes/insertNode/separateUpdateMs"
+        },
+        {
+          "cells": {
+            "slate-v2:transaction-execution": {
+              "status": "ok",
+              "medianUs": 30,
+              "p95Us": 40,
+              "ops": 200
+            }
+          },
+          "fixture": "opFamilyLanes/insertNode/updateReplayMs"
+        },
+        {
+          "cells": {
+            "slate-v2:transaction-execution": {
+              "status": "ok",
+              "medianUs": 20,
+              "p95Us": 30,
+              "ops": 200
+            }
+          },
+          "fixture": "opFamilyLanes/insertText/separateUpdateMs"
+        },
+        {
+          "cells": {
+            "slate-v2:transaction-execution": {
+              "status": "ok",
+              "medianUs": 20,
+              "p95Us": 30,
+              "ops": 200
+            }
+          },
+          "fixture": "opFamilyLanes/insertText/updateReplayMs"
+        },
+        {
+          "cells": {
+            "slate-v2:transaction-execution": {
+              "status": "ok",
+              "medianUs": 210,
+              "p95Us": 350,
+              "ops": 200
+            }
+          },
+          "fixture": "opFamilyLanes/mixedBatch/separateUpdateMs"
+        },
+        {
+          "cells": {
+            "slate-v2:transaction-execution": {
+              "status": "ok",
+              "medianUs": 70,
+              "p95Us": 140,
+              "ops": 200
+            }
+          },
+          "fixture": "opFamilyLanes/mixedBatch/updateReplayMs"
+        },
+        {
+          "cells": {
+            "slate-v2:transaction-execution": {
+              "status": "ok",
+              "medianUs": 30,
+              "p95Us": 30,
+              "ops": 200
+            }
+          },
+          "fixture": "opFamilyLanes/moveNode/separateUpdateMs"
+        },
+        {
+          "cells": {
+            "slate-v2:transaction-execution": {
+              "status": "ok",
+              "medianUs": 30,
+              "p95Us": 30,
+              "ops": 200
+            }
+          },
+          "fixture": "opFamilyLanes/moveNode/updateReplayMs"
+        },
+        {
+          "cells": {
+            "slate-v2:transaction-execution": {
+              "status": "ok",
+              "medianUs": 20,
+              "p95Us": 30,
+              "ops": 200
+            }
+          },
+          "fixture": "opFamilyLanes/removeText/separateUpdateMs"
+        },
+        {
+          "cells": {
+            "slate-v2:transaction-execution": {
+              "status": "ok",
+              "medianUs": 20,
+              "p95Us": 30,
+              "ops": 200
+            }
+          },
+          "fixture": "opFamilyLanes/removeText/updateReplayMs"
+        },
+        {
+          "cells": {
+            "slate-v2:transaction-execution": {
+              "status": "ok",
+              "medianUs": 30,
+              "p95Us": 40,
+              "ops": 200
+            }
+          },
+          "fixture": "opFamilyLanes/setNode/separateUpdateMs"
+        },
+        {
+          "cells": {
+            "slate-v2:transaction-execution": {
+              "status": "ok",
+              "medianUs": 30,
+              "p95Us": 40,
+              "ops": 200
+            }
+          },
+          "fixture": "opFamilyLanes/setNode/updateReplayMs"
+        },
+        {
+          "cells": {
+            "slate-v2:transaction-execution": {
+              "status": "ok",
+              "medianUs": 30,
+              "p95Us": 40,
+              "ops": 200
+            }
+          },
+          "fixture": "opFamilyLanes/splitNode/separateUpdateMs"
+        },
+        {
+          "cells": {
+            "slate-v2:transaction-execution": {
+              "status": "ok",
+              "medianUs": 30,
+              "p95Us": 40,
+              "ops": 200
+            }
+          },
+          "fixture": "opFamilyLanes/splitNode/updateReplayMs"
+        }
+      ]
+    },
+    {
+      "category": "slate-core-transaction-current",
+      "libraries": ["slate-v2:core-current"],
+      "rows": [
+        {
+          "cells": {
+            "slate-v2:core-current": {
+              "status": "optional-missing-artifact",
+              "note": "missing artifact ../../.tmp/slate-v2/tmp/slate-transaction-benchmark.json"
+            }
+          },
+          "fixture": "core-transaction-current"
+        }
+      ]
+    },
+    {
+      "category": "slate-history-retained-memory",
+      "libraries": ["slate-v2:history-memory"],
+      "rows": [
+        {
+          "cells": {
+            "slate-v2:history-memory": {
+              "status": "optional-missing-artifact",
+              "note": "missing artifact ../../.tmp/slate-v2/tmp/slate-history-retained-memory-benchmark.json"
+            }
+          },
+          "fixture": "history-retained-memory"
+        }
+      ]
+    }
+  ],
+  "libraries": [
+    "slate-v2:core-current",
+    "slate-v2:react-rerender-breadth",
+    "slate-v2:react-overlays",
+    "slate-v2:react-active-typing",
+    "slate-v2:clipboard",
+    "slate-v2:collab-readiness",
+    "slate-v2:transaction-execution",
+    "slate-v2:history-memory"
+  ],
+  "missingRows": [
+    {
+      "category": "slate-core-transaction-current",
+      "fixture": "core-transaction-current",
+      "library": "slate-v2:core-current",
+      "medianUs": null,
+      "note": "missing artifact ../../.tmp/slate-v2/tmp/slate-transaction-benchmark.json",
+      "ops": null,
+      "p95Us": null,
+      "status": "optional-missing-artifact"
+    },
+    {
+      "category": "slate-history-retained-memory",
+      "fixture": "history-retained-memory",
+      "library": "slate-v2:history-memory",
+      "medianUs": null,
+      "note": "missing artifact ../../.tmp/slate-v2/tmp/slate-history-retained-memory-benchmark.json",
+      "ops": null,
+      "p95Us": null,
+      "status": "optional-missing-artifact"
+    }
+  ],
+  "name": "slate-v2 internal proof results",
+  "rowCount": 326,
+  "statusCounts": { "ok": 324, "optional-missing-artifact": 2 }
+}

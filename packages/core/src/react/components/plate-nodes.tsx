@@ -43,6 +43,26 @@ export const useNodeAttributes = (props: any, ref?: any) => ({
 export const isHtmlVoidElementTag = (tag: keyof HTMLElementTagNameMap) =>
   VOID_HTML_TAGS.has(tag);
 
+export const useBlockIdAttributeRef = <T extends HTMLElement>(
+  blockId: unknown,
+  ref?: React.Ref<T>
+) => {
+  const blockIdRef = React.useCallback(
+    (node: T | null) => {
+      if (!node) return;
+
+      if (blockId) {
+        node.setAttribute('data-block-id', String(blockId));
+      } else {
+        node.removeAttribute('data-block-id');
+      }
+    },
+    [blockId]
+  );
+
+  return useComposedRef(blockIdRef, ref);
+};
+
 export type PlateChunkProps = RenderChunkProps;
 
 export type PlateElementProps<
@@ -111,38 +131,25 @@ export const PlateElement = React.forwardRef(function PlateElement(
   { as: Tag = 'div', children, insetProp, ...props }: StyledPlateElementProps,
   ref: React.ForwardedRef<HTMLDivElement>
 ) {
+  const blockId =
+    props.element.id && props.editor.api.isBlock(props.element)
+      ? props.element.id
+      : undefined;
+  const blockIdRef = useBlockIdAttributeRef(blockId, ref);
   const attributes = useNodeAttributes(
     {
       attributes: props.attributes,
       className: props.className,
       style: props.style,
     },
-    ref
+    blockIdRef
   );
-  const elementId = props.element.id as string | undefined;
-  const blockId =
-    elementId && props.editor.api.isBlock(props.element)
-      ? elementId
-      : undefined;
 
   const inset =
     insetProp ?? props.plugin?.rules.selection?.affinity === 'directional';
 
-  if (!blockId) {
-    return (
-      <PlateElementBody attributes={attributes} inset={inset} tag={Tag}>
-        {children}
-      </PlateElementBody>
-    );
-  }
-
   return (
-    <PlateElementBody
-      attributes={attributes}
-      blockId={blockId}
-      inset={inset}
-      tag={Tag}
-    >
+    <PlateElementBody attributes={attributes} inset={inset} tag={Tag}>
       {children}
     </PlateElementBody>
   );
@@ -156,13 +163,11 @@ export const PlateElement = React.forwardRef(function PlateElement(
 
 function PlateElementBody({
   attributes,
-  blockId,
   children,
   inset,
   tag: Tag,
 }: {
   attributes: any;
-  blockId?: string;
   children: React.ReactNode;
   inset: boolean;
   tag: keyof HTMLElementTagNameMap;
@@ -176,7 +181,6 @@ function PlateElementBody({
         <Tag
           data-slate-node="element"
           data-slate-inline={attributes['data-slate-inline']}
-          data-block-id={blockId}
           {...attributes}
           style={
             {
@@ -189,7 +193,6 @@ function PlateElementBody({
         <Tag
           data-slate-node="element"
           data-slate-inline={attributes['data-slate-inline']}
-          data-block-id={blockId}
           {...attributes}
           style={
             {

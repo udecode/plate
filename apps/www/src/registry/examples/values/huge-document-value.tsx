@@ -1,8 +1,6 @@
 import { faker } from '@faker-js/faker';
 import type { Value } from 'platejs';
 
-import { DEFAULT_HUGE_DOCUMENT_BLOCKS } from '@/lib/huge-document-config';
-
 type HugeDocumentBlock = {
   text: string;
   type: 'heading-one' | 'paragraph';
@@ -10,8 +8,27 @@ type HugeDocumentBlock = {
 
 type HugeDocumentEngine = 'plate' | 'slate';
 
+const DEFAULT_HUGE_DOCUMENT_BLOCKS = 10_000;
 const HEADING_INTERVAL = 100;
 const cachedHugeDocumentBlocks: HugeDocumentBlock[] = [];
+
+const buildHugeDocumentBlocks = (blocks: number): HugeDocumentBlock[] => {
+  faker.seed(1);
+
+  return Array.from({ length: blocks }, (_, index) => {
+    if (index % HEADING_INTERVAL === 0) {
+      return {
+        text: faker.lorem.sentence(),
+        type: 'heading-one',
+      };
+    }
+
+    return {
+      text: faker.lorem.paragraph(),
+      type: 'paragraph',
+    };
+  });
+};
 
 const toPlateValue = (blocks: HugeDocumentBlock[]): Value =>
   blocks.map(({ text, type }) => ({
@@ -32,21 +49,8 @@ export const getHugeDocumentBlocks = (
     return structuredClone(cachedHugeDocumentBlocks.slice(0, blocks));
   }
 
-  faker.seed(1);
-
-  for (let index = cachedHugeDocumentBlocks.length; index < blocks; index++) {
-    if (index % HEADING_INTERVAL === 0) {
-      cachedHugeDocumentBlocks.push({
-        text: faker.lorem.sentence(),
-        type: 'heading-one',
-      });
-    } else {
-      cachedHugeDocumentBlocks.push({
-        text: faker.lorem.paragraph(),
-        type: 'paragraph',
-      });
-    }
-  }
+  cachedHugeDocumentBlocks.length = 0;
+  cachedHugeDocumentBlocks.push(...buildHugeDocumentBlocks(blocks));
 
   return structuredClone(cachedHugeDocumentBlocks.slice(0, blocks));
 };

@@ -60,10 +60,7 @@
     "package-shape": {
       "description": "Package metadata, lockfiles, and TypeScript configuration.",
       "hash": "6b3103f2f73dc96abcd02badfcd14c3c5fd08634c9160c4fcc0bc9b9528cbf60",
-      "files": [
-        "package-lock.json",
-        "package.json"
-      ]
+      "files": ["package-lock.json", "package.json"]
     }
   }
 }

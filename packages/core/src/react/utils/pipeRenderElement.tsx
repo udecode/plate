@@ -6,12 +6,20 @@ import type { PlateEditor } from '../editor/PlateEditor';
 import { type EditableProps, getPluginByType, getSlateClass } from '../../lib';
 import { pipeInjectNodeProps } from '../../internal/plugin/pipeInjectNodeProps';
 import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
-import { isHtmlVoidElementTag, PlateElement } from '../components';
+import {
+  isHtmlVoidElementTag,
+  PlateElement,
+  useBlockIdAttributeRef,
+} from '../components';
 import { useNodePath } from '../hooks';
 import { useReadOnly } from '../slate-react';
-import { ElementProvider } from '../stores';
+import { ElementProvider, withElementContext } from '../stores';
 import { getRenderNodeProps } from './getRenderNodeProps';
 import { BelowRootNodes, pluginRenderElement } from './pluginRenderElement';
+
+type RenderElementProps = Parameters<
+  NonNullable<EditableProps['renderElement']>
+>[0];
 
 function FastElementWithPath({
   attributes,
@@ -43,6 +51,189 @@ function FastElementWithPath({
   );
 }
 
+function FastIntrinsicElement({
+  attributes,
+  blockId,
+  children,
+  editor,
+  element,
+  isVoidTag,
+  plugin,
+  renderBelowNodes,
+  tag: Tag,
+}: {
+  attributes: any;
+  blockId: any;
+  children: React.ReactNode;
+  editor: PlateEditor;
+  element: any;
+  isVoidTag: boolean;
+  plugin: any;
+  renderBelowNodes: boolean;
+  tag: keyof HTMLElementTagNameMap;
+}) {
+  const path = useNodePath(element)!;
+
+  return (
+    <ElementProvider
+      element={element}
+      entry={[element, path]}
+      path={path}
+      scope={plugin.key}
+    >
+      <FastIntrinsicElementBody
+        attributes={attributes}
+        blockId={blockId}
+        editor={editor}
+        element={element}
+        isVoidTag={isVoidTag}
+        path={path}
+        plugin={plugin}
+        renderBelowNodes={renderBelowNodes}
+        tag={Tag}
+      >
+        {children}
+      </FastIntrinsicElementBody>
+    </ElementProvider>
+  );
+}
+
+function FastIntrinsicElementBody({
+  attributes,
+  blockId,
+  children,
+  editor,
+  element,
+  isVoidTag,
+  path,
+  plugin,
+  renderBelowNodes,
+  tag: Tag,
+}: {
+  attributes: any;
+  blockId: any;
+  children: React.ReactNode;
+  editor: PlateEditor;
+  element: any;
+  isVoidTag: boolean;
+  path: any;
+  plugin: any;
+  renderBelowNodes: boolean;
+  tag: keyof HTMLElementTagNameMap;
+}) {
+  const readOnly = useReadOnly();
+  const ref = useBlockIdAttributeRef<HTMLElement>(blockId, attributes.ref);
+  let elementChildren = children;
+
+  if (renderBelowNodes) {
+    const nodeProps = {
+      attributes,
+      children,
+      editor,
+      element,
+      path,
+      plugin,
+    } as any;
+
+    editor.meta.pluginCache.render.belowNodes.forEach((key) => {
+      const wrapperPlugin = editor.getPlugin({ key });
+
+      if (isEditOnly(readOnly, wrapperPlugin as any, 'render')) return;
+
+      const hoc = wrapperPlugin.render.belowNodes!({ ...nodeProps, key });
+
+      if (hoc) {
+        elementChildren = hoc({
+          ...nodeProps,
+          children: elementChildren,
+        });
+      }
+    });
+  }
+
+  const fastElementProps = {
+    'data-slate-inline': attributes['data-slate-inline'],
+    'data-slate-node': 'element',
+    ...attributes,
+    ref,
+    style: {
+      position: 'relative',
+      ...attributes.style,
+    } as React.CSSProperties,
+  } as any;
+
+  return isVoidTag ? (
+    <Tag {...fastElementProps} />
+  ) : (
+    <Tag {...fastElementProps}>{elementChildren}</Tag>
+  );
+}
+
+function PluginElementWithPath({
+  editor,
+  plugin,
+  props,
+}: {
+  editor: PlateEditor;
+  plugin: any;
+  props: RenderElementProps;
+}) {
+  const path = useNodePath(props.element)!;
+
+  return pluginRenderElement(
+    editor,
+    plugin as any
+  )({
+    ...props,
+    path,
+  } as any) as any;
+}
+
+function RenderElementPropWithPath({
+  props,
+  renderElementProp,
+}: {
+  props: RenderElementProps;
+  renderElementProp: NonNullable<EditableProps['renderElement']>;
+}) {
+  const path = useNodePath(props.element)!;
+
+  return renderElementProp({ ...props, path } as any) as any;
+}
+
+function DefaultElementWithPath({
+  editor,
+  props,
+}: {
+  editor: PlateEditor;
+  props: RenderElementProps;
+}) {
+  const readOnly = useReadOnly();
+  const path = useNodePath(props.element)!;
+  const ctxProps = getRenderNodeProps({
+    // `transformProps` can run hooks, so we need to disable it for default elements.
+    disableInjectNodeProps: true,
+    editor,
+    props: { ...props, path } as any,
+    readOnly,
+  }) as any;
+
+  return (
+    <ElementProvider
+      element={ctxProps.element}
+      entry={[ctxProps.element, path]}
+      path={path}
+      scope={ctxProps.element.type ?? 'default'}
+    >
+      <PlateElement {...ctxProps}>
+        {props.children}
+
+        <BelowRootNodes {...ctxProps} />
+      </PlateElement>
+    </ElementProvider>
+  );
+}
+
 /** @see {@link RenderElement} */
 export const pipeRenderElement = (
   editor: PlateEditor,
@@ -53,17 +244,8 @@ export const pipeRenderElement = (
     editor.meta.pluginCache.render.belowRootNodes.length > 0;
   const hasInjectNodeProps =
     editor.meta.pluginCache.inject.nodeProps.length > 0;
-  const hasPathAwareInjectNodeProps =
-    editor.meta.pluginCache.inject.nodeProps.some((key) => {
-      const injectPlugin = editor.getPlugin({ key });
 
-      return (
-        !!injectPlugin.inject?.excludeBelowPlugins ||
-        !!injectPlugin.inject?.maxLevel
-      );
-    });
-
-  return function render(props) {
+  return function render(props): any {
     const plugin = getPluginByType(editor, props.element.type);
 
     // We could deprecate isElement (unneeded check)
@@ -80,8 +262,7 @@ export const pipeRenderElement = (
         if (isEditOnly(readOnly, plugin as any, 'render')) return null;
 
         const blockId =
-          typeof props.element.id === 'string' &&
-          editor.api.isBlock(props.element)
+          props.element.id && editor.api.isBlock(props.element)
             ? props.element.id
             : undefined;
         const inset = plugin.rules.selection?.affinity === 'directional';
@@ -95,101 +276,91 @@ export const pipeRenderElement = (
               .filter(Boolean)
               .join(' ') || undefined,
         } as any;
-        const Tag = (plugin.render?.as ?? 'div') as keyof HTMLElementTagNameMap;
-        const isVoidTag = isHtmlVoidElementTag(Tag);
-        const hasActiveBelowNodes =
+        const renderAs = plugin.render?.as ?? 'div';
+        const isIntrinsicTag = typeof renderAs === 'string';
+        const Tag = renderAs as keyof HTMLElementTagNameMap;
+        const isVoidTag = isIntrinsicTag && isHtmlVoidElementTag(Tag);
+        const hasBelowNodeWrappers =
           editor.meta.pluginCache.render.belowNodes.some((key) => {
             const wrapperPlugin = editor.getPlugin({ key });
 
-            if (isEditOnly(readOnly, wrapperPlugin as any, 'render')) {
-              return false;
-            }
-
-            return Boolean(
-              wrapperPlugin.render.belowNodes?.({
-                ...props,
-                key,
-              } as any)
-            );
+            return !isEditOnly(readOnly, wrapperPlugin as any, 'render');
           });
-        const fastAttributes =
-          hasInjectNodeProps && !hasPathAwareInjectNodeProps
-            ? (
-                pipeInjectNodeProps(
-                  editor,
-                  {
-                    attributes,
-                    element: props.element,
-                  },
-                  () => [] as any,
-                  readOnly
-                ) as any
-              ).attributes
-            : attributes;
-
-        if (!inset && !hasActiveBelowNodes) {
-          if (blockId) {
-            return isVoidTag ? (
-              <Tag
-                data-slate-inline={fastAttributes['data-slate-inline']}
-                data-slate-node="element"
-                data-block-id={blockId}
-                {...fastAttributes}
-                style={
-                  {
-                    position: 'relative',
-                    ...fastAttributes.style,
-                  } as React.CSSProperties
-                }
-              />
-            ) : (
-              <Tag
-                data-slate-inline={fastAttributes['data-slate-inline']}
-                data-slate-node="element"
-                data-block-id={blockId}
-                {...fastAttributes}
-                style={
-                  {
-                    position: 'relative',
-                    ...fastAttributes.style,
-                  } as React.CSSProperties
-                }
-              >
-                {props.children}
-              </Tag>
-            );
+        let fastPath: any;
+        const getFastPath = () => {
+          if (fastPath === undefined) {
+            fastPath = editor.api.findPath(props.element) ?? null;
           }
 
-          return isVoidTag ? (
-            <Tag
-              data-slate-inline={fastAttributes['data-slate-inline']}
-              data-slate-node="element"
-              {...fastAttributes}
-              style={
-                {
-                  position: 'relative',
-                  ...fastAttributes.style,
-                } as React.CSSProperties
-              }
-            />
-          ) : (
-            <Tag
-              data-slate-inline={fastAttributes['data-slate-inline']}
-              data-slate-node="element"
-              {...fastAttributes}
-              style={
-                {
-                  position: 'relative',
-                  ...fastAttributes.style,
-                } as React.CSSProperties
-              }
+          return fastPath;
+        };
+        const fastAttributes = hasInjectNodeProps
+          ? withElementContext(
+              {
+                element: props.element,
+                get entry() {
+                  const path = getFastPath();
+
+                  return path ? [props.element, path] : null;
+                },
+                get path() {
+                  return getFastPath();
+                },
+                scope: plugin.key,
+              } as any,
+              () =>
+                (
+                  pipeInjectNodeProps(
+                    editor,
+                    {
+                      attributes,
+                      element: props.element,
+                    },
+                    (node) =>
+                      node === props.element
+                        ? getFastPath()!
+                        : editor.api.findPath(node)!,
+                    readOnly
+                  ) as any
+                ).attributes
+            )
+          : attributes;
+
+        if (!inset && !hasBelowNodeWrappers && isIntrinsicTag) {
+          return (
+            <FastIntrinsicElement
+              attributes={fastAttributes}
+              blockId={blockId}
+              editor={editor}
+              element={props.element}
+              isVoidTag={isVoidTag}
+              plugin={plugin}
+              renderBelowNodes={false}
+              tag={Tag}
             >
               {props.children}
-            </Tag>
+            </FastIntrinsicElement>
           );
         }
 
-        if (!hasActiveBelowNodes) {
+        if (!inset && hasBelowNodeWrappers && isIntrinsicTag) {
+          return (
+            <FastIntrinsicElement
+              attributes={fastAttributes}
+              blockId={blockId}
+              editor={editor}
+              element={props.element}
+              isVoidTag={isVoidTag}
+              plugin={plugin}
+              renderBelowNodes
+              tag={Tag}
+            >
+              {props.children}
+            </FastIntrinsicElement>
+          );
+        }
+
+        if (!hasBelowNodeWrappers && isIntrinsicTag) {
           return (
             <FastElementWithPath
               attributes={fastAttributes}
@@ -202,55 +373,29 @@ export const pipeRenderElement = (
           );
         }
 
-        const path = useNodePath(props.element)!;
-
-        return pluginRenderElement(
-          editor,
-          plugin as any
-        )({
-          ...props,
-          path,
-        } as any) as any;
+        return (
+          <PluginElementWithPath
+            editor={editor}
+            plugin={plugin}
+            props={props}
+          />
+        );
       }
 
-      const path = useNodePath(props.element)!;
-
-      return pluginRenderElement(
-        editor,
-        plugin as any
-      )({
-        ...props,
-        path,
-      } as any) as any;
+      return (
+        <PluginElementWithPath editor={editor} plugin={plugin} props={props} />
+      );
     }
 
     if (renderElementProp) {
-      return renderElementProp(props as any);
+      return (
+        <RenderElementPropWithPath
+          props={props}
+          renderElementProp={renderElementProp}
+        />
+      );
     }
 
-    const readOnly = useReadOnly();
-    const path = useNodePath(props.element)!;
-    const ctxProps = getRenderNodeProps({
-      // `transformProps` can run hooks, so we need to disable it for default elements.
-      disableInjectNodeProps: true,
-      editor,
-      props: { ...props, path } as any,
-      readOnly,
-    }) as any;
-
-    return (
-      <ElementProvider
-        element={ctxProps.element}
-        entry={[ctxProps.element, path]}
-        path={path}
-        scope={ctxProps.element.type ?? 'default'}
-      >
-        <PlateElement {...ctxProps}>
-          {props.children}
-
-          <BelowRootNodes {...ctxProps} />
-        </PlateElement>
-      </ElementProvider>
-    );
+    return <DefaultElementWithPath editor={editor} props={props} />;
   };
 };

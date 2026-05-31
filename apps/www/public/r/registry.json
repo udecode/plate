@@ -4627,6 +4627,9 @@
           "path": "src/registry/examples/values/huge-document-value.tsx",
           "type": "registry:example"
         }
+      ],
+      "registryDependencies": [
+        "@shadcn/button"
       ]
     },
     {
@@ -4932,7 +4935,7 @@
         "https://platejs.org/r/examples-collaboration-example-docs",
         "https://platejs.org/r/examples-editable-voids-docs",
         "https://platejs.org/r/examples-export-docs",
-        "https://platejs.org/r/examples-hundreds-blocks-docs",
+        "https://platejs.org/r/examples-huge-document-docs",
         "https://platejs.org/r/examples-hundreds-editors-docs",
         "https://platejs.org/r/examples-preview-markdown-docs",
         "https://platejs.org/r/examples-version-history-docs",
@@ -6431,16 +6434,16 @@
       "type": "registry:file"
     },
     {
-      "description": "Documentation for Hundreds Blocks",
+      "description": "Documentation for Huge Document",
       "files": [
         {
-          "path": "../../content/examples/hundreds-blocks.mdx",
-          "target": "content/docs/plate/examples/hundreds-blocks.mdx",
+          "path": "../../content/examples/huge-document.mdx",
+          "target": "content/docs/plate/examples/huge-document.mdx",
           "type": "registry:file"
         }
       ],
-      "name": "examples-hundreds-blocks-docs",
-      "title": "Hundreds Blocks",
+      "name": "examples-huge-document-docs",
+      "title": "Huge Document",
       "type": "registry:file"
     },
     {

@@ -37,9 +37,12 @@ it('render the default leaf', () => {
 it('returns the custom leaf renderer unchanged when no plugin work exists', () => {
   const renderLeaf = (() => null) as any;
 
-  expect(pipeRenderLeaf(createPlateEditor({ plugins: [] }), renderLeaf)).toBe(
-    renderLeaf
-  );
+  expect(
+    pipeRenderLeaf(
+      createPlateEditor({ navigationFeedback: false, plugins: [] }),
+      renderLeaf
+    )
+  ).toBe(renderLeaf);
 });
 
 it('render with render.leaf and isDecoration=false', () => {
@@ -250,6 +253,57 @@ it('skips inactive leaf renderers', () => {
   expect(queryByTestId('inactive-leaf')).toBeNull();
 });
 
+it('uses node.type to activate leaf renderers when key differs', () => {
+  const simplePlugin = createTSlatePlugin({
+    key: 'simple',
+    node: {
+      isLeaf: true,
+      type: 'simpleMark',
+    },
+    render: {
+      as: 'strong',
+    },
+  });
+  const complexPlugin = createTSlatePlugin({
+    key: 'complex',
+    node: {
+      isLeaf: true,
+      type: 'complexMark',
+    },
+    render: {
+      leaf: ({ children }) => (
+        <span data-testid="complex-leaf">{children}</span>
+      ),
+    },
+  });
+
+  const editor = createPlateEditor({
+    navigationFeedback: false,
+    plugins: [simplePlugin, complexPlugin],
+  } as any);
+
+  const Leaf = pipeRenderLeaf(editor)!;
+  const activeText = {
+    complexMark: true,
+    simpleMark: true,
+    text: 'test',
+  } as any;
+
+  const { container, getByTestId } = render(
+    <Leaf
+      attributes={attributes}
+      leaf={activeText}
+      leafPosition={{ end: 0, start: 4 }}
+      text={activeText}
+    >
+      test content
+    </Leaf>
+  );
+
+  expect(container.querySelector('strong')).not.toBeNull();
+  expect(getByTestId('complex-leaf')).toBeInTheDocument();
+});
+
 it('keeps plugin leafProps behavior', () => {
   const testPlugin = createTSlatePlugin({
     key: 'test',
@@ -316,9 +370,12 @@ it('render with render.node', () => {
 it('returns the custom text renderer unchanged when no plugin work exists', () => {
   const renderText = (() => null) as any;
 
-  expect(pipeRenderText(createPlateEditor({ plugins: [] }), renderText)).toBe(
-    renderText
-  );
+  expect(
+    pipeRenderText(
+      createPlateEditor({ navigationFeedback: false, plugins: [] }),
+      renderText
+    )
+  ).toBe(renderText);
 });
 
 it('keeps the outer text attributes for render.as text plugins', () => {

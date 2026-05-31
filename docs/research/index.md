@@ -106,6 +106,7 @@ This is the entrypoint for the compiled agent research layer.
   - [slate-v2-state-tx-public-api-and-extension-namespaces.md](docs/research/decisions/slate-v2-state-tx-public-api-and-extension-namespaces.md)
   - [slate-v2-post-closure-architecture-review.md](docs/research/decisions/slate-v2-post-closure-architecture-review.md)
   - [slate-v2-architecture-verdict-after-human-stress-sweep.md](docs/research/decisions/slate-v2-architecture-verdict-after-human-stress-sweep.md)
+  - [arthrod.md](docs/research/decisions/arthrod.md)
   - [node-text-mark-render-dx-corpus-ledger.md](docs/research/sources/editor-architecture/node-text-mark-render-dx-corpus-ledger.md)
   - [scroll-selection-visibility-runtime.md](docs/research/sources/editor-architecture/scroll-selection-visibility-runtime.md)
   - [yjs-collaboration-bindings.md](docs/research/sources/editor-architecture/yjs-collaboration-bindings.md)

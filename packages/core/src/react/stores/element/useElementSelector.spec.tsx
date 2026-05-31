@@ -148,4 +148,43 @@ describe('useElementSelector', () => {
     expect(result.current).toBe(2);
     expect(renderValues).toHaveLength(initialRenderCount + 1);
   });
+
+  it('keeps inline selectors stable when deps are empty', () => {
+    const editor = createPlateEditor();
+    const entry = [
+      {
+        children: [{ text: 'one' }],
+        type: 'p',
+      },
+      [0],
+    ] as any;
+    const selector = mock(([element]: any) => element.type);
+
+    const wrapper = ({ children }: { children: React.ReactNode }) => (
+      <Plate editor={editor}>
+        <ElementProvider
+          element={entry[0]}
+          entry={entry}
+          path={entry[1]}
+          scope="element"
+        >
+          {children}
+        </ElementProvider>
+      </Plate>
+    );
+
+    const { rerender, result } = renderHook(
+      () =>
+        useElementSelector((state) => selector(state), [], { key: 'element' }),
+      { wrapper }
+    );
+
+    expect(result.current).toBe('p');
+    const initialCallCount = selector.mock.calls.length;
+
+    rerender();
+
+    expect(result.current).toBe('p');
+    expect(selector).toHaveBeenCalledTimes(initialCallCount);
+  });
 });

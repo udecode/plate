@@ -122,8 +122,9 @@ describe('withNodeId', () => {
   });
 
   it('reuses one editor scan for multiple duplicate ids during insert_node', () => {
+    const onDuplicateIdScan = mock();
     const { apply, editor, transforms } = createNodeIdOverride(
-      {},
+      { onDuplicateIdScan },
       () => false,
       [
         {
@@ -160,6 +161,13 @@ describe('withNodeId', () => {
     } as any);
 
     expect(editor.api.some).not.toHaveBeenCalled();
+    expect(onDuplicateIdScan).toHaveBeenCalledTimes(1);
+    expect(onDuplicateIdScan).toHaveBeenCalledWith({
+      candidateCount: 2,
+      duration: expect.any(Number),
+      existingCount: 2,
+      visitedCount: expect.any(Number),
+    });
     expect(apply).toHaveBeenCalledWith({
       node: {
         children: [

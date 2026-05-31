@@ -646,6 +646,32 @@ Classification notes for this reviewed surface:
 | `#3892` | cluster-synced, unchanged | Generic layout substrate helps custom surfaces, but product custom layout engines remain outside raw Slate closure. |
 | `#5945`, `#4056`, `#5992` | improves-claimed, unchanged | Large-document operation/clipboard benchmark claims remain owned by their existing proof rows. This pagination plan does not promote or rewrite those claims. |
 
+## 2026-05-30 Pagination Architecture Review Final Sync Notes
+
+Source plan:
+`docs/plans/2026-05-29-slate-v2-pagination-architecture-review.md`
+
+This review makes no new `Fixes #...` or `Improves #...` claim. Final planning
+wording keeps `slate-layout`, `useSlateLayout`, `PagedEditable`, provider-owned
+boxes/units/split policy, page/spread virtualization behind virtualized
+`domStrategy`, and opt-in `pageBreaks`. It requires example/proof-harness
+decoupling before new pagination features, keeps TanStack internal, keeps
+table/media/Markdown product policy outside raw Slate, and assigns strict
+collaboration/export page-break authority to the app/export pipeline while raw
+Slate owns only the `pageBreaks` protocol and accepted/stale status.
+
+Classification notes for this reviewed surface:
+
+| Issue | Effective sync status | Note |
+| --- | --- | --- |
+| `#5944` | issue-reviewed, unchanged | Direct pagination pressure. Keep as related until browser proof covers page-boundary flicker, caret mapping, stable edits, and page-break stability across fragments. |
+| `#790` | proof-route backlog, unchanged | Page/spread virtualization targets dynamic-rendering pressure, but claim requires active mount/edit/scroll benchmark proof, mounted-count proof, DOM coverage proof, and browser native-behavior proof. |
+| `#5924` | not claimed, unchanged | Page chrome, table/media fragments, and debug DOM route through DOM coverage, mount policy, and provider-owned layout fragments, not a public ignore-cursor or render-prop path API. |
+| `#5131`, `#2051`, `#4141` | guardrails unchanged | Layout snapshot consumers, page virtualization, and fragment lookup must keep narrow subscriptions and rerender breadth. |
+| `#2793`, `#2572` | release guard / policy non-claim unchanged | Missing-DOM/page-virtualized modes cannot claim screen-reader or accessibility parity without assistive-tech proof or explicit degradation docs. |
+| `#3892` | policy non-claim unchanged | Generic layout substrate helps custom surfaces, but product custom layout engines remain outside raw Slate closure. |
+| `#5945`, `#4056`, `#5992` | improves-claimed, unchanged | Existing large-document operation/clipboard benchmark claims remain owned by existing proof rows and are not promoted by this pagination review. |
+
 ## 2026-05-20 Non-Node State Review Sync Notes
 
 Source plan:

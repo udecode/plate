@@ -446,19 +446,62 @@ const getTextSubstitutionMatchRange = ({
   match: string;
   trigger?: readonly string[] | string;
 }) => {
-  const start = match;
-  const reversed = start.split('').reverse().join('');
   const triggers = trigger
     ? Array.isArray(trigger)
       ? [...trigger]
       : [trigger]
-    : [reversed.slice(-1)];
+    : [match.slice(-1)];
 
   return {
-    end: trigger ? reversed : reversed.slice(0, -1),
-    start,
+    end: trigger ? match : match.slice(0, -1),
+    start: match,
     triggers,
   };
+};
+
+type TextSubstitutionCandidate = {
+  end: string;
+  isPaired: boolean;
+  pattern: TextSubstitutionPattern;
+  start: string;
+};
+
+const getTextSubstitutionCandidatesByTrigger = (
+  patterns: TextSubstitutionPattern[]
+) => {
+  const candidatesByTrigger = new Map<string, TextSubstitutionCandidate[]>();
+
+  for (const pattern of patterns) {
+    const matches = Array.isArray(pattern.match)
+      ? [...pattern.match]
+      : [pattern.match];
+    const isPaired = Array.isArray(pattern.format);
+
+    for (const match of matches) {
+      const { end, start, triggers } = getTextSubstitutionMatchRange({
+        match,
+        trigger: pattern.trigger,
+      });
+      const candidate = {
+        end,
+        isPaired,
+        pattern,
+        start,
+      };
+
+      for (const trigger of new Set(triggers)) {
+        const candidates = candidatesByTrigger.get(trigger);
+
+        if (candidates) {
+          candidates.push(candidate);
+        } else {
+          candidatesByTrigger.set(trigger, [candidate]);
+        }
+      }
+    }
+  }
+
+  return candidatesByTrigger;
 };
 
 const getTextSubstitutionMatchPoints = (
@@ -507,60 +550,26 @@ const getTextSubstitutionMatchPoints = (
   };
 };
 
-const getTextSubstitutionTriggers = (patterns: TextSubstitutionPattern[]) =>
-  Array.from(
-    new Set(
-      patterns.flatMap((pattern) => {
-        const matches = Array.isArray(pattern.match)
-          ? [...pattern.match]
-          : [pattern.match];
-
-        return matches.flatMap(
-          (match) =>
-            getTextSubstitutionMatchRange({
-              match,
-              trigger: pattern.trigger,
-            }).triggers
-        );
-      })
-    )
-  );
-
 const resolveTextSubstitution = ({
+  candidates,
   editor,
-  patterns,
-  text,
 }: {
+  candidates: TextSubstitutionCandidate[];
   editor: SlateEditor;
-  patterns: TextSubstitutionPattern[];
-  text: string;
 }): TextSubstitutionMatch | undefined => {
-  for (const pattern of patterns) {
-    const matches = Array.isArray(pattern.match)
-      ? [...pattern.match]
-      : [pattern.match];
+  for (const { end, isPaired, pattern, start } of candidates) {
+    const points = getTextSubstitutionMatchPoints(editor, {
+      end: isPaired ? '' : end,
+      start: isPaired ? start : '',
+    });
 
-    for (const match of matches) {
-      const { end, start, triggers } = getTextSubstitutionMatchRange({
-        match,
-        trigger: pattern.trigger,
-      });
+    if (!points) continue;
 
-      if (!triggers.includes(text)) continue;
-
-      const points = getTextSubstitutionMatchPoints(editor, {
-        end: Array.isArray(pattern.format) ? '' : end,
-        start,
-      });
-
-      if (!points) continue;
-
-      return {
-        end: Array.isArray(pattern.format) ? '' : end,
-        pattern,
-        points,
-      };
-    }
+    return {
+      end: isPaired ? '' : end,
+      pattern,
+      points,
+    };
   }
 };
 
@@ -610,21 +619,27 @@ export const createTextSubstitutionInputRule = ({
   enabled,
   patterns,
   priority,
-}: TextSubstitutionInputRuleConfig) =>
-  defineInputRule({
+}: TextSubstitutionInputRuleConfig) => {
+  const candidatesByTrigger = getTextSubstitutionCandidatesByTrigger(patterns);
+
+  return defineInputRule({
     enabled,
     priority,
     target: 'insertText',
-    trigger: getTextSubstitutionTriggers(patterns),
+    trigger: Array.from(candidatesByTrigger.keys()),
     resolve: ({ editor, text }) => {
       if (!editor.selection || !editor.api.isCollapsed()) return;
 
+      const candidates = candidatesByTrigger.get(text);
+
+      if (!candidates) return;
+
       return resolveTextSubstitution({
+        candidates,
         editor,
-        patterns,
-        text,
       });
     },
     apply: ({ editor }, match: TextSubstitutionMatch) =>
       applyTextSubstitution(editor, match),
   });
+};

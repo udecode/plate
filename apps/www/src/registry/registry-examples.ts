@@ -68,6 +68,7 @@ export const examples: Registry['items'] = [
       },
     ],
     name: 'huge-document-demo',
+    registryDependencies: ['@shadcn/button'],
     type: 'registry:example',
   },
   {
