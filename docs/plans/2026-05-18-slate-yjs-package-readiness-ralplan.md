@@ -8,6 +8,11 @@
 > calibration benchmark. The remaining execution gates are package source,
 > full simulation example, package tests, Playwright selection proof, and final
 > public package identity.
+>
+> Sync note, 2026-05-28: stale for package existence. Live `../slate-v2` has
+> `@slate/yjs` source, package metadata, a core contract test, an example, and
+> Playwright rows. Current planning target:
+> `docs/plans/2026-05-28-slate-yjs-current-architecture-operation-matrix.md`.
 
 Date: 2026-05-18
 Status: pending user review / Ralph implementation

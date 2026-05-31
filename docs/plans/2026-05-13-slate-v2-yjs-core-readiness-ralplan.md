@@ -1,5 +1,24 @@
 # Slate v2 Yjs core-readiness ralplan
 
+> Sync note, 2026-05-18: superseded for package timing by
+> `docs/plans/2026-05-18-slate-yjs-package-readiness-ralplan.md`. The core
+> substrate cautions remain useful, but current package work must use live
+> `setup(...)` / `onCommit(...)` APIs instead of the older
+> `register` / `commitListeners` examples.
+>
+> Sync note, 2026-05-24: do not use this file as the package plan. The latest
+> package target remains
+> `docs/plans/2026-05-18-slate-yjs-package-readiness-ralplan.md`, refreshed
+> against current `../slate-v2`. Core readiness tests and the
+> `collab-readiness` benchmark now pass; `packages/slate-yjs` source, the full
+> simulation example, package tests, and Playwright selection proof still do
+> not exist.
+>
+> Sync note, 2026-05-28: do not use this file for current `@slate/yjs`
+> execution. Live `../slate-v2` now has `packages/slate-yjs` source, tests, an
+> example, and Playwright rows. Current work lives in
+> `docs/plans/2026-05-28-slate-yjs-current-architecture-operation-matrix.md`.
+
 Date: 2026-05-13
 Status: done
 Score: 0.94
