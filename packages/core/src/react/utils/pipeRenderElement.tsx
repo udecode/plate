@@ -13,7 +13,7 @@ import {
 } from '../components';
 import { useNodePath } from '../hooks';
 import { useReadOnly } from '../slate-react';
-import { ElementProvider, withElementContext } from '../stores';
+import { ElementProvider } from '../stores';
 import { getRenderNodeProps } from './getRenderNodeProps';
 import { BelowRootNodes, pluginRenderElement } from './pluginRenderElement';
 
@@ -26,21 +26,101 @@ function FastElementWithPath({
   children,
   editor,
   element,
+  hasInjectNodeProps,
   plugin,
 }: {
   attributes: any;
   children: React.ReactNode;
   editor: PlateEditor;
   element: any;
+  hasInjectNodeProps: boolean;
   plugin: any;
 }) {
   const path = useNodePath(element)!;
 
   return (
+    <ElementProvider
+      element={element}
+      entry={[element, path]}
+      path={path}
+      scope={plugin.key}
+    >
+      <FastElementBody
+        attributes={attributes}
+        editor={editor}
+        element={element}
+        hasInjectNodeProps={hasInjectNodeProps}
+        path={path}
+        plugin={plugin}
+      >
+        {children}
+      </FastElementBody>
+    </ElementProvider>
+  );
+}
+
+function getFastInjectedAttributes({
+  attributes,
+  editor,
+  element,
+  hasInjectNodeProps,
+  path,
+  readOnly,
+}: {
+  attributes: any;
+  editor: PlateEditor;
+  element: any;
+  hasInjectNodeProps: boolean;
+  path: any;
+  readOnly: boolean;
+}) {
+  if (!hasInjectNodeProps) return attributes;
+
+  return (
+    pipeInjectNodeProps(
+      editor,
+      {
+        attributes,
+        element,
+      },
+      (node) => (node === element ? path : editor.api.findPath(node)!),
+      readOnly
+    ) as any
+  ).attributes;
+}
+
+function FastElementBody({
+  attributes,
+  children,
+  editor,
+  element,
+  hasInjectNodeProps,
+  path,
+  plugin,
+}: {
+  attributes: any;
+  children: React.ReactNode;
+  editor: PlateEditor;
+  element: any;
+  hasInjectNodeProps: boolean;
+  path: any;
+  plugin: any;
+}) {
+  const readOnly = useReadOnly();
+  const injectedAttributes = getFastInjectedAttributes({
+    attributes,
+    editor,
+    element,
+    hasInjectNodeProps,
+    path,
+    readOnly,
+  });
+
+  return (
     <PlateElement
       {...({
         as: plugin.render?.as,
-        attributes,
+        attributes: injectedAttributes,
         children,
         editor,
         element,
@@ -57,6 +137,7 @@ function FastIntrinsicElement({
   children,
   editor,
   element,
+  hasInjectNodeProps,
   isVoidTag,
   plugin,
   renderBelowNodes,
@@ -67,6 +148,7 @@ function FastIntrinsicElement({
   children: React.ReactNode;
   editor: PlateEditor;
   element: any;
+  hasInjectNodeProps: boolean;
   isVoidTag: boolean;
   plugin: any;
   renderBelowNodes: boolean;
@@ -86,6 +168,7 @@ function FastIntrinsicElement({
         blockId={blockId}
         editor={editor}
         element={element}
+        hasInjectNodeProps={hasInjectNodeProps}
         isVoidTag={isVoidTag}
         path={path}
         plugin={plugin}
@@ -104,6 +187,7 @@ function FastIntrinsicElementBody({
   children,
   editor,
   element,
+  hasInjectNodeProps,
   isVoidTag,
   path,
   plugin,
@@ -115,6 +199,7 @@ function FastIntrinsicElementBody({
   children: React.ReactNode;
   editor: PlateEditor;
   element: any;
+  hasInjectNodeProps: boolean;
   isVoidTag: boolean;
   path: any;
   plugin: any;
@@ -122,7 +207,18 @@ function FastIntrinsicElementBody({
   tag: keyof HTMLElementTagNameMap;
 }) {
   const readOnly = useReadOnly();
-  const ref = useBlockIdAttributeRef<HTMLElement>(blockId, attributes.ref);
+  const injectedAttributes = getFastInjectedAttributes({
+    attributes,
+    editor,
+    element,
+    hasInjectNodeProps,
+    path,
+    readOnly,
+  });
+  const ref = useBlockIdAttributeRef<HTMLElement>(
+    blockId,
+    injectedAttributes.ref
+  );
   let elementChildren = children;
 
   if (renderBelowNodes) {
@@ -152,18 +248,21 @@ function FastIntrinsicElementBody({
   }
 
   const fastElementProps = {
-    'data-slate-inline': attributes['data-slate-inline'],
+    'data-slate-inline': injectedAttributes['data-slate-inline'],
     'data-slate-node': 'element',
-    ...attributes,
+    ...injectedAttributes,
     ref,
     style: {
       position: 'relative',
-      ...attributes.style,
+      ...injectedAttributes.style,
     } as React.CSSProperties,
   } as any;
 
   return isVoidTag ? (
-    <Tag {...fastElementProps} />
+    <div {...fastElementProps}>
+      <Tag contentEditable={false} />
+      {elementChildren}
+    </div>
   ) : (
     <Tag {...fastElementProps}>{elementChildren}</Tag>
   );
@@ -286,53 +385,14 @@ export const pipeRenderElement = (
 
             return !isEditOnly(readOnly, wrapperPlugin as any, 'render');
           });
-        let fastPath: any;
-        const getFastPath = () => {
-          if (fastPath === undefined) {
-            fastPath = editor.api.findPath(props.element) ?? null;
-          }
-
-          return fastPath;
-        };
-        const fastAttributes = hasInjectNodeProps
-          ? withElementContext(
-              {
-                element: props.element,
-                get entry() {
-                  const path = getFastPath();
-
-                  return path ? [props.element, path] : null;
-                },
-                get path() {
-                  return getFastPath();
-                },
-                scope: plugin.key,
-              } as any,
-              () =>
-                (
-                  pipeInjectNodeProps(
-                    editor,
-                    {
-                      attributes,
-                      element: props.element,
-                    },
-                    (node) =>
-                      node === props.element
-                        ? getFastPath()!
-                        : editor.api.findPath(node)!,
-                    readOnly
-                  ) as any
-                ).attributes
-            )
-          : attributes;
-
         if (!inset && !hasBelowNodeWrappers && isIntrinsicTag) {
           return (
             <FastIntrinsicElement
-              attributes={fastAttributes}
+              attributes={attributes}
               blockId={blockId}
               editor={editor}
               element={props.element}
+              hasInjectNodeProps={hasInjectNodeProps}
               isVoidTag={isVoidTag}
               plugin={plugin}
               renderBelowNodes={false}
@@ -346,10 +406,11 @@ export const pipeRenderElement = (
         if (!inset && hasBelowNodeWrappers && isIntrinsicTag) {
           return (
             <FastIntrinsicElement
-              attributes={fastAttributes}
+              attributes={attributes}
               blockId={blockId}
               editor={editor}
               element={props.element}
+              hasInjectNodeProps={hasInjectNodeProps}
               isVoidTag={isVoidTag}
               plugin={plugin}
               renderBelowNodes
@@ -363,9 +424,10 @@ export const pipeRenderElement = (
         if (!hasBelowNodeWrappers && isIntrinsicTag) {
           return (
             <FastElementWithPath
-              attributes={fastAttributes}
+              attributes={attributes}
               editor={editor}
               element={props.element}
+              hasInjectNodeProps={hasInjectNodeProps}
               plugin={plugin}
             >
               {props.children}

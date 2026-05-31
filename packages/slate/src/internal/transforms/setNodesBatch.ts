@@ -54,6 +54,8 @@ export const buildSetNodeBatchOperations = <N extends Descendant>(
         properties[key] = currentValue;
       }
 
+      // Match Slate setNodes: nullish values remove properties by staying out
+      // of newProperties while properties carries the previous value.
       if (value != null) {
         newProperties[key] = value;
       }

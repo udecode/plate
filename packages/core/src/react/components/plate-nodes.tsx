@@ -178,7 +178,7 @@ function PlateElementBody({
     <>
       {inset && <NonBreakingSpace />}
       {isVoidTag ? (
-        <Tag
+        <div
           data-slate-node="element"
           data-slate-inline={attributes['data-slate-inline']}
           {...attributes}
@@ -188,7 +188,10 @@ function PlateElementBody({
               ...attributes?.style,
             } as React.CSSProperties
           }
-        />
+        >
+          <Tag contentEditable={false} />
+          {children}
+        </div>
       ) : (
         <Tag
           data-slate-node="element"

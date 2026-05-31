@@ -11,6 +11,20 @@ import { getRenderNodeProps } from './getRenderNodeProps';
 
 export type RenderText = (props: PlateTextProps) => React.ReactElement<any>;
 
+const getSimpleTextAttributes = (
+  props: PlateTextProps,
+  className?: string
+) => {
+  const attributes = (props.attributes ?? {}) as any;
+
+  return {
+    ...attributes,
+    className:
+      [className, attributes.className].filter(Boolean).join(' ') ||
+      undefined,
+  };
+};
+
 /**
  * Get a `Editable.renderText` handler for `plugin.node.type`. If the type is
  * equals to the slate text type and isDecoration is false, render
@@ -41,12 +55,12 @@ export const pluginRenderText = (
       if (canUsePlainText) {
         const Tag = (plugin.render?.as ??
           'span') as keyof HTMLElementTagNameMap;
-
-        return (
-          <Tag className={getSlateClass(plugin.node.type) || undefined}>
-            {children}
-          </Tag>
+        const attributes = getSimpleTextAttributes(
+          nodeProps,
+          getSlateClass(plugin.node.type) || undefined
         );
+
+        return <Tag {...attributes}>{children}</Tag>;
       }
 
       const Text = node ?? PlateText;

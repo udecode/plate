@@ -23,10 +23,14 @@ it('uses a plain render.as fast path for simple text plugins', () => {
   const editor = createPlateEditor({
     plugins: [testPlugin],
   });
+  editor.meta.pluginCache.inject.nodeProps = [];
   const renderText = pluginRenderText(editor, testPlugin as any);
   const TestComponent = () =>
     renderText({
-      attributes: { 'data-slate-node': 'text' } as any,
+      attributes: {
+        'data-slate-node': 'text',
+        className: 'from-slate',
+      } as any,
       children: 'test content',
       text: { test: true, text: 'test content' } as any,
     } as any);
@@ -37,5 +41,7 @@ it('uses a plain render.as fast path for simple text plugins', () => {
 
   expect(text).not.toBeNull();
   expect(text).toHaveClass('slate-test');
+  expect(text).toHaveClass('from-slate');
+  expect(text).toHaveAttribute('data-slate-node', 'text');
   expect(text).toHaveTextContent('test content');
 });

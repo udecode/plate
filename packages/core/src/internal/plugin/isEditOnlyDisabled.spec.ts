@@ -34,4 +34,13 @@ describe('isEditOnly', () => {
       )
     ).toBe(true);
   });
+
+  it('does not apply legacy normalizeInitialValue config to unrelated features', () => {
+    const plugin = { editOnly: { normalizeInitialValue: false } };
+
+    expect(isEditOnly(true, plugin, 'handlers')).toBe(true);
+    expect(isEditOnly(true, plugin, 'inject')).toBe(true);
+    expect(isEditOnly(true, plugin, 'render')).toBe(true);
+    expect(isEditOnly(true, plugin, 'transformInitialValue')).toBe(false);
+  });
 });

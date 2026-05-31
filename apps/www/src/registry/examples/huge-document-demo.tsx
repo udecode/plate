@@ -10,6 +10,7 @@ import React, {
   useEffect,
   useMemo,
   useState,
+  useSyncExternalStore,
 } from 'react';
 
 import type { Value } from 'platejs';
@@ -29,10 +30,14 @@ import { createEditor as slateCreateEditor } from 'slate';
 import { createHugeDocumentValue } from '@/registry/examples/values/huge-document-value';
 import { Button } from '@/components/ui/button';
 
-const SUPPORTS_EVENT_TIMING =
+const subscribeBrowserPerformanceSupport = () => () => {};
+
+const getUnsupportedBrowserFeature = () => false;
+
+const getBrowserSupportsEventTiming = () =>
   typeof window !== 'undefined' && 'PerformanceEventTiming' in window;
 
-const SUPPORTS_LOAF_TIMING =
+const getBrowserSupportsLoafTiming = () =>
   typeof window !== 'undefined' &&
   'PerformanceLongAnimationFrameTiming' in window;
 
@@ -436,7 +441,7 @@ function EnginePane({
   ]);
 
   useEffect(() => {
-    if (!SUPPORTS_EVENT_TIMING) return;
+    if (!getBrowserSupportsEventTiming()) return;
 
     const observer = new PerformanceObserver((list) => {
       if (!active) return;
@@ -463,7 +468,7 @@ function EnginePane({
   }, [active]);
 
   useEffect(() => {
-    if (!SUPPORTS_LOAF_TIMING) return;
+    if (!getBrowserSupportsLoafTiming()) return;
 
     const apply = editor.apply;
     let afterOperation = false;
@@ -578,6 +583,16 @@ function PerformanceControls({
   statistics: Record<EngineKind, EngineStatistics>;
 }) {
   const [configurationOpen, setConfigurationOpen] = useState(true);
+  const supportsEventTiming = useSyncExternalStore(
+    subscribeBrowserPerformanceSupport,
+    getBrowserSupportsEventTiming,
+    getUnsupportedBrowserFeature
+  );
+  const supportsLoafTiming = useSyncExternalStore(
+    subscribeBrowserPerformanceSupport,
+    getBrowserSupportsLoafTiming,
+    getUnsupportedBrowserFeature
+  );
 
   const renderStatisticValue = (
     mounted: boolean,
@@ -791,14 +806,14 @@ function PerformanceControls({
               <td align="right">
                 {renderStatisticValue(
                   mountedEngines.includes('plate'),
-                  SUPPORTS_EVENT_TIMING,
+                  supportsEventTiming,
                   statistics.plate.lastKeyPressDuration
                 )}
               </td>
               <td align="right">
                 {renderStatisticValue(
                   mountedEngines.includes('slate'),
-                  SUPPORTS_EVENT_TIMING,
+                  supportsEventTiming,
                   statistics.slate.lastKeyPressDuration
                 )}
               </td>
@@ -808,14 +823,14 @@ function PerformanceControls({
               <td align="right">
                 {renderStatisticValue(
                   mountedEngines.includes('plate'),
-                  SUPPORTS_EVENT_TIMING,
+                  supportsEventTiming,
                   statistics.plate.averageKeyPressDuration
                 )}
               </td>
               <td align="right">
                 {renderStatisticValue(
                   mountedEngines.includes('slate'),
-                  SUPPORTS_EVENT_TIMING,
+                  supportsEventTiming,
                   statistics.slate.averageKeyPressDuration
                 )}
               </td>
@@ -825,14 +840,14 @@ function PerformanceControls({
               <td align="right">
                 {renderStatisticValue(
                   mountedEngines.includes('plate'),
-                  SUPPORTS_LOAF_TIMING,
+                  supportsLoafTiming,
                   statistics.plate.lastLongAnimationFrameDuration
                 )}
               </td>
               <td align="right">
                 {renderStatisticValue(
                   mountedEngines.includes('slate'),
-                  SUPPORTS_LOAF_TIMING,
+                  supportsLoafTiming,
                   statistics.slate.lastLongAnimationFrameDuration
                 )}
               </td>
@@ -840,7 +855,7 @@ function PerformanceControls({
           </tbody>
         </table>
 
-        {SUPPORTS_EVENT_TIMING &&
+        {supportsEventTiming &&
           statistics.plate.lastKeyPressDuration === null &&
           statistics.slate.lastKeyPressDuration === null && (
             <p>

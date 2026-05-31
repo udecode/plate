@@ -78,6 +78,30 @@ describe('setNodesBatch', () => {
     ]);
   });
 
+  it('removes properties for null and undefined values', () => {
+    const editor = createEditor({
+      children: [
+        { children: [{ text: 'one' }], id: 'a', optional: true, type: 'p' },
+      ] as any,
+    });
+
+    editor.tf.setNodesBatch([
+      { at: [0], props: { id: null, optional: undefined } as any },
+    ]);
+
+    expect(editor.children).toEqual([
+      { children: [{ text: 'one' }], type: 'p' },
+    ]);
+    expect(editor.operations).toEqual([
+      {
+        type: 'set_node',
+        path: [0],
+        properties: { id: 'a', optional: true },
+        newProperties: {},
+      },
+    ]);
+  });
+
   it('rejects duplicate exact paths in one batch', () => {
     const editor = createEditor({
       children: [{ children: [{ text: 'one' }], type: 'p' }] as any,

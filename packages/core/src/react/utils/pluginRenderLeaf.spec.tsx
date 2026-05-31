@@ -22,9 +22,15 @@ it('uses a plain render.as fast path for simple leaf plugins', () => {
   const editor = createPlateEditor({
     plugins: [testPlugin],
   });
+  editor.meta.pluginCache.inject.nodeProps = [];
+  editor.meta.pluginCache.inject.nodeProps = [];
   const renderLeaf = pluginRenderLeaf(editor, testPlugin as any);
   const TestComponent = () =>
     renderLeaf({
+      attributes: {
+        'data-slate-leaf': true,
+        className: 'from-slate',
+      } as any,
       children: 'test content',
       leaf: { test: true, text: 'test content' } as any,
       leafPosition: { end: 0, start: 12 } as any,
@@ -37,6 +43,8 @@ it('uses a plain render.as fast path for simple leaf plugins', () => {
 
   expect(leaf).not.toBeNull();
   expect(leaf).toHaveClass('slate-test');
+  expect(leaf).toHaveClass('from-slate');
+  expect(leaf).toHaveAttribute('data-slate-leaf', 'true');
   expect(leaf).toHaveTextContent('test content');
 });
 
@@ -57,16 +65,11 @@ it('renders simple hard-affinity leaves without spacers when inactive', () => {
     },
   });
   const editor = createPlateEditor({
-    value: [
-      {
-        children: [{ test: true, text: 'test content' }],
-        type: 'p',
-      },
-    ] as any,
     plugins: [testPlugin],
   });
+  editor.meta.pluginCache.inject.nodeProps = [];
   const renderLeaf = pluginRenderLeaf(editor, testPlugin as any);
-  const text = editor.children[0].children[0] as any;
+  const text = { test: true, text: 'test content' } as any;
   const TestComponent = () =>
     renderLeaf({
       children: 'test content',
@@ -76,7 +79,6 @@ it('renders simple hard-affinity leaves without spacers when inactive', () => {
     } as any);
 
   const { container } = render(<TestComponent />);
-
   const leaf = container.querySelector('code');
   const spacers = container.querySelectorAll('span[contenteditable="false"]');
 
@@ -152,6 +154,7 @@ it('renders boundary spacers only for the active hard-affinity edge', () => {
       },
     ] as any,
   });
+  editor.meta.pluginCache.inject.nodeProps = [];
   const renderLeaf = pluginRenderLeaf(editor, testPlugin as any);
   const text = editor.children[0].children[0] as any;
   const TestComponent = () =>

@@ -90,7 +90,7 @@ describe('pluginRenderElement', () => {
     expect(getByTestId('paragraph')).toHaveAttribute('data-marker', 'yes');
   });
 
-  it('does not pass children into void render.as tags', () => {
+  it('preserves Slate children for void render.as tags', () => {
     const editor = createPlateEditor({
       plugins: [
         createSlatePlugin({
@@ -114,9 +114,13 @@ describe('pluginRenderElement', () => {
     });
 
     const { container } = renderPlugin(editor);
-    const element = container.querySelector('hr[data-slate-node="element"]');
+    const element = container.querySelector('[data-slate-node="element"]');
 
     expect(element).toBeInTheDocument();
-    expect(element).toBeEmptyDOMElement();
+    expect(element?.tagName).toBe('DIV');
+    expect(
+      element?.querySelector('hr[contenteditable="false"]')
+    ).toBeInTheDocument();
+    expect(element).toHaveTextContent('Body');
   });
 });

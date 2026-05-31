@@ -8,7 +8,7 @@ import { createSlatePlugin } from '../../lib';
 import { TestPlate as Plate } from '../__tests__/TestPlate';
 import { PlateSlate } from '../components/PlateSlate';
 import { createPlateEditor } from '../editor/withPlate';
-import { useElement, usePath } from '../stores';
+import { useElement, useElementSelector, usePath } from '../stores';
 import { pipeRenderElement } from './pipeRenderElement';
 
 const createValue = (id?: string) =>
@@ -206,7 +206,7 @@ describe('pipeRenderElement', () => {
     expect(element).toHaveAttribute('data-context-path', '0');
   });
 
-  it('does not pass children into void render.as tags on the fast path', () => {
+  it('preserves Slate children for void render.as tags on the fast path', () => {
     const editor = createPlateEditor({
       plugins: [
         createSlatePlugin({
@@ -246,10 +246,14 @@ describe('pipeRenderElement', () => {
         </PlateSlate>
       </Plate>
     );
-    const rendered = container.querySelector('hr[data-slate-node="element"]');
+    const rendered = container.querySelector('[data-slate-node="element"]');
 
     expect(rendered).toBeInTheDocument();
-    expect(rendered).toBeEmptyDOMElement();
+    expect(rendered?.tagName).toBe('DIV');
+    expect(
+      rendered?.querySelector('hr[contenteditable="false"]')
+    ).toBeInTheDocument();
+    expect(rendered).toHaveTextContent('Body');
   });
 
   it('keeps global aboveNodes wrappers', () => {
@@ -431,6 +435,44 @@ describe('pipeRenderElement', () => {
 
     expect(element).toHaveAttribute('data-context-path', '0');
     expect(element).toHaveAttribute('data-context-type', 'p');
+  });
+
+  it('keeps element store context for inject.nodeProps transform hooks', () => {
+    const editor = createPlateEditor({
+      plugins: [
+        createSlatePlugin({
+          inject: {
+            nodeProps: {
+              nodeKey: 'listStyleType',
+              query: ({ nodeProps }) => !!nodeProps.element?.listStyleType,
+              transformProps: ({ props }) => {
+                // eslint-disable-next-line react-hooks/rules-of-hooks
+                const type = useElementSelector(([element]) => element.type, []);
+
+                return {
+                  ...props,
+                  'data-selected-type': type,
+                };
+              },
+            },
+            targetPlugins: ['p'],
+          },
+          key: 'selector-inject',
+        }),
+      ],
+      value: [
+        {
+          children: [{ text: 'Body' }],
+          listStyleType: 'disc',
+          type: 'p',
+        },
+      ] as any,
+    });
+
+    const { container } = renderPipe(editor);
+    const element = container.querySelector('[data-slate-node="element"]');
+
+    expect(element).toHaveAttribute('data-selected-type', 'p');
   });
 
   it('keeps pathless inject.nodeProps on the wrapped directional path', () => {

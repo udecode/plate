@@ -33,6 +33,22 @@ const isActiveHardAffinityBoundary = (editor: PlateEditor, text: any) => {
   return focus.offset === 0 || focus.offset === text.text.length;
 };
 
+const getSimpleLeafAttributes = (
+  props: PlateLeafProps,
+  className?: string
+) => {
+  const attributes = ((props as any).attributes ??
+    (props.leaf as any).attributes ??
+    {}) as any;
+
+  return {
+    ...attributes,
+    className:
+      [className, attributes.className].filter(Boolean).join(' ') ||
+      undefined,
+  };
+};
+
 /**
  * Get a `Editable.renderLeaf` handler for `plugin.node.type`. If the type is
  * equals to the slate leaf type, render `plugin.render.node`. Else, return
@@ -63,25 +79,25 @@ export const pluginRenderLeaf = (
       if (canUseSimpleLeaf && !plugin.rules.selection?.affinity) {
         const Tag = (plugin.render?.as ??
           'span') as keyof HTMLElementTagNameMap;
-
-        return (
-          <Tag className={getSlateClass(plugin.node.type) || undefined}>
-            {children}
-          </Tag>
+        const attributes = getSimpleLeafAttributes(
+          props,
+          getSlateClass(plugin.node.type) || undefined
         );
+
+        return <Tag {...attributes}>{children}</Tag>;
       }
 
       if (canUseSimpleLeaf && plugin.rules.selection?.affinity === 'hard') {
         const Tag = (plugin.render?.as ??
           'span') as keyof HTMLElementTagNameMap;
+        const attributes = getSimpleLeafAttributes(
+          props,
+          getSlateClass(plugin.node.type) || undefined
+        );
         const showBoundarySpacers = isActiveHardAffinityBoundary(editor, text);
 
         if (!showBoundarySpacers) {
-          return (
-            <Tag className={getSlateClass(plugin.node.type) || undefined}>
-              {children}
-            </Tag>
-          );
+          return <Tag {...attributes}>{children}</Tag>;
         }
 
         return (
@@ -89,7 +105,7 @@ export const pluginRenderLeaf = (
             <span contentEditable={false} style={HARD_AFFINITY_SPACER_STYLE}>
               {HARD_AFFINITY_SPACE}
             </span>
-            <Tag className={getSlateClass(plugin.node.type) || undefined}>
+            <Tag {...attributes}>
               {children}
               <span contentEditable={false} style={HARD_AFFINITY_SPACER_STYLE}>
                 {HARD_AFFINITY_SPACE}

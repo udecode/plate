@@ -32,11 +32,18 @@ export const isEditOnly = (
 
   // If editOnly is an object, use its value if specified, otherwise use default
   if (typeof plugin.editOnly === 'object') {
-    return (
-      plugin.editOnly[resolvedFeature] ??
-      plugin.editOnly.normalizeInitialValue ??
-      DEFAULT[resolvedFeature]
-    );
+    if (plugin.editOnly[resolvedFeature] !== undefined) {
+      return plugin.editOnly[resolvedFeature];
+    }
+
+    if (resolvedFeature === 'transformInitialValue') {
+      return (
+        plugin.editOnly.normalizeInitialValue ??
+        DEFAULT.transformInitialValue
+      );
+    }
+
+    return DEFAULT[resolvedFeature];
   }
 
   return false;
