@@ -7,6 +7,7 @@ import { findNeighbour } from 'fumadocs-core/server';
 import {
   getDocsNavMeta,
   getDocsSectionTitleCn,
+  getSidebarCategoryItems,
   normalizeDocsHref,
 } from '@/lib/docs-nav-metadata';
 import { hrefWithLocale } from '@/lib/withLocale';
@@ -27,9 +28,18 @@ function withDocsOverlay(item: SidebarNavItem): SidebarNavItem {
   return {
     ...item,
     description: item.description ?? overlay?.description,
-    keywords: overlay?.keywords,
-    label: overlay?.label,
-    titleCn: overlay?.titleCn,
+    keywords: item.keywords ?? overlay?.keywords,
+    label: item.label ?? overlay?.label,
+    titleCn: item.titleCn ?? overlay?.titleCn,
+  };
+}
+
+function withDocsOverlayDeep(item: SidebarNavItem): SidebarNavItem {
+  const overlaid = withDocsOverlay(item);
+
+  return {
+    ...overlaid,
+    items: overlaid.items?.map(withDocsOverlayDeep),
   };
 }
 
@@ -93,7 +103,18 @@ export function getSidebarNavFromPageTree(locale = 'en') {
     }
   }
 
-  return sections.filter((section) => section.items?.length);
+  return sections
+    .map((section) => {
+      const overlayItems = getSidebarCategoryItems(section.title);
+
+      if (!overlayItems?.length) return section;
+
+      return {
+        ...section,
+        items: overlayItems.map(withDocsOverlayDeep),
+      };
+    })
+    .filter((section) => section.items?.length);
 }
 
 function toPagerItem(item: PageTree.Item | undefined, locale: string) {

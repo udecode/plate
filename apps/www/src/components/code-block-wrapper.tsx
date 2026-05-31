@@ -10,10 +10,12 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from './ui/collapsible';
+import { Separator } from './ui/separator';
 
 interface CodeBlockProps extends React.HTMLAttributes<HTMLDivElement> {
   expandButtonTitle?: string;
   full?: boolean;
+  onOpenChange?: (open: boolean) => void;
   open?: boolean;
 }
 
@@ -22,49 +24,68 @@ export function CodeBlockWrapper({
   className,
   expandButtonTitle = 'Expand',
   full = false,
+  onOpenChange,
   open = false,
   ...props
 }: CodeBlockProps) {
   const [internalOpen, setInternalOpen] = React.useState<boolean | null>(null);
   const isOpened = internalOpen ?? open;
+  const triggerTitle = isOpened ? 'Collapse' : expandButtonTitle;
+
+  const handleOpenChange = React.useCallback(
+    (nextOpen: boolean) => {
+      setInternalOpen(nextOpen);
+      onOpenChange?.(nextOpen);
+    },
+    [onOpenChange]
+  );
 
   if (full) {
     return (
-      <div className={cn('relative overflow-hidden', className)} {...props}>
-        <div className="[&_pre]:my-0">{children}</div>
+      <div className={cn('md:-mx-1 relative', className)} {...props}>
+        <div className="[&>figure]:mt-0 [&>figure]:md:mx-0! [&>pre]:my-0 [&_pre]:my-0">
+          {children}
+        </div>
       </div>
     );
   }
 
   return (
-    <Collapsible open={isOpened} onOpenChange={setInternalOpen}>
-      <div className={cn('relative overflow-hidden', className)} {...props}>
-        <CollapsibleContent
-          className={cn('overflow-hidden', !isOpened && 'max-h-72')}
-          forceMount
-        >
-          <div
-            className={cn(
-              '[&_pre]:my-0 [&_pre]:max-h-[650px] [&_pre]:pb-[100px]',
-              isOpened ? '[&_pre]:overflow-auto]' : '[&_pre]:overflow-hidden'
-            )}
+    <Collapsible
+      open={isOpened}
+      onOpenChange={handleOpenChange}
+      className={cn('group/collapsible md:-mx-1 relative', className)}
+      {...props}
+    >
+      <CollapsibleTrigger asChild>
+        <div className="absolute top-1.5 right-9 z-10 flex items-center">
+          <Button
+            size="sm"
+            variant="ghost"
+            className="h-7 rounded-md px-2 text-muted-foreground"
           >
-            {children}
-          </div>
-        </CollapsibleContent>
-        <div
-          className={cn(
-            'absolute flex items-center justify-center bg-linear-to-b from-background/10 to-90% to-background px-2 py-1',
-            isOpened ? 'inset-x-0 bottom-0 h-12 from-gray-900/30' : 'inset-0'
-          )}
-        >
-          <CollapsibleTrigger asChild>
-            <Button variant="secondary" className="mb-8 h-8 text-xs">
-              {isOpened ? 'Collapse' : expandButtonTitle}
-            </Button>
-          </CollapsibleTrigger>
+            {triggerTitle}
+          </Button>
+          <Separator orientation="vertical" className="mx-1.5 h-4!" />
         </div>
-      </div>
+      </CollapsibleTrigger>
+      <CollapsibleContent
+        forceMount
+        className={cn(
+          'relative mt-6 overflow-hidden data-[state=closed]:max-h-64 data-[state=closed]:[content-visibility:auto]',
+          '[&>figure]:mt-0 [&>figure]:md:mx-0! [&>pre]:my-0 [&_pre]:my-0'
+        )}
+      >
+        {children}
+      </CollapsibleContent>
+      <CollapsibleTrigger
+        className={cn(
+          '-bottom-2 absolute inset-x-0 flex h-20 items-center justify-center rounded-b-lg bg-gradient-to-b from-code/70 to-code text-muted-foreground text-sm',
+          'group-data-[state=open]/collapsible:hidden'
+        )}
+      >
+        {expandButtonTitle}
+      </CollapsibleTrigger>
     </Collapsible>
   );
 }

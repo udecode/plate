@@ -126,7 +126,7 @@ as the execution goal. The user-review boundary is real.
 - Create the plan from the Slate Plan goal template:
 
   ```bash
-  node .agents/rules/autogoal/scripts/create-goal-scratchpad.mjs \
+  node .agents/skills/autogoal/scripts/create-goal-scratchpad.mjs \
     --template slate-plan \
     --title "<short Slate Plan title>"
   ```

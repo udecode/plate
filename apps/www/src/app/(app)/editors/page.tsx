@@ -22,15 +22,13 @@ export default async function BlocksPage() {
   const blocks = await getAllBlocks();
 
   return (
-    <div className="gap-3 md:flex md:flex-row-reverse md:items-start">
-      <div className="grid flex-1 gap-12 md:gap-24 lg:gap-48">
-        {blocks.map((block) => (
-          <BlockDisplay key={block.name} item={block} />
-        ))}
+    <div className="flex flex-col gap-12 md:gap-24">
+      {blocks.map((block) => (
+        <BlockDisplay key={block.name} item={block} />
+      ))}
 
-        <div className="relative scroll-m-16 pb-48">
-          <BlockDisplay item={potionBlock} />
-        </div>
+      <div className="relative scroll-m-16 pb-48">
+        <BlockDisplay item={potionBlock} />
       </div>
     </div>
   );

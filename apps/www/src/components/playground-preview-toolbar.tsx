@@ -17,7 +17,10 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard';
-import { getRegistryInstallCommand } from '@/lib/registry-install';
+import {
+  getRegistryClipboardInstallCommand,
+  getRegistryInstallCommand,
+} from '@/lib/registry-install';
 
 import { BlockCopyButton } from './block-copy-button';
 import { ToggleGroup, ToggleGroupItem } from './ui/toggle-group';
@@ -31,6 +34,9 @@ export function PlaygroundPreviewToolbar({
 }) {
   const src = block.descriptionSrc ?? block.src;
   const installCommand = getRegistryInstallCommand(block.name);
+  const clipboardInstallCommand = getRegistryClipboardInstallCommand(
+    block.name
+  );
 
   const { copyToClipboard, isCopied } = useCopyToClipboard();
 
@@ -52,7 +58,7 @@ export function PlaygroundPreviewToolbar({
           variant="ghost"
           className="h-7 rounded-md border bg-muted shadow-none"
           onClick={() => {
-            copyToClipboard(installCommand);
+            copyToClipboard(clipboardInstallCommand);
           }}
         >
           {isCopied ? <CheckIcon /> : <TerminalIcon />}

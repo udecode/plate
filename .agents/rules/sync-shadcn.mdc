@@ -1,5 +1,5 @@
 ---
-description: Autogoal-backed planning, status, review, and tracking for upstream shadcn docs syncs into Plate docs. Use when the user asks for `sync-shadcn`, `sync-shadcn status`, `sync-shadcn review`, a scoped `sync-shadcn <feature>` lane, to sync shadcn docs, audit newer shadcn docs changes, compare `../shadcn/apps/v4` with `apps/www`, update the shadcn sync baseline, or decide what to adopt, fork, or exclude from upstream shadcn.
+description: Autogoal-backed planning, status, review, dashboard, apply, and tracking for upstream shadcn docs syncs into Plate docs. Use when the user asks for `sync-shadcn`, `sync-shadcn status`, `sync-shadcn review`, `sync-shadcn dashboard`, `sync-shadcn apply`, a scoped `sync-shadcn <feature>` lane, to sync shadcn docs, audit newer shadcn docs changes, compare `../shadcn/apps/v4` with `apps/www`, update the shadcn sync baseline, or decide what to adopt, fork, defer, or exclude from upstream shadcn.
 ---
 
 # Sync Shadcn
@@ -65,6 +65,13 @@ Supported commands:
 
 - `status`: summarize current shadcn sync state, partial syncs, deferred
   decisions, and recommended next step without writing sync artifacts.
+- `dashboard`: regenerate the structured feature-delta dashboard under
+  `docs/sync/shadcn` for visual review of synced, deferred, rejected, forked,
+  and pending shadcn sync decisions.
+- `apply`: apply a copied dashboard review payload to
+  `docs/sync/shadcn/deltas.json`, answer question-only rows without mutation,
+  implement rows targeting `synced`, then regenerate the dashboard when rows
+  changed.
 - `review`: re-audit the current tracked shadcn range against `../shadcn` and
   the current Plate checkout before trusting an existing plan.
 
@@ -84,8 +91,8 @@ Command parsing:
   supported command.
 - If no command or scope is present, use the default full-range
   planning/implementation flow.
-- Reserved commands are `status` and `review`; do not treat them as scope
-  labels.
+- Reserved commands are `status`, `dashboard`, `apply`, and `review`; do not
+  treat them as scope labels.
 - Scopes are planning lanes, not implementation permission. A scoped
   plan still stops for user review before patching `apps/www`.
 
@@ -144,6 +151,8 @@ Purpose:
   whether the tracked plan looks fresh enough for decision-making
 - list accepted partial syncs already landed
 - list deferred decisions so the user can choose what to do next
+- list reviewable Plate-vs-shadcn differences that are still intentionally
+  undecided or deferred, especially visual parity gaps from scoped sync plans
 - recommend the next command or decision
 
 Status mode may:
@@ -157,6 +166,13 @@ Status mode may:
   `lastPlannedCommit..origin/main`
 - summarize `partialSyncs[*].slices`, `partialSyncs[*].deferred`,
   and plan `Questions`
+- when the user supplies words after `status`, treat the remaining argument as
+  a status scope filter, for example `status our /editors vs shadcn /blocks`;
+  prefer the matching `partialSyncs[*].plan`, `lastPlan`, or run directory
+  before falling back to global status
+- summarize remaining reviewable differences from the matched plan's
+  `Recommended Merge Slices`, `Visual Evidence`, `Implementation Result`, and
+  `partialSyncs[*].deferred`
 
 Status mode must not:
 
@@ -167,8 +183,19 @@ Status mode must not:
   `partialSyncs`
 - delegate implementation to `task`
 - treat listed deferred items as accepted decisions
-- list settled exclusions or preserved Plate forks; those belong in `review`
-  evidence or the plan, not routine status output
+- list settled exclusions or preserved Plate forks as if they still need
+  action; those belong in `review` evidence or the plan, not routine status
+  output
+
+Status must distinguish three things:
+
+- `Landed`: accepted partial sync slices already applied.
+- `Reviewable differences`: Plate still differs from upstream and the
+  difference is not settled policy. These are the items the user can re-decide.
+  Include the upstream behavior, current Plate behavior, likely owner files,
+  and the smallest next command or decision.
+- `Settled differences`: explicit exclusions and preserved Plate forks. Do not
+  list these by default unless the user asks to re-open them.
 
 Deferred item sources, in order:
 
@@ -176,7 +203,22 @@ Deferred item sources, in order:
 2. the selected plan's `Questions` section
 3. recommended merge slices marked `defer`, `needs-question`, or not yet
    implemented
-4. status update notes that say `lastSyncedCommit` cannot advance
+4. visual evidence rows where the plan says a Plate-vs-upstream difference
+   still needs work
+5. implementation-result notes that explicitly leave a follow-up slice open
+6. status update notes that say `lastSyncedCommit` cannot advance
+
+For visual scoped status, do not stop at "fresh" when visible deltas remain.
+Report them as reviewable differences even when the scoped implementation was
+verified. Example:
+
+```md
+Reviewable differences:
+- BlockViewer toolbar: upstream `/blocks` has compact device controls,
+  refresh, separated command pill, and v0 action; Plate `/editors` still keeps
+  its current toolbar density and excludes v0. Decision: sync toolbar spacing
+  only, keep Plate install/source behavior and no v0; or leave as Plate fork.
+```
 
 Collapse upstream product/theme/style noise into its owning deferred decision.
 For example, Rhea/style/theme/generated style registry rows are part of the
@@ -216,14 +258,201 @@ Plan: <path or none>
 Partial syncs:
 - <date/range>: <landed slices>
 
+Reviewable differences:
+- <surface>: upstream <behavior>; Plate <behavior>; decision needed <adopt |
+  smart-merge | keep fork>; files <paths>
+
 Deferred decisions:
 - <item>
 
 Next: <run review | rerun planning | decide deferred item | implement accepted slice | advance baseline>
 ```
 
-Keep status concise. If the user wants full evidence, tell them to run
+Keep status concise, but do not hide reviewable differences behind a generic
+"deferred" label. If the user wants full evidence, tell them to run
 `sync-shadcn review`.
+
+### `apply`
+
+Use `sync-shadcn apply` when the user pastes a dashboard review payload.
+
+Purpose:
+
+- apply rows listed directly under `$sync-shadcn apply` or under an optional
+  `Rows` heading
+- answer rows listed under `Questions` in chat without mutating
+  `deltas.json`
+- keep the copied dashboard prompt short by storing the mutation contract in
+  this command
+
+Apply mode may:
+
+- read and update `docs/sync/shadcn/deltas.json`
+- patch `apps/www`, `content/docs`, and related source files when a listed row
+  targets `synced` or `fork`
+- delegate a coherent implementation slice to `task` when a `synced` or `fork`
+  row needs more than a tiny local edit
+- remove screenshot refs for rows applied to `synced` or `rejected`
+- delete unreferenced local screenshot files under `docs/sync/shadcn/runs/**`
+- run `pnpm sync-shadcn dashboard` after any JSON mutation
+
+Apply mode must not:
+
+- write `docs/sync/shadcn/runs/**` except deleting unreferenced screenshots
+- change `lastSyncedCommit`, `lastPlannedCommit`, `lastPlan`, or
+  `partialSyncs`
+- infer decisions for rows not listed in the pasted payload
+- mutate `deltas.json` for question-only rows
+- mark a row `synced` or `fork` before implementation is present and verified
+- ask for review when the row has clear files, suggestion, and acceptance
+  criteria; ask one focused question only when the target behavior is unclear
+
+Payload shape:
+
+```md
+$sync-shadcn apply
+
+- command-menu/command-footer-shortcuts (Command Menu / Footer shortcuts and copy payloads): defer -> pending note: Add copy only for components and editor kits.
+
+Questions:
+- registry/registry-review (Registry / Full registry review): Which registry rows should include copy shortcuts?
+```
+
+Apply rules:
+
+- A direct bullet row under `$sync-shadcn apply`, or under an optional `Rows`
+  heading, is the only mutation unit.
+- Set each listed item state to the requested target state.
+- Target states `pending`, `defer`, and `rejected` are metadata decisions.
+- Target state `synced` is implementation mode: inspect the row files and
+  suggestion, implement the requested change, run focused verification, then
+  update `deltas.json` to `synced`.
+- Target state `fork` is also implementation mode when the row's note,
+  suggestion, or files imply work in Plate. Inspect the row files and
+  suggestion, implement or verify the intentional Plate-owned fork, run focused
+  verification, then update `deltas.json` to `fork`.
+- A `fork` update may be metadata-only only when the Plate fork already exists,
+  the row note does not ask for code/content work, and the source evidence is
+  checked before updating `deltas.json`.
+- Use notes to update `decision`, `suggestion`, or summary text when
+  appropriate.
+- If a note is only a question, keep it under `Questions`, answer it in chat,
+  and do not mutate JSON.
+- When applying `synced` or `rejected`, remove that row's `screenshots` object
+  and delete unreferenced local screenshot files.
+- Keep screenshots for `fork` rows.
+- If any row is applied, run `pnpm sync-shadcn dashboard`.
+
+### `dashboard`
+
+Use `sync-shadcn dashboard` when the user wants a visual decision board for
+the shadcn sync delta instead of prose status output.
+
+Purpose:
+
+- render feature-owned sync deltas grouped by product surface, such as header,
+  home, editors, releases, command menu, registry, create, preview routes, and
+  sidebar
+- show review states that can be re-decided later: `pending`, `defer`,
+  `fork`, `rejected`, and `synced`
+- keep settled exclusions visible in the dashboard without polluting routine
+  `status` output
+- make user review possible through a local static HTML artifact
+- include browser-only state controls, note textareas, and a copy button that
+  builds a concise `$sync-shadcn apply` payload
+- include quick row actions in two rows: `Ask`, `Defer`, then `Sync`,
+  `Reject`, `Fork`; `pending` is a state/filter, not a row action
+- keep note textareas locked until the user chooses an explicit row intent:
+  `Ask`, a quick apply action, or a changed state value
+- render review actions as selected controls; `Sync` copies an
+  `$sync-shadcn apply` row targeting `synced`, which means implementation mode
+  for that row
+- render `Fork` as an implementation-capable action too: copied payloads
+  targeting `fork` mean "make or verify the Plate-owned fork", not "metadata
+  only"
+- use `suggestion` as the durable item field for Plate-owned recommendation
+  text, rendered as `Suggestion` in the dashboard with an explicit `Apply`
+  action that copies that suggestion into `Note`
+- treat `Ask` as question-only: it keeps the current row state, writes the row
+  under `Questions`, and must not mutate `deltas.json`
+- treat question-only notes as questions to answer in chat, not as decisions to
+  apply to `deltas.json`; only rows under `Rows` in a `$sync-shadcn apply`
+  payload should mutate structured state
+- open on the actionable filter by default:
+  `pending` and `defer`; keep `synced`, `rejected`, and `fork` available
+  behind explicit filters
+- split state filters into an Action row and a Done row so active review work
+  is visually separate from settled policy/history
+- render Suggestion and shadcn screenshot columns for non-`synced` review rows when
+  row screenshot paths exist, with click-to-zoom and close behavior in the
+  static HTML page
+- remove screenshot refs for `synced` and `rejected` rows during dashboard
+  generation, and delete unreferenced local screenshot files; keep screenshot
+  evidence for `fork` rows because forked differences stay useful
+- render one card per delta item instead of a wide table, with Suggestion vs shadcn
+  text in two responsive columns and empty screenshot areas hidden
+- do not use an item-level `next` field in `deltas.json`; status and workflow
+  guidance should come from item state, decision, suggestion, and group summary
+
+Dashboard mode may:
+
+- read `docs/sync/shadcn/status.json`
+- read and update `docs/sync/shadcn/deltas.json`
+- write `docs/sync/shadcn/dashboard.json`
+- write `docs/sync/shadcn/dashboard.html`
+
+Dashboard mode must not:
+
+- patch `apps/www`
+- write `docs/sync/shadcn/runs/**`
+- change `lastSyncedCommit`, `lastPlannedCommit`, `lastPlan`, or
+  `partialSyncs`
+- delegate implementation to `task`
+- treat a dashboard item as user acceptance to implement
+
+State meanings:
+
+- `synced`: the slice was accepted, implemented, and verified.
+- `defer`: the item is acknowledged but intentionally postponed.
+- `pending`: the item has no final decision yet, including rows waiting on a
+  user decision.
+- `fork`: Plate intentionally keeps a different implementation, and that
+  implementation is present or has been verified before the row is marked fork.
+- `rejected`: upstream behavior is explicitly excluded.
+
+Dashboard source:
+
+- `docs/sync/shadcn/deltas.json` is the editable structured decision source.
+- `docs/sync/shadcn/dashboard.json` and
+  `docs/sync/shadcn/dashboard.html` are generated views.
+- When adding a landed implementation slice, update `status.json` first, then
+  add or update the matching `deltas.json` feature row, then regenerate the
+  dashboard.
+- When rejecting, deferring, or forking a feature, record the upstream behavior,
+  suggestion, owner files, and state rationale in `deltas.json`.
+- For non-`synced` visual rows, add screenshot paths under
+  `screenshots.suggestion` and `screenshots.shadcn` when available. Leave
+  source-only rows blank.
+- The HTML review controls are intentionally not persistent. The user can mark
+  many rows, copy the generated prompt, and send it back; Codex applies the
+  JSON edits and regenerates the dashboard.
+
+Dashboard command:
+
+```bash
+pnpm sync-shadcn dashboard
+```
+
+Dashboard output shape:
+
+```md
+Dashboard: docs/sync/shadcn/dashboard.html
+Data: docs/sync/shadcn/dashboard.json
+
+| Feature | State | Items |
+| --- | --- | ---: |
+| Registry | defer | 2 |
+```
 
 ### `review`
 
@@ -345,7 +574,7 @@ Next: <use the existing plan | rerun planning | fix local drift | resolve refs>
 Before substantive work:
 
 ```bash
-node .agents/rules/autogoal/scripts/create-goal-scratchpad.mjs \
+node .agents/skills/autogoal/scripts/create-goal-scratchpad.mjs \
   --template sync-shadcn \
   --title "sync shadcn <short range or target>"
 ```
@@ -358,7 +587,7 @@ with a smaller ad hoc plan.
 Completion requires the named sync evidence plus:
 
 ```bash
-node .agents/rules/autogoal/scripts/check-complete.mjs <docs/plans/path>
+node .agents/skills/autogoal/scripts/check-complete.mjs <docs/plans/path>
 ```
 
 Never mark the active goal complete just because a range plan was written if

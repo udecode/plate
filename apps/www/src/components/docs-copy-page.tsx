@@ -28,6 +28,7 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard';
 import { getPlateLLMPromptUrl } from '@/lib/llm';
+import { cn } from '@/lib/utils';
 
 const getMarkdownUrl = (url: string) => `${url}.md`;
 
@@ -99,12 +100,19 @@ function DocsCopyPageItem({
   );
 }
 
-function DocsCopyPageTrigger() {
+function DocsCopyPageTrigger({
+  className,
+  ...props
+}: ComponentPropsWithoutRef<typeof Button>) {
   return (
     <Button
+      {...props}
       size="sm"
       variant="secondary"
-      className="peer -ml-0.5 size-8 shadow-none md:size-7 md:text-[0.8rem]"
+      className={cn(
+        'peer -ml-0.5 size-8 shadow-none md:size-7 md:text-[0.8rem]',
+        className
+      )}
     >
       <ChevronDown className="rotate-180 sm:rotate-0" />
       <span className="sr-only">Open page options</span>

@@ -29,7 +29,7 @@ Plugin pages are a lane inside `docs-creator`, not a separate skill.
 Use the docs goal template for non-trivial docs work:
 
 ```bash
-node .agents/rules/autogoal/scripts/create-goal-scratchpad.mjs \
+node .agents/skills/autogoal/scripts/create-goal-scratchpad.mjs \
   --template docs \
   --title "<short docs title>"
 ```
@@ -42,7 +42,7 @@ When docs are only a supporting surface under another dominant task, do not
 switch the primary template to `docs`. Add the docs pack to the owning plan:
 
 ```bash
-node .agents/rules/autogoal/scripts/create-goal-scratchpad.mjs \
+node .agents/skills/autogoal/scripts/create-goal-scratchpad.mjs \
   --template task \
   --with docs \
   --title "<short task title>"
@@ -52,7 +52,7 @@ For heavyweight architecture or proposal work that also changes docs, use the
 major primary template plus packs, for example:
 
 ```bash
-node .agents/rules/autogoal/scripts/create-goal-scratchpad.mjs \
+node .agents/skills/autogoal/scripts/create-goal-scratchpad.mjs \
   --template major-task \
   --with docs \
   --title "<short major task title>"

@@ -2,6 +2,7 @@
 
 import {
   PageActions,
+  PageHeader,
   PageHeaderDescription,
   PageHeaderHeading,
 } from '@/components/page-header';
@@ -26,15 +27,14 @@ export function EditorDescription() {
   const content = i18n[locale as keyof typeof i18n];
 
   return (
-    <section className="flex flex-col items-start gap-2 py-8 md:py-10 lg:py-12">
-      {/* <Announcement /> */}
+    <PageHeader>
       <PageHeaderHeading>{content.title}</PageHeaderHeading>
       <PageHeaderDescription>{content.description}</PageHeaderDescription>
-      <PageActions>
-        <Button asChild size="sm" className="text-xs">
+      <PageActions className="justify-center **:data-[slot=button]:shadow-none">
+        <Button asChild size="sm">
           <a href="#blocks">{content.browseEditors}</a>
         </Button>
       </PageActions>
-    </section>
+    </PageHeader>
   );
 }

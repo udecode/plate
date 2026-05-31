@@ -1,11 +1,6 @@
 ---
-description: Create, verify, repair, and close Codex goals as durable, evidence-based objectives for long-running work; covers agent-native goal tool usage, measurable outcome gates, docs/plans goal plans, lifecycle handling, pass-gated lanes, blockers, budgets, completion audits, and template repair.
-argument-hint: '[objective | repair <expectation> | draft request | status/closeout question]'
-disable-model-invocation: true
 name: autogoal
-metadata:
-  skiller:
-    source: .agents/rules/autogoal.mdc
+description: Create, verify, repair, and close durable Codex goals with measurable outcomes, evidence gates, plan templates, blocker handling, completion audits, and goal-backed workflow repair.
 ---
 
 # Autogoal
@@ -53,7 +48,8 @@ browser proof, or source-backed citations.
 
 It does not own project policy. Keep repo commands, package managers, browser
 tools, release rules, PR policy, scorecards, issue ledgers, and lane-specific
-pass schedules in derived skills or `docs/plans/templates/<template>.md`.
+pass schedules in derived skills or project-owned
+`docs/plans/templates/<template>.md`.
 
 Derived skills may be stricter than `autogoal`; they should not duplicate the
 goal lifecycle. `autogoal` says how work remains honest. The derived skill says
@@ -72,22 +68,23 @@ The model is:
 
 The primary template is chosen by dominant risk: `task` for normal execution,
 `docs` for docs-dominant work, `major-task` for heavyweight architecture or
-proposal work, `slate-plan` for Slate plan lanes, and so on.
+proposal work, and repo-specific templates for domain lanes.
 
 Packs are chosen by touched surface. They add recurring gates without becoming
 parents:
 
 - `docs`: docs are touched but not the dominant deliverable
-- `agent-native`: `.agents/**`, `.claude/**`, `.codex/**`, skills, hooks,
-  commands, prompts, or user-action tooling changed
+- `agent-native`: agent instructions, skills, hooks, commands, prompts, or
+  user-action tooling changed
 - `browser`: real browser, route, UI, console, network, or interaction proof
   is required
 - `package-api`: package exports, public API, release artifacts, package
   boundaries, or package-level checks changed
 
-Core execution and review gates belong in the primary template. Packs are only
-for optional touched surfaces that would otherwise be absent from that
-template.
+Core execution and review gates belong in the primary template. Every primary
+template must include `Autoreview` as the last human-readable gate before
+`Goal plan complete`. Packs are only for optional touched surfaces that would
+otherwise be absent from that template.
 
 Do not create runtime inheritance between templates. The helper copies pack rows
 into the generated plan's `Start Gates`, `Work Checklist`, and
@@ -106,7 +103,7 @@ and close it honestly.
 Use packs like this:
 
 ```bash
-node .agents/rules/autogoal/scripts/create-goal-scratchpad.mjs \
+node .agents/skills/autogoal/scripts/create-goal-scratchpad.mjs \
   --template task \
   --with docs \
   --with agent-native \
@@ -119,7 +116,7 @@ Examples:
 - normal code task that also changes docs: `--template task --with docs`
 - agent workflow task: `--template task --with agent-native`
 - browser behavior task: `--template task --with browser`
-- published package API task: `--template task --with package-api`
+- public app/API or package-boundary task: `--template task --with package-api`
 - major architecture task: `--template major-task`
 - major architecture task that also changes docs and package API:
   `--template major-task --with docs --with package-api`
@@ -296,7 +293,7 @@ Use this objective shape:
 ```txt
 <desired end state>, complete only when <quantitative or auditable threshold>,
 verified by <specific evidence>, and when the active goal plan passes
-`node .agents/rules/autogoal/scripts/check-complete.mjs <docs/plans/path>`, while
+`node .agents/skills/autogoal/scripts/check-complete.mjs <docs/plans/path>`, while
 preserving <constraints>. Use flow mode <one-shot execution | agent-led plan
 hardening | collaborative planning> and <allowed inputs/tools/boundaries>.
 Maintain goal plan <docs/plans/path>. Between iterations, <progress log and
@@ -351,7 +348,7 @@ Use the hybrid rule for every goal:
 1. The goal objective names the real outcome, threshold, verification surface,
    constraints, boundaries, and blocked condition.
 2. The `docs/plans` goal plan records the fresh evidence for that threshold.
-3. `node .agents/rules/autogoal/scripts/check-complete.mjs <docs/plans/path>` is
+3. `node .agents/skills/autogoal/scripts/check-complete.mjs <docs/plans/path>` is
    the final mechanical gate before `update_goal(status: complete)`.
 
 The checker validates that the goal plan has no unchecked required checklist
@@ -405,18 +402,20 @@ Do not use it for:
 - one-off wording preferences in a single plan
 - a product/runtime bug that belongs in implementation code
 - broad "make all skills better" edits
-- rewriting generated `.agents/skills/*/SKILL.md` by hand
+- rewriting generated `skills/*/SKILL.md` by hand
 
 Target selection order:
 
 1. If the prompt names a plan path, read that plan first. Use its `Template:`,
    skill name, phase table, and completion gates to identify the owner.
-2. If the prompt names a skill, read `.agents/skills/<skill>/SKILL.md` first, then
-   `docs/plans/templates/<skill>.md` when it exists.
+2. If the prompt names a skill, read `skills/<skill>/SKILL.md` first, then
+   project-owned `docs/plans/templates/<skill>.md` when it exists.
 3. If there is an active goal, read its plan path from the objective or current
    plan before editing anything.
-4. If the miss belongs to every goal, target `.agents/rules/autogoal.mdc` and
-   `docs/plans/templates/goal.md`.
+4. If the miss belongs to every goal, target the dotai source package:
+   `skills/autogoal/SKILL.md` and
+   `skills/autogoal/assets/templates/goal.md`. Do not patch the
+   installed `.agents/skills/autogoal` copy by hand.
 5. If ownership is still unclear after source reads, ask one short targeting
    question instead of patching multiple templates.
 
@@ -425,11 +424,11 @@ Repair scope matrix:
 | Miss | Primary repair owner |
 |------|----------------------|
 | Current plan has wrong status, row, evidence, or handoff fields | active `docs/plans/*` plan |
-| Future generated plans need a recurring section, gate, row, or placeholder | `docs/plans/templates/<owner>.md` |
-| Agent chose the wrong workflow, target, proof standard, or completion rule | `.agents/rules/<owner>.mdc` |
-| Prose keeps failing and the miss is mechanically checkable | `.agents/rules/autogoal/scripts/*` plus focused script proof |
+| Future generated plans need a recurring section, gate, row, or placeholder | project-owned `docs/plans/templates/<owner>.md` or dotai source `skills/autogoal/assets/templates/<owner>.md` |
+| Agent chose the wrong workflow, target, proof standard, or completion rule | `skills/<owner>/SKILL.md` |
+| Prose keeps failing and the miss is mechanically checkable | dotai source `skills/autogoal/scripts/*` plus focused script proof |
 | Derived skill adds lane-specific ceremony or policy | derived skill rule/template, not `autogoal` |
-| Universal lifecycle rule is missing across goal-backed work | `.agents/rules/autogoal.mdc` |
+| Universal lifecycle rule is missing across goal-backed work | dotai source `skills/autogoal/SKILL.md` |
 
 Repair workflow:
 
@@ -441,18 +440,18 @@ Repair workflow:
 4. Create a repair plan with:
 
    ```bash
-   node .agents/rules/autogoal/scripts/create-goal-scratchpad.mjs \
+   node .agents/skills/autogoal/scripts/create-goal-scratchpad.mjs \
      --template goal-repair \
      --title "<short repair title>"
    ```
 
    If a repair is truly trivial, record why no separate repair plan is needed.
-5. Patch source-of-truth files only. Never hand-edit generated
-   `.agents/skills/*/SKILL.md`; after changing `.agents/rules/**`, run
-   `pnpm install`.
+5. Patch source-of-truth files only. Never hand-edit installed
+   `.agents/skills/**/SKILL.md`; after changing dotai `skills/**`, run
+   `scripts/validate-skills`.
 6. Prove the repair:
    - source audit with `rg` for the new rule/gate/wording
-   - generated skill sync when `.agents/rules/**` changed
+   - generated skill sync when `skills/**` changed
    - instantiate the repaired template or inspect it directly when a smoke plan
      would create noise
    - verify unfinished generated plans still fail `check-complete.mjs`
@@ -481,7 +480,7 @@ Any skill that requires or wraps `autogoal` should declare:
 
 - when it creates or continues a goal
 - which flow mode it uses by default, and how the user changes it
-- which `docs/plans/templates/<template>.md` it uses
+- which project template `docs/plans/templates/<template>.md` it uses
 - which packs it applies by default, and which touched surfaces add more packs
 - extra start gates and completion gates it owns
 - evidence types it requires
@@ -576,6 +575,31 @@ Set the goal before mutable lane state when the workflow depends on a goal. For
 pass-gated planning or accepted-plan execution lanes, the goal is the first
 durable action after the minimum read needed to derive the objective.
 
+## Template Init
+
+Generic autogoal templates are project files. They live at:
+
+```txt
+docs/plans/templates/goal.md
+docs/plans/templates/task.md
+docs/plans/templates/docs.md
+docs/plans/templates/major-task.md
+docs/plans/templates/goal-repair.md
+docs/plans/templates/packs/<pack>.md
+```
+
+When `docs/plans/templates/goal.md` or another generic template is missing,
+initialize the generic set before creating a goal plan:
+
+```bash
+node .agents/skills/autogoal/scripts/init-templates.mjs
+```
+
+`create-goal-scratchpad.mjs` and `create-goal-template.mjs` run this
+initialization automatically. Existing files are kept. Project-specific
+templates such as `docs/plans/templates/<lane>.md` stay in the project and are
+never moved into the skill package.
+
 ## Goal Plan
 
 Every active goal gets one durable goal plan. It is a single markdown file that
@@ -597,15 +621,16 @@ overkill. The active goal plus the `docs/plans` file are the durable state.
 Create the goal plan with the source-owned helper whenever available:
 
 ```bash
-node .agents/rules/autogoal/scripts/create-goal-scratchpad.mjs \
+node .agents/skills/autogoal/scripts/create-goal-scratchpad.mjs \
   --title "<short title>" \
   --template "<primary template name or path>" \
   --with "<optional pack name>"
 ```
 
 The helper writes `docs/plans/YYYY-MM-DD-<slug>.md` or
-`docs/plans/<ticket>-<slug>.md` from a project-owned template. The helper lives
-under `.agents/rules/autogoal/` because it is generic rule tooling; generated
+`docs/plans/<ticket>-<slug>.md` from a project-owned template or built-in
+autogoal template. The helper lives
+under `.agents/skills/autogoal/` because it is generic rule tooling; generated
 `SKILL.md` files are not edited by hand.
 
 Do not pass objective, threshold, verification, constraints, boundaries, or
@@ -644,7 +669,7 @@ Use templates by passing the primary template name. Add packs for touched
 surfaces:
 
 ```bash
-node .agents/rules/autogoal/scripts/create-goal-scratchpad.mjs \
+node .agents/skills/autogoal/scripts/create-goal-scratchpad.mjs \
   --template "<template-name>" \
   --with "<pack-name>" \
   --title "<short title>" \
@@ -655,14 +680,16 @@ Repeat `--with` for multiple packs, or pass a comma-separated list. The helper
 records `Primary template:` and `Applied packs:` in the generated plan and
 copies pack rows into the plan's existing gate/checklist sections.
 
-`docs/plans/templates` holds reusable project templates. Direct files under
-`docs/plans` are instantiated runtime goal plans. Do not store goal templates or
-active goal state under `docs/goals`.
+`docs/plans/templates` holds reusable project templates. Generic templates are
+seeded there by `init-templates.mjs`; non-generic templates stay there as
+project-owned workflow policy. Direct files under `docs/plans` are instantiated
+runtime goal plans. Do not store goal templates or active goal state under
+`docs/goals`.
 
 Create a new project-owned template by copying the generic template:
 
 ```bash
-node .agents/rules/autogoal/scripts/create-goal-template.mjs \
+node .agents/skills/autogoal/scripts/create-goal-template.mjs \
   --skill "<skill-name>"
 ```
 
@@ -670,9 +697,9 @@ Then edit the new `docs/plans/templates/<skill-name>.md` to add that skill or
 project lane's mandatory sections, checklist rows, phase schedule, evidence
 rows, and closure gates. Keep the generic goal template project-agnostic.
 
-Template creation is not skill creation. Do not generate `.agents/rules/*`,
-`.agents/skills/*`, aliases, execution handoffs, hook state or compatibility
-bridges from this workflow. A project template is just a reusable static shell
+Template creation is not skill creation. Do not generate skill folders, aliases,
+execution handoffs, hook state, or compatibility bridges from this workflow. A
+project template is just a reusable static shell
 for a future `docs/plans/*` goal plan. The agent fills the real objective,
 threshold, verification surface, constraints, boundaries, and blocked condition
 inside the instantiated plan.
@@ -712,6 +739,8 @@ Template quality bar:
   facts.
 - No template may let a goal finish from polished prose, score alone, or a
   completed phase table without fresh evidence.
+- Every primary template must include an `Autoreview` completion gate before
+  the final `Goal plan complete` check.
 - Every required checklist item must map to evidence, an explicit N/A reason,
   or a blocker.
 - Every required section is either present in the template or omitted with a
@@ -737,8 +766,7 @@ Template sync review:
 - Verify a blank or unfinished instantiated plan fails `check-complete.mjs`.
 - Verify a completed plan can record the named evidence without editing the
   template itself.
-- After editing `.agents/rules/autogoal.mdc`, run `pnpm install` to regenerate
-  generated skill files.
+- After editing dotai `skills/autogoal/SKILL.md`, run `scripts/validate-skills`.
 
 Create the plan before substantive edits. Update it after every meaningful
 decision, finding, tradeoff, failed attempt, review fix, verification run, or
@@ -748,7 +776,7 @@ interruption.
 Check the goal plan before completion:
 
 ```bash
-node .agents/rules/autogoal/scripts/check-complete.mjs docs/plans/<goal-plan>.md
+node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/<goal-plan>.md
 ```
 
 This is the final mechanical gate, not a substitute for the named verification
@@ -944,7 +972,7 @@ Mark a goal complete only when:
 - the verification surface named by the goal was checked
 - the `docs/plans` goal plan is updated with final verification
 - every required goal-plan checklist item is checked or marked N/A with reason
-- `node .agents/rules/autogoal/scripts/check-complete.mjs <docs/plans/path>` passes
+- `node .agents/skills/autogoal/scripts/check-complete.mjs <docs/plans/path>` passes
   after the final evidence is recorded
 - constraints and boundaries were respected, or deviations were explicitly
   accepted
@@ -1024,7 +1052,7 @@ Before running exploratory commands inside an active goal:
 - If a result may be large but still matters, write it to a local artifact and
   inspect slices from that artifact. Do not stream the full result into the
   conversation.
-- Never run unbounded `rg` across the whole repo plus `tmp/api`, logs, or binary
+- Never run unbounded `rg` across the whole repo plus large generated trees, logs, or binary
   outputs during a budgeted goal. Split the search by owner or exclude the noisy
   trees first.
 - After any accidental large output, stop broad exploration immediately, record

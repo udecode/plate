@@ -30,12 +30,63 @@ interface CopyButtonProps extends ComponentProps<typeof Button> {
   src?: string;
 }
 
-export function copyToClipboardWithMeta(value: string, event?: Event) {
-  void navigator.clipboard.writeText(value);
+function legacyCopyToClipboard(value: string) {
+  if (!document.body) {
+    return false;
+  }
+
+  const textArea = document.createElement('textarea');
+  textArea.value = value;
+  textArea.setAttribute('readonly', '');
+  textArea.style.position = 'fixed';
+  textArea.style.opacity = '0';
+  textArea.style.pointerEvents = 'none';
+
+  document.body.appendChild(textArea);
+  textArea.focus();
+  textArea.select();
+  textArea.setSelectionRange(0, value.length);
+
+  let hasCopied = false;
+
+  try {
+    hasCopied = document.execCommand('copy');
+  } catch {
+    hasCopied = false;
+  }
+
+  document.body.removeChild(textArea);
+
+  return hasCopied;
+}
+
+export async function copyToClipboardWithMeta(value: string, event?: Event) {
+  if (typeof window === 'undefined' || !value) {
+    return false;
+  }
+
+  let hasCopied = false;
+
+  if (navigator.clipboard?.writeText) {
+    try {
+      await navigator.clipboard.writeText(value);
+      hasCopied = true;
+    } catch {
+      hasCopied = legacyCopyToClipboard(value);
+    }
+  } else {
+    hasCopied = legacyCopyToClipboard(value);
+  }
+
+  if (!hasCopied) {
+    return false;
+  }
 
   if (event) {
     trackEvent(event);
   }
+
+  return true;
 }
 
 export function CopyButton({
@@ -63,8 +114,8 @@ export function CopyButton({
       size="icon"
       variant={variant}
       className={cn(codeCopyButtonClassName, className)}
-      onClick={() => {
-        void copyToClipboardWithMeta(
+      onClick={async () => {
+        const hasCopied = await copyToClipboardWithMeta(
           value,
           event
             ? {
@@ -75,7 +126,10 @@ export function CopyButton({
               }
             : undefined
         );
-        setHasCopied(true);
+
+        if (hasCopied) {
+          setHasCopied(true);
+        }
       }}
       {...props}
     >
@@ -107,9 +161,12 @@ export function CopyWithClassNames({
     return () => clearTimeout(timeout);
   }, [hasCopied]);
 
-  const copyToClipboard = (_value: string) => {
-    copyToClipboardWithMeta(_value);
-    setHasCopied(true);
+  const copyToClipboard = async (_value: string) => {
+    const hasCopied = await copyToClipboardWithMeta(_value);
+
+    if (hasCopied) {
+      setHasCopied(true);
+    }
   };
 
   return (
@@ -165,15 +222,21 @@ export function CopyNpmCommandButton({
     return () => clearTimeout(timeout);
   }, [hasCopied]);
 
-  const copyCommand = (value: string, pm: 'bun' | 'npm' | 'pnpm') => {
-    void copyToClipboardWithMeta(value, {
+  const copyCommand = async (
+    value: string,
+    pm: 'bun' | 'npm' | 'pnpm' | 'yarn'
+  ) => {
+    const hasCopied = await copyToClipboardWithMeta(value, {
       name: 'copy_npm_command',
       properties: {
         command: value,
         pm,
       },
     });
-    setHasCopied(true);
+
+    if (hasCopied) {
+      setHasCopied(true);
+    }
   };
 
   return (
@@ -203,6 +266,11 @@ export function CopyNpmCommandButton({
             onClick={() => copyCommand(commands.__npmCommand__, 'npm')}
           >
             npm
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => copyCommand(commands.__yarnCommand__, 'yarn')}
+          >
+            yarn
           </DropdownMenuItem>
           <DropdownMenuItem
             onClick={() => copyCommand(commands.__bunCommand__, 'bun')}

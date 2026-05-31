@@ -1,0 +1,398 @@
+{
+  "version": 1,
+  "updatedAt": "2026-05-30",
+  "notes": [
+    "Editable source for sync-shadcn dashboard.",
+    "Routine sync-shadcn status should stay concise; this file can include settled forks and rejected upstream surfaces.",
+    "For non-synced visual rows, add screenshots.suggestion and screenshots.shadcn when evidence exists."
+  ],
+  "features": [
+    {
+      "id": "header",
+      "label": "Header",
+      "reviewState": "synced",
+      "summary": "Shared header follows shadcn structure while keeping Plate-owned product choices.",
+      "items": [
+        {
+          "id": "header-parity",
+          "title": "Shared header parity",
+          "state": "synced",
+          "decision": "Use shadcn header structure, omit Home because the Plate logo owns it, remove MCP from the header, keep Discord, and hardcode GitHub stars to 16k.",
+          "upstream": "Shadcn desktop header with search trigger, GitHub, Discord, language, theme, and separators.",
+          "files": [
+            "apps/www/src/components/site-header.tsx",
+            "apps/www/src/components/command-menu.tsx",
+            "apps/www/src/components/github-link.tsx"
+          ],
+          "suggestion": "Plate header keeps Docs, Editors, Templates, search trigger, GitHub 16k, Discord, language, and theme."
+        }
+      ]
+    },
+    {
+      "id": "home",
+      "label": "Home Page",
+      "reviewState": "synced",
+      "summary": "Home page adopted shadcn layout polish without replacing the Plate editor preview or product copy.",
+      "items": [
+        {
+          "id": "home-layout",
+          "title": "Hero and preview layout",
+          "state": "synced",
+          "decision": "Use centered shadcn-style PageHeader, muted announcement, single docs CTA, and full-bleed muted preview area; keep Plate preview content and remove duplicate GitHub CTA.",
+          "upstream": "Shadcn home uses centered hero, muted product band, and compact CTA rhythm.",
+          "files": [
+            "apps/www/src/app/(app)/page.tsx",
+            "apps/www/src/app/cn/page.tsx",
+            "apps/www/src/app/(app)/_components/announcement-button.tsx"
+          ],
+          "suggestion": "Plate keeps editor preview and Pro/Potion path with shadcn spacing/background polish."
+        }
+      ]
+    },
+    {
+      "id": "editors",
+      "label": "Editors vs Blocks",
+      "reviewState": "synced",
+      "summary": "Plate /editors uses shadcn /blocks framing and toolbar polish while preserving Plate demos.",
+      "items": [
+        {
+          "id": "editors-shell",
+          "title": "Page shell and vertical rhythm",
+          "state": "synced",
+          "decision": "Use shadcn /blocks page shell style without BlocksNav categories, Browse CTAs, or v0 actions.",
+          "upstream": "Shadcn /blocks has centered PageHeader, section-soft content band, category nav, and block gallery actions.",
+          "files": [
+            "apps/www/src/app/(app)/editors/layout.tsx",
+            "apps/www/src/app/(app)/editors/editor-description.tsx",
+            "apps/www/src/app/(app)/editors/page.tsx"
+          ],
+          "suggestion": "Plate /editors keeps editor demos as the product and excludes category nav and browse CTAs."
+        },
+        {
+          "id": "block-viewer-toolbar",
+          "title": "BlockViewer toolbar",
+          "state": "synced",
+          "decision": "Use upstream device/open/refresh group order and command-pill rhythm, excluding Open in v0.",
+          "upstream": "Shadcn BlockViewer toolbar has device controls, open/refresh controls, separated install command, and v0 action.",
+          "files": ["apps/www/src/components/block-viewer.tsx"],
+          "suggestion": "Plate keeps install/source behavior, Pro/Get the code behavior, and no v0 button."
+        },
+        {
+          "id": "preview-frame",
+          "title": "Preview frame polish",
+          "state": "synced",
+          "decision": "Use shadcn radial dotted background, soft backing layer, overflow-hidden rounded frame, and handle breakpoint.",
+          "upstream": "Shadcn /blocks preview frame has dotted background and resizable shell polish.",
+          "files": ["apps/www/src/components/block-viewer.tsx"],
+          "suggestion": "Plate keeps iframe/source/install/editor behavior inside the polished frame."
+        }
+      ]
+    },
+    {
+      "id": "releases",
+      "label": "Releases vs Changelog",
+      "reviewState": "synced",
+      "summary": "Plate /docs/releases uses shadcn changelog page structure with Plate release data.",
+      "items": [
+        {
+          "id": "releases-page",
+          "title": "Releases page parity",
+          "state": "synced",
+          "decision": "Use RSS action, latest-five inline releases, More Updates grid, and page anchors; keep the Plate title and release source.",
+          "upstream": "Shadcn /docs/changelog has RSS action and More Updates layout.",
+          "files": [
+            "apps/www/src/app/(app)/docs/releases/page.tsx",
+            "apps/www/src/components/release-index.tsx",
+            "apps/www/src/lib/releases.ts",
+            "content/docs/releases/index.mdx"
+          ],
+          "suggestion": "Plate /docs/releases keeps Plate release data, RSS feed, and docs shell."
+        }
+      ]
+    },
+    {
+      "id": "sidebar",
+      "label": "Docs Sidebar",
+      "reviewState": "fork",
+      "summary": "Plate keeps the current sidebar as an intentional fork.",
+      "items": [
+        {
+          "id": "accordion-sidebar",
+          "title": "Accordion sidebar",
+          "state": "fork",
+          "decision": "Keep current Plate behavior as an intentional fork. No merge work now.",
+          "upstream": "Shadcn sidebar is simpler because its docs tree is smaller.",
+          "files": ["apps/www/src/components/docs-nav.tsx"],
+          "suggestion": "Plate needs accordion grouping for dense docs, plugins, components, examples, migrations, and API pages."
+        }
+      ]
+    },
+    {
+      "id": "command-menu",
+      "label": "Command Menu",
+      "reviewState": "synced",
+      "summary": "Command input styling, performance, footer shortcuts, and copy payload policy are settled.",
+      "items": [
+        {
+          "id": "command-input",
+          "title": "Header search input",
+          "state": "synced",
+          "decision": "Use the shadcn-style compact command trigger in the header.",
+          "upstream": "Shadcn search trigger is compact and borderless.",
+          "files": ["apps/www/src/components/command-menu.tsx"],
+          "suggestion": "Plate search trigger matches that visual shape."
+        },
+        {
+          "id": "command-footer-shortcuts",
+          "title": "Footer shortcuts and copy payloads",
+          "state": "synced",
+          "decision": "Plate limits command-menu copy payloads to registry-backed editor/plugin kits, components, and examples; Sync applies code before marking the row synced.",
+          "upstream": "Shadcn can show Enter plus copy shortcuts for copyable command items.",
+          "files": [
+            "apps/www/src/components/command-menu.tsx",
+            "apps/www/src/lib/registry-install.ts",
+            "apps/www/src/registry/registry.ts"
+          ],
+          "suggestion": "Plate should limit copy payloads to editor kits, plugin kits, components, and examples after the registry review."
+        }
+      ]
+    },
+    {
+      "id": "registry",
+      "label": "Registry",
+      "reviewState": "defer",
+      "summary": "Registry shape, copy payloads, and source loading are deferred as one product review.",
+      "items": [
+        {
+          "id": "registry-source",
+          "title": "Lazy source loading",
+          "state": "fork",
+          "decision": "Keep lazy /api/registry-source/[name] for bandwidth; do not pull shadcn eager code-source behavior without a registry decision.",
+          "upstream": "Shadcn registry pages can load source/code through its block/component viewer model.",
+          "files": [
+            "apps/www/src/app/api/registry-source/[name]/route.ts",
+            "apps/www/src/components/block-viewer.tsx"
+          ],
+          "suggestion": "Plate uses lazy internal source hydration to avoid heavy payloads."
+        },
+        {
+          "id": "registry-review",
+          "title": "Full registry review",
+          "state": "defer",
+          "decision": "Review components, plugin kits, editor kits, examples, install commands, and public route shape together.",
+          "upstream": "Shadcn registry behavior is the base compatibility target.",
+          "files": [
+            "apps/www/src/lib/registry-install.ts",
+            "apps/www/src/registry/registry.ts",
+            "apps/www/src/registry/registry-components.ts"
+          ],
+          "screenshots": {
+            "shadcn": "docs/sync/shadcn/runs/2026-05-30-deferred-review-screenshots/screenshots/shadcn-registry-review-blocks.png",
+            "suggestion": "docs/sync/shadcn/runs/2026-05-30-deferred-review-screenshots/screenshots/plate-registry-review-editors.png"
+          },
+          "suggestion": "Plate registry content and API MDX are product-owned and should not be merged piecemeal."
+        }
+      ]
+    },
+    {
+      "id": "create",
+      "label": "Create",
+      "reviewState": "defer",
+      "summary": "Defer upstream /create review; future Plate create work is a separate product decision.",
+      "items": [
+        {
+          "id": "upstream-create",
+          "title": "Upstream /create product surface",
+          "state": "defer",
+          "decision": "Defer upstream /create and v0-oriented create flow review until Plate has a product-shaped /create decision.",
+          "upstream": "Shadcn /create is tied to its own product flow and generated style/theme registry.",
+          "files": ["docs/sync/shadcn/decisions.md"],
+          "suggestion": "Plate may have a /create later, but it should be designed for Plate rather than copied now."
+        }
+      ]
+    },
+    {
+      "id": "themes",
+      "label": "Themes and Styles",
+      "reviewState": "defer",
+      "summary": "Defer upstream Rhea/style/theme/generated style registry review with the create/theming product surface.",
+      "items": [
+        {
+          "id": "rhea-style-registry",
+          "title": "Rhea/style/theme generated registry",
+          "state": "defer",
+          "decision": "Defer this with upstream create/theming instead of treating it as a final exclusion.",
+          "upstream": "Shadcn has generated style registry files for themed examples.",
+          "files": ["docs/sync/shadcn/decisions.md"],
+          "suggestion": "Plate does not want the old theme/customizer direction or upstream Rhea theme surface."
+        }
+      ]
+    },
+    {
+      "id": "preview-routes",
+      "label": "Preview Routes",
+      "reviewState": "fork",
+      "summary": "Plate keeps a single preview route while the registry/style system stays deferred.",
+      "items": [
+        {
+          "id": "style-param-view-route",
+          "title": "Shadcn style-param /view route",
+          "state": "fork",
+          "decision": "Do not copy shadcn /view/[style]/[name] and legacy theme wrapper for now.",
+          "upstream": "Shadcn iframes use /view/[style]/[name] for style-aware block previews.",
+          "files": [
+            "apps/www/src/app/(view)/view/[name]/page.tsx",
+            "apps/www/src/components/block-viewer.tsx"
+          ],
+          "suggestion": "Plate uses /view/[name] for registry previews and has no active multi-style preview surface."
+        }
+      ]
+    },
+    {
+      "id": "docs-engine",
+      "label": "Docs Engine",
+      "reviewState": "fork",
+      "summary": "Plate keeps the docs shell, source loader, and search wiring as product-owned forks.",
+      "items": [
+        {
+          "id": "docs-shell-ownership",
+          "title": "Docs shell ownership",
+          "state": "fork",
+          "decision": "Keep Plate docs shell as an intentional fork. It owns CN fallback, registry fallback pages, Plate LLM markdown, custom pager behavior, and no-v0 policy.",
+          "upstream": "Shadcn renders docs from one route file with Fumadocs neighbours, copy page, TOC, and Open in v0 CTA.",
+          "files": [
+            "apps/www/src/app/(app)/docs/[[...slug]]/doc-page.tsx",
+            "apps/www/src/app/(app)/docs/[[...slug]]/doc-content.tsx",
+            "apps/www/src/components/docs-copy-page.tsx",
+            "../shadcn/apps/v4/app/(app)/docs/[[...slug]]/page.tsx"
+          ],
+          "suggestion": "Track future shadcn page-shell changes as small visual/layout rows, not as a route rewrite."
+        },
+        {
+          "id": "source-search-wiring",
+          "title": "Source and search wiring",
+          "state": "fork",
+          "decision": "Keep Plate i18n source loader and grouped search route.",
+          "upstream": "Shadcn uses a simple /docs source loader and default Fumadocs createFromSource search route.",
+          "files": [
+            "apps/www/src/lib/source.ts",
+            "apps/www/src/app/api/search/route.ts",
+            "../shadcn/apps/v4/lib/source.ts",
+            "../shadcn/apps/v4/app/api/search/route.ts"
+          ],
+          "suggestion": "Plate source/search wiring exists for CN docs and command/search result quality, so do not chase upstream simplicity here."
+        }
+      ]
+    },
+    {
+      "id": "mdx",
+      "label": "MDX and Code Primitives",
+      "reviewState": "pending",
+      "summary": "Stable MDX/code infrastructure differences that were missed by route-focused sync reviews.",
+      "items": [
+        {
+          "id": "mdx-component-primitives",
+          "title": "MDX component primitives",
+          "state": "fork",
+          "decision": "Keep Plate's MDX map as an intentional fork for now; before changing it, sweep shadcn docs usage and decide which upstream primitives Plate can actually use.",
+          "upstream": "Shadcn MDX components include explicit heading anchors, DirectoryList, Kbd, Callout, CodeCollapsibleWrapper, package-manager command blocks, and component-list helpers.",
+          "files": [
+            "apps/www/src/components/mdx-components.tsx",
+            "../shadcn/apps/v4/mdx-components.tsx",
+            "content/docs"
+          ],
+          "suggestion": "Sweep all shadcn docs for upstream MDX primitive usage, then pull useful upstream primitives while preserving Plate API and registry MDX vocabulary."
+        },
+        {
+          "id": "codeblock-collapsible-wrapper",
+          "title": "Codeblock collapsible wrapper",
+          "state": "synced",
+          "decision": "Plate CodeBlockWrapper uses upstream expand/collapse behavior while preserving Plate full, open, and expandButtonTitle support.",
+          "upstream": "Shadcn CodeCollapsibleWrapper has a top-right Expand/Collapse control, separator, bottom gradient trigger, content-visibility:auto, and cleaner figure handling.",
+          "files": [
+            "apps/www/src/components/code-block-wrapper.tsx",
+            "../shadcn/apps/v4/components/code-collapsible-wrapper.tsx"
+          ],
+          "suggestion": "Synced: upstream top-right control, separator, bottom gradient trigger, content-visibility, and figure/pre cleanup are implemented with Plate props preserved."
+        },
+        {
+          "id": "code-command-yarn-tab",
+          "title": "Code command yarn tab",
+          "state": "synced",
+          "decision": "Plate command blocks generate and render yarn variants alongside pnpm, npm, and bun.",
+          "upstream": "Shadcn command blocks generate and render bun, npm, pnpm, and yarn variants.",
+          "files": [
+            "apps/www/src/lib/rehype-npm-command.ts",
+            "apps/www/src/components/code-block-command.tsx",
+            "apps/www/src/components/copy-button.tsx",
+            "../shadcn/apps/v4/components/code-block-command.tsx",
+            "../shadcn/apps/v4/lib/highlight-code.ts"
+          ],
+          "suggestion": "Synced: rehype command props, MDX command tabs, config persistence, and copy helpers all include yarn."
+        },
+        {
+          "id": "highlight-code-cache",
+          "title": "Highlight code cache",
+          "state": "synced",
+          "decision": "Plate highlightCode uses upstream-style SHA-256 keyed LRU caching while preserving registry file highlighting.",
+          "upstream": "Shadcn caches Shiki output with a SHA-256 key and one-hour LRU cache.",
+          "files": [
+            "apps/www/package.json",
+            "apps/www/src/lib/highlight-code.ts",
+            "../shadcn/apps/v4/lib/highlight-code.ts"
+          ],
+          "suggestion": "Synced: Plate caches highlighted HTML in highlightCode and keeps highlightFiles for registry/source previews."
+        },
+        {
+          "id": "copy-button-fallback",
+          "title": "Copy button fallback",
+          "state": "synced",
+          "decision": "Plate copy helpers use upstream-style clipboard fallback and success-gated copied state while preserving analytics and dropdown copy helpers.",
+          "upstream": "Shadcn copy waits for clipboard success and falls back to a hidden textarea for older or restricted browsers.",
+          "files": [
+            "apps/www/src/components/copy-button.tsx",
+            "../shadcn/apps/v4/components/copy-button.tsx"
+          ],
+          "suggestion": "Synced: copy helpers fall back to a hidden textarea, track events only after a successful copy, and only show copied state on success."
+        }
+      ]
+    },
+    {
+      "id": "docs-actions",
+      "label": "Docs Actions",
+      "reviewState": "fork",
+      "summary": "Plate keeps shadcn action-button structure but owns the action menu destinations.",
+      "items": [
+        {
+          "id": "docs-copy-page-menu",
+          "title": "Docs copy page menu",
+          "state": "fork",
+          "decision": "Keep Plate Markdown, ChatGPT, Claude, and GitHub actions; continue excluding v0.",
+          "upstream": "Shadcn copy page menu includes Markdown, v0, ChatGPT, Claude, and Scira.",
+          "files": [
+            "apps/www/src/components/docs-copy-page.tsx",
+            "../shadcn/apps/v4/components/docs-copy-page.tsx"
+          ],
+          "suggestion": "Keep the Plate menu. Do not add v0 or Scira unless product policy changes."
+        }
+      ]
+    },
+    {
+      "id": "api-docs",
+      "label": "API Docs",
+      "reviewState": "fork",
+      "summary": "Keep Plate custom MDX/API docs support; it is product-owned, not shadcn-owned.",
+      "items": [
+        {
+          "id": "custom-api-mdx",
+          "title": "Custom API MDX",
+          "state": "fork",
+          "decision": "Keep Plate's generated API docs vocabulary and MDX support.",
+          "upstream": "Shadcn docs do not own Plate API reference generation.",
+          "files": ["content/docs/api"],
+          "suggestion": "Plate API pages are a core docs surface and must stay."
+        }
+      ]
+    }
+  ]
+}

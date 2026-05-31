@@ -21,6 +21,7 @@ import {
 import { useTheme } from 'next-themes';
 import { useRouter } from 'next/navigation';
 
+import { copyToClipboardWithMeta } from '@/components/copy-button';
 import { Button } from '@/components/ui/button';
 import {
   Command,
@@ -40,13 +41,69 @@ import {
 import { Spinner } from '@/components/ui/spinner';
 import { useMutationObserver } from '@/hooks/use-mutation-observer';
 import { useLocale } from '@/hooks/useLocale';
+import {
+  getRegistryClipboardInstallCommand,
+  getRegistryInstallCommand,
+} from '@/lib/registry-install';
 import { cn } from '@/lib/utils';
 import { hrefWithLocale } from '@/lib/withLocale';
 
 const ABSOLUTE_HREF_REGEX = /^[a-z][a-z\d+\-.]*:/i;
+const CN_DOCS_PREFIX_REGEX = /^\/cn(?=\/docs)/;
 const WHITESPACE_REGEX = /\s+/;
+const DOC_SEARCH_DEBOUNCE_MS = 300;
+const MIN_DOC_SEARCH_LENGTH = 2;
+const commandMenuCopyableRegistryNames = new Set(
+  `
+  ai-kit align-kit autoformat-classic-kit autoformat-kit basic-blocks-kit
+  basic-marks-kit basic-nodes-kit block-menu-kit block-placeholder-kit
+  block-selection-kit callout-kit code-block-kit code-drawing-kit column-kit
+  comment-kit copilot-kit cursor-overlay-kit date-kit discussion-kit dnd-kit
+  docx-kit docx-export-kit editor-base-kit editor-kit emoji-kit exit-break-kit
+  fixed-toolbar-classic-kit fixed-toolbar-kit floating-toolbar-kit
+  floating-toolbar-classic-kit footnote-kit font-kit indent-kit
+  line-height-kit link-kit list-classic-kit list-kit markdown-kit math-kit
+  media-kit media-uploadthing-kit mention-kit slash-kit suggestion-kit
+  tabbable-kit table-kit toc-kit toggle-kit
+  ai-demo align-demo autoformat-demo basic-blocks-demo basic-marks-demo
+  basic-nodes-demo block-menu-demo block-selection-demo callout-demo
+  code-block-demo code-drawing-demo collaboration-demo column-demo
+  controlled-demo copilot-demo cursor-overlay-demo date-demo discussion-demo
+  dnd-demo editable-voids-demo emoji-demo equation-demo excalidraw-demo
+  exit-break-demo find-replace-demo floating-toolbar-demo font-demo
+  footnote-demo hundreds-blocks-demo hundreds-editors-demo html-demo
+  indent-demo link-demo line-height-demo list-classic-demo list-demo
+  markdown-demo media-demo mention-demo plugin-rules-demo preview-markdown-demo
+  select-editor-demo single-block-demo slash-command-demo tabbable-demo
+  table-demo toc-demo toggle-demo version-history-demo
+  ai-node ai-toolbar-button blockquote-node callout-node caption code-block-node
+  code-drawing-node code-node column-node comment-node date-node editor
+  equation-node excalidraw-node fixed-toolbar floating-toolbar font-size-toolbar-button
+  heading-node highlight-node hr-node kbd-node link-node list-classic-node
+  media-image-node media-toolbar mention-node paragraph-node slash-node
+  suggestion-node table-node toc-node toggle-node toolbar
+  `
+    .trim()
+    .split(/\s+/)
+);
+const commandMenuRegistryNameAliases: Record<string, string> = {
+  'collaboration-example': 'collaboration-demo',
+  'horizontal-rule': 'hr-node',
+  'preview-markdown': 'preview-markdown-demo',
+  'text-align': 'align-kit',
+  'slash-command': 'slash-kit',
+};
+const selectedMutationObserverOptions: MutationObserverInit = {
+  attributeFilter: ['aria-selected'],
+  attributes: true,
+};
 
 type Query = Awaited<ReturnType<typeof useFumadocsSearch>>['query'];
+type HighlightCommand = (
+  label: string,
+  copyPayload?: string,
+  copyLabel?: string
+) => void;
 type Push = ReturnType<typeof useRouter>['push'];
 
 const i18n = {
@@ -116,6 +173,39 @@ function navigateToHref(push: Push, href: string) {
   push(href);
 }
 
+function getCommandMenuRegistryName(href: string) {
+  const normalizedPath = href
+    .split('#')[0]
+    .split('?')[0]
+    .replace(CN_DOCS_PREFIX_REGEX, '');
+  const slug = normalizedPath.split('/').filter(Boolean).at(-1);
+
+  if (!slug) return;
+
+  const candidates = [
+    commandMenuRegistryNameAliases[slug],
+    `${slug}-kit`,
+    `${slug}-demo`,
+    `${slug}-node`,
+    slug,
+  ].filter(isString);
+
+  return candidates.find((name) => commandMenuCopyableRegistryNames.has(name));
+}
+
+function getCommandMenuCopyCommand(href: string | undefined) {
+  if (!href) return;
+
+  const registryName = getCommandMenuRegistryName(href);
+
+  return registryName
+    ? {
+        label: getRegistryInstallCommand(registryName),
+        payload: getRegistryClipboardInstallCommand(registryName),
+      }
+    : undefined;
+}
+
 function CommandItems({
   content,
   item,
@@ -127,20 +217,29 @@ function CommandItems({
   content: (typeof i18n)['en'];
   item: NavItemWithChildren;
   locale: string;
-  onHighlight: (label: string) => void;
+  onHighlight: HighlightCommand;
   runCommand: (command: () => unknown) => void;
   parentTitle?: string;
 }) {
   const { push } = useRouter();
   const title = getNavTitle(item, locale);
   const keywords = getItemKeywords(item, parentTitle);
+  const copyCommand = item.href
+    ? getCommandMenuCopyCommand(item.href)
+    : undefined;
 
   return (
     <>
       {item.href && (
         <CommandMenuItem
           key={item.href}
-          onHighlight={() => onHighlight(content.goToPage)}
+          onHighlight={() =>
+            onHighlight(
+              content.goToPage,
+              copyCommand?.payload,
+              copyCommand?.label
+            )
+          }
           onSelect={() => {
             runCommand(() =>
               navigateToHref(push, hrefWithLocale(item.href!, locale))
@@ -181,7 +280,7 @@ function CommandMenuGroup({
 }: {
   content: (typeof i18n)['en'];
   locale: string;
-  onHighlight: (label: string) => void;
+  onHighlight: HighlightCommand;
   runCommand: (command: () => unknown) => void;
 } & SidebarNavItem) {
   if (!group.items?.length) return null;
@@ -217,7 +316,7 @@ function SearchResults({
   locale: string;
   query: Query;
   search: string;
-  onHighlight: (label: string) => void;
+  onHighlight: HighlightCommand;
   setOpen: (open: boolean) => void;
 }) {
   const { push } = useRouter();
@@ -250,21 +349,31 @@ function SearchResults({
       heading={content.searchResults}
       className={commandMenuGroupClassName}
     >
-      {uniqueResults.map((item) => (
-        <CommandMenuItem
-          key={item.id}
-          data-type={item.type}
-          onHighlight={() => onHighlight(content.goToPage)}
-          onSelect={() => {
-            push(hrefWithLocale(item.url, locale));
-            setOpen(false);
-          }}
-          keywords={[item.content]}
-          value={`${item.content} ${item.type}`}
-        >
-          <div className="line-clamp-1 text-sm">{item.content}</div>
-        </CommandMenuItem>
-      ))}
+      {uniqueResults.map((item) => {
+        const copyCommand = getCommandMenuCopyCommand(item.url);
+
+        return (
+          <CommandMenuItem
+            key={item.id}
+            data-type={item.type}
+            onHighlight={() =>
+              onHighlight(
+                content.goToPage,
+                copyCommand?.payload,
+                copyCommand?.label
+              )
+            }
+            onSelect={() => {
+              push(hrefWithLocale(item.url, locale));
+              setOpen(false);
+            }}
+            keywords={[item.content, search]}
+            value={`${item.content} ${item.type} ${search}`}
+          >
+            <div className="line-clamp-1 text-sm">{item.content}</div>
+          </CommandMenuItem>
+        );
+      })}
     </CommandGroup>
   );
 }
@@ -281,18 +390,26 @@ function CommandMenuItem({
   onHighlight?: () => void;
 }) {
   const ref = React.useRef<HTMLDivElement>(null);
-
-  useMutationObserver(ref, (mutations) => {
-    mutations.forEach((mutation) => {
-      if (
-        mutation.type === 'attributes' &&
-        mutation.attributeName === 'aria-selected' &&
-        ref.current?.getAttribute('aria-selected') === 'true'
-      ) {
-        onHighlight?.();
+  const handleSelectedMutation = React.useCallback(
+    (mutations: MutationRecord[]) => {
+      for (const mutation of mutations) {
+        if (
+          mutation.attributeName === 'aria-selected' &&
+          ref.current?.getAttribute('aria-selected') === 'true'
+        ) {
+          onHighlight?.();
+          return;
+        }
       }
-    });
-  });
+    },
+    [onHighlight]
+  );
+
+  useMutationObserver(
+    ref,
+    handleSelectedMutation,
+    selectedMutationObserverOptions
+  );
 
   return (
     <CommandItem
@@ -333,17 +450,56 @@ export function CommandMenu({
   const content = i18n[locale as keyof typeof i18n];
   const [open, setOpen] = React.useState(false);
   const [renderDelayedGroups, setRenderDelayedGroups] = React.useState(false);
+  const [copyLabel, setCopyLabel] = React.useState('');
+  const [copyPayload, setCopyPayload] = React.useState('');
   const [selectedAction, setSelectedAction] = React.useState(content.goToPage);
+  const docsSearchTimeoutRef = React.useRef<NodeJS.Timeout | undefined>(
+    undefined
+  );
   const { setTheme } = useTheme();
-  const { search, setSearch, query } = useFumadocsSearch({ type: 'fetch' });
+  const {
+    query,
+    search: docsSearch,
+    setSearch: setDocsSearch,
+  } = useFumadocsSearch({
+    type: 'fetch',
+  });
+  const isDocsSearchActive = docsSearch.trim().length >= MIN_DOC_SEARCH_LENGTH;
 
-  React.useEffect(() => {
-    setSelectedAction(content.goToPage);
-  }, [content.goToPage, open]);
+  const updateOpen = React.useCallback(
+    (nextOpen: boolean) => {
+      setOpen(nextOpen);
+
+      if (nextOpen) {
+        setSelectedAction(content.goToPage);
+        setCopyLabel('');
+        setCopyPayload('');
+      } else {
+        setRenderDelayedGroups(false);
+        setDocsSearch('');
+        setCopyLabel('');
+        setCopyPayload('');
+
+        if (docsSearchTimeoutRef.current) {
+          clearTimeout(docsSearchTimeoutRef.current);
+          docsSearchTimeoutRef.current = undefined;
+        }
+      }
+    },
+    [content.goToPage, setDocsSearch]
+  );
+
+  const setHighlightedCommand = React.useCallback<HighlightCommand>(
+    (label, payload = '', display = payload) => {
+      setSelectedAction(label);
+      setCopyLabel(display);
+      setCopyPayload(payload);
+    },
+    []
+  );
 
   React.useEffect(() => {
     if (!open) {
-      setRenderDelayedGroups(false);
       return;
     }
 
@@ -353,6 +509,14 @@ export function CommandMenu({
 
     return () => cancelAnimationFrame(frame);
   }, [open]);
+
+  const runCommand = React.useCallback(
+    (command: () => unknown) => {
+      setOpen(false);
+      command();
+    },
+    [setOpen]
+  );
 
   React.useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -367,31 +531,64 @@ export function CommandMenu({
         }
 
         e.preventDefault();
-        setOpen((_open) => !_open);
+        updateOpen(!open);
+        return;
+      }
+
+      if (e.key === 'c' && (e.metaKey || e.ctrlKey) && copyPayload) {
+        e.preventDefault();
+        runCommand(() => {
+          void copyToClipboardWithMeta(copyPayload, {
+            name: 'copy_npm_command',
+            properties: {
+              command: copyPayload,
+            },
+          });
+        });
       }
     };
 
     document.addEventListener('keydown', down);
 
     return () => document.removeEventListener('keydown', down);
-  }, []);
+  }, [copyPayload, open, runCommand, updateOpen]);
 
-  const runCommand = (command: () => unknown) => {
-    setOpen(false);
-    command();
-  };
+  React.useEffect(
+    () => () => {
+      if (docsSearchTimeoutRef.current) {
+        clearTimeout(docsSearchTimeoutRef.current);
+      }
+    },
+    []
+  );
 
-  const commandFilter = (
-    value: string,
-    searchValue: string,
-    keywords?: string[]
-  ) => {
-    const searchableValue = `${value} ${keywords?.join(' ') ?? ''}`;
+  const commandFilter = React.useCallback(
+    (value: string, searchValue: string, keywords?: string[]) => {
+      const searchableValue = `${value} ${keywords?.join(' ') ?? ''}`;
 
-    return searchableValue.toLowerCase().includes(searchValue.toLowerCase())
-      ? 1
-      : 0;
-  };
+      return searchableValue.toLowerCase().includes(searchValue.toLowerCase())
+        ? 1
+        : 0;
+    },
+    []
+  );
+
+  const handleSearchChange = React.useCallback(
+    (value: string) => {
+      if (docsSearchTimeoutRef.current) {
+        clearTimeout(docsSearchTimeoutRef.current);
+      }
+
+      docsSearchTimeoutRef.current = setTimeout(() => {
+        React.startTransition(() => {
+          setDocsSearch(
+            value.trim().length >= MIN_DOC_SEARCH_LENGTH ? value : ''
+          );
+        });
+      }, DOC_SEARCH_DEBOUNCE_MS);
+    },
+    [setDocsSearch]
+  );
 
   return (
     <>
@@ -400,7 +597,7 @@ export function CommandMenu({
         className={cn(
           'relative h-8 w-full justify-start rounded-lg border-none bg-muted pl-3 text-foreground shadow-none transition-colors hover:bg-muted/50 md:w-48 lg:w-40 xl:w-64 dark:bg-card'
         )}
-        onClick={() => setOpen(true)}
+        onClick={() => updateOpen(true)}
         {...props}
       >
         <span className="hidden xl:inline-flex">
@@ -409,7 +606,7 @@ export function CommandMenu({
         <span className="inline-flex xl:hidden">{content.searchShort}</span>
       </Button>
 
-      <Dialog open={open} onOpenChange={setOpen}>
+      <Dialog open={open} onOpenChange={updateOpen}>
         <DialogContent className="top-[15%]! max-w-[calc(100%-2rem)] translate-y-0! overflow-hidden rounded-xl border-none bg-clip-padding p-2 pb-11 shadow-2xl ring-4 ring-neutral-200/80 sm:max-w-lg dark:bg-neutral-900 dark:ring-neutral-800 [&>button]:hidden">
           <DialogHeader className="sr-only">
             <DialogTitle>{content.search}</DialogTitle>
@@ -421,21 +618,30 @@ export function CommandMenu({
           >
             <div className="relative">
               <CommandInput
-                onValueChange={(value) => {
-                  React.startTransition(() => setSearch(value));
-                }}
+                onValueChange={handleSearchChange}
                 placeholder={content.searchDocumentation}
               />
-              {query.isLoading && (
+              {isDocsSearchActive && query.isLoading && (
                 <div className="-translate-y-1/2 pointer-events-none absolute top-1/2 right-3 flex items-center justify-center">
                   <Spinner />
                 </div>
               )}
             </div>
             <CommandEmpty className="py-12 text-center text-muted-foreground text-sm">
-              {query.isLoading ? content.searching : content.noResults}
+              {isDocsSearchActive && query.isLoading
+                ? content.searching
+                : content.noResults}
             </CommandEmpty>
             <CommandList className="no-scrollbar min-h-80 scroll-pt-2 scroll-pb-1.5">
+              <SearchResults
+                content={content}
+                locale={locale}
+                query={query}
+                search={docsSearch}
+                onHighlight={setHighlightedCommand}
+                setOpen={setOpen}
+              />
+
               <CommandGroup
                 heading={content.pages}
                 className={commandMenuGroupClassName}
@@ -448,7 +654,9 @@ export function CommandMenu({
                     return (
                       <CommandMenuItem
                         key={navItem.href}
-                        onHighlight={() => setSelectedAction(content.goToPage)}
+                        onHighlight={() =>
+                          setHighlightedCommand(content.goToPage)
+                        }
                         onSelect={() => {
                           runCommand(() =>
                             navigateToHref(
@@ -482,42 +690,39 @@ export function CommandMenu({
                         key={`${group.title}:sidebar`}
                         content={content}
                         locale={locale}
-                        onHighlight={setSelectedAction}
+                        onHighlight={setHighlightedCommand}
                         runCommand={runCommand}
                         {...group}
                       />
                     )
                   )}
 
-                  <SearchResults
-                    content={content}
-                    locale={locale}
-                    query={query}
-                    search={search}
-                    onHighlight={setSelectedAction}
-                    setOpen={setOpen}
-                  />
-
                   <CommandGroup
                     heading={content.theme}
                     className={commandMenuGroupClassName}
                   >
                     <CommandMenuItem
-                      onHighlight={() => setSelectedAction(content.runCommand)}
+                      onHighlight={() =>
+                        setHighlightedCommand(content.runCommand)
+                      }
                       onSelect={() => runCommand(() => setTheme('light'))}
                     >
                       <SunMedium />
                       {content.light}
                     </CommandMenuItem>
                     <CommandMenuItem
-                      onHighlight={() => setSelectedAction(content.runCommand)}
+                      onHighlight={() =>
+                        setHighlightedCommand(content.runCommand)
+                      }
                       onSelect={() => runCommand(() => setTheme('dark'))}
                     >
                       <Moon />
                       {content.dark}
                     </CommandMenuItem>
                     <CommandMenuItem
-                      onHighlight={() => setSelectedAction(content.runCommand)}
+                      onHighlight={() =>
+                        setHighlightedCommand(content.runCommand)
+                      }
                       onSelect={() => runCommand(() => setTheme('system'))}
                     >
                       <Laptop />
@@ -531,7 +736,7 @@ export function CommandMenu({
                         key={group.title}
                         content={content}
                         locale={locale}
-                        onHighlight={setSelectedAction}
+                        onHighlight={setHighlightedCommand}
                         runCommand={runCommand}
                         {...group}
                       />
@@ -546,6 +751,14 @@ export function CommandMenu({
               <CornerDownLeft />
             </CommandMenuKbd>
             {selectedAction}
+            {copyPayload ? (
+              <>
+                <div className="h-4 w-px bg-border" />
+                <CommandMenuKbd>⌘</CommandMenuKbd>
+                <CommandMenuKbd>C</CommandMenuKbd>
+                <span className="truncate font-mono">{copyLabel}</span>
+              </>
+            ) : null}
           </div>
         </DialogContent>
       </Dialog>

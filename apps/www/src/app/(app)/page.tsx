@@ -69,7 +69,7 @@ export default async function IndexPage() {
       <PageHeader className="md:**:[.container]:pb-8 lg:**:[.container]:pb-12">
         <AnnouncementButton />
 
-        <PageHeaderHeading className="max-w-4xl font-semibold text-primary text-balance xl:text-5xl">
+        <PageHeaderHeading className="max-w-4xl text-balance font-semibold text-primary xl:text-5xl">
           {content.buildYourRichTextEditor}
         </PageHeaderHeading>
         <PageHeaderDescription className="max-w-4xl font-normal text-base sm:text-lg">

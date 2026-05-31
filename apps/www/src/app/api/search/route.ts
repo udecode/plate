@@ -6,4 +6,11 @@ export const { GET } = createFromSource(source, {
   localeMap: {
     cn: 'english',
   },
+  search: {
+    groupBy: {
+      maxResult: 4,
+      properties: ['page_id'],
+    },
+    limit: 20,
+  },
 });

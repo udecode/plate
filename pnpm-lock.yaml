@@ -548,6 +548,9 @@ importers:
       lowlight:
         specifier: 3.3.0
         version: 3.3.0
+      lru-cache:
+        specifier: ^11.2.4
+        version: 11.2.6
       lucide-react:
         specifier: 0.514.0
         version: 0.514.0(react@19.2.4)

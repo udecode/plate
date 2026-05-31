@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/** biome-ignore-all lint/suspicious/noConsole: CLI scripts write command output. */
 import { existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
@@ -370,7 +371,7 @@ function findRepoRoot(start) {
   let current = path.resolve(start);
 
   while (true) {
-    const marker = path.join(current, '.agents', 'AGENTS.md');
+    const marker = path.join(current, 'AGENTS.md');
 
     if (existsSync(marker)) {
       return current;
@@ -379,7 +380,7 @@ function findRepoRoot(start) {
     const parent = path.dirname(current);
 
     if (parent === current) {
-      throw new Error('could not find repo root containing .agents/AGENTS.md');
+      throw new Error('could not find repo root containing AGENTS.md');
     }
 
     current = parent;
@@ -388,7 +389,7 @@ function findRepoRoot(start) {
 
 function printHelp() {
   console.log(`Usage:
-  node .agents/rules/autogoal/scripts/check-complete.mjs docs/plans/<goal-plan>.md
+  node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/<goal-plan>.md
 
 Validates the active goal plan before update_goal(status: complete). The check
 is mechanical: it proves the checklist, phase table, verification evidence,

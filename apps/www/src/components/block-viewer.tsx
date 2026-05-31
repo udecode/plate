@@ -19,6 +19,7 @@ import {
   Fullscreen,
   Monitor,
   Package,
+  RotateCw,
   Smartphone,
   Tablet,
   Terminal,
@@ -55,7 +56,10 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { siteConfig } from '@/config/site';
 import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard';
-import { getRegistryInstallCommand } from '@/lib/registry-install';
+import {
+  getRegistryClipboardInstallCommand,
+  getRegistryInstallCommand,
+} from '@/lib/registry-install';
 import { cn } from '@/lib/utils';
 
 type BlockViewerContext = {
@@ -74,10 +78,12 @@ type BlockViewerContext = {
       src?: string;
     };
   };
+  iframeKey: number;
   resizablePanelRef: React.RefObject<ImperativePanelHandle | null> | null;
   tree: ReturnType<typeof createFileTreeForRegistryItemFiles> | null;
   view: 'code' | 'preview';
   setActiveFile: (file: string) => void;
+  setIframeKey: React.Dispatch<React.SetStateAction<number>>;
   setView: (view: 'code' | 'preview') => void;
 };
 
@@ -127,12 +133,13 @@ function BlockViewerProvider({
   const [highlightedFiles, setHighlightedFiles] = React.useState<
     BlockViewerContext['highlightedFiles']
   >(highlightedFilesProp ?? []);
-  const files = highlightedFiles ?? [];
+  const files = React.useMemo(() => highlightedFiles ?? [], [highlightedFiles]);
   const [activeFileState, setActiveFile] = React.useState<
     BlockViewerContext['activeFile']
   >(files[0]?.target ?? null);
   const [isLoading, setIsLoading] = React.useState(false);
   const resizablePanelRef = React.useRef<ImperativePanelHandle>(null);
+  const [iframeKey, setIframeKey] = React.useState(0);
 
   const activeFile =
     files.find((file) => file.target === activeFileState)?.target ??
@@ -173,7 +180,7 @@ function BlockViewerProvider({
       };
       void loadFiles();
     }
-  }, [activeFileState, highlightedFiles, isLoading, item.name, view]);
+  }, [activeFileState, files, isLoading, item.name, view]);
 
   return (
     <BlockViewerContext.Provider
@@ -181,10 +188,12 @@ function BlockViewerProvider({
         activeFile,
         dependencies,
         highlightedFiles,
+        iframeKey,
         isLoading,
         item,
         resizablePanelRef,
         setActiveFile,
+        setIframeKey,
         setView,
         tree,
         view,
@@ -207,42 +216,40 @@ function BlockViewerProvider({
 }
 
 function BlockViewerToolbar({ block }: { block: boolean }) {
-  const { item, resizablePanelRef, setView } = useBlockViewer();
+  const { item, resizablePanelRef, setIframeKey, setView, view } =
+    useBlockViewer();
   const { copyToClipboard, isCopied } = useCopyToClipboard();
   const installCommand = getRegistryInstallCommand(item.name);
+  const clipboardInstallCommand = getRegistryClipboardInstallCommand(item.name);
   const previewUrl =
     item.meta?.src?.replace('?iframe=true', '') ?? `/view/${item.name}`;
 
   const description = item.meta?.descriptionSrc ?? previewUrl;
 
   return (
-    <div className="flex w-full items-center gap-2 md:pr-[14px]">
+    <div className="flex w-full items-center gap-2 pl-2 md:pr-6">
       <Tabs
         className="hidden sm:flex"
-        defaultValue="preview"
+        value={view}
         onValueChange={(value) => setView(value as 'code' | 'preview')}
       >
-        <TabsList className="h-7 items-center rounded-md p-0 px-[calc(--spacing(1)-2px)] py-[--spacing(1)]">
-          <TabsTrigger
-            className="h-[1.45rem] rounded-sm px-2 text-xs"
-            value="preview"
-          >
-            Preview
-          </TabsTrigger>
-
-          {!item.meta?.isPro && (
-            <TabsTrigger
-              className="h-[1.45rem] rounded-sm px-2 text-xs"
-              value="code"
-            >
-              Code
-            </TabsTrigger>
+        <TabsList
+          className={cn(
+            'h-8! items-center rounded-lg p-1 *:data-[slot=tabs-trigger]:h-6 *:data-[slot=tabs-trigger]:rounded-sm *:data-[slot=tabs-trigger]:px-2 *:data-[slot=tabs-trigger]:text-xs',
+            !item.meta?.isPro && 'grid grid-cols-2'
           )}
+        >
+          <TabsTrigger value="preview">Preview</TabsTrigger>
+
+          {!item.meta?.isPro && <TabsTrigger value="code">Code</TabsTrigger>}
         </TabsList>
       </Tabs>
 
       {block && (
-        <Separator orientation="vertical" className="mx-2 hidden h-4 sm:flex" />
+        <Separator
+          orientation="vertical"
+          className="mx-2 hidden h-4! sm:flex"
+        />
       )}
 
       {block && (
@@ -256,19 +263,74 @@ function BlockViewerToolbar({ block }: { block: boolean }) {
       )}
 
       <div className="ml-auto flex items-center gap-2">
+        {block && (
+          <div className="hidden h-8 items-center gap-1.5 rounded-md border p-[3px] shadow-none lg:flex">
+            <ToggleGroup
+              className="gap-1 *:data-[slot=toggle-group-item]:size-6! *:data-[slot=toggle-group-item]:rounded-sm!"
+              defaultValue="100"
+              onValueChange={(value) => {
+                setView('preview');
+
+                if (resizablePanelRef?.current) {
+                  resizablePanelRef.current.resize(Number.parseInt(value, 10));
+                }
+              }}
+              type="single"
+            >
+              <ToggleGroupItem value="100" title="Desktop">
+                <Monitor />
+              </ToggleGroupItem>
+              <ToggleGroupItem value="60" title="Tablet">
+                <Tablet />
+              </ToggleGroupItem>
+              <ToggleGroupItem value="30" title="Mobile">
+                <Smartphone />
+              </ToggleGroupItem>
+              <Separator orientation="vertical" className="h-4!" />
+              <Button
+                asChild
+                size="icon"
+                variant="ghost"
+                className="size-6 rounded-sm p-0"
+                title="Open in New Tab"
+              >
+                <Link href={previewUrl} target="_blank">
+                  <span className="sr-only">Open in New Tab</span>
+                  <Fullscreen />
+                </Link>
+              </Button>
+              <Separator orientation="vertical" className="h-4!" />
+              <Button
+                size="icon"
+                variant="ghost"
+                className="size-6 rounded-sm p-0"
+                title="Refresh Preview"
+                onClick={() => setIframeKey((key) => key + 1)}
+              >
+                <RotateCw />
+                <span className="sr-only">Refresh Preview</span>
+              </Button>
+            </ToggleGroup>
+          </div>
+        )}
+
         {!item.meta?.src &&
           !item.meta?.isPro &&
           item.meta?.registry !== false && (
             <>
-              {/* NPX Command Button */}
+              {block && (
+                <Separator
+                  orientation="vertical"
+                  className="mx-1 hidden h-4! lg:flex"
+                />
+              )}
+
               <Button
-                size="icon"
-                variant="ghost"
-                className={cn(
-                  'flex h-7 rounded-md border bg-transparent px-1.5 shadow-none lg:w-auto'
-                )}
+                size="sm"
+                variant="outline"
+                className="w-fit gap-1 px-2 shadow-none"
                 onClick={() => {
-                  copyToClipboard(installCommand);
+                  copyToClipboard(clipboardInstallCommand);
                 }}
               >
                 {isCopied ? <Check /> : <Terminal />}
@@ -277,87 +339,40 @@ function BlockViewerToolbar({ block }: { block: boolean }) {
                   <span className="hidden lg:inline">{installCommand}</span>
                 )}
               </Button>
-
-              {block && (
-                <Separator
-                  orientation="vertical"
-                  className="mx-2 hidden h-4 lg:flex"
-                />
-              )}
             </>
           )}
 
         {item.meta?.isPro && (
-          <Link
-            className={cn(
-              buttonVariants(),
-              'group relative flex justify-start gap-2 overflow-hidden whitespace-pre rounded-sm',
-              'dark:bg-muted dark:text-foreground',
-              'hover:ring-2 hover:ring-primary hover:ring-offset-2',
-              'transition-all duration-300 ease-out',
-              'h-[26px] px-2 text-xs'
+          <>
+            {block && (
+              <Separator
+                orientation="vertical"
+                className="mx-1 hidden h-4! lg:flex"
+              />
             )}
-            href={item.meta?.descriptionSrc ?? siteConfig.links.potionIframe}
-            target="_blank"
-          >
-            <span
-              className={cn(
-                '-mt-12 absolute right-0 h-32 w-8 translate-x-12 rotate-12',
-                'bg-white opacity-10',
-                'transition-all duration-1000 ease-out'
-              )}
-            />
-            Get the code
-          </Link>
-        )}
 
-        {block && (
-          <div className="hidden h-7 items-center gap-1.5 rounded-md border p-[2px] shadow-none lg:flex">
-            <ToggleGroup
-              defaultValue="100"
-              onValueChange={(value) => {
-                if (resizablePanelRef?.current) {
-                  resizablePanelRef.current.resize(Number.parseInt(value, 10));
-                }
-              }}
-              type="single"
+            <Link
+              className={cn(
+                buttonVariants(),
+                'group relative flex justify-start gap-2 overflow-hidden whitespace-pre rounded-sm',
+                'dark:bg-muted dark:text-foreground',
+                'hover:ring-2 hover:ring-primary hover:ring-offset-2',
+                'transition-all duration-300 ease-out',
+                'h-[26px] px-2 text-xs'
+              )}
+              href={item.meta?.descriptionSrc ?? siteConfig.links.potionIframe}
+              target="_blank"
             >
-              <ToggleGroupItem
-                className="size-[22px] rounded-sm p-0"
-                value="100"
-                title="Desktop"
-              >
-                <Monitor className="size-3.5" />
-              </ToggleGroupItem>
-              <ToggleGroupItem
-                className="size-[22px] rounded-sm p-0"
-                value="60"
-                title="Tablet"
-              >
-                <Tablet className="size-3.5" />
-              </ToggleGroupItem>
-              <ToggleGroupItem
-                className="size-[22px] rounded-sm p-0"
-                value="30"
-                title="Mobile"
-              >
-                <Smartphone className="size-3.5" />
-              </ToggleGroupItem>
-              <Separator orientation="vertical" className="h-4" />
-              <Button
-                asChild
-                size="icon"
-                variant="ghost"
-                className="size-[22px] rounded-sm p-0"
-                title="Open in New Tab"
-              >
-                <Link href={previewUrl} target="_blank">
-                  <span className="sr-only">Open in New Tab</span>
-                  <Fullscreen className="size-3.5" />
-                </Link>
-              </Button>
-            </ToggleGroup>
-          </div>
+              <span
+                className={cn(
+                  '-mt-12 absolute right-0 h-32 w-8 translate-x-12 rotate-12',
+                  'bg-white opacity-10',
+                  'transition-all duration-1000 ease-out'
+                )}
+              />
+              Get the code
+            </Link>
+          </>
         )}
       </div>
     </div>
@@ -371,18 +386,22 @@ function BlockViewerView({
   preview: React.ReactNode;
   height?: string;
 }) {
-  const { item, resizablePanelRef } = useBlockViewer();
+  const { iframeKey, item, resizablePanelRef } = useBlockViewer();
 
   return (
     <div
       className="h-(--height) group-data-[view=code]/block-view-wrapper:hidden"
       style={height ? { height } : undefined}
     >
-      <div className="grid size-full gap-4">
-        <ResizablePanelGroup className="relative z-10" direction="horizontal">
+      <div className="relative grid size-full gap-4">
+        <div className="absolute inset-0 right-4 [background-image:radial-gradient(#d4d4d4_1px,transparent_1px)] [background-size:20px_20px] dark:[background-image:radial-gradient(#404040_1px,transparent_1px)]" />
+        <ResizablePanelGroup
+          className="relative z-10 after:pointer-events-none after:absolute after:inset-0 after:right-3 after:z-0 after:rounded-xl after:bg-surface/50"
+          direction="horizontal"
+        >
           <ResizablePanel
             ref={resizablePanelRef}
-            className="relative aspect-[4/2.5] rounded-xl border bg-background md:aspect-auto"
+            className="relative z-10 aspect-[4/2.5] overflow-hidden rounded-lg border bg-background md:aspect-auto md:rounded-xl"
             defaultSize={100}
             minSize={30}
           >
@@ -405,6 +424,7 @@ function BlockViewerView({
 
             {preview ?? (
               <iframe
+                key={iframeKey}
                 // className="chunk-mode relative z-20 hidden w-full bg-background md:block"
                 className="chunk-mode relative z-20 size-full bg-background"
                 title={item.name}
@@ -414,7 +434,7 @@ function BlockViewerView({
               />
             )}
           </ResizablePanel>
-          <ResizableHandle className="after:-translate-x-px after:-translate-y-1/2 relative hidden w-3 bg-transparent p-0 after:absolute after:top-1/2 after:right-0 after:h-8 after:w-[6px] after:rounded-full after:bg-border after:transition-all hover:after:h-10 sm:block" />
+          <ResizableHandle className="after:-translate-x-px after:-translate-y-1/2 relative hidden w-3 bg-transparent p-0 after:absolute after:top-1/2 after:right-0 after:h-8 after:w-[6px] after:rounded-full after:bg-border after:transition-all hover:after:h-10 md:block" />
           <ResizablePanel defaultSize={0} minSize={0} />
         </ResizablePanelGroup>
       </div>
@@ -466,6 +486,7 @@ function BlockViewerCode({ size }: { size?: 'default' | 'sm' }) {
                   __bunCommand__: `bun add ${deps}`,
                   __npmCommand__: `npm install ${deps}`,
                   __pnpmCommand__: `pnpm add ${deps}`,
+                  __yarnCommand__: `yarn add ${deps}`,
                 }}
                 icon={<Package />}
               />

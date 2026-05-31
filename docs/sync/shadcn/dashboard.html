@@ -1,0 +1,2195 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>sync-shadcn dashboard</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: #f6f6f7;
+        --panel: #ffffff;
+        --text: #111113;
+        --muted: #686b73;
+        --line: #dedfe3;
+        --code: #f1f1f3;
+        --synced: #dff6e7;
+        --synced-text: #17633a;
+        --defer: #fff3cf;
+        --defer-text: #7a4b00;
+        --pending: #eeeeef;
+        --pending-text: #4d4f57;
+        --fork: #f2ebff;
+        --fork-text: #5730a3;
+        --rejected: #ffe8e5;
+        --rejected-text: #a02c21;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #111113;
+          --panel: #191a1f;
+          --text: #f4f4f5;
+          --muted: #a1a1aa;
+          --line: #2d2e35;
+          --code: #25262d;
+          --synced: #143820;
+          --synced-text: #9be7b4;
+          --defer: #3f300c;
+          --defer-text: #ffd982;
+          --pending: #2b2c33;
+          --pending-text: #d0d2da;
+          --fork: #2b2046;
+          --fork-text: #ceb9ff;
+          --rejected: #451d1a;
+          --rejected-text: #ffb3ac;
+        }
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        line-height: 1.45;
+      }
+
+      main {
+        width: min(1440px, calc(100vw - 48px));
+        margin: 0 auto;
+        padding: 48px 0;
+      }
+
+      header {
+        display: grid;
+        gap: 18px;
+        margin-bottom: 28px;
+      }
+
+      h1,
+      h2,
+      p {
+        margin: 0;
+      }
+
+      h1 {
+        font-size: 40px;
+        line-height: 1.05;
+      }
+
+      h2 {
+        font-size: 22px;
+        line-height: 1.2;
+      }
+
+      .muted,
+      header p,
+      .feature-header p {
+        color: var(--muted);
+      }
+
+      .meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px 18px;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .summary {
+        display: grid;
+        gap: 12px;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        margin-bottom: 20px;
+      }
+
+      .summary-card,
+      .feature {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--panel);
+      }
+
+      .summary-card {
+        padding: 14px 16px;
+      }
+
+      .summary-card strong {
+        display: block;
+        font-size: 28px;
+      }
+
+      .state-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        padding: 0;
+        margin: 0;
+        list-style: none;
+      }
+
+      .state-list li {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .filter-groups {
+        display: grid;
+        gap: 10px;
+        margin: 24px 0;
+      }
+
+      .filter-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .filter-label {
+        min-width: 78px;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+      }
+
+      button {
+        height: 34px;
+        border: 1px solid var(--line);
+        border-radius: 7px;
+        background: var(--panel);
+        color: var(--text);
+        cursor: pointer;
+        padding: 0 12px;
+        font: inherit;
+      }
+
+      button[aria-pressed="true"] {
+        border-color: var(--text);
+      }
+
+      button span {
+        color: var(--muted);
+      }
+
+      .prompt-panel {
+        position: fixed;
+        left: 50%;
+        bottom: 18px;
+        z-index: 40;
+        display: grid;
+        width: min(780px, calc(100vw - 32px));
+        gap: 10px;
+        padding: 12px;
+        transform: translateX(-50%);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: var(--panel);
+        box-shadow: 0 18px 60px rgb(0 0 0 / 22%);
+      }
+
+      .prompt-panel-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .prompt-panel-header h2 {
+        font-size: 15px;
+      }
+
+      .prompt-panel-header p {
+        font-size: 13px;
+      }
+
+      .prompt-actions {
+        display: flex;
+        gap: 8px;
+      }
+
+      .prompt-panel textarea {
+        width: 100%;
+        min-height: 92px;
+        max-height: 34vh;
+        resize: vertical;
+      }
+
+      body.has-review-prompt main {
+        padding-bottom: 220px;
+      }
+
+      .feature {
+        margin: 18px 0;
+        overflow: hidden;
+      }
+
+      .feature-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 18px;
+        padding: 18px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .eyebrow {
+        margin-bottom: 5px;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        height: 26px;
+        white-space: nowrap;
+        border-radius: 999px;
+        padding: 0 10px;
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .synced {
+        background: var(--synced);
+        color: var(--synced-text);
+      }
+
+      .defer {
+        background: var(--defer);
+        color: var(--defer-text);
+      }
+
+      .pending {
+        background: var(--pending);
+        color: var(--pending-text);
+      }
+
+      .fork {
+        background: var(--fork);
+        color: var(--fork-text);
+      }
+
+      .rejected {
+        background: var(--rejected);
+        color: var(--rejected-text);
+      }
+
+      .item-list {
+        display: grid;
+        gap: 12px;
+        padding: 12px;
+      }
+
+      .item-card {
+        display: grid;
+        grid-template-columns: minmax(240px, 300px) minmax(0, 1fr);
+        gap: 18px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 14px;
+        background: var(--bg);
+      }
+
+      .item-body {
+        display: grid;
+        gap: 14px;
+        min-width: 0;
+      }
+
+      .item-heading {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 14px;
+      }
+
+      .item-heading h3 {
+        margin: 0;
+        font-size: 18px;
+        line-height: 1.25;
+      }
+
+      .item-heading p {
+        margin-top: 5px;
+        color: var(--muted);
+      }
+
+      .comparison-grid,
+      .item-meta-grid {
+        display: grid;
+        gap: 12px;
+      }
+
+      .comparison-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .item-meta-grid {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .comparison-grid section,
+      .item-meta-grid section {
+        min-width: 0;
+      }
+
+      .comparison-grid h4,
+      .item-meta-grid h4 {
+        margin: 0 0 5px;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+      }
+
+      .comparison-grid p,
+      .item-meta-grid p {
+        margin: 0;
+      }
+
+      .note-action {
+        height: 28px;
+        margin-top: 10px;
+        padding: 0 8px;
+        font-size: 12px;
+      }
+
+      textarea {
+        width: 100%;
+        border: 1px solid var(--line);
+        border-radius: 7px;
+        background: var(--panel);
+        color: var(--text);
+        font: inherit;
+      }
+
+      textarea {
+        padding: 9px 10px;
+      }
+
+      .review-cell {
+        min-width: 0;
+      }
+
+      .review-cell label {
+        display: grid;
+        gap: 6px;
+      }
+
+      .review-options + label {
+        margin-top: 10px;
+      }
+
+      .quick-actions {
+        display: grid;
+        gap: 6px;
+        margin: 10px 0;
+      }
+
+      .quick-action-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+
+      .quick-actions button {
+        height: 28px;
+        padding: 0 8px;
+        font-size: 12px;
+      }
+
+      .quick-actions button[aria-checked="true"],
+      .quick-actions button[aria-pressed="true"] {
+        border-color: var(--text);
+        background: var(--code);
+        color: var(--text);
+      }
+
+      .review-cell span {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+      }
+
+      .screenshot-grid {
+        display: grid;
+        gap: 12px;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .screenshot-card {
+        display: grid;
+        gap: 6px;
+        margin: 0;
+      }
+
+      .screenshot-card figcaption {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+      }
+
+      .screenshot-thumb {
+        display: flex;
+        width: 100%;
+        height: 180px;
+        padding: 0;
+        overflow: hidden;
+        border-radius: 7px;
+      }
+
+      .screenshot-thumb img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .screenshot-modal {
+        position: fixed;
+        inset: 0;
+        z-index: 50;
+        display: grid;
+        place-items: center;
+        padding: 28px;
+        background: rgb(0 0 0 / 72%);
+      }
+
+      .screenshot-dialog {
+        display: grid;
+        gap: 12px;
+        width: min(1200px, 96vw);
+        max-height: 92vh;
+      }
+
+      .screenshot-dialog-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        color: white;
+      }
+
+      .screenshot-dialog-header p {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .screenshot-dialog img {
+        max-width: 100%;
+        max-height: calc(92vh - 70px);
+        border-radius: 8px;
+        background: var(--panel);
+        object-fit: contain;
+      }
+
+      code {
+        border-radius: 5px;
+        background: var(--code);
+        padding: 2px 5px;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+        font-size: 12px;
+      }
+
+      .files {
+        display: grid;
+        gap: 5px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .hidden {
+        display: none;
+      }
+
+      @media (max-width: 720px) {
+        main {
+          width: min(100vw - 24px, 1440px);
+          padding: 28px 0;
+        }
+
+        h1 {
+          font-size: 32px;
+        }
+
+        .feature-header {
+          display: grid;
+        }
+
+        .prompt-panel {
+          bottom: 12px;
+          width: min(100vw - 20px, 780px);
+        }
+
+        .prompt-panel-header {
+          display: grid;
+        }
+
+        .prompt-actions {
+          width: 100%;
+        }
+
+        .prompt-actions button {
+          flex: 1;
+        }
+
+        .item-card,
+        .comparison-grid,
+        .item-meta-grid,
+        .screenshot-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>sync-shadcn dashboard</h1>
+        <p>Feature-owned delta board for deciding what Plate should land, defer, reject, fork, or keep pending from upstream shadcn.</p>
+        <div class="meta">
+          <span>Generated 2026-05-31T06:58:19.248Z</span>
+          <span>Baseline 4a4dc8e</span>
+          <span>Planned efdec3c</span>
+          <span>Plan docs/sync/shadcn/runs/2026-05-29-4a4dc8e-to-efdec3c-editors-blocks-style/plan.md</span>
+        </div>
+      </header>
+
+      <section class="summary" aria-label="Summary">
+        <div class="summary-card">
+          <span class="muted">Features</span>
+          <strong>14</strong>
+        </div>
+        <div class="summary-card">
+          <span class="muted">Items</span>
+          <strong>23</strong>
+        </div>
+        <div class="summary-card">
+          <span class="muted">Partial Syncs</span>
+          <strong>7</strong>
+        </div>
+        <div class="summary-card">
+          <span class="muted">Feature States</span>
+          <ul class="state-list"><li><span class="badge defer" data-state-label="defer">Defer</span> <strong>3</strong></li><li><span class="badge pending" data-state-label="pending">Pending</span> <strong>1</strong></li><li><span class="badge fork" data-state-label="fork">Fork</span> <strong>5</strong></li><li><span class="badge synced" data-state-label="synced">Synced</span> <strong>5</strong></li></ul>
+        </div>
+      </section>
+
+      <nav class="filter-groups" aria-label="State filters">
+        <div class="filter-row">
+          <span class="filter-label">Action</span>
+          <button type="button" data-filter="actionable" aria-pressed="true">All Action <span>3</span></button>
+          <button type="button" data-filter="pending">Pending <span>0</span></button><button type="button" data-filter="defer">Defer <span>3</span></button>
+        </div>
+        <div class="filter-row">
+          <span class="filter-label">Done</span>
+          <button type="button" data-filter="done">All Done <span>20</span></button>
+          <button type="button" data-filter="fork">Fork <span>8</span></button><button type="button" data-filter="rejected">Rejected <span>0</span></button><button type="button" data-filter="synced">Synced <span>12</span></button>
+          <button type="button" data-filter="all">Everything <span>23</span></button>
+          
+        </div>
+      </nav>
+
+      
+        <section class="feature" data-feature-card="header" data-state="synced">
+          <div class="feature-header">
+            <div>
+              <p class="eyebrow">header</p>
+              <h2>Header</h2>
+              <p>Shared header follows shadcn structure while keeping Plate-owned product choices.</p>
+            </div>
+            <span class="badge synced" data-state-label="synced">Synced</span>
+          </div>
+          <div class="item-list">
+            <article class="item-card" data-state="synced" data-feature="header" data-feature-label="Header" data-item-id="header-parity" data-item-title="Shared header parity" data-current-state="synced">
+              <div class="review-cell">
+                <div class="review-options">
+                  <span>Review</span>
+                  <input type="hidden" data-review-state value="synced" />
+                  <div class="quick-actions" aria-label="Review actions">
+                    <div class="quick-action-row">
+    <button type="button" data-question-action aria-pressed="false">Ask</button>
+    <button type="button" role="radio" aria-checked="false" data-preset-state="defer">Defer</button>
+  </div>
+  <div class="quick-action-row" role="radiogroup" aria-label="Apply review state">
+    <button type="button" role="radio" aria-checked="true" data-preset-state="synced">Sync</button>
+    <button type="button" role="radio" aria-checked="false" data-preset-state="rejected">Reject</button>
+    <button type="button" role="radio" aria-checked="false" data-preset-state="fork">Fork</button>
+  </div>
+                  </div>
+                </div>
+                <label>
+                  <span>Note</span>
+                  <textarea data-review-note rows="3" placeholder="Pick an action first" disabled></textarea>
+                </label>
+              </div>
+              <div class="item-body">
+                <div class="item-heading">
+                  <div>
+                    <h3>Shared header parity</h3>
+                    <p>Use shadcn header structure, omit Home because the Plate logo owns it, remove MCP from the header, keep Discord, and hardcode GitHub stars to 16k.</p>
+                  </div>
+                  <span class="badge synced" data-state-label="synced">Synced</span>
+                </div>
+                <div class="comparison-grid">
+                  <section>
+                    <h4>shadcn</h4>
+                    <p>Shadcn desktop header with search trigger, GitHub, Discord, language, theme, and separators.</p>
+                  </section>
+                  <section>
+                    <h4>Suggestion</h4>
+                    <p>Plate header keeps Docs, Editors, Templates, search trigger, GitHub 16k, Discord, language, and theme.</p>
+                    <button type="button" class="note-action" data-use-suggestion-note="Plate header keeps Docs, Editors, Templates, search trigger, GitHub 16k, Discord, language, and theme.">Apply</button>
+                  </section>
+                </div>
+                
+                <div class="item-meta-grid">
+                  <section>
+                    <h4>Owner Files</h4>
+                    <ul class="files"><li><code>apps/www/src/components/site-header.tsx</code></li><li><code>apps/www/src/components/command-menu.tsx</code></li><li><code>apps/www/src/components/github-link.tsx</code></li></ul>
+                  </section>
+                </div>
+              </div>
+            </article></div>
+        </section>
+        <section class="feature" data-feature-card="home" data-state="synced">
+          <div class="feature-header">
+            <div>
+              <p class="eyebrow">home</p>
+              <h2>Home Page</h2>
+              <p>Home page adopted shadcn layout polish without replacing the Plate editor preview or product copy.</p>
+            </div>
+            <span class="badge synced" data-state-label="synced">Synced</span>
+          </div>
+          <div class="item-list">
+            <article class="item-card" data-state="synced" data-feature="home" data-feature-label="Home Page" data-item-id="home-layout" data-item-title="Hero and preview layout" data-current-state="synced">
+              <div class="review-cell">
+                <div class="review-options">
+                  <span>Review</span>
+                  <input type="hidden" data-review-state value="synced" />
+                  <div class="quick-actions" aria-label="Review actions">
+                    <div class="quick-action-row">
+    <button type="button" data-question-action aria-pressed="false">Ask</button>
+    <button type="button" role="radio" aria-checked="false" data-preset-state="defer">Defer</button>
+  </div>
+  <div class="quick-action-row" role="radiogroup" aria-label="Apply review state">
+    <button type="button" role="radio" aria-checked="true" data-preset-state="synced">Sync</button>
+    <button type="button" role="radio" aria-checked="false" data-preset-state="rejected">Reject</button>
+    <button type="button" role="radio" aria-checked="false" data-preset-state="fork">Fork</button>
+  </div>
+                  </div>
+                </div>
+                <label>
+                  <span>Note</span>
+                  <textarea data-review-note rows="3" placeholder="Pick an action first" disabled></textarea>
+                </label>
+              </div>
+              <div class="item-body">
+                <div class="item-heading">
+                  <div>
+                    <h3>Hero and preview layout</h3>
+                    <p>Use centered shadcn-style PageHeader, muted announcement, single docs CTA, and full-bleed muted preview area; keep Plate preview content and remove duplicate GitHub CTA.</p>
+                  </div>
+                  <span class="badge synced" data-state-label="synced">Synced</span>
+                </div>
+                <div class="comparison-grid">
+                  <section>
+                    <h4>shadcn</h4>
+                    <p>Shadcn home uses centered hero, muted product band, and compact CTA rhythm.</p>
+                  </section>
+                  <section>
+                    <h4>Suggestion</h4>
+                    <p>Plate keeps editor preview and Pro/Potion path with shadcn spacing/background polish.</p>
+                    <button type="button" class="note-action" data-use-suggestion-note="Plate keeps editor preview and Pro/Potion path with shadcn spacing/background polish.">Apply</button>
+                  </section>
+                </div>
+                
+                <div class="item-meta-grid">
+                  <section>
+                    <h4>Owner Files</h4>
+                    <ul class="files"><li><code>apps/www/src/app/(app)/page.tsx</code></li><li><code>apps/www/src/app/cn/page.tsx</code></li><li><code>apps/www/src/app/(app)/_components/announcement-button.tsx</code></li></ul>
+                  </section>
+                </div>
+              </div>
+            </article></div>
+        </section>
+        <section class="feature" data-feature-card="editors" data-state="synced">
+          <div class="feature-header">
+            <div>
+              <p class="eyebrow">editors</p>
+              <h2>Editors vs Blocks</h2>
+              <p>Plate /editors uses shadcn /blocks framing and toolbar polish while preserving Plate demos.</p>
+            </div>
+            <span class="badge synced" data-state-label="synced">Synced</span>
+          </div>
+          <div class="item-list">
+            <article class="item-card" data-state="synced" data-feature="editors" data-feature-label="Editors vs Blocks" data-item-id="editors-shell" data-item-title="Page shell and vertical rhythm" data-current-state="synced">
+              <div class="review-cell">
+                <div class="review-options">
+                  <span>Review</span>
+                  <input type="hidden" data-review-state value="synced" />
+                  <div class="quick-actions" aria-label="Review actions">
+                    <div class="quick-action-row">
+    <button type="button" data-question-action aria-pressed="false">Ask</button>
+    <button type="button" role="radio" aria-checked="false" data-preset-state="defer">Defer</button>
+  </div>
+  <div class="quick-action-row" role="radiogroup" aria-label="Apply review state">
+    <button type="button" role="radio" aria-checked="true" data-preset-state="synced">Sync</button>
+    <button type="button" role="radio" aria-checked="false" data-preset-state="rejected">Reject</button>
+    <button type="button" role="radio" aria-checked="false" data-preset-state="fork">Fork</button>
+  </div>
+                  </div>
+                </div>
+                <label>
+                  <span>Note</span>
+                  <textarea data-review-note rows="3" placeholder="Pick an action first" disabled></textarea>
+                </label>
+              </div>
+              <div class="item-body">
+                <div class="item-heading">
+                  <div>
+                    <h3>Page shell and vertical rhythm</h3>
+                    <p>Use shadcn /blocks page shell style without BlocksNav categories, Browse CTAs, or v0 actions.</p>
+                  </div>
+                  <span class="badge synced" data-state-label="synced">Synced</span>
+                </div>
+                <div class="comparison-grid">
+                  <section>
+                    <h4>shadcn</h4>
+                    <p>Shadcn /blocks has centered PageHeader, section-soft content band, category nav, and block gallery actions.</p>
+                  </section>
+                  <section>
+                    <h4>Suggestion</h4>
+                    <p>Plate /editors keeps editor demos as the product and excludes category nav and browse CTAs.</p>
+                    <button type="button" class="note-action" data-use-suggestion-note="Plate /editors keeps editor demos as the product and excludes category nav and browse CTAs.">Apply</button>
+                  </section>
+                </div>
+                
+                <div class="item-meta-grid">
+                  <section>
+                    <h4>Owner Files</h4>
+                    <ul class="files"><li><code>apps/www/src/app/(app)/editors/layout.tsx</code></li><li><code>apps/www/src/app/(app)/editors/editor-description.tsx</code></li><li><code>apps/www/src/app/(app)/editors/page.tsx</code></li></ul>
+                  </section>
+                </div>
+              </div>
+            </article>
+            <article class="item-card" data-state="synced" data-feature="editors" data-feature-label="Editors vs Blocks" data-item-id="block-viewer-toolbar" data-item-title="BlockViewer toolbar" data-current-state="synced">
+              <div class="review-cell">
+                <div class="review-options">
+                  <span>Review</span>
+                  <input type="hidden" data-review-state value="synced" />
+                  <div class="quick-actions" aria-label="Review actions">
+                    <div class="quick-action-row">
+    <button type="button" data-question-action aria-pressed="false">Ask</button>
+    <button type="button" role="radio" aria-checked="false" data-preset-state="defer">Defer</button>
+  </div>
+  <div class="quick-action-row" role="radiogroup" aria-label="Apply review state">
+    <button type="button" role="radio" aria-checked="true" data-preset-state="synced">Sync</button>
+    <button type="button" role="radio" aria-checked="false" data-preset-state="rejected">Reject</button>
+    <button type="button" role="radio" aria-checked="false" data-preset-state="fork">Fork</button>
+  </div>
+                  </div>
+                </div>
+                <label>
+                  <span>Note</span>
+                  <textarea data-review-note rows="3" placeholder="Pick an action first" disabled></textarea>
+                </label>
+              </div>
+              <div class="item-body">
+                <div class="item-heading">
+                  <div>
+                    <h3>BlockViewer toolbar</h3>
+                    <p>Use upstream device/open/refresh group order and command-pill rhythm, excluding Open in v0.</p>
+                  </div>
+                  <span class="badge synced" data-state-label="synced">Synced</span>
+                </div>
+                <div class="comparison-grid">
+                  <section>
+                    <h4>shadcn</h4>
+                    <p>Shadcn BlockViewer toolbar has device controls, open/refresh controls, separated install command, and v0 action.</p>
+                  </section>
+                  <section>
+                    <h4>Suggestion</h4>
+                    <p>Plate keeps install/source behavior, Pro/Get the code behavior, and no v0 button.</p>
+                    <button type="button" class="note-action" data-use-suggestion-note="Plate keeps install/source behavior, Pro/Get the code behavior, and no v0 button.">Apply</button>
+                  </section>
+                </div>
+                
+                <div class="item-meta-grid">
+                  <section>
+                    <h4>Owner Files</h4>
+                    <ul class="files"><li><code>apps/www/src/components/block-viewer.tsx</code></li></ul>
+                  </section>
+                </div>
+              </div>
+            </article>
+            <article class="item-card" data-state="synced" data-feature="editors" data-feature-label="Editors vs Blocks" data-item-id="preview-frame" data-item-title="Preview frame polish" data-current-state="synced">
+              <div class="review-cell">
+                <div class="review-options">
+                  <span>Review</span>
+                  <input type="hidden" data-review-state value="synced" />
+                  <div class="quick-actions" aria-label="Review actions">
+                    <div class="quick-action-row">
+    <button type="button" data-question-action aria-pressed="false">Ask</button>
+    <button type="button" role="radio" aria-checked="false" data-preset-state="defer">Defer</button>
+  </div>
+  <div class="quick-action-row" role="radiogroup" aria-label="Apply review state">
+    <button type="button" role="radio" aria-checked="true" data-preset-state="synced">Sync</button>
+    <button type="button" role="radio" aria-checked="false" data-preset-state="rejected">Reject</button>
+    <button type="button" role="radio" aria-checked="false" data-preset-state="fork">Fork</button>
+  </div>
+                  </div>
+                </div>
+                <label>
+                  <span>Note</span>
+                  <textarea data-review-note rows="3" placeholder="Pick an action first" disabled></textarea>
+                </label>
+              </div>
+              <div class="item-body">
+                <div class="item-heading">
+                  <div>
+                    <h3>Preview frame polish</h3>
+                    <p>Use shadcn radial dotted background, soft backing layer, overflow-hidden rounded frame, and handle breakpoint.</p>
+                  </div>
+                  <span class="badge synced" data-state-label="synced">Synced</span>
+                </div>
+                <div class="comparison-grid">
+                  <section>
+                    <h4>shadcn</h4>
+                    <p>Shadcn /blocks preview frame has dotted background and resizable shell polish.</p>
+                  </section>
+                  <section>
+                    <h4>Suggestion</h4>
+                    <p>Plate keeps iframe/source/install/editor behavior inside the polished frame.</p>
+                    <button type="button" class="note-action" data-use-suggestion-note="Plate keeps iframe/source/install/editor behavior inside the polished frame.">Apply</button>
+                  </section>
+                </div>
+                
+                <div class="item-meta-grid">
+                  <section>
+                    <h4>Owner Files</h4>
+                    <ul class="files"><li><code>apps/www/src/components/block-viewer.tsx</code></li></ul>
+                  </section>
+                </div>
+              </div>
+            </article></div>
+        </section>
+        <section class="feature" data-feature-card="releases" data-state="synced">
+          <div class="feature-header">
+            <div>
+              <p class="eyebrow">releases</p>
+              <h2>Releases vs Changelog</h2>
+              <p>Plate /docs/releases uses shadcn changelog page structure with Plate release data.</p>
+            </div>
+            <span class="badge synced" data-state-label="synced">Synced</span>
+          </div>
+          <div class="item-list">
+            <article class="item-card" data-state="synced" data-feature="releases" data-feature-label="Releases vs Changelog" data-item-id="releases-page" data-item-title="Releases page parity" data-current-state="synced">
+              <div class="review-cell">
+                <div class="review-options">
+                  <span>Review</span>
+                  <input type="hidden" data-review-state value="synced" />
+                  <div class="quick-actions" aria-label="Review actions">
+                    <div class="quick-action-row">
+    <button type="button" data-question-action aria-pressed="false">Ask</button>
+    <button type="button" role="radio" aria-checked="false" data-preset-state="defer">Defer</button>
+  </div>
+  <div class="quick-action-row" role="radiogroup" aria-label="Apply review state">
+    <button type="button" role="radio" aria-checked="true" data-preset-state="synced">Sync</button>
+    <button type="button" role="radio" aria-checked="false" data-preset-state="rejected">Reject</button>
+    <button type="button" role="radio" aria-checked="false" data-preset-state="fork">Fork</button>
+  </div>
+                  </div>
+                </div>
+                <label>
+                  <span>Note</span>
+                  <textarea data-review-note rows="3" placeholder="Pick an action first" disabled></textarea>
+                </label>
+              </div>
+              <div class="item-body">
+                <div class="item-heading">
+                  <div>
+                    <h3>Releases page parity</h3>
+                    <p>Use RSS action, latest-five inline releases, More Updates grid, and page anchors; keep the Plate title and release source.</p>
+                  </div>
+                  <span class="badge synced" data-state-label="synced">Synced</span>
+                </div>
+                <div class="comparison-grid">
+                  <section>
+                    <h4>shadcn</h4>
+                    <p>Shadcn /docs/changelog has RSS action and More Updates layout.</p>
+                  </section>
+                  <section>
+                    <h4>Suggestion</h4>
+                    <p>Plate /docs/releases keeps Plate release data, RSS feed, and docs shell.</p>
+                    <button type="button" class="note-action" data-use-suggestion-note="Plate /docs/releases keeps Plate release data, RSS feed, and docs shell.">Apply</button>
+                  </section>
+                </div>
+                
+                <div class="item-meta-grid">
+                  <section>
+                    <h4>Owner Files</h4>
+                    <ul class="files"><li><code>apps/www/src/app/(app)/docs/releases/page.tsx</code></li><li><code>apps/www/src/components/release-index.tsx</code></li><li><code>apps/www/src/lib/releases.ts</code></li><li><code>content/docs/releases/index.mdx</code></li></ul>
+                  </section>
+                </div>
+              </div>
+            </article></div>
+        </section>
+        <section class="feature" data-feature-card="sidebar" data-state="fork">
+          <div class="feature-header">
+            <div>
+              <p class="eyebrow">sidebar</p>
+              <h2>Docs Sidebar</h2>
+              <p>Plate keeps the current sidebar as an intentional fork.</p>
+            </div>
+            <span class="badge fork" data-state-label="fork">Fork</span>
+          </div>
+          <div class="item-list">
+            <article class="item-card" data-state="fork" data-feature="sidebar" data-feature-label="Docs Sidebar" data-item-id="accordion-sidebar" data-item-title="Accordion sidebar" data-current-state="fork">
+              <div class="review-cell">
+                <div class="review-options">
+                  <span>Review</span>
+                  <input type="hidden" data-review-state value="fork" />
+                  <div class="quick-actions" aria-label="Review actions">
+                    <div class="quick-action-row">
+    <button type="button" data-question-action aria-pressed="false">Ask</button>
+    <button type="button" role="radio" aria-checked="false" data-preset-state="defer">Defer</button>
+  </div>
+  <div class="quick-action-row" role="radiogroup" aria-label="Apply review state">
+    <button type="button" role="radio" aria-checked="false" data-preset-state="synced">Sync</button>
+    <button type="button" role="radio" aria-checked="false" data-preset-state="rejected">Reject</button>
+    <button type="button" role="radio" aria-checked="true" data-preset-state="fork">Fork</button>
+  </div>
+                  </div>
+                </div>
+                <label>
+                  <span>Note</span>
+                  <textarea data-review-note rows="3" placeholder="Pick an action first" disabled></textarea>
+                </label>
+              </div>
+              <div class="item-body">
+                <div class="item-heading">
+                  <div>
+                    <h3>Accordion sidebar</h3>
+                    <p>Keep current Plate behavior as an intentional fork. No merge work now.</p>
+                  </div>
+                  <span class="badge fork" data-state-label="fork">Fork</span>
+                </div>
+                <div class="comparison-grid">
+                  <section>
+                    <h4>shadcn</h4>
+                    <p>Shadcn sidebar is simpler because its docs tree is smaller.</p>
+                  </section>
+                  <section>
+                    <h4>Suggestion</h4>
+                    <p>Plate needs accordion grouping for dense docs, plugins, components, examples, migrations, and API pages.</p>
+                    <button type="button" class="note-action" data-use-suggestion-note="Plate needs accordion grouping for dense docs, plugins, components, examples, migrations, and API pages.">Apply</button>
+                  </section>
+                </div>
+                
+                <div class="item-meta-grid">
+                  <section>
+                    <h4>Owner Files</h4>
+                    <ul class="files"><li><code>apps/www/src/components/docs-nav.tsx</code></li></ul>
+                  </section>
+                </div>
+              </div>
+            </article></div>
+        </section>
+        <section class="feature" data-feature-card="command-menu" data-state="synced">
+          <div class="feature-header">
+            <div>
+              <p class="eyebrow">command-menu</p>
+              <h2>Command Menu</h2>
+              <p>Command input styling, performance, footer shortcuts, and copy payload policy are settled.</p>
+            </div>
+            <span class="badge synced" data-state-label="synced">Synced</span>
+          </div>
+          <div class="item-list">
+            <article class="item-card" data-state="synced" data-feature="command-menu" data-feature-label="Command Menu" data-item-id="command-input" data-item-title="Header search input" data-current-state="synced">
+              <div class="review-cell">
+                <div class="review-options">
+                  <span>Review</span>
+                  <input type="hidden" data-review-state value="synced" />
+                  <div class="quick-actions" aria-label="Review actions">
+                    <div class="quick-action-row">
+    <button type="button" data-question-action aria-pressed="false">Ask</button>
+    <button type="button" role="radio" aria-checked="false" data-preset-state="defer">Defer</button>
+  </div>
+  <div class="quick-action-row" role="radiogroup" aria-label="Apply review state">
+    <button type="button" role="radio" aria-checked="true" data-preset-state="synced">Sync</button>
+    <button type="button" role="radio" aria-checked="false" data-preset-state="rejected">Reject</button>
+    <button type="button" role="radio" aria-checked="false" data-preset-state="fork">Fork</button>
+  </div>
+                  </div>
+                </div>
+                <label>
+                  <span>Note</span>
+                  <textarea data-review-note rows="3" placeholder="Pick an action first" disabled></textarea>
+                </label>
+              </div>
+              <div class="item-body">
+                <div class="item-heading">
+                  <div>
+                    <h3>Header search input</h3>
+                    <p>Use the shadcn-style compact command trigger in the header.</p>
+                  </div>
+                  <span class="badge synced" data-state-label="synced">Synced</span>
+                </div>
+                <div class="comparison-grid">
+                  <section>
+                    <h4>shadcn</h4>
+                    <p>Shadcn search trigger is compact and borderless.</p>
+                  </section>
+                  <section>
+                    <h4>Suggestion</h4>
+                    <p>Plate search trigger matches that visual shape.</p>
+                    <button type="button" class="note-action" data-use-suggestion-note="Plate search trigger matches that visual shape.">Apply</button>
+                  </section>
+                </div>
+                
+                <div class="item-meta-grid">
+                  <section>
+                    <h4>Owner Files</h4>
+                    <ul class="files"><li><code>apps/www/src/components/command-menu.tsx</code></li></ul>
+                  </section>
+                </div>
+              </div>
+            </article>
+            <article class="item-card" data-state="synced" data-feature="command-menu" data-feature-label="Command Menu" data-item-id="command-footer-shortcuts" data-item-title="Footer shortcuts and copy payloads" data-current-state="synced">
+              <div class="review-cell">
+                <div class="review-options">
+                  <span>Review</span>
+                  <input type="hidden" data-review-state value="synced" />
+                  <div class="quick-actions" aria-label="Review actions">
+                    <div class="quick-action-row">
+    <button type="button" data-question-action aria-pressed="false">Ask</button>
+    <button type="button" role="radio" aria-checked="false" data-preset-state="defer">Defer</button>
+  </div>
+  <div class="quick-action-row" role="radiogroup" aria-label="Apply review state">
+    <button type="button" role="radio" aria-checked="true" data-preset-state="synced">Sync</button>
+    <button type="button" role="radio" aria-checked="false" data-preset-state="rejected">Reject</button>
+    <button type="button" role="radio" aria-checked="false" data-preset-state="fork">Fork</button>
+  </div>
+                  </div>
+                </div>
+                <label>
+                  <span>Note</span>
+                  <textarea data-review-note rows="3" placeholder="Pick an action first" disabled></textarea>
+                </label>
+              </div>
+              <div class="item-body">
+                <div class="item-heading">
+                  <div>
+                    <h3>Footer shortcuts and copy payloads</h3>
+                    <p>Plate limits command-menu copy payloads to registry-backed editor/plugin kits, components, and examples; Sync applies code before marking the row synced.</p>
+                  </div>
+                  <span class="badge synced" data-state-label="synced">Synced</span>
+                </div>
+                <div class="comparison-grid">
+                  <section>
+                    <h4>shadcn</h4>
+                    <p>Shadcn can show Enter plus copy shortcuts for copyable command items.</p>
+                  </section>
+                  <section>
+                    <h4>Suggestion</h4>
+                    <p>Plate should limit copy payloads to editor kits, plugin kits, components, and examples after the registry review.</p>
+                    <button type="button" class="note-action" data-use-suggestion-note="Plate should limit copy payloads to editor kits, plugin kits, components, and examples after the registry review.">Apply</button>
+                  </section>
+                </div>
+                
+                <div class="item-meta-grid">
+                  <section>
+                    <h4>Owner Files</h4>
+                    <ul class="files"><li><code>apps/www/src/components/command-menu.tsx</code></li><li><code>apps/www/src/lib/registry-install.ts</code></li><li><code>apps/www/src/registry/registry.ts</code></li></ul>
+                  </section>
+                </div>
+              </div>
+            </article></div>
+        </section>
+        <section class="feature" data-feature-card="registry" data-state="defer">
+          <div class="feature-header">
+            <div>
+              <p class="eyebrow">registry</p>
+              <h2>Registry</h2>
+              <p>Registry shape, copy payloads, and source loading are deferred as one product review.</p>
+            </div>
+            <span class="badge defer" data-state-label="defer">Defer</span>
+          </div>
+          <div class="item-list">
+            <article class="item-card" data-state="fork" data-feature="registry" data-feature-label="Registry" data-item-id="registry-source" data-item-title="Lazy source loading" data-current-state="fork">
+              <div class="review-cell">
+                <div class="review-options">
+                  <span>Review</span>
+                  <input type="hidden" data-review-state value="fork" />
+                  <div class="quick-actions" aria-label="Review actions">
+                    <div class="quick-action-row">
+    <button type="button" data-question-action aria-pressed="false">Ask</button>
+    <button type="button" role="radio" aria-checked="false" data-preset-state="defer">Defer</button>
+  </div>
+  <div class="quick-action-row" role="radiogroup" aria-label="Apply review state">
+    <button type="button" role="radio" aria-checked="false" data-preset-state="synced">Sync</button>
+    <button type="button" role="radio" aria-checked="false" data-preset-state="rejected">Reject</button>
+    <button type="button" role="radio" aria-checked="true" data-preset-state="fork">Fork</button>
+  </div>
+                  </div>
+                </div>
+                <label>
+                  <span>Note</span>
+                  <textarea data-review-note rows="3" placeholder="Pick an action first" disabled></textarea>
+                </label>
+              </div>
+              <div class="item-body">
+                <div class="item-heading">
+                  <div>
+                    <h3>Lazy source loading</h3>
+                    <p>Keep lazy /api/registry-source/[name] for bandwidth; do not pull shadcn eager code-source behavior without a registry decision.</p>
+                  </div>
+                  <span class="badge fork" data-state-label="fork">Fork</span>
+                </div>
+                <div class="comparison-grid">
+                  <section>
+                    <h4>shadcn</h4>
+                    <p>Shadcn registry pages can load source/code through its block/component viewer model.</p>
+                  </section>
+                  <section>
+                    <h4>Suggestion</h4>
+                    <p>Plate uses lazy internal source hydration to avoid heavy payloads.</p>
+                    <button type="button" class="note-action" data-use-suggestion-note="Plate uses lazy internal source hydration to avoid heavy payloads.">Apply</button>
+                  </section>
+                </div>
+                
+                <div class="item-meta-grid">
+                  <section>
+                    <h4>Owner Files</h4>
+                    <ul class="files"><li><code>apps/www/src/app/api/registry-source/[name]/route.ts</code></li><li><code>apps/www/src/components/block-viewer.tsx</code></li></ul>
+                  </section>
+                </div>
+              </div>
+            </article>
+            <article class="item-card" data-state="defer" data-feature="registry" data-feature-label="Registry" data-item-id="registry-review" data-item-title="Full registry review" data-current-state="defer">
+              <div class="review-cell">
+                <div class="review-options">
+                  <span>Review</span>
+                  <input type="hidden" data-review-state value="defer" />
+                  <div class="quick-actions" aria-label="Review actions">
+                    <div class="quick-action-row">
+    <button type="button" data-question-action aria-pressed="false">Ask</button>
+    <button type="button" role="radio" aria-checked="true" data-preset-state="defer">Defer</button>
+  </div>
+  <div class="quick-action-row" role="radiogroup" aria-label="Apply review state">
+    <button type="button" role="radio" aria-checked="false" data-preset-state="synced">Sync</button>
+    <button type="button" role="radio" aria-checked="false" data-preset-state="rejected">Reject</button>
+    <button type="button" role="radio" aria-checked="false" data-preset-state="fork">Fork</button>
+  </div>
+                  </div>
+                </div>
+                <label>
+                  <span>Note</span>
+                  <textarea data-review-note rows="3" placeholder="Pick an action first" disabled></textarea>
+                </label>
+              </div>
+              <div class="item-body">
+                <div class="item-heading">
+                  <div>
+                    <h3>Full registry review</h3>
+                    <p>Review components, plugin kits, editor kits, examples, install commands, and public route shape together.</p>
+                  </div>
+                  <span class="badge defer" data-state-label="defer">Defer</span>
+                </div>
+                <div class="comparison-grid">
+                  <section>
+                    <h4>shadcn</h4>
+                    <p>Shadcn registry behavior is the base compatibility target.</p>
+                  </section>
+                  <section>
+                    <h4>Suggestion</h4>
+                    <p>Plate registry content and API MDX are product-owned and should not be merged piecemeal.</p>
+                    <button type="button" class="note-action" data-use-suggestion-note="Plate registry content and API MDX are product-owned and should not be merged piecemeal.">Apply</button>
+                  </section>
+                </div>
+                <div class="screenshot-grid"><figure class="screenshot-card">
+        <figcaption>Suggestion</figcaption>
+        <button type="button" class="screenshot-thumb" data-screenshot-src="runs/2026-05-30-deferred-review-screenshots/screenshots/plate-registry-review-editors.png" data-screenshot-label="Suggestion screenshot for Full registry review"><img src="runs/2026-05-30-deferred-review-screenshots/screenshots/plate-registry-review-editors.png" alt="Suggestion screenshot for Full registry review" loading="lazy" /></button>
+      </figure><figure class="screenshot-card">
+        <figcaption>shadcn</figcaption>
+        <button type="button" class="screenshot-thumb" data-screenshot-src="runs/2026-05-30-deferred-review-screenshots/screenshots/shadcn-registry-review-blocks.png" data-screenshot-label="shadcn screenshot for Full registry review"><img src="runs/2026-05-30-deferred-review-screenshots/screenshots/shadcn-registry-review-blocks.png" alt="shadcn screenshot for Full registry review" loading="lazy" /></button>
+      </figure></div>
+                <div class="item-meta-grid">
+                  <section>
+                    <h4>Owner Files</h4>
+                    <ul class="files"><li><code>apps/www/src/lib/registry-install.ts</code></li><li><code>apps/www/src/registry/registry.ts</code></li><li><code>apps/www/src/registry/registry-components.ts</code></li></ul>
+                  </section>
+                </div>
+              </div>
+            </article></div>
+        </section>
+        <section class="feature" data-feature-card="create" data-state="defer">
+          <div class="feature-header">
+            <div>
+              <p class="eyebrow">create</p>
+              <h2>Create</h2>
+              <p>Defer upstream /create review; future Plate create work is a separate product decision.</p>
+            </div>
+            <span class="badge defer" data-state-label="defer">Defer</span>
+          </div>
+          <div class="item-list">
+            <article class="item-card" data-state="defer" data-feature="create" data-feature-label="Create" data-item-id="upstream-create" data-item-title="Upstream /create product surface" data-current-state="defer">
+              <div class="review-cell">
+                <div class="review-options">
+                  <span>Review</span>
+                  <input type="hidden" data-review-state value="defer" />
+                  <div class="quick-actions" aria-label="Review actions">
+                    <div class="quick-action-row">
+    <button type="button" data-question-action aria-pressed="false">Ask</button>
+    <button type="button" role="radio" aria-checked="true" data-preset-state="defer">Defer</button>
+  </div>
+  <div class="quick-action-row" role="radiogroup" aria-label="Apply review state">
+    <button type="button" role="radio" aria-checked="false" data-preset-state="synced">Sync</button>
+    <button type="button" role="radio" aria-checked="false" data-preset-state="rejected">Reject</button>
+    <button type="button" role="radio" aria-checked="false" data-preset-state="fork">Fork</button>
+  </div>
+                  </div>
+                </div>
+                <label>
+                  <span>Note</span>
+                  <textarea data-review-note rows="3" placeholder="Pick an action first" disabled></textarea>
+                </label>
+              </div>
+              <div class="item-body">
+                <div class="item-heading">
+                  <div>
+                    <h3>Upstream /create product surface</h3>
+                    <p>Defer upstream /create and v0-oriented create flow review until Plate has a product-shaped /create decision.</p>
+                  </div>
+                  <span class="badge defer" data-state-label="defer">Defer</span>
+                </div>
+                <div class="comparison-grid">
+                  <section>
+                    <h4>shadcn</h4>
+                    <p>Shadcn /create is tied to its own product flow and generated style/theme registry.</p>
+                  </section>
+                  <section>
+                    <h4>Suggestion</h4>
+                    <p>Plate may have a /create later, but it should be designed for Plate rather than copied now.</p>
+                    <button type="button" class="note-action" data-use-suggestion-note="Plate may have a /create later, but it should be designed for Plate rather than copied now.">Apply</button>
+                  </section>
+                </div>
+                
+                <div class="item-meta-grid">
+                  <section>
+                    <h4>Owner Files</h4>
+                    <ul class="files"><li><code>docs/sync/shadcn/decisions.md</code></li></ul>
+                  </section>
+                </div>
+              </div>
+            </article></div>
+        </section>
+        <section class="feature" data-feature-card="themes" data-state="defer">
+          <div class="feature-header">
+            <div>
+              <p class="eyebrow">themes</p>
+              <h2>Themes and Styles</h2>
+              <p>Defer upstream Rhea/style/theme/generated style registry review with the create/theming product surface.</p>
+            </div>
+            <span class="badge defer" data-state-label="defer">Defer</span>
+          </div>
+          <div class="item-list">
+            <article class="item-card" data-state="defer" data-feature="themes" data-feature-label="Themes and Styles" data-item-id="rhea-style-registry" data-item-title="Rhea/style/theme generated registry" data-current-state="defer">
+              <div class="review-cell">
+                <div class="review-options">
+                  <span>Review</span>
+                  <input type="hidden" data-review-state value="defer" />
+                  <div class="quick-actions" aria-label="Review actions">
+                    <div class="quick-action-row">
+    <button type="button" data-question-action aria-pressed="false">Ask</button>
+    <button type="button" role="radio" aria-checked="true" data-preset-state="defer">Defer</button>
+  </div>
+  <div class="quick-action-row" role="radiogroup" aria-label="Apply review state">
+    <button type="button" role="radio" aria-checked="false" data-preset-state="synced">Sync</button>
+    <button type="button" role="radio" aria-checked="false" data-preset-state="rejected">Reject</button>
+    <button type="button" role="radio" aria-checked="false" data-preset-state="fork">Fork</button>
+  </div>
+                  </div>
+                </div>
+                <label>
+                  <span>Note</span>
+                  <textarea data-review-note rows="3" placeholder="Pick an action first" disabled></textarea>
+                </label>
+              </div>
+              <div class="item-body">
+                <div class="item-heading">
+                  <div>
+                    <h3>Rhea/style/theme generated registry</h3>
+                    <p>Defer this with upstream create/theming instead of treating it as a final exclusion.</p>
+                  </div>
+                  <span class="badge defer" data-state-label="defer">Defer</span>
+                </div>
+                <div class="comparison-grid">
+                  <section>
+                    <h4>shadcn</h4>
+                    <p>Shadcn has generated style registry files for themed examples.</p>
+                  </section>
+                  <section>
+                    <h4>Suggestion</h4>
+                    <p>Plate does not want the old theme/customizer direction or upstream Rhea theme surface.</p>
+                    <button type="button" class="note-action" data-use-suggestion-note="Plate does not want the old theme/customizer direction or upstream Rhea theme surface.">Apply</button>
+                  </section>
+                </div>
+                
+                <div class="item-meta-grid">
+                  <section>
+                    <h4>Owner Files</h4>
+                    <ul class="files"><li><code>docs/sync/shadcn/decisions.md</code></li></ul>
+                  </section>
+                </div>
+              </div>
+            </article></div>
+        </section>
+        <section class="feature" data-feature-card="preview-routes" data-state="fork">
+          <div class="feature-header">
+            <div>
+              <p class="eyebrow">preview-routes</p>
+              <h2>Preview Routes</h2>
+              <p>Plate keeps a single preview route while the registry/style system stays deferred.</p>
+            </div>
+            <span class="badge fork" data-state-label="fork">Fork</span>
+          </div>
+          <div class="item-list">
+            <article class="item-card" data-state="fork" data-feature="preview-routes" data-feature-label="Preview Routes" data-item-id="style-param-view-route" data-item-title="Shadcn style-param /view route" data-current-state="fork">
+              <div class="review-cell">
+                <div class="review-options">
+                  <span>Review</span>
+                  <input type="hidden" data-review-state value="fork" />
+                  <div class="quick-actions" aria-label="Review actions">
+                    <div class="quick-action-row">
+    <button type="button" data-question-action aria-pressed="false">Ask</button>
+    <button type="button" role="radio" aria-checked="false" data-preset-state="defer">Defer</button>
+  </div>
+  <div class="quick-action-row" role="radiogroup" aria-label="Apply review state">
+    <button type="button" role="radio" aria-checked="false" data-preset-state="synced">Sync</button>
+    <button type="button" role="radio" aria-checked="false" data-preset-state="rejected">Reject</button>
+    <button type="button" role="radio" aria-checked="true" data-preset-state="fork">Fork</button>
+  </div>
+                  </div>
+                </div>
+                <label>
+                  <span>Note</span>
+                  <textarea data-review-note rows="3" placeholder="Pick an action first" disabled></textarea>
+                </label>
+              </div>
+              <div class="item-body">
+                <div class="item-heading">
+                  <div>
+                    <h3>Shadcn style-param /view route</h3>
+                    <p>Do not copy shadcn /view/[style]/[name] and legacy theme wrapper for now.</p>
+                  </div>
+                  <span class="badge fork" data-state-label="fork">Fork</span>
+                </div>
+                <div class="comparison-grid">
+                  <section>
+                    <h4>shadcn</h4>
+                    <p>Shadcn iframes use /view/[style]/[name] for style-aware block previews.</p>
+                  </section>
+                  <section>
+                    <h4>Suggestion</h4>
+                    <p>Plate uses /view/[name] for registry previews and has no active multi-style preview surface.</p>
+                    <button type="button" class="note-action" data-use-suggestion-note="Plate uses /view/[name] for registry previews and has no active multi-style preview surface.">Apply</button>
+                  </section>
+                </div>
+                
+                <div class="item-meta-grid">
+                  <section>
+                    <h4>Owner Files</h4>
+                    <ul class="files"><li><code>apps/www/src/app/(view)/view/[name]/page.tsx</code></li><li><code>apps/www/src/components/block-viewer.tsx</code></li></ul>
+                  </section>
+                </div>
+              </div>
+            </article></div>
+        </section>
+        <section class="feature" data-feature-card="docs-engine" data-state="fork">
+          <div class="feature-header">
+            <div>
+              <p class="eyebrow">docs-engine</p>
+              <h2>Docs Engine</h2>
+              <p>Plate keeps the docs shell, source loader, and search wiring as product-owned forks.</p>
+            </div>
+            <span class="badge fork" data-state-label="fork">Fork</span>
+          </div>
+          <div class="item-list">
+            <article class="item-card" data-state="fork" data-feature="docs-engine" data-feature-label="Docs Engine" data-item-id="docs-shell-ownership" data-item-title="Docs shell ownership" data-current-state="fork">
+              <div class="review-cell">
+                <div class="review-options">
+                  <span>Review</span>
+                  <input type="hidden" data-review-state value="fork" />
+                  <div class="quick-actions" aria-label="Review actions">
+                    <div class="quick-action-row">
+    <button type="button" data-question-action aria-pressed="false">Ask</button>
+    <button type="button" role="radio" aria-checked="false" data-preset-state="defer">Defer</button>
+  </div>
+  <div class="quick-action-row" role="radiogroup" aria-label="Apply review state">
+    <button type="button" role="radio" aria-checked="false" data-preset-state="synced">Sync</button>
+    <button type="button" role="radio" aria-checked="false" data-preset-state="rejected">Reject</button>
+    <button type="button" role="radio" aria-checked="true" data-preset-state="fork">Fork</button>
+  </div>
+                  </div>
+                </div>
+                <label>
+                  <span>Note</span>
+                  <textarea data-review-note rows="3" placeholder="Pick an action first" disabled></textarea>
+                </label>
+              </div>
+              <div class="item-body">
+                <div class="item-heading">
+                  <div>
+                    <h3>Docs shell ownership</h3>
+                    <p>Keep Plate docs shell as an intentional fork. It owns CN fallback, registry fallback pages, Plate LLM markdown, custom pager behavior, and no-v0 policy.</p>
+                  </div>
+                  <span class="badge fork" data-state-label="fork">Fork</span>
+                </div>
+                <div class="comparison-grid">
+                  <section>
+                    <h4>shadcn</h4>
+                    <p>Shadcn renders docs from one route file with Fumadocs neighbours, copy page, TOC, and Open in v0 CTA.</p>
+                  </section>
+                  <section>
+                    <h4>Suggestion</h4>
+                    <p>Track future shadcn page-shell changes as small visual/layout rows, not as a route rewrite.</p>
+                    <button type="button" class="note-action" data-use-suggestion-note="Track future shadcn page-shell changes as small visual/layout rows, not as a route rewrite.">Apply</button>
+                  </section>
+                </div>
+                
+                <div class="item-meta-grid">
+                  <section>
+                    <h4>Owner Files</h4>
+                    <ul class="files"><li><code>apps/www/src/app/(app)/docs/[[...slug]]/doc-page.tsx</code></li><li><code>apps/www/src/app/(app)/docs/[[...slug]]/doc-content.tsx</code></li><li><code>apps/www/src/components/docs-copy-page.tsx</code></li><li><code>../shadcn/apps/v4/app/(app)/docs/[[...slug]]/page.tsx</code></li></ul>
+                  </section>
+                </div>
+              </div>
+            </article>
+            <article class="item-card" data-state="fork" data-feature="docs-engine" data-feature-label="Docs Engine" data-item-id="source-search-wiring" data-item-title="Source and search wiring" data-current-state="fork">
+              <div class="review-cell">
+                <div class="review-options">
+                  <span>Review</span>
+                  <input type="hidden" data-review-state value="fork" />
+                  <div class="quick-actions" aria-label="Review actions">
+                    <div class="quick-action-row">
+    <button type="button" data-question-action aria-pressed="false">Ask</button>
+    <button type="button" role="radio" aria-checked="false" data-preset-state="defer">Defer</button>
+  </div>
+  <div class="quick-action-row" role="radiogroup" aria-label="Apply review state">
+    <button type="button" role="radio" aria-checked="false" data-preset-state="synced">Sync</button>
+    <button type="button" role="radio" aria-checked="false" data-preset-state="rejected">Reject</button>
+    <button type="button" role="radio" aria-checked="true" data-preset-state="fork">Fork</button>
+  </div>
+                  </div>
+                </div>
+                <label>
+                  <span>Note</span>
+                  <textarea data-review-note rows="3" placeholder="Pick an action first" disabled></textarea>
+                </label>
+              </div>
+              <div class="item-body">
+                <div class="item-heading">
+                  <div>
+                    <h3>Source and search wiring</h3>
+                    <p>Keep Plate i18n source loader and grouped search route.</p>
+                  </div>
+                  <span class="badge fork" data-state-label="fork">Fork</span>
+                </div>
+                <div class="comparison-grid">
+                  <section>
+                    <h4>shadcn</h4>
+                    <p>Shadcn uses a simple /docs source loader and default Fumadocs createFromSource search route.</p>
+                  </section>
+                  <section>
+                    <h4>Suggestion</h4>
+                    <p>Plate source/search wiring exists for CN docs and command/search result quality, so do not chase upstream simplicity here.</p>
+                    <button type="button" class="note-action" data-use-suggestion-note="Plate source/search wiring exists for CN docs and command/search result quality, so do not chase upstream simplicity here.">Apply</button>
+                  </section>
+                </div>
+                
+                <div class="item-meta-grid">
+                  <section>
+                    <h4>Owner Files</h4>
+                    <ul class="files"><li><code>apps/www/src/lib/source.ts</code></li><li><code>apps/www/src/app/api/search/route.ts</code></li><li><code>../shadcn/apps/v4/lib/source.ts</code></li><li><code>../shadcn/apps/v4/app/api/search/route.ts</code></li></ul>
+                  </section>
+                </div>
+              </div>
+            </article></div>
+        </section>
+        <section class="feature" data-feature-card="mdx" data-state="pending">
+          <div class="feature-header">
+            <div>
+              <p class="eyebrow">mdx</p>
+              <h2>MDX and Code Primitives</h2>
+              <p>Stable MDX/code infrastructure differences that were missed by route-focused sync reviews.</p>
+            </div>
+            <span class="badge pending" data-state-label="pending">Pending</span>
+          </div>
+          <div class="item-list">
+            <article class="item-card" data-state="fork" data-feature="mdx" data-feature-label="MDX and Code Primitives" data-item-id="mdx-component-primitives" data-item-title="MDX component primitives" data-current-state="fork">
+              <div class="review-cell">
+                <div class="review-options">
+                  <span>Review</span>
+                  <input type="hidden" data-review-state value="fork" />
+                  <div class="quick-actions" aria-label="Review actions">
+                    <div class="quick-action-row">
+    <button type="button" data-question-action aria-pressed="false">Ask</button>
+    <button type="button" role="radio" aria-checked="false" data-preset-state="defer">Defer</button>
+  </div>
+  <div class="quick-action-row" role="radiogroup" aria-label="Apply review state">
+    <button type="button" role="radio" aria-checked="false" data-preset-state="synced">Sync</button>
+    <button type="button" role="radio" aria-checked="false" data-preset-state="rejected">Reject</button>
+    <button type="button" role="radio" aria-checked="true" data-preset-state="fork">Fork</button>
+  </div>
+                  </div>
+                </div>
+                <label>
+                  <span>Note</span>
+                  <textarea data-review-note rows="3" placeholder="Pick an action first" disabled></textarea>
+                </label>
+              </div>
+              <div class="item-body">
+                <div class="item-heading">
+                  <div>
+                    <h3>MDX component primitives</h3>
+                    <p>Keep Plate's MDX map as an intentional fork for now; before changing it, sweep shadcn docs usage and decide which upstream primitives Plate can actually use.</p>
+                  </div>
+                  <span class="badge fork" data-state-label="fork">Fork</span>
+                </div>
+                <div class="comparison-grid">
+                  <section>
+                    <h4>shadcn</h4>
+                    <p>Shadcn MDX components include explicit heading anchors, DirectoryList, Kbd, Callout, CodeCollapsibleWrapper, package-manager command blocks, and component-list helpers.</p>
+                  </section>
+                  <section>
+                    <h4>Suggestion</h4>
+                    <p>Sweep all shadcn docs for upstream MDX primitive usage, then pull useful upstream primitives while preserving Plate API and registry MDX vocabulary.</p>
+                    <button type="button" class="note-action" data-use-suggestion-note="Sweep all shadcn docs for upstream MDX primitive usage, then pull useful upstream primitives while preserving Plate API and registry MDX vocabulary.">Apply</button>
+                  </section>
+                </div>
+                
+                <div class="item-meta-grid">
+                  <section>
+                    <h4>Owner Files</h4>
+                    <ul class="files"><li><code>apps/www/src/components/mdx-components.tsx</code></li><li><code>../shadcn/apps/v4/mdx-components.tsx</code></li><li><code>content/docs</code></li></ul>
+                  </section>
+                </div>
+              </div>
+            </article>
+            <article class="item-card" data-state="synced" data-feature="mdx" data-feature-label="MDX and Code Primitives" data-item-id="codeblock-collapsible-wrapper" data-item-title="Codeblock collapsible wrapper" data-current-state="synced">
+              <div class="review-cell">
+                <div class="review-options">
+                  <span>Review</span>
+                  <input type="hidden" data-review-state value="synced" />
+                  <div class="quick-actions" aria-label="Review actions">
+                    <div class="quick-action-row">
+    <button type="button" data-question-action aria-pressed="false">Ask</button>
+    <button type="button" role="radio" aria-checked="false" data-preset-state="defer">Defer</button>
+  </div>
+  <div class="quick-action-row" role="radiogroup" aria-label="Apply review state">
+    <button type="button" role="radio" aria-checked="true" data-preset-state="synced">Sync</button>
+    <button type="button" role="radio" aria-checked="false" data-preset-state="rejected">Reject</button>
+    <button type="button" role="radio" aria-checked="false" data-preset-state="fork">Fork</button>
+  </div>
+                  </div>
+                </div>
+                <label>
+                  <span>Note</span>
+                  <textarea data-review-note rows="3" placeholder="Pick an action first" disabled></textarea>
+                </label>
+              </div>
+              <div class="item-body">
+                <div class="item-heading">
+                  <div>
+                    <h3>Codeblock collapsible wrapper</h3>
+                    <p>Plate CodeBlockWrapper uses upstream expand/collapse behavior while preserving Plate full, open, and expandButtonTitle support.</p>
+                  </div>
+                  <span class="badge synced" data-state-label="synced">Synced</span>
+                </div>
+                <div class="comparison-grid">
+                  <section>
+                    <h4>shadcn</h4>
+                    <p>Shadcn CodeCollapsibleWrapper has a top-right Expand/Collapse control, separator, bottom gradient trigger, content-visibility:auto, and cleaner figure handling.</p>
+                  </section>
+                  <section>
+                    <h4>Suggestion</h4>
+                    <p>Synced: upstream top-right control, separator, bottom gradient trigger, content-visibility, and figure/pre cleanup are implemented with Plate props preserved.</p>
+                    <button type="button" class="note-action" data-use-suggestion-note="Synced: upstream top-right control, separator, bottom gradient trigger, content-visibility, and figure/pre cleanup are implemented with Plate props preserved.">Apply</button>
+                  </section>
+                </div>
+                
+                <div class="item-meta-grid">
+                  <section>
+                    <h4>Owner Files</h4>
+                    <ul class="files"><li><code>apps/www/src/components/code-block-wrapper.tsx</code></li><li><code>../shadcn/apps/v4/components/code-collapsible-wrapper.tsx</code></li></ul>
+                  </section>
+                </div>
+              </div>
+            </article>
+            <article class="item-card" data-state="synced" data-feature="mdx" data-feature-label="MDX and Code Primitives" data-item-id="code-command-yarn-tab" data-item-title="Code command yarn tab" data-current-state="synced">
+              <div class="review-cell">
+                <div class="review-options">
+                  <span>Review</span>
+                  <input type="hidden" data-review-state value="synced" />
+                  <div class="quick-actions" aria-label="Review actions">
+                    <div class="quick-action-row">
+    <button type="button" data-question-action aria-pressed="false">Ask</button>
+    <button type="button" role="radio" aria-checked="false" data-preset-state="defer">Defer</button>
+  </div>
+  <div class="quick-action-row" role="radiogroup" aria-label="Apply review state">
+    <button type="button" role="radio" aria-checked="true" data-preset-state="synced">Sync</button>
+    <button type="button" role="radio" aria-checked="false" data-preset-state="rejected">Reject</button>
+    <button type="button" role="radio" aria-checked="false" data-preset-state="fork">Fork</button>
+  </div>
+                  </div>
+                </div>
+                <label>
+                  <span>Note</span>
+                  <textarea data-review-note rows="3" placeholder="Pick an action first" disabled></textarea>
+                </label>
+              </div>
+              <div class="item-body">
+                <div class="item-heading">
+                  <div>
+                    <h3>Code command yarn tab</h3>
+                    <p>Plate command blocks generate and render yarn variants alongside pnpm, npm, and bun.</p>
+                  </div>
+                  <span class="badge synced" data-state-label="synced">Synced</span>
+                </div>
+                <div class="comparison-grid">
+                  <section>
+                    <h4>shadcn</h4>
+                    <p>Shadcn command blocks generate and render bun, npm, pnpm, and yarn variants.</p>
+                  </section>
+                  <section>
+                    <h4>Suggestion</h4>
+                    <p>Synced: rehype command props, MDX command tabs, config persistence, and copy helpers all include yarn.</p>
+                    <button type="button" class="note-action" data-use-suggestion-note="Synced: rehype command props, MDX command tabs, config persistence, and copy helpers all include yarn.">Apply</button>
+                  </section>
+                </div>
+                
+                <div class="item-meta-grid">
+                  <section>
+                    <h4>Owner Files</h4>
+                    <ul class="files"><li><code>apps/www/src/lib/rehype-npm-command.ts</code></li><li><code>apps/www/src/components/code-block-command.tsx</code></li><li><code>apps/www/src/components/copy-button.tsx</code></li><li><code>../shadcn/apps/v4/components/code-block-command.tsx</code></li><li><code>../shadcn/apps/v4/lib/highlight-code.ts</code></li></ul>
+                  </section>
+                </div>
+              </div>
+            </article>
+            <article class="item-card" data-state="synced" data-feature="mdx" data-feature-label="MDX and Code Primitives" data-item-id="highlight-code-cache" data-item-title="Highlight code cache" data-current-state="synced">
+              <div class="review-cell">
+                <div class="review-options">
+                  <span>Review</span>
+                  <input type="hidden" data-review-state value="synced" />
+                  <div class="quick-actions" aria-label="Review actions">
+                    <div class="quick-action-row">
+    <button type="button" data-question-action aria-pressed="false">Ask</button>
+    <button type="button" role="radio" aria-checked="false" data-preset-state="defer">Defer</button>
+  </div>
+  <div class="quick-action-row" role="radiogroup" aria-label="Apply review state">
+    <button type="button" role="radio" aria-checked="true" data-preset-state="synced">Sync</button>
+    <button type="button" role="radio" aria-checked="false" data-preset-state="rejected">Reject</button>
+    <button type="button" role="radio" aria-checked="false" data-preset-state="fork">Fork</button>
+  </div>
+                  </div>
+                </div>
+                <label>
+                  <span>Note</span>
+                  <textarea data-review-note rows="3" placeholder="Pick an action first" disabled></textarea>
+                </label>
+              </div>
+              <div class="item-body">
+                <div class="item-heading">
+                  <div>
+                    <h3>Highlight code cache</h3>
+                    <p>Plate highlightCode uses upstream-style SHA-256 keyed LRU caching while preserving registry file highlighting.</p>
+                  </div>
+                  <span class="badge synced" data-state-label="synced">Synced</span>
+                </div>
+                <div class="comparison-grid">
+                  <section>
+                    <h4>shadcn</h4>
+                    <p>Shadcn caches Shiki output with a SHA-256 key and one-hour LRU cache.</p>
+                  </section>
+                  <section>
+                    <h4>Suggestion</h4>
+                    <p>Synced: Plate caches highlighted HTML in highlightCode and keeps highlightFiles for registry/source previews.</p>
+                    <button type="button" class="note-action" data-use-suggestion-note="Synced: Plate caches highlighted HTML in highlightCode and keeps highlightFiles for registry/source previews.">Apply</button>
+                  </section>
+                </div>
+                
+                <div class="item-meta-grid">
+                  <section>
+                    <h4>Owner Files</h4>
+                    <ul class="files"><li><code>apps/www/package.json</code></li><li><code>apps/www/src/lib/highlight-code.ts</code></li><li><code>../shadcn/apps/v4/lib/highlight-code.ts</code></li></ul>
+                  </section>
+                </div>
+              </div>
+            </article>
+            <article class="item-card" data-state="synced" data-feature="mdx" data-feature-label="MDX and Code Primitives" data-item-id="copy-button-fallback" data-item-title="Copy button fallback" data-current-state="synced">
+              <div class="review-cell">
+                <div class="review-options">
+                  <span>Review</span>
+                  <input type="hidden" data-review-state value="synced" />
+                  <div class="quick-actions" aria-label="Review actions">
+                    <div class="quick-action-row">
+    <button type="button" data-question-action aria-pressed="false">Ask</button>
+    <button type="button" role="radio" aria-checked="false" data-preset-state="defer">Defer</button>
+  </div>
+  <div class="quick-action-row" role="radiogroup" aria-label="Apply review state">
+    <button type="button" role="radio" aria-checked="true" data-preset-state="synced">Sync</button>
+    <button type="button" role="radio" aria-checked="false" data-preset-state="rejected">Reject</button>
+    <button type="button" role="radio" aria-checked="false" data-preset-state="fork">Fork</button>
+  </div>
+                  </div>
+                </div>
+                <label>
+                  <span>Note</span>
+                  <textarea data-review-note rows="3" placeholder="Pick an action first" disabled></textarea>
+                </label>
+              </div>
+              <div class="item-body">
+                <div class="item-heading">
+                  <div>
+                    <h3>Copy button fallback</h3>
+                    <p>Plate copy helpers use upstream-style clipboard fallback and success-gated copied state while preserving analytics and dropdown copy helpers.</p>
+                  </div>
+                  <span class="badge synced" data-state-label="synced">Synced</span>
+                </div>
+                <div class="comparison-grid">
+                  <section>
+                    <h4>shadcn</h4>
+                    <p>Shadcn copy waits for clipboard success and falls back to a hidden textarea for older or restricted browsers.</p>
+                  </section>
+                  <section>
+                    <h4>Suggestion</h4>
+                    <p>Synced: copy helpers fall back to a hidden textarea, track events only after a successful copy, and only show copied state on success.</p>
+                    <button type="button" class="note-action" data-use-suggestion-note="Synced: copy helpers fall back to a hidden textarea, track events only after a successful copy, and only show copied state on success.">Apply</button>
+                  </section>
+                </div>
+                
+                <div class="item-meta-grid">
+                  <section>
+                    <h4>Owner Files</h4>
+                    <ul class="files"><li><code>apps/www/src/components/copy-button.tsx</code></li><li><code>../shadcn/apps/v4/components/copy-button.tsx</code></li></ul>
+                  </section>
+                </div>
+              </div>
+            </article></div>
+        </section>
+        <section class="feature" data-feature-card="docs-actions" data-state="fork">
+          <div class="feature-header">
+            <div>
+              <p class="eyebrow">docs-actions</p>
+              <h2>Docs Actions</h2>
+              <p>Plate keeps shadcn action-button structure but owns the action menu destinations.</p>
+            </div>
+            <span class="badge fork" data-state-label="fork">Fork</span>
+          </div>
+          <div class="item-list">
+            <article class="item-card" data-state="fork" data-feature="docs-actions" data-feature-label="Docs Actions" data-item-id="docs-copy-page-menu" data-item-title="Docs copy page menu" data-current-state="fork">
+              <div class="review-cell">
+                <div class="review-options">
+                  <span>Review</span>
+                  <input type="hidden" data-review-state value="fork" />
+                  <div class="quick-actions" aria-label="Review actions">
+                    <div class="quick-action-row">
+    <button type="button" data-question-action aria-pressed="false">Ask</button>
+    <button type="button" role="radio" aria-checked="false" data-preset-state="defer">Defer</button>
+  </div>
+  <div class="quick-action-row" role="radiogroup" aria-label="Apply review state">
+    <button type="button" role="radio" aria-checked="false" data-preset-state="synced">Sync</button>
+    <button type="button" role="radio" aria-checked="false" data-preset-state="rejected">Reject</button>
+    <button type="button" role="radio" aria-checked="true" data-preset-state="fork">Fork</button>
+  </div>
+                  </div>
+                </div>
+                <label>
+                  <span>Note</span>
+                  <textarea data-review-note rows="3" placeholder="Pick an action first" disabled></textarea>
+                </label>
+              </div>
+              <div class="item-body">
+                <div class="item-heading">
+                  <div>
+                    <h3>Docs copy page menu</h3>
+                    <p>Keep Plate Markdown, ChatGPT, Claude, and GitHub actions; continue excluding v0.</p>
+                  </div>
+                  <span class="badge fork" data-state-label="fork">Fork</span>
+                </div>
+                <div class="comparison-grid">
+                  <section>
+                    <h4>shadcn</h4>
+                    <p>Shadcn copy page menu includes Markdown, v0, ChatGPT, Claude, and Scira.</p>
+                  </section>
+                  <section>
+                    <h4>Suggestion</h4>
+                    <p>Keep the Plate menu. Do not add v0 or Scira unless product policy changes.</p>
+                    <button type="button" class="note-action" data-use-suggestion-note="Keep the Plate menu. Do not add v0 or Scira unless product policy changes.">Apply</button>
+                  </section>
+                </div>
+                
+                <div class="item-meta-grid">
+                  <section>
+                    <h4>Owner Files</h4>
+                    <ul class="files"><li><code>apps/www/src/components/docs-copy-page.tsx</code></li><li><code>../shadcn/apps/v4/components/docs-copy-page.tsx</code></li></ul>
+                  </section>
+                </div>
+              </div>
+            </article></div>
+        </section>
+        <section class="feature" data-feature-card="api-docs" data-state="fork">
+          <div class="feature-header">
+            <div>
+              <p class="eyebrow">api-docs</p>
+              <h2>API Docs</h2>
+              <p>Keep Plate custom MDX/API docs support; it is product-owned, not shadcn-owned.</p>
+            </div>
+            <span class="badge fork" data-state-label="fork">Fork</span>
+          </div>
+          <div class="item-list">
+            <article class="item-card" data-state="fork" data-feature="api-docs" data-feature-label="API Docs" data-item-id="custom-api-mdx" data-item-title="Custom API MDX" data-current-state="fork">
+              <div class="review-cell">
+                <div class="review-options">
+                  <span>Review</span>
+                  <input type="hidden" data-review-state value="fork" />
+                  <div class="quick-actions" aria-label="Review actions">
+                    <div class="quick-action-row">
+    <button type="button" data-question-action aria-pressed="false">Ask</button>
+    <button type="button" role="radio" aria-checked="false" data-preset-state="defer">Defer</button>
+  </div>
+  <div class="quick-action-row" role="radiogroup" aria-label="Apply review state">
+    <button type="button" role="radio" aria-checked="false" data-preset-state="synced">Sync</button>
+    <button type="button" role="radio" aria-checked="false" data-preset-state="rejected">Reject</button>
+    <button type="button" role="radio" aria-checked="true" data-preset-state="fork">Fork</button>
+  </div>
+                  </div>
+                </div>
+                <label>
+                  <span>Note</span>
+                  <textarea data-review-note rows="3" placeholder="Pick an action first" disabled></textarea>
+                </label>
+              </div>
+              <div class="item-body">
+                <div class="item-heading">
+                  <div>
+                    <h3>Custom API MDX</h3>
+                    <p>Keep Plate's generated API docs vocabulary and MDX support.</p>
+                  </div>
+                  <span class="badge fork" data-state-label="fork">Fork</span>
+                </div>
+                <div class="comparison-grid">
+                  <section>
+                    <h4>shadcn</h4>
+                    <p>Shadcn docs do not own Plate API reference generation.</p>
+                  </section>
+                  <section>
+                    <h4>Suggestion</h4>
+                    <p>Plate API pages are a core docs surface and must stay.</p>
+                    <button type="button" class="note-action" data-use-suggestion-note="Plate API pages are a core docs surface and must stay.">Apply</button>
+                  </section>
+                </div>
+                
+                <div class="item-meta-grid">
+                  <section>
+                    <h4>Owner Files</h4>
+                    <ul class="files"><li><code>content/docs/api</code></li></ul>
+                  </section>
+                </div>
+              </div>
+            </article></div>
+        </section>
+    </main>
+    <section class="prompt-panel hidden" aria-label="Review prompt">
+      <div class="prompt-panel-header">
+        <div>
+          <h2>Prompt</h2>
+        </div>
+        <div class="prompt-actions">
+          <button type="button" id="cancel-review-prompt">Cancel</button>
+          <button type="button" id="copy-review-prompt" disabled>Copy</button>
+        </div>
+      </div>
+      <textarea id="review-prompt" readonly></textarea>
+    </section>
+    <div id="screenshot-modal" class="screenshot-modal hidden" role="dialog" aria-modal="true" aria-label="Screenshot preview">
+      <div class="screenshot-dialog">
+        <div class="screenshot-dialog-header">
+          <p id="screenshot-modal-label"></p>
+          <button type="button" id="close-screenshot-modal">Close</button>
+        </div>
+        <img id="screenshot-modal-image" alt="" />
+      </div>
+    </div>
+    <script>
+      const buttons = Array.from(document.querySelectorAll("[data-filter]"));
+      const rows = Array.from(document.querySelectorAll(".item-card[data-state]"));
+      const cards = Array.from(document.querySelectorAll("[data-feature-card]"));
+      const promptPanel = document.querySelector(".prompt-panel");
+      const copyReviewPromptButton = document.querySelector("#copy-review-prompt");
+      const cancelReviewPromptButton = document.querySelector("#cancel-review-prompt");
+      const reviewPrompt = document.querySelector("#review-prompt");
+      const actionableStates = new Set(["pending","defer"]);
+      const doneStates = new Set(["fork","rejected","synced"]);
+      const screenshotModal = document.querySelector("#screenshot-modal");
+      const screenshotModalImage = document.querySelector("#screenshot-modal-image");
+      const screenshotModalLabel = document.querySelector("#screenshot-modal-label");
+      const closeScreenshotModalButton = document.querySelector("#close-screenshot-modal");
+
+      function applyFilter(state) {
+        buttons.forEach((button) => {
+          button.setAttribute("aria-pressed", String(button.dataset.filter === state));
+        });
+
+        rows.forEach((row) => {
+          const isVisible =
+            state === "all" ||
+            (state === "actionable" && actionableStates.has(row.dataset.state)) ||
+            (state === "done" && doneStates.has(row.dataset.state)) ||
+            row.dataset.state === state;
+          row.classList.toggle("hidden", !isVisible);
+        });
+
+        cards.forEach((card) => {
+          const visibleRows = Array.from(card.querySelectorAll(".item-card")).some(
+            (row) => !row.classList.contains("hidden")
+          );
+          card.classList.toggle("hidden", !visibleRows);
+        });
+      }
+
+      buttons.forEach((button) => {
+        button.addEventListener("click", () => applyFilter(button.dataset.filter));
+      });
+      applyFilter("actionable");
+
+      function enableNote(row, placeholder = "Optional decision note") {
+        const noteInput = row.querySelector("[data-review-note]");
+        noteInput.disabled = false;
+        noteInput.placeholder = placeholder;
+        return noteInput;
+      }
+
+      function setQuestionActive(row, isActive) {
+        row.querySelector("[data-question-action]").setAttribute("aria-pressed", String(isActive));
+      }
+
+      function setSelectedState(row, nextState) {
+        row.querySelector("[data-review-state]").value = nextState;
+
+        row.querySelectorAll("[data-preset-state]").forEach((button) => {
+          button.setAttribute("aria-checked", String(button.dataset.presetState === nextState));
+        });
+      }
+
+      function collectReviewChanges() {
+        return rows
+          .map((row) => {
+            const stateInput = row.querySelector("[data-review-state]");
+            const noteInput = row.querySelector("[data-review-note]");
+            const nextState = stateInput.value;
+            const note = noteInput.disabled ? "" : noteInput.value.trim().replace(/\s+/g, " ");
+
+            if (nextState === row.dataset.currentState && note.length === 0) {
+              return null;
+            }
+
+            return {
+              currentState: row.dataset.currentState,
+              featureId: row.dataset.feature,
+              featureLabel: row.dataset.featureLabel,
+              itemId: row.dataset.itemId,
+              itemTitle: row.dataset.itemTitle,
+              intent: row.dataset.reviewIntent || "",
+              nextState,
+              note
+            };
+          })
+          .filter(Boolean);
+      }
+
+      function isQuestionNote(note) {
+        return (
+          /^question:/i.test(note) ||
+          /[?？]/.test(note) ||
+          /^(what|which|should|would|could|can|do|does|is|are|how|why|where|when)\b/i.test(note)
+        );
+      }
+
+      function buildReviewPrompt() {
+        const changes = collectReviewChanges();
+
+        if (changes.length === 0) {
+          return "No dashboard review changes selected yet.";
+        }
+
+        const questionRows = changes.filter((change) => {
+          return (
+            change.intent === "question" ||
+            (change.nextState === change.currentState && isQuestionNote(change.note))
+          );
+        });
+        const applyRows = changes.filter((change) => !questionRows.includes(change));
+        const lines = ["$sync-shadcn apply"];
+
+        for (const change of applyRows) {
+          const row = [
+            "- " + change.featureId + "/" + change.itemId,
+            "(" + change.featureLabel + " / " + change.itemTitle + "):",
+            change.currentState + " -> " + change.nextState
+          ];
+
+          if (change.note) {
+            row.push("note: " + change.note);
+          }
+
+          lines.push(row.join(" "));
+        }
+
+        if (questionRows.length > 0) {
+          lines.push("", "Questions:");
+        }
+
+        for (const change of questionRows) {
+          lines.push(
+            "- " +
+              change.featureId +
+              "/" +
+              change.itemId +
+              " (" +
+              change.featureLabel +
+              " / " +
+              change.itemTitle +
+              "): " +
+              change.note
+          );
+        }
+
+        return lines.join("\n");
+      }
+
+      function updateReviewPrompt() {
+        const changes = collectReviewChanges();
+        const hasChanges = changes.length > 0;
+        reviewPrompt.value = hasChanges ? buildReviewPrompt() : "";
+        promptPanel.classList.toggle("hidden", !hasChanges);
+        document.body.classList.toggle("has-review-prompt", hasChanges);
+        copyReviewPromptButton.disabled = changes.length === 0;
+      }
+
+      function resetReviewPrompt() {
+        rows.forEach((row) => {
+          delete row.dataset.reviewIntent;
+          setQuestionActive(row, false);
+          setSelectedState(row, row.dataset.currentState);
+          const noteInput = row.querySelector("[data-review-note]");
+          noteInput.value = "";
+          noteInput.disabled = true;
+          noteInput.placeholder = "Pick an action first";
+        });
+        updateReviewPrompt();
+      }
+
+      rows.forEach((row) => {
+        row.querySelector("[data-review-note]").addEventListener("input", updateReviewPrompt);
+      });
+
+      document.querySelectorAll("[data-preset-state]").forEach((button) => {
+        button.addEventListener("click", () => {
+          const row = button.closest(".item-card");
+          row.dataset.reviewIntent = "apply";
+          setQuestionActive(row, false);
+          setSelectedState(row, button.dataset.presetState);
+          enableNote(row);
+          updateReviewPrompt();
+        });
+      });
+
+      document.querySelectorAll("[data-question-action]").forEach((button) => {
+        button.addEventListener("click", () => {
+          const row = button.closest(".item-card");
+          row.dataset.reviewIntent = "question";
+          setQuestionActive(row, true);
+          setSelectedState(row, row.dataset.currentState);
+          const noteInput = enableNote(row, "Ask a question");
+          noteInput.focus();
+          updateReviewPrompt();
+        });
+      });
+
+      document.querySelectorAll("[data-use-suggestion-note]").forEach((button) => {
+        button.addEventListener("click", () => {
+          const row = button.closest(".item-card");
+          row.dataset.reviewIntent = "apply";
+          setQuestionActive(row, false);
+          const noteInput = enableNote(row);
+          noteInput.value = button.dataset.useSuggestionNote || "";
+          noteInput.focus();
+          updateReviewPrompt();
+        });
+      });
+
+      copyReviewPromptButton.addEventListener("click", async () => {
+        updateReviewPrompt();
+
+        try {
+          await navigator.clipboard.writeText(reviewPrompt.value);
+          copyReviewPromptButton.textContent = "Copied";
+        } catch {
+          reviewPrompt.select();
+          document.execCommand("copy");
+          copyReviewPromptButton.textContent = "Copied";
+        }
+
+        window.setTimeout(() => {
+          copyReviewPromptButton.textContent = "Copy";
+        }, 1200);
+      });
+
+      cancelReviewPromptButton.addEventListener("click", resetReviewPrompt);
+
+      function closeScreenshotModal() {
+        screenshotModal.classList.add("hidden");
+        screenshotModalImage.removeAttribute("src");
+        screenshotModalImage.alt = "";
+        screenshotModalLabel.textContent = "";
+      }
+
+      document.querySelectorAll("[data-screenshot-src]").forEach((button) => {
+        button.addEventListener("click", () => {
+          const label = button.dataset.screenshotLabel || "Screenshot preview";
+          screenshotModalImage.src = button.dataset.screenshotSrc;
+          screenshotModalImage.alt = label;
+          screenshotModalLabel.textContent = label;
+          screenshotModal.classList.remove("hidden");
+        });
+      });
+
+      closeScreenshotModalButton.addEventListener("click", closeScreenshotModal);
+      screenshotModal.addEventListener("click", (event) => {
+        if (event.target === screenshotModal) {
+          closeScreenshotModal();
+        }
+      });
+      window.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && !screenshotModal.classList.contains("hidden")) {
+          closeScreenshotModal();
+        }
+      });
+    </script>
+  </body>
+</html>

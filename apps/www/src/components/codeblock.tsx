@@ -39,11 +39,13 @@ const CodeBlock: FC<{
   language: string;
   value: string;
   className?: string;
+  copyValue?: string;
   fixedHeight?: boolean;
   name?: string;
   npm?: boolean;
-}> = ({ className, fixedHeight, language, npm, value }) => {
+}> = ({ className, copyValue, fixedHeight, language, npm, value }) => {
   const code = npm ? `npm install ${value}` : value;
+  const codeCopyValue = copyValue ?? value;
   const effectiveLanguage = npm ? 'text' : language;
   const showLineNumbers = !npm && code.includes('\n');
 
@@ -61,12 +63,13 @@ const CodeBlock: FC<{
             __bunCommand__: `bun add ${value}`,
             __npmCommand__: `npm install ${value}`,
             __pnpmCommand__: `pnpm add ${value}`,
+            __yarnCommand__: `yarn add ${value}`,
           }}
         />
       ) : (
         <CopyButton
           className={codeCopyButtonClassName}
-          value={value}
+          value={codeCopyValue}
           variant="ghost"
         />
       )}

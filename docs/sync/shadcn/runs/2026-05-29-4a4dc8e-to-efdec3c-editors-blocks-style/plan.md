@@ -141,6 +141,45 @@ None. The user already made the policy calls for the three ambiguous surfaces: n
 
 This scoped plan must not advance `lastSyncedCommit`. It updates `lastPlannedCommit` to the current upstream target because the plan was written against `origin/main`, but it only accounts for this `/editors` visual scope. The default full sync lane remains pending for 739 out-of-scope rows.
 
+## Implementation Result
+
+Implemented slices 1 and 2 on 2026-05-29.
+
+Files changed:
+
+- `apps/www/src/app/(app)/editors/layout.tsx`
+- `apps/www/src/app/(app)/editors/editor-description.tsx`
+- `apps/www/src/app/(app)/editors/page.tsx`
+- `apps/www/src/components/block-viewer.tsx`
+- `docs/sync/shadcn/status.json`
+
+Result:
+
+- `/editors` uses the upstream-style centered `PageHeader`.
+- Editor previews sit inside `container-wrapper flex-1 section-soft md:py-12`.
+- The list uses the upstream vertical rhythm `flex flex-col gap-12 md:gap-24`.
+- Plate editor demos, Potion block, install command model, and shared app shell are preserved.
+- `PageNav`/`BlocksNav`, `Browse all blocks`, `Open in v0`, and `Browse more editors` remain excluded.
+- `lastSyncedCommit` remains `4a4dc8eb0fc793d8e9225e780183ad605f15d2c2`; this landed as a `partialSyncs` entry only.
+- `BlockViewer` adopts the upstream `/blocks` toolbar order and density: device controls, open-new-tab, refresh, then command/pro action.
+- Plate keeps the actual `@plate` install command model, lazy source/code behavior, `/view/[name]`, and Pro/Potion `Get the code` behavior.
+- The upstream `Open in v0` action remains excluded.
+
+Verification:
+
+- `pnpm --filter www exec eslint 'src/app/(app)/editors/layout.tsx' 'src/app/(app)/editors/editor-description.tsx' 'src/app/(app)/editors/page.tsx' --fix`
+- `pnpm --filter www exec eslint src/components/block-viewer.tsx --fix`
+- `pnpm --filter www typecheck`
+- Browser proof on `http://localhost:3003/editors` at `1175x1239` and `390x844`: centered header, `section-soft` present, Plate demos retained, no `Featured`/`Sidebar`/`Login`/`Signup` category nav, no `Browse all blocks`, no `Open in v0`, no `Browse more editors`, and no horizontal overflow.
+- Browser proof on `http://localhost:3002/editors` at `1175x1239` and `390x844`: toolbar has visible device controls/open-new-tab/refresh before the command pill on desktop, refresh reloads iframe content, `Open in v0` remains absent, and mobile has no horizontal overflow.
+
+Screenshots:
+
+- `screenshots/plate-editors-desktop-after.png`
+- `screenshots/plate-editors-mobile-after.png`
+- `screenshots/plate-editors-toolbar-desktop-after.png`
+- `screenshots/plate-editors-toolbar-mobile-after.png`
+
 ## Artifacts
 
 - Full upstream rows: `upstream-name-status.tsv`
@@ -150,4 +189,3 @@ This scoped plan must not advance `lastSyncedCommit`. It updates `lastPlannedCom
 - Current upstream reference rows: `target-reference-files.tsv`
 - Inventory: `inventory.md`
 - Screenshots: `screenshots/*.png`
-

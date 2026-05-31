@@ -1,10 +1,17 @@
 {
   "version": 1,
   "skills": {
+    "autogoal": {
+      "source": "udecode/dotai",
+      "sourceType": "github",
+      "skillPath": "skills/autogoal/SKILL.md",
+      "computedHash": "0210fb93adf53ee82f424cb9c2bce890d640cf60e07eb52151e92544d22f464e"
+    },
     "autoreview": {
       "source": "openclaw/agent-skills",
       "sourceType": "github",
-      "computedHash": "b65c6f42c3f6cc87c993666796c2e79f978e89e34430ebd594d678c98a30a86e"
+      "skillPath": "skills/autoreview/SKILL.md",
+      "computedHash": "5ca6dcf5c2cc0f21735b66c28267bd1f15f01bbfdcf69ffd8a6c21039b8af381"
     },
     "debug": {
       "source": "udecode/dotai",
@@ -65,6 +72,12 @@
       "source": "vercel-labs/agent-skills",
       "sourceType": "github",
       "computedHash": "1be892a3ea68b74654326ef836a58dd528d99ae0ab8d879764e2519c39068e67"
+    },
+    "video-transcripts": {
+      "source": "udecode/dotai",
+      "sourceType": "github",
+      "skillPath": "skills/video-transcripts/SKILL.md",
+      "computedHash": "dfce0b8ea81350223ee9967acbad18eb589e17aebf91e87e94b07dfaa86db471"
     }
   }
 }

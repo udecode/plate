@@ -35,10 +35,6 @@ function getLabelValues(label: SidebarNavItem['label']) {
   return castArray(label).filter(Boolean);
 }
 
-function hasNewStatus(label: SidebarNavItem['label']) {
-  return Boolean(getStatusLabel(label));
-}
-
 function getStatusLabel(label: SidebarNavItem['label']) {
   return getLabelValues(label).find(
     (value) => value === 'New' || value === 'Updated'
@@ -343,7 +339,6 @@ function DocsNavItem({
     return (
       <SidebarMenuButton className={docsNavItemButtonClassName} disabled>
         <DocsNavItemContent
-          label={item.label}
           statusLabel={statusLabel}
           textLabels={textLabels}
           title={title}
@@ -365,7 +360,6 @@ function DocsNavItem({
         target={item.external ? '_blank' : undefined}
       >
         <DocsNavItemContent
-          label={item.label}
           statusLabel={statusLabel}
           textLabels={textLabels}
           title={title}
@@ -376,13 +370,11 @@ function DocsNavItem({
 }
 
 function DocsNavItemContent({
-  label,
   statusLabel,
   textLabels,
   title,
 }: {
   title?: string;
-  label?: SidebarNavItem['label'];
   statusLabel?: string;
   textLabels: string[];
 }) {
@@ -391,11 +383,18 @@ function DocsNavItemContent({
       <span className="absolute inset-0 flex bg-transparent" />
       {title}
 
-      {hasNewStatus(label) ? (
+      {statusLabel ? (
         <span
-          className="flex size-2 rounded-full bg-blue-500"
+          className={cn(
+            'shrink-0 rounded-full px-1.5 py-0.5 font-semibold text-[0.65rem] leading-none',
+            statusLabel === 'New'
+              ? 'bg-[#adfa1d] text-black'
+              : 'bg-muted text-foreground'
+          )}
           title={statusLabel}
-        />
+        >
+          {statusLabel}
+        </span>
       ) : null}
 
       {textLabels.length > 0 ? (

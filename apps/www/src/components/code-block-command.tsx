@@ -22,6 +22,7 @@ export function CodeBlockCommand({
   __bunCommand__,
   __npmCommand__,
   __pnpmCommand__,
+  __yarnCommand__,
   className,
   ...props
 }: CodeBlockCommandProps) {
@@ -35,23 +36,27 @@ export function CodeBlockCommand({
   }, [hasCopied]);
   const packageManager = config.packageManager || 'pnpm';
   const tabs = {
-    bun: __bunCommand__,
-    npm: __npmCommand__,
     pnpm: __pnpmCommand__,
+    npm: __npmCommand__,
+    yarn: __yarnCommand__,
+    bun: __bunCommand__,
   };
-  const copyCommand = () => {
+  const copyCommand = async () => {
     const command = tabs[packageManager];
     if (!command) {
       return;
     }
-    copyToClipboardWithMeta(command, {
+    const hasCopied = await copyToClipboardWithMeta(command, {
       name: 'copy_npm_command',
       properties: {
         command,
         pm: packageManager,
       },
     });
-    setHasCopied(true);
+
+    if (hasCopied) {
+      setHasCopied(true);
+    }
   };
   return (
     <div
@@ -67,7 +72,7 @@ export function CodeBlockCommand({
         onValueChange={(value) => {
           setConfig({
             ...config,
-            packageManager: value as 'bun' | 'npm' | 'pnpm',
+            packageManager: value as 'bun' | 'npm' | 'pnpm' | 'yarn',
           });
         }}
       >

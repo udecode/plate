@@ -4,6 +4,7 @@ import type { Event } from '@/lib/events';
 import type { NpmCommands } from '@/types/unist';
 
 import { CodeBlockCommand } from '@/components/code-block-command';
+import { getNpmCommands } from '@/lib/npm-command';
 import { cn } from '@/lib/utils';
 
 import { CopyButton } from './copy-button';
@@ -216,6 +217,7 @@ export const Pre = ({
   __showLineNumbers__,
   __src__,
   __withMeta__,
+  __yarnCommand__,
   className,
   ...props
 }: {
@@ -226,7 +228,19 @@ export const Pre = ({
   __withMeta__?: boolean;
 } & NpmCommands &
   React.HTMLAttributes<HTMLPreElement>) => {
-  const isNpmCommand = __npmCommand__ && __pnpmCommand__ && __bunCommand__;
+  const rawCommands = getNpmCommands(__rawString__);
+  const npmCommands = {
+    __bunCommand__: __bunCommand__ ?? rawCommands?.__bunCommand__,
+    __npmCommand__: __npmCommand__ ?? rawCommands?.__npmCommand__,
+    __pnpmCommand__: __pnpmCommand__ ?? rawCommands?.__pnpmCommand__,
+    __yarnCommand__: __yarnCommand__ ?? rawCommands?.__yarnCommand__,
+  };
+  const isNpmCommand =
+    npmCommands.__npmCommand__ &&
+    npmCommands.__pnpmCommand__ &&
+    npmCommands.__yarnCommand__ &&
+    npmCommands.__bunCommand__;
+
   if (isNpmCommand) {
     const dataProps = props as React.HTMLAttributes<HTMLPreElement> & {
       'data-language'?: string;
@@ -238,9 +252,10 @@ export const Pre = ({
         className={className}
         data-language={dataProps['data-language']}
         data-theme={dataProps['data-theme']}
-        __bunCommand__={__bunCommand__}
-        __npmCommand__={__npmCommand__}
-        __pnpmCommand__={__pnpmCommand__}
+        __bunCommand__={npmCommands.__bunCommand__}
+        __npmCommand__={npmCommands.__npmCommand__}
+        __pnpmCommand__={npmCommands.__pnpmCommand__}
+        __yarnCommand__={npmCommands.__yarnCommand__}
       />
     );
   }

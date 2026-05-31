@@ -79,6 +79,59 @@ export function getDocsCategoryGroups(category: DocsCategory | string) {
   return docsOverlay.categoryGroups?.[category] ?? [];
 }
 
+const guideSidebarSections: Record<string, string> = {
+  'Get Started': 'Overview',
+  Guides: 'Guides',
+  Installation: 'Installation',
+  Migration: 'Migration',
+  Migrations: 'Migration',
+  Overview: 'Overview',
+};
+
+const categorySidebarSections: Record<string, DocsCategory> = {
+  API: 'api',
+  'API Reference': 'api',
+  Components: 'component',
+  Examples: 'example',
+  Plugins: 'plugin',
+};
+
+function unwrapSingleUntitledGroup(items: SidebarNavItem[]) {
+  const [group] = items;
+
+  if (
+    items.length === 1 &&
+    group &&
+    !group.href &&
+    !group.title &&
+    group.items?.length
+  ) {
+    return group.items;
+  }
+
+  return items;
+}
+
+export function getSidebarCategoryItems(title: string | undefined) {
+  if (!title) return;
+
+  const guideSectionTitle = guideSidebarSections[title];
+
+  if (guideSectionTitle) {
+    return docsOverlay.categoryGroups?.guide?.find(
+      (group) => group.title === guideSectionTitle
+    )?.items;
+  }
+
+  const category = categorySidebarSections[title];
+
+  if (!category) return;
+
+  return unwrapSingleUntitledGroup(
+    docsOverlay.categoryGroups?.[category] ?? []
+  );
+}
+
 export function getLocalizedNavTitle(
   item: Pick<SidebarNavItem, 'title' | 'titleCn'>,
   locale: string
