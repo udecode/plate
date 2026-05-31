@@ -57,36 +57,25 @@ clone. It is not the old rewrite archive.
 
 ## Read Order
 
-1. [agent-start.md](/Users/zbeyens/git/plate-2/docs/slate-v2/agent-start.md)
-2. [master-roadmap.md](/Users/zbeyens/git/plate-2/docs/slate-v2/master-roadmap.md)
-3. [absolute-architecture-release-claim.md](/Users/zbeyens/git/plate-2/docs/slate-v2/absolute-architecture-release-claim.md)
-4. [replacement-gates-scoreboard.md](/Users/zbeyens/git/plate-2/docs/slate-v2/replacement-gates-scoreboard.md)
-5. [release-readiness-decision.md](/Users/zbeyens/git/plate-2/docs/slate-v2/release-readiness-decision.md)
-6. [ledgers/README.md](/Users/zbeyens/git/plate-2/docs/slate-v2/ledgers/README.md)
-7. [docs/plans/2026-04-25-slate-v2-editing-epoch-kernel-regression-closure-plan.md](/Users/zbeyens/git/plate-2/docs/plans/2026-04-25-slate-v2-editing-epoch-kernel-regression-closure-plan.md)
-8. [docs/plans/2026-04-24-slate-v2-post-closure-proof-hardening-plan.md](/Users/zbeyens/git/plate-2/docs/plans/2026-04-24-slate-v2-post-closure-proof-hardening-plan.md)
-9. [docs/plans/2026-04-24-slate-v2-absolute-architecture-closure-plan.md](/Users/zbeyens/git/plate-2/docs/plans/2026-04-24-slate-v2-absolute-architecture-closure-plan.md)
-10. reference body only:
-    [references/architecture-contract.md](/Users/zbeyens/git/plate-2/docs/slate-v2/references/architecture-contract.md)
-11. reference body only:
-    [references/pr-description.md](/Users/zbeyens/git/plate-2/docs/slate-v2/references/pr-description.md)
-12. reference body only:
-    [true-slate-rc-proof-ledger.md](/Users/zbeyens/git/plate-2/docs/slate-v2/true-slate-rc-proof-ledger.md)
-13. reference body only:
-    [fresh-branch-migration-plan.md](/Users/zbeyens/git/plate-2/docs/slate-v2/fresh-branch-migration-plan.md)
-14. reference body only:
-    [release-file-review-ledger.md](/Users/zbeyens/git/plate-2/docs/slate-v2/release-file-review-ledger.md)
-15. historical context only:
+1. [absolute-architecture-release-claim.md](/Users/zbeyens/git/plate-2/docs/slate-v2/absolute-architecture-release-claim.md)
+2. [docs/plans/2026-04-25-slate-v2-editing-epoch-kernel-regression-closure-plan.md](/Users/zbeyens/git/plate-2/docs/plans/2026-04-25-slate-v2-editing-epoch-kernel-regression-closure-plan.md)
+3. [docs/plans/2026-04-24-slate-v2-post-closure-proof-hardening-plan.md](/Users/zbeyens/git/plate-2/docs/plans/2026-04-24-slate-v2-post-closure-proof-hardening-plan.md)
+4. [docs/plans/2026-04-24-slate-v2-absolute-architecture-closure-plan.md](/Users/zbeyens/git/plate-2/docs/plans/2026-04-24-slate-v2-absolute-architecture-closure-plan.md)
+5. [references/architecture-contract.md](/Users/zbeyens/git/plate-2/docs/slate-v2/references/architecture-contract.md)
+6. [master-roadmap.md](/Users/zbeyens/git/plate-2/docs/slate-v2/master-roadmap.md)
+7. [release-readiness-decision.md](/Users/zbeyens/git/plate-2/docs/slate-v2/release-readiness-decision.md)
+8. [replacement-gates-scoreboard.md](/Users/zbeyens/git/plate-2/docs/slate-v2/replacement-gates-scoreboard.md)
+9. [true-slate-rc-proof-ledger.md](/Users/zbeyens/git/plate-2/docs/slate-v2/true-slate-rc-proof-ledger.md)
+10. [fresh-branch-migration-plan.md](/Users/zbeyens/git/plate-2/docs/slate-v2/fresh-branch-migration-plan.md)
+11. [release-file-review-ledger.md](/Users/zbeyens/git/plate-2/docs/slate-v2/release-file-review-ledger.md)
+12. historical context only:
     [2026-04-18-001-refactor-slate-v2-parity-first-migration-plan.md](/Users/zbeyens/git/plate-2/docs/plans/2026-04-18-001-refactor-slate-v2-parity-first-migration-plan.md)
-16. reference body only:
-    [decoration-roadmap.md](/Users/zbeyens/git/plate-2/docs/slate-v2/decoration-roadmap.md)
-17. reference body only:
-    [decorations-annotations-cluster.md](/Users/zbeyens/git/plate-2/docs/slate-v2/decorations-annotations-cluster.md)
-18. [references/chunking-review.md](/Users/zbeyens/git/plate-2/docs/slate-v2/references/chunking-review.md)
-19. [final-api-hard-cuts-status.md](/Users/zbeyens/git/plate-2/docs/slate-v2/final-api-hard-cuts-status.md)
-
-Do not open giant ledgers first. Start from `agent-start.md`, then use indexes
-and current source reads to decide which long reference body matters.
+13. [decoration-roadmap.md](/Users/zbeyens/git/plate-2/docs/slate-v2/decoration-roadmap.md)
+14. [decorations-annotations-cluster.md](/Users/zbeyens/git/plate-2/docs/slate-v2/decorations-annotations-cluster.md)
+15. [references/chunking-review.md](/Users/zbeyens/git/plate-2/docs/slate-v2/references/chunking-review.md)
+16. [final-api-hard-cuts-status.md](/Users/zbeyens/git/plate-2/docs/slate-v2/final-api-hard-cuts-status.md)
+17. [pr-description.md](/Users/zbeyens/git/plate-2/docs/slate-v2/references/pr-description.md)
+18. [ledgers/README.md](/Users/zbeyens/git/plate-2/docs/slate-v2/ledgers/README.md)
 
 ## Ownership
 

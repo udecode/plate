@@ -15,60 +15,14 @@ Handle $ARGUMENTS.
 Use this for repeated "harsh honest, absolute best Slate v2 architecture/DX"
 review prompts where the failure mode is death by incremental suggestions.
 
-## Mode Selection
-
-Slate Plan has three modes. Pick the smallest mode that protects the decision.
-
-### `--quick`
-
-Use for "what do you think?", "should we?", "is this good DX?", and other
-single-turn architecture questions.
-
-Output a one-page verdict:
-
-- current owner or source gap;
-- best decision;
-- rejected alternatives;
-- risk/proof needed;
-- next action.
-
-Do not create a plan file, issue-ledger pass, ClawSweeper pass, Evidence Kit
-refresh, or goal unless the user explicitly asks for durable planning or an
-active governing goal already requires it. Still ground current-state claims in
-live `.tmp/slate-v2` source when the answer depends on current code.
-
-### `--standard`
-
-Use for a durable architecture/API plan that needs user review but is not a
-release-wide or issue-ledger-heavy lane.
-
-Create or continue a Slate Plan goal and plan file. Run the useful pass
-schedule: current-state read, intent/boundary, decision brief, focused
-research/live-source refresh, pressure review, verification plan, and final
-user-review handoff. Trigger issue/reference sync, ClawSweeper, Evidence Kit,
-and ecosystem maintainer passes only when the touched surface requires them.
-
-### `--deep`
-
-Use for release-grade, public API, collaboration, browser-runtime, issue-claim,
-benchmark, or maintainer-facing plans where stale claims would be expensive.
-
-Run the full pass schedule, scorecard, issue ledger, ClawSweeper, Evidence Kit,
-objection ledger, ecosystem maintainer pass, and closure gates described below.
-
-Default: `--quick` for lightweight question prompts, `--standard` for prompts
-asking to create/update a plan, and `--deep` only when requested or triggered
-by release/API/collaboration/issue-claim risk.
-
 This is a two-phase lane skill.
 
-Planning mode is the default for `--standard` and `--deep`. It creates or
-updates the execution-grade plan, scores it, and uses the active goal as the
-durable lane contract until every required pass, triggered issue/reference sync
-gate, verification gate, and closure score gate is complete. Score is only one
-input. A high score never permits goal completion by itself; planning
-completion means the required pass schedule for the selected mode is closed and
-the plan is ready for user review.
+Planning mode is the default. It creates or updates the execution-grade plan,
+scores it, and uses the active goal as the durable lane contract until every
+required pass, issue/reference sync gate, verification gate, and closure score
+gate is complete. Score is only one input. A high score never permits goal
+completion by itself; planning completion means the full pass schedule is
+closed and the plan is ready for user review.
 
 Execution mode starts only after the user explicitly accepts a ready plan and
 invokes `slate-plan` again for that plan. Execution mode creates or continues a
@@ -87,7 +41,7 @@ as the execution goal. The user-review boundary is real.
   - unopinionated Slate-close DX
   - Plate and slate-yjs migration
   - regression-proof browser behavior
-  - Lexical / ProseMirror / Tiptap / Portable Text evidence
+  - Lexical / ProseMirror / Tiptap evidence
   - shadcn-style composability and minimal props
 - The user says repeated review keeps producing more suggestions and wants a
   methodical plan-confidence gate.
@@ -117,8 +71,6 @@ as the execution goal. The user-review boundary is real.
 - Score is not completion. A passing score with any pending pass, issue sync,
   reference sync, verification gate, named next owner, or runnable next action
   keeps the goal active.
-- In `--quick`, do not create durable state by reflex. The point is to reduce
-  orchestration tax for frequent architecture calls.
 - The active goal is the lane status. The plan is the evidence ledger.
 - Never write contradictory closeout state. If the plan says
   `slate_plan_lane_status: pending`, `final_handoff_status: pending`, a non-`none`
@@ -166,9 +118,6 @@ as the execution goal. The user-review boundary is real.
 - Do not count `bun run test`, typecheck, lint, Playwright, or package filters
   run in `plate-2` as Slate v2 verification. They may be recorded only as
   plan-artifact checks.
-- Evidence Kit is the `plate-2` benchmark control plane, not Slate v2 behavior
-  proof. Use it to read benchmark coverage, stale artifacts, comparison rows,
-  and next actions after the relevant `.tmp/slate-v2` proof exists.
 - If execution mode touched `.tmp/slate-v2`, Slate Plan closure must require the
   applicable `.tmp/slate-v2` verification command set.
   A failing relevant `.tmp/slate-v2` command keeps the plan or execution review
@@ -176,10 +125,6 @@ as the execution goal. The user-review boundary is real.
   failing scope, and owner.
 
 ## Required Artifacts
-
-Required artifacts apply to `--standard` and `--deep`. In `--quick`, create no
-artifact unless the user explicitly asks or the answer discovers that a durable
-plan is required.
 
 - Plan file under `docs/plans/`.
 - Create the plan from the Slate Plan goal template:
@@ -207,33 +152,16 @@ plan is required.
   issue/reference sync, loading `.agents/skills/autoreview/SKILL.md` when
   implementation changes are non-trivial and uncommitted, and closeout
   conditions. For dirty local work, the autoreview skill's target is
-  `--mode local`; do not use `--uncommitted`. The autoreview command must run
-  from the git checkout that owns the implementation patch. For Slate v2
-  execution patches under `.tmp/slate-v2`, run the helper with cwd
-  `.tmp/slate-v2` even if the helper binary lives in `plate-2`
-  (`/Users/zbeyens/git/plate-2/.agents/skills/autoreview/scripts/autoreview
-  --mode local`). Do not run dirty-local autoreview from `plate-2` unless the
-  patch being reviewed is actually in the `plate-2` checkout.
+  `--mode local`; do not use `--uncommitted`.
 - Research updates under `docs/research/` when the evidence lane is stale or
   incomplete.
-- Evidence Kit benchmark control-plane evidence when the plan touches
-  performance, huge documents, rendering/projection, history, clipboard,
-  browser behavior, collaboration, operation replay, or a registered benchmark
-  family. Required sources are
-  `benchmarks/editor/research/benchmark-registry.json`,
-  `benchmarks/editor/benchmarks/results/benchmark-health-latest.json`, and the
-  relevant latest benchmark result JSON under
-  `benchmarks/editor/benchmarks/results/`. Missing coverage must be recorded as
-  a candidate benchmark or explicit non-goal.
-- Issue-ledger accounting in the active plan for `--deep` or triggered
-  `--standard` lanes: fixed issue claims, related issue
+- Issue-ledger accounting in the active plan: fixed issue claims, related issue
   classifications, cluster coverage, and explicit non-claim decisions grounded
   in `docs/slate-issues`.
-- ClawSweeper related-issue pass in the active plan whenever a `--deep` plan or
-  triggered `--standard` plan changes Slate v2 public API, runtime behavior,
-  browser behavior, examples, issue claims, or PR narrative. Run it once per
-  related surface, not after every v2 edit. Re-run only when the touched issue
-  surface changes materially.
+- ClawSweeper related-issue pass in the active plan whenever the plan changes
+  Slate v2 public API, runtime behavior, browser behavior, examples, issue
+  claims, or PR narrative. Run it once per related surface, not after every v2
+  edit. Re-run only when the touched issue surface changes materially.
 - Issue discovery is ledger/cache-first. Reuse existing ClawSweeper output in
   `docs/slate-v2/ledgers/fork-issue-dossier.md`,
   `docs/slate-v2/ledgers/issue-coverage-matrix.md`,
@@ -274,9 +202,9 @@ plan is required.
 - Decision brief in the active plan: principles, decision drivers, viable
   options, invalidated alternatives, consequences, and follow-ups.
 - Ecosystem strategy synthesis in the active plan whenever Lexical,
-  ProseMirror, Tiptap, Portable Text, React, Plate, slate-yjs, or another
-  reference system is used as evidence. This is not a citations list; it must
-  state the mechanism Slate should steal, reject, or deliberately diverge from.
+  ProseMirror, Tiptap, React, Plate, slate-yjs, or another reference system is
+  used as evidence. This is not a citations list; it must state the mechanism
+  Slate should steal, reject, or deliberately diverge from.
 - Applicable implementation-skill review notes in the active plan: Vercel
   React, performance-oracle, and tdd, plus shadcn/react-useeffect when relevant,
   each marked `applied` or `skipped` with a concrete reason.
@@ -288,9 +216,6 @@ plan is required.
   owners, plus the active plan ledger.
 
 ## Goal Setup
-
-Skip this section in `--quick` unless a goal already exists or the user asks
-for durable state.
 
 Before creating or resuming a Slate Plan:
 
@@ -377,13 +302,9 @@ that lane.
 6. `docs/slate-v2/ledgers/issue-coverage-matrix.md`,
    `docs/slate-v2/ledgers/fork-issue-dossier.md`, and
    `docs/slate-v2/references/pr-description.md`.
-7. Relevant compiled research pages for Lexical, ProseMirror, Tiptap, Portable
-   Text, Slate, React 19.2, node/render DX, and browser proof.
+7. Relevant compiled research pages for Lexical, ProseMirror, Tiptap, Slate,
+   React 19.2, node/render DX, and browser proof.
 8. Live `.tmp/slate-v2` API surfaces touched by the review.
-9. Evidence Kit registry and health when the plan touches benchmarkable editor
-   behavior:
-   `benchmarks/editor/research/benchmark-registry.json` and
-   `benchmarks/editor/benchmarks/results/benchmark-health-latest.json`.
 
 Read when relevant:
 
@@ -413,9 +334,9 @@ coverage for the current question. For framework evidence, inspect local
 official clones under `..` or normalized `../raw` before external docs.
 
 If the review depends on current `.tmp/slate-v2` behavior, cite live source files
-or tests. If it depends on React 19.2, Lexical, ProseMirror, Tiptap, Portable
-Text, or Slate legacy behavior, cite the compiled research page or local source
-read used for that claim.
+or tests. If it depends on React 19.2, Lexical, ProseMirror, Tiptap, or Slate
+legacy behavior, cite the compiled research page or local source read used for
+that claim.
 
 ## Live Source Grounding
 
@@ -491,64 +412,6 @@ Common command ownership examples:
   claims conservative until it passes.
 - Planning-only docs/ledger changes in `plate-2`: run the relevant source sync
   and targeted text checks; no Slate v2 test claim may be made from that alone.
-
-## Evidence Kit Control-Plane Gate
-
-Evidence Kit makes benchmark work agent-first by turning raw benchmark JSON into
-an action surface. It does not replace Slate v2 tests, Playwright proof, or
-source reads.
-
-Apply this gate when a plan touches performance, scalability, huge documents,
-rendering/projection, React subscriptions, history, clipboard, collaboration,
-operation replay, browser behavior, Slate-vs-Slate-v2 parity, or rich-text editor
-comparison.
-
-Rules:
-
-1. Read `benchmarks/editor/research/benchmark-registry.json` before claiming a
-   benchmark family exists.
-2. Read `benchmarks/editor/benchmarks/results/benchmark-health-latest.json`
-   before scoring the plan ready.
-3. Map each benchmark-sensitive claim to one of:
-   - registered artifact family;
-   - coverage gap;
-   - candidate benchmark;
-   - explicit non-goal.
-4. After relevant `.tmp/slate-v2` verification passes, refresh the control plane
-   from `plate-2` when the plan needs current benchmark evidence:
-
-   ```bash
-   npm run bench:editor:refresh
-   ```
-
-5. Record the refresh command, cwd, health summary, stale/missing/over-budget
-   rows that matter, and next action owner in the active plan.
-6. If no registered benchmark covers the changed behavior, do not call the plan
-   benchmark-proven. Add a candidate benchmark or mark the gap as an explicit
-   non-goal with reason.
-7. Use Evidence Kit next actions as plan owners when they expose a real coverage
-   gap, stale artifact, over-budget row, or missing adapter. Do not leave those
-   only in the dashboard when they affect the current plan.
-
-## Autoreview Workspace Gate
-
-Slate Plan execution review follows the same workspace authority rule as tests.
-
-Rules:
-
-1. Before running autoreview, identify the git checkout that owns the
-   implementation diff being reviewed.
-2. For `.tmp/slate-v2` implementation, test, example, package, config, or docs
-   changes, run autoreview with cwd `.tmp/slate-v2`.
-3. It is valid to invoke the `plate-2` helper by absolute path while cwd is the
-   Slate v2 checkout:
-   `/Users/zbeyens/git/plate-2/.agents/skills/autoreview/scripts/autoreview --mode local`.
-4. Do not run dirty-local autoreview from `plate-2` for a Slate v2 execution
-   slice. That reviews unrelated root skill/docs changes and can hide the actual
-   implementation review behind a huge wrong bundle.
-5. If an execution slice intentionally changes both `plate-2` ledgers/templates
-   and `.tmp/slate-v2` implementation, record either one autoreview per dirty
-   checkout or a concrete reason why one checkout is docs-only/trivial/N/A.
 
 ## Goal And Plan State
 
@@ -659,9 +522,8 @@ All rows are conjunctive. Passing score is necessary but never sufficient.
 - every dimension score has cited evidence
 - no unresolved contradiction in the research layer
 - ecosystem strategy synthesis complete for every external system used as
-  evidence; plans that only say
-  "analyze Lexical/ProseMirror/Tiptap/Portable Text" or cite files without a
-  concrete Slate strategy stay `pending`
+  evidence; plans that only say "analyze Lexical/ProseMirror/Tiptap" or cite
+  files without a concrete Slate strategy stay `pending`
 - issue-ledger pass complete: every planned fix maps to fixed issue claims or
   explicit related/non-fix classifications
 - ClawSweeper related-issue pass complete for the current plan surface, or
@@ -697,16 +559,11 @@ completed pass <name/date>`
   package, browser, or issue-fix claim has a recorded `.tmp/slate-v2` command and
   result, and no relevant failing `.tmp/slate-v2` command is left without a fix,
   unrelated-failure proof, or explicit owner
-- Evidence Kit control-plane gate is satisfied when applicable: benchmark
-  registry and health were read, relevant claims are mapped to registered
-  artifacts/gaps/candidates/non-goals, `npm run bench:editor:refresh` was run
-  from `plate-2` when current benchmark evidence is required, and any relevant
-  stale/missing/over-budget next action has an owner
 - autoreview closeout is satisfied for execution work: non-trivial uncommitted
   implementation changes load `.agents/skills/autoreview/SKILL.md` and follow
-  its dirty-local target selection from the git checkout that owns the patch
-  until no accepted/actionable findings remain, or the plan records why the lane
-  is planning-only or otherwise has no local implementation patch to review
+  its dirty-local target selection until no accepted/actionable findings remain,
+  or the plan records why the lane is planning-only or otherwise has no local
+  implementation patch to review
 - final user-review handoff gate complete: the active plan contains the final
   handoff outline, and the final chat response lists every accepted plan
   item/decision with before/after shape when applicable
@@ -746,19 +603,18 @@ The plan must include:
     - PR-description update status for issue claims, API shape, proof status,
       and release gates.
 13. Legacy regression proof matrix.
-14. Evidence Kit benchmark control-plane mapping when applicable.
-15. Browser stress / parity strategy.
-16. Applicable implementation-skill review matrix.
-17. High-risk deliberate-mode pre-mortem and proof plan when triggered.
-18. Hard cuts and rejected alternatives.
-19. Slate maintainer objection ledger with ecosystem answers when triggered.
-20. Pass schedule and pass-state ledger.
-21. Plan deltas from review.
-22. Open questions and what would change the decision.
-23. Implementation phases with owners.
-24. Fast driver gates.
-25. Final user-review handoff outline.
-26. Final completion gates.
+14. Browser stress / parity strategy.
+15. Applicable implementation-skill review matrix.
+16. High-risk deliberate-mode pre-mortem and proof plan when triggered.
+17. Hard cuts and rejected alternatives.
+18. Slate maintainer objection ledger with ecosystem answers when triggered.
+19. Pass schedule and pass-state ledger.
+20. Plan deltas from review.
+21. Open questions and what would change the decision.
+22. Implementation phases with owners.
+23. Fast driver gates.
+24. Final user-review handoff outline.
+25. Final completion gates.
 
 Fast driver gates must include the cwd. For any gate that proves Slate v2
 behavior, the cwd is `.tmp/slate-v2`. For planning-only gates, the cwd is
@@ -794,8 +650,7 @@ incomplete pass only. Do not create separate per-pass goals.
    re-triaging the same issues.
 4. Intent/boundary and decision-brief pass; write the boundary record directly
    when it is not already explicit.
-5. Research, ecosystem strategy synthesis, live-source refresh, and Evidence
-   Kit benchmark control-plane mapping when applicable.
+5. Research, ecosystem strategy synthesis, and live-source refresh.
 6. Performance, DX, unopinionated-core, migration, regression, research, and
    simplicity pressure passes.
 7. Slate maintainer objection ledger with steelman pressure for major decisions.
@@ -1070,8 +925,8 @@ Use the research layer before inventing new architecture or API law.
 Use `research-wiki` when:
 
 - compiled research is stale, contradictory, or thin
-- raw evidence is missing for Slate, Lexical, ProseMirror, Tiptap, Portable
-  Text, React, Plate, or slate-yjs pressure
+- raw evidence is missing for Slate, Lexical, ProseMirror, Tiptap, React, Plate,
+  or slate-yjs pressure
 - the decision changes public API, runtime boundaries, browser behavior,
   operation semantics, collaboration substrate, or migration backbone
 - silence from a reference system would materially weaken the plan
@@ -1086,9 +941,9 @@ gap, not agreement.
 
 External editor research must end in a Slate decision, not a bibliography.
 
-When Lexical, ProseMirror, Tiptap, Portable Text, React, Plate, slate-yjs, or
-another reference system is relevant, record this table in the active plan
-before scoring the research dimension above `0.85`:
+When Lexical, ProseMirror, Tiptap, React, Plate, slate-yjs, or another reference
+system is relevant, record this table in the active plan before scoring the
+research dimension above `0.85`:
 
 | System | Source | Mechanism | Avoids | Steal | Reject | Slate target | Verdict |
 | ------ | ------ | --------- | ------ | ----- | ------ | ------------ | ------- |
@@ -1113,16 +968,13 @@ this gate must explicitly compare:
 - ProseMirror-style schema/content fitting, Slice replacement, and transaction
   construction instead of post-hoc broad normalization;
 - Tiptap-style command and extension DX over the ProseMirror engine.
-- Portable Text-style behavior event/action semantics, schema applicability
-  selectors, and browser behavior specs for author-facing input/paste policy.
 
 Default conclusion to challenge, not blindly accept:
 
 ```txt
 Slate v2 should use Lexical-style dirty runtime buckets for normal editing and
 ProseMirror-style bulk replace/fitting for large paste or fragment insert, with
-Tiptap-style extension hooks for app paste rules and Portable Text-style
-behavior event semantics for author-facing input/paste policy.
+Tiptap-style extension hooks for app paste rules.
 ```
 
 If the plan rejects that hybrid, it must explain why the current Slate v2 source
@@ -1317,16 +1169,13 @@ in the plan:
   were checked in `.tmp/slate-v2`, not `plate-2`. If a relevant `.tmp/slate-v2`
   command fails, keep status `pending` and record the failing command, scope,
   and next owner.
-- Research pass: prove Lexical, ProseMirror, Tiptap, and Portable Text were used
-  as evidence, not decoration. The pass is incomplete until the ecosystem
-  strategy synthesis table names the concrete Slate mechanism to steal, reject,
-  or diverge from.
+- Research pass: prove Lexical, ProseMirror, and Tiptap were used as evidence,
+  not decoration. The pass is incomplete until the ecosystem strategy synthesis
+  table names the concrete Slate mechanism to steal, reject, or diverge from.
   For normalization, paste, large insert, operation replay, or hot runtime
   paths, explicitly test the hybrid thesis: Lexical-style dirty runtime buckets
   for normal editing plus ProseMirror-style bulk replace/fitting for large
-  paste/fragment insert, with Tiptap-style extension hooks for app paste rules
-  and Portable Text-style behavior event semantics for author-facing input/paste
-  policy.
+  paste/fragment insert, with Tiptap-style extension hooks for app paste rules.
 - Simplicity pass: remove overbuilt props, aliases, shims, and speculative API
   layers.
 - Slate maintainer pass: challenge every breaking/paradigm change as if
@@ -1366,9 +1215,7 @@ acceptance. On that second invocation:
    and next owner in the plan.
 6. For non-trivial uncommitted implementation changes, load
    `.agents/skills/autoreview/SKILL.md` and follow its dirty-local target
-   selection from the implementation checkout that owns the diff. For
-   `.tmp/slate-v2` patches, run the helper from cwd `.tmp/slate-v2`, not
-   `plate-2`. Verify any accepted/actionable findings against source, fix valid
+   selection. Verify any accepted/actionable findings against source, fix valid
    findings, rerun focused proof, and rerun autoreview until clean.
 7. Keep the execution goal active while any accepted queue row, verification
    gate, reference sync, autoreview finding, or risk owner remains runnable.

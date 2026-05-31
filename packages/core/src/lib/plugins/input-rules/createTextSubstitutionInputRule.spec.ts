@@ -15,23 +15,21 @@ const createEditor = (
   } as any);
 
 describe('createTextSubstitutionInputRule', () => {
-  it('substitutes a flat match on its final character', () => {
+  it('substitutes a flat match on its final character (`->` → `→`)', () => {
     const rule = createTextSubstitutionInputRule({
-      patterns: [{ format: 'arrow', match: '->' }],
+      patterns: [{ format: '→', match: '->' }],
     });
     const editor = createEditor(rule);
 
     editor.tf.insertText('-');
     editor.tf.insertText('>');
 
-    expect(editor.children).toEqual([
-      { children: [{ text: 'arrow' }], type: 'p' },
-    ]);
+    expect(editor.children).toEqual([{ children: [{ text: '→' }], type: 'p' }]);
   });
 
   it('keeps the literal text when only the leading character is typed', () => {
     const rule = createTextSubstitutionInputRule({
-      patterns: [{ format: 'arrow', match: '->' }],
+      patterns: [{ format: '→', match: '->' }],
     });
     const editor = createEditor(rule);
 
@@ -40,9 +38,9 @@ describe('createTextSubstitutionInputRule', () => {
     expect(editor.children).toEqual([{ children: [{ text: '-' }], type: 'p' }]);
   });
 
-  it('substitutes multi-character flat matches (`(c)` -> `copyright`)', () => {
+  it('substitutes multi-character flat matches (`(c)` → `©`)', () => {
     const rule = createTextSubstitutionInputRule({
-      patterns: [{ format: 'copyright', match: '(c)' }],
+      patterns: [{ format: '©', match: '(c)' }],
     });
     const editor = createEditor(rule);
 
@@ -50,14 +48,12 @@ describe('createTextSubstitutionInputRule', () => {
     editor.tf.insertText('c');
     editor.tf.insertText(')');
 
-    expect(editor.children).toEqual([
-      { children: [{ text: 'copyright' }], type: 'p' },
-    ]);
+    expect(editor.children).toEqual([{ children: [{ text: '©' }], type: 'p' }]);
   });
 
-  it('wraps paired delimiters on the closing character', () => {
+  it('wraps paired delimiters on the closing character (smart quotes)', () => {
     const rule = createTextSubstitutionInputRule({
-      patterns: [{ format: ['open-', '-close'], match: '"' }],
+      patterns: [{ format: ['“', '”'], match: '"' }],
     });
     const editor = createEditor(rule);
 
@@ -67,7 +63,7 @@ describe('createTextSubstitutionInputRule', () => {
     editor.tf.insertText('"');
 
     expect(editor.children).toEqual([
-      { children: [{ text: 'open-hi-close' }], type: 'p' },
+      { children: [{ text: '“hi”' }], type: 'p' },
     ]);
   });
 

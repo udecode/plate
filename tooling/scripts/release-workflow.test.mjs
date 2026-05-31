@@ -31,6 +31,10 @@ test('release workflow uses the pruned GitHub Release path', async () => {
   );
   assert.match(workflow, /node tooling\/scripts\/release-notes\.mjs/);
   assert.match(workflow, /anthropics\/claude-code-action\/base-action/);
+  assert.match(
+    workflow,
+    /node tooling\/scripts\/release-notes\.mjs add-package-changelogs "\$\{RAW_PATH\}\.final"/
+  );
   assert.match(workflow, /touch "\$\{RAW_PATH\}\.final\.validated"/);
   assert.match(
     workflow,

@@ -40,6 +40,10 @@ Boundaries:
 - Derived skill scope: TODO.
 - Non-goals: TODO.
 
+Output budget strategy:
+- TODO: Record how command/search output will be scoped, capped, counted, or
+  saved as artifacts before broad exploration.
+
 Blocked condition:
 - TODO: Name the missing plan path, skill owner, expected behavior, or user
   decision that stops autonomous repair.
@@ -75,6 +79,7 @@ Start Gates:
 | Owning source selected | pending | pending |
 | Repair classification selected | pending | pending |
 | Safety conflict checked | pending | pending |
+| Output budget strategy recorded | pending | pending |
 
 Work Checklist:
 - [ ] Expectation and observed miss are stated with source evidence.
@@ -83,6 +88,9 @@ Work Checklist:
 - [ ] Secondary owners are justified or marked N/A.
 - [ ] Patch touches source-of-truth files only.
 - [ ] Derived skill vs generic `autogoal` ownership decision is recorded.
+- [ ] Output budget discipline recorded and followed: broad searches are
+      scoped, capped, counted, or artifacted instead of streamed into goal
+      context.
 - [ ] Deliberate non-repairs are recorded.
 - [ ] Final response shape is recorded.
 
@@ -97,6 +105,7 @@ Completion Gates:
 | Helper/checker tests | pending | If scripts changed, run focused script tests; otherwise N/A | pending |
 | Autoreview / review | pending | Run applicable review gate or record N/A for docs-only/source-rule-only repair | pending |
 | Final lint | pending | Run scoped formatter/lint or record ignored-path/N/A reason | pending |
+| Output budget discipline | pending | Verify no unbounded high-volume command output was streamed, or record the accidental output and recovery | pending |
 | Goal plan complete | yes | Run `node .agents/rules/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` | pending |
 
 Phase / pass table:

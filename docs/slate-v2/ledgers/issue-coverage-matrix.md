@@ -77,173 +77,6 @@ Current fixed issue claims:
 - Fixes #6053: `useElementSelected()` does not throw when a selected rendered element removes itself, and `useElementSelected(path)` returns `false` after the watched path is removed.
 - Fixes #5400: Public helper value namespaces use `*Api`, so importing Slate helpers no longer shadows DOM globals such as `Node`.
 
-## Comment Mode Focus Ownership Cleanup Planning Sync - 2026-05-26
-
-This is planning/accounting sync for
-`docs/plans/2026-05-26-slate-v2-focus-ownership-cleanup.md`. It adds no fixed
-issue claims and no improved issue claims.
-
-The target is a Slate React focus-boundary cleanup: remove the read-only-only
-outside-click listener from `EditableDOMRoot`, keep public `Editable` DX
-unchanged, and move read-only/editable outside-interaction handling into one
-runtime owner that classifies editor roots, internal controls, external command
-controls, and inert page chrome. The live `comment-mode` route currently proves
-the edit-mode bug: after clicking `#comment-mode-document`, clicking the header
-leaves the editor as `document.activeElement` in Chromium, Firefox, and WebKit.
-
-Execution must prove the RED edit-mode blur row, the existing read-only
-selection/Add Comment row, read-only outside click, ordinary button/header focus
-state, follow-up typing after blur/refocus, and #4376/#5171 guardrails before
-any issue claim changes.
-
-| Issue | Claim policy |
-| --- | --- |
-| `#3893` | Direct related focus pressure. Ordinary external UI must update Slate focus state, but exact HTML button closure is not claimed until button-specific browser proof lands. |
-| `#5004` | Direct related focus-lifecycle pressure. Stale focus after outside click is adjacent to spurious focus-event ordering, but exact `onFocus` closure needs event-counter proof. |
-| `#4376`, `#5171` | Existing fixed claims stay exact and become guardrails. The cleanup must preserve inactive editable model selection and Firefox unfocused-update behavior; it does not broaden either claim. |
-| `#5537` | Related multi-view focus/input pressure. Comment mode and future content roots strengthen the same owner, but multi-editor programmatic focus closure is not claimed. |
-| `#5034` | Adjacent Android/readOnly pressure only. This web focus-boundary plan has no raw-device Android proof and makes no readOnly mobile-selection claim. |
-| `#5826`, `#5538`, `#5568` | Preserve existing focus/scroll/initialization statuses. The cleanup must not restore stale selection, scroll unexpectedly, or weaken focus initialization, but no new closure is claimed. |
-
-## Hidden/Offscreen Block API Execution Sync - 2026-05-26
-
-This is execution/accounting sync for
-`docs/plans/2026-05-26-slate-v2-hidden-dom-blocks-api-plan.md`. It adds no
-fixed issue claims and no improved issue claims.
-
-The shipped surface is a narrow hidden/offscreen content primitive: internal
-`DOMCoverage`, public `slots.contentBoundary`, optional `boundaryId`,
-object-shaped `onMaterialize({ boundary, reason, range })`, local app-owned
-accordion/collapsible/tab state, real shadcn source components in the example
-app only, and explicit native degradation while editable DOM is absent.
-
-Focused package tests prove stable API behavior and handler coexistence with
-staged and virtualized strategies. The `hidden-content-blocks` browser route
-proves shadcn Accordion, Collapsible, and Tabs behavior, mounted boundary
-counts, model-backed copy, and native degradation. No issue claim changes
-follow from that proof alone.
-
-| Issue | Claim policy |
-| --- | --- |
-| `#2072` | Related architecture pressure unchanged. Hidden/offscreen blocks strengthen library-owned boundaries, but the Island request remains broader than this content-boundary target. |
-| `#1769`, `#3893` | Keep focus rows related only. Native/app controls inside shadcn-shaped shells need coherent focus ownership and browser proof, but no exact external-focus or HTML-button closure is claimed. |
-| `#5211` | Keep stale/no-claim. Whole-editor hide/show persistence is adjacent React lifecycle pressure, not a model-present hidden-descendant boundary claim. |
-| `#5355` | Keep not claimed. Raw `colgroup` / `col` DOM omissions remain unsupported unless a Slate-owned DOM coverage boundary declares the missing model content. |
-| `#5924` | Keep not claimed. Structural DOM exclusion should route through DOM coverage and mount policy, not a public ignore-cursor or render-prop path API. |
-| `#790` | Keep as related proof-route backlog. Hidden/offscreen blocks share dynamic-rendering pressure, but need benchmark, mounted-count, DOM coverage, and browser native-behavior proof before any claim. |
-| `#2793`, `#2572` | Keep release guard / policy non-claim. Missing-DOM modes must expose degradation and cannot claim screen-reader or accessibility parity without assistive-tech proof. |
-| `#3892` | Keep policy non-claim. Generic custom-layout surfaces remain ecosystem/product territory; raw Slate exposes only the boundary primitive. |
-
-## Synced Blocks / Content-Root Projection Planning Sync - 2026-05-26
-
-This is planning/accounting sync for
-`docs/plans/2026-05-26-slate-v2-synced-content-roots.md`. It adds no fixed
-issue claims and no improved issue claims.
-
-The target is a first-class content-root block model for a Notion-style
-`Synced Blocks` example: one runtime editor, keyed body roots, multiple owner
-blocks projecting the same root, runtime-local active projection identity, and
-canonical React DX through `props.slots.contentRoot('body', options)`.
-
-The accepted execution queue now proves the route-level projected selection,
-shared editing, active-copy focus/history, ArrowUp/Down flow, click-outside
-behavior, projected copy/delete/type, native affordance classification,
-root-lifecycle substrate, and repeated-root stress rows. Issue claim changes
-still require exact external-repro mapping and release-scope proof.
-
-| Issue | Claim policy |
-| --- | --- |
-| `#5212` | Related, not claimed. Synced Blocks is the planned clean teaching route, but route/source/browser proof must land before any fixed/improved example claim. |
-| `#2072` | Related architecture pressure unchanged. Mixed editable islands and pure document-flow content-root blocks stay separate; the original island request remains broader. |
-| `#5524` | Related, not claimed. Soft-break ArrowDown is not same-runtime root crossing unless future browser proof shows that exact owner. |
-| `#6034` | Existing `Fixes #6034` claim unchanged. Table-last-node ArrowDown remains exact and is only a regression floor. |
-| `#5874`, `#4309` | Related identity guardrail. Synced Blocks share root keys in one runtime, not Slate node object identity across positions or editors. |
-| `#6016` | Triage-closed/non-fix unchanged. Shared node-object graphs across independent editor runtimes stay unsupported. |
-| `#5537`, `#5117` | Related multi-view focus/DOM-state pressure. Active projection identity and root-local DOM state have route-level proof, but exact issue closure remains unclaimed. |
-| `#3482`, `#3367` | Related model-shape pressure. Default void descendants do not become traversable. |
-| `#3435`, `#3884`, `#4301` | Related navigation guardrails. Existing selected-void behavior and `#4301` fixed floor must stay exact. |
-| `#3991`, `#3868`, `#5582`, `#5477`, `#4896`, `#4350`, `#4328`, `#5630` | Preserve delete/selection statuses. Projected delete/type proof landed for the route, but exact issue closure remains unclaimed. |
-| `#4984`, `#4842`, `#3909` | Preserve nested/contenteditable statuses. Same-runtime projections are the direction; only existing `#4984` remains fixed. |
-| `#4806`, `#4802`, `#4104`, `#3926`, `#4888`, `#4623` | Preserve clipboard/drop/move statuses. Projected copy serialization proof landed, including custom clipboard format keys; move/drop/remap issue closure remains unclaimed. |
-| `#1769`, `#3893` | Keep related. Click-outside and native/external focus need route-specific proof. |
-| `#5183`, `#5391`, `#5087`, `#4839`, `#5130`, `#5559` | Preserve mobile/IME/inline-boundary statuses. No raw-device or IME claim from this plan. |
-| `#5131`, `#2051`, `#2195`, `#2405`, `#790` | Preserve performance statuses. Deterministic repeated-projection stress proof landed; broader browser benchmark claims remain unclaimed. |
-| `#5771`, `#5533`, `#1770`, `#3741` | Preserve collaboration/history statuses. Root lifecycle/collab substrate proof landed, but current slate-yjs support is not claimed. |
-| `#3177`, `#3222`, `#3283` | Keep related API/example pressure. Raw Slate exposes the primitive; product sync UI belongs later. |
-
-## Projection Selection Architecture Execution Sync - 2026-05-26
-
-This is planning/accounting sync for
-`docs/plans/2026-05-26-slate-v2-projection-selection-architecture.md`. It adds
-no fixed issue claims and no improved issue claims.
-
-The target is the remaining architecture after Synced Blocks/content roots:
-one internal projection graph, internal cross-root `ViewSelection`,
-projection-owned command targets, runtime-local owner identity, root-keyed
-collaboration substrate, repeated-projection performance budgets, and explicit
-browser-native affordance contracts.
-
-Accepted-plan execution proves expanded selection, delete/type replacement,
-copy, history restoration, focus/click-outside behavior, repeated-root stress,
-native affordance classification, and collaboration substrate behavior. Issue
-claim changes still need exact external-repro mapping and release-scope proof.
-
-| Issue | Claim policy |
-| --- | --- |
-| `#5212` | Related, not claimed. Projection selection keeps Synced Blocks as the clean teaching route, but source, route, and browser proof must land before any editable-void/example fixed or improved claim. |
-| `#2072` | Related architecture pressure unchanged. Internal projection graph and `ViewSelection` strengthen same-runtime content roots, but the original Island request remains broader. |
-| `#5524` | Related, not claimed. Cross-root projected selection is adjacent vertical-selection pressure, but soft-break ArrowDown is not claimed without future proof of the same root-crossing owner. |
-| `#5874`, `#4309` | Related identity guardrail. Repeated projections use root keys plus runtime-local owner identity, not shared Slate node objects. |
-| `#6016` | Triage-closed/non-fix unchanged. One runtime with many root views remains the supported answer; shared object graphs across independent editors stay unsupported. |
-| `#5537`, `#5117` | Related multi-view focus/DOM-state pressure. Active projection identity and focus have route-level proof; placeholder/DOM-state issue closure remains unclaimed. |
-| `#3991`, `#3868`, `#5582`, `#5477`, `#4896`, `#4350`, `#4328`, `#5630` | Preserve delete/selection statuses. Existing exact fixed floors stay exact; projected commands have route-level proof, not external issue closure. |
-| `#4806`, `#4802`, `#4104`, `#3926`, `#4888`, `#4623` | Preserve clipboard/drop/move statuses. Existing exact clipboard fixed floors stay exact; projected copy serialization has route-level proof, while move, unsync payload remap, drag/drop, and exact issue closure remain unclaimed. |
-| `#5131`, `#2051`, `#2195`, `#2405`, `#790` | Preserve performance statuses. 20/100 repeated-root stress has deterministic package proof; broader benchmark claims remain unclaimed. |
-| `#5771`, `#5533`, `#1770`, `#3741` | Preserve collaboration/history statuses. Existing `#5771` readiness accounting is not upgraded or broadened here; root lifecycle/collab substrate proof landed, but current slate-yjs adapter support remains unclaimed. |
-
-## Vertical ContentRoot Navigation Planning Sync - 2026-05-25
-
-This is planning/accounting sync for
-`docs/plans/2026-05-25-slate-v2-vertical-content-root-navigation.md`.
-It adds no fixed issue claims and no improved issue claims. The target is a
-lazy geometry-aware `ArrowUp` / `ArrowDown` bridge across same-runtime
-content roots using the existing `contentRoot` surface.
-
-The prior void-root/content-root API execution, horizontal editable-void
-keyboard proof, and mouse-unfocus proof stay the baseline. Vertical content-root
-runtime behavior still needs focused browser proof, no-content-root perf proof,
-and release-gate verification before the claim scope can change.
-
-| Issue | Claim policy |
-| --- | --- |
-| `#5524` | Related, not claimed. Soft-break vertical selection is the nearest ArrowDown issue, but it is not same-runtime root crossing. Route to core caret/navigation unless future proof shows a DOM bridge failure. |
-| `#6034` | Existing `Fixes #6034` claim unchanged. Table-last-node ArrowDown remains exact and must not be broadened to content-root navigation. |
-| `#5212` | Related example/DX pressure unchanged. Vertical content-root proof may improve the example later, but no fixed/improved claim is made by this planning sync. |
-| `#2072` | Related architecture pressure unchanged. Same-runtime content roots are the accepted substrate, but exact island closure remains gated by owner/root payload, serialization, mobile/raw-device, slate-yjs, repeated-root perf, and release proof. |
-| `#5924`, `#5550`, `#5551` | Not claimed. Structural DOM exclusion, Web Component selection boundaries, and table-selection semantics are outside this surface. |
-
-## Vertical ContentRoot Navigation Revision Sync - 2026-05-25
-
-This is planning/accounting sync for the frozen user-review spec in
-`docs/plans/2026-05-25-slate-v2-vertical-content-root-navigation.md`.
-It adds no fixed issue claims and no improved issue claims.
-
-The target remains an internal Slate React/runtime bridge over the existing
-`contentRoot: { slot }` contract. Future execution must prove same-x browser
-movement, no-content-root no-scan/no-layout behavior, no stale native-selection
-sync overwrite, and the full editable-voids route before any issue claim
-changes. Default void traversal, mobile/raw-device or IME behavior, structural
-DOM exclusion, table-selection semantics, and current slate-yjs collaboration
-support are explicitly not claimed.
-
-| Issue | Claim policy |
-| --- | --- |
-| `#5524` | Related, not claimed. Soft-break vertical selection remains a different failure family unless later proof shows same-runtime root crossing. |
-| `#6034` | Existing `Fixes #6034` claim unchanged. It remains exact table-edge ArrowDown proof and is not broadened. |
-| `#5212` | Related example/DX pressure unchanged. No fixed/improved claim until vertical content-root execution and browser proof land. |
-| `#2072` | Related architecture pressure unchanged. Same-runtime content roots help the substrate story, but the island request remains broader than vertical navigation. |
-| `#5924`, `#5550`, `#5551` | Not claimed. These remain structural DOM, Web Component, and table-selection surfaces outside this plan. |
-
 ## Void Roots / ContentRoot API Execution Sync - 2026-05-25
 
 This is implementation/accounting sync for
@@ -252,19 +85,17 @@ It adds no fixed issue claims and no improved issue claims. The public
 API/lifecycle baseline is implemented in `.tmp/slate-v2`:
 `EditorElementSpec.contentRoot`, `tx.roots.create/replace/delete`, and
 `useSlateContentRoot`. The editable-voids example now uses `tx.roots.create`
-instead of raw operation replay for child-root creation and includes scoped
-keyboard/browser proof for an editor-only content root.
+instead of raw operation replay for child-root creation.
 
-Owner/root payload remap, copy/cut/move serialization, mobile/raw-device
-behavior, slate-yjs mapping, repeated-root performance, and release-gate
+Keyboard projection, owner/root payload remap, browser proof, and release-gate
 verification remain execution proof gates.
 
 | Issue | Claim policy |
 | --- | --- |
-| `#5212` | Keep related/planned example and DX candidate. Root creation DX and scoped content-root browser proof improved the example route, but no exact fixed/improved claim is made. |
-| `#2072` | Keep related architecture target strengthened. The content-root API and scoped keyboard/browser baseline exist, but no exact closure claim is made without owner-root payload and release-gate proof. |
+| `#5212` | Keep related/planned example and DX candidate. Root creation DX improved, but no fixed or improved claim until the full example route and browser proof land. |
+| `#2072` | Keep related architecture target strengthened. The content-root API baseline exists, but no closure without keyboard/navigation and browser proof. |
 | `#3482`, `#3367` | Keep related model-shape pressure. Default voids stay atomic; normal void descendants do not become traversable. |
-| `#3435`, `#3884`, `#4301` | Keep related navigation guardrails. Scoped editable-voids keyboard proof landed; no broad arrow/Enter issue claim; existing `#4301` fixed floor remains exact. |
+| `#3435`, `#3884`, `#4301` | Keep related navigation guardrails. No new arrow/Enter claim; existing `#4301` fixed floor remains exact. |
 | `#3991`, `#3868`, `#5582`, `#5477`, `#4896`, `#4350`, `#4328`, `#5630` | Preserve delete/selection statuses. Root lifecycle helpers landed, but behavior closure still needs targeted proof. |
 | `#4984`, `#4842`, `#3909` | Preserve nested/contenteditable statuses. Same-runtime roots remain the direction; only existing `#4984` fixed floor is preserved. |
 | `#4806`, `#4802`, `#4104`, `#3926`, `#4888`, `#4623` | Preserve clipboard/drop/move statuses. Root payload serialization and remap policy remain proof gates. |
@@ -447,33 +278,6 @@ generic provider/split protocols for table/media/BFC pagination.
 | `#3892` | Keep policy non-claim. Generic layout substrate helps custom surfaces, but product custom layout engines remain outside raw Slate closure. |
 | `#5945`, `#4056`, `#5992` | Preserve existing `Improves`. Large-document operation/clipboard benchmark claims are not promoted or changed by this pagination plan. |
 
-## Provider-Owned Page Layout Fragments Planning Sync - 2026-05-26
-
-This is planning/accounting sync for
-`docs/plans/2026-05-26-slate-v2-provider-owned-page-layout-fragments.md`.
-It adds no fixed issue claims and no improved issue claims. The reviewed target
-is `useSlateLayout(..., { nodeLayout, pageBreaks })`, provider-owned
-unit/fragments for table and media pagination, pathless
-`useSlateLayoutFragments()` in renderers, explicit `layout.getFragments(path)`
-for tools, no public `boxes`, no public `RenderElementProps.path`, no raw Slate
-TableKit, no AST table splitting, Pretext text layout with
-`measurementProfile`, and page/spread virtualization that remains
-degraded/native-incomplete until browser proof promotes specific native-surface
-claims.
-
-| Issue | Claim policy |
-| --- | --- |
-| `#5944` | Keep issue-reviewed. The plan is directly related to pagination stability, but it makes no stable page-boundary/caret claim without browser proof for page-break flicker, caret mapping, and edit behavior across page fragments. |
-| `#790` | Keep as related proof-route backlog. Page/spread virtualization is the paged-mode target, but dynamic rendering still needs mount/edit/scroll benchmarks, mounted-count proof, DOM coverage proof, and browser native-behavior proof before any claim. |
-| `#5924` | Keep not claimed. Page frames, table/media fragments, and debug DOM route through DOM coverage, mount policy, and provider-owned layout fragments, not a public ignore-cursor or render-prop path API. |
-| `#4141` | Preserve existing `Improves`. `nodeLayout` and fragment lookup must preserve affected-range invalidation and avoid widening rerender breadth. |
-| `#5131`, `#2051` | Preserve existing subscription/performance guardrail rows. Layout fragments, page/spread virtualization, and renderer hooks must prove they do not broaden editor subscriptions or rerender breadth. |
-| `#2793` | Keep cluster-synced/release-guard. Missing-DOM/page-virtualized modes still need assistive-tech proof or explicit degradation docs before any native-equivalence claim. |
-| `#2572` | Keep policy non-claim. Accessibility remains a release guard, not a fixed issue claim from planning docs. |
-| `#3892` | Keep policy non-claim. Generic provider-owned layout fragments are substrate pressure only; product custom editor surfaces remain outside raw Slate closure. |
-| `#5945`, `#4056`, `#5992` | Preserve existing `Improves`. Large-document operation/clipboard benchmark claims are not promoted or changed by this pagination/table-fragment plan. |
-| `#6034` | Preserve existing `Fixes #6034` exactly. Table-last-node ArrowDown stays a regression floor; this plan does not claim table row fragmentation, repeated headers, or multi-page table editing as fixed issue coverage. |
-
 ## Android Mark Toggle No-Appium Proof - 2026-05-23
 
 This is implementation/accounting sync for
@@ -513,7 +317,6 @@ auto-close.
 | #2288 | operation-granularity-and-range-steps                | Improves    | `replace_children` gives Slate a range-capable child-window operation with apply/inverse/ref/history/collab proof, and PM-08 replays range delete through three peers; exact public operation exposure remains separate.                                                                                                                                        | `.tmp/slate-v2/packages/slate/src/interfaces/operation.ts`; `.tmp/slate-v2/packages/slate/src/transforms-text/delete-text.ts`; `.tmp/slate-v2/packages/slate/test/operations-contract.ts`; `.tmp/slate-v2/packages/slate/test/collab-history-runtime-contract.ts`; `docs/plans/2026-05-10-slate-v2-all-editor-harvest-test-processing-ralplan.md`; `docs/plans/2026-05-06-slate-v2-range-delete-replace-children-ralplan.md`; `gitcrawl threads ianstormtaylor/slate --numbers 2288 --include-closed --json`                                                                                                                                                                                                                   |
 | #1770 | collaboration-op-metadata-and-transaction-boundaries | Related     | PM-08 proves three-peer replay convergence for text, mark, range-delete, and move commits, but it does not provide a general operation-merging utility.                                                                                                                                                                                                         | `.tmp/slate-v2/packages/slate/test/collab-history-runtime-contract.ts`; `docs/plans/2026-05-10-slate-v2-all-editor-harvest-test-processing-ralplan.md`; `docs/plans/2026-05-06-slate-v2-range-delete-replace-children-ralplan.md`; `gitcrawl threads ianstormtaylor/slate --numbers 1770 --include-closed --json`                                                                                                                                                                                                                                                                                                                                                                                                              |
 | #3741 | collaboration-op-metadata-and-transaction-boundaries | Related     | PM-08 proves remote replay convergence for `move_node`, but it does not add moved-node payloads to serialized `move_node` operations. Exact OT closure is not claimed.                                                                                                                                                                                          | `.tmp/slate-v2/packages/slate/test/collab-history-runtime-contract.ts`; `docs/plans/2026-05-10-slate-v2-all-editor-harvest-test-processing-ralplan.md`; `gitcrawl threads ianstormtaylor/slate --numbers 3741 --include-closed --json`; `docs/plans/2026-05-06-slate-v2-core-history-selection-undo-ralplan.md`                                                                                                                                                                                                                                                                                                                                                                                                                |
-| #4178 | collaboration-op-metadata-and-transaction-boundaries | Related | Commit metadata and `@slate/yjs` adapter origins give collaboration layers source provenance, but Slate operations still do not expose durable public source fields. Exact operation-source API closure is not claimed. | `docs/slate-issues/gitcrawl-v2-sync-ledger.md`; `docs/slate-issues/open-issues-ledger.md`; `docs/slate-issues/open-issues-dossiers/4268-4162.md`; `docs/plans/2026-05-18-slate-yjs-package-readiness-ralplan.md` |
 | #2500 | select-all-delete-and-structural-reset               | Fixes       | Core package proof deletes a full-document selection spanning list-heavy content and leaves one empty editable paragraph, not an orphan list shell.                                                                                                                                                                                                             | `.tmp/slate-v2/packages/slate/test/delete-contract.ts`; `docs/plans/2026-05-07-slate-v2-core-structural-delete-normalization-ralplan.md`; `gitcrawl threads --numbers 2500 --include-closed --json ianstormtaylor/slate`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | #4121 | structural-delete-selection-window                   | Fixes       | Core package proof deletes a selection from plain text through a formatted leaf ending at another formatted leaf boundary and preserves all unselected prefix/suffix text.                                                                                                                                                                                      | `.tmp/slate-v2/packages/slate/test/delete-contract.ts`; `docs/plans/2026-05-07-slate-v2-core-structural-delete-normalization-ralplan.md`; `gitcrawl threads --numbers 4121 --include-closed --json ianstormtaylor/slate`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | #3965 | adjacent-marked-text-delete                          | Fixes       | Core package proof Backspaces from an empty same-mark text at a block start and merges the block boundary without deleting both neighboring text runs.                                                                                                                                                                                                          | `.tmp/slate-v2/packages/slate/test/delete-contract.ts`; `docs/plans/2026-05-07-slate-v2-core-structural-delete-normalization-ralplan.md`; `gitcrawl threads --numbers 3965 --include-closed --json ianstormtaylor/slate`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
@@ -625,8 +428,8 @@ auto-close.
 | #3177 | render-extension-composition                         | Related     | Renderer composition pressure is real, but raw Slate should not own a renderer registry. The accepted target is raw `Editable render*` escape hatches plus model/runtime extension middleware; Plate owns renderer/plugin composition. No fixed/improved claim until examples, docs, contracts, and proof land.                                                 | `docs/plans/2026-05-16-slate-v2-render-element-extension-dx-ralplan.md`; `docs/plans/2026-05-16-slate-v2-unified-extension-composition-ralplan.md`; `docs/plans/2026-05-17-slate-v2-plate-fit-api-hard-cuts-ralplan.md`; `docs/slate-issues/gitcrawl-v2-sync-ledger.md`; `docs/slate-v2/references/pr-description.md#641-react-editable-renderer-registration`                                                                                                                                                                                                                                                                                                                                                                 |
 | #5961 | onkeydown-render-warning                             | Related     | Public key-command helper DX is a raw-Slate hard cut, but this stale DevTools `onKeyDown` render warning has no current repro and no runtime fix claim. Raw Slate keeps `Editable onKeyDown`; Plate owns product keymaps.                                                                                                                                       | `docs/slate-issues/gitcrawl-v2-sync-ledger.md`; `docs/slate-issues/open-issues-ledger.md`; `docs/plans/2026-05-17-slate-v2-plate-fit-api-hard-cuts-ralplan.md`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | #3802 | unified-extension-composition-api-dx                 | Related     | The plan hard-cuts public wrapper composition and public author-facing `editor.extend` as target API architecture, but no exact issue closure exists until implementation removes stale public surfaces and public-surface/type contracts pass.                                                                                                                 | `docs/plans/2026-05-16-slate-v2-unified-extension-composition-ralplan.md`; `docs/slate-issues/gitcrawl-v2-sync-ledger.md`; `.tmp/slate-v2/packages/slate/test/public-surface-contract.ts`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| #5771 | collaboration-selection-anchor-rebase                | Improves    | Core now has focused high-QPS remote insert versus local collapsed-selection proof, including same-block prefix bursts, same-offset contention, suffix inserts, split/merge, selected-node removal, local follow-up typing, and remote-history skip. Exact upstream collaboration/provider closure remains unclaimed until a real `@slate/yjs` adapter/browser repro exists. | `.tmp/slate-v2/packages/slate/test/collab-selection-stress-contract.ts`; `.tmp/slate-v2/packages/slate/test/collab-bookmark-position-contract.ts`; `.tmp/slate-v2/packages/slate/test/collab-canonical-reconcile-contract.ts`; `.tmp/slate-v2/packages/slate-react/test/selection-side-effect-policy-contract.ts`; `.tmp/slate-v2/packages/slate-react/test/app-owned-customization.tsx`; `.tmp/slate-v2/scripts/benchmarks/core/current/collab-readiness.mjs`; `.tmp/slate-v2/tmp/slate-collab-readiness-benchmark.json`; `docs/plans/2026-05-13-slate-v2-yjs-core-readiness-ralplan.md`; `docs/plans/2026-05-18-slate-yjs-package-readiness-ralplan.md`; `gitcrawl threads ianstormtaylor/slate --numbers 5771 --include-closed --json`; `docs/slate-issues/test-candidate-map/5912-5771.md` |
-| #5533 | collaboration-without-yjs                            | Related     | PM-08 proves operation replay can converge three package peers, and the `@slate/yjs` package plan covers a Yjs-specific binding, but Slate still does not ship a first-party OT or Yjs-free collaboration protocol.                                                                                                                                                                                                              | `.tmp/slate-v2/packages/slate/test/collab-history-runtime-contract.ts`; `docs/plans/2026-05-10-slate-v2-all-editor-harvest-test-processing-ralplan.md`; `docs/plans/2026-05-18-slate-yjs-package-readiness-ralplan.md`; `docs/slate-issues/open-issues-dossiers/5558-5480.md`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| #5771 | collaboration-selection-anchor-rebase                | Improves    | Core now has focused high-QPS remote insert versus local collapsed-selection proof, including same-block prefix bursts, same-offset contention, suffix inserts, split/merge, selected-node removal, local follow-up typing, and remote-history skip. Exact upstream collaboration/provider closure remains unclaimed until a real adapter/browser repro exists. | `.tmp/slate-v2/packages/slate/test/collab-selection-stress-contract.ts`; `.tmp/slate-v2/packages/slate/test/collab-bookmark-position-contract.ts`; `.tmp/slate-v2/packages/slate/test/collab-canonical-reconcile-contract.ts`; `.tmp/slate-v2/packages/slate-react/test/selection-side-effect-policy-contract.ts`; `.tmp/slate-v2/packages/slate-react/test/app-owned-customization.tsx`; `.tmp/slate-v2/scripts/benchmarks/core/current/collab-readiness.mjs`; `.tmp/slate-v2/tmp/slate-collab-readiness-benchmark.json`; `docs/plans/2026-05-13-slate-v2-yjs-core-readiness-ralplan.md`; `gitcrawl threads ianstormtaylor/slate --numbers 5771 --include-closed --json`; `docs/slate-issues/test-candidate-map/5912-5771.md` |
+| #5533 | collaboration-without-yjs                            | Related     | PM-08 proves operation replay can converge three package peers, but Slate still does not ship a first-party OT or Yjs-free collaboration protocol.                                                                                                                                                                                                              | `.tmp/slate-v2/packages/slate/test/collab-history-runtime-contract.ts`; `docs/plans/2026-05-10-slate-v2-all-editor-harvest-test-processing-ralplan.md`; `docs/slate-issues/open-issues-dossiers/5558-5480.md`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | #1769 | focus-state-external-dom-ownership                   | Related     | Clicking non-editable editor content belongs to focus and DOM ownership policy; no hook self-removal proof or claim is made.                                                                                                                                                                                                                                    | `gitcrawl threads ianstormtaylor/slate --numbers 1769 --include-closed --json`; `docs/plans/2026-05-08-slate-v2-use-element-selected-self-removal-ralplan.md`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | #3585 | click-selection-timing                               | Related     | Click selection timing races are DOM selection import pressure, not the `useElementSelected` stale path lifecycle.                                                                                                                                                                                                                                              | `gitcrawl threads ianstormtaylor/slate --numbers 3585 --include-closed --json`; `docs/plans/2026-05-08-slate-v2-use-element-selected-self-removal-ralplan.md`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | #3412 | focus-loss-selection-retention                       | Related     | Focus-out selection retention/nulling belongs to focus restoration policy; this lane does not prove toolbar/focus behavior.                                                                                                                                                                                                                                     | `gitcrawl threads ianstormtaylor/slate --numbers 3412 --include-closed --json`; `docs/plans/2026-05-08-slate-v2-use-element-selected-self-removal-ralplan.md`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |

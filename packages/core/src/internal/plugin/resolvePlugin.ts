@@ -45,8 +45,9 @@ export const resolvePlugin = <P extends AnySlatePlugin>(
     const rawConfigResult = plugin.__configuration(
       getEditorPlugin(editor, plugin as any)
     ) as any;
-    // The user's config object can be captured by closure and reused across
-    // editor instances, so never mutate it while extracting inputRules.
+    // Copy before mutating: the user's config object is captured by closure
+    // and reused across editor instances, so mutating it would clear
+    // inputRules on subsequent resolutions.
     const { inputRules: configInputRules, ...configResult } = rawConfigResult;
 
     if (configInputRules !== undefined) {

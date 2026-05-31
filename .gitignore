@@ -6,7 +6,8 @@ apps/www/public/rd
 **/*.tsbuildinfo
 templates/my-app
 .cursor/local
-**/next-env.d.ts
+.bun
+
 .pnpm-store/*
 .repo_ignore
 
@@ -28,11 +29,8 @@ jspm_packages/
 
 # compiled output
 /dist
-**/tmp
 /tmp
 /tmp*
-/.tmp
-/.tmp*
 /out-tsc
 **/build
 
@@ -133,6 +131,4 @@ packages/plate/docs/
 
 *.local*
 
-# Local agent state and generated benchmark artifacts
 .omx/
-.clawpatch/

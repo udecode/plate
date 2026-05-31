@@ -226,9 +226,13 @@ jobs:
         continue-on-error: true
         env:
           RAW_PATH: ${{ steps.raw-notes.outputs.raw_changelog_path }}
+          PUBLISHED_PACKAGES: ${{ steps.changesets.outputs.publishedPackages }}
         run: |
           node tooling/scripts/release-notes.mjs validate "$RAW_PATH" "${RAW_PATH}.final"
-          touch "${RAW_PATH}.final.validated"
+          if [[ -f "${RAW_PATH}.final" ]]; then
+            node tooling/scripts/release-notes.mjs add-package-changelogs "${RAW_PATH}.final"
+            touch "${RAW_PATH}.final.validated"
+          fi
 
       - name: 📝 Create GitHub Release
         if: ${{ steps.changesets.outputs.published == 'true' }}
@@ -317,6 +321,11 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: 📝 Sync release docs to GitHub Releases
+        env:
+          GH_TOKEN: ${{ secrets.API_TOKEN_GITHUB || secrets.GITHUB_TOKEN }}
+        run: node tooling/scripts/sync-version-package-releases.mjs --latest 300 --from v49
 
       - name: 🏗 Build production registry
         run: pnpm --filter www build:registry && pnpm --filter www build:tw

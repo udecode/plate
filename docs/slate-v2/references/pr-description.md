@@ -42,16 +42,6 @@ Current summary:
   or improved claims from that sync: `0`.
 - Yjs/collaboration readiness sync promotes `#5771` from Related to Improves,
   with no new exact fixed issue claim.
-- Slate-Yjs package readiness sync keeps `#5771` at Improves and keeps
-  `#5533`, `#1770`, `#3741`, and `#4178` related/non-closure. It also records
-  the package identity boundary: repo folder `packages/slate-yjs`, preferred
-  public package name `@slate/yjs`, no PR/import-path claim until publish access
-  is resolved.
-- Slate-Yjs package readiness refresh on 2026-05-24 confirms the core
-  collab-readiness benchmark now passes against current `setup(...)` /
-  `onCommit(...)` APIs. This does not change issue claims: package source,
-  full example, package tests, and Playwright selection proof are still required
-  before any `#5771` fixed claim.
 - Native beforeinput command-handler sync adds related rows for `#3586` and
   `#4681`, and refreshes `#3568`, `#5181`, and `#4317`. New exact fixed or
   improved claims from that sync: `0`.
@@ -78,60 +68,10 @@ Current summary:
   sync: `0`.
 - Void roots / content-root API execution keeps ordinary voids atomic, keeps
   `editable-island` for mixed native/app controls with optional child roots,
-  and adds the public API/lifecycle plus scoped browser baseline for pure
-  editor-flow child content: `EditorElementSpec.contentRoot`,
-  `tx.roots.create/replace/delete`, `useSlateContentRoot`, and editable-voids
-  keyboard/browser proof. Owner/root payload remap, copy/cut/move
-  serialization, mobile/raw-device behavior, slate-yjs mapping, repeated-root
-  performance, and release-gate verification remain unclaimed. New exact fixed
-  or improved claims from that sync: `0`.
-- Vertical content-root keyboard navigation planning keeps `contentRoot` as the
-  public surface and targets a lazy geometry-aware `ArrowUp` / `ArrowDown`
-  bridge across same-runtime roots. It preserves the existing `#6034` table
-  ArrowDown fixed claim as exact, keeps `#5524` soft-break navigation related
-  but unclaimed, and reuses the prior `#5212` / `#2072` content-root accounting.
-  New exact fixed or improved claims from that sync: `0`.
-- Vertical content-root revision sync freezes the user-review architecture:
-  one internal runtime bridge over existing `contentRoot: { slot }`, same-x
-  browser geometry proof, no-content-root perf proof, no public vertical prop,
-  no default void traversal, no mobile/raw-device or IME claim, and no current
-  slate-yjs collaboration claim. It keeps `#6034` exact and `#5524`, `#5212`,
-  and `#2072` related but unclaimed. New exact fixed or improved claims from
-  that sync: `0`.
-- Synced Blocks / content-root projection planning sync freezes the user-review
-  architecture for repeated shared roots: canonical
-  `props.slots.contentRoot('body', options)` DX, one-runtime focus/selection/
-  history, runtime-local active projection identity, route-local duplicate and
-  unsync, no default void traversal change, and no current slate-yjs support
-  claim. Related issue rows stay related/non-claim until the route and browser /
-  package proof land. New exact fixed or improved claims from that sync: `0`.
-- Projection-selection architecture execution sync implements the post-Synced-
-  Blocks target: one internal projection graph, internal cross-root
-  `ViewSelection`, projection-owned command targets, runtime-local projection
-  owner identity, root-keyed collaboration substrate, repeated-projection
-  performance budgets, and explicit browser-native affordance contracts.
-  Related issue rows stay related/non-claim, while existing fixed floors and the
-  existing `#5771` readiness accounting are not broadened. Route-level proof now
-  covers expanded selection, commands, projected copy, history/focus, native
-  affordance classification, root lifecycle/collab substrate, and deterministic
-  repeated-root stress; exact projected-root issue claims remain unclaimed until
-  issue-specific repro mapping and release-scope proof land. New exact fixed or
-  improved claims from that sync: `0`.
-- Hidden/offscreen block API execution sync adds the runtime and example surface
-  for model-present content whose editable DOM is absent: internal
-  `DOMCoverage`, stable `slots.contentBoundary`, optional `boundaryId`,
-  object-shaped `onMaterialize({ boundary, reason, range })`, local app-owned
-  accordion/collapsible/tab state, real shadcn source components in the example
-  app only, no raw Slate UI kits, and explicit native degradation while DOM is
-  absent. Focused package tests and the `hidden-content-blocks` browser route
-  cover Accordion, Collapsible, and Tabs, while related issue rows stay
-  related/non-claim until exact external repros are proven end to end.
-  New exact fixed or improved claims from that sync: `0`.
-- Comment-mode focus ownership cleanup planning sync targets one Slate React
-  focus-boundary owner for read-only and editable outside interactions, removes
-  the read-only-only `EditableDOMRoot` listener, keeps public `Editable` DX
-  unchanged, and treats `#3893` / `#5004` as related proof gates while
-  preserving `#4376` / `#5171` as exact fixed guardrails. New exact fixed or
+  and adds the public API/lifecycle baseline for pure editor-flow child content:
+  `EditorElementSpec.contentRoot`, `tx.roots.create/replace/delete`, and
+  `useSlateContentRoot`. Keyboard projection, root payload remap, browser
+  proof, and release-gate verification remain unclaimed. New exact fixed or
   improved claims from that sync: `0`.
 
 Current fixed issue claims:
@@ -301,20 +241,12 @@ Accepted current shape:
   engine behind an internal boundary and `slate-react` consuming layout through
   a DOM materialization policy instead of treating pagination or virtualization
   as product rendering modes.
-- Pagination planning target: public beta API should stay small:
-  `useSlateLayout(editor, { page, root, typography, nodeLayout, pageBreaks })`
-  is the layout entrypoint, `nodeLayout({ element, path, defaults,
-  pageSettings, measurementProfile })` describes text fallback, fixed/avoid
-  boxes, or provider-owned units, and `PagedEditable` exposes pathless
-  `useSlateLayoutFragments()` for renderers. Tools can still use
-  `layout.getFragments(path)`. Public `boxes`, public `RenderElementProps.path`,
-  raw Slate TableKit, and AST table splitting stay out of the beta target.
-  `pageView` groups page display settings, virtualized `domStrategy` drives
-  internal page/spread mounting, `measurementProfile` is snapshot metadata, and
-  `pageBreaks` remains opt-in strict-fidelity metadata. Apps or export
-  pipelines own authoritative writer policy for collaboration/export; raw Slate
-  owns only the protocol and accepted/stale status. This planning target adds no
-  fixed/improved issue claim.
+- Pagination planning target: public beta API should stay small: `pageView`
+  groups page display settings, virtualized `domStrategy` drives internal
+  page/spread mounting in `PagedEditable`, `measurementProfile` is snapshot
+  metadata, `pageBreaks` is opt-in strict-fidelity metadata, and table/media
+  pagination uses generic provider/split protocols rather than a raw Slate
+  product TableKit. This planning target adds no fixed/improved issue claim.
 
 Why it belongs in the PR:
 
@@ -685,10 +617,9 @@ Accepted current shape:
 - React reads from editor snapshots and commit-local dirty data.
 - Selector hooks expose editor-typed operations and commit facts, including
   `EditorSelectorOptions<TEditor>` for `useEditorSelector`.
-- `decorate` is not the primary overlay API. The compatibility adapter stays
-  narrow.
-- `decorationSources` and `createDecorationSource` are the primary scalable
-  path for external or high-churn overlays.
+- `decorate` stays the simple transient range API.
+- `decorationSources` and `createDecorationSource` are the scalable path for
+  external or high-churn overlays.
 - Annotation stores and widget stores are durable overlay substrates, not
   product comment workflows.
 - Projection stores, projection selectors, and projection metrics are advanced

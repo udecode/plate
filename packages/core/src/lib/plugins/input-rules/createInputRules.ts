@@ -459,51 +459,6 @@ const getTextSubstitutionMatchRange = ({
   };
 };
 
-type TextSubstitutionCandidate = {
-  end: string;
-  isPaired: boolean;
-  pattern: TextSubstitutionPattern;
-  start: string;
-};
-
-const getTextSubstitutionCandidatesByTrigger = (
-  patterns: TextSubstitutionPattern[]
-) => {
-  const candidatesByTrigger = new Map<string, TextSubstitutionCandidate[]>();
-
-  for (const pattern of patterns) {
-    const matches = Array.isArray(pattern.match)
-      ? [...pattern.match]
-      : [pattern.match];
-    const isPaired = Array.isArray(pattern.format);
-
-    for (const match of matches) {
-      const { end, start, triggers } = getTextSubstitutionMatchRange({
-        match,
-        trigger: pattern.trigger,
-      });
-      const candidate = {
-        end,
-        isPaired,
-        pattern,
-        start,
-      };
-
-      for (const trigger of new Set(triggers)) {
-        const candidates = candidatesByTrigger.get(trigger);
-
-        if (candidates) {
-          candidates.push(candidate);
-        } else {
-          candidatesByTrigger.set(trigger, [candidate]);
-        }
-      }
-    }
-  }
-
-  return candidatesByTrigger;
-};
-
 const getTextSubstitutionMatchPoints = (
   editor: SlateEditor,
   { end, start }: { end: string; start: string }
@@ -550,23 +505,65 @@ const getTextSubstitutionMatchPoints = (
   };
 };
 
+type CompiledPattern = {
+  end: string;
+  pattern: TextSubstitutionPattern;
+  start: string;
+};
+
+const compilePatternsByTrigger = (
+  patterns: TextSubstitutionPattern[]
+): Map<string, CompiledPattern[]> => {
+  const byTrigger = new Map<string, CompiledPattern[]>();
+
+  for (const pattern of patterns) {
+    const matches = Array.isArray(pattern.match)
+      ? pattern.match
+      : [pattern.match];
+    const isPaired = Array.isArray(pattern.format);
+
+    for (const match of matches) {
+      const { end, start, triggers } = getTextSubstitutionMatchRange({
+        match,
+        trigger: pattern.trigger,
+      });
+
+      const compiled: CompiledPattern = {
+        end: isPaired ? '' : end,
+        pattern,
+        start: isPaired ? start : '',
+      };
+
+      for (const trigger of triggers) {
+        let list = byTrigger.get(trigger);
+
+        if (!list) {
+          list = [];
+          byTrigger.set(trigger, list);
+        }
+
+        list.push(compiled);
+      }
+    }
+  }
+
+  return byTrigger;
+};
+
 const resolveTextSubstitution = ({
   candidates,
   editor,
 }: {
-  candidates: TextSubstitutionCandidate[];
+  candidates: CompiledPattern[];
   editor: SlateEditor;
 }): TextSubstitutionMatch | undefined => {
-  for (const { end, isPaired, pattern, start } of candidates) {
-    const points = getTextSubstitutionMatchPoints(editor, {
-      end: isPaired ? '' : end,
-      start: isPaired ? start : '',
-    });
+  for (const { end, pattern, start } of candidates) {
+    const points = getTextSubstitutionMatchPoints(editor, { end, start });
 
     if (!points) continue;
 
     return {
-      end: isPaired ? '' : end,
+      end,
       pattern,
       points,
     };
@@ -620,24 +617,22 @@ export const createTextSubstitutionInputRule = ({
   patterns,
   priority,
 }: TextSubstitutionInputRuleConfig) => {
-  const candidatesByTrigger = getTextSubstitutionCandidatesByTrigger(patterns);
+  const patternsByTrigger = compilePatternsByTrigger(patterns);
+  const triggers = Array.from(patternsByTrigger.keys());
 
   return defineInputRule({
     enabled,
     priority,
     target: 'insertText',
-    trigger: Array.from(candidatesByTrigger.keys()),
+    trigger: triggers,
     resolve: ({ editor, text }) => {
       if (!editor.selection || !editor.api.isCollapsed()) return;
 
-      const candidates = candidatesByTrigger.get(text);
+      const candidates = patternsByTrigger.get(text);
 
       if (!candidates) return;
 
-      return resolveTextSubstitution({
-        candidates,
-        editor,
-      });
+      return resolveTextSubstitution({ candidates, editor });
     },
     apply: ({ editor }, match: TextSubstitutionMatch) =>
       applyTextSubstitution(editor, match),

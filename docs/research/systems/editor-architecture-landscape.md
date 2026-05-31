@@ -6,7 +6,6 @@ updated: 2026-04-15
 related:
   - docs/research/sources/editor-architecture/decorations-annotations-overlay-corpus.md
   - docs/research/sources/editor-architecture/react-19-2-external-store-and-background-ui.md
-  - docs/research/sources/editor-architecture/portable-text-schema-behavior-and-portability.md
   - docs/research/systems/slate-v2-perfect-plan-steal-reject-defer-map.md
   - docs/research/decisions/slate-v2-overlay-architecture-cuts.md
   - docs/research/decisions/slate-v2-overlay-superiority-vs-legacy-and-field.md
@@ -39,7 +38,6 @@ It is the answer to:
   comment stores, and decorator UI into different lanes.
 - Tiptap is the product-layer benchmark, not the engine winner.
 - Premirror + Pretext own the future page-layout / measurement lane.
-- Portable Text owns the spec/schema/behavior-test discipline lane.
 - Slate matters because it is the inheritance pressure and the local v2 proof
   substrate.
 - edix, use-editable, and rich-textarea are the lower-bound warning:
@@ -101,22 +99,6 @@ Take:
 
 - composition and measurement should stay derived
 - layout belongs in a dedicated lane, not hacked into overlay semantics
-
-### Portable Text
-
-Role:
-
-- content specification benchmark
-- schema-applicability benchmark
-- behavior authoring and browser behavior proof benchmark
-
-Take:
-
-- steal public profile/spec discipline for common content shapes
-- steal behavior event/action vocabulary for input, paste, and command policy
-- steal selector-first schema applicability for toolbar/product DX
-- steal scenario-shaped real-browser behavior tests
-- reject Portable Text as the raw Slate value model or runtime engine
 
 ### Slate
 

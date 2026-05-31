@@ -117,4 +117,22 @@ describe('resolvePlugin', () => {
       undefined
     );
   });
+
+  it('does not mutate the configured plugin between editor instances', () => {
+    const configured = createSlatePlugin({ key: 'p' }).configure({
+      inputRules: [
+        {
+          apply: () => true,
+          target: 'insertText',
+          trigger: ' ',
+        } as any,
+      ],
+    });
+
+    const e1 = createSlateEditor({ plugins: [configured] });
+    expect((e1.plugins.p as any).__configuredInputRules?.length).toBe(1);
+
+    const e2 = createSlateEditor({ plugins: [configured] });
+    expect((e2.plugins.p as any).__configuredInputRules?.length).toBe(1);
+  });
 });

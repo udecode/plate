@@ -34,16 +34,14 @@ Verification surface:
   notes if updated, and completion check.
 - Slate v2 source/API/runtime claims must cite live `.tmp/slate-v2` source reads
   or a `.tmp/slate-v2` command.
-- Browser/runtime behavior claims require `.tmp/slate-v2` browser proof.
+- Browser/runtime behavior claims require `.tmp/slate-v2` browser proof in a
+  later pass. This pass records source evidence only.
 
 Constraints:
-- Planning pass was planning-only. The user accepted execution on 2026-05-25, so
-  scoped `.tmp/slate-v2` implementation, example, and proof edits are now part of
-  this lane.
-- Allowed execution scope: `.tmp/slate-v2/packages/slate-layout`,
-  `.tmp/slate-v2/packages/slate-react`, `.tmp/slate-v2/site/examples`,
-  `.tmp/slate-v2/site/pages`, `.tmp/slate-v2/site/constants`,
-  `.tmp/slate-v2/playwright/integration/examples`, and this plan.
+- Planning mode only. Do not patch `.tmp/slate-v2` implementation.
+- Allowed edit scope: `docs/plans/**`, `docs/research/**`,
+  `docs/slate-issues/**`, `docs/slate-v2/ledgers/**`,
+  `docs/slate-v2/references/**`.
 - Keep Slate core Pretext-free. Layout is optional derived view data.
 - Do not claim headless deterministic pagination until the measurement layer is
   actually headless and cross-platform-stable.
@@ -65,16 +63,16 @@ Blocked condition:
 
 Slate Plan lane state:
 - slate_plan_lane_status: complete
-- current_pass: Accepted implementation execution
+- current_pass: Closure score and final gates
 - current_pass_status: complete
 - next_pass: none
 - next_action: none
 - final_handoff_status: complete
 
 Current verdict:
-- verdict: execution complete for the accepted scoped plan; no issue-closure claim
-- confidence: 0.93 for scoped implementation and Chromium/browser proof; raw mobile
-  and strict product collab/export fidelity remain separate release gates
+- verdict: ready for user review
+- confidence: 0.94 for planning readiness; implementation/browser proof remains
+  execution-gated
 - keep / cut / revise call:
   - Keep Pretext as the default `slate-layout` engine.
   - Cut any language that implies Pretext gives cross-client/server page-break
@@ -87,8 +85,8 @@ Current verdict:
     layout when available.
 - reason: current Slate v2 already has page snapshots, fragments, projections,
   Pretext-backed line layout, state fields, and TanStack-backed top-level
-  virtualization, but those pieces were wired in the wrong repeated unit for
-  paged documents and the determinism contract was too optimistic.
+  virtualization, but those pieces are wired in the wrong repeated unit for
+  paged documents and the determinism contract is currently too optimistic.
   Maintainer pressure keeps the plan but narrows ownership: raw Slate exposes
   substrate, `slate-layout` exposes derived layout and provider protocols,
   React owns DOM materialization, and apps/Plate own product UI and export
@@ -100,13 +98,13 @@ Current verdict:
   `domStrategy` remains the only public incomplete-DOM switch, page virtualization
   is internal to `PagedEditable`, `measurementProfile` is metadata not a required
   user knob, and `pageBreaks` stays opt-in strict-fidelity metadata. High-risk
-  pressure keeps issue-closure claims gated until release-quality product proofs
-  exist. Issue sync accounting confirms the final API/proof wording changes no
-  fixed/improved issue counts and is reflected in the v2 sync ledger, coverage
-  matrix, fork dossier, and PR reference. Execution added the scoped substrate:
-  `pageView`, page/spread mount items, page-unit virtualizer input, outer scroll
-  root support, measurement profiles, opt-in `pageBreaks`, provider boxes, and
-  Chromium proof on the existing `/examples/pagination` route.
+  pressure keeps implementation claims gated until the missing release proofs
+  exist; adjacent tests are good evidence, not final proof. Issue sync accounting
+  confirms the final API/proof wording changes no fixed/improved issue counts
+  and is now reflected in the v2 sync ledger, coverage matrix, fork dossier, and
+  PR reference. The closure pass verified the score threshold, pass table,
+  planning-only verification surface, issue/reference sync, final handoff, and
+  no-runnable-planning-work state.
 
 Completion rule:
 - Do not call `update_goal(status: complete)` while any pass/checklist/gate
@@ -126,7 +124,8 @@ Work Checklist:
 - [x] Objective includes lane outcome, pass schedule, one-pass-per-activation
       policy, completion threshold, verification surface, constraints,
       boundaries, and blocked condition.
-- [x] Accepted execution pass completed after planning closure.
+- [x] One-pass-per-activation policy respected: this activation closes only the
+      Closure score and final gates pass.
 - [x] Live source grounding recorded for current implementation claims.
 - [x] Issue ledger / ClawSweeper pass applied: gitcrawl-v2 sync ledger, issue
       coverage matrix, and fork dossier updated; PR reference inspected and left
@@ -141,18 +140,16 @@ Work Checklist:
 - [x] Slate maintainer objection ledger complete.
 - [x] Verification workspace gate recorded for every Slate v2 source, runtime,
       browser, package, public API, or issue-fix claim.
-- [x] Focused package tests added/updated for page mount planning, split-block
-      retention, page-level virtualization, page-break metadata, and provider boxes.
-- [x] Browser proof run for canonical pagination, proof harness pagination, active
-      page-level virtualization, and DOMCoverage policy rows.
+- [x] TDD marked N/A for this pass: no implementation or behavior proof edited.
+- [x] Browser proof marked N/A for this pass: source-only planning pass.
 
 Completion Gates:
 | Gate | Applies | Required action | Evidence |
 |------|---------|-----------------|----------|
-| Named verification threshold | yes | Run final plan completion check in closure pass | Closure pass audited all scheduled passes, raised final weighted score to 0.92, and final execution reruns the autogoal checker after updating proof evidence. |
-| Slate v2 source/runtime/browser/API claim | yes | Record live `.tmp/slate-v2` source/commands | Current-state and behavior claims are backed by `.tmp/slate-v2` package tests, Chromium browser proof, `bun check`, and autoreview evidence below. |
+| Named verification threshold | yes | Run final plan completion check in closure pass | Closure pass audited all scheduled passes, raised final weighted score to 0.92, and runs `node .agents/rules/autogoal/scripts/check-complete.mjs docs/plans/2026-05-25-slate-v2-pretext-pagination-virtualization-feedback.md` as the final checker. |
+| Slate v2 source/runtime/browser/API claim | yes | Record live `.tmp/slate-v2` source/commands | Current-state claims are source-confirmed in the verification workspace gate; behavior/browser/API implementation proofs are recorded as future execution gates, and this planning lane makes no implementation or issue-fix claim. |
 | Issue ledger or PR reference changed | yes | Sync manual rows; inspect PR reference for claim-count drift | `docs/slate-issues/gitcrawl-v2-sync-ledger.md`, `docs/slate-v2/ledgers/issue-coverage-matrix.md`, `docs/slate-v2/ledgers/fork-issue-dossier.md`, and `docs/slate-v2/references/pr-description.md` synced to final API/proof wording; fixed/improved claim counts unchanged |
-| Autoreview for implementation changes | yes | Run local autoreview after execution patches | Final `.tmp/slate-v2` local autoreview run was clean after split-block retention proof was added. |
+| Autoreview for implementation changes | no | N/A planning-only | no `.tmp/slate-v2` implementation patch |
 | Final user-review handoff | yes | Emit final handoff or keep next pass | Final user-review handoff recorded below; final response should summarize it. |
 | Goal plan complete | yes | Run check-complete | `node .agents/rules/autogoal/scripts/check-complete.mjs docs/plans/2026-05-25-slate-v2-pretext-pagination-virtualization-feedback.md` passed in closure. |
 
@@ -170,8 +167,7 @@ Phase / pass table:
 | Ecosystem maintainer pass | complete | Pretext/Premirror/TanStack/Tiptap/DOMCoverage/GitHub large-surface keep-reject decisions rechecked against the high-risk queue; no strategy reversal, but Tiptap CSS pagination is a harder reject | revision pass |
 | Revision pass | complete | final public API target, internal runtime target, proof queue, and issue-sync impact revised from ecosystem decisions; no new fixed/improved issue claims added | issue sync accounting |
 | Issue sync accounting | complete | v2 sync ledger, issue coverage matrix, fork dossier, and PR reference updated/verified against final API target; no new fixed/improved issue claims | closure score and final gates |
-| Closure score and final gates | complete | Closure audit verified the score threshold, all scheduled pass rows, issue/reference sync, final handoff, reboot status, open risks, and no remaining planning pass. | accepted implementation execution |
-| Accepted implementation execution | complete | Scoped `.tmp/slate-v2` implementation, package proof, Chromium browser proof, `bun check`, clean autoreview, and final plan evidence completed. | final handoff |
+| Closure score and final gates | complete | Closure audit verified the score threshold, all scheduled pass rows, issue/reference sync, planning-only workspace gate, TDD/browser N/A reasons, final handoff, reboot status, open risks, and no remaining planning pass. | final handoff |
 
 Scorecard:
 | Dimension | Weight | Score | Evidence |
@@ -265,7 +261,7 @@ Hook / component / render DX target:
 | `useSlateLayout` | `useSlateLayout(editor, { page?, typography?, pageBreaks? })` | one layout source for continuous and paged consumers | memoized derived store; dirty range later | current hook exists | keep/revise |
 | `PagedEditable` | `layout`, `domStrategy`, `pageView` | page UI wraps editable overlay | page/spread repeated unit when virtualized | current component renders all page surfaces | revise |
 | `EditableLayout` protocol | current `getVirtualizedTopLevelItems` plus internal page/spread mount items | continuous docs can keep top-level items; paged docs must not force pages through the block API | page/spread item generation happens in `PagedEditable`, not user code | current protocol returns top-level items only | revise |
-| canonical example | existing `/examples/pagination` route, clean default state, controls in-route | users see one obvious pagination example URL | no extra route for the same concept | current example is the public route and proof surface | revise |
+| canonical example | `pagination-basic` style route: `useSlateLayout` + `PagedEditable` only | users see the actual API before the proof harness | no debug/table/stress controls in first teaching surface | current example is a heavy proof surface | add |
 
 Revision pass:
 Pass verdict:
@@ -777,8 +773,8 @@ Verification workspace gate:
 | Pretext prepare uses canvas; layout hot path is arithmetic | `../pretext` | `nl -ba ../pretext/src/layout.ts`; `nl -ba ../pretext/src/measurement.ts` | source-confirmed | current pass |
 | Pretext has documented font/profile drift | `../pretext` | `nl -ba ../pretext/RESEARCH.md` | source-confirmed | current pass |
 | Slate layout has pages/fragments/snapshots and Pretext engine | `.tmp/slate-v2` | `nl -ba packages/slate-layout/src/index.ts` | source-confirmed | current pass |
-| Current paged editable exposes page/spread mount items and grouped page view props | `.tmp/slate-v2` | `nl -ba packages/slate-layout/src/react.tsx` | source-confirmed | execution pass |
-| Current virtualized plan can range over page layout items and nearest scroll ancestors | `.tmp/slate-v2` | `nl -ba packages/slate-react/src/dom-strategy/use-virtualized-root-plan.ts` | source-confirmed | execution pass |
+| Current paged editable feeds block layout items and renders all page surfaces | `.tmp/slate-v2` | `nl -ba packages/slate-layout/src/react.tsx` | source-confirmed | current pass |
+| Current virtualized plan is top-level id/index based | `.tmp/slate-v2` | `nl -ba packages/slate-react/src/dom-strategy/use-virtualized-root-plan.ts` | source-confirmed | current pass |
 | Current example keeps page settings in shared state | `.tmp/slate-v2` | `nl -ba site/examples/ts/pagination.tsx` | source-confirmed | current pass |
 | Issue-ledger no-claim posture synced | `plate-2` | `rg -n "Pretext Pagination / Page Virtualization Feedback" docs/slate-issues/gitcrawl-v2-sync-ledger.md docs/slate-v2/ledgers/issue-coverage-matrix.md docs/slate-v2/ledgers/fork-issue-dossier.md` | artifact-confirmed | issue-ledger pass |
 | PR reference did not need claim sync | `plate-2` | `rg -n "#5944|#2793|#790|page virtualization" docs/slate-v2/references/pr-description.md` | no matching PR-claim rows; no change needed | issue-ledger pass |
@@ -811,9 +807,9 @@ Final completion gates:
 | all scheduled pass rows complete | pass | Phase/pass table rows from current-state through closure are complete. |
 | issue/reference sync closed | pass | v2 sync ledger, issue coverage matrix, fork dossier, and PR reference all name the final API/proof target; fixed/improved claim counts unchanged. |
 | live source grounding complete | pass | Verification workspace gate records live `.tmp/slate-v2`, sibling repo, local Tiptap docs, official Tiptap docs, and plan/ledger artifact reads for every current-state claim. |
-| behavior/browser proof scoped honestly | pass | Package proof, Chromium pagination proof, and Chromium DOMCoverage proof are recorded; raw mobile, issue-fix, and product export/collab claims remain non-claims. |
-| TDD/browser proof | pass | Focused package rows and browser rows passed for the scoped implementation. |
-| autoreview clean or N/A | pass | Final `.tmp/slate-v2` local autoreview run reported no accepted/actionable findings. |
+| behavior/browser proof scoped honestly | pass | The plan records behavior/browser proof as execution gates and makes no implementation, native-parity, issue-fix, or release-quality browser claim in planning mode. |
+| TDD/browser proof | pass | N/A for planning-only closeout; required unit/browser rows are named before any accepted implementation or issue claim. |
+| autoreview clean or N/A | pass | N/A: this pass changed planning, research, ledger, and PR-reference artifacts only; no `.tmp/slate-v2` implementation changed. |
 | final handoff emitted | pass | Final user-review handoff is recorded below and will be summarized in the final response. |
 | no runnable planning work remains | pass | `next_pass: none`, `next_action: none`, and all scheduled Slate Plan passes are complete. |
 | `check-complete` passes | pass | Final checker result recorded under Verification evidence. |
@@ -852,7 +848,7 @@ Pass verdict:
 | stale authoritative breaks accepted | document/font/page settings change after snapshot | export/collab replays wrong page breaks | no current `pageBreaks` API exists; plan only sketches it | snapshot key includes doc version, root, page settings, typography profile, engine id/version, writer id | stale rejection tests and export-reader fixture | yes |
 | table/media split lies | table/image/BFC-like blocks treated as text blocks | overlap footer, lose content, or corrupt semantics | box kinds and split policies exist at `.tmp/slate-v2/packages/slate-layout/src/index.ts:105`; structured-box extraction tests cover image/table/table-cell at `.tmp/slate-v2/packages/slate-layout/test/page-layout-contract.test.ts:652`; avoid-split movement is tested at `:808` | provider protocol for table/media/intrinsic boxes; no raw Slate product TableKit | package fixtures for merged cells, nested table, row span, oversized image, and BFC-like container; browser page-boundary rows | yes |
 | missing-DOM native parity lie | virtualized pages are missing from DOM | browser find/a11y/copy claims overpromise | DOMCoverage defaults `findPolicy` to `not-native-until-mounted`; Playwright proves hidden content stays out of native find until materialized at `.tmp/slate-v2/playwright/integration/examples/dom-coverage-boundaries.test.ts:77`; model-backed hidden copy is proven at `:142` and select-all at `:161` | document degraded mode; keep model-backed copy; materialize on selection/programmatic access | paged virtualized rows for browser find caveat, select-all/copy, and screen-reader/manual lane | yes for native-parity claim, no for alpha degraded mode |
-| canonical DX rots into proof harness | example route becomes too noisy | users copy debug/table/projection code as API | current example renders `PagedEditable` inside the public pagination route at `.tmp/slate-v2/site/examples/ts/pagination.tsx:796` | keep one `/examples/pagination` route with a clean default state and opt-in controls | docs/example review plus browser smoke on canonical route | yes for user-review-ready docs |
+| canonical DX rots into proof harness | example remains the only public teaching surface | users copy debug/table/projection code as API | current example renders `PagedEditable` only inside a heavy proof surface at `.tmp/slate-v2/site/examples/ts/pagination.tsx:796` | split `pagination-basic`/canonical from stress/proof harness | docs/example review plus browser smoke on canonical route | yes for user-review-ready docs |
 | release gate too weak | only package tests run | browser/runtime failures escape | root scripts define `check`, `check:full`, integration, release-proof, persistent soak, and Playwright gates at `.tmp/slate-v2/package.json:33` | execution closure names focused package tests, pagination Playwright rows, then `bun check` or `bun check:full` depending claim strength | recorded command results from `.tmp/slate-v2`, not `plate-2` | yes before implementation release claim |
 
 High-risk proof queue:
@@ -959,31 +955,9 @@ Fast driver gates:
 | Gate | Cwd | Command / artifact | Proves | Status |
 |------|-----|--------------------|--------|--------|
 | planning artifact check | plate-2 | `node .agents/rules/autogoal/scripts/check-complete.mjs docs/plans/2026-05-25-slate-v2-pretext-pagination-virtualization-feedback.md` | final plan integrity | passed in closure |
-| Slate v2 package proof | .tmp/slate-v2 | `bun --filter ./packages/slate-layout test`; `cd packages/slate-react && bun test:vitest`; `bun test ./packages/slate-history/test/document-state-history-contract.ts` | source/API behavior | pass: layout, page mount plan, split-block retention, pageBreaks metadata, slate-history state fields, and broad slate-react Vitest are green |
-| Slate v2 browser proof | .tmp/slate-v2 | `bunx playwright test playwright/integration/examples/pagination.test.ts --project=chromium`; `bunx playwright test playwright/integration/examples/dom-coverage-boundaries.test.ts --project=chromium` | paged editing/page virtualization/missing-DOM policy | pass for Chromium: canonical route, proof harness, active page-level virtualization, DOMCoverage find/copy/select-all/IME rows; mobile raw row remains skipped/not claimed |
-| Slate v2 release proof | .tmp/slate-v2 | `bun check`, escalating to `bun check:full` only for release-quality browser claims | whole touched surface | pass for fast gate; `bun check:full` not run because no raw-device/release-quality claim is made |
-| Autoreview | .tmp/slate-v2 | `.agents/skills/autoreview/scripts/autoreview --mode local` | review closeout | pass: clean after adding split-block retention regression proof |
-
-Execution progress:
-| Phase | Status | Evidence | Remaining |
-|-------|--------|----------|-----------|
-| 1 page/spread mount plan | implemented and tested | `.tmp/slate-v2/packages/slate-layout/src/page-mount-plan.ts`; `PagedEditable` accepts `pageView` and emits page mount items through `EditableLayout`; layout tests cover single pages, spreads, split-block retention, selected/promoted/composing retention | no remaining scoped work |
-| 2 measurement profile and page-break authority | implemented and tested | `SlatePageLayoutSnapshot.measurementProfile`; opt-in `pageBreaks` read/write authority with profile/document/root stale checks; layout package test "keeps authoritative page break snapshots opt-in and profile checked"; `slate-history` state-field contract passed | product collab/export reader proof remains a separate release gate, not a claim here |
-| 3 page-level virtualizer | implemented and browser-proven | `EditableLayout.getVirtualizedPageItems`; virtualized root plan ranges TanStack over page items; nearest scrollable ancestor support lets paged editors virtualize inside external viewports; focused Vitest and Chromium page-level virtualization row passed | raw mobile and large-device soak not claimed |
-| 4 provider split policy | implemented and tested | `SlatePageLayoutBoxProvider` option lets table/media/BFC packages own intrinsic boxes and split policy; layout package provider test passed | richer table/media plugin fixtures remain follow-up release proof |
-| 5 canonical example route | implemented and browser-proven | existing `/examples/pagination` remains the single route; proof controls stay in-route; Chromium route smoke passed | no remaining scoped work |
-
-Execution verification:
-| Command | Cwd | Result | Notes |
-|---------|-----|--------|-------|
-| `bun --filter ./packages/slate-layout test` | `.tmp/slate-v2` | passed | final run: 31 tests, 108 assertions, including split-block retention |
-| `bunx vitest run --config ./vitest.config.mjs test/dom-strategy-page-virtualization.test.tsx` | `.tmp/slate-v2/packages/slate-react` | passed | 2 focused rows: page item unit and outer scroll container |
-| `bun typecheck:site` | `.tmp/slate-v2` | passed | pagination example `pageView` call site compiles |
-| `bun test ./packages/slate-history/test/document-state-history-contract.ts` | `.tmp/slate-v2` | passed | 8 state-field/history rows for pageBreaks-style metadata |
-| `bun check` | `.tmp/slate-v2` | passed | lint, package/site/root typecheck, Bun tests, layout tests, and 396 slate-react Vitest tests |
-| `bunx playwright test playwright/integration/examples/pagination.test.ts --project=chromium` | `.tmp/slate-v2` | passed | 9 Chromium pagination rows, including canonical route and active page-level virtualization |
-| `bunx playwright test playwright/integration/examples/dom-coverage-boundaries.test.ts --project=chromium` | `.tmp/slate-v2` | passed | 8 Chromium rows passed, 1 mobile-only row skipped |
-| `.agents/skills/autoreview/scripts/autoreview --mode local` | `.tmp/slate-v2` | passed | final run clean: no accepted/actionable findings |
+| Slate v2 package proof | .tmp/slate-v2 | `bun --filter ./packages/slate-layout test`; `cd packages/slate-react && bun test:vitest`; targeted `slate-history` state-field rows when page-break metadata is implemented | source/API behavior | pending execution |
+| Slate v2 browser proof | .tmp/slate-v2 | `playwright test playwright/integration/examples/pagination.test.ts --project=chromium`; paged virtualized follow-up rows; `playwright test playwright/integration/examples/dom-coverage-boundaries.test.ts --project=chromium` | paged editing/page virtualization/missing-DOM policy | pending execution |
+| Slate v2 release proof | .tmp/slate-v2 | `bun check`, escalating to `bun check:full` only for release-quality browser claims | whole touched surface | pending execution |
 
 Final user-review handoff outline:
 - accepted plan items: Pretext default layout engine, page/spread virtualization
@@ -999,12 +973,11 @@ Final user-review handoff outline:
 - issue claims and non-claims: no new `Fixes #...`; no new `Improves #...`;
   #5944, #790, #2793/#2572, #5924, rerender guardrails, and large-doc rows remain
   proof-gated.
-- proof gates passed for this scoped lane: page/spread mount contract,
-  split-block retention, active page-level virtualization, authoritative break
-  metadata checks, state-field history rows, DOMCoverage browser rows, canonical
-  example split, `bun check`, and autoreview.
-- remaining non-claims: raw mobile/device proof, large-document soak, and
-  product collab/export fidelity are release gates outside this scoped execution.
+- proof gates: page/spread mount contract, mounted-count/edit-latency proof,
+  authoritative break replay/stale checks, table/media fixtures, DOMCoverage
+  browser rows, canonical example split, and `.tmp/slate-v2` release commands.
+- accepted-plan execution handoff: implementation starts only after explicit user
+  acceptance and a new execution-shaped `slate-plan` invocation naming this plan.
 
 Final completion gates:
 | Gate | Required evidence | Status |
@@ -1014,7 +987,7 @@ Final completion gates:
 | issue/reference sync closed | issue-ledger sync status closed | pass |
 | live source grounding complete | source-backed rows cite current owners | pass |
 | workspace verification recorded | verification workspace gate closed | pass |
-| autoreview clean or N/A | final `.tmp/slate-v2` local autoreview run | pass |
+| autoreview clean or N/A | N/A for planning-only, required if execution patches code | pass |
 | final handoff emitted or lane remains pending | final handoff recorded; next pass none | pass |
 | `check-complete` passes | check-complete command | pass |
 
@@ -1026,8 +999,9 @@ Findings:
 - Current Slate v2 already has the right raw ingredients: page settings,
   fragments, pages, projections, Pretext engine, `PagedEditable`, state fields,
   and virtualized DOM strategy.
-- Executed paged virtualization now feeds page/spread items into `Editable`, while
-  continuous/pathological mode can still use block layout items.
+- Current paged virtualization shape is wrong for long-term architecture:
+  `PagedEditable` feeds block geometry into `Editable` and renders every page
+  surface.
 - The feedback's authoritative-source idea is the correct strict-fidelity
   extension point. Make it opt-in, shared state, profile-hashed, and stale-safe.
 - Related issue discovery found no basis for new fixed or improved issue claims.
@@ -1146,20 +1120,15 @@ Timeline:
 Verification evidence:
 - Active goal: `get_goal` returned the matching Slate Plan objective for this
   virtualization/pagination feedback lane.
-- Skill gate: `.agents/skills/slate-plan/SKILL.md` was read before execution
-  continued; `autoreview` was used before closure because code changed.
+- Skill gate: `.agents/skills/slate-plan/SKILL.md` was read in this closure pass;
+  closure is legal because all previous scheduled pass rows were already complete.
 - Planning artifact gate: this plan records current-state source reads,
   ecosystem research, issue/reference accounting, maintainer objections, high-risk
-  proof gates, final API revision, issue sync accounting, execution evidence,
-  scorecard, and handoff.
-- Behavior/browser proof: `.tmp/slate-v2` passed `bun check`,
-  `bun test ./packages/slate-history/test/document-state-history-contract.ts`,
-  focused page-virtualization Vitest, Chromium pagination browser proof, and
-  Chromium DOMCoverage browser proof. The parallel DOMCoverage attempt failed only
-  because two Next builds ran at once; the sequential rerun passed.
-- Review proof: `.agents/skills/autoreview/scripts/autoreview --mode local` in
-  `.tmp/slate-v2` first found a split-block retention risk; the regression test
-  was added; the final autoreview rerun was clean.
+  proof gates, final API revision, issue sync accounting, scorecard, and handoff.
+- Behavior/browser proof boundary: no Slate v2 tests or browser proof were run in
+  this planning closure because this lane does not change implementation or claim
+  behavior. The plan names the exact package/browser proof gates required before
+  accepted implementation, release-quality browser claims, or issue closure.
 - Final checker: `node .agents/rules/autogoal/scripts/check-complete.mjs
   docs/plans/2026-05-25-slate-v2-pretext-pagination-virtualization-feedback.md`
   returned `[autogoal] complete:
@@ -1174,10 +1143,8 @@ Final user-review handoff:
   virtualized `domStrategy`, and optional `pageBreaks`. Cut public
   `pageVirtualization`; do not expose TanStack, Pretext caches, or product
   TableKit mechanics.
-- Runtime target: paged mode feeds pages/spreads into the virtualizer first;
-  continuous or pathological documents can keep block/fragment virtualization.
-  Virtualized mode can use an outer scroll viewport, which is the correct shape
-  for paged editors.
+- Runtime target: paged mode virtualizes pages/spreads first; continuous or
+  pathological documents can keep block/fragment virtualization.
 - Strict fidelity: `pageBreaks` is opt-in metadata with read/write authority,
   measurement/profile hashes, stale rejection, writer identity, history-skip
   derived writes, and export-reader proof.
@@ -1188,21 +1155,22 @@ Final user-review handoff:
 - Issue posture: no new `Fixes #...` and no new `Improves #...`. #5944, #790,
   #2793/#2572, #5924, rerender guardrails, and large-doc rows remain proof-gated
   exactly as recorded.
-- Execution result: scoped implementation is done in `.tmp/slate-v2`, with
-  package proof, Chromium browser proof, `bun check`, and clean autoreview.
-  Issue closure, raw mobile proof, and strict product collab/export fidelity
-  remain separate release gates.
+- Execution boundary: implementation begins only after explicit user acceptance
+  and a new execution-shaped `slate-plan` invocation naming this plan. Execution
+  must run focused package tests and pagination/DOMCoverage browser rows from
+  `.tmp/slate-v2` before any release or issue-closure claim.
 
 Reboot status:
 | Question | Answer |
 |----------|--------|
-| Where am I? | Accepted implementation execution complete |
-| Where am I going? | User review or commit/PR if requested |
-| What is the goal? | Closed: the accepted scoped plan is implemented and verified |
+| Where am I? | Closure score and final gates complete |
+| Where am I going? | User review; execution starts only after explicit acceptance |
+| What is the goal? | Closed: the plan is ready for user review |
 | What have I learned? | Feedback is correct; Pretext is still right but not headless-stable today; page mode needs internal page/spread virtualization; public `pageVirtualization` is extra API noise; authoritative page breaks need explicit writer authority; Tiptap Pages is stronger negative evidence against CSS-float pagination; DOMCoverage must remain a browser-policy layer; `measurementProfile` should be metadata, not a user-facing engine knob; issue ledgers can stay no-claim because the plan is architecture/proof-gate work, not an implementation fix |
-| What have I done? | Implemented `pageView`, page/spread mount items, measurement profiles, opt-in `pageBreaks`, provider boxes, page-unit virtualization with outer scroll support, single-route pagination browser proof, and final clean autoreview |
+| What have I done? | Closed the plan with current-state evidence, target direction, related issue classifications, manual issue-ledger sync, hardened owner/decision boundary, compiled research page, refreshed source/doc evidence, Tiptap pushback, pressure-pass cuts, maintainer objection decisions, high-risk proof gates, final ecosystem keep/reject decisions, final API/proof revision decisions, final issue/PR accounting sync, final score, and final handoff |
 
 Open risks:
-- None for the scoped execution lane. Remaining non-claims: raw mobile/device
-  proof, large-document soak, issue closure, and strict product collab/export
-  fidelity.
+- None for planning closure. Implementation risks remain intentionally
+  execution-gated: page/spread mount planning, authoritative break replay,
+  provider/split fixtures, missing-DOM browser proof, canonical example split, and
+  release command proof.

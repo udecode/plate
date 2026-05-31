@@ -21,7 +21,7 @@ const releaseIntroPattern = /^#\s+Releases[^\S\r\n]*$/m;
 const listIndentPattern = /^-\s{3}/gm;
 const continuationLinePattern = /^\s{2,}\S/;
 const generatedFooterPattern =
-  /\n*(?:For detailed changes, see \[`CHANGELOG`\]\([^)]+\)(?:\n\nThanks to [\s\S]*?)?(?:\n\nFull changelog: \[`[^`]+`\]\([^)]+\))?|\[`CHANGELOG`\]\([^)]+\)(?:\s+·\s+\[`[^`]+`\]\([^)]+\))?(?:\s+·\s+(?:Thanks to|By) [^\n]+)?)\s*$/;
+  /\n*(?:For detailed changes, see \[`CHANGELOG`\]\([^)]+\)(?:\n\nThanks to [\s\S]*?)?(?:\n\nFull changelog: \[`[^`]+`\]\([^)]+\))?|\[`CHANGELOG`\]\([^)]+\)(?:\s+·\s+\[`[^`]+`\]\([^)]+\))?(?:\s+·\s+(?:Thanks to|By) [^\n]+)?|\[`v[^`]+`\]\([^)]+\)(?:\s+·\s+(?:Thanks to|By) [^\n]+)?)\s*$/;
 const changesetChangeLinePattern =
   /^-\s+\[(?<changeLabel>#\d+|`[0-9a-f]{7,40}`)\]\((?<changeUrl>[^)]+)\)\s+by\s+\[(?<username>@[A-Za-z0-9-]+(?:\\?\[bot\\?\])?)\]\((?<userUrl>[^)]+)\)\s+[–-]\s*(?<summary>.*)$/;
 const leadingIndentPattern = /^\s{4}/;
@@ -60,8 +60,13 @@ async function main(args) {
   const parsedReleases = pullRequests.flatMap((pullRequest) =>
     parseVersionPackagesPullRequest(pullRequest)
   );
+  const releaseUrlsByTag = await readGitHubReleaseUrls(
+    mergeReleaseLists(existingReleases, parsedReleases).map(
+      (release) => release.tag
+    )
+  );
   const releases = filterReleasesFromVersion(
-    mergeReleases(existingReleases, parsedReleases),
+    mergeReleases(existingReleases, parsedReleases, { releaseUrlsByTag }),
     options.fromVersion
   );
 
@@ -119,7 +124,7 @@ async function readPullRequest(number) {
     '--repo',
     githubRepo,
     '--json',
-    'number,title,body,createdAt,mergedAt,updatedAt,url',
+    'number,title,body,createdAt,mergedAt,mergeCommit,updatedAt,url',
   ]);
 
   return JSON.parse(stdout);
@@ -136,12 +141,41 @@ async function readLatestPullRequests(limit) {
     '--search',
     '"[Release] Version packages"',
     '--json',
-    'number,title,body,createdAt,mergedAt,updatedAt,url',
+    'number,title,body,createdAt,mergedAt,mergeCommit,updatedAt,url',
     '--limit',
     String(limit),
   ]);
 
   return filterMergedVersionPackagePullRequests(JSON.parse(stdout));
+}
+
+async function readGitHubReleaseUrls(tags) {
+  if (tags.length === 0) return new Map();
+
+  try {
+    const { stdout } = await execFile('gh', [
+      'release',
+      'list',
+      '--repo',
+      githubRepo,
+      '--limit',
+      String(Math.max(tags.length, 30)),
+      '--json',
+      'tagName',
+    ]);
+    const requestedTags = new Set(tags);
+
+    return new Map(
+      JSON.parse(stdout)
+        .filter((release) => requestedTags.has(release.tagName))
+        .map((release) => [
+          release.tagName,
+          `${githubBaseUrl}/releases/tag/${encodeTag(release.tagName)}`,
+        ])
+    );
+  } catch {
+    return new Map();
+  }
 }
 
 export function filterMergedVersionPackagePullRequests(pullRequests) {
@@ -182,6 +216,10 @@ function compileVersionPackageRelease({
   const { content, contributors } = compileReleaseContent(packageChanges);
 
   return {
+    changelogUrl: getPackageChangelogUrl(
+      selectedPackage.packageName,
+      pullRequest.mergeCommit?.oid ?? 'main'
+    ),
     content,
     contributors,
     date: formatDate(
@@ -209,25 +247,29 @@ function groupPackageChangesByVersion(packageChanges) {
   return packageChangesByVersion;
 }
 
-export function mergeReleases(existingReleases, nextReleases) {
-  const releasesByTag = new Map();
-
-  for (const release of [...existingReleases, ...nextReleases]) {
-    releasesByTag.set(release.tag, release);
-  }
-
-  const releases = [...releasesByTag.values()].sort((a, b) =>
-    compareVersionsDesc(a.tag, b.tag)
-  );
+export function mergeReleases(
+  existingReleases,
+  nextReleases,
+  { releaseUrlsByTag = new Map() } = {}
+) {
+  const releases = mergeReleaseLists(existingReleases, nextReleases);
 
   return releases.map((release, index) => {
     const previousRelease = releases[index + 1];
+    const releaseUrl = releaseUrlsByTag.get(release.tag);
+    const previousReleaseUrl = previousRelease
+      ? releaseUrlsByTag.get(previousRelease.tag)
+      : undefined;
     const url =
-      release.versionPackagePrUrl ?? getPackageReleaseUrl(release.packageTag);
+      releaseUrl ??
+      release.versionPackagePrUrl ??
+      getPackageReleaseUrl(release.packageTag);
     const fullChangelogUrl =
-      previousRelease?.packageTag && release.packageTag
-        ? getCompareUrl(previousRelease.packageTag, release.packageTag)
-        : url;
+      previousRelease?.tag && releaseUrl && previousReleaseUrl
+        ? getCompareUrl(previousRelease.tag, release.tag)
+        : previousRelease?.packageTag && release.packageTag
+          ? getCompareUrl(previousRelease.packageTag, release.packageTag)
+          : url;
     const changelogLabel = previousRelease
       ? `${previousRelease.tag}...${release.tag}`
       : release.tag;
@@ -238,12 +280,26 @@ export function mergeReleases(existingReleases, nextReleases) {
         changelogLabel,
         content: release.content,
         contributors: release.contributors,
-        detailedChangesUrl: release.versionPackagePrUrl ?? url,
+        detailedChangesUrl: releaseUrl
+          ? undefined
+          : (release.versionPackagePrUrl ?? url),
         fullChangelogUrl,
       }),
       url,
     };
   });
+}
+
+function mergeReleaseLists(existingReleases, nextReleases) {
+  const releasesByTag = new Map();
+
+  for (const release of [...existingReleases, ...nextReleases]) {
+    releasesByTag.set(release.tag, release);
+  }
+
+  return [...releasesByTag.values()].sort((a, b) =>
+    compareVersionsDesc(a.tag, b.tag)
+  );
 }
 
 function getReleaseContentWithFooter({
@@ -254,7 +310,7 @@ function getReleaseContentWithFooter({
   fullChangelogUrl,
 }) {
   const footer = [
-    `[\`CHANGELOG\`](${detailedChangesUrl})`,
+    detailedChangesUrl ? `[\`CHANGELOG\`](${detailedChangesUrl})` : undefined,
     `[\`${changelogLabel}\`](${fullChangelogUrl})`,
     contributors.length > 0
       ? `By ${formatContributorList(contributors)}`
@@ -485,6 +541,33 @@ function getPackageReleaseUrl(tag) {
   if (!tag) return;
 
   return `${githubBaseUrl}/releases/tag/${encodeTag(tag)}`;
+}
+
+function getPackageChangelogUrl(packageName, commitRef) {
+  const directory = getPackageDirectory(packageName);
+
+  if (!directory) return;
+
+  return `${githubBaseUrl}/blob/${commitRef}/${directory}/CHANGELOG.md`;
+}
+
+function getPackageDirectory(packageName) {
+  if (packageName === 'platejs') return 'packages/plate';
+  if (packageName === 'depset') return 'packages/udecode/depset';
+
+  if (packageName.startsWith('@platejs/')) {
+    return `packages/${packageName.slice('@platejs/'.length)}`;
+  }
+
+  if (packageName.startsWith('@udecode/')) {
+    const name = packageName.slice('@udecode/'.length);
+
+    if (name.startsWith('plate-')) {
+      return `packages/${name.slice('plate-'.length)}`;
+    }
+
+    return `packages/udecode/${name}`;
+  }
 }
 
 function encodeTag(tag) {

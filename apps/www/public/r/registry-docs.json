@@ -131,9 +131,9 @@
         "https://platejs.org/r/installation-react-docs",
         "https://platejs.org/r/installation-rsc-docs",
         "https://platejs.org/r/installation-docs",
-        "https://platejs.org/r/migration-index-docs",
         "https://platejs.org/r/migration-slate-to-plate-docs",
-        "https://platejs.org/r/migration-v48-docs"
+        "https://platejs.org/r/migration-v48-docs",
+        "https://platejs.org/r/releases-index-docs"
       ],
       "title": "Documentation",
       "type": "registry:file"
@@ -1798,19 +1798,6 @@
       "type": "registry:file"
     },
     {
-      "description": "Documentation for Major Releases",
-      "files": [
-        {
-          "path": "../../content/migration/index.mdx",
-          "target": "content/docs/plate/migration/index.mdx",
-          "type": "registry:file"
-        }
-      ],
-      "name": "migration-index-docs",
-      "title": "Major Releases",
-      "type": "registry:file"
-    },
-    {
       "description": "Learn how to migrate from Slate to Plate.",
       "files": [
         {
@@ -1834,6 +1821,19 @@
       ],
       "name": "migration-v48-docs",
       "title": "Major Releases",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Releases",
+      "files": [
+        {
+          "path": "../../content/releases/index.mdx",
+          "target": "content/docs/plate/releases/index.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "releases-index-docs",
+      "title": "Releases",
       "type": "registry:file"
     }
   ],

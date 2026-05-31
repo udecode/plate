@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import { execFileSync } from 'node:child_process';
 import { appendFile, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -11,14 +12,25 @@ const packageRoots = [
   path.join(repoRoot, 'packages'),
   path.join(repoRoot, 'packages', 'udecode'),
 ];
+const releaseIndexPath = path.join(
+  repoRoot,
+  'apps/www/src/generated/release-index.json'
+);
 const semverPattern = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/;
 const releaseTypeHeadingPattern =
   /^###\s+(Major|Minor|Patch) Changes[^\S\r\n]*$/gm;
 const nextVersionHeadingPattern = /^##\s+/m;
 const packageHeadingPattern = /^## `[^`]+`[^\S\r\n]*$/gm;
+const packageNameFromHeadingPattern = /^## `([^`]+)`/;
 const changeHeadingPattern = /^###\s+(Major|Minor|Patch) Changes[^\S\r\n]*$/gm;
 const changelogLinkPattern =
   /For detailed changes, see \[`CHANGELOG`\]\([^)]+\)/g;
+const fullChangelogLinkPattern = /Full changelog: \[`[^`]+`\]\([^)]+\)/g;
+const fullChangelogFooterPattern =
+  /\n\nFull changelog: \[`[^`]+`\]\([^)]+\)\s*$/;
+const markdownHeadingBoundaryPattern = /\n##\s+/;
+const packageChangelogFooterPattern =
+  /\n*For detailed changes, see \[`CHANGELOG`\]\([^)]+\)\s*$/g;
 const pullRequestLinkPattern = /\[#\d+\]\(https:\/\/github\.com\/[^)]+\)/g;
 const commitLinkPattern =
   /\[`[0-9a-f]{7,40}`\]\(https:\/\/github\.com\/udecode\/plate\/commit\/[0-9a-f]{7,40}\)/g;
@@ -76,6 +88,34 @@ async function main(args) {
     return;
   }
 
+  if (args[0] === 'add-package-changelogs') {
+    const [, releaseNotesPath] = args;
+
+    if (!releaseNotesPath) {
+      throw new Error(
+        'Usage: release-notes.mjs add-package-changelogs <release-notes>'
+      );
+    }
+
+    const publishedPackages = parsePublishedPackages(
+      process.env.PUBLISHED_PACKAGES ??
+        process.env.PUBLISHED_PACKAGES_JSON ??
+        ''
+    );
+    const workspacePackages = await getWorkspacePackages();
+    const content = await readFile(releaseNotesPath, 'utf8');
+    const updatedContent = addPackageChangelogLinks(content, {
+      commitRef: process.env.GITHUB_SHA || 'main',
+      publishedPackages,
+      workspacePackages,
+    });
+
+    await writeFile(releaseNotesPath, updatedContent);
+
+    console.log(`Added package changelog links to ${releaseNotesPath}.`);
+    return;
+  }
+
   const publishedPackages = parsePublishedPackages(
     process.env.PUBLISHED_PACKAGES ?? process.env.PUBLISHED_PACKAGES_JSON ?? ''
   );
@@ -86,8 +126,12 @@ async function main(args) {
   }
 
   const workspacePackages = await getWorkspacePackages();
+  const fullChangelog = await getFullChangelog({
+    publishedPackages,
+    version,
+  });
   const body = await generateRawReleaseNotes({
-    commitRef: process.env.GITHUB_SHA ?? 'main',
+    fullChangelog,
     publishedPackages,
     workspacePackages,
   });
@@ -116,6 +160,77 @@ export function getGlobalReleaseVersion(publishedPackages) {
     .filter((version) => typeof version === 'string')
     .filter((version) => semverPattern.test(version))
     .sort(compareVersionsDesc)[0];
+}
+
+export async function getFullChangelog({
+  globalReleaseTags,
+  publishedPackages,
+  releaseIndexFile = releaseIndexPath,
+  version,
+}) {
+  const currentTag = `v${version}`;
+  const previousGlobalVersion = getPreviousGlobalReleaseVersion(
+    version,
+    globalReleaseTags
+  );
+  const previousEntry = getPreviousReleaseIndexEntry(
+    await readReleaseIndex(releaseIndexFile),
+    version
+  );
+
+  if (
+    previousGlobalVersion &&
+    (!previousEntry?.version ||
+      compareVersionsDesc(previousGlobalVersion, previousEntry.version) <= 0)
+  ) {
+    const previousGlobalTag = `v${previousGlobalVersion}`;
+
+    return {
+      label: `${previousGlobalTag}...${currentTag}`,
+      url: compareUrl(previousGlobalTag, currentTag),
+    };
+  }
+
+  const currentPackageTag = getPreferredPackageTag(publishedPackages, version);
+
+  if (!currentPackageTag) return null;
+
+  if (!previousEntry?.packageTag || !previousEntry?.tag) return null;
+
+  return {
+    label: `${previousEntry.tag}...${currentTag}`,
+    url: compareUrl(previousEntry.packageTag, currentPackageTag),
+  };
+}
+
+export function getPackageChangelogUrls({
+  commitRef = 'main',
+  publishedPackages,
+  repoRootDirectory = repoRoot,
+  workspacePackages,
+}) {
+  const changelogUrls = new Map();
+
+  for (const publishedPackage of publishedPackages) {
+    if (typeof publishedPackage?.name !== 'string') continue;
+
+    const workspacePackage = workspacePackages.get(publishedPackage.name);
+
+    if (!workspacePackage?.directory) continue;
+
+    const packageDirectory = normalizePath(
+      path.relative(repoRootDirectory, workspacePackage.directory)
+    );
+
+    if (!packageDirectory || packageDirectory.startsWith('..')) continue;
+
+    changelogUrls.set(
+      publishedPackage.name,
+      `https://github.com/${repo}/blob/${commitRef}/${packageDirectory}/CHANGELOG.md`
+    );
+  }
+
+  return changelogUrls;
 }
 
 export async function getWorkspacePackages(roots = packageRoots) {
@@ -150,7 +265,7 @@ export async function getWorkspacePackages(roots = packageRoots) {
 }
 
 export async function generateRawReleaseNotes({
-  commitRef,
+  fullChangelog,
   publishedPackages,
   workspacePackages,
 }) {
@@ -192,16 +307,6 @@ export async function generateRawReleaseNotes({
     }
 
     lines.push('');
-
-    if (workspacePackage) {
-      const changelogUrl = packageToChangelogUrl(
-        workspacePackage.directory,
-        commitRef
-      );
-
-      lines.push(`For detailed changes, see [\`CHANGELOG\`](${changelogUrl})`);
-      lines.push('');
-    }
   }
 
   if (contributors.size > 0) {
@@ -218,7 +323,65 @@ export async function generateRawReleaseNotes({
     lines.push('');
   }
 
+  if (fullChangelog) {
+    lines.push(
+      `Full changelog: [\`${fullChangelog.label}\`](${fullChangelog.url})`
+    );
+    lines.push('');
+  }
+
   return `${lines.join('\n').trimEnd()}\n`;
+}
+
+export function addPackageChangelogLinks(
+  content,
+  {
+    commitRef = 'main',
+    publishedPackages,
+    repoRootDirectory,
+    workspacePackages,
+  }
+) {
+  const changelogUrls = getPackageChangelogUrls({
+    commitRef,
+    publishedPackages,
+    repoRootDirectory,
+    workspacePackages,
+  });
+  let output = '';
+  let cursor = 0;
+
+  for (const match of content.matchAll(packageHeadingPattern)) {
+    const headingStart = match.index;
+
+    if (headingStart < cursor) continue;
+
+    const heading = match[0];
+    const packageName = packageNameFromHeadingPattern.exec(heading)?.[1];
+    const bodyStart = headingStart + heading.length;
+    const nextHeadingMatch = markdownHeadingBoundaryPattern.exec(
+      content.slice(bodyStart)
+    );
+    const sectionEnd =
+      nextHeadingMatch?.index === undefined
+        ? content.length
+        : bodyStart + nextHeadingMatch.index;
+    const changelogUrl = packageName ? changelogUrls.get(packageName) : null;
+    let sectionBody = content.slice(bodyStart, sectionEnd);
+
+    output += content.slice(cursor, bodyStart);
+
+    if (changelogUrl) {
+      sectionBody = appendPackageChangelogLink(sectionBody, changelogUrl);
+    }
+
+    output += sectionBody;
+    cursor = sectionEnd;
+  }
+
+  output += content.slice(cursor);
+
+  return output.endsWith('\n') ? output : `${output}\n`;
 }
 
 export function extractReleaseChanges(changelog, version) {
@@ -249,6 +412,8 @@ export function validateAiReleaseNotes(raw, final) {
   const finalChangeHeadings = matchAll(final, changeHeadingPattern);
   const rawChangelogLinks = matchAll(raw, changelogLinkPattern);
   const finalChangelogLinks = matchAll(final, changelogLinkPattern);
+  const rawFullChangelogLinks = matchAll(raw, fullChangelogLinkPattern);
+  const finalFullChangelogLinks = matchAll(final, fullChangelogLinkPattern);
   const rawPullRequestLinks = matchAll(raw, pullRequestLinkPattern);
   const finalPullRequestLinks = matchAll(final, pullRequestLinkPattern);
   const rawCommitLinks = matchAll(raw, commitLinkPattern);
@@ -281,6 +446,10 @@ export function validateAiReleaseNotes(raw, final) {
 
   if (!sameList(rawChangelogLinks, finalChangelogLinks)) {
     errors.push('AI output changed package changelog links.');
+  }
+
+  if (!sameList(rawFullChangelogLinks, finalFullChangelogLinks)) {
+    errors.push('AI output changed full changelog links.');
   }
 
   if (!sameList(rawPullRequestLinks, finalPullRequestLinks)) {
@@ -368,19 +537,121 @@ function extractReleaseTypeSections(content) {
     .sort((a, b) => compareReleaseTypes(a.type, b.type));
 }
 
-function packageToChangelogUrl(directory, commitRef) {
-  const relativePath = path.relative(
-    repoRoot,
-    path.join(directory, 'CHANGELOG.md')
-  );
+function appendPackageChangelogLink(sectionBody, changelogUrl) {
+  const fullChangelogMatch = fullChangelogFooterPattern.exec(sectionBody);
 
-  return `https://github.com/${repo}/blob/${commitRef}/${relativePath}`;
+  if (fullChangelogMatch) {
+    const body = sectionBody.slice(0, fullChangelogMatch.index);
+    const footer = sectionBody.slice(fullChangelogMatch.index);
+
+    return `${appendPackageChangelogLink(body, changelogUrl)}${footer}`;
+  }
+
+  return `${sectionBody
+    .replace(packageChangelogFooterPattern, '')
+    .trimEnd()}\n\nFor detailed changes, see [\`CHANGELOG\`](${changelogUrl})`;
 }
 
 async function readPackageJson(directory) {
   const content = await readOptionalFile(path.join(directory, 'package.json'));
 
   return content ? JSON.parse(content) : null;
+}
+
+async function readReleaseIndex(filePath) {
+  const content = await readOptionalFile(filePath);
+
+  if (!content) return [];
+
+  try {
+    const releases = JSON.parse(content);
+
+    return Array.isArray(releases) ? releases : [];
+  } catch {
+    return [];
+  }
+}
+
+function getPreviousReleaseIndexEntry(releases, version) {
+  return releases
+    .map((release) => ({
+      ...release,
+      version: tagToVersion(release?.tag),
+    }))
+    .filter(
+      (release) => release.version && isBeforeVersion(release.version, version)
+    )
+    .sort((a, b) => compareVersionsDesc(a.version, b.version))[0];
+}
+
+function getPreferredPackageTag(publishedPackages, version) {
+  const preferredPackage = getPreferredPublishedPackage(
+    publishedPackages,
+    version
+  );
+
+  return preferredPackage
+    ? `${preferredPackage.name}@${preferredPackage.version}`
+    : null;
+}
+
+function getPreferredPublishedPackage(publishedPackages, version) {
+  const matchingPackages = publishedPackages.filter(
+    (publishedPackage) =>
+      typeof publishedPackage?.name === 'string' &&
+      publishedPackage.version === version
+  );
+
+  return (
+    matchingPackages.find(
+      (publishedPackage) => publishedPackage.name === 'platejs'
+    ) ?? matchingPackages[0]
+  );
+}
+
+function getPreviousGlobalReleaseVersion(version, globalReleaseTags) {
+  const previousVersion = (globalReleaseTags ?? getGitGlobalReleaseTags())
+    .map(tagToVersion)
+    .filter(Boolean)
+    .filter((tagVersion) => isBeforeVersion(tagVersion, version))
+    .sort(compareVersionsDesc)[0];
+
+  return previousVersion ?? null;
+}
+
+function getGitGlobalReleaseTags() {
+  try {
+    return execFileSync('git', ['tag', '--list', 'v*'], {
+      cwd: repoRoot,
+      encoding: 'utf8',
+    })
+      .split('\n')
+      .map((tag) => tag.trim())
+      .filter(Boolean)
+      .filter((tag) => semverPattern.test(tagToVersion(tag) ?? ''));
+  } catch {
+    return [];
+  }
+}
+
+function compareUrl(fromTag, toTag) {
+  return `https://github.com/${repo}/compare/${encodeURIComponent(fromTag)}...${encodeURIComponent(toTag)}`;
+}
+
+function normalizePath(filePath) {
+  return filePath.split(path.sep).join('/');
+}
+
+function tagToVersion(tag) {
+  if (typeof tag !== 'string' || !tag.startsWith('v')) return null;
+
+  const version = tag.slice(1);
+
+  return semverPattern.test(version) ? version : null;
+}
+
+function isBeforeVersion(version, referenceVersion) {
+  return compareVersionsDesc(version, referenceVersion) > 0;
 }
 
 async function readOptionalFile(filePath) {

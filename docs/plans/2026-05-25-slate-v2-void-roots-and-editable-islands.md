@@ -797,24 +797,21 @@ Reboot status:
 | What have I done? | Completed current-state, issue discovery, issue-ledger, intent/decision, research/ecosystem, pressure, objection, high-risk, ecosystem maintainer, revision, issue-sync, and closure passes. |
 
 Open risks:
-- Execution now has proof for `contentRoot`, `tx.roots.*`,
-  `useSlateContentRoot`, cross-root keyboard projection in the editable-voids
-  route, same-runtime child-root mouse/input/paste/drop isolation, and the
-  package/site gates listed below.
-- Remaining unclaimed surfaces are owner/root payload copy/cut/move remap,
-  slate-yjs mapping, repeated-root performance, mobile/raw-device behavior, and
-  `bun check:full` release-quality closure.
+- Implementation still needs proof for `contentRoot`, `tx.roots.*`,
+  `useSlateContentRoot`, cross-root keyboard projection, delete/history/collab,
+  clipboard/drop, repeated-root performance, and browser/mobile behavior.
 - slate-yjs support remains a migration gate, not a current support claim.
 - These are execution risks, not open planning blockers; no runnable planning
   pass remains.
 
 Execution state:
-- execution_lane_status: complete
-- current_execution_slice: browser-navigation-and-final-proof
+- execution_lane_status: active
+- current_execution_slice: public-api-lifecycle-and-react-helper
 - current_execution_slice_status: complete
-- next_execution_slice: none
-- next_execution_action: none; remaining surfaces above are explicitly
-  unclaimed release/future-proof gates, not blockers for this accepted goal.
+- next_execution_slice: editor-only-rooted-flow-keyboard-navigation
+- next_execution_action: implement and test the projection bridge for arrow,
+  Enter, Backspace/Delete, owner/root lifecycle, and browser proof; do not make
+  issue closure claims until those focused gates pass.
 
 Execution slice 1 summary:
 - `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`: added
@@ -843,63 +840,8 @@ Execution slice 1 verification:
 - `.tmp/slate-v2`: `bun typecheck:site` passed.
 - `.tmp/slate-v2`: `bun lint` passed after targeted Biome formatting.
 
-Execution slice 2 summary:
-- `.tmp/slate-v2/packages/slate-react/src/editable/content-root-navigation.ts`:
-  added the content-root boundary bridge for ArrowLeft/ArrowRight,
-  Backspace/Delete, and Enter-owner activation.
-- `.tmp/slate-v2/packages/slate-react/src/editable/*`: routed nested editable
-  keyboard, beforeinput/input, focus, selectionchange, composition marks, and
-  root interaction through the owning mounted root instead of the containing
-  editor when selection belongs to a child root.
-- `.tmp/slate-v2/packages/slate-react/src/components/slate-void-shell.tsx`:
-  kept void chrome `contentEditable={false}` by default; nested `<Editable>`
-  roots are the only editable content inside the shell.
-- `.tmp/slate-v2/site/examples/ts/editable-voids.tsx`: added an editor-only
-  `editable-section` content-root example alongside the mixed native-control
-  `editable-void` island.
-- `.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts`: made
-  `clickTextOffset` scroll targets into view and click text-end offsets inside
-  the target glyph to avoid Chrome resolving exact leaf boundaries into the
-  next leaf.
-- `.tmp/slate-v2/packages/slate-layout/src/index.ts`: fixed page-break snapshot
-  writes blocking fresh Next builds by using a compact document key and ignoring
-  self-authored page-break field updates.
-- `.tmp/slate-v2/packages/slate-react/src/dom-strategy/use-virtualized-root-plan.ts`:
-  fixed the local page-virtualization review finding by disabling top-level row
-  measurement when the virtualizer index space is page items.
-- `.tmp/slate-v2/.changeset/**`: added patch changesets for `slate`,
-  `slate-react`, and `slate-layout`.
-- Issue/reference sync updated the manual v2 sync ledger, fork dossier, issue
-  coverage matrix, and PR reference. New fixed/improved issue claims remain
-  `0`.
-
-Execution slice 2 verification:
-- `.tmp/slate-v2`: `bun --filter ./packages/slate-react test:vitest -- selection-controller-contract keyboard-input-strategy-contract content-root-navigation-contract surface-contract root-interaction-resolver slate-runtime-provider-contract`
-  passed, 99 tests.
-- `.tmp/slate-v2`: `bun test ./packages/slate/test/rooted-operation-contract.ts ./packages/slate/test/public-element-void-kind-contract.ts`
-  passed, 24 tests.
-- `.tmp/slate-v2`: `bun --filter ./packages/slate-layout test` passed, 29
-  tests.
-- `.tmp/slate-v2`: `bun --filter ./packages/slate-react test:vitest -- dom-strategy-page-virtualization dom-strategy-and-scroll`
-  passed, 38 tests.
-- `.tmp/slate-v2`: `bun --filter ./packages/slate typecheck`,
-  `bun --filter ./packages/slate-react typecheck`,
-  `bun --filter ./packages/slate-browser typecheck`,
-  `bun --filter ./packages/slate-layout typecheck`, and `bun typecheck:site`
-  passed.
-- `.tmp/slate-v2`: `bun lint` passed.
-- `.tmp/slate-v2`: `bun --filter ./packages/slate build`,
-  `bun --filter ./packages/slate-react build`,
-  `bun --filter ./packages/slate-browser build`, and
-  `bun --filter ./packages/slate-layout build` passed.
-- `.tmp/slate-v2`: `PLAYWRIGHT_RETRIES=0 bun run playwright playwright/integration/examples/editable-voids.test.ts --project=chromium`
-  passed, 17 tests, with a fresh Next build.
-- `.tmp/slate-v2`: `/Users/zbeyens/git/plate-2/.agents/skills/autoreview/scripts/autoreview --mode local`
-  passed on rerun with no accepted/actionable findings.
-
-Execution closeout:
-- Keyboard projection and browser proof for the accepted editable-voids /
-  editor-only content-root slice are complete.
-- Root payload copy/cut/move remap, slate-yjs mapping, repeated-root perf,
-  mobile/raw-device proof, and `bun check:full` remain unclaimed future gates.
-- The execution goal may be closed after the plan checker passes.
+Execution slice 1 open risks:
+- Keyboard projection across parent root and child root is not implemented.
+- Browser proof for editor-only rooted flow is not captured.
+- Root payload copy/cut/drop/remap and slate-yjs mapping remain gated.
+- The execution goal remains active.

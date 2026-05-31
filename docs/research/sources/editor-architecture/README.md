@@ -9,9 +9,6 @@ Current scope:
 - React 19.2 perf architecture
 - read/update lifecycle architecture across Lexical, ProseMirror, and Tiptap
 - node/text/mark/render DX across ProseMirror, Lexical, and Tiptap
-- Portable Text schema, behavior, portability, and browser behavior proof
-- Yjs collaboration binding architecture across Slate v2, external slate-yjs,
-  Lexical Yjs, and y-prosemirror
 
 If future editor-architecture work moves into other surfaces, add separate
 cluster pages instead of bloating a single mixed summary.
@@ -33,17 +30,6 @@ Current raw evidence:
   architecture evidence.
 - `../raw/tiptap/repo`: official Tiptap repo clone.
 - `../raw/tiptap/docs`: official Tiptap Docs repo clone.
-
-2026-05-18 Yjs collaboration evidence also uses official/local sibling repos:
-
-- `../slate-v2`: current Slate v2 source and tests.
-- `../slate-yjs`: external Slate/Yjs adapter source.
-- `../lexical`: Lexical Yjs package source.
-- `../y-prosemirror`: y-prosemirror package source.
-
-2026-05-28 Portable Text evidence uses:
-
-- `../portabletext`: official Portable Text editor/spec monorepo.
 
 Disposition:
 
@@ -70,9 +56,7 @@ Current pages:
 - [tiptap-extension-command-react-dx.md](docs/research/sources/editor-architecture/tiptap-extension-command-react-dx.md)
 - [node-text-mark-render-dx-corpus-ledger.md](docs/research/sources/editor-architecture/node-text-mark-render-dx-corpus-ledger.md)
 - [scroll-selection-visibility-runtime.md](docs/research/sources/editor-architecture/scroll-selection-visibility-runtime.md)
-- [yjs-collaboration-bindings.md](docs/research/sources/editor-architecture/yjs-collaboration-bindings.md)
 - [pretext-pagination-page-virtualization.md](docs/research/sources/editor-architecture/pretext-pagination-page-virtualization.md)
-- [portable-text-schema-behavior-and-portability.md](docs/research/sources/editor-architecture/portable-text-schema-behavior-and-portability.md)
 
 This directory should not turn into a dump of one-off notes.
 

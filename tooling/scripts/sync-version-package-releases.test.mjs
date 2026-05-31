@@ -40,6 +40,7 @@ test('parses Version Packages PR body into release entries', () => {
 -   [#4891](https://github.com/udecode/plate/pull/4891) by [@zbeyens](https://github.com/zbeyens) – Fix TypeScript 6 compatibility.
 `,
     mergedAt: '2026-04-29T07:11:20Z',
+    mergeCommit: { oid: 'abc123' },
     title: '[Release] Version packages',
     url: 'https://github.com/udecode/plate/pull/4969',
   });
@@ -49,6 +50,10 @@ test('parses Version Packages PR body into release entries', () => {
   assert.equal(releases.length, 2);
   assert.equal(release.tag, 'v53.0.3');
   assert.equal(release.date, '2026-04-29');
+  assert.equal(
+    release.changelogUrl,
+    'https://github.com/udecode/plate/blob/abc123/packages/plate/CHANGELOG.md'
+  );
   assert.equal(release.packageTag, 'platejs@53.0.3');
   assert.match(release.content, /^`@platejs\/ai`$/m);
   assert.match(release.content, /### Bug Fixes/);
@@ -143,6 +148,92 @@ test('falls back to first package tag and builds compare URLs', () => {
   assert.match(
     releases[1].content,
     /\[`CHANGELOG`\]\(https:\/\/github\.com\/udecode\/plate\/pull\/1\) · \[`v53\.0\.1`\]\(https:\/\/github\.com\/udecode\/plate\/pull\/1\)/
+  );
+});
+
+test('uses GitHub Release URLs without fake package changelog footer links', () => {
+  const releases = mergeReleases(
+    [
+      {
+        content: 'older',
+        date: '2026-05-12',
+        packageTag: '@platejs/ai@53.0.4',
+        tag: 'v53.0.4',
+        title: 'v53.0.4',
+        versionPackagePrUrl: 'https://github.com/udecode/plate/pull/4975',
+      },
+    ],
+    [
+      {
+        content: 'newer',
+        contributors: [
+          {
+            url: 'https://github.com/github-actions%5Bbot%5D',
+            username: '@github-actions\\[bot\\]',
+          },
+        ],
+        date: '2026-05-21',
+        changelogUrl:
+          'https://github.com/udecode/plate/blob/d09298282dd3af8022052e51c212eb6cdcdd3843/packages/plate/CHANGELOG.md',
+        packageTag: 'platejs@53.0.5',
+        tag: 'v53.0.5',
+        title: 'v53.0.5',
+        versionPackagePrUrl: 'https://github.com/udecode/plate/pull/4978',
+      },
+    ],
+    {
+      releaseUrlsByTag: new Map([
+        ['v53.0.5', 'https://github.com/udecode/plate/releases/tag/v53.0.5'],
+      ]),
+    }
+  );
+
+  assert.equal(
+    releases[0].url,
+    'https://github.com/udecode/plate/releases/tag/v53.0.5'
+  );
+  assert.match(
+    releases[0].content,
+    /\[`v53\.0\.4\.\.\.v53\.0\.5`\]\(https:\/\/github\.com\/udecode\/plate\/compare\/%40platejs%2Fai%4053\.0\.4\.\.\.platejs%4053\.0\.5\) · By \[@github-actions\\\[bot\\\]\]\(https:\/\/github\.com\/github-actions%5Bbot%5D\)/
+  );
+  assert.doesNotMatch(releases[0].content, /\[`CHANGELOG`\]/);
+  assert.doesNotMatch(releases[0].content, /pull\/4978/);
+  assert.equal(releases[1].url, 'https://github.com/udecode/plate/pull/4975');
+});
+
+test('compares global tags when adjacent GitHub Releases exist', () => {
+  const releases = mergeReleases(
+    [
+      {
+        content: 'older',
+        date: '2026-05-21',
+        packageTag: 'platejs@53.0.5',
+        tag: 'v53.0.5',
+        title: 'v53.0.5',
+        versionPackagePrUrl: 'https://github.com/udecode/plate/pull/4978',
+      },
+    ],
+    [
+      {
+        content: 'newer',
+        date: '2026-05-22',
+        packageTag: 'platejs@53.0.6',
+        tag: 'v53.0.6',
+        title: 'v53.0.6',
+        versionPackagePrUrl: 'https://github.com/udecode/plate/pull/4999',
+      },
+    ],
+    {
+      releaseUrlsByTag: new Map([
+        ['v53.0.5', 'https://github.com/udecode/plate/releases/tag/v53.0.5'],
+        ['v53.0.6', 'https://github.com/udecode/plate/releases/tag/v53.0.6'],
+      ]),
+    }
+  );
+
+  assert.match(
+    releases[0].content,
+    /\[`v53\.0\.5\.\.\.v53\.0\.6`\]\(https:\/\/github\.com\/udecode\/plate\/compare\/v53\.0\.5\.\.\.v53\.0\.6\)/
   );
 });
 

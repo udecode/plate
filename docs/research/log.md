@@ -1,41 +1,5 @@
 # Research Log
 
-## [2026-05-31] maintain | Arthrod discussion semantic document model note
-
-- added [arthrod.md](docs/research/decisions/arthrod.md) as a proposed Plate
-  document-model decision from Arthrod's discussion:
-  raw Slate stays the editing substrate; Plate owns the semantic AST/schema,
-  validators, feature policies, diagnostics, and conversion map
-- compared local Slate v2 roots/document-state docs, Portable Text schema
-  evidence, ProseMirror schema discipline, DOCX fidelity-policy ideas, and
-  redoc-style markdown export syntax
-- recorded the hard split: steal schema and fidelity discipline, reject a
-  centralized semantic AST in raw Slate core
-
-## [2026-05-28] maintain | Portable Text architecture evidence bootstrap
-
-- added Portable Text to the editor-architecture candidate lane as a
-  spec/schema/behavior/test benchmark:
-  [portable-text-schema-behavior-and-portability.md](docs/research/sources/editor-architecture/portable-text-schema-behavior-and-portability.md)
-- compared local `../portabletext` source for schema compilation, behavior
-  events/actions, selectors, toolbar hooks, patch bridging, and real-browser
-  behavior specs
-- recorded the hard split: steal spec discipline, schema applicability,
-  behavior action vocabulary, and scenario tests; reject Portable Text as raw
-  Slate's value format or runtime engine
-
-## [2026-05-18] maintain | slate-yjs collaboration binding refresh
-
-- compiled a dedicated editor-architecture source summary for Slate v2
-  `slate-yjs` package planning:
-  [yjs-collaboration-bindings.md](docs/research/sources/editor-architecture/yjs-collaboration-bindings.md)
-- compared live `../slate-v2`, external `../slate-yjs`, Lexical Yjs, and
-  y-prosemirror source for extension lifecycle, remote import, relative
-  positions, undo selection, awareness, and React cursor subscription posture
-- recorded the hard split: steal the binding mechanics, reject editor wrapper
-  mutation, and recreate `packages/slate-yjs` as a current Slate v2 source
-  package
-
 ## [2026-05-23] maintain | TanStack Virtual perf and iOS refresh
 
 - refreshed
