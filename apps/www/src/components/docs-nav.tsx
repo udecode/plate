@@ -385,16 +385,9 @@ function DocsNavItemContent({
 
       {statusLabel ? (
         <span
-          className={cn(
-            'shrink-0 rounded-full px-1.5 py-0.5 font-semibold text-[0.65rem] leading-none',
-            statusLabel === 'New'
-              ? 'bg-[#adfa1d] text-black'
-              : 'bg-muted text-foreground'
-          )}
+          className="flex size-2 shrink-0 rounded-full bg-blue-500"
           title={statusLabel}
-        >
-          {statusLabel}
-        </span>
+        />
       ) : null}
 
       {textLabels.length > 0 ? (

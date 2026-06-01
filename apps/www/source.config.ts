@@ -1,5 +1,9 @@
 import { getHighlighter } from '@shikijs/compat';
-import { remarkMdxFiles, remarkStructure } from 'fumadocs-core/mdx-plugins';
+import {
+  remarkHeading,
+  remarkMdxFiles,
+  remarkStructure,
+} from 'fumadocs-core/mdx-plugins';
 import {
   defineConfig,
   defineDocs,
@@ -25,6 +29,10 @@ const typeTableGenerator = createGenerator();
 const EVENT_META_REGEX = /event="([^"]*)"/;
 const COMMAND_CODE_REGEX = /^(bun|npm|npx|pnpm|yarn)\s/;
 const WHITESPACE_REGEX = /\s+/;
+const shouldCompileDocsDynamically =
+  process.env.PLATE_WWW_DYNAMIC_DOCS === '1';
+const shouldLoadDocsAsync = process.env.PLATE_WWW_ASYNC_DOCS === '1';
+const shouldHighlightCode = !shouldCompileDocsDynamically;
 
 function addMetaToken(meta: string | undefined, token: string) {
   if (meta?.split(WHITESPACE_REGEX).includes(token)) {
@@ -68,9 +76,15 @@ const linksPropertiesSchema = z.object({
 export const docs = defineDocs({
   dir: '../../content/docs',
   docs: {
-    postprocess: {
-      includeProcessedMarkdown: true,
-    },
+    ...(shouldCompileDocsDynamically
+      ? { dynamic: true }
+      : shouldLoadDocsAsync
+        ? { async: true }
+        : {
+            postprocess: {
+              includeProcessedMarkdown: true,
+            },
+          }),
     schema: frontmatterSchema.extend({
       component: z.boolean().default(false),
       docs: z.array(docPropertiesSchema).optional(),
@@ -124,93 +138,107 @@ export default defineConfig({
               node.__rawString__ = rawString;
               node.__src__ = node.properties?.__src__;
               node.__style__ = node.properties?.__style__;
+              node.properties.__rawString__ = rawString;
+              node.properties.__showLineNumbers__ = showLineNumbers;
+
+              if (showLineNumbers) {
+                codeEl.properties ??= {};
+                codeEl.properties['data-line-numbers'] = '';
+              }
             }
           });
         },
-        [
-          rehypePrettyCode,
-          {
-            getHighlighter,
-            theme: {
-              dark: 'github-dark',
-              light: 'github-light',
-            },
-            onVisitHighlightedLine(node: any) {
-              node.properties.className.push('line--highlighted');
-            },
-            onVisitHighlightedWord(node: any) {
-              node.properties.className = ['word--highlighted'];
-            },
-            onVisitLine(node: any) {
-              node.properties['data-line'] = '';
+        ...(shouldHighlightCode
+          ? [
+              [
+                rehypePrettyCode,
+                {
+                  getHighlighter,
+                  theme: {
+                    dark: 'github-dark',
+                    light: 'github-light',
+                  },
+                  onVisitHighlightedLine(node: any) {
+                    node.properties.className.push('line--highlighted');
+                  },
+                  onVisitHighlightedWord(node: any) {
+                    node.properties.className = ['word--highlighted'];
+                  },
+                  onVisitLine(node: any) {
+                    node.properties['data-line'] = '';
 
-              if (node.children.length === 0) {
-                node.children = [{ type: 'text', value: ' ' }];
-              }
-            },
-          },
-        ],
-        () => (tree: any) => {
-          visit(tree, (node: any) => {
-            if (node?.type === 'element' && node?.tagName === 'div') {
-              if (!('data-rehype-pretty-code-fragment' in node.properties)) {
-                return;
-              }
+                    if (node.children.length === 0) {
+                      node.children = [{ type: 'text', value: ' ' }];
+                    }
+                  },
+                },
+              ],
+              () => (tree: any) => {
+                visit(tree, (node: any) => {
+                  if (node?.type === 'element' && node?.tagName === 'div') {
+                    if (
+                      !('data-rehype-pretty-code-fragment' in node.properties)
+                    ) {
+                      return;
+                    }
 
-              const hasMeta = node.children.some(
-                (child: any) => child.tagName === 'div'
-              );
+                    const hasMeta = node.children.some(
+                      (child: any) => child.tagName === 'div'
+                    );
 
-              for (const titleElement of node.children.filter(
-                (child: any) =>
-                  child.tagName === 'div' &&
-                  'data-rehype-pretty-code-title' in child.properties
-              )) {
-                const iconLabel = getCodeTitleIconLabel(
-                  titleElement.properties?.['data-language']
-                );
+                    for (const titleElement of node.children.filter(
+                      (child: any) =>
+                        child.tagName === 'div' &&
+                        'data-rehype-pretty-code-title' in child.properties
+                    )) {
+                      const iconLabel = getCodeTitleIconLabel(
+                        titleElement.properties?.['data-language']
+                      );
 
-                if (iconLabel) {
-                  titleElement.properties['data-file-icon-label'] = iconLabel;
-                }
-              }
+                      if (iconLabel) {
+                        titleElement.properties['data-file-icon-label'] =
+                          iconLabel;
+                      }
+                    }
 
-              for (const preElement of node.children.filter(
-                (child: any) => child.tagName === 'pre'
-              )) {
-                preElement.properties.__withMeta__ = hasMeta;
-                preElement.properties.__rawString__ = node.__rawString__;
-                preElement.properties.__showLineNumbers__ =
-                  node.__showLineNumbers__;
+                    for (const preElement of node.children.filter(
+                      (child: any) => child.tagName === 'pre'
+                    )) {
+                      preElement.properties.__withMeta__ = hasMeta;
+                      preElement.properties.__rawString__ = node.__rawString__;
+                      preElement.properties.__showLineNumbers__ =
+                        node.__showLineNumbers__;
 
-                if (node.__showLineNumbers__) {
-                  let codeElement: any;
+                      if (node.__showLineNumbers__) {
+                        let codeElement: any;
 
-                  for (const child of preElement.children ?? []) {
-                    if (child.tagName === 'code') {
-                      codeElement = child;
-                      break;
+                        for (const child of preElement.children ?? []) {
+                          if (child.tagName === 'code') {
+                            codeElement = child;
+                            break;
+                          }
+                        }
+
+                        if (codeElement) {
+                          codeElement.properties ??= {};
+                          codeElement.properties['data-line-numbers'] = '';
+                        }
+                      }
+                      if (node.__src__) {
+                        preElement.properties.__src__ = node.__src__;
+                      }
+                      if (node.__event__) {
+                        preElement.properties.__event__ = node.__event__;
+                      }
+                      if (node.__style__) {
+                        preElement.properties.__style__ = node.__style__;
+                      }
                     }
                   }
-
-                  if (codeElement) {
-                    codeElement.properties ??= {};
-                    codeElement.properties['data-line-numbers'] = '';
-                  }
-                }
-                if (node.__src__) {
-                  preElement.properties.__src__ = node.__src__;
-                }
-                if (node.__event__) {
-                  preElement.properties.__event__ = node.__event__;
-                }
-                if (node.__style__) {
-                  preElement.properties.__style__ = node.__style__;
-                }
-              }
-            }
-          });
-        },
+                });
+              },
+            ]
+          : []),
         rehypeNpmCommand,
         [
           rehypeAutolinkHeadings,
@@ -228,6 +256,7 @@ export default defineConfig({
     remarkPlugins: (plugins) =>
       [
         remarkGfm,
+        [remarkHeading, { generateToc: false }],
         codeImport,
         remarkMdxFiles,
         [remarkAutoTypeTable, { generator: typeTableGenerator }],

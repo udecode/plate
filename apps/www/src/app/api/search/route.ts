@@ -10,20 +10,29 @@ type SearchPageFrontmatter = {
   description?: string;
   title?: string;
 };
+type SearchResult = {
+  section?: 'docsApi';
+  url?: string;
+};
+
+const MARKDOWN_CODE_TICK_REGEX = /`/g;
+const MARKDOWN_HEADING_REGEX = /^(#{1,6})\s+(.+?)\s*#*\s*$/;
+const API_DOCS_PATH_REGEX = /^\/(?:cn\/)?docs\/api(?:\/|$)/;
+const API_SECTION_TITLE_REGEX =
+  /^api(?:\b|[\s:/-]|接口|参考|方法|组件|路由|和|与)/i;
+const API_SECTION_TITLES = new Set([
+  'hooks',
+  'options',
+  'selectors',
+  'transforms',
+  'types',
+  'utilities',
+]);
 
 const getSearchMarkdown = async (page: SearchPage) => {
-  try {
-    return await page.data.getText('processed');
-  } catch (error) {
-    if (
-      !(error instanceof Error) ||
-      !error.message.includes('includeProcessedMarkdown')
-    ) {
-      throw error;
-    }
+  const raw = await page.data.getText('raw');
 
-    return page.data.getText('raw');
-  }
+  return frontmatter(raw).content;
 };
 
 const getSearchFrontmatter = async (page: SearchPage) => {
@@ -51,6 +60,33 @@ const buildSearchIndex = async (page: SearchPage) => {
 
 const getPageKey = (page: SearchPage) => page.slugs.join('/');
 
+const getPlainHeadingText = (value: string) =>
+  value.replace(MARKDOWN_CODE_TICK_REGEX, '').trim();
+
+const getMarkdownHeadings = (markdown: string) =>
+  markdown
+    .split(/\r?\n/)
+    .map((line) => {
+      const match = MARKDOWN_HEADING_REGEX.exec(line);
+
+      if (!match) return;
+
+      return {
+        depth: match[1].length,
+        text: match[2],
+      };
+    })
+    .filter((item): item is { depth: number; text: string } => Boolean(item));
+
+const isDocsApiSectionHeading = (heading: string) => {
+  const title = getPlainHeadingText(heading);
+
+  return (
+    API_SECTION_TITLE_REGEX.test(title) ||
+    API_SECTION_TITLES.has(title.toLowerCase())
+  );
+};
+
 const searchSource = {
   ...source,
   getPages: ((language?: string) => {
@@ -73,7 +109,51 @@ const searchSource = {
   }) as typeof source.getPages,
 };
 
-export const { GET } = createFromSource(searchSource as typeof source, {
+let docsApiAnchorUrlsPromise: Promise<Set<string>> | undefined;
+
+const getDocsApiAnchorUrls = () => {
+  docsApiAnchorUrlsPromise ??= collectDocsApiAnchorUrls();
+
+  return docsApiAnchorUrlsPromise;
+};
+
+const collectDocsApiAnchorUrls = async () => {
+  const urls = new Set<string>();
+
+  await Promise.all(
+    searchSource.getPages().map(async (page) => {
+      if (API_DOCS_PATH_REGEX.test(page.url)) {
+        return;
+      }
+
+      const markdown = await getSearchMarkdown(page);
+      const structuredData = structure(markdown);
+      const markdownHeadings = getMarkdownHeadings(markdown);
+      let apiSectionDepth: number | undefined;
+
+      structuredData.headings.forEach((heading, index) => {
+        const markdownHeading = markdownHeadings[index];
+        const depth = markdownHeading?.depth ?? 2;
+
+        if (apiSectionDepth !== undefined && depth <= apiSectionDepth) {
+          apiSectionDepth = undefined;
+        }
+
+        if (isDocsApiSectionHeading(markdownHeading?.text ?? heading.content)) {
+          apiSectionDepth = depth;
+        }
+
+        if (apiSectionDepth !== undefined) {
+          urls.add(`${page.url}#${heading.id}`);
+        }
+      });
+    })
+  );
+
+  return urls;
+};
+
+const { GET: baseGET } = createFromSource(searchSource as typeof source, {
   buildIndex: buildSearchIndex,
   localeMap: {
     cn: 'english',
@@ -87,3 +167,26 @@ export const { GET } = createFromSource(searchSource as typeof source, {
     limit: 20,
   },
 });
+
+export async function GET(request: Request) {
+  const response = await baseGET(request);
+  const results = (await response.json()) as unknown;
+
+  if (!Array.isArray(results)) {
+    return Response.json(results, { status: response.status });
+  }
+
+  const docsApiAnchorUrls = await getDocsApiAnchorUrls();
+  const taggedResults = results.map((item: SearchResult) => {
+    if (item.url && docsApiAnchorUrls.has(item.url)) {
+      return {
+        ...item,
+        section: 'docsApi' as const,
+      };
+    }
+
+    return item;
+  });
+
+  return Response.json(taggedResults, { status: response.status });
+}

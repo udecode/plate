@@ -8,7 +8,6 @@ import type {
   SidebarNavItem,
 } from '@/types/nav';
 import type { DialogProps } from '@radix-ui/react-dialog';
-
 import { useDocsSearch as useFumadocsSearch } from 'fumadocs-core/search/client';
 import {
   ArrowRight,
@@ -45,6 +44,12 @@ import {
   getRegistryClipboardInstallCommand,
   getRegistryInstallCommand,
 } from '@/lib/registry-install';
+import {
+  getSearchResultGroup,
+  getSearchResultKey,
+  type SearchResultGroup,
+  searchResultGroupOrder,
+} from '@/lib/search-result-groups';
 import { cn } from '@/lib/utils';
 import { hrefWithLocale } from '@/lib/withLocale';
 
@@ -108,7 +113,10 @@ type Push = ReturnType<typeof useRouter>['push'];
 
 const i18n = {
   cn: {
+    apiReference: 'API 参考',
     dark: '深色',
+    docsApiSections: '文档 API 区块',
+    documentation: '文档',
     light: '浅色',
     links: '链接',
     pages: '页面',
@@ -125,7 +133,10 @@ const i18n = {
     theme: '主题',
   },
   en: {
+    apiReference: 'API Reference',
     dark: 'Dark',
+    docsApiSections: 'Docs API Sections',
+    documentation: 'Documentation',
     light: 'Light',
     links: 'Links',
     pages: 'Pages',
@@ -326,15 +337,40 @@ function SearchResults({
       return [];
     }
 
-    return query.data.filter(
-      (item, index, self) =>
-        !(
-          item.type === 'text' &&
-          item.content.trim().split(WHITESPACE_REGEX).length <= 1
-        ) &&
-        index === self.findIndex((result) => result.content === item.content)
-    );
+    const seen = new Set<string>();
+
+    return query.data.filter((item) => {
+      if (
+        item.type === 'text' &&
+        item.content.trim().split(WHITESPACE_REGEX).length <= 1
+      ) {
+        return false;
+      }
+
+      const key = getSearchResultKey(item);
+
+      if (seen.has(key)) {
+        return false;
+      }
+
+      seen.add(key);
+
+      return true;
+    });
   }, [query.data]);
+
+  const resultGroups = React.useMemo(
+    () =>
+      searchResultGroupOrder
+        .map((group) => ({
+          group,
+          items: uniqueResults.filter(
+            (item) => getSearchResultGroup(item) === group
+          ),
+        }))
+        .filter(({ items }) => items.length > 0),
+    [uniqueResults]
+  );
 
   if (!search.trim() || !query.data || query.data === 'empty') {
     return null;
@@ -345,36 +381,42 @@ function SearchResults({
   }
 
   return (
-    <CommandGroup
-      heading={content.searchResults}
-      className={commandMenuGroupClassName}
-    >
-      {uniqueResults.map((item) => {
-        const copyCommand = getCommandMenuCopyCommand(item.url);
+    <>
+      {resultGroups.map(({ group, items }) => (
+        <CommandGroup
+          key={group}
+          heading={content[group]}
+          className={commandMenuGroupClassName}
+        >
+          {items.map((item) => {
+            const copyCommand = getCommandMenuCopyCommand(item.url);
 
-        return (
-          <CommandMenuItem
-            key={item.id}
-            data-type={item.type}
-            onHighlight={() =>
-              onHighlight(
-                content.goToPage,
-                copyCommand?.payload,
-                copyCommand?.label
-              )
-            }
-            onSelect={() => {
-              push(hrefWithLocale(item.url, locale));
-              setOpen(false);
-            }}
-            keywords={[item.content, search]}
-            value={`${item.content} ${item.type} ${search}`}
-          >
-            <div className="line-clamp-1 text-sm">{item.content}</div>
-          </CommandMenuItem>
-        );
-      })}
-    </CommandGroup>
+            return (
+              <CommandMenuItem
+                key={getSearchResultKey(item)}
+                data-search-group={group}
+                data-type={item.type}
+                onHighlight={() =>
+                  onHighlight(
+                    content.goToPage,
+                    copyCommand?.payload,
+                    copyCommand?.label
+                  )
+                }
+                onSelect={() => {
+                  push(hrefWithLocale(item.url, locale));
+                  setOpen(false);
+                }}
+                keywords={[item.content, ...(item.breadcrumbs ?? []), search]}
+                value={`${item.content} ${item.type} ${content[group]} ${search}`}
+              >
+                <div className="line-clamp-1 text-sm">{item.content}</div>
+              </CommandMenuItem>
+            );
+          })}
+        </CommandGroup>
+      ))}
+    </>
   );
 }
 

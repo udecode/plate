@@ -383,10 +383,14 @@ function BlockViewerView({
   height,
   preview,
 }: {
-  preview: React.ReactNode;
+  preview:
+    | React.ReactNode
+    | ((props: { iframeKey: number; item: BlockViewerContext['item'] }) => React.ReactNode);
   height?: string;
 }) {
   const { iframeKey, item, resizablePanelRef } = useBlockViewer();
+  const previewNode =
+    typeof preview === 'function' ? preview({ iframeKey, item }) : preview;
 
   return (
     <div
@@ -422,7 +426,7 @@ function BlockViewerView({
               width={1440}
             /> */}
 
-            {preview ?? (
+            {previewNode ?? (
               <iframe
                 key={iframeKey}
                 // className="chunk-mode relative z-20 hidden w-full bg-background md:block"
@@ -635,7 +639,12 @@ export function BlockViewer({
 > & {
   block?: boolean;
   height?: string;
-  preview?: React.ReactNode;
+  preview?:
+    | React.ReactNode
+    | ((props: {
+        iframeKey: number;
+        item: BlockViewerContext['item'];
+      }) => React.ReactNode);
 }) {
   return (
     <BlockViewerProvider {...props}>

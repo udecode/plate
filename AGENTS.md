@@ -73,6 +73,7 @@ Goal plans:
 
 Browser usage:
 
+- When updating `content/**`, `apps/www/**`, or `packages/**`, start the relevant dev server and verify the affected route, UI, or package-facing behavior with `[@Browser](plugin://browser@openai-bundled)` before handoff. If the surface has no runnable browser path or the server/browser is blocked, say that explicitly.
 - Always try `[@browser-use](plugin://browser-use@openai-bundled)` first for browser usage.
 - Do not substitute Puppeteer, standalone Playwright, or raw Chrome DevTools for browser usage.
 - For Plate registry/browser proof, prefer `/blocks/[id]-demo` over docs wrappers when that standalone demo route exists.

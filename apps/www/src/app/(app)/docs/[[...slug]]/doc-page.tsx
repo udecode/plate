@@ -2,6 +2,7 @@ import type { PackageInfoType } from '@/hooks/use-package-info';
 import type { RegistryItem } from 'shadcn/schema';
 
 import type { Metadata } from 'next';
+import type { ComponentType } from 'react';
 
 import { frontmatter } from 'fumadocs-core/content/md/frontmatter';
 import { notFound } from 'next/navigation';
@@ -41,6 +42,11 @@ type PlateDocFrontmatter = {
     doc?: string;
   };
   toc?: boolean;
+};
+
+type LoadableDocData = {
+  body?: ComponentType<any>;
+  load?: () => Promise<{ body: ComponentType<any> }>;
 };
 
 export type DocPageProps = {
@@ -287,7 +293,17 @@ export async function renderDocPage(props: DocPageProps, locale: DocsLocale) {
   const localizedDocUrl = localizeDocsUrl(doc.url, locale);
   const description =
     doc.data.description ?? getDocsNavMeta(localizedDocUrl)?.description;
-  const MDX = doc.data.body;
+  const loadableDocData = doc.data as LoadableDocData;
+  const docData =
+    typeof loadableDocData.load === 'function'
+      ? await loadableDocData.load()
+      : loadableDocData;
+  const MDX = docData.body;
+
+  if (!MDX) {
+    notFound();
+  }
+
   const toc = await getTableOfContents(raw);
   const neighbours = getPagerForDoc({ slug: doc.url }, locale);
   const docUrl = `https://platejs.org${localizedDocUrl}`;
@@ -300,6 +316,7 @@ export async function renderDocPage(props: DocPageProps, locale: DocsLocale) {
         copyMarkdown: await getPlateLLMPageMarkdownFromPage({
           docUrl,
           page: doc,
+          textKind: 'raw',
         }),
         docs: frontmatterData.docs,
         links: frontmatterData.links,

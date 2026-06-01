@@ -3,18 +3,12 @@
 import type { ComponentProps } from 'react';
 import * as React from 'react';
 
-import type { ImperativePanelHandle } from 'react-resizable-panels';
+import type { PlaygroundPreviewData } from '@/lib/playground-preview-data';
 
 import { useLocale } from '@/hooks/useLocale';
-import { cn } from '@/lib/utils';
 import PlaygroundDemo from '@/registry/examples/playground-demo';
 
-import { PlaygroundPreviewToolbar } from './playground-preview-toolbar';
-import {
-  ResizableHandle,
-  ResizablePanel,
-  ResizablePanelGroup,
-} from './ui/resizable';
+import { BlockViewer } from './block-viewer';
 
 const i18n = {
   cn: {
@@ -25,53 +19,46 @@ const i18n = {
   },
 };
 
+const HOME_PREVIEW_HEIGHT = 780;
+
 export function PlaygroundPreview({
   className,
+  dependencies,
+  highlightedFiles,
+  item,
+  tree,
   ...props
-}: {
-  block?: any;
-} & ComponentProps<'div'>) {
+}: ComponentProps<'div'> & PlaygroundPreviewData) {
   const locale = useLocale();
   const content = i18n[locale as keyof typeof i18n];
-
-  const block: any = {
-    description: content.description,
-    name: 'editor-ai',
-    src: '/blocks/playground',
-  };
-
-  const ref = React.useRef<ImperativePanelHandle>(null);
+  const previewItem = React.useMemo(
+    () => ({
+      ...item,
+      description: content.description,
+      meta: {
+        ...item.meta,
+        iframeHeight: HOME_PREVIEW_HEIGHT,
+      },
+    }),
+    [content.description, item]
+  );
 
   return (
-    <div
-      id={block.name}
-      className={cn('relative w-full scroll-m-28', className)}
-      style={
-        {
-          '--container-height': block.container?.height,
-        } as React.CSSProperties
-      }
-      {...props}
-    >
-      <PlaygroundPreviewToolbar block={block} resizablePanelRef={ref} />
-
-      <ResizablePanelGroup className="relative z-10" direction="horizontal">
-        <ResizablePanel
-          ref={ref}
-          className="relative rounded-lg border bg-background max-sm:w-full max-sm:flex-auto!"
-          defaultSize={100}
-          minSize={30}
-        >
-          <div className="themes-wrapper chunk-mode relative z-20 w-full bg-background">
-            <React.Suspense fallback={null}>
-              <PlaygroundDemo className="h-[650px]" />
-            </React.Suspense>
+    <div className={className} {...props}>
+      <BlockViewer
+        dependencies={dependencies}
+        highlightedFiles={highlightedFiles as any}
+        item={previewItem as any}
+        preview={({ iframeKey }) => (
+          <div
+            key={iframeKey}
+            className="themes-wrapper chunk-mode relative z-20 size-full bg-background"
+          >
+            <PlaygroundDemo className="h-full" />
           </div>
-        </ResizablePanel>
-
-        <ResizableHandle className="after:-translate-x-px after:-translate-y-1/2 relative hidden w-3 bg-transparent p-0 after:absolute after:top-1/2 after:right-0 after:h-8 after:w-[6px] after:rounded-full after:bg-border after:transition-all hover:after:h-10 sm:block" />
-        <ResizablePanel defaultSize={0} minSize={0} />
-      </ResizablePanelGroup>
+        )}
+        tree={tree}
+      />
     </div>
   );
 }

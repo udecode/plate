@@ -19,9 +19,11 @@ const toAppImportPath = (targetPath: string) => {
 const getIndexEntry = (dir: string) => {
   const tsEntry = path.join(dir, 'index.ts');
   const tsxEntry = path.join(dir, 'index.tsx');
+  const jsEntry = path.join(dir, 'index.js');
 
   if (fs.existsSync(tsEntry)) return tsEntry;
   if (fs.existsSync(tsxEntry)) return tsxEntry;
+  if (fs.existsSync(jsEntry)) return jsEntry;
 
   return null;
 };
@@ -29,12 +31,13 @@ const getIndexEntry = (dir: string) => {
 const addAliasEntries = (
   aliases: Record<string, string>,
   importPath: string,
-  packageDir: string
+  packageDir: string,
+  rootDirName: 'dist' | 'src'
 ) => {
-  const srcDir = path.join(packageDir, 'src');
-  const rootEntry = getIndexEntry(srcDir);
-  const reactEntry = getIndexEntry(path.join(srcDir, 'react'));
-  const staticEntry = getIndexEntry(path.join(srcDir, 'static'));
+  const rootDir = path.join(packageDir, rootDirName);
+  const rootEntry = getIndexEntry(rootDir);
+  const reactEntry = getIndexEntry(path.join(rootDir, 'react'));
+  const staticEntry = getIndexEntry(path.join(rootDir, 'static'));
 
   if (rootEntry) aliases[importPath] = toAppImportPath(rootEntry);
   if (reactEntry) aliases[`${importPath}/react`] = toAppImportPath(reactEntry);
@@ -43,10 +46,15 @@ const addAliasEntries = (
   }
 };
 
-const buildWorkspaceSourceAliases = () => {
+const buildWorkspaceAliases = (rootDirName: 'dist' | 'src') => {
   const aliases: Record<string, string> = {};
 
-  addAliasEntries(aliases, 'platejs', path.join(PACKAGES_ROOT, 'plate'));
+  addAliasEntries(
+    aliases,
+    'platejs',
+    path.join(PACKAGES_ROOT, 'plate'),
+    rootDirName
+  );
 
   for (const entry of fs.readdirSync(PACKAGES_ROOT, { withFileTypes: true })) {
     if (!entry.isDirectory()) continue;
@@ -62,7 +70,8 @@ const buildWorkspaceSourceAliases = () => {
         addAliasEntries(
           aliases,
           `@udecode/${udecodeEntry.name}`,
-          path.join(udecodeRoot, udecodeEntry.name)
+          path.join(udecodeRoot, udecodeEntry.name),
+          rootDirName
         );
       }
 
@@ -72,11 +81,37 @@ const buildWorkspaceSourceAliases = () => {
     addAliasEntries(
       aliases,
       `@platejs/${entry.name}`,
-      path.join(PACKAGES_ROOT, entry.name)
+      path.join(PACKAGES_ROOT, entry.name),
+      rootDirName
     );
   }
 
   return aliases;
+};
+
+const buildWorkspaceDevAliases = () => {
+  const sourceAliases = buildWorkspaceAliases('src');
+  const distAliases = buildWorkspaceAliases('dist');
+  const docsSourceAlias: Record<string, string> = {};
+
+  if (process.env.PLATE_WWW_DYNAMIC_DOCS === '1') {
+    docsSourceAlias['collections/server'] = toAppImportPath(
+      path.join(APP_ROOT, '.source-dev/dynamic.ts')
+    );
+  }
+
+  if (process.env.PLATE_WWW_DEV_SOURCE === '1') {
+    return {
+      ...sourceAliases,
+      ...docsSourceAlias,
+    };
+  }
+
+  return {
+    ...sourceAliases,
+    ...distAliases,
+    ...docsSourceAlias,
+  };
 };
 
 const withMDX = createMDX({});
@@ -90,6 +125,7 @@ const nextConfig = async (_phase: string) => {
 
     experimental: {
       externalDir: isDev,
+      // The OOM came from the docs/import graph, not Turbopack's dev cache itself.
       turbopackFileSystemCacheForDev: true,
     },
     productionBrowserSourceMaps: false,
@@ -131,7 +167,7 @@ const nextConfig = async (_phase: string) => {
 
     turbopack: isDev
       ? {
-          resolveAlias: buildWorkspaceSourceAliases(),
+          resolveAlias: buildWorkspaceDevAliases(),
         }
       : undefined,
 

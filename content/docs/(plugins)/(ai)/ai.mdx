@@ -382,138 +382,7 @@ Reset the internal `_blockChunks`, `_blockPath`, and `_mdxName` options when str
 
 <ComponentPreviewPro name="ai-pro" />
 
-## Hooks
-
-### `useAIChatEditor`
-
-Registers an auxiliary editor for chat previews and deserializes Markdown with block-level memoization.
-
-<API name="useAIChatEditor">
-<APIParameters>
-  <APIItem name="editor" type="SlateEditor">Editor instance dedicated to the chat preview.</APIItem>
-  <APIItem name="content" type="string">Markdown content returned by the model.</APIItem>
-  <APIItem name="options" type="DeserializeMdOptions" optional>Pass `parser` to filter tokens before deserialization.</APIItem>
-</APIParameters>
-</API>
-
-```tsx
-import { usePlateEditor } from 'platejs/react';
-import { MarkdownPlugin } from '@platejs/markdown';
-import { AIChatPlugin, useAIChatEditor } from '@platejs/ai/react';
-
-const aiPreviewEditor = usePlateEditor({
-  plugins: [MarkdownPlugin, AIChatPlugin],
-});
-
-useAIChatEditor(aiPreviewEditor, responseMarkdown, {
-  parser: { exclude: ['space'] },
-});
-```
-
-### `useEditorChat`
-
-Connects `UseChatHelpers` to editor state so the AI menu knows whether to anchor to cursor, selection, or block selection.
-
-<API name="useEditorChat">
-<APIParameters>
-  <APIItem name="onOpenBlockSelection" type="(blocks: NodeEntry[]) => void" optional>Called when the menu opens on block selection.</APIItem>
-  <APIItem name="onOpenChange" type="(open: boolean) => void" optional>Called whenever the menu opens or closes.</APIItem>
-  <APIItem name="onOpenCursor" type="() => void" optional>Called when the menu opens at the cursor.</APIItem>
-  <APIItem name="onOpenSelection" type="() => void" optional>Called when the menu opens on a text selection.</APIItem>
-</APIParameters>
-</API>
-
-### `useChatChunk`
-
-Streams chat responses chunk-by-chunk and gives you full control over insertion.
-
-<API name="useChatChunk">
-<APIParameters>
-  <APIItem name="onChunk" type="(chunk: { chunk: string; isFirst: boolean; nodes: TText[]; text: string }) => void">Handle each streamed chunk.</APIItem>
-  <APIItem name="onFinish" type="({ content }: { content: string }) => void" optional>Called when streaming finishes.</APIItem>
-</APIParameters>
-</API>
-
-## Utilities
-
-### `withAIBatch`
-
-Groups editor operations into a single history batch and flags it as AI-generated so `tf.ai.undo()` removes it safely.
-
-<API name="withAIBatch">
-<APIParameters>
-  <APIItem name="editor" type="SlateEditor">Target editor.</APIItem>
-  <APIItem name="fn" type="() => void">Operations to run.</APIItem>
-  <APIItem name="options" type="{ split?: boolean }" optional>Set `split: true` to start a new history batch.</APIItem>
-</APIParameters>
-</API>
-
-### `applyAISuggestions`
-
-Diffs AI output against stored `chatNodes` and writes transient suggestion nodes. Requires `@platejs/suggestion`.
-
-<API name="applyAISuggestions">
-<APIParameters>
-  <APIItem name="editor" type="SlateEditor">Editor to apply suggestions to.</APIItem>
-  <APIItem name="content" type="string">Markdown response from the model.</APIItem>
-</APIParameters>
-</API>
-
-Complementary helpers allow you to finalize or discard the diff:
-
-- `acceptAISuggestions(editor)`: Converts transient suggestion nodes into permanent suggestions.
-- `rejectAISuggestions(editor)`: Removes transient suggestion nodes and clears suggestion marks.
-
-### `aiCommentToRange`
-
-Maps streamed comment metadata back to document ranges so comments can be inserted automatically.
-
-<API name="aiCommentToRange">
-<APIParameters>
-  <APIItem name="editor" type="PlateEditor">Editor instance.</APIItem>
-  <APIItem name="options" type="{ blockId: string; comment: string; content: string }">Block id and text used to locate the range.</APIItem>
-</APIParameters>
-<APIReturns type="{ start: BasePoint; end: BasePoint } | null">Range matching the comment or `null` if it cannot be found.</APIReturns>
-</API>
-
-### `findTextRangeInBlock`
-
-Fuzzy-search helper that uses LCS to find the closest match inside a block.
-
-<API name="findTextRangeInBlock">
-<APIParameters>
-  <APIItem name="node" type="TNode">Block node to search.</APIItem>
-  <APIItem name="searchText" type="string">Text snippet to locate.</APIItem>
-</APIParameters>
-<APIReturns type="{ start: { path: Path; offset: number }; end: { path: Path; offset: number } } | null">Matched range or `null`.</APIReturns>
-</API>
-
-### `getEditorPrompt`
-
-Generates prompts that respect cursor, selection, or block selection states.
-
-<API name="getEditorPrompt">
-<APIParameters>
-  <APIItem name="editor" type="SlateEditor">Editor providing context.</APIItem>
-  <APIItem name="options" type="{ prompt?: EditorPrompt }">String, config, or function describing the prompt.</APIItem>
-</APIParameters>
-<APIReturns type="string">Contextualized prompt string.</APIReturns>
-</API>
-
-### `replacePlaceholders`
-
-Replaces placeholders like `{editor}`, `{blockSelection}`, and `{prompt}` with serialized Markdown.
-
-<API name="replacePlaceholders">
-<APIParameters>
-  <APIItem name="editor" type="SlateEditor">Editor providing content.</APIItem>
-  <APIItem name="text" type="string">Template text.</APIItem>
-  <APIItem name="options" type="{ prompt?: string }" optional>Prompt value injected into `{prompt}`.</APIItem>
-</APIParameters>
-<APIReturns type="string">Template with placeholders replaced by Markdown.</APIReturns>
-</API>
-
-## Plugins
+## API Reference
 
 ### `AIPlugin`
 
@@ -544,8 +413,6 @@ Main plugin that powers the AI menu, chat state, and transforms.
     <APIItem name="toolName" type="'comment' | 'edit' | 'generate' | null" optional>Active tool used to interpret the response.</APIItem>
   </APIOptions>
 </API>
-
-## API
 
 ### `api.aiChat.submit(input, options?)`
 
@@ -606,8 +473,6 @@ Closes the AI menu, optionally undoing the last AI batch and refocusing the edit
   <APIItem name="options" type="{ focus?: boolean; undo?: boolean }" optional>Set `focus: false` to keep focus outside the editor or `undo: false` to preserve inserted content.</APIItem>
 </APIParameters>
 </API>
-
-## Transforms
 
 ### `tf.aiChat.accept()`
 
@@ -703,6 +568,133 @@ Reports whether an insert-mode preview rollback point is currently active.
 ### `tf.ai.undo()`
 
 Undoes the latest AI history entry when it was created by `withAIBatch`. If an insert-mode preview is active, it cancels that preview first instead of replaying every streamed chunk. In both cases it avoids re-applying AI output from redo.
+
+### `useAIChatEditor`
+
+Registers an auxiliary editor for chat previews and deserializes Markdown with block-level memoization.
+
+<API name="useAIChatEditor">
+<APIParameters>
+  <APIItem name="editor" type="SlateEditor">Editor instance dedicated to the chat preview.</APIItem>
+  <APIItem name="content" type="string">Markdown content returned by the model.</APIItem>
+  <APIItem name="options" type="DeserializeMdOptions" optional>Pass `parser` to filter tokens before deserialization.</APIItem>
+</APIParameters>
+</API>
+
+```tsx
+import { usePlateEditor } from 'platejs/react';
+import { MarkdownPlugin } from '@platejs/markdown';
+import { AIChatPlugin, useAIChatEditor } from '@platejs/ai/react';
+
+const aiPreviewEditor = usePlateEditor({
+  plugins: [MarkdownPlugin, AIChatPlugin],
+});
+
+useAIChatEditor(aiPreviewEditor, responseMarkdown, {
+  parser: { exclude: ['space'] },
+});
+```
+
+### `useEditorChat`
+
+Connects `UseChatHelpers` to editor state so the AI menu knows whether to anchor to cursor, selection, or block selection.
+
+<API name="useEditorChat">
+<APIParameters>
+  <APIItem name="onOpenBlockSelection" type="(blocks: NodeEntry[]) => void" optional>Called when the menu opens on block selection.</APIItem>
+  <APIItem name="onOpenChange" type="(open: boolean) => void" optional>Called whenever the menu opens or closes.</APIItem>
+  <APIItem name="onOpenCursor" type="() => void" optional>Called when the menu opens at the cursor.</APIItem>
+  <APIItem name="onOpenSelection" type="() => void" optional>Called when the menu opens on a text selection.</APIItem>
+</APIParameters>
+</API>
+
+### `useChatChunk`
+
+Streams chat responses chunk-by-chunk and gives you full control over insertion.
+
+<API name="useChatChunk">
+<APIParameters>
+  <APIItem name="onChunk" type="(chunk: { chunk: string; isFirst: boolean; nodes: TText[]; text: string }) => void">Handle each streamed chunk.</APIItem>
+  <APIItem name="onFinish" type="({ content }: { content: string }) => void" optional>Called when streaming finishes.</APIItem>
+</APIParameters>
+</API>
+
+### `withAIBatch`
+
+Groups editor operations into a single history batch and flags it as AI-generated so `tf.ai.undo()` removes it safely.
+
+<API name="withAIBatch">
+<APIParameters>
+  <APIItem name="editor" type="SlateEditor">Target editor.</APIItem>
+  <APIItem name="fn" type="() => void">Operations to run.</APIItem>
+  <APIItem name="options" type="{ split?: boolean }" optional>Set `split: true` to start a new history batch.</APIItem>
+</APIParameters>
+</API>
+
+### `applyAISuggestions`
+
+Diffs AI output against stored `chatNodes` and writes transient suggestion nodes. Requires `@platejs/suggestion`.
+
+<API name="applyAISuggestions">
+<APIParameters>
+  <APIItem name="editor" type="SlateEditor">Editor to apply suggestions to.</APIItem>
+  <APIItem name="content" type="string">Markdown response from the model.</APIItem>
+</APIParameters>
+</API>
+
+Complementary helpers allow you to finalize or discard the diff:
+
+- `acceptAISuggestions(editor)`: Converts transient suggestion nodes into permanent suggestions.
+- `rejectAISuggestions(editor)`: Removes transient suggestion nodes and clears suggestion marks.
+
+### `aiCommentToRange`
+
+Maps streamed comment metadata back to document ranges so comments can be inserted automatically.
+
+<API name="aiCommentToRange">
+<APIParameters>
+  <APIItem name="editor" type="PlateEditor">Editor instance.</APIItem>
+  <APIItem name="options" type="{ blockId: string; comment: string; content: string }">Block id and text used to locate the range.</APIItem>
+</APIParameters>
+<APIReturns type="{ start: BasePoint; end: BasePoint } | null">Range matching the comment or `null` if it cannot be found.</APIReturns>
+</API>
+
+### `findTextRangeInBlock`
+
+Fuzzy-search helper that uses LCS to find the closest match inside a block.
+
+<API name="findTextRangeInBlock">
+<APIParameters>
+  <APIItem name="node" type="TNode">Block node to search.</APIItem>
+  <APIItem name="searchText" type="string">Text snippet to locate.</APIItem>
+</APIParameters>
+<APIReturns type="{ start: { path: Path; offset: number }; end: { path: Path; offset: number } } | null">Matched range or `null`.</APIReturns>
+</API>
+
+### `getEditorPrompt`
+
+Generates prompts that respect cursor, selection, or block selection states.
+
+<API name="getEditorPrompt">
+<APIParameters>
+  <APIItem name="editor" type="SlateEditor">Editor providing context.</APIItem>
+  <APIItem name="options" type="{ prompt?: EditorPrompt }">String, config, or function describing the prompt.</APIItem>
+</APIParameters>
+<APIReturns type="string">Contextualized prompt string.</APIReturns>
+</API>
+
+### `replacePlaceholders`
+
+Replaces placeholders like `{editor}`, `{blockSelection}`, and `{prompt}` with serialized Markdown.
+
+<API name="replacePlaceholders">
+<APIParameters>
+  <APIItem name="editor" type="SlateEditor">Editor providing content.</APIItem>
+  <APIItem name="text" type="string">Template text.</APIItem>
+  <APIItem name="options" type="{ prompt?: string }" optional>Prompt value injected into `{prompt}`.</APIItem>
+</APIParameters>
+<APIReturns type="string">Template with placeholders replaced by Markdown.</APIReturns>
+</API>
 
 ## Customization
 

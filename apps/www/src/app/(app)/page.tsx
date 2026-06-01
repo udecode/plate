@@ -12,6 +12,7 @@ import {
 } from '@/components/page-header';
 import { PlaygroundPreview } from '@/components/playground-preview';
 import { Button } from '@/components/ui/button';
+import { getPlaygroundPreviewData } from '@/lib/playground-preview-data';
 
 import { AnnouncementButton } from './_components/announcement-button';
 import { PotionLazyBlock } from './_components/potion-lazy-block';
@@ -63,6 +64,7 @@ export const dynamic = 'force-static';
 
 export default async function IndexPage() {
   const content = i18n.en;
+  const playgroundPreviewData = await getPlaygroundPreviewData();
 
   return (
     <div className="flex flex-1 flex-col" data-home-page>
@@ -90,7 +92,9 @@ export default async function IndexPage() {
             data-home-preview
           >
             <div className="relative z-10">
-              <PlaygroundPreview />
+              {playgroundPreviewData && (
+                <PlaygroundPreview {...playgroundPreviewData} />
+              )}
             </div>
             <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-48 bg-linear-to-t from-muted via-muted/80 to-transparent lg:h-80 xl:h-64 dark:from-background dark:via-background/80" />
           </section>

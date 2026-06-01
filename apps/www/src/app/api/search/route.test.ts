@@ -3,6 +3,8 @@ import { describe, expect, it } from 'bun:test';
 import { GET } from './route';
 
 type SearchResult = {
+  content: string;
+  section?: 'docsApi';
   url: string;
 };
 
@@ -46,5 +48,52 @@ describe('/api/search', () => {
       results.some((item) => item.url.startsWith('/cn/docs/plugin-input-rules'))
     ).toBe(true);
     expect(results.every((item) => !item.url.startsWith('/docs/'))).toBe(true);
+  });
+
+  it('indexes API headings inside docs pages', async () => {
+    const results = await search('duplicate definitions', 'en');
+    const apiHeading = results.find(
+      (item) => item.url === '/docs/footnote#apifootnoteduplicatedefinitions'
+    );
+
+    expect(apiHeading).toBeDefined();
+    expect(apiHeading?.section).toBe('docsApi');
+  });
+
+  it('tags transform headings inside docs pages', async () => {
+    const results = await search(
+      'tf footnote normalizeDuplicateDefinition',
+      'en'
+    );
+    const apiHeading = results.find(
+      (item) =>
+        item.url === '/docs/footnote#tffootnotenormalizeduplicatedefinition'
+    );
+
+    expect(apiHeading).toBeDefined();
+    expect(apiHeading?.section).toBe('docsApi');
+  });
+
+  it('does not tag normal docs headings as docs API sections', async () => {
+    const results = await search('Create your first editor', 'en');
+    const normalHeading = results.find(
+      (item) => item.url === '/docs/installation/react#create-your-first-editor'
+    );
+
+    expect(normalHeading).toBeDefined();
+    expect(normalHeading?.section).toBeUndefined();
+  });
+
+  it('does not index docs frontmatter as searchable body text', async () => {
+    const results = await search('route docs markdown title markdown', 'en');
+
+    expect(
+      results.some(
+        (item) =>
+          item.url === '/docs/footnote' &&
+          item.content.includes('route') &&
+          item.content.includes('title')
+      )
+    ).toBe(false);
   });
 });

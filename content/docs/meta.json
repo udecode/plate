@@ -587,14 +587,12 @@
             {
               "description": "A menu for AI-powered content generation and insertion.",
               "href": "/docs/components/ai-menu",
-              "label": "New",
               "title": "AI Menu",
               "titleCn": "AI Menu"
             },
             {
               "description": "A toolbar button for accessing AI features.",
               "href": "/docs/components/ai-toolbar-button",
-              "label": "New",
               "title": "AI Toolbar Button",
               "titleCn": "AI Toolbar Button"
             },
@@ -619,14 +617,12 @@
             {
               "description": "A toolbar button to import editor content from a file.",
               "href": "/docs/components/import-toolbar-button",
-              "label": "New",
               "title": "Import Toolbar Button",
               "titleCn": "Import Toolbar Button"
             },
             {
               "description": "A toolbar button for exporting editor content in various formats (HTML, PDF, Image, Markdown).",
               "href": "/docs/components/export-toolbar-button",
-              "label": "New",
               "title": "Export Toolbar Button",
               "titleCn": "Export Toolbar Button"
             },
@@ -675,7 +671,6 @@
             {
               "description": "An editor to select tags.",
               "href": "/docs/components/select-editor",
-              "label": "New",
               "title": "Select Editor",
               "titleCn": "Select Editor"
             },
@@ -880,7 +875,6 @@
             {
               "description": "A text highlighter for AI-generated content.",
               "href": "/docs/components/ai-node",
-              "label": "New",
               "title": "AI Leaf",
               "titleCn": "AI Leaf"
             },
@@ -1117,14 +1111,12 @@
             {
               "description": "Slate to HTML",
               "href": "/docs/examples/slate-to-html",
-              "label": "New",
               "title": "Slate to HTML",
               "titleCn": "Slate 转 HTML"
             },
             {
               "description": "Export a Plate document to a file.",
               "href": "/docs/examples/export",
-              "label": "New",
               "title": "Export",
               "titleCn": "导出"
             },
@@ -1173,7 +1165,6 @@
             {
               "description": "Collaborative editing.",
               "href": "/docs/examples/collaboration",
-              "label": "New",
               "title": "Collaboration Demo",
               "titleCn": "协作演示"
             },
@@ -1191,7 +1182,6 @@
             {
               "description": "Create diagrams from code using PlantUML, Graphviz, Flowchart, or Mermaid.",
               "href": "/docs/examples/code-drawing",
-              "label": "New",
               "title": "Code Drawing Demo",
               "titleCn": "Code Drawing"
             },
@@ -1512,7 +1502,6 @@
                 },
                 {
                   "href": "/docs/plugin-shortcuts",
-                  "label": "Updated",
                   "title": "Plugin Shortcuts",
                   "titleCn": "插件快捷键"
                 },
@@ -1533,6 +1522,7 @@
                 },
                 {
                   "href": "/docs/editing-behavior",
+                  "label": "New",
                   "title": "Editing Behavior",
                   "titleCn": "编辑行为"
                 },
@@ -1565,21 +1555,18 @@
             },
             {
               "href": "/docs/static",
-              "label": "Updated",
               "title": "Static Rendering",
               "titleCn": "静态渲染"
             },
             {
               "description": "HTML ↔ Plate",
               "href": "/docs/html",
-              "label": "Updated",
               "title": "HTML",
               "titleCn": "HTML"
             },
             {
               "description": "Markdown ↔ Plate",
               "href": "/docs/markdown",
-              "label": "Updated",
               "title": "Markdown",
               "titleCn": "Markdown"
             },
@@ -1650,7 +1637,6 @@
                   "keywords": ["ai"]
                 }
               ],
-              "label": "New",
               "title": "AI"
             },
             {
@@ -1671,7 +1657,6 @@
                   "titleCn": "Suggestion"
                 }
               ],
-              "label": "New",
               "title": "Discussion",
               "titleCn": "Discussion"
             },
@@ -2001,8 +1986,7 @@
                   "description": "Flash the landed target after TOC, footnote, search, or custom navigation jumps.",
                   "href": "/docs/navigation-feedback",
                   "title": "Navigation Feedback",
-                  "titleCn": "Navigation Feedback",
-                  "label": "New"
+                  "titleCn": "Navigation Feedback"
                 },
                 {
                   "description": "Maintain a consistent tab order for tabbable elements.",
@@ -2019,7 +2003,6 @@
                 {
                   "description": "Collaborate with others in a single document.",
                   "href": "/docs/yjs",
-                  "label": "New",
                   "title": "Yjs",
                   "titleCn": "Yjs"
                 },
@@ -2050,7 +2033,6 @@
                 {
                   "description": "Import DOCX files and export to Word.",
                   "href": "/docs/docx-io",
-                  "label": "New",
                   "title": "DOCX Import/Export",
                   "titleCn": "DOCX 导入/导出"
                 },
@@ -2063,7 +2045,6 @@
                 {
                   "description": "Copy paste from Markdown to Slate.",
                   "href": "/docs/markdown",
-                  "label": "New",
                   "title": "Markdown",
                   "titleCn": "Markdown"
                 }
@@ -2179,7 +2160,6 @@
         "titleCn": "插件方法"
       },
       "/docs/plugin-shortcuts": {
-        "label": "Updated",
         "title": "Plugin Shortcuts",
         "titleCn": "插件快捷键"
       },
@@ -2196,6 +2176,7 @@
         "titleCn": "插件规则"
       },
       "/docs/editing-behavior": {
+        "label": "New",
         "title": "Editing Behavior",
         "titleCn": "编辑行为"
       },
@@ -2217,7 +2198,6 @@
         "titleCn": "受控值"
       },
       "/docs/static": {
-        "label": "Updated",
         "title": "Static Rendering",
         "titleCn": "静态渲染"
       },
@@ -2228,7 +2208,6 @@
       },
       "/docs/markdown": {
         "description": "Copy paste from Markdown to Slate.",
-        "label": "New",
         "title": "Markdown",
         "titleCn": "Markdown"
       },
@@ -2274,7 +2253,6 @@
         "titleCn": "Copilot"
       },
       "/docs/discussion": {
-        "label": "New",
         "title": "Discussion",
         "titleCn": "Discussion"
       },
@@ -2531,7 +2509,6 @@
       },
       "/docs/navigation-feedback": {
         "description": "Flash the landed target after TOC, footnote, search, or custom navigation jumps.",
-        "label": "New",
         "title": "Navigation Feedback",
         "titleCn": "Navigation Feedback"
       },
@@ -2547,7 +2524,6 @@
       },
       "/docs/yjs": {
         "description": "Collaborate with others in a single document.",
-        "label": "New",
         "title": "Yjs",
         "titleCn": "Yjs"
       },
@@ -2569,7 +2545,6 @@
       },
       "/docs/docx-io": {
         "description": "Import DOCX files and export to Word.",
-        "label": "New",
         "title": "DOCX Import/Export",
         "titleCn": "DOCX 导入/导出"
       },
@@ -2583,13 +2558,11 @@
       },
       "/docs/components/ai-menu": {
         "description": "A menu for AI-powered content generation and insertion.",
-        "label": "New",
         "title": "AI Menu",
         "titleCn": "AI Menu"
       },
       "/docs/components/ai-toolbar-button": {
         "description": "A toolbar button for accessing AI features.",
-        "label": "New",
         "title": "AI Toolbar Button",
         "titleCn": "AI Toolbar Button"
       },
@@ -2610,13 +2583,11 @@
       },
       "/docs/components/import-toolbar-button": {
         "description": "A toolbar button to import editor content from a file.",
-        "label": "New",
         "title": "Import Toolbar Button",
         "titleCn": "Import Toolbar Button"
       },
       "/docs/components/export-toolbar-button": {
         "description": "A toolbar button for exporting editor content in various formats (HTML, PDF, Image, Markdown).",
-        "label": "New",
         "title": "Export Toolbar Button",
         "titleCn": "Export Toolbar Button"
       },
@@ -2657,7 +2628,6 @@
       },
       "/docs/components/select-editor": {
         "description": "An editor to select tags.",
-        "label": "New",
         "title": "Select Editor",
         "titleCn": "Select Editor"
       },
@@ -2826,7 +2796,6 @@
       },
       "/docs/components/ai-node": {
         "description": "A text highlighter for AI-generated content.",
-        "label": "New",
         "title": "AI Leaf",
         "titleCn": "AI Leaf"
       },
@@ -3021,13 +2990,11 @@
       },
       "/docs/examples/slate-to-html": {
         "description": "Slate to HTML",
-        "label": "New",
         "title": "Slate to HTML",
         "titleCn": "Slate 转 HTML"
       },
       "/docs/examples/export": {
         "description": "Export a Plate document to a file.",
-        "label": "New",
         "title": "Export",
         "titleCn": "导出"
       },
@@ -3067,7 +3034,6 @@
       },
       "/docs/examples/collaboration": {
         "description": "Collaborative editing.",
-        "label": "New",
         "title": "Collaboration Demo",
         "titleCn": "协作演示"
       },
@@ -3082,7 +3048,6 @@
       },
       "/docs/examples/code-drawing": {
         "description": "Create diagrams from code using PlantUML, Graphviz, Flowchart, or Mermaid.",
-        "label": "New",
         "title": "Code Drawing Demo",
         "titleCn": "Code Drawing"
       },

@@ -45,9 +45,23 @@ function isExternalHref(href: string) {
 function NavLabel({ label }: { label: SidebarNavItem['label'] }) {
   if (!label) return null;
 
+  const values = Array.isArray(label) ? label : [label];
+  const statusLabel = values.find(
+    (value) => value === 'New' || value === 'Updated'
+  );
+
+  if (statusLabel) {
+    return (
+      <span
+        className="ml-2 flex size-2 shrink-0 rounded-full bg-blue-500"
+        title={statusLabel}
+      />
+    );
+  }
+
   return (
     <span className="ml-2 rounded-md bg-[#adfa1d] px-1.5 py-0.5 text-[#000000] text-xs leading-none no-underline group-hover:no-underline">
-      {Array.isArray(label) ? label[0] : label}
+      {values[0]}
     </span>
   );
 }
