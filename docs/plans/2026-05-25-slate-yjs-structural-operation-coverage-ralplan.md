@@ -5,6 +5,11 @@ Status: done
 Current pass: closure final gates complete
 Next pass: none
 
+> Sync note, 2026-05-28: this plan is still useful for the structural fallback
+> bug class, but it is narrower than the current request. Use
+> `docs/plans/2026-05-28-slate-yjs-current-architecture-operation-matrix.md`
+> for the full operation/transform matrix and four collaboration scenarios.
+
 ## Current Verdict
 
 `@slate/yjs` is still not operation-complete. The latest `split_node` fix closed

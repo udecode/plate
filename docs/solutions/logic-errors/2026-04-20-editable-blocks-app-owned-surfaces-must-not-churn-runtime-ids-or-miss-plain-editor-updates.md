@@ -1,6 +1,7 @@
 ---
 title: EditableBlocks app-owned surfaces must not churn runtime ids or miss plain-editor updates
 date: 2026-04-20
+last_updated: 2026-05-29
 category: docs/solutions/logic-errors
 module: Slate React runtime
 problem_type: logic_error
@@ -9,6 +10,7 @@ symptoms:
   - "EditableBlocks app-owned proofs rendered no projection slices even though the projection store snapshot was populated"
   - "Plain createEditor()-backed app-owned transforms changed editor state without rerendering EditableBlocks subscribers"
   - "App-owned scrollSelectionIntoView could not resolve DOM text nodes for plain-editor text selections"
+  - "A Slate example control passed initial value setup but still failed the value replacement guard by calling tx.value.replace() after the provider mounted"
 root_cause: logic_error
 resolution_type: code_fix
 severity: high
@@ -59,6 +61,9 @@ bridge seams that were actually broken.
 5. Preserve shifted node keys across `insert_node` and `remove_node` in
    `with-dom`, so mounted surfaces do not remount unchanged siblings when a
    structural edit only shifts paths.
+6. Keep example controls structural after mount. If a control changes generated
+   stress content, remove and insert the owned blocks with node transforms
+   instead of replacing the whole root value.
 
 Key files:
 
@@ -117,6 +122,10 @@ selection-to-DOM resolution became honest enough for `scrollSelectionIntoView`.
 ## Prevention
 - Do not auto-wrap an already-populated editor with a provider that blindly
   reapplies `initialValue`.
+- Do not treat `tx.value.replace()` as a harmless example control shortcut.
+  After `<Slate>` mounts, prefer scoped `tx.nodes.remove()` /
+  `tx.nodes.insertMany()` updates so runtime ids, layout projection, selection,
+  and collaboration state stay traceable.
 - Treat `createEditor()` support as a real public contract. If a surface
   accepts a plain editor, selector wakeups and DOM key maps must not rely on
   `withReact()` or `withDOM()` being present.
