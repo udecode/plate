@@ -65,7 +65,6 @@ const createItem = (
 const expectAlreadyNormalized = (editor: SlateEditor) => {
   const before = editor.children;
   editor.tf.normalize({ force: true });
-  // biome-ignore lint/suspicious/noMisplacedAssertion: helper function called inside tests
   expect(editor.children).toBe(before);
 };
 

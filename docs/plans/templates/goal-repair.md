@@ -22,7 +22,7 @@ Completion threshold:
   skills are synced when `.agents/rules/**` changed, a source audit proves the
   repair text exists, the repaired template or rule is smoke-checked, deliberate
   non-repairs are recorded, and
-  `node .agents/rules/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` passes.
+  `node .agents/skills/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` passes.
 
 Verification surface:
 - TODO: Name the source audit, generated skill sync, smoke plan/checker proof,
@@ -66,7 +66,7 @@ Completion rule:
   remains unchecked. If an item does not apply, check it and add `N/A: <reason>`.
 - Do not call `update_goal(status: complete)` until every completion threshold
   above is satisfied, final repair evidence is recorded, and
-  `node .agents/rules/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` passes.
+  `node .agents/skills/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` passes.
 - Do not create hook state for this repair. This file plus the active goal are
   the durable state.
 
@@ -106,7 +106,7 @@ Completion Gates:
 | Autoreview / review | pending | Run applicable review gate or record N/A for docs-only/source-rule-only repair | pending |
 | Final lint | pending | Run scoped formatter/lint or record ignored-path/N/A reason | pending |
 | Output budget discipline | pending | Verify no unbounded high-volume command output was streamed, or record the accidental output and recovery | pending |
-| Goal plan complete | yes | Run `node .agents/rules/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` | pending |
+| Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` | pending |
 
 Phase / pass table:
 | Phase | Status | Evidence | Next |

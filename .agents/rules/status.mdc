@@ -47,7 +47,7 @@ Risks: {none|summary}
 No goal plan found
 
 Create one with:
-node .agents/rules/autogoal/scripts/create-goal-scratchpad.mjs ...
+node .agents/skills/autogoal/scripts/create-goal-scratchpad.mjs ...
 ```
 
 ## Keep It Brief

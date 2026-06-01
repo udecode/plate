@@ -447,7 +447,7 @@ For review-only work:
 ```bash
 clawpatch status --json
 clawpatch report --status open --json
-node .agents/rules/autogoal/scripts/check-complete.mjs docs/plans/<goal-plan>.md
+node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/<goal-plan>.md
 ```
 
 For fix work, run the configured Clawpatch validation plus the repo's relevant

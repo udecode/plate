@@ -1,8 +1,8 @@
 # {{TITLE}}
 
 Objective:
-TODO: Write the exact active Slate Plan lane objective after creating this
-file.
+TODO: Write the short create_goal objective, under 240 characters. Put the full
+Slate Plan lane contract in the sections below.
 
 Goal plan:
 {{PLAN_PATH}}
@@ -15,7 +15,7 @@ Completion threshold:
 - Slate Plan closure is legal only when score >= 0.92, no dimension is below
   0.85, every pass row is complete or intentionally skipped with evidence,
   issue/reference sync rows are closed, final handoff is emitted, and
-  `node .agents/rules/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` passes.
+  `node .agents/skills/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` passes.
 
 Verification surface:
 - TODO: Name the planning checks, source audits, issue/reference sync, browser
@@ -59,7 +59,7 @@ Completion rule:
   remains unchecked. If an item does not apply, check it and add `N/A: <reason>`.
 - Do not call `update_goal(status: complete)` until every Slate Plan
   completion gate below is satisfied and
-  `node .agents/rules/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` passes.
+  `node .agents/skills/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` passes.
 - Do not create hook state for this goal. This
   file plus the active goal are the durable state.
 
@@ -73,9 +73,9 @@ Start Gates:
 | Live `.tmp/slate-v2` grounding needed for current-state claims | pending | pending |
 
 Work Checklist:
-- [ ] Objective includes lane outcome, full pass schedule, one-pass-per-
+- [ ] Short objective plus lane outcome, full pass schedule, one-pass-per-
       activation policy, completion threshold, verification surface,
-      constraints, boundaries, and blocked condition.
+      constraints, boundaries, and blocked condition are concrete.
 - [ ] One-pass-per-activation policy respected, or marked N/A with reason.
 - [ ] Live source grounding recorded for every current implementation claim, or
       marked N/A with reason.
@@ -104,7 +104,7 @@ Completion Gates:
 | Issue ledger or PR reference changed | pending | Sync the relevant ledger/reference row or record why no sync applies | pending |
 | Autoreview for uncommitted implementation changes | pending | Load `.agents/skills/autoreview/SKILL.md` and follow its dirty-local target selection until no accepted/actionable findings, or record N/A for planning-only/no local patch | pending |
 | Final user-review handoff | pending | Emit final handoff or keep the plan pending with the next pass | pending |
-| Goal plan complete | yes | Run `node .agents/rules/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` | pending |
+| Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` | pending |
 
 Phase / pass table:
 | Phase | Status | Evidence | Next |
@@ -275,7 +275,7 @@ Final completion gates:
 | workspace verification recorded | verification workspace gate closed | pending |
 | autoreview clean or N/A | `.agents/skills/autoreview/SKILL.md` loaded and clean for non-trivial uncommitted implementation changes, or N/A with reason | pending |
 | final handoff emitted or lane remains pending | final response / next pass recorded | pending |
-| `check-complete` passes | `node .agents/rules/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` | pending |
+| `check-complete` passes | `node .agents/skills/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` | pending |
 
 Findings:
 - None yet.

@@ -124,15 +124,16 @@ Use `autogoal` for non-trivial Slate Patch work.
 Goal shape:
 
 ```txt
-Slate Patch fixes <bug/cluster> in `.tmp/slate-v2`: reproduce current failure,
-add behavior coverage, implement the cleanest long-term architecture/API/DX/perf
-fix even if breaking changes are required, verify focused Slate v2 gates, run
-autoreview from the `.tmp/slate-v2` checkout until no accepted/actionable
-findings remain, and hand off root cause plus proof.
+Fix Slate Patch <bug/cluster>; done when repro, behavior coverage, Slate v2
+proof, and autoreview pass; target `.tmp/slate-v2`.
 ```
 
 Do not create a Slate Plan pass schedule. This skill is one implementation
 slice, not a planning lane.
+
+Keep any `create_goal.objective` short. Put repro details, cleanest-fix
+criteria, verification gates, autoreview target, and handoff proof in the goal
+plan or final ledger, not the goal text.
 
 ## Workflow
 

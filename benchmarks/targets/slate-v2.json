@@ -1,0 +1,917 @@
+{
+  "version": 1,
+  "policy": {
+    "authority": "Benchmark targets are the future source of truth. Evidence Kit is a legacy import/report archive during migration.",
+    "benchmarkCode": "Benchmark implementation lives with the runtime/package code it measures.",
+    "activeLoops": "Autoresearch sessions optimize one target id at a time and own only active loop state.",
+    "docs": "Docs and research files are linked evidence, not benchmark control state."
+  },
+  "targets": [
+    {
+      "id": "react-huge-document-legacy-compare",
+      "question": "Does Slate v2 beat legacy Slate for 5,000-block React editing, selection, startup, and full-document replacement?",
+      "owner": "slate-v2",
+      "family": "react-large-document",
+      "kind": "slate-legacy-compare",
+      "cwd": ".tmp/slate-v2",
+      "command": "REACT_HUGE_COMPARE_LEGACY_REPO=../../../slate bun run bench:react:huge-document:legacy-compare:local",
+      "metrics": {
+        "primary": "benchmark_seconds",
+        "direction": "lower",
+        "unit": "s",
+        "printsMetric": false,
+        "upgrade": "Prefer benchmark-native METRIC lines when this target is touched."
+      },
+      "correctness": {
+        "command": "bun check",
+        "policy": "Use the target-specific correctness command when one exists; bun check is the fallback before promotion."
+      },
+      "artifacts": [
+        {
+          "path": ".tmp/slate-v2/tmp/slate-react-huge-document-legacy-compare-benchmark-compare-all-blocks-5000-iters-3-ops-20-combined-selection-no-profile.json",
+          "required": true
+        }
+      ],
+      "docs": {
+        "sources": [
+          "benchmarks/editor/research/evidence-source-map.md",
+          "benchmarks/editor/iterations/003-evidence-control-plane.md"
+        ]
+      },
+      "migration": {
+        "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
+        "evidenceKitId": "react-huge-document-legacy-compare",
+        "evidenceKitCategory": "slate-react-huge-document-legacy-compare",
+        "evidenceKitActive": true
+      }
+    },
+    {
+      "id": "react-rerender-breadth",
+      "question": "How broad are React rerenders for selection, leaves, ancestors, and source-scoped invalidation?",
+      "owner": "slate-v2",
+      "family": "react-locality",
+      "kind": "current",
+      "cwd": ".tmp/slate-v2/packages/slate-react",
+      "command": "bun ../../scripts/benchmarks/browser/react/rerender-breadth.tsx",
+      "metrics": {
+        "primary": "benchmark_seconds",
+        "direction": "lower",
+        "unit": "s",
+        "printsMetric": false,
+        "upgrade": "Prefer benchmark-native METRIC lines when this target is touched."
+      },
+      "correctness": {
+        "command": "bun check",
+        "policy": "Use the target-specific correctness command when one exists; bun check is the fallback before promotion."
+      },
+      "artifacts": [
+        {
+          "path": ".tmp/slate-v2/packages/slate-react/tmp/slate-react-rerender-breadth-benchmark.json",
+          "required": true
+        }
+      ],
+      "docs": {
+        "sources": [
+          "benchmarks/editor/research/evidence-source-map.md",
+          "benchmarks/editor/iterations/003-evidence-control-plane.md"
+        ]
+      },
+      "migration": {
+        "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
+        "evidenceKitId": "react-rerender-breadth",
+        "evidenceKitCategory": "slate-react-rerender-breadth",
+        "evidenceKitActive": true
+      }
+    },
+    {
+      "id": "react-huge-document-overlays",
+      "question": "Do overlay and partial-DOM promotion paths stay local in huge documents?",
+      "owner": "slate-v2",
+      "family": "react-large-document",
+      "kind": "current",
+      "cwd": ".tmp/slate-v2/packages/slate-react",
+      "command": "bun ../../scripts/benchmarks/browser/react/huge-document-overlays.tsx",
+      "metrics": {
+        "primary": "benchmark_seconds",
+        "direction": "lower",
+        "unit": "s",
+        "printsMetric": false,
+        "upgrade": "Prefer benchmark-native METRIC lines when this target is touched."
+      },
+      "correctness": {
+        "command": "bun check",
+        "policy": "Use the target-specific correctness command when one exists; bun check is the fallback before promotion."
+      },
+      "artifacts": [
+        {
+          "path": ".tmp/slate-v2/packages/slate-react/tmp/slate-react-huge-document-overlays-benchmark.json",
+          "required": true
+        }
+      ],
+      "docs": {
+        "sources": [
+          "benchmarks/editor/research/evidence-source-map.md",
+          "benchmarks/editor/iterations/003-evidence-control-plane.md"
+        ]
+      },
+      "migration": {
+        "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
+        "evidenceKitId": "react-huge-document-overlays",
+        "evidenceKitCategory": "slate-react-huge-document-overlays",
+        "evidenceKitActive": true
+      }
+    },
+    {
+      "id": "react-active-typing-breakdown",
+      "question": "Where does active typing time go in the React runtime?",
+      "owner": "slate-v2",
+      "family": "react-typing",
+      "kind": "current",
+      "cwd": ".tmp/slate-v2",
+      "command": "bun run bench:react:active-typing:local",
+      "metrics": {
+        "primary": "typing_seconds",
+        "direction": "lower",
+        "unit": "s",
+        "printsMetric": false,
+        "upgrade": "Prefer benchmark-native METRIC lines when this target is touched."
+      },
+      "correctness": {
+        "command": "bun check",
+        "policy": "Use the target-specific correctness command when one exists; bun check is the fallback before promotion."
+      },
+      "artifacts": [
+        {
+          "path": ".tmp/slate-v2/tmp/slate-react-active-typing-breakdown-benchmark.json",
+          "required": true
+        }
+      ],
+      "docs": {
+        "sources": [
+          "benchmarks/editor/research/evidence-source-map.md",
+          "benchmarks/editor/iterations/003-evidence-control-plane.md"
+        ]
+      },
+      "migration": {
+        "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
+        "evidenceKitId": "react-active-typing-breakdown",
+        "evidenceKitCategory": "slate-react-active-typing-breakdown",
+        "evidenceKitActive": true
+      }
+    },
+    {
+      "id": "react-pagination-virtualized-char-burst",
+      "question": "Does rows=800 virtualized pagination keep char-burst typing near staged table performance while DOM and page mounts stay bounded?",
+      "owner": "slate-v2",
+      "family": "react-pagination",
+      "kind": "browser-trace",
+      "cwd": ".tmp/slate-v2",
+      "command": "bun run bench:react:pagination-virtualized-char-burst:local",
+      "metrics": {
+        "primary": "pagination_virtualized_vs_table_ratio",
+        "direction": "lower",
+        "unit": "ratio",
+        "printsMetric": true,
+        "upgrade": "Primary metric compares rows=800 virtualized burst latency against the staged 500-row table burst in the same benchmark run."
+      },
+      "correctness": {
+        "command": "PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright test playwright/integration/examples/pagination.test.ts --project=chromium -g \"keeps rows=800 virtualized pagination in the staged-class perf envelope|keeps fast staged text after insert breaks at the model caret|selects projected pagination words on native double click|places virtualized pagination selection at wrapped line ends\"",
+        "policy": "Promotion requires virtualized burst perf plus native pagination selection/editing correctness."
+      },
+      "artifacts": [
+        {
+          "path": ".tmp/slate-v2/tmp/slate-pagination-virtualized-char-burst-benchmark.json",
+          "required": true
+        }
+      ],
+      "docs": {
+        "sources": [
+          "docs/plans/2026-05-31-pagination-virtualized-rows800-perf.md",
+          "docs/plans/2026-06-01-pagination-virtualization-char-burst-perf.md"
+        ]
+      }
+    },
+    {
+      "id": "react-huge-document-browser-trace",
+      "question": "What DOM count, heap, long-frame, and interaction traces does Slate v2 produce in Chromium?",
+      "owner": "slate-v2",
+      "family": "react-large-document",
+      "kind": "browser-trace",
+      "cwd": ".tmp/slate-v2",
+      "command": "bun run bench:react:huge-document:browser-trace:local",
+      "metrics": {
+        "primary": "browser_trace_seconds",
+        "direction": "lower",
+        "unit": "s",
+        "printsMetric": false,
+        "upgrade": "Prefer benchmark-native METRIC lines when this target is touched."
+      },
+      "correctness": {
+        "command": "bun check",
+        "policy": "Use the target-specific correctness command when one exists; bun check is the fallback before promotion."
+      },
+      "artifacts": [
+        {
+          "path": ".tmp/slate-v2/tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-defaultAuto-stagedDomPresent-blocks-5000-iters-3-ops-10.json",
+          "required": true
+        }
+      ],
+      "docs": {
+        "sources": [
+          "benchmarks/editor/research/evidence-source-map.md",
+          "benchmarks/editor/iterations/003-evidence-control-plane.md"
+        ]
+      },
+      "migration": {
+        "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
+        "evidenceKitId": "react-huge-document-browser-trace",
+        "evidenceKitCategory": "slate-react-huge-document-browser-trace",
+        "evidenceKitActive": true
+      }
+    },
+    {
+      "id": "react-huge-document-slate-browser-trace",
+      "question": "What matching browser trace does legacy Slate chunk-on produce for the same huge-document surface?",
+      "owner": "slate-v2",
+      "family": "react-large-document",
+      "kind": "browser-trace",
+      "cwd": ".tmp/slate-v2",
+      "command": "SLATE_LEGACY_BROWSER_TRACE_SURFACES=legacyChunkOn bun run bench:react:huge-document:slate-browser-trace:local",
+      "metrics": {
+        "primary": "browser_trace_seconds",
+        "direction": "lower",
+        "unit": "s",
+        "printsMetric": false,
+        "upgrade": "Prefer benchmark-native METRIC lines when this target is touched."
+      },
+      "correctness": {
+        "command": "bun check",
+        "policy": "Use the target-specific correctness command when one exists; bun check is the fallback before promotion."
+      },
+      "artifacts": [
+        {
+          "path": ".tmp/slate-v2/tmp/slate-react-huge-document-slate-browser-trace-benchmark-surfaces-legacyChunkOn-blocks-5000-iters-3-ops-10.json",
+          "required": true
+        }
+      ],
+      "docs": {
+        "sources": [
+          "benchmarks/editor/research/evidence-source-map.md",
+          "benchmarks/editor/iterations/003-evidence-control-plane.md"
+        ]
+      },
+      "migration": {
+        "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
+        "evidenceKitId": "react-huge-document-slate-browser-trace",
+        "evidenceKitCategory": "slate-react-huge-document-browser-trace",
+        "evidenceKitActive": true
+      }
+    },
+    {
+      "id": "browser-rich-text-replay-coverage",
+      "question": "Which rich-text, table, inline, and paste-html browser fixtures replay across Slate v2 and legacy Slate?",
+      "owner": "slate-v2",
+      "family": "browser-rich-text",
+      "kind": "rows",
+      "cwd": ".tmp/slate-v2",
+      "command": "bun run bench:browser:rich-text-replay-coverage:local",
+      "metrics": {
+        "primary": "replay_seconds",
+        "direction": "lower",
+        "unit": "s",
+        "printsMetric": false,
+        "upgrade": "Prefer benchmark-native METRIC lines when this target is touched."
+      },
+      "correctness": {
+        "command": "bun check",
+        "policy": "Use the target-specific correctness command when one exists; bun check is the fallback before promotion."
+      },
+      "artifacts": [
+        {
+          "path": ".tmp/slate-v2/tmp/slate-browser-rich-text-replay-coverage-benchmark.json",
+          "required": true
+        }
+      ],
+      "docs": {
+        "sources": [
+          "benchmarks/editor/research/evidence-source-map.md",
+          "benchmarks/editor/iterations/003-evidence-control-plane.md"
+        ]
+      },
+      "migration": {
+        "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
+        "evidenceKitId": "browser-rich-text-replay-coverage",
+        "evidenceKitCategory": "slate-browser-rich-text-replay-coverage",
+        "evidenceKitActive": true
+      }
+    },
+    {
+      "id": "core-normalization-current",
+      "question": "How fast is current Slate v2 normalization?",
+      "owner": "slate-v2",
+      "family": "core-current",
+      "kind": "current",
+      "cwd": ".tmp/slate-v2",
+      "command": "bun run bench:core:normalization:local",
+      "metrics": {
+        "primary": "core_benchmark_seconds",
+        "direction": "lower",
+        "unit": "s",
+        "printsMetric": false,
+        "upgrade": "Prefer benchmark-native METRIC lines when this target is touched."
+      },
+      "correctness": {
+        "command": "bun check",
+        "policy": "Use the target-specific correctness command when one exists; bun check is the fallback before promotion."
+      },
+      "artifacts": [
+        {
+          "path": ".tmp/slate-v2/tmp/slate-normalization-benchmark.json",
+          "required": true
+        }
+      ],
+      "docs": {
+        "sources": [
+          "benchmarks/editor/research/evidence-source-map.md",
+          "benchmarks/editor/iterations/003-evidence-control-plane.md"
+        ]
+      },
+      "migration": {
+        "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
+        "evidenceKitId": "core-normalization-current",
+        "evidenceKitCategory": "slate-core-normalization-current",
+        "evidenceKitActive": true
+      }
+    },
+    {
+      "id": "core-query-ref-observation",
+      "question": "How expensive are query, ref, and observation paths?",
+      "owner": "slate-v2",
+      "family": "core-current",
+      "kind": "current",
+      "cwd": ".tmp/slate-v2",
+      "command": "bun run bench:core:query-ref-observation:local",
+      "metrics": {
+        "primary": "core_benchmark_seconds",
+        "direction": "lower",
+        "unit": "s",
+        "printsMetric": false,
+        "upgrade": "Prefer benchmark-native METRIC lines when this target is touched."
+      },
+      "correctness": {
+        "command": "bun check",
+        "policy": "Use the target-specific correctness command when one exists; bun check is the fallback before promotion."
+      },
+      "artifacts": [
+        {
+          "path": ".tmp/slate-v2/tmp/slate-query-ref-observation-benchmark.json",
+          "required": true
+        }
+      ],
+      "docs": {
+        "sources": [
+          "benchmarks/editor/research/evidence-source-map.md",
+          "benchmarks/editor/iterations/003-evidence-control-plane.md"
+        ]
+      },
+      "migration": {
+        "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
+        "evidenceKitId": "core-query-ref-observation",
+        "evidenceKitCategory": "slate-core-query-ref-observation",
+        "evidenceKitActive": true
+      }
+    },
+    {
+      "id": "core-node-transforms",
+      "question": "How expensive are structural node transforms?",
+      "owner": "slate-v2",
+      "family": "core-current",
+      "kind": "current",
+      "cwd": ".tmp/slate-v2",
+      "command": "bun run bench:core:node-transforms:local",
+      "metrics": {
+        "primary": "core_benchmark_seconds",
+        "direction": "lower",
+        "unit": "s",
+        "printsMetric": false,
+        "upgrade": "Prefer benchmark-native METRIC lines when this target is touched."
+      },
+      "correctness": {
+        "command": "bun check",
+        "policy": "Use the target-specific correctness command when one exists; bun check is the fallback before promotion."
+      },
+      "artifacts": [
+        {
+          "path": ".tmp/slate-v2/tmp/slate-node-transform-benchmark.json",
+          "required": true
+        }
+      ],
+      "docs": {
+        "sources": [
+          "benchmarks/editor/research/evidence-source-map.md",
+          "benchmarks/editor/iterations/003-evidence-control-plane.md"
+        ]
+      },
+      "migration": {
+        "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
+        "evidenceKitId": "core-node-transforms",
+        "evidenceKitCategory": "slate-core-node-transforms",
+        "evidenceKitActive": true
+      }
+    },
+    {
+      "id": "core-text-selection",
+      "question": "How expensive are text and selection operations?",
+      "owner": "slate-v2",
+      "family": "core-current",
+      "kind": "current",
+      "cwd": ".tmp/slate-v2",
+      "command": "bun run bench:core:text-selection:local",
+      "metrics": {
+        "primary": "core_benchmark_seconds",
+        "direction": "lower",
+        "unit": "s",
+        "printsMetric": false,
+        "upgrade": "Prefer benchmark-native METRIC lines when this target is touched."
+      },
+      "correctness": {
+        "command": "bun check",
+        "policy": "Use the target-specific correctness command when one exists; bun check is the fallback before promotion."
+      },
+      "artifacts": [
+        {
+          "path": ".tmp/slate-v2/tmp/slate-text-selection-benchmark.json",
+          "required": true
+        }
+      ],
+      "docs": {
+        "sources": [
+          "benchmarks/editor/research/evidence-source-map.md",
+          "benchmarks/editor/iterations/003-evidence-control-plane.md"
+        ]
+      },
+      "migration": {
+        "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
+        "evidenceKitId": "core-text-selection",
+        "evidenceKitCategory": "slate-core-text-selection",
+        "evidenceKitActive": true
+      }
+    },
+    {
+      "id": "core-editor-store",
+      "question": "How expensive is the editor store and public snapshot surface?",
+      "owner": "slate-v2",
+      "family": "core-current",
+      "kind": "current",
+      "cwd": ".tmp/slate-v2",
+      "command": "bun run bench:core:editor-store:local",
+      "metrics": {
+        "primary": "core_benchmark_seconds",
+        "direction": "lower",
+        "unit": "s",
+        "printsMetric": false,
+        "upgrade": "Prefer benchmark-native METRIC lines when this target is touched."
+      },
+      "correctness": {
+        "command": "bun check",
+        "policy": "Use the target-specific correctness command when one exists; bun check is the fallback before promotion."
+      },
+      "artifacts": [
+        {
+          "path": ".tmp/slate-v2/tmp/slate-editor-store-benchmark.json",
+          "required": true
+        }
+      ],
+      "docs": {
+        "sources": [
+          "benchmarks/editor/research/evidence-source-map.md",
+          "benchmarks/editor/iterations/003-evidence-control-plane.md"
+        ]
+      },
+      "migration": {
+        "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
+        "evidenceKitId": "core-editor-store",
+        "evidenceKitCategory": "slate-core-editor-store",
+        "evidenceKitActive": true
+      }
+    },
+    {
+      "id": "core-refs-projection",
+      "question": "How expensive are refs and projection paths?",
+      "owner": "slate-v2",
+      "family": "core-current",
+      "kind": "current",
+      "cwd": ".tmp/slate-v2",
+      "command": "bun run bench:core:refs-projection:local",
+      "metrics": {
+        "primary": "core_benchmark_seconds",
+        "direction": "lower",
+        "unit": "s",
+        "printsMetric": false,
+        "upgrade": "Prefer benchmark-native METRIC lines when this target is touched."
+      },
+      "correctness": {
+        "command": "bun check",
+        "policy": "Use the target-specific correctness command when one exists; bun check is the fallback before promotion."
+      },
+      "artifacts": [
+        {
+          "path": ".tmp/slate-v2/tmp/slate-refs-projection-benchmark.json",
+          "required": true
+        }
+      ],
+      "docs": {
+        "sources": [
+          "benchmarks/editor/research/evidence-source-map.md",
+          "benchmarks/editor/iterations/003-evidence-control-plane.md"
+        ]
+      },
+      "migration": {
+        "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
+        "evidenceKitId": "core-refs-projection",
+        "evidenceKitCategory": "slate-core-refs-projection",
+        "evidenceKitActive": true
+      }
+    },
+    {
+      "id": "clipboard-large-payload",
+      "question": "Do 10,000-line copy/paste payloads and 50,000-block two-node cuts stay under issue-shaped budgets?",
+      "owner": "slate-v2",
+      "family": "clipboard",
+      "kind": "current",
+      "cwd": ".tmp/slate-v2",
+      "command": "SLATE_CLIPBOARD_BENCH_HUGE_CUT_BLOCKS=50000 SLATE_CLIPBOARD_BENCH_ISSUE_TARGETS=1 bun run bench:core:clipboard-large-payload:local",
+      "metrics": {
+        "primary": "clipboard_seconds",
+        "direction": "lower",
+        "unit": "s",
+        "printsMetric": false,
+        "upgrade": "Prefer benchmark-native METRIC lines when this target is touched."
+      },
+      "correctness": {
+        "command": "bun check",
+        "policy": "Use the target-specific correctness command when one exists; bun check is the fallback before promotion."
+      },
+      "artifacts": [
+        {
+          "path": ".tmp/slate-v2/tmp/slate-clipboard-large-payload-benchmark.json",
+          "required": true
+        }
+      ],
+      "docs": {
+        "sources": [
+          "benchmarks/editor/research/evidence-source-map.md",
+          "benchmarks/editor/iterations/003-evidence-control-plane.md"
+        ]
+      },
+      "migration": {
+        "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
+        "evidenceKitId": "clipboard-large-payload",
+        "evidenceKitCategory": "slate-clipboard-large-payload",
+        "evidenceKitActive": true
+      }
+    },
+    {
+      "id": "collab-readiness",
+      "question": "Are remote replay, bookmark rebase, canonical replacement, history skip, and cleanup lanes ready?",
+      "owner": "slate-v2",
+      "family": "collaboration",
+      "kind": "current",
+      "cwd": ".tmp/slate-v2",
+      "command": "bun run bench:core:collab-readiness:local",
+      "metrics": {
+        "primary": "benchmark_seconds",
+        "direction": "lower",
+        "unit": "s",
+        "printsMetric": false,
+        "upgrade": "Prefer benchmark-native METRIC lines when this target is touched."
+      },
+      "correctness": {
+        "command": "bun check",
+        "policy": "Use the target-specific correctness command when one exists; bun check is the fallback before promotion."
+      },
+      "artifacts": [
+        {
+          "path": ".tmp/slate-v2/tmp/slate-collab-readiness-benchmark.json",
+          "required": true
+        }
+      ],
+      "docs": {
+        "sources": [
+          "benchmarks/editor/research/evidence-source-map.md",
+          "benchmarks/editor/iterations/003-evidence-control-plane.md"
+        ]
+      },
+      "migration": {
+        "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
+        "evidenceKitId": "collab-readiness",
+        "evidenceKitCategory": "slate-collab-readiness",
+        "evidenceKitActive": true
+      }
+    },
+    {
+      "id": "issue-6038-transaction-execution",
+      "question": "Does the issue #6038 transaction execution replay stay healthy?",
+      "owner": "slate-v2",
+      "family": "issue-replay",
+      "kind": "current",
+      "cwd": ".tmp/slate-v2",
+      "command": "bun run bench:slate:6038:local",
+      "metrics": {
+        "primary": "benchmark_seconds",
+        "direction": "lower",
+        "unit": "s",
+        "printsMetric": false,
+        "upgrade": "Prefer benchmark-native METRIC lines when this target is touched."
+      },
+      "correctness": {
+        "command": "bun check",
+        "policy": "Use the target-specific correctness command when one exists; bun check is the fallback before promotion."
+      },
+      "artifacts": [
+        {
+          "path": ".tmp/slate-v2/tmp/bench-slate-6038.json",
+          "required": true
+        }
+      ],
+      "docs": {
+        "sources": [
+          "benchmarks/editor/research/evidence-source-map.md",
+          "benchmarks/editor/iterations/003-evidence-control-plane.md"
+        ]
+      },
+      "migration": {
+        "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
+        "evidenceKitId": "issue-6038-transaction-execution",
+        "evidenceKitCategory": "slate-6038-transaction-execution",
+        "evidenceKitActive": true
+      }
+    },
+    {
+      "id": "core-huge-document-compare",
+      "question": "Does Slate v2 match legacy Slate for core huge-document operations?",
+      "owner": "slate-v2",
+      "family": "core-compare",
+      "kind": "compare",
+      "cwd": ".tmp/slate-v2",
+      "command": "bun run bench:core:huge-document:compare:local",
+      "metrics": {
+        "primary": "core_benchmark_seconds",
+        "direction": "lower",
+        "unit": "s",
+        "printsMetric": false,
+        "upgrade": "Prefer benchmark-native METRIC lines when this target is touched."
+      },
+      "correctness": {
+        "command": "bun check",
+        "policy": "Use the target-specific correctness command when one exists; bun check is the fallback before promotion."
+      },
+      "artifacts": [
+        {
+          "path": ".tmp/slate-v2/tmp/slate-core-huge-document-benchmark.json",
+          "required": true
+        }
+      ],
+      "docs": {
+        "sources": [
+          "benchmarks/editor/research/evidence-source-map.md",
+          "benchmarks/editor/iterations/003-evidence-control-plane.md"
+        ]
+      },
+      "migration": {
+        "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
+        "evidenceKitId": "core-huge-document-compare",
+        "evidenceKitCategory": "slate-core-huge-document-compare",
+        "evidenceKitActive": true
+      }
+    },
+    {
+      "id": "core-normalization-compare",
+      "question": "Does Slate v2 match legacy Slate for normalization?",
+      "owner": "slate-v2",
+      "family": "core-compare",
+      "kind": "compare",
+      "cwd": ".tmp/slate-v2",
+      "command": "bun run bench:core:normalization:compare:local",
+      "metrics": {
+        "primary": "core_benchmark_seconds",
+        "direction": "lower",
+        "unit": "s",
+        "printsMetric": false,
+        "upgrade": "Prefer benchmark-native METRIC lines when this target is touched."
+      },
+      "correctness": {
+        "command": "bun check",
+        "policy": "Use the target-specific correctness command when one exists; bun check is the fallback before promotion."
+      },
+      "artifacts": [
+        {
+          "path": ".tmp/slate-v2/tmp/slate-normalization-compare-benchmark.json",
+          "required": true
+        }
+      ],
+      "docs": {
+        "sources": [
+          "benchmarks/editor/research/evidence-source-map.md",
+          "benchmarks/editor/iterations/003-evidence-control-plane.md"
+        ]
+      },
+      "migration": {
+        "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
+        "evidenceKitId": "core-normalization-compare",
+        "evidenceKitCategory": "slate-core-normalization-compare",
+        "evidenceKitActive": true
+      }
+    },
+    {
+      "id": "core-observation-compare",
+      "question": "Does Slate v2 match legacy Slate for core observation?",
+      "owner": "slate-v2",
+      "family": "core-compare",
+      "kind": "compare",
+      "cwd": ".tmp/slate-v2",
+      "command": "bun run bench:core:observation:compare:local",
+      "metrics": {
+        "primary": "core_benchmark_seconds",
+        "direction": "lower",
+        "unit": "s",
+        "printsMetric": false,
+        "upgrade": "Prefer benchmark-native METRIC lines when this target is touched."
+      },
+      "correctness": {
+        "command": "bun check",
+        "policy": "Use the target-specific correctness command when one exists; bun check is the fallback before promotion."
+      },
+      "artifacts": [
+        {
+          "path": ".tmp/slate-v2/tmp/slate-core-observation-benchmark.json",
+          "required": true
+        }
+      ],
+      "docs": {
+        "sources": [
+          "benchmarks/editor/research/evidence-source-map.md",
+          "benchmarks/editor/iterations/003-evidence-control-plane.md"
+        ]
+      },
+      "migration": {
+        "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
+        "evidenceKitId": "core-observation-compare",
+        "evidenceKitCategory": "slate-core-observation-compare",
+        "evidenceKitActive": true
+      }
+    },
+    {
+      "id": "core-rich-text-operations-compare",
+      "question": "Does Slate v2 match legacy Slate for rich-text editing, transforms, selection, and navigation operations?",
+      "owner": "slate-v2",
+      "family": "editing-navigation",
+      "kind": "compare",
+      "cwd": ".tmp/slate-v2",
+      "command": "bun run bench:core:rich-text-operations:compare:local",
+      "metrics": {
+        "primary": "benchmark_seconds",
+        "direction": "lower",
+        "unit": "s",
+        "printsMetric": false,
+        "upgrade": "Prefer benchmark-native METRIC lines when this target is touched."
+      },
+      "correctness": {
+        "command": "bun check",
+        "policy": "Use the target-specific correctness command when one exists; bun check is the fallback before promotion."
+      },
+      "artifacts": [
+        {
+          "path": ".tmp/slate-v2/tmp/slate-rich-text-operations-compare-benchmark.json",
+          "required": true
+        }
+      ],
+      "docs": {
+        "sources": [
+          "benchmarks/editor/research/evidence-source-map.md",
+          "benchmarks/editor/iterations/003-evidence-control-plane.md"
+        ]
+      },
+      "migration": {
+        "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
+        "evidenceKitId": "core-rich-text-operations-compare",
+        "evidenceKitCategory": "slate-core-rich-text-operations-compare",
+        "evidenceKitActive": true
+      }
+    },
+    {
+      "id": "history-compare",
+      "question": "Does Slate v2 match legacy Slate for undo/redo typing and fragment history?",
+      "owner": "slate-v2",
+      "family": "history",
+      "kind": "compare",
+      "cwd": ".tmp/slate-v2",
+      "command": "HISTORY_BENCH_LEGACY_REPO=../../../slate bun run bench:history:compare:local",
+      "metrics": {
+        "primary": "benchmark_seconds",
+        "direction": "lower",
+        "unit": "s",
+        "printsMetric": false,
+        "upgrade": "Prefer benchmark-native METRIC lines when this target is touched."
+      },
+      "correctness": {
+        "command": "bun check",
+        "policy": "Use the target-specific correctness command when one exists; bun check is the fallback before promotion."
+      },
+      "artifacts": [
+        {
+          "path": ".tmp/slate-v2/tmp/slate-history-compare-benchmark.json",
+          "required": true
+        }
+      ],
+      "docs": {
+        "sources": [
+          "benchmarks/editor/research/evidence-source-map.md",
+          "benchmarks/editor/iterations/003-evidence-control-plane.md"
+        ]
+      },
+      "migration": {
+        "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
+        "evidenceKitId": "history-compare",
+        "evidenceKitCategory": "slate-history-compare",
+        "evidenceKitActive": true
+      }
+    },
+    {
+      "id": "core-transaction-current",
+      "question": "How expensive is the current-only transaction path?",
+      "owner": "slate-v2",
+      "family": "core-current",
+      "kind": "current",
+      "cwd": ".tmp/slate-v2",
+      "command": "bun run bench:core:transaction:local",
+      "metrics": {
+        "primary": "core_benchmark_seconds",
+        "direction": "lower",
+        "unit": "s",
+        "printsMetric": false,
+        "upgrade": "Prefer benchmark-native METRIC lines when this target is touched."
+      },
+      "correctness": {
+        "command": "bun check",
+        "policy": "Use the target-specific correctness command when one exists; bun check is the fallback before promotion."
+      },
+      "artifacts": [
+        {
+          "path": ".tmp/slate-v2/tmp/slate-transaction-benchmark.json",
+          "required": false
+        }
+      ],
+      "docs": {
+        "sources": [
+          "benchmarks/editor/research/evidence-source-map.md",
+          "benchmarks/editor/iterations/003-evidence-control-plane.md"
+        ]
+      },
+      "migration": {
+        "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
+        "evidenceKitId": "core-transaction-current",
+        "evidenceKitCategory": "slate-core-transaction-current",
+        "evidenceKitActive": true
+      }
+    },
+    {
+      "id": "history-retained-memory",
+      "question": "How much retained memory does history keep?",
+      "owner": "slate-v2",
+      "family": "history",
+      "kind": "current",
+      "cwd": ".tmp/slate-v2",
+      "command": "bun run bench:core:history-retained-memory:local",
+      "metrics": {
+        "primary": "benchmark_seconds",
+        "direction": "lower",
+        "unit": "s",
+        "printsMetric": false,
+        "upgrade": "Prefer benchmark-native METRIC lines when this target is touched."
+      },
+      "correctness": {
+        "command": "bun check",
+        "policy": "Use the target-specific correctness command when one exists; bun check is the fallback before promotion."
+      },
+      "artifacts": [
+        {
+          "path": ".tmp/slate-v2/tmp/slate-history-retained-memory-benchmark.json",
+          "required": false
+        }
+      ],
+      "docs": {
+        "sources": [
+          "benchmarks/editor/research/evidence-source-map.md",
+          "benchmarks/editor/iterations/003-evidence-control-plane.md"
+        ]
+      },
+      "migration": {
+        "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
+        "evidenceKitId": "history-retained-memory",
+        "evidenceKitCategory": "slate-history-retained-memory",
+        "evidenceKitActive": true
+      }
+    }
+  ]
+}

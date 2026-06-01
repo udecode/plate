@@ -50,6 +50,8 @@ Use those skills when relevant:
   threshold
 - `task` for normal repo task execution
 - `major-task` for heavyweight architecture, framework comparison, migration, benchmark, or proposal work
+- `slate-autoresearch` for measured Slate v2 performance optimization loops
+  with Codex Autoresearch, especially pagination/virtualization
 - `clawsweeper` for Slate issue-ledger triage, duplicate/stale/invalid classification, small high-confidence issue processing, and exact claim sync
 - `clawpatch` for Clawpatch init/map/review/report/fix/revalidate workflows
 - `editor-test-harvester` for mining external editor repositories for portable editor-behavior tests, Slate v2 coverage gaps, and copy/refactor/create decisions

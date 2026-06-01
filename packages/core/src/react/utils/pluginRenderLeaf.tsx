@@ -33,10 +33,7 @@ const isActiveHardAffinityBoundary = (editor: PlateEditor, text: any) => {
   return focus.offset === 0 || focus.offset === text.text.length;
 };
 
-const getSimpleLeafAttributes = (
-  props: PlateLeafProps,
-  className?: string
-) => {
+const getSimpleLeafAttributes = (props: PlateLeafProps, className?: string) => {
   const attributes = ((props as any).attributes ??
     (props.leaf as any).attributes ??
     {}) as any;
@@ -44,8 +41,7 @@ const getSimpleLeafAttributes = (
   return {
     ...attributes,
     className:
-      [className, attributes.className].filter(Boolean).join(' ') ||
-      undefined,
+      [className, attributes.className].filter(Boolean).join(' ') || undefined,
   };
 };
 

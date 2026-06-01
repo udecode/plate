@@ -152,7 +152,7 @@ matching goal exists. There can be only one active goal per thread.
 Create the harvest goal plan from the project template:
 
 ```bash
-node .agents/rules/autogoal/scripts/create-goal-scratchpad.mjs \
+node .agents/skills/autogoal/scripts/create-goal-scratchpad.mjs \
   --template editor-test-harvester \
   --title "<Repo> Editor Test Harvest"
 ```
@@ -664,7 +664,7 @@ rg --files <target> | rg '<test inventory pattern>' | wc -l
 rg -n "License Gate|Confidence Score|Pass-State Ledger|Matrix|Skips|Next Slice|Full Inventory Appendix" "$report_dir/report.md"
 test -f "$report_dir/inventory.md"
 test -f "$report_dir/test-index.md"
-node .agents/rules/autogoal/scripts/check-complete.mjs docs/plans/<goal-plan>.md
+node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/<goal-plan>.md
 ```
 
 Versioned-output hygiene check for behavior-only sources:

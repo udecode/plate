@@ -6125,8 +6125,14 @@ export default function EditorPerfPage() {
   }, [configureRunnerControls, runRunnerBenchmark]);
 
   React.useEffect(() => {
-    setConfig(getInitialHugeDocumentBenchmarkConfig() as BenchmarkConfig);
-    setDidLoadSearchParams(true);
+    const timeout = window.setTimeout(() => {
+      setConfig(getInitialHugeDocumentBenchmarkConfig() as BenchmarkConfig);
+      setDidLoadSearchParams(true);
+    });
+
+    return () => {
+      window.clearTimeout(timeout);
+    };
   }, []);
 
   React.useEffect(() => {

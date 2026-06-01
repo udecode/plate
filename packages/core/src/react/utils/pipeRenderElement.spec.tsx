@@ -447,7 +447,10 @@ describe('pipeRenderElement', () => {
               query: ({ nodeProps }) => !!nodeProps.element?.listStyleType,
               transformProps: ({ props }) => {
                 // eslint-disable-next-line react-hooks/rules-of-hooks
-                const type = useElementSelector(([element]) => element.type, []);
+                const type = useElementSelector(
+                  ([element]) => element.type,
+                  []
+                );
 
                 return {
                   ...props,

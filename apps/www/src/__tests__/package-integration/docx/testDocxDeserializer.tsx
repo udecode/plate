@@ -17,7 +17,7 @@ import { jsx } from '@platejs/test-utils';
 import { DocxPlugin } from '@platejs/docx';
 import { readTestFile } from './readTestFile';
 
-// biome-ignore lint/nursery/noUnusedExpressions: test
+// biome-ignore lint/suspicious/noUnusedExpressions: test
 jsx;
 
 const injectConfig = {

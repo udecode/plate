@@ -38,8 +38,7 @@ export const isEditOnly = (
 
     if (resolvedFeature === 'transformInitialValue') {
       return (
-        plugin.editOnly.normalizeInitialValue ??
-        DEFAULT.transformInitialValue
+        plugin.editOnly.normalizeInitialValue ?? DEFAULT.transformInitialValue
       );
     }
 

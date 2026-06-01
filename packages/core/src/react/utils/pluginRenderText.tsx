@@ -11,17 +11,13 @@ import { getRenderNodeProps } from './getRenderNodeProps';
 
 export type RenderText = (props: PlateTextProps) => React.ReactElement<any>;
 
-const getSimpleTextAttributes = (
-  props: PlateTextProps,
-  className?: string
-) => {
+const getSimpleTextAttributes = (props: PlateTextProps, className?: string) => {
   const attributes = (props.attributes ?? {}) as any;
 
   return {
     ...attributes,
     className:
-      [className, attributes.className].filter(Boolean).join(' ') ||
-      undefined,
+      [className, attributes.className].filter(Boolean).join(' ') || undefined,
   };
 };
 

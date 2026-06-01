@@ -5,7 +5,6 @@ const expectCollapsedWhiteSpace = (input: string, expected: string) => {
   const element = htmlStringToDOMNodeModule.htmlStringToDOMNode(input);
   const collapsedElement = collapseWhiteSpace(element);
   const output = collapsedElement.innerHTML;
-  // biome-ignore lint/suspicious/noMisplacedAssertion: Test helper function pattern
   expect(output).toEqual(expected);
 };
 

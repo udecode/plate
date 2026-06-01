@@ -1,8 +1,7 @@
 # {{TITLE}}
 
 Objective:
-TODO: Write the exact active editor-test-harvester objective after creating
-this file.
+TODO: Write the short create_goal objective, under 240 characters. Put the full editor-test-harvester contract in the sections below.
 
 Goal plan:
 {{PLAN_PATH}}
@@ -17,7 +16,7 @@ Completion threshold:
   files remain, every portable or portable-mixed runnable file is indexed/read
   or explicitly skipped with reason, every actionable row has owner/target/proof
   evidence, the harvest report links or contains a full inventory appendix, and
-  `node .agents/rules/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` passes.
+  `node .agents/skills/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` passes.
 
 Verification surface:
 - TODO: Name the target repo path, harvest report path, inventory/test-index
@@ -68,7 +67,7 @@ Completion rule:
   remains unchecked. If an item does not apply, check it and add `N/A: <reason>`.
 - Do not call `update_goal(status: complete)` until every completion threshold
   above is satisfied, report artifacts are current, and
-  `node .agents/rules/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` passes.
+  `node .agents/skills/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` passes.
 - Do not create hook state for this goal. This
   file plus the active goal are the durable state.
 
@@ -80,8 +79,8 @@ Start Gates:
 | Source of truth read before edits | pending | pending |
 
 Work Checklist:
-- [ ] Objective includes outcome, score threshold, verification surface,
-      constraints, boundaries, and blocked condition.
+- [ ] Short objective plus outcome, score threshold, verification surface,
+      constraints, boundaries, and blocked condition are concrete.
 - [ ] License gate complete before selecting report directory.
 - [ ] Existing report, inventory, and test-index read before rerun updates, or
       marked N/A with reason.
@@ -115,7 +114,7 @@ Completion Gates:
 | Harvest artifacts current | pending | Verify report, inventory, test-index, matrix accounting, and skip evidence are current | pending |
 | Behavior-only hygiene | pending | Verify versioned output uses fresh invariant wording and no copied source material | pending |
 | Final harvest handoff | pending | Emit harvest report handoff or keep the plan pending with the next pass | pending |
-| Goal plan complete | yes | Run `node .agents/rules/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` | pending |
+| Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` | pending |
 
 Phase / pass table:
 | Phase | Status | Evidence | Next |

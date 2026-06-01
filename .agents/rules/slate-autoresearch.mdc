@@ -1,0 +1,345 @@
+---
+description: Run measured Slate v2 performance optimization loops with Codex Autoresearch, using `.tmp/slate-v2` as the target workspace, explicit METRIC benchmarks, native editor correctness checks, and short Codex goal handles.
+argument-hint: '[pagination | benchmark name | Slate v2 perf target]'
+disable-model-invocation: true
+---
+
+# Slate Autoresearch
+
+Handle $ARGUMENTS.
+
+Use this for Slate v2 performance work where "try another optimization" needs a
+measured loop, not another plan essay.
+
+This is the measured optimization lane. It wraps Codex Autoresearch with Slate
+specific guardrails: target `.tmp/slate-v2`, prove editor correctness, keep
+native behavior visible, and log every keep/discard/measure decision.
+
+## Use When
+
+- The user invokes `slate-autoresearch`.
+- Pagination, virtualization, huge-document, table, render, layout, selection,
+  typing, paste, scroll, or mount performance needs iterative optimization.
+- There is, or should be, a benchmark command that prints `METRIC name=value`.
+- The next move depends on measured results, not just architecture judgment.
+- Previous `slate-plan` / `slate-patch` iterations are looping without a stable
+  metric ledger.
+
+## Do Not Use When
+
+- The bug is primarily correctness and needs a direct fix. Use `slate-patch`.
+- The output is an architecture/API proposal for user review. Use `slate-plan`.
+- No repeatable benchmark or correctness check can be defined yet. First add the
+  benchmark/proof surface with `slate-patch` or `task`.
+- The target is Plate product code instead of raw Slate v2.
+
+## Relationship To Other Lanes
+
+- `slate-plan`: decides the architecture/API target and pass-gated review.
+- `slate-patch`: fixes correctness bugs with repro, tests, and autoreview.
+- `slate-autoresearch`: optimizes a measurable Slate v2 performance target
+  through packets, metrics, ASI, and keep/discard evidence.
+- `autogoal`: if a Codex goal is required by repo policy, keep the objective
+  short: `<target>; done when <metric gate>; plan/session <path>`. Put the full
+  loop contract in Autoresearch session files and any plan, not the goal text.
+
+Do not run `slate-plan` pass schedules inside this lane. Do not use
+Autoresearch packets as a substitute for native editor correctness proof.
+
+## Command Surface
+
+Prefer the root package shortcuts from `plate-2`:
+
+```bash
+pnpm bench:targets:list
+pnpm bench:targets:check
+pnpm bench:targets:report
+pnpm bench:targets:dry-run -- <target-id>
+pnpm slate:ar:setup-target -- <target-id>
+pnpm slate:ar:init-target -- <target-id>
+pnpm slate:ar:guide
+pnpm slate:ar:onboard
+pnpm slate:ar:recommend
+pnpm slate:ar:suggest-loops
+pnpm slate:ar:prompt-plan -- --prompt "<user target>"
+pnpm slate:ar:setup-plan -- --name "<session>" --metric-name "<metric>"
+pnpm slate:ar:benchmark-inspect
+pnpm slate:ar:benchmark-lint
+pnpm slate:ar:checks-inspect -- --command "<correctness command>"
+pnpm slate:ar:doctor
+pnpm slate:ar:serve
+pnpm slate:ar:next
+pnpm slate:ar:log -- --status measure --description "<what was measured>"
+pnpm slate:ar:research-setup -- --slug "<slug>" --goal "<goal>"
+pnpm slate:ar:quality-gap -- --research-slug "<slug>" --list
+pnpm slate:ar:gap-candidates -- --research-slug "<slug>"
+pnpm slate:ar:finalize-preview
+pnpm slate:ar:finalize-current-tree
+```
+
+Prefer the local source checkout when available:
+
+```bash
+node ../codex-autoresearch/plugins/codex-autoresearch/scripts/autoresearch.mjs \
+  <command> --cwd .tmp/slate-v2
+```
+
+If a repo-local plugin install exists and is fresher, use that instead. When in
+doubt, run:
+
+```bash
+node ../codex-autoresearch/plugins/codex-autoresearch/scripts/autoresearch.mjs guide --cwd .tmp/slate-v2
+node ../codex-autoresearch/plugins/codex-autoresearch/scripts/autoresearch.mjs onboarding-packet --cwd .tmp/slate-v2 --compact
+node ../codex-autoresearch/plugins/codex-autoresearch/scripts/autoresearch.mjs recommend-next --cwd .tmp/slate-v2 --compact
+```
+
+Direct CLI fallback:
+
+```bash
+node tooling/scripts/slate-autoresearch.mjs suggest-loops
+node ../codex-autoresearch/plugins/codex-autoresearch/scripts/autoresearch.mjs prompt-plan --cwd .tmp/slate-v2 --prompt "<user target>"
+node ../codex-autoresearch/plugins/codex-autoresearch/scripts/autoresearch.mjs setup-plan --cwd .tmp/slate-v2 --name "<session>" --metric-name "<metric>"
+node ../codex-autoresearch/plugins/codex-autoresearch/scripts/autoresearch.mjs setup --cwd .tmp/slate-v2 --name "<session>" --metric-name "<metric>"
+node ../codex-autoresearch/plugins/codex-autoresearch/scripts/autoresearch.mjs benchmark-inspect --cwd .tmp/slate-v2
+node ../codex-autoresearch/plugins/codex-autoresearch/scripts/autoresearch.mjs benchmark-lint --cwd .tmp/slate-v2
+node ../codex-autoresearch/plugins/codex-autoresearch/scripts/autoresearch.mjs checks-inspect --cwd .tmp/slate-v2 --command "<correctness command>"
+```
+
+## Start Workflow
+
+1. Read the latest user target and identify the exact Slate v2 surface.
+2. Use `.tmp/slate-v2` as the target cwd. `plate-2` is only the control plane.
+3. Read existing `autoresearch.md`, `autoresearch.jsonl`,
+   `autoresearch.ideas.md`, and `autoresearch.config.json` when present. If no
+   session exists, run `prompt-plan` or `setup-plan` before creating one.
+   If the user asks what to optimize next, run `pnpm slate:ar:suggest-loops`
+   first. Use `pnpm slate:ar:suggest-loops -- --with-checks` when live focused
+   correctness state matters more than speed.
+4. Run `guide`, then `onboarding-packet --compact` and `recommend-next
+   --compact`. If the returned next action says setup, repair, stale packet,
+   segment reset, or dashboard recovery owns the lane, do that before `next`.
+5. Define the benchmark before editing:
+   - primary metric name and direction;
+   - secondary metrics;
+   - correctness checks;
+   - allowed edit scope;
+   - discard/revert scope;
+   - stop condition.
+6. Prefer existing Slate v2 benchmark scripts first. Current likely starting
+   points include `bench:react:active-typing:local`,
+   `bench:react:huge-document:browser-trace:local`, and
+   `bench:react:huge-document:slate-browser-trace:local`. Add a route-specific
+   benchmark only when the decision cannot be measured by an existing script.
+7. Run `benchmark-inspect`, `benchmark-lint`, `checks-inspect`, and
+   `doctor --check-benchmark --explain` before the first packet or after
+   benchmark/check edits.
+8. Start or refresh the dashboard with `serve --cwd .tmp/slate-v2`; provide the
+   verified URL when running the loop for the user.
+9. Run one packet with `next --cwd .tmp/slate-v2 --compact`.
+10. Log with `log --from-last` and ASI. Use:
+   - `measure` for baselines, probes, and no-change diagnostics;
+   - `keep` only when the metric improves and correctness checks pass;
+   - `discard` when the metric or architecture loses;
+   - `checks_failed` when correctness proof fails;
+   - `crash` when the packet cannot produce trustworthy evidence.
+11. After every log, read the returned continuation and `recommend-next
+   --compact` before another packet.
+
+## Existing Context
+
+"Existing session files" means Autoresearch-owned files under `.tmp/slate-v2`:
+
+- `autoresearch.md`
+- `autoresearch.jsonl`
+- `autoresearch.ideas.md`
+- `autoresearch.config.json`
+- `autoresearch.last-run.json`
+- `autoresearch.research/**`
+
+Those files are the loop state. `docs/plans/**`, `docs/research/**`,
+`docs/solutions/**`, issue ledgers, and prior handoff docs are supporting
+evidence, not active Autoresearch state. Read them only when the user target,
+Autoresearch session, or exactness oracle points there.
+
+## Target Registry
+
+Use `benchmarks/targets/slate-v2.json` as the migration spine when it exists.
+It is the future source of truth for benchmark questions, cohorts, commands,
+metrics, correctness checks, artifacts, and supporting docs.
+
+Default path:
+
+1. list targets with `pnpm bench:targets:list`;
+2. check registry health with `pnpm bench:targets:check`;
+3. generate or check target reports with `pnpm bench:targets:report`;
+4. dry-run the end-to-end target handoff with
+   `pnpm bench:targets:dry-run -- <target-id>`;
+5. choose one target id and run
+   `pnpm slate:ar:setup-target -- <target-id>` to inspect the read-only setup
+   plan;
+6. run `pnpm slate:ar:init-target -- <target-id>` only when the target should
+   create or replace the real `.tmp/slate-v2/autoresearch.*` session files;
+7. run `benchmark-inspect` / `benchmark-lint` so Autoresearch knows whether it
+   prints `METRIC name=value` or needs wrapper timing;
+8. attach correctness with `checks-inspect`;
+9. use Autoresearch for setup, packets, stale-run detection, ASI, dashboard,
+   keep/discard decisions, and final evidence.
+
+The old Slate v2 `bench:*` package scripts remain the workload owners during
+migration. Do not rewrite every benchmark into Autoresearch ceremony. The clean
+cut is: target registry owns the decision contract, benchmark scripts own the
+runtime workload, Autoresearch owns active optimization state, and generated
+target reports/history own historical status.
+
+Evidence Kit is legacy input/reporting while rows are imported. Do not treat it
+as the active control plane for new work once a target exists.
+
+Add a route-specific benchmark only when no existing target or `bench:*` script
+can measure the decision honestly.
+
+## Quality-Gap Research Mode
+
+Use quality-gap mode for broad product, docs, UX, architecture, or research
+requests. Do not use it as the default pagination perf loop; explicit benchmark
+targets and `METRIC` packets are still the default for perf.
+
+Workflow:
+
+1. create the scratchpad with
+   `pnpm slate:ar:research-setup -- --slug "<slug>" --goal "<goal>"`;
+2. keep dated, claim-specific sources in
+   `.tmp/slate-v2/autoresearch.research/<slug>/sources.md`;
+3. write the judgment pass in
+   `.tmp/slate-v2/autoresearch.research/<slug>/synthesis.md`;
+4. put only accepted findings into
+   `.tmp/slate-v2/autoresearch.research/<slug>/quality-gaps.md`;
+5. measure with
+   `pnpm slate:ar:quality-gap -- --research-slug "<slug>" --list`;
+6. preview implementation candidates with
+   `pnpm slate:ar:gap-candidates -- --research-slug "<slug>"`;
+7. implement only credible high-impact gaps, then log keep/discard/checks with
+   ASI.
+
+`quality_gap=0` means the accepted checklist for that round is closed. It does
+not mean discovery is complete. Check `qualityRound.closed`,
+`freshRoundSuggested`, and the plateau reason before claiming the research loop
+is done.
+
+## Finalization Mode
+
+Use finalization only when the user explicitly asks to finalize, create review
+branches, or turn noisy kept history into reviewable work.
+
+Default finalization flow:
+
+1. run `pnpm slate:ar:finalize-preview` first;
+2. select only accepted/current kept evidence;
+3. keep rejected, provisional, superseded, quarantined, invalidated, or reverted
+   evidence audit-visible but out of review branches;
+4. exclude `autoresearch.*`, `autoresearch.research/**`, dashboard exports, and
+   finalization scratch files unless the user asks to review session artifacts;
+5. read dirty-tree, overlap, semantic-safety, unkept-commit, excluded-file, and
+   final-tree coverage warnings before promoting anything;
+6. use `pnpm slate:ar:finalize-current-tree` when the current tree is the review
+   unit because kept commits were later corrected, bundled, or reverted;
+7. verify review branches or current-tree output before cleanup.
+
+The package shortcut prints a compact preview by default because raw previews
+can include thousands of branch files. Use
+`pnpm slate:ar:finalize-preview -- --full` only when the raw JSON is needed.
+
+Finalization preview is read-only. Branch creation, cleanup, commit, push, and
+PR work still require explicit user approval.
+
+## Exactness Gate
+
+Performance wins do not count when the editor is less correct.
+
+Before pagination, virtualization, hidden DOM, model-backed selection, or
+staged-render optimization:
+
+- identify the exact correctness oracle or browser proof command;
+- if no oracle exists, add it first with `slate-patch` or `tdd`;
+- classify each native behavior as preserved, intentionally degraded, or out of
+  scope before using it as a benchmark cohort;
+- keep cold-path estimates as scaffold hints only, not authoritative layout or
+  selection truth;
+- if a packet improves speed but breaks selection, input ordering, IME, copy,
+  paste, undo, or follow-up typing, log `checks_failed` or `discard`, never
+  `keep`.
+
+## Pagination Default Contract
+
+For pagination or page-level virtualization, start from this contract unless the
+user gives a sharper one.
+
+Target route:
+
+```txt
+http://localhost:3100/examples/pagination?page_layout=single&strategy=virtualized&rows=800
+```
+
+Required cohorts:
+
+- small: `rows=8`, staged and virtualized
+- table-large: `rows=500`, staged and virtualized
+- stress: `rows=800` or `rows=1000`, virtualized
+- table-span: table spans at least 10 pages
+
+Primary metrics, lower is better:
+
+- fast typing burst p95 or total interaction latency
+- initial interactive time for the route
+- strategy switch latency from staged to virtualized
+- fast scroll recovery time
+
+Secondary metrics:
+
+- dropped or reordered characters count
+- DOM node count
+- mounted page count
+- page overscan count
+- React commit count or render count when available
+- heap estimate when cheap to gather
+
+Correctness checks:
+
+- no skipped/reordered characters during fast typing bursts;
+- insert break keeps following typed characters after the caret;
+- click left margin selects start of line;
+- click right margin selects end of line;
+- double click selects a word;
+- drag selection autoscroll works near top and bottom;
+- text selection across visible page content works;
+- native copy/paste/select-all behavior is preserved or explicitly classified.
+
+Benchmark output must print `METRIC` lines. Example:
+
+```txt
+METRIC typing_p95_ms=42
+METRIC dropped_chars=0
+METRIC dom_nodes=1840
+```
+
+Do not let a faster packet count as `keep` when any correctness metric regresses.
+
+## Git And Safety
+
+- Do not commit, push, branch-finalize, or run Autoresearch finalization unless
+  the user explicitly asks.
+- Configure commit/revert paths narrowly if the loop needs discard cleanup.
+- Keep session artifacts out of review unless the user asks for the benchmark
+  ledger itself.
+- Treat dirty unrelated files as out of scope. Do not clean them.
+
+## Handoff
+
+Report:
+
+- benchmark command and primary metric;
+- baseline, latest, and best values;
+- kept, discarded, crashed, and checks-failed packets;
+- correctness checks used;
+- files changed by kept work;
+- dashboard URL, if served;
+- next recommended packet or blocker.

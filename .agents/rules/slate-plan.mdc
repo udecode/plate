@@ -126,7 +126,7 @@ as the execution goal. The user-review boundary is real.
 - Create the plan from the Slate Plan goal template:
 
   ```bash
-  node .agents/rules/autogoal/scripts/create-goal-scratchpad.mjs \
+  node .agents/skills/autogoal/scripts/create-goal-scratchpad.mjs \
     --template slate-plan \
     --title "<short Slate Plan title>"
   ```
@@ -138,16 +138,17 @@ as the execution goal. The user-review boundary is real.
   constraints, boundaries, and blocked condition there.
 
 - Active goal for planning mode: one Slate Plan planning lane uses one
-  `create_goal` objective. The goal content must name the desired closed plan
-  state, the full pass schedule, the one-pass-per-activation policy, required
-  proof gates, user-review-ready closeout, and blocked condition. Do not split
-  the planning lane into multiple goals.
+  short `create_goal` objective. The goal content must stay under 240
+  characters and name only the desired closed plan state, short completion
+  threshold, and plan path. Put the full pass schedule,
+  one-pass-per-activation policy, proof gates, user-review-ready closeout, and
+  blocked condition in the plan. Do not split the planning lane into multiple
+  goals.
 - Active goal for execution mode: after explicit user acceptance, start a new
-  goal for the accepted plan path and implementation target. It must name the
-  exact plan, execution queue, `.tmp/slate-v2` verification gates,
-  issue/reference sync, loading `.agents/skills/autoreview/SKILL.md` when
-  implementation changes are non-trivial and uncommitted, and closeout
-  conditions. For dirty local work, the autoreview skill's target is
+  goal for the accepted plan path and implementation target. Keep that goal
+  objective short and put the execution queue, `.tmp/slate-v2` verification
+  gates, issue/reference sync, autoreview requirement, and closeout conditions
+  in the execution plan. For dirty local work, the autoreview skill's target is
   `--mode local`; do not use `--uncommitted`.
 - Research updates under `docs/research/` when the evidence lane is stale or
   incomplete.
@@ -220,10 +221,12 @@ Before creating or resuming a Slate Plan:
 - Do not call `create_goal` when `get_goal` returns any active goal. Repeated
   goal creation fails in a thread. Continue under a matching goal, or resolve a
   mismatched active goal before creating a new one.
-- The goal objective must include the pass schedule and say that each activation
-  completes only the next incomplete pass.
-- The goal objective must include constraints, scope, verification details, and
-  the closure condition when they materially change what completion means.
+- The goal objective must be short: `<lane outcome>; done when <short
+  threshold>; plan <docs/plans/path>`.
+- The plan must include the pass schedule and say that each activation completes
+  only the next incomplete pass.
+- The plan must include constraints, scope, verification details, and the
+  closure condition when they materially change what completion means.
 - Create the lane plan with `--template slate-plan` so the goal plan starts
   with Slate Plan's required plan-shape sections, pass table, scorecard,
   issue accounting, workspace gate, objection ledger, and final handoff rows.
@@ -244,23 +247,15 @@ Before creating or resuming a Slate Plan:
 Good goal:
 
 ```txt
-Slate Plan closes the callback-memoization API plan for user review:
-complete the scheduled passes one activation at a time, record evidence-backed
-score deltas, issue/reference sync, objection handling, verification gates, and
-  the final user-review handoff; keep the goal active until closure/final gates
-  prove no planning pass remains runnable.
+Close callback-memoization API plan; done when Slate Plan closure gates pass;
+plan docs/plans/YYYY-MM-DD-callback-memoization-plan.md.
 ```
 
 Good execution goal:
 
 ```txt
-Slate Plan executes docs/plans/<accepted-plan>.md against `.tmp/slate-v2`,
-complete only when every accepted execution queue row is implemented or
-explicitly deferred with evidence, focused and broad `.tmp/slate-v2` gates pass
-or have recorded owners, issue/reference sync is current, the autoreview skill
-has been loaded and its dirty-local target has no accepted/actionable findings
-for non-trivial uncommitted implementation changes or is marked N/A for
-planning-only work, and the plan's final execution closeout rows are closed.
+Execute docs/plans/<accepted-plan>.md; done when execution closeout gates pass;
+target `.tmp/slate-v2`.
 ```
 
 Bad goal:
@@ -420,9 +415,8 @@ At activation:
 2. If the active goal already matches the Slate Plan lane, continue under it.
 3. If an active goal exists but does not match, resolve that mismatch before
    doing mutable Ralplan work.
-4. If no goal exists, call `create_goal` with the lane objective, full
-   pass schedule, one-pass-per-activation rule, verification constraints, and
-   closure condition.
+4. If no goal exists, call `create_goal` with a short lane objective, short
+   completion threshold, and plan path only.
 5. Resolve the target plan path from the latest user request or create the
    default plan path.
 6. Read the active plan and pass-state ledger to find the first runnable pass.

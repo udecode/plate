@@ -1,6 +1,12 @@
 {
   "version": 1,
   "skills": {
+    "autogoal": {
+      "source": "udecode/dotai",
+      "sourceType": "github",
+      "skillPath": "skills/autogoal/SKILL.md",
+      "computedHash": "3cab3cd0791c54bb3f96900676d4d0aae7664c208faf94c1edb06121f117ad7b"
+    },
     "autoreview": {
       "source": "openclaw/agent-skills",
       "sourceType": "github",

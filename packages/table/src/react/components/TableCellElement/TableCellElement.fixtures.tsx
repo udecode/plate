@@ -2,7 +2,7 @@
 
 import { jsx } from '@platejs/test-utils';
 
-// biome-ignore lint/nursery/noUnusedExpressions: test
+// biome-ignore lint/suspicious/noUnusedExpressions: test
 jsx;
 
 export const a = (

@@ -1,6 +1,5 @@
 /* biome-ignore-all lint/complexity/useOptionalChain: legacy code */
 /* biome-ignore-all lint/style/useForOf: legacy code */
-/* biome-ignore-all lint/nursery/useMaxParams: legacy code */
 // @ts-expect-error - no types available
 import { default as HTMLToVDOM } from 'html-to-vdom';
 // @ts-expect-error - no types available

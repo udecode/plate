@@ -9,6 +9,7 @@ export default defineConfig([
       '**/*.spec.*',
       '**/*.slow.*',
       '**/node_modules/**',
+      '**/.tmp/**',
       '**/dist/**',
       '**/.next/**',
       '**/build/**',
