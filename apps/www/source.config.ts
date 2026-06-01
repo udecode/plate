@@ -29,8 +29,7 @@ const typeTableGenerator = createGenerator();
 const EVENT_META_REGEX = /event="([^"]*)"/;
 const COMMAND_CODE_REGEX = /^(bun|npm|npx|pnpm|yarn)\s/;
 const WHITESPACE_REGEX = /\s+/;
-const shouldCompileDocsDynamically =
-  process.env.PLATE_WWW_DYNAMIC_DOCS === '1';
+const shouldCompileDocsDynamically = process.env.PLATE_WWW_DYNAMIC_DOCS === '1';
 const shouldLoadDocsAsync = process.env.PLATE_WWW_ASYNC_DOCS === '1';
 const shouldHighlightCode = !shouldCompileDocsDynamically;
 

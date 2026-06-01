@@ -148,9 +148,7 @@
           "id": "block-viewer-toolbar",
           "title": "BlockViewer toolbar",
           "state": "synced",
-          "files": [
-            "apps/www/src/components/block-viewer.tsx"
-          ],
+          "files": ["apps/www/src/components/block-viewer.tsx"],
           "screenshots": {
             "suggestion": "",
             "shadcn": ""
@@ -164,9 +162,7 @@
           "id": "preview-frame",
           "title": "Preview frame polish",
           "state": "synced",
-          "files": [
-            "apps/www/src/components/block-viewer.tsx"
-          ],
+          "files": ["apps/www/src/components/block-viewer.tsx"],
           "screenshots": {
             "suggestion": "",
             "shadcn": ""
@@ -215,9 +211,7 @@
           "id": "accordion-sidebar",
           "title": "Accordion sidebar",
           "state": "fork",
-          "files": [
-            "apps/www/src/components/docs-nav.tsx"
-          ],
+          "files": ["apps/www/src/components/docs-nav.tsx"],
           "screenshots": {
             "suggestion": "",
             "shadcn": ""
@@ -239,9 +233,7 @@
           "id": "command-input",
           "title": "Header search input",
           "state": "synced",
-          "files": [
-            "apps/www/src/components/command-menu.tsx"
-          ],
+          "files": ["apps/www/src/components/command-menu.tsx"],
           "screenshots": {
             "suggestion": "",
             "shadcn": ""
@@ -324,9 +316,7 @@
           "id": "upstream-create",
           "title": "Upstream /create product surface",
           "state": "defer",
-          "files": [
-            "docs/sync/shadcn/decisions.md"
-          ],
+          "files": ["docs/sync/shadcn/decisions.md"],
           "screenshots": {
             "suggestion": "",
             "shadcn": ""
@@ -348,9 +338,7 @@
           "id": "rhea-style-registry",
           "title": "Rhea/style/theme generated registry",
           "state": "defer",
-          "files": [
-            "docs/sync/shadcn/decisions.md"
-          ],
+          "files": ["docs/sync/shadcn/decisions.md"],
           "screenshots": {
             "suggestion": "",
             "shadcn": ""
@@ -589,9 +577,7 @@
           "id": "custom-api-mdx",
           "title": "Custom API MDX",
           "state": "fork",
-          "files": [
-            "content/docs/api"
-          ],
+          "files": ["content/docs/api"],
           "screenshots": {
             "suggestion": "",
             "shadcn": ""

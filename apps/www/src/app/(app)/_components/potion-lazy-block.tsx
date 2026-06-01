@@ -33,19 +33,13 @@ const i18n = {
 function PotionLazyBlockContent() {
   const searchParams = useSearchParams();
 
-  const [locale, setLocale] = useState<keyof typeof i18n>('en');
   const ref = useRef<HTMLDivElement>(null);
   const [shouldRender, setShouldRender] = useState(false);
-
-  useEffect(() => {
-    const localeParam = searchParams?.get('locale');
-    const resolvedLocale =
-      localeParam && localeParam in i18n
-        ? (localeParam as keyof typeof i18n)
-        : 'en';
-
-    setLocale(resolvedLocale);
-  }, [searchParams]);
+  const localeParam = searchParams?.get('locale');
+  const locale =
+    localeParam && localeParam in i18n
+      ? (localeParam as keyof typeof i18n)
+      : 'en';
 
   useEffect(() => {
     const handleScroll = () => {

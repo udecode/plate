@@ -44,7 +44,8 @@ function openFile(filePath) {
 
   if (result.error || result.status !== 0) {
     return {
-      error: result.error?.message ?? `${opener.command} exited ${result.status}`,
+      error:
+        result.error?.message ?? `${opener.command} exited ${result.status}`,
     };
   }
 

@@ -385,7 +385,10 @@ function BlockViewerView({
 }: {
   preview:
     | React.ReactNode
-    | ((props: { iframeKey: number; item: BlockViewerContext['item'] }) => React.ReactNode);
+    | ((props: {
+        iframeKey: number;
+        item: BlockViewerContext['item'];
+      }) => React.ReactNode);
   height?: string;
 }) {
   const { iframeKey, item, resizablePanelRef } = useBlockViewer();

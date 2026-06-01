@@ -17,6 +17,7 @@ type SearchResult = {
 
 const MARKDOWN_CODE_TICK_REGEX = /`/g;
 const MARKDOWN_HEADING_REGEX = /^(#{1,6})\s+(.+?)\s*#*\s*$/;
+const MARKDOWN_LINE_BREAK_REGEX = /\r?\n/;
 const API_DOCS_PATH_REGEX = /^\/(?:cn\/)?docs\/api(?:\/|$)/;
 const API_SECTION_TITLE_REGEX =
   /^api(?:\b|[\s:/-]|接口|参考|方法|组件|路由|和|与)/i;
@@ -63,20 +64,22 @@ const getPageKey = (page: SearchPage) => page.slugs.join('/');
 const getPlainHeadingText = (value: string) =>
   value.replace(MARKDOWN_CODE_TICK_REGEX, '').trim();
 
-const getMarkdownHeadings = (markdown: string) =>
-  markdown
-    .split(/\r?\n/)
-    .map((line) => {
-      const match = MARKDOWN_HEADING_REGEX.exec(line);
+const getMarkdownHeadings = (markdown: string) => {
+  const headings: { depth: number; text: string }[] = [];
 
-      if (!match) return;
+  for (const line of markdown.split(MARKDOWN_LINE_BREAK_REGEX)) {
+    const match = MARKDOWN_HEADING_REGEX.exec(line);
 
-      return {
+    if (match) {
+      headings.push({
         depth: match[1].length,
         text: match[2],
-      };
-    })
-    .filter((item): item is { depth: number; text: string } => Boolean(item));
+      });
+    }
+  }
+
+  return headings;
+};
 
 const isDocsApiSectionHeading = (heading: string) => {
   const title = getPlainHeadingText(heading);

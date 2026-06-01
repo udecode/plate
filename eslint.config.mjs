@@ -6,6 +6,7 @@ export default defineConfig([
   {
     ignores: [
       '**/.pnpm-store/**',
+      '**/.contentlayer/**',
       '**/*.spec.*',
       '**/*.slow.*',
       '**/node_modules/**',

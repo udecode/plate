@@ -47,7 +47,6 @@ import {
 import {
   getSearchResultGroup,
   getSearchResultKey,
-  type SearchResultGroup,
   searchResultGroupOrder,
 } from '@/lib/search-result-groups';
 import { cn } from '@/lib/utils';
