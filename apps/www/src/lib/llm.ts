@@ -1,3 +1,45 @@
+import { frontmatter } from 'fumadocs-core/content/md/frontmatter';
+
+const SITE_URL = 'https://platejs.org';
+
+type PlateLLMFrontmatter = {
+  description?: string;
+  title?: string;
+};
+
+export type PlateLLMPage = {
+  url: string;
+  data: {
+    description?: string;
+    title?: string;
+    getText: (kind: 'processed' | 'raw') => Promise<string>;
+  };
+};
+
+const getAbsoluteUrl = (url: string) => `${SITE_URL}${url}`;
+
+const getPageFrontmatter = async (page: PlateLLMPage) => {
+  try {
+    const raw = await page.data.getText('raw');
+    const { data } = frontmatter(raw);
+
+    return data as PlateLLMFrontmatter;
+  } catch {
+    return {};
+  }
+};
+
+const getPageTitle = async (page: PlateLLMPage) => {
+  const frontmatterData = await getPageFrontmatter(page);
+
+  return (
+    page.data.title?.trim() ||
+    frontmatterData.title?.trim() ||
+    page.url.split('/').filter(Boolean).at(-1) ||
+    'Docs'
+  );
+};
+
 export const getPlateLLMPageMarkdown = ({
   content,
   docUrl,
@@ -21,6 +63,46 @@ Any \`<ComponentSource name="..." />\` or \`<ComponentPreview name="..." />\` in
 ---
 
 ${content}`;
+
+export const getPlateLLMPageMarkdownFromPage = async ({
+  docUrl,
+  page,
+  textKind = 'processed',
+}: {
+  docUrl?: string;
+  page: PlateLLMPage;
+  textKind?: 'processed' | 'raw';
+}) => {
+  let content: string;
+
+  try {
+    content = await page.data.getText(textKind);
+  } catch (error) {
+    if (
+      textKind !== 'processed' ||
+      !(error instanceof Error) ||
+      !error.message.includes('includeProcessedMarkdown')
+    ) {
+      throw error;
+    }
+
+    content = await page.data.getText('raw');
+  }
+
+  return getPlateLLMPageMarkdown({
+    content: processMdxForLLMs(content),
+    docUrl: docUrl ?? getAbsoluteUrl(page.url),
+    title: await getPageTitle(page),
+  });
+};
+
+export const getPlateLLMFullMarkdown = async (pages: PlateLLMPage[]) => {
+  const content = await Promise.all(
+    pages.map((page) => getPlateLLMPageMarkdownFromPage({ page }))
+  );
+
+  return content.join('\n\n');
+};
 
 export const getPlateLLMPromptUrl = ({
   baseUrl,

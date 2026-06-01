@@ -1,0 +1,262 @@
+---
+title: Editing Behavior
+description: How Plate handles Enter, Backspace, merge, normalize, and selection behavior.
+---
+
+Editing behavior is the path from a key press or transform to the final document shape. Use [Plugin Rules](/docs/plugin-rules) for declarative node policy, and use [Editor Methods](/docs/editor-methods) when you need an imperative transform. This guide shows how break, delete, merge, normalize, and selection behavior fit together.
+
+## On This Page
+
+- [Choose the Right Surface](#choose-the-right-surface)
+- [Runtime Pipeline](#runtime-pipeline)
+- [Break Behavior](#break-behavior)
+- [Delete Behavior](#delete-behavior)
+- [Merge Behavior](#merge-behavior)
+- [Normalize Behavior](#normalize-behavior)
+- [Selection Behavior](#selection-behavior)
+- [Recipes](#recipes)
+- [API Reference](#api-reference)
+
+## Choose the Right Surface
+
+Most editing behavior belongs in `plugin.rules`. Reach for custom transforms only when the rule table cannot express the behavior.
+
+| Need | Use |
+| --- | --- |
+| Change how `Enter` works in a node. | `rules.break` |
+| Change how `Backspace` works at the start of a block. | `rules.delete` |
+| Decide whether an empty sibling disappears during a merge. | `rules.merge` |
+| Remove empty nodes during normalization. | `rules.normalize` |
+| Control mark or inline boundaries while typing and moving. | `rules.selection` |
+| Apply one plugin's rules to another node type. | `rules.match` |
+| Run product-specific behavior that rules cannot express. | `.overrideEditor()` or an explicit `editor.tf.*` command |
+
+Rules keep common editor policy close to the plugin that owns the node. Transforms are still the right tool for commands, toolbar actions, and behavior that depends on app state.
+
+## Runtime Pipeline
+
+Plate resolves plugins first, then core plugins wrap Slate APIs and transforms.
+
+| Layer | Owner | Handles |
+| --- | --- | --- |
+| `OverridePlugin` | Core runtime | Node flags, break rules, delete rules, merge rules, normalize rules. |
+| `AffinityPlugin` | Core runtime | `rules.selection` for mark and inline boundaries. |
+| Feature plugins | Feature packages | Default rules for headings, callouts, lists, links, tables, marks, and other nodes. |
+| App plugins | Your app | Local overrides, custom node policy, and custom transforms. |
+
+The normal flow is:
+
+```txt
+key press or command
+  -> optional input rule for typed patterns
+  -> plugin rule lookup for the current node
+  -> editor.tf transform
+  -> merge guard when nodes are joined
+  -> normalization
+  -> selection affinity cleanup
+```
+
+Input rules are for text patterns such as markdown shortcuts and autolinks. Plugin rules are for node behavior such as "a heading resets to paragraph on Backspace" or "a callout inserts soft breaks on Enter."
+
+## Break Behavior
+
+`rules.break` controls `editor.tf.insertBreak()`, which is what `Enter` calls.
+
+Plate checks the current block and handles these cases in order:
+
+| Case | Rule | What happens |
+| --- | --- | --- |
+| Empty collapsed block | `break.empty` | Runs `reset`, `exit`, `lift`, `deleteExit`, or falls through. |
+| Cursor after a trailing newline | `break.emptyLineEnd` | Runs `exit`, `deleteExit`, or falls through. |
+| Normal Enter | `break.default` | Runs `lineBreak`, `exit`, `deleteExit`, or falls through. |
+| Split created a new block | `break.splitReset` | Resets the new block to the default type. |
+
+Use `splitReset` for blocks that should not keep their type after a normal split.
+
+```tsx title="plugins.tsx" showLineNumbers
+import { H1Plugin } from '@platejs/basic-nodes/react';
+
+export const AppH1Plugin = H1Plugin.configure({
+  rules: {
+    break: {
+      splitReset: true,
+    },
+  },
+});
+```
+
+Use `lineBreak` and `deleteExit` for container-like blocks that need soft lines before they leave the block.
+
+```tsx title="plugins.tsx" showLineNumbers
+import { CalloutPlugin } from '@platejs/callout/react';
+
+export const AppCalloutPlugin = CalloutPlugin.configure({
+  rules: {
+    break: {
+      default: 'lineBreak',
+      empty: 'reset',
+      emptyLineEnd: 'deleteExit',
+    },
+  },
+});
+```
+
+That callout keeps normal Enter inside the callout, resets empty callouts to paragraphs, and exits after a trailing empty line.
+
+## Delete Behavior
+
+`rules.delete` controls collapsed `Backspace` behavior. Expanded selections still delete through the normal fragment path unless the whole editor is selected.
+
+Plate checks collapsed `deleteBackward` in this order:
+
+| Case | Rule | What happens |
+| --- | --- | --- |
+| Cursor at the start of the current block | `delete.start` | Runs `reset`, `lift`, or falls through. |
+| Current block is empty | `delete.empty` | Runs `reset` or falls through. |
+| Cursor is at the start of the document | Core default | Resets the first block. |
+| Nothing handled the case | Slate transform | Runs the original delete transform. |
+
+Use `start: 'reset'` for formatted text blocks that should become paragraphs before they merge into the previous block.
+
+```tsx title="plugins.tsx" showLineNumbers
+import { H1Plugin } from '@platejs/basic-nodes/react';
+
+export const AppH1Plugin = H1Plugin.configure({
+  rules: {
+    delete: {
+      start: 'reset',
+    },
+  },
+});
+```
+
+Use `start: 'lift'` for nested blocks that should move out one ancestor level.
+
+```tsx title="plugins.tsx" showLineNumbers
+import { createPlatePlugin } from 'platejs/react';
+
+export const QuoteItemPlugin = createPlatePlugin({
+  key: 'quote_item',
+  node: {
+    isElement: true,
+  },
+  rules: {
+    delete: {
+      start: 'lift',
+    },
+  },
+});
+```
+
+When a selection spans multiple blocks, Plate deletes the selected content and then calls `editor.tf.mergeNodes()` at the end boundary. That means cross-block deletion can still enter the merge pipeline below.
+
+## Merge Behavior
+
+Merge behavior decides whether two nodes can join and whether empty nodes at the boundary disappear.
+
+`editor.tf.mergeNodes()` calls `editor.api.shouldMergeNodes(prev, next, options)` before it applies the merge. Plate's merge rules add three important guards:
+
+| Case | Behavior |
+| --- | --- |
+| Empty text node before the merge point | Remove it when it is not the first child. |
+| Empty previous sibling | Remove it only when the owning plugin has `rules.merge.removeEmpty: true`. |
+| Target node is void | Do not delete the void target by default; remove the current empty node instead when possible. |
+
+Use `removeEmpty: true` for text-like blocks such as paragraphs and headings.
+
+```tsx title="plugins.tsx" showLineNumbers
+import { H1Plugin } from '@platejs/basic-nodes/react';
+
+export const AppH1Plugin = H1Plugin.configure({
+  rules: {
+    merge: {
+      removeEmpty: true,
+    },
+  },
+});
+```
+
+Keep `removeEmpty: false` for structural nodes that own layout, children, or wrappers. Tables, rows, cells, columns, and callouts should not disappear just because a merge crosses their boundary.
+
+```tsx title="plugins.tsx" showLineNumbers
+import { CalloutPlugin } from '@platejs/callout/react';
+
+export const StableCalloutPlugin = CalloutPlugin.configure({
+  rules: {
+    merge: {
+      removeEmpty: false,
+    },
+  },
+});
+```
+
+<Callout>
+  Merge rules are not table cell merge commands. `rules.merge` protects
+  document structure during node joins. Table cell merge and split commands live
+  on `editor.tf.table.merge()` and `editor.tf.table.split()`.
+</Callout>
+
+## Normalize Behavior
+
+`rules.normalize` runs during Slate normalization.
+
+Use `normalize.removeEmpty` for elements that should not exist without text content. Links use this shape because an empty link has no useful editing surface.
+
+```tsx title="plugins.tsx" showLineNumbers
+import { LinkPlugin } from '@platejs/link/react';
+
+export const AppLinkPlugin = LinkPlugin.configure({
+  rules: {
+    normalize: {
+      removeEmpty: true,
+    },
+  },
+});
+```
+
+Keep normalization rules boring. If a node needs a rich repair strategy, write a dedicated normalizer with `.overrideEditor()` so the behavior is explicit and testable.
+
+## Selection Behavior
+
+`rules.selection` controls how marks and inline-like boundaries behave while typing, deleting, and moving the cursor.
+
+| Affinity | Use for |
+| --- | --- |
+| `default` | Normal Slate boundary behavior. |
+| `directional` | Links and highlights where cursor direction decides whether typed text stays inside. |
+| `outward` | Comment and suggestion marks where edge typing should leave the mark. |
+| `hard` | Boundaries that should take an extra arrow-key step to cross. |
+
+Node flags also affect editing behavior. `node.isInline`, `node.isVoid`, `node.isSelectable`, and `node.isMarkableVoid` are resolved by the core override layer before selection and transform logic runs.
+
+## Recipes
+
+| Behavior | Configure |
+| --- | --- |
+| Heading resets to paragraph on Backspace. | `rules.delete.start: 'reset'` |
+| Heading splits into paragraph on Enter. | `rules.break.splitReset: true` |
+| Callout keeps Enter inside the block. | `rules.break.default: 'lineBreak'` |
+| Empty callout becomes a paragraph. | `rules.break.empty: 'reset'` or `rules.delete.start: 'reset'` |
+| Nested item outdents on Backspace. | `rules.delete.start: 'lift'` |
+| Empty text block disappears during merge. | `rules.merge.removeEmpty: true` |
+| Structural wrapper survives merge. | `rules.merge.removeEmpty: false` |
+| Empty inline element disappears. | `rules.normalize.removeEmpty: true` |
+| Link boundary follows cursor direction. | `rules.selection.affinity: 'directional'` |
+
+For list metadata and code-block children, use `rules.match` so the feature plugin can apply its rule to the child block that actually contains the selection.
+
+## API Reference
+
+| Surface | Owner | Reference |
+| --- | --- | --- |
+| `rules.break` | Core rule engine plus feature plugin config | [Plugin Rules](/docs/plugin-rules#rulesbreak) |
+| `rules.delete` | Core rule engine plus feature plugin config | [Plugin Rules](/docs/plugin-rules#rulesdelete) |
+| `rules.merge` | Core rule engine plus feature plugin config | [Plugin Rules](/docs/plugin-rules#rulesmerge) |
+| `rules.normalize` | Core rule engine plus feature plugin config | [Plugin Rules](/docs/plugin-rules#rulesnormalize) |
+| `rules.selection` | Affinity core plugin plus feature plugin config | [Plugin Rules](/docs/plugin-rules#rulesselection) |
+| `rules.match` | Core rule lookup plus feature plugin config | [Plugin Rules](/docs/plugin-rules#rulesmatch) |
+| `editor.tf.mergeNodes()` | Slate transform patched by Plate | [Editor Transforms](/docs/api/slate/editor-transforms#mergenodes) |
+| `editor.api.shouldMergeNodes()` | Slate editor API patched by Plate | [Editor API](/docs/api/slate/editor-api#shouldmergenodes) |
+| `editor.tf.table.merge()` | Table feature package | [Table](/docs/table#editing-behavior) |
+
+Done. Rules describe the policy; transforms do the work.

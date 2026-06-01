@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-05-30",
+  "updatedAt": "2026-05-31",
   "notes": [
     "Editable source for sync-shadcn dashboard.",
     "Routine sync-shadcn status should stay concise; this file can include settled forks and rejected upstream surfaces.",
@@ -252,7 +252,7 @@
       "id": "docs-engine",
       "label": "Docs Engine",
       "reviewState": "fork",
-      "summary": "Plate keeps the docs shell, source loader, and search wiring as product-owned forks.",
+      "summary": "Plate keeps the docs shell, source loader, LLM routes, and search wiring as product-owned forks.",
       "items": [
         {
           "id": "docs-shell-ownership",
@@ -281,6 +281,24 @@
             "../shadcn/apps/v4/app/api/search/route.ts"
           ],
           "suggestion": "Plate source/search wiring exists for CN docs and command/search result quality, so do not chase upstream simplicity here."
+        },
+        {
+          "id": "fumadocs-latest-llms",
+          "title": "Fumadocs latest and LLM routes",
+          "state": "fork",
+          "decision": "Upgrade Plate docs to latest Fumadocs core/MDX, use the upstream llms(source) index helper, and keep Plate-owned raw-MDX full-page LLM markdown with registry context to avoid processed-markdown compile cost across the large Plate docs corpus.",
+          "upstream": "Shadcn tracks Fumadocs docs-engine patterns but currently pins an older Fumadocs 16 line and does not own Plate registry or CN LLM context.",
+          "files": [
+            "apps/www/package.json",
+            "pnpm-lock.yaml",
+            "apps/www/source.config.ts",
+            "apps/www/src/lib/source.ts",
+            "apps/www/src/lib/llm.ts",
+            "apps/www/src/lib/llm-source.ts",
+            "apps/www/src/app/(app)/llms.txt/route.ts",
+            "apps/www/src/app/(app)/llms-full.txt/route.ts"
+          ],
+          "suggestion": "Keep following Fumadocs engine upgrades here, but do not enable collection-wide processed Markdown unless it is proven fast enough for Plate's docs corpus."
         }
       ]
     },

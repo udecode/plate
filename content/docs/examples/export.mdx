@@ -1,44 +1,57 @@
 ---
 title: Export
+description: Export a Plate document to HTML, PDF, image, Markdown, or Word.
 docs:
   - route: https://pro.platejs.org/docs/examples/export
     title: Plus
 ---
 
+This example exports the current Plate editor value from the browser. The
+registry `export-toolbar-button` owns the client-side download menu for HTML,
+PDF, image, Markdown, and Word output.
+
+## Demo
+
 <ComponentPreview name="playground-demo" id="basic-blocks" />
 
-<PackageInfo>
+## Toolbar Source
 
-## Features
+Install the [Export Toolbar Button](/docs/components/export-toolbar-button)
+component to add the menu to an editor toolbar.
 
-- Export editor content to:
-- Client-side export with no server dependencies
+<ComponentSource name="export-toolbar-button" />
 
-</PackageInfo>
+## Export Formats
 
-## Usage
+| Format | Implementation | Output |
+| --- | --- | --- |
+| HTML | `serializeHtml` from `platejs/static` with `BaseEditorKit` and `EditorStatic` | `plate.html` |
+| PDF | `html2canvas-pro` snapshot converted with `pdf-lib` | `plate.pdf` |
+| Image | `html2canvas-pro` snapshot | `plate.png` |
+| Markdown | `editor.getApi(MarkdownPlugin).markdown.serialize()` | `plate.md` |
+| Word | `exportToDocx(editor.children, { editorPlugins })` from `@platejs/docx-io` | `plate.docx` |
 
-Install the [Export Toolbar Button](/docs/components/export-toolbar-button) component.
+The PDF and image exporters snapshot the current editable DOM. Use them for a
+quick client-side download, not for paginated print layout.
 
-## Plate Plus
+## DOCX Static Kit
 
-- Server-side PDF export:
-  - High-quality PDF generation
-  - Custom fonts and styling
-  - Headers and footers
-  - Page numbers
-  - Font selectable
-- Advanced export options:
-  - Paper size selection
-  - Margin controls
-  - Orientation settings
-  - Compression level
-{/* - Enterprise-ready features: */}
-  {/* - Batch processing */}
-  {/* - Watermarking */}
-  {/* - Custom templates */}
-  {/* - Password protection */}
+Word export passes the base static editor kit plus `DocxExportKit` so custom
+nodes can render with DOCX-friendly components.
 
-Try it out with our server-side PDF export:
+<ComponentSource name="docx-export-kit" />
+
+`DocxExportKit` overrides code blocks, columns, equations, callouts, and table
+of contents rendering for the DOCX conversion path.
+
+## Plus Export
+
+Plate Plus includes a server-side export flow for PDF output with page settings.
 
 <ComponentPreviewPro name="export-pro" />
+
+## Related
+
+- [DOCX Import/Export](/docs/docx-io) covers `@platejs/docx-io` options and plugin APIs.
+- [Markdown](/docs/markdown) covers Markdown serialization.
+- [Static Rendering](/docs/static) covers static editor rendering and HTML serialization.

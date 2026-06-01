@@ -1,7 +1,7 @@
 # {{TITLE}}
 
 Objective:
-TODO: Write the exact active major-task objective.
+TODO: Write the short create_goal objective, under 240 characters. Put the full major-task contract in the sections below.
 
 Goal plan:
 {{PLAN_PATH}}

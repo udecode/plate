@@ -1,22 +1,26 @@
 import { getHighlighter } from '@shikijs/compat';
+import { remarkMdxFiles, remarkStructure } from 'fumadocs-core/mdx-plugins';
 import {
   defineConfig,
   defineDocs,
   frontmatterSchema,
 } from 'fumadocs-mdx/config';
+import { createGenerator, remarkAutoTypeTable } from 'fumadocs-typescript';
 import rehypeAutolinkHeadings from 'rehype-autolink-headings';
 import rehypePrettyCode from 'rehype-pretty-code';
 import rehypeSlug from 'rehype-slug';
 import { codeImport } from 'remark-code-import';
 import remarkGfm from 'remark-gfm';
 import { visit } from 'unist-util-visit';
-import { z } from 'zod/v4';
+import { z } from 'zod';
 
 import { rehypeComponent } from './src/lib/rehype-component';
 import { rehypeNpmCommand } from './src/lib/rehype-npm-command';
 import { getCodeTitleIconLabel } from './src/lib/code-title-icon';
 
 import 'dotenv/config';
+
+const typeTableGenerator = createGenerator();
 
 const EVENT_META_REGEX = /event="([^"]*)"/;
 const COMMAND_CODE_REGEX = /^(bun|npm|npx|pnpm|yarn)\s/;
@@ -64,6 +68,9 @@ const linksPropertiesSchema = z.object({
 export const docs = defineDocs({
   dir: '../../content/docs',
   docs: {
+    postprocess: {
+      includeProcessedMarkdown: true,
+    },
     schema: frontmatterSchema.extend({
       component: z.boolean().default(false),
       docs: z.array(docPropertiesSchema).optional(),
@@ -218,6 +225,14 @@ export default defineConfig({
         ...plugins,
       ] as any,
     remarkNpmOptions: false,
-    remarkPlugins: (plugins) => [remarkGfm, codeImport, ...plugins] as any,
+    remarkPlugins: (plugins) =>
+      [
+        remarkGfm,
+        codeImport,
+        remarkMdxFiles,
+        [remarkAutoTypeTable, { generator: typeTableGenerator }],
+        [remarkStructure, { exportAs: 'structuredData' }],
+        ...plugins,
+      ] as any,
   },
 });

@@ -5,7 +5,7 @@
       "source": "udecode/dotai",
       "sourceType": "github",
       "skillPath": "skills/autogoal/SKILL.md",
-      "computedHash": "0210fb93adf53ee82f424cb9c2bce890d640cf60e07eb52151e92544d22f464e"
+      "computedHash": "3cab3cd0791c54bb3f96900676d4d0aae7664c208faf94c1edb06121f117ad7b"
     },
     "autoreview": {
       "source": "openclaw/agent-skills",
@@ -16,7 +16,8 @@
     "debug": {
       "source": "udecode/dotai",
       "sourceType": "github",
-      "computedHash": "09c9096e132640e201c4ffd592ffa144d949243ca7a71c5ef020e111927c495a"
+      "skillPath": "skills/debug/SKILL.md",
+      "computedHash": "0c74e2022d4b01170526cc5aabd386dd76f9a65e8b23df92a947bb52504e26b1"
     },
     "frontend-design": {
       "source": "EveryInc/compound-engineering-plugin",
@@ -32,6 +33,11 @@
       "source": "EveryInc/compound-engineering-plugin",
       "sourceType": "github",
       "computedHash": "20c90be5091df67d3f889a781473a6426d471405cead3dbe61d33d0c9a4ad0e9"
+    },
+    "orchestrator": {
+      "source": "udecode/dotai",
+      "sourceType": "github",
+      "computedHash": "02a6d9c3931f0af4b6d0a04344082c90dd7d9cb9dbe1e4962bd98471591f02d8"
     },
     "react-useeffect": {
       "source": "softaworks/agent-toolkit",
@@ -61,6 +67,7 @@
     "tdd": {
       "source": "udecode/dotai",
       "sourceType": "github",
+      "skillPath": "skills/tdd/SKILL.md",
       "computedHash": "117755128a6b66a3faf32d0bb9740837b1ab4471286dda6c4c5674d803fbbbe5"
     },
     "typescript-advanced-types": {

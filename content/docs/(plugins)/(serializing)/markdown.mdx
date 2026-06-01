@@ -349,8 +349,36 @@ Converts a Markdown string into a Plate `Value` (`Descendant[]`).
       If `true`, single line breaks (`\\n`) in paragraphs become paragraph
       breaks. Default: `false`.
     </APIItem>
+    <APIItem name="withoutMdx" type="boolean" optional>
+      If `true`, skips the MDX preprocessing pass and filters `remarkMdx` out
+      of the plugin list. Default: `false`.
+    </APIItem>
+    <APIItem name="preserveEmptyParagraphs" type="boolean" optional>
+      Preserves empty paragraph nodes during deserialization.
+    </APIItem>
+    <APIItem name="onError" type="(error: Error) => void" optional>
+      Receives parser errors before the safe fallback path runs.
+    </APIItem>
   </APIOptions>
   <APIReturns type="Descendant[]">An array of Plate nodes.</APIReturns>
+</API>
+
+---
+
+### `api.markdown.deserializeInline`
+
+Converts inline Markdown text into Slate children.
+
+<API name="deserializeInline">
+  <APIParameters>
+    <APIItem name="markdown" type="string">
+      Inline Markdown text to deserialize.
+    </APIItem>
+    <APIItem name="options" type="DeserializeMdOptions" optional>
+      Options for this call, overriding plugin defaults.
+    </APIItem>
+  </APIParameters>
+  <APIReturns type="Descendant[]">Slate children for inline content.</APIReturns>
 </API>
 
 ---
@@ -383,6 +411,19 @@ Converts a Plate `Value` (`Descendant[]`) into a Markdown string.
     </APIItem>
     <APIItem name="remarkPlugins" type="Plugin[]" optional>
       Override plugin `remarkPlugins` (affects stringification).
+    </APIItem>
+    <APIItem name="remarkStringifyOptions" type="RemarkStringifyOptions | null" optional>
+      Options passed to `remark-stringify`. Defaults to plugin options, with
+      Plate setting emphasis to `_` and resource links to `false`.
+    </APIItem>
+    <APIItem name="plainMarks" type="PlateType[] | null" optional>
+      Marks to serialize as plain text instead of Markdown formatting.
+    </APIItem>
+    <APIItem name="spread" type="boolean" optional>
+      Controls spread formatting for list output. Default: `false`.
+    </APIItem>
+    <APIItem name="preserveEmptyParagraphs" type="boolean" optional>
+      Preserves empty paragraph nodes during serialization.
     </APIItem>
     <APIItem name="withBlockId" type="boolean" optional>
       When true, preserves block IDs in markdown serialization to enable AI
@@ -489,7 +530,7 @@ This example shows two approaches: customizing the rendering component (common f
 
 - `@platejs/markdown` converts Markdown fenced code blocks (e.g., \`\`\`js ... \`\`\`) to Plate `code_block` elements with `code_line` children.
 - The Plate `CodeBlockElement` (often from `@platejs/code-block/react`) renders this structure.
-- Syntax highlighting typically occurs within `CodeBlockElement` using a library like `lowlight` (via `CodeBlockPlugin`). See [Code Block Plugin](/docs/plugins/code-block) for details.
+- Syntax highlighting typically occurs within `CodeBlockElement` using a library like `lowlight` (via `CodeBlockPlugin`). See [Code Block Plugin](/docs/code-block) for details.
 
 **Approach 1: Customizing Rendering Component (Recommended for UI)**
 
@@ -519,7 +560,7 @@ const editor = createPlateEditor({
 // (e.g., using react-syntax-highlighter), consuming props from PlateElement.
 ```
 
-Refer to the [Code Block Plugin documentation](/docs/plugins/code-block) for complete examples.
+Refer to the [Code Block Plugin documentation](/docs/code-block) for complete examples.
 
 **Approach 2: Customizing Conversion Rule (Advanced - Changing Plate Structure)**
 
@@ -740,9 +781,9 @@ const markdownOutput = editor.api.markdown.serialize({ value: slateValue });
 <Callout type="info" title="Remark vs. Rehype">
   Plate components (e.g., `TableElement`, `CodeBlockElement`) render Plate JSON.
   `remarkPlugins` modify the Markdown AST. Unlike some renderers,
-  `rehypePlugins` (for HTML AST) are generally not needed for Plate rendering,
-  but can be used within the remark pipeline for complex HTML transformations
-  (e.g., with `rehype-raw`).
+  `rehypePlugins` (for HTML AST) are not part of `MarkdownPlugin`'s conversion
+  pipeline. Run HTML transforms before Plate, or model controlled HTML-like
+  content as MDX plus explicit `rules`.
 </Callout>
 
 ## Syntax Support
@@ -817,75 +858,35 @@ Migrating involves mapping `react-markdown` concepts to Plate's architecture.
 | :------------------------------ | :--------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------- |
 | `children` (string)             | Pass to `editor.api.markdown.deserialize(string)`                                                                | Input for deserialization; often in `createPlateEditor` `value` option.                |
 | `remarkPlugins`                 | `MarkdownPlugin.configure({ options: { remarkPlugins: [...] }})`                                                 | Direct mapping; operates on mdast.                                                     |
-| `rehypePlugins`                 | Usually **not needed**. Use `remarkPlugins` for syntax.                                                          | Plate components handle rendering. For raw HTML, use `rehype-raw` via `remarkPlugins`. |
+| `rehypePlugins`                 | Not part of `MarkdownPlugin`'s conversion pipeline.                                                              | Run any HTML pipeline before passing Markdown or Plate nodes to Plate.                 |
 | `components={{ h1: MyH1 }}`     | `createPlateEditor({ components: { h1: MyH1 } })`                                                                | Configures Plate rendering component. Key depends on `HeadingPlugin` config.           |
 | `components={{ code: MyCode }}` | 1. **Conversion**: `MarkdownPlugin > rules > code`. 2. **Rendering**: `components: { [KEYS.codeBlock]: MyCode }` | `rules` for mdast (`code`) to Plate (`code_block`). `components` for Plate rendering.  |
 | `allowedElements`               | `MarkdownPlugin.configure({ options: { allowedNodes: [...] }})`                                                  | Filters nodes during conversion (mdast/Plate types).                                   |
 | `disallowedElements`            | `MarkdownPlugin.configure({ options: { disallowedNodes: [...] }})`                                               | Filters nodes during conversion.                                                       |
 | `unwrapDisallowed`              | No direct equivalent. Filtering removes nodes.                                                                   | Custom `rules` could implement unwrapping.                                             |
-| `skipHtml`                      | Default behavior strips most HTML.                                                                               | Use `rehype-raw` via `remarkPlugins` for HTML processing.                              |
+| `skipHtml`                      | Default behavior strips most HTML.                                                                               | Sanitize or convert raw HTML before calling `editor.api.markdown.deserialize`.          |
 | `urlTransform`                  | Customize via `rules` for `link` (deserialize) or plugin type (serialize).                                       | Handle URL transformations in conversion rules.                                        |
 | `allowElement`                  | `MarkdownPlugin.configure({ options: { allowNode: { ... } } })`                                                  | Function-based filtering during conversion.                                            |
 
 ## Appendix A: HTML in Markdown
 
-By default, `@platejs/markdown` does **not** process raw HTML tags for security. Standard Markdown generating HTML (e.g., `*emphasis*` → `<em>`) is handled.
+By default, `@platejs/markdown` does **not** process raw HTML tags. Standard Markdown syntax still becomes Plate nodes, but literal HTML like `<div>` is ignored unless you handle it outside Plate or model it as MDX/custom nodes.
 
-To process raw HTML in a **trusted environment**:
+`MarkdownPlugin` runs `remark-parse`, configured `remarkPlugins`, and Plate conversion rules. It does not run a rehype HTML stage, so `rehype-raw` and `rehype-sanitize` are not `MarkdownPlugin` options.
 
-1.  **Include `remark-mdx`:** Add to `remarkPlugins`.
-2.  **Use `rehype-raw`:** Add [`rehype-raw`][github-rehype-raw] to `remarkPlugins`.
-3.  **Configure Rules:** May need `rules` for parsed HTML `hast` nodes to Plate structures.
+For raw HTML from a trusted source, convert it in your own content pipeline before calling Plate. For untrusted input, sanitize with a strict element and attribute whitelist before deserializing.
 
-```tsx title="lib/plate-editor.ts"
-import { MarkdownPlugin, remarkMdx } from '@platejs/markdown';
-import rehypeRaw from 'rehype-raw'; // May require VFile, ensure compatibility
-// import { VFile } from 'vfile'; // If needed by rehype-raw setup
+```tsx
+const safeMarkdown = await sanitizeMarkdownBeforePlate(untrustedMarkdown);
 
-MarkdownPlugin.configure({
-  options: {
-    remarkPlugins: [
-      remarkMdx,
-      // Using rehype plugins within remark pipeline can be complex.
-      [
-        rehypeRaw,
-        {
-          /* options, e.g., pass vfile */
-        },
-      ],
-    ],
-    rules: {
-      // Example: Rule for HTML tags parsed by rehype-raw.
-      // mdastNode structure depends on rehype-raw output.
-      element: {
-        // Generic rule for 'element' nodes from rehype-raw
-        deserialize: (mdastNode, deco, options) => {
-          // Simplified: Needs proper handling based on mdastNode.tagName and attributes.
-          // You'll likely need specific rules per HTML tag.
-          if (mdastNode.tagName === 'div') {
-            return {
-              type: 'html_div', // Example: Map to a custom 'html_div' Plate element
-              children: convertChildrenDeserialize(
-                mdastNode.children,
-                deco,
-                options
-              ),
-            };
-          }
-          // Fallback or handle other tags
-          return convertChildrenDeserialize(mdastNode.children, deco, options);
-        },
-      },
-      // Add serialization rules if outputting raw HTML from Plate.
-    },
-  },
-});
+const value = editor.api.markdown.deserialize(safeMarkdown);
 ```
 
+For HTML-like custom nodes that you control, prefer MDX syntax with `remarkMdx` and explicit `rules`. That keeps the conversion in Plate's supported Markdown pipeline.
+
 <Callout type="destructive" title="Security Warning">
-  Enabling raw HTML rendering increases XSS risk if the Markdown source isn't
-  trusted. Use [`rehype-sanitize`][github-rehype-sanitize] after `rehype-raw` to
-  whitelist HTML elements/attributes.
+  Raw HTML can carry XSS payloads. Treat untrusted Markdown as unsafe until your
+  own pipeline sanitizes it with a strict element and attribute whitelist.
 </Callout>
 
 ## Appendix B: Customizing Conversion Rules (`rules`)
@@ -1088,8 +1089,8 @@ export function PlateMarkdown({
 
 - **Custom `rules`:** Ensure `deserialize` rules don't introduce unsafe data.
 - **`remarkPlugins`:** Vet third-party remark plugins for potential security risks.
-- **Raw HTML Processing:** If `rehype-raw` is used, always sanitize with [`rehype-sanitize`][github-rehype-sanitize] if the source is untrusted.
-- **Plugin Responsibility:** URL validation in `LinkPlugin` ([`isUrl`](/docs/plugins/link#linkplugin)) or `MediaEmbedPlugin` ([`parseMediaUrl`](/docs/plugins/media#parsemediaurl)) is crucial.
+- **Raw HTML Processing:** Sanitize or convert raw HTML before passing Markdown to Plate. Treat untrusted Markdown as unsafe until your own pipeline has applied a strict whitelist.
+- **Plugin Responsibility:** URL validation in `LinkPlugin` ([`isUrl`](/docs/link#linkplugin)) or `MediaEmbedPlugin` ([`parseMediaUrl`](/docs/media#parsemediaurl)) is crucial.
 
 **Recommendation:** Treat untrusted Markdown input cautiously. Sanitize if allowing complex features or raw HTML.
 

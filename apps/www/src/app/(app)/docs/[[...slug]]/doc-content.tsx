@@ -26,6 +26,7 @@ export type DocContentDoc = {
     doc?: string;
   };
   slug?: string;
+  sourcePath?: string;
   title?: string;
   toc?: boolean;
 };
@@ -121,6 +122,7 @@ export function DocContent({
                     <div className="hidden sm:block">
                       <DocsCopyPage
                         page={doc.copyMarkdown}
+                        sourcePath={doc.sourcePath}
                         url={`https://platejs.org${doc.slug}`}
                       />
                     </div>

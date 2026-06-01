@@ -1,9 +1,16 @@
 ---
 title: Bold
+description: Add strong inline text formatting.
 docs:
+  - route: /docs/basic-marks
+    title: Basic Marks
   - route: /docs/components/mark-toolbar-button
     title: Mark Toolbar Button
+  - route: /docs/plugin-shortcuts
+    title: Plugin Shortcuts
 ---
+
+Bold applies the `bold` leaf mark to selected text. `BoldPlugin` owns the mark key, shortcut, HTML parsing, render tag, and toggle transform.
 
 <ComponentPreview name="basic-marks-demo" />
 
@@ -11,9 +18,12 @@ docs:
 
 ## Features
 
-- Apply bold formatting to emphasize important text
-- Keyboard shortcut support for quick formatting (`Cmd + B`)
-- Renders as `<strong>` HTML element by default
+- `KEYS.bold` leaf mark.
+- Default `⌘B` / `Ctrl+B` shortcut.
+- HTML deserialization from `strong`, `b`, and bold font weight.
+- `<strong>` rendering by default.
+- Optional Markdown-style input rules through `BoldRules`.
+- Toolbar support through `MarkToolbarButton`.
 
 </PackageInfo>
 
@@ -21,92 +31,107 @@ docs:
 
 <Steps>
 
-### Installation
+### Add Basic Marks
 
-The fastest way to add the bold plugin is with the `BasicMarksKit`, which includes pre-configured `BoldPlugin` along with other basic marks and their [Plate UI](/docs/installation/plate-ui) components.
+`BasicMarksKit` includes `BoldPlugin`, bold input rules, and the standard toolbar buttons that use `KEYS.bold`.
 
 <ComponentSource name="basic-marks-kit" />
 
-### Add Kit
-
-Add the kit to your plugins:
-
 ```tsx
 import { createPlateEditor } from 'platejs/react';
+
 import { BasicMarksKit } from '@/components/editor/plugins/basic-marks-kit';
 
-const editor = createPlateEditor({
-  plugins: [
-    // ...otherPlugins,
-    ...BasicMarksKit,
-  ],
+export const editor = createPlateEditor({
+  plugins: [...BasicMarksKit],
 });
+```
+
+### Add A Toolbar Button
+
+Use `MarkToolbarButton` with `KEYS.bold`.
+
+```tsx
+import { BoldIcon } from 'lucide-react';
+import { KEYS } from 'platejs';
+
+import { MarkToolbarButton } from '@/components/ui/mark-toolbar-button';
+
+export function BoldToolbarButton() {
+  return (
+    <MarkToolbarButton nodeType={KEYS.bold} tooltip="Bold (⌘+B)">
+      <BoldIcon />
+    </MarkToolbarButton>
+  );
+}
 ```
 
 </Steps>
 
 ## Manual Usage
 
-<Steps>
-
-### Installation
+Install the mark package.
 
 ```bash
 npm install @platejs/basic-nodes
 ```
 
-### Add Plugin
-
-Include `BoldPlugin` in your Plate plugins array when creating the editor.
+Add `BoldPlugin` directly when you do not want the whole kit.
 
 ```tsx
 import { BoldPlugin } from '@platejs/basic-nodes/react';
 import { createPlateEditor } from 'platejs/react';
 
-const editor = createPlateEditor({
-  plugins: [
-    // ...otherPlugins,
-    BoldPlugin,
-  ],
+export const editor = createPlateEditor({
+  plugins: [BoldPlugin],
 });
 ```
 
-### Configure Plugin
-
-You can configure the `BoldPlugin` with custom keyboard shortcuts.
+Register Markdown-style input rules when users should type bold delimiters.
 
 ```tsx
+import { BoldRules } from '@platejs/basic-nodes';
 import { BoldPlugin } from '@platejs/basic-nodes/react';
-import { createPlateEditor } from 'platejs/react';
 
-const editor = createPlateEditor({
-  plugins: [
-    // ...otherPlugins,
-    BoldPlugin.configure({
-      shortcuts: { toggle: 'mod+b' },
-    }),
+export const boldPlugin = BoldPlugin.configure({
+  inputRules: [
+    BoldRules.markdown({ variant: '*' }),
+    BoldRules.markdown({ variant: '_' }),
   ],
 });
 ```
 
-- `shortcuts.toggle`: Defines a keyboard [shortcut](/docs/plugin-shortcuts) to toggle bold formatting.
+## Ownership
 
-### Add Toolbar Button
+| Surface | Owner | What It Does |
+|---------|-------|--------------|
+| `BaseBoldPlugin` | `@platejs/basic-nodes` | Headless bold mark, HTML parser, render tag, and `toggle` transform. |
+| `BoldPlugin` | `@platejs/basic-nodes/react` | React wrapper with default `mod+b` shortcut. |
+| `BoldRules.markdown` | `@platejs/basic-nodes` | Optional mark input rule factory. |
+| `BasicMarksKit` | Registry | Adds `BoldPlugin` with `*` and `_` Markdown-style input rules. |
+| `MarkToolbarButton` | Registry UI | Reads active mark state and calls the mark toggle hook. |
 
-You can add [`MarkToolbarButton`](/docs/components/mark-toolbar-button) to your [Toolbar](/docs/toolbar) to toggle bold formatting.
+The package owns the mark. The registry owns toolbar placement and icon choice.
 
-</Steps>
+## Behavior
 
-## Plugins
+| Behavior | Source |
+|----------|--------|
+| Mark key | `KEYS.bold` |
+| Leaf behavior | `node.isLeaf: true` |
+| Toggle transform | `editor.tf.bold.toggle()` calls `editor.tf.toggleMark(type)`. |
+| Shortcut | `BoldPlugin` registers `mod+b`. |
+| HTML tags | `strong`, `b` |
+| HTML styles | `font-weight: 600`, `700`, or `bold` |
+| HTML guard | Ignores descendants where `fontWeight` is `normal`. |
+| Render output | `strong` |
 
-### `BoldPlugin`
+## API Reference
 
-Plugin for bold text formatting. Renders as `<strong>` HTML element by default.
+| API | Package | Use |
+|-----|---------|-----|
+| `BaseBoldPlugin` | `@platejs/basic-nodes` | Headless bold plugin. |
+| `BoldPlugin` | `@platejs/basic-nodes/react` | React bold plugin with shortcut defaults. |
+| `BoldRules.markdown(options)` | `@platejs/basic-nodes` | Creates a bold mark input rule. |
+| `tf.bold.toggle()` | `@platejs/basic-nodes` | Toggles the bold mark at the selection. |
 
-## Transforms
-
-### `tf.bold.toggle`
-
-Toggles the bold formatting for the selected text.
-
-Default Shortcut: `Cmd + B`

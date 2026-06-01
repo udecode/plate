@@ -1,9 +1,14 @@
 ---
 title: Date
+description: Inline void date elements with canonical and raw date storage.
 docs:
   - route: /docs/components/date-node
     title: Date Element
+  - route: https://pro.platejs.org/docs/components/date-node
+    title: Plus
 ---
+
+Date adds inline void elements that display a date label inside text. Canonical dates are stored as `YYYY-MM-DD`; non-normalizable input is kept as `rawDate`. This page covers kit setup, insertion, value shape, picker behavior, Markdown serialization, and the small query API.
 
 <ComponentPreview name="date-demo" />
 
@@ -11,151 +16,208 @@ docs:
 
 ## Features
 
-- Insert and display inline date elements in your text.
-- Pick and edit dates through a bundled calendar UI.
-- Store dates as a single `YYYY-MM-DD` value on `node.date`.
-- Serialize to `<date value="YYYY-MM-DD" />` in Markdown and MDX.
+- Inline void `date` element.
+- Bound `editor.tf.insert.date` transform.
+- Direct `insertDate(editor, options)` helper.
+- Canonical `date` storage with `rawDate` fallback.
+- Calendar editing in the registry UI.
+- Static renderer for read-only output.
+- Markdown round-trip through `<date value="YYYY-MM-DD" />` and child-text date tags.
 
 </PackageInfo>
 
-## Kit Usage
+## Fast Path
 
 <Steps>
 
-### Installation
+### Add The Kit
 
-The fastest way to add date functionality is with the `DateKit`, which includes pre-configured `DatePlugin` with [Plate UI](/docs/installation/plate-ui) components.
+`DateKit` installs `DatePlugin` with the registry `DateElement`.
 
 <ComponentSource name="date-kit" />
 
-- [`DateElement`](/docs/components/date-node): Renders inline date elements.
-
-### Add Kit
-
-Add the kit to your plugins:
-
 ```tsx
 import { createPlateEditor } from 'platejs/react';
+
 import { DateKit } from '@/components/editor/plugins/date-kit';
 
-const editor = createPlateEditor({
-  plugins: [
-    // ...otherPlugins,
-    ...DateKit,
-  ],
+export const editor = createPlateEditor({
+  plugins: DateKit,
 });
+```
+
+### Render The Element
+
+`date-node` owns the inline wrapper, display label, popover, calendar picker, and static element.
+
+<ComponentSource name="date-node" />
+
+### Add An Insert Action
+
+The registry insert toolbar maps `KEYS.date` to `insertDate(editor, { select: true })`.
+
+```tsx title="components/editor/transforms.ts"
+import { insertDate } from '@platejs/date';
+import { KEYS } from 'platejs';
+
+export const insertInlineMap = {
+  [KEYS.date]: (editor) => insertDate(editor, { select: true }),
+};
 ```
 
 </Steps>
 
-## Manual Usage
+## Ownership
+
+| Layer | Owner | What It Does |
+|-------|-------|--------------|
+| `@platejs/date` | Package | Exports `BaseDatePlugin`, `insertDate`, date value helpers, and `isPointNextToNode`. |
+| `@platejs/date/react` | Package | Exports `DatePlugin`. |
+| `date-kit` | Registry | Adds `DatePlugin.withComponent(DateElement)`. |
+| `date-base-kit` | Registry | Adds `BaseDatePlugin.withComponent(DateElementStatic)`. |
+| `date-node` | Registry UI | Renders the editable popover/calendar element and static element. |
+| `@platejs/markdown` | Package | Converts date MDX tags to canonical `date` or fallback `rawDate` values. |
+
+`BaseDatePlugin` is inline and void. The text child exists only to satisfy Slate's element shape.
+
+## Manual Setup
 
 <Steps>
 
-### Installation
+### Install Package
 
 ```bash
 npm install @platejs/date
 ```
 
-### Add Plugin
+### Add The Plugin
 
-Include `DatePlugin` in your Plate plugins array when creating the editor.
-
-```tsx
-import { DatePlugin } from '@platejs/date/react';
-import { createPlateEditor } from 'platejs/react';
-
-const editor = createPlateEditor({
-  plugins: [
-    // ...otherPlugins,
-    DatePlugin,
-  ],
-});
-```
-
-### Configure Plugin
-
-Configure the plugin with a custom component to render date elements.
+Use the React plugin when the editor renders the calendar popover.
 
 ```tsx
 import { DatePlugin } from '@platejs/date/react';
 import { createPlateEditor } from 'platejs/react';
+
 import { DateElement } from '@/components/ui/date-node';
 
-const editor = createPlateEditor({
-  plugins: [
-    // ...otherPlugins,
-    DatePlugin.withComponent(DateElement),
-  ],
+export const editor = createPlateEditor({
+  plugins: [DatePlugin.withComponent(DateElement)],
 });
 ```
 
-- `withComponent`: Assigns [`DateElement`](/docs/components/date-node) to render inline date elements.
+### Add Static Rendering
 
-### Insert Toolbar Button
+Use the base kit when rendering read-only output with `platejs/static`.
 
-You can add this item to the [Insert Toolbar Button](/docs/toolbar#insert-toolbar-button) to insert date elements:
+<ComponentSource name="date-base-kit" />
+
+### Insert A Date
+
+`DatePlugin` binds `insertDate` to `editor.tf.insert.date`.
 
 ```tsx
-{
-  focusEditor: true,
-  icon: <CalendarIcon />,
-  label: 'Date',
-  value: KEYS.date,
-}
+editor.tf.insert.date({
+  date: '2026-03-23',
+  select: true,
+});
+```
+
+Use the package helper directly when you are outside plugin-bound transform access.
+
+```tsx
+import { insertDate } from '@platejs/date';
+
+insertDate(editor, {
+  date: '2026-03-23',
+  select: true,
+});
 ```
 
 </Steps>
 
-## Plugins
+## Value Shape
 
-### `DatePlugin`
+Canonical date values live in `date`. Invalid or intentionally loose date text lives in `rawDate`.
 
-Plugin for adding date elements to your document.
+```tsx
+const value = [
+  {
+    children: [
+      { text: 'Due ' },
+      {
+        children: [{ text: '' }],
+        date: '2026-03-23',
+        type: 'date',
+      },
+      { text: '.' },
+    ],
+    type: 'p',
+  },
+];
+```
 
-## API
+| Field | Type | Notes |
+|-------|------|-------|
+| `type` | `'date'` | Plugin key and node type from `KEYS.date`. |
+| `children` | `[{ text: '' }]` | Required Slate child for the inline void element. |
+| `date` | `string` | Canonical `YYYY-MM-DD` value. |
+| `rawDate` | `string` | Fallback for non-normalizable input. |
 
-### `isPointNextToNode`
+## Date Normalization
 
-Check if a point is next to a specific node type.
+`normalizeDateValue` decides which field is written.
 
-<API name="isPointNextToNode">
-<APIParameters>
-  <APIItem name="nodeType" type="string">
-    The type of node to check for adjacency (e.g. 'date' for inline date elements).
-  </APIItem>
-  <APIItem name="options" type="object">
-    Options for checking adjacency.
-  </APIItem>
-</APIParameters>
+| Input | Stored Value |
+|-------|--------------|
+| `Date` object | `date: formatDateValue(value)` when the object is valid. |
+| `YYYY-MM-DD` | `date` when the calendar date is valid. |
+| Invalid canonical string | `rawDate`. |
+| `Mon Mar 23 2026` | `date: '2026-03-23'` when JavaScript can parse it. |
+| Blank string | no date fields. |
+| Other text | `rawDate`. |
 
-<APIOptions type="object">
-  <APIItem name="at" type="Point" optional>
-    Position to check from. Uses current selection anchor if not provided.
-  </APIItem>
-  <APIItem name="reverse" type="boolean">
-    Direction to check. If true, checks previous node; if false, checks next node.
-  </APIItem>
-</APIOptions>
-</API>
+`getDateDisplayLabel` returns `Today`, `Yesterday`, `Tomorrow`, a localized long date, or the raw fallback string.
 
-## Transforms
+## Picker Behavior
 
-### `tf.insert.date`
+The registry element is display-only while read-only. In editable mode, clicking the inline label opens a calendar popover.
 
-<API name="insert.date">
-<APIParameters>
-  <APIItem name="date" type="string" optional>
-    The date string to insert, in `YYYY-MM-DD` format. Input is normalized to that shape before it reaches the node.
-    - **Default:** Today's date as `YYYY-MM-DD`
-  </APIItem>
-  <APIItem name="options" type="InsertNodesOptions" optional>
-    Options for inserting nodes.
-  </APIItem>
-</APIParameters>
-</API>
+| State | Behavior |
+|-------|----------|
+| `date` exists | The trigger shows `getDateDisplayLabel(element)`. |
+| `rawDate` exists | The trigger shows the raw string. |
+| no date fields | The trigger shows `Pick a date`. |
+| calendar selection | The node is set to `{ date: formatDateValue(date), rawDate: undefined }`. |
 
-<Callout type="info">
-  **Note:** `DateElement` may render a friendlier label such as `Today` or a long-date string, but that is display-only. The stored node value is always the `YYYY-MM-DD` string.
-</Callout>
+The registry element uses `contentEditable={false}` on the inline wrapper, so users edit the date through the calendar instead of typing inside the void node.
+
+## Markdown
+
+Canonical values serialize as a self-closing date tag with a `value` attribute.
+
+```mdx
+Date: <date value="2026-03-23" />
+```
+
+Raw fallback values serialize as child text.
+
+```mdx
+Date: <date>sometime next week</date>
+```
+
+The deserializer also accepts child text such as `<date>Mon Mar 23 2026</date>` and normalizes it to `date: '2026-03-23'` when the date is safe to parse.
+
+## API Reference
+
+| API | Package | Use |
+|-----|---------|-----|
+| `BaseDatePlugin` | `@platejs/date` | Headless inline void date plugin. |
+| `DatePlugin` | `@platejs/date/react` | React date plugin. |
+| `insertDate(editor, options)` | `@platejs/date` | Inserts a date element plus a trailing text space. |
+| `editor.tf.insert.date(options)` | plugin-bound transform | Bound transform registered by `BaseDatePlugin`. |
+| `normalizeDateValue(value)` | `@platejs/date` | Returns `{ date }`, `{ rawDate }`, or an empty object. |
+| `formatDateValue(date)` | `@platejs/date` | Formats a `Date` object as `YYYY-MM-DD`. |
+| `parseCanonicalDateValue(value)` | `@platejs/date` | Parses only valid canonical date strings. |
+| `getDateDisplayLabel(options)` | `@platejs/date` | Builds the visible date label. |
+| `isPointNextToNode(editor, options)` | `@platejs/date` | Checks whether a point is adjacent to a node type. Throws when neither `options.at` nor editor selection exists. |
+| `TDateElement` | `platejs` | Element shape with optional `date` and `rawDate`. |

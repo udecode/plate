@@ -447,11 +447,15 @@ Dashboard command:
 pnpm sync-shadcn dashboard
 ```
 
+This regenerates `dashboard.html` and opens it in the local browser. Use
+`--no-open` or `SYNC_SHADCN_NO_OPEN=1` when running in a non-GUI check.
+
 Dashboard output shape:
 
 ```md
 Dashboard: docs/sync/shadcn/dashboard.html
 Data: docs/sync/shadcn/dashboard.json
+Opened: file:///.../docs/sync/shadcn/dashboard.html
 
 | Feature | State | Items |
 | --- | --- | ---: |

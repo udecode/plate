@@ -1,6 +1,14 @@
 ---
 title: Single Block
+description: Restrict an editor to one root block or one line of text.
+docs:
+  - route: /docs/examples/single-block
+    title: Demo
+  - route: /docs/trailing-block
+    title: Trailing Block
 ---
+
+Single Block provides two input constraints: one root block with soft breaks, or one line with no breaks. Both plugins disable `TrailingBlockPlugin` while enabled and collapse extra root blocks during normalization.
 
 <ComponentPreview name="single-block-demo" />
 
@@ -8,52 +16,91 @@ title: Single Block
 
 ## Features
 
-- **SingleLinePlugin**: Restricts editor to a single line of text with all line breaks removed
-- **SingleBlockPlugin**: Restricts editor to a single block with line breaks converted to soft breaks
-- Prevents creation of multiple blocks through normalization
-- Filters out line break characters from pasted content
-- Suitable for titles, labels, comments, or constrained text inputs
+- `SingleBlockPlugin` keeps one root block and converts Enter to a soft break.
+- `SingleLinePlugin` keeps one root block and removes all line break characters.
+- Root normalization merges extra blocks into the first block.
+- Both plugins disable `TrailingBlockPlugin`.
+- Demo toggle for switching between single-block and single-line behavior.
 
 </PackageInfo>
 
-## Manual Usage
+## Fast Path
 
-<Steps>
-
-### Add Plugins
+Use `SingleBlockPlugin` when the field may contain line breaks.
 
 ```tsx
-import { SingleLinePlugin, SingleBlockPlugin } from 'platejs';
+import { SingleBlockPlugin } from 'platejs';
 import { createPlateEditor } from 'platejs/react';
 
-const editor = createPlateEditor({
-  plugins: [
-    // ...otherPlugins,
-    SingleLinePlugin, // For single-line text
-    // OR
-    SingleBlockPlugin, // For single-block text with soft breaks
-  ],
+export const editor = createPlateEditor({
+  plugins: [SingleBlockPlugin],
 });
 ```
 
-</Steps>
+Use `SingleLinePlugin` when the field must be plain one-line text.
 
-## Plugins
+```tsx
+import { SingleLinePlugin } from 'platejs';
+import { createPlateEditor } from 'platejs/react';
 
-### `SingleLinePlugin`
+export const editor = createPlateEditor({
+  plugins: [SingleLinePlugin],
+});
+```
 
-Plugin that restricts editor content to a single line of text by removing all line breaks and merging multiple blocks.
+## Ownership
 
-**Key behaviors:**
-- Prevents `insertBreak` and `insertSoftBreak` operations
-- Filters out line break characters
-- Merges multiple blocks into the first block without separators
+| Layer | Owner | What It Does |
+|-------|-------|--------------|
+| `SingleBlockPlugin` | `platejs` / `@platejs/utils` | Keeps one root block and preserves line breaks as text. |
+| `SingleLinePlugin` | `platejs` / `@platejs/utils` | Keeps one root block and strips line break characters. |
+| `TrailingBlockPlugin` | `@platejs/utils` | Disabled by both plugins through `override.enabled`. |
+| `single-block-demo` | Registry example | Lets users toggle between single-block and single-line mode. |
 
-### `SingleBlockPlugin`
+These plugins are editor constraints, not schema validation. They rewrite editor content during normalization.
 
-Plugin that restricts editor content to a single block while preserving line breaks.
+## Behavior
 
-**Key behaviors:**
-- Converts `insertBreak` to `insertSoftBreak`
-- Merges multiple blocks into the first block with `\n` separators
-- Preserves existing line break characters in text content
+| Plugin | Enter | Soft Break | Extra Root Blocks | Existing Text Breaks |
+|--------|-------|------------|-------------------|----------------------|
+| `SingleBlockPlugin` | Calls `editor.tf.insertSoftBreak()`. | Preserved as `\n`. | Merged into the first block with `\n` separators. | Preserved. |
+| `SingleLinePlugin` | No-op. | No-op. | Merged into the first block with no separator. | Removes `\r`, `\n`, `\r\n`, `\u2028`, and `\u2029`. |
+
+Use single-block mode for descriptions, comments, or titles that may wrap across lines. Use single-line mode for labels, slugs, short titles, and command inputs.
+
+## Normalization
+
+Both plugins override `normalizeNode`.
+
+| Case | Result |
+|------|--------|
+| Root has one block | Leaves the value alone. |
+| Root has multiple blocks with `SingleBlockPlugin` | Inserts `\n` at the start of each next block, then merges it into the first block. |
+| Root has multiple blocks with `SingleLinePlugin` | Merges each next block into the first block without a separator. |
+| Text node contains line separators with `SingleLinePlugin` | Replaces the text with the filtered one-line string. |
+
+The merge happens inside `editor.tf.withoutNormalizing`, so the root collapse finishes as one normalization pass.
+
+## Demo Toggle
+
+The registry example switches plugins from a checkbox.
+
+```tsx
+import { SingleBlockPlugin, SingleLinePlugin } from 'platejs';
+
+const plugins = [
+  isSingleBlock ? SingleBlockPlugin : SingleLinePlugin,
+];
+```
+
+`Single Block Mode` keeps pasted lines as `\n`. Turning it off switches to single-line mode and removes line breaks.
+
+## API Reference
+
+| API | Package | Use |
+|-----|---------|-----|
+| `SingleBlockPlugin` | `platejs` / `@platejs/utils` | One root block with soft breaks preserved. |
+| `SingleLinePlugin` | `platejs` / `@platejs/utils` | One root block with all line breaks removed. |
+| `KEYS.singleBlock` | `platejs` / `@platejs/utils` | Plugin key for `SingleBlockPlugin`. |
+| `KEYS.singleLine` | `platejs` / `@platejs/utils` | Plugin key for `SingleLinePlugin`. |
+| `override.enabled.trailingBlock` | Plugin override | Set to `false` by both plugins. |

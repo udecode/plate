@@ -1,9 +1,14 @@
 ---
 title: Text Align
+description: Align block content.
 docs:
+  - route: /docs/examples/align
+    title: Align Demo
   - route: /docs/components/align-toolbar-button
     title: Align Toolbar Button
 ---
+
+`TextAlignPlugin` stores block alignment in an `align` property and renders it as CSS `text-align`. Setting the default `start` value removes the property from matching blocks.
 
 <ComponentPreview name="align-demo" />
 
@@ -11,9 +16,12 @@ docs:
 
 ## Features
 
-- Apply text alignment to block elements like paragraphs and headings.
-- Supports left, right, center, and justify alignment.
-- Injects an `align` prop into targeted block elements.
+- Block-level text alignment.
+- `start`, `left`, `center`, `right`, `end`, and `justify` values.
+- HTML `text-align` style deserialization.
+- Default-value cleanup.
+- Configurable target block types.
+- Registry dropdown toolbar for common alignments.
 
 </PackageInfo>
 
@@ -21,29 +29,32 @@ docs:
 
 <Steps>
 
-### Installation
+### Add the Kit
 
-The fastest way to add text alignment functionality is with the `AlignKit`, which includes pre-configured `TextAlignPlugin` targeting paragraph, heading, image, and media elements.
+Use `AlignKit` for the Plate UI setup. It targets headings, paragraphs, images, and media embeds.
 
 <ComponentSource name="align-kit" />
 
-- Configures `Paragraph`, `Heading`, `Image`, and `Media` elements to support the `align` property.
-- Provides alignment options: `start`, `left`, `center`, `right`, `end`, `justify`.
-
-### Add Kit
-
-Add the kit to your plugins:
-
 ```tsx
 import { createPlateEditor } from 'platejs/react';
+
 import { AlignKit } from '@/components/editor/plugins/align-kit';
 
-const editor = createPlateEditor({
-  plugins: [
-    // ...otherPlugins,
-    ...AlignKit,
-  ],
+export const editor = createPlateEditor({
+  plugins: [...AlignKit],
 });
+```
+
+### Add the Toolbar Control
+
+`AlignToolbarButton` shows left, center, right, and justify controls.
+
+```tsx
+import { AlignToolbarButton } from '@/components/ui/align-toolbar-button';
+
+export function AlignControls() {
+  return <AlignToolbarButton />;
+}
 ```
 
 </Steps>
@@ -52,47 +63,37 @@ const editor = createPlateEditor({
 
 <Steps>
 
-### Installation
+### Install Package
 
 ```bash
 npm install @platejs/basic-styles
 ```
 
-### Add Plugin
+### Add the Plugin
 
-Include `TextAlignPlugin` in your Plate plugins array when creating the editor.
-
-```tsx
-import { TextAlignPlugin } from '@platejs/basic-styles/react';
-import { createPlateEditor } from 'platejs/react';
-
-const editor = createPlateEditor({
-  plugins: [
-    // ...otherPlugins,
-    TextAlignPlugin,
-  ],
-});
-```
-
-### Configure Plugin
-
-You can configure the `TextAlignPlugin` to target specific elements and define alignment options.
+Configure the blocks that can store alignment.
 
 ```tsx
 import { TextAlignPlugin } from '@platejs/basic-styles/react';
 import { KEYS } from 'platejs';
 import { createPlateEditor } from 'platejs/react';
 
-const editor = createPlateEditor({
+export const editor = createPlateEditor({
   plugins: [
-    // ...otherPlugins,
     TextAlignPlugin.configure({
       inject: {
         nodeProps: {
-          nodeKey: 'align',
           defaultNodeValue: 'start',
+          nodeKey: 'align',
           styleKey: 'textAlign',
-          validNodeValues: ['start', 'left', 'center', 'right', 'end', 'justify'],
+          validNodeValues: [
+            'start',
+            'left',
+            'center',
+            'right',
+            'end',
+            'justify',
+          ],
         },
         targetPlugins: [...KEYS.heading, KEYS.p],
       },
@@ -101,62 +102,74 @@ const editor = createPlateEditor({
 });
 ```
 
-- `inject.nodeProps.nodeKey`: The property name injected into target elements (`align` by default). Set to `'textAlign'` if you prefer that prop name.
-- `inject.nodeProps.defaultNodeValue`: Sets the default alignment (`start`).
-- `inject.nodeProps.styleKey`: Maps the injected prop to the CSS `textAlign` property.
-- `inject.nodeProps.validNodeValues`: Defines valid alignment values for UI controls.
-- `inject.targetPlugins`: An array of plugin keys indicating which element types will receive the alignment prop.
+### Set Alignment
 
-### Add Toolbar Button
+Use the bound transform or the headless utility.
 
-You can add [`AlignToolbarButton`](/docs/components/align-toolbar-button) to your [Toolbar](/docs/toolbar) to control text alignment.
+```tsx
+import { setAlign } from '@platejs/basic-styles';
+
+editor.tf.textAlign.setNodes('center');
+
+setAlign(editor, 'start', { at: [] });
+```
 
 </Steps>
 
-## Plugins
+## Ownership
 
-### `TextAlignPlugin`
+| Surface | Owner | What It Does |
+|---------|-------|--------------|
+| `BaseTextAlignPlugin` | `@platejs/basic-styles` | Headless plugin that stores alignment, injects block props, and parses HTML text-align styles. |
+| `TextAlignPlugin` | `@platejs/basic-styles/react` | React wrapper around `BaseTextAlignPlugin`. |
+| `setAlign` | `@platejs/basic-styles` | Sets or clears alignment on matching blocks. |
+| `tf.textAlign.setNodes` | `@platejs/basic-styles` | Bound transform exposed by the plugin. |
+| `BaseAlignKit` | Registry kit | Static/headless setup for headings, paragraphs, images, and media embeds. |
+| `AlignKit` | Registry kit | React setup plus toolbar dependency. |
+| `AlignToolbarButton` | Registry UI | Dropdown that writes alignment through `textAlign.setNodes`. |
 
-Plugin for aligning text within block elements. It injects an `align` prop into the elements specified by `inject.targetPlugins`.
+The package owns alignment storage and parsing. The registry owns the dropdown UI.
 
-<API name="TextAlignPlugin">
-<APIOptions type="object">
-  <APIItem name="inject.nodeProps.nodeKey" type="string" optional>
-    The property name injected into target elements.
-    - **Default:** `'align'`
-  </APIItem>
-  <APIItem name="inject.nodeProps.defaultNodeValue" type="string" optional>
-    Default text alignment value.
-    - **Default:** `'start'`
-  </APIItem>
-  <APIItem name="inject.nodeProps.styleKey" type="string" optional>
-    CSS property name for styling.
-    - **Default:** `'textAlign'`
-  </APIItem>
-  <APIItem name="inject.nodeProps.validNodeValues" type="string[]" optional>
-    Array of valid alignment values.
-    - **Default:** `['start', 'left', 'center', 'right', 'end', 'justify']`
-  </APIItem>
-  <APIItem name="inject.targetPlugins" type="string[]" optional>
-    Array of plugin keys to target for alignment injection.
-    - **Default:** `['p']`
-  </APIItem>
-</APIOptions>
-</API>
+## Behavior
 
-## Transforms
+| Behavior | Source |
+|----------|--------|
+| Plugin key | `KEYS.textAlign` |
+| Stored property | `align` |
+| Rendered CSS style | `textAlign` |
+| Default target plugins | `[KEYS.p]` |
+| Registry target plugins | `[...KEYS.heading, KEYS.p, KEYS.img, KEYS.mediaEmbed]` |
+| Default value | `start` |
+| Valid values | `start`, `left`, `center`, `right`, `end`, `justify` |
+| HTML parser | Reads `element.style.textAlign`. |
+| Setting a custom value | Sets `{ align: value }` on matching blocks. |
+| Setting `start` | Unsets the stored alignment property. |
+| Non-target blocks | Are ignored by `setAlign`. |
 
-### `tf.textAlign.setNodes`
+## HTML
 
-Sets the alignment for the selected block nodes that are configured as targets for this plugin.
+The plugin injects an HTML deserializer into each target plugin. Pasted HTML with a `text-align` style becomes an `align` prop on matching blocks.
 
-<API name="tf.textAlign.setNodes">
-<APIParameters>
-<APIItem name="value" type="string">
-The alignment value (e.g., `'left'`, `'center'`, `'right'`, `'justify'`).
-</APIItem>
-<APIItem name="options" type="SetNodesOptions" optional>
-Options for the `setNodes` function.
-</APIItem>
-</APIParameters>
-</API>
+```html
+<p style="text-align: center">Centered text</p>
+```
+
+## API Reference
+
+| API | Package | Use |
+|-----|---------|-----|
+| `TextAlignPlugin` | `@platejs/basic-styles/react` | React alignment plugin. |
+| `BaseTextAlignPlugin` | `@platejs/basic-styles` | Headless alignment plugin. |
+| `editor.tf.textAlign.setNodes(value, options?)` | `@platejs/basic-styles` | Sets or clears alignment on matching blocks. |
+| `setAlign(editor, value, options?)` | `@platejs/basic-styles` | Headless transform behind the bound API. |
+
+## Options
+
+| Option | Surface | Use |
+|--------|---------|-----|
+| `inject.targetPlugins` | `TextAlignPlugin` | Block types that can keep `align`. |
+| `inject.nodeProps.nodeKey` | `TextAlignPlugin` | Stored block property; registry kits use `align`. |
+| `inject.nodeProps.defaultNodeValue` | `TextAlignPlugin` | Value that clears the stored property when selected. |
+| `inject.nodeProps.styleKey` | `TextAlignPlugin` | CSS property used for rendering. |
+| `inject.nodeProps.validNodeValues` | Registry toolbar | Values exposed to alignment UI. |
+| `SetNodesOptions` | `setAlign` | Slate node update options passed to `setNodes` or `unsetNodes`. |

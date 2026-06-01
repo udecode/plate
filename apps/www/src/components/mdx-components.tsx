@@ -7,6 +7,8 @@ import Image from 'next/image';
 import { Card, Cards } from '@/components/cards';
 import { CodeTabs } from '@/components/code-tabs';
 import { ComponentInstallation } from '@/components/component-installation';
+import { File, Files, Folder } from '@/components/docs-files';
+import { TypeTable } from '@/components/docs-type-table';
 import {
   type CalloutType,
   type CalloutVariant,
@@ -104,6 +106,9 @@ export const mdxComponents = {
   ComponentPreview,
   ComponentPreviewPro,
   ComponentSource,
+  File,
+  Files,
+  Folder,
   h1: Typography.H1,
   h2: Typography.H2,
   h3: Typography.H3,
@@ -125,6 +130,7 @@ export const mdxComponents = {
   td: Typography.TD,
   th: Typography.TH,
   tr: Typography.TR,
+  TypeTable,
   ul: Typography.UL,
   CodeBlockWrapper: ({ ...props }) => (
     <CodeBlockWrapper className="rounded-md border" {...props} />

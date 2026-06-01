@@ -2,11 +2,10 @@ import { notFound } from 'next/navigation';
 import { NextResponse, type NextRequest } from 'next/server';
 
 import {
-  getPlateLLMPageMarkdown,
-  processMdxForLLMs,
+  getPlateLLMPageMarkdownFromPage,
   stripMarkdownSuffixFromSlug,
 } from '@/lib/llm';
-import { source } from '@/lib/source';
+import { getPlateLLMSource } from '@/lib/llm-source';
 
 export const revalidate = false;
 export const dynamic = 'force-static';
@@ -17,16 +16,16 @@ export async function GET(
   { params }: { params: Promise<{ slug?: string[] }> }
 ) {
   const { slug } = await params;
+  const source = await getPlateLLMSource();
   const page = source.getPage(stripMarkdownSuffixFromSlug(slug), 'en');
 
   if (!page) {
     notFound();
   }
 
-  const content = getPlateLLMPageMarkdown({
-    content: processMdxForLLMs(await page.data.getText('raw')),
+  const content = await getPlateLLMPageMarkdownFromPage({
     docUrl: `https://platejs.org${page.url}`,
-    title: page.data.title,
+    page,
   });
 
   return new NextResponse(content, {

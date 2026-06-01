@@ -1,73 +1,201 @@
 ---
-title: Basic Elements
-description: Commonly used block elements for structuring content.
+title: Basic Blocks
+description: Paragraphs, headings, blockquotes, and horizontal rules.
+docs:
+  - route: /docs/components/paragraph-node
+    title: Paragraph Element
+  - route: /docs/components/heading-node
+    title: Heading Element
+  - route: /docs/components/blockquote-node
+    title: Blockquote Element
+  - route: /docs/components/hr-node
+    title: Horizontal Rule Element
 ---
+
+Basic Blocks is the registry kit for the common structural blocks in a Plate editor. It wires paragraphs, six heading levels, blockquotes, and horizontal rules to Plate UI components. Use the leaf docs when you need the behavior details for one block type.
 
 <Cards>
 
 <Card icon="heading" title="Heading" href="/docs/heading">
-Create headings of various levels to structure content.
+Structure content with H1 through H6 blocks.
 </Card>
 
 <Card icon="blockquote" title="Blockquote" href="/docs/blockquote">
-Emphasize important information with styled quotes.
+Wrap quoted or emphasized content in a blockquote.
 </Card>
 
 <Card icon="horizontal-rule" title="Horizontal Rule" href="/docs/horizontal-rule">
-Insert horizontal lines to separate content.
+Insert a void divider between sections.
 </Card>
 
 </Cards>
 
 <ComponentPreview name="basic-blocks-demo" />
 
-## Kit Usage
+<PackageInfo>
+
+## Features
+
+- Paragraph, H1-H6, blockquote, and horizontal rule components.
+- Markdown shortcuts for headings, blockquotes, and horizontal rules.
+- Keyboard shortcuts for heading toggles and blockquote toggling.
+- Static rendering companion through `basic-blocks-base-kit`.
+- Leaf docs for block-specific setup and API details.
+
+</PackageInfo>
+
+## Fast Path
 
 <Steps>
 
-### Installation
+### Add The Kit
 
-The `BasicBlocksKit` bundles plugins for Paragraphs, Headings (H1, H2, H3), Blockquotes, and Horizontal Rules, along with their respective UI components from [Plate UI](/docs/installation/plate-ui). It also registers the shipped markdown input rules for headings, blockquotes, and horizontal rules.
+`BasicBlocksKit` is the normal app/editor kit. It installs the React plugins and the matching registry UI components.
 
 <ComponentSource name="basic-blocks-kit" />
 
-- [`ParagraphElement`](/docs/components/paragraph-node): Renders paragraph elements.
-- [`H1Element`](/docs/components/heading-node): Renders H1 elements.
-- [`H2Element`](/docs/components/heading-node): Renders H2 elements.
-- [`H3Element`](/docs/components/heading-node): Renders H3 elements.
-- [`BlockquoteElement`](/docs/components/blockquote-node): Renders blockquote elements.
-- [`HrElement`](/docs/components/hr-node): Renders horizontal rule elements.
-
-### Add Kit
-
-Add the kit to your plugins:
-
 ```tsx
 import { createPlateEditor } from 'platejs/react';
+
 import { BasicBlocksKit } from '@/components/editor/plugins/basic-blocks-kit';
 
-const editor = createPlateEditor({
-  plugins: [
-    // ...otherPlugins,
-    ...BasicBlocksKit,
-  ],
+export const editor = createPlateEditor({
+  plugins: BasicBlocksKit,
+});
+```
+
+### Add Static Rendering
+
+Use `BaseBasicBlocksKit` in static or server-safe rendering paths.
+
+<ComponentSource name="basic-blocks-base-kit" />
+
+```tsx
+import { createStaticEditor } from 'platejs';
+
+import { BaseBasicBlocksKit } from '@/components/editor/plugins/basic-blocks-base-kit';
+
+const value = [
+  {
+    children: [{ text: 'Static content' }],
+    type: 'p',
+  },
+];
+
+export const staticEditor = createStaticEditor({
+  plugins: BaseBasicBlocksKit,
+  value,
 });
 ```
 
 </Steps>
 
-The kit enables the common block markdown shortcuts out of the box:
+## Ownership
 
-- `# `, `## `, `### ` for headings
-- `> ` for blockquotes
-- `---` and `___` for horizontal rules
+| Layer | Owner | What It Does |
+|-------|-------|--------------|
+| `platejs/react` | Package | Exports `ParagraphPlugin`. |
+| `@platejs/basic-nodes` | Package | Exports block rules and base block plugins. |
+| `@platejs/basic-nodes/react` | Package | Exports `BlockquotePlugin`, `HeadingPlugin`, `H1Plugin` through `H6Plugin`, `HorizontalRulePlugin`, and `BasicBlocksPlugin`. |
+| `basic-blocks-kit` | Registry | Adds React UI components, input rules, break rules, and shortcuts. |
+| `basic-blocks-base-kit` | Registry | Adds static UI components for static rendering. |
+| Leaf pages | Docs | Own block-specific behavior: [`Heading`](/docs/heading), [`Blockquote`](/docs/blockquote), and [`Horizontal Rule`](/docs/horizontal-rule). |
 
-See the [Plugin Input Rules](/docs/plugin-input-rules) guide for the runtime model and the exact rule families.
+`BasicBlocksPlugin` is a package-level grouping plugin. It does not install the registry UI components; use `BasicBlocksKit` when you want Plate UI rendering.
 
-## Manual Usage
+## Included Plugins
+
+| Block | Plugin | Registry Component | Notes |
+|-------|--------|--------------------|-------|
+| Paragraph | `ParagraphPlugin` | `ParagraphElement` | Comes from `platejs/react`; the registry kit adds the UI component. |
+| Heading 1-6 | `H1Plugin` through `H6Plugin` | `H1Element` through `H6Element` | Each level gets a markdown rule and `mod+alt+<level>` shortcut. |
+| Blockquote | `BlockquotePlugin` | `BlockquoteElement` | Uses a wrapping transform and `mod+shift+period`. |
+| Horizontal rule | `HorizontalRulePlugin` | `HrElement` | Void block; supports dash and underscore markdown rules. |
+
+## Markdown Shortcuts
+
+| Shortcut | Result |
+|----------|--------|
+| `# ` through `###### ` | Converts the current paragraph into H1 through H6. |
+| `> ` | Wraps the current block in a blockquote. |
+| `---` | Converts the current block into a horizontal rule, then inserts a paragraph after it. |
+| `___ ` | Converts the current block into a horizontal rule, then inserts a paragraph after it. |
+
+See [`Plugin Input Rules`](/docs/plugin-input-rules) for the rule engine and trigger model.
+
+## Manual Setup
+
+Use manual setup when you want the package plugins without the registry kit.
 
 ```bash
 npm install @platejs/basic-nodes
 ```
 
-For individual plugin setup and configuration, see the specific plugin documentation pages linked above.
+```tsx
+import {
+  BlockquoteRules,
+  HeadingRules,
+  HorizontalRuleRules,
+} from '@platejs/basic-nodes';
+import {
+  BlockquotePlugin,
+  H1Plugin,
+  H2Plugin,
+  H3Plugin,
+  H4Plugin,
+  H5Plugin,
+  H6Plugin,
+  HorizontalRulePlugin,
+} from '@platejs/basic-nodes/react';
+import { createPlateEditor, ParagraphPlugin } from 'platejs/react';
+
+export const editor = createPlateEditor({
+  plugins: [
+    ParagraphPlugin,
+    H1Plugin.configure({
+      inputRules: [HeadingRules.markdown()],
+      shortcuts: { toggle: { keys: 'mod+alt+1' } },
+    }),
+    H2Plugin.configure({
+      inputRules: [HeadingRules.markdown()],
+      shortcuts: { toggle: { keys: 'mod+alt+2' } },
+    }),
+    H3Plugin.configure({
+      inputRules: [HeadingRules.markdown()],
+      shortcuts: { toggle: { keys: 'mod+alt+3' } },
+    }),
+    H4Plugin.configure({
+      inputRules: [HeadingRules.markdown()],
+      shortcuts: { toggle: { keys: 'mod+alt+4' } },
+    }),
+    H5Plugin.configure({
+      inputRules: [HeadingRules.markdown()],
+      shortcuts: { toggle: { keys: 'mod+alt+5' } },
+    }),
+    H6Plugin.configure({
+      inputRules: [HeadingRules.markdown()],
+      shortcuts: { toggle: { keys: 'mod+alt+6' } },
+    }),
+    BlockquotePlugin.configure({
+      inputRules: [BlockquoteRules.markdown()],
+      shortcuts: { toggle: { keys: 'mod+shift+period' } },
+    }),
+    HorizontalRulePlugin.configure({
+      inputRules: [
+        HorizontalRuleRules.markdown({ variant: '-' }),
+        HorizontalRuleRules.markdown({ variant: '_' }),
+      ],
+    }),
+  ],
+});
+```
+
+## API Reference
+
+| API | Use |
+|-----|-----|
+| `BasicBlocksPlugin` | Package grouping plugin for blockquote, heading, and horizontal rule behavior. |
+| `BaseBasicBlocksPlugin` | Static/headless grouping plugin for blockquote, heading, and horizontal rule behavior. |
+| `HeadingRules.markdown()` | Creates heading input rules based on the configured H1-H6 plugin key. |
+| `BlockquoteRules.markdown()` | Creates the `> ` block-start rule. |
+| `HorizontalRuleRules.markdown({ variant })` | Creates dash or underscore thematic-break rules. |

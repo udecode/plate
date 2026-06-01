@@ -1,208 +1,226 @@
 ---
 title: Editor Methods
-description: Explore the various methods available for interacting with and customizing the Plate editor.
+description: Read, mutate, and configure a Plate editor instance.
 ---
 
-This guide covers the various methods available on the Plate editor instance.
+The Plate editor exposes two main method surfaces: `editor.api` for reads and
+helpers, and `editor.tf` for transforms that change editor state. In React, pick
+the editor hook by how often the component should re-render.
 
-## Accessing the Editor
+## Access the Editor
 
-How you access the editor instance depends on the context in which you need it.
+| Need | Use |
+| --- | --- |
+| Read the editor inside callbacks without re-rendering. | `useEditorRef()` |
+| Re-render from one derived value. | `useEditorSelector(selector, deps)` |
+| Re-render on every editor change. | `useEditorState()` |
+| Reach the active editor from outside a `<Plate>` subtree. | `<PlateController>` plus the same hooks. |
 
-### Below Plate
+```tsx title="components/bold-button.tsx" showLineNumbers
+import { useEditorRef, useEditorSelector } from 'platejs/react';
 
-Use one of these hooks:
+import { Button } from '@/components/ui/button';
 
-- `useEditorRef`: Never re-render.
-- `useEditorSelector`: Re-render only when a specific editor property changes.
-- `useEditorState`: Re-render on every change.
-
-```ts
-import { useEditorRef, useEditorSelector, useEditorState } from 'platejs/react';
-
-const MyComponent = () => {
+export function BoldButton() {
   const editor = useEditorRef();
-  const hasSelection = useEditorSelector((editor) => !!editor.selection, []);
-  const editorState = useEditorState();
-  
-  // ...
-};
+  const hasSelection = useEditorSelector(
+    (editor) => Boolean(editor.selection),
+    []
+  );
+
+  return (
+    <Button
+      disabled={!hasSelection}
+      onClick={() => editor.tf.toggleMark('bold')}
+    >
+      Bold
+    </Button>
+  );
+}
 ```
 
-#### useEditorRef
+### `useEditorRef`
 
-- Use a reference to editor that never gets replaced. This should be the default choice.
-- Since editor is a mutable object that gets updated by reference, `useEditorRef` is always sufficient for accessing the editor inside callbacks.
-- `useEditorRef` will never cause your component to re-render, so it's the best choice for performance.
+`useEditorRef` returns the stable editor object. Use it for event handlers,
+effects, commands, and reads that should not cause a render.
 
-#### useEditorSelector
+```tsx title="components/insert-paragraph-button.tsx"
+const editor = useEditorRef();
 
-- Subscribe to a specific selector based on editor. This is the most performant option for subscribing to state changes.
-- Example usage: `const hasSelection = useEditorSelector((editor) => !!editor.selection, []);`
-- When you want your component to re-render in response to a specific change that you're interested in, you can use `useEditorSelector` to access the relevant property.
-- The selector function is called every time the editor changes (i.e. on every keystroke or selection change), but the component only re-renders when the return value changes.
-- For this to work properly, you should make sure that the return value can be compared using `===`. In most cases, this means returning a primitive value, like a number, string or boolean.
-- You can provide a custom `equalityFn` in the options to `useEditorSelector` for cases where `===` isn't sufficient.
-- If the selector function depends on any locally scoped variables, you should include these in the dependency list.
+editor.tf.insertNodes({
+  children: [{ text: 'Inserted paragraph' }],
+  type: 'p',
+});
+```
 
-#### useEditorState
+### `useEditorSelector`
 
-- Re-render every time the editor changes.
-- Using `useEditorState` will cause your component to re-render every time the user presses a key or changes the selection.
-- This may cause performance issues for large documents, or when re-rendering is particularly expensive.
+`useEditorSelector` subscribes to a derived value. Return a primitive or provide
+`equalityFn` when the selected value needs custom comparison.
 
-### Outside Plate
-
-To access the editor outside the `Plate` component or work with multiple editors, use the `PlateController` component:
-
-```ts
-import { PlateController } from 'platejs/react';
-
-const App = () => (
-  <PlateController>
-    <Toolbar />
-    <MyEditor />
-  </PlateController>
+```tsx title="components/selection-state.tsx"
+const isSelectionExpanded = useEditorSelector(
+  (editor) => editor.api.isExpanded(),
+  []
 );
-
-const Toolbar = () => {
-  const editor = useEditorState();
-  const isMounted = useEditorMounted();
-  // Use editor methods here
-};
 ```
 
-`PlateController` manages active editors:
-- The first mounted editor is active by default (override with `primary={false}` on `Plate`).
-- Focus changes the active editor.
-- An editor remains active until another is focused or it unmounts.
+### `useEditorState`
 
-Hooks like `useEditorRef` and `useEditorSelector` work with the active editor inside `PlateController`. If no editor is active, they return a fallback editor, which:
-- Provides default values for queries.
-- Cannot be mutated.
-- Throws errors on state-changing operations.
+`useEditorState` subscribes to the whole editor state. Use it only when the UI
+really needs to update on every editor change.
 
-Fallback editor scenarios:
-- No mounted `Plate` components.
-- All `Plate` components are non-primary.
-- During `PlateContent` mounting.
+```tsx title="components/selection-debug.tsx"
+const editor = useEditorState();
 
-You can check if any editor is mounted using `useEditorMounted`:
-
-```ts
-const Toolbar = () => {
-  const editor = useEditorState();
-  const isMounted = useEditorMounted();
-  
-  if (!isMounted) {
-    return <div>Editor not ready</div>;
-  }
-  
-  return <div>{/* Toolbar content */}</div>;
-};
+return <pre>{JSON.stringify(editor.selection, null, 2)}</pre>;
 ```
 
-You can also use `editor.meta.isFallback` to check if the editor is a fallback instance.
+## Outside Plate
 
-## API Methods
+Wrap shared UI in `PlateController` when a toolbar, side panel, or inspector
+lives outside a single `<Plate>` tree.
 
-### findPath
+```tsx title="components/editor-shell.tsx" showLineNumbers
+import type React from 'react';
 
-Find the path of a node. Default is `findNodePath` (traversal). Overridden by `withPlate` to use `ReactEditor.findPath` (memo).
+import { PlateController, useEditorMounted, useEditorRef } from 'platejs/react';
 
-```ts
-const path = editor.findPath(node);
+import { Button } from '@/components/ui/button';
+
+export function EditorShell({ children }: { children: React.ReactNode }) {
+  return (
+    <PlateController>
+      <ActiveEditorToolbar />
+      {children}
+    </PlateController>
+  );
+}
+
+function ActiveEditorToolbar() {
+  const editor = useEditorRef();
+  const mounted = useEditorMounted();
+
+  if (!mounted || editor.meta.isFallback) return null;
+
+  return (
+    <Button onClick={() => editor.tf.focus({ edge: 'end' })}>
+      Focus editor
+    </Button>
+  );
+}
 ```
 
-### getApi
+`PlateController` resolves an editor by explicit `id`, focused editor, then
+primary editors. If a controller exists but no editor store is ready, hooks
+return a fallback editor; check `useEditorMounted()` or
+`!editor.meta.isFallback` before running transforms.
 
-Retrieve the typed API for the editor:
+## Editor API and Transforms
 
-```ts
-const api = editor.getApi(TablePlugin);
-api.api.create.tableCell(); // Type-safe API method
+Use `editor.api` for queries and DOM/editor helpers. Use `editor.tf` for
+operations that change the document, selection, history, focus, or plugin state.
+`editor.transforms` is an alias for `editor.tf`.
+
+```ts title="editor-methods.ts" showLineNumbers
+const selectedText = editor.selection
+  ? editor.api.string(editor.selection)
+  : '';
+
+const currentBlock = editor.api.block();
+
+if (selectedText && !editor.api.hasMark('bold')) {
+  editor.tf.toggleMark('bold');
+}
+
+editor.tf.insertNodes({
+  children: [{ text: 'New paragraph' }],
+  type: 'p',
+});
 ```
 
-### getTransforms
-
-Get the typed transforms for the editor:
-
-```ts
-const tf = editor.getTransforms(TablePlugin);
-tf.insert.tableRow(); // Type-safe transform method
-```
+| Surface | Examples | Use for |
+| --- | --- | --- |
+| `editor.api` | `string`, `block`, `findPath`, `hasMark`, `isExpanded` | Reading editor state, resolving paths, checking selection. |
+| `editor.tf` | `insertNodes`, `setNodes`, `toggleMark`, `focus`, `reset` | Mutating document or editor state. |
+| `editor.transforms` | Same as `editor.tf` | Compatibility alias. Prefer `editor.tf` in new code. |
 
 ## Plugin Methods
 
-### getPlugin
+Plugin helpers let TypeScript infer APIs and transforms from the plugin you
+pass in.
 
-Retrieve the editor plugin instance by its key or base plugin:
+```ts title="table-methods.ts" showLineNumbers
+import { TablePlugin } from '@platejs/table/react';
 
-```ts
-const codeBlockPlugin = editor.getPlugin(CodeBlockPlugin);
-const headingPlugin = editor.getPlugin({ key: KEYS.heading });
+const api = editor.getApi(TablePlugin);
+const tf = editor.getTransforms(TablePlugin);
+
+const cell = api.create.tableCell();
+
+tf.insert.tableRow();
 ```
 
-### getType
+| Method | Use for |
+| --- | --- |
+| `editor.getApi(plugin)` | Typed plugin APIs merged onto `editor.api`. |
+| `editor.getTransforms(plugin)` | Typed plugin transforms merged onto `editor.tf`. |
+| `editor.getPlugin(plugin)` | The resolved plugin instance for a key or plugin object. |
+| `editor.getType(pluginKey)` | The node type registered for a plugin key. |
+| `editor.getInjectProps(plugin)` | Resolved injected node props for a plugin. |
 
-Get the node type associated with a plugin:
+## Plugin Options
 
-```ts
-const paragraphType = editor.getType(KEYS.p);
+Use editor option methods when imperative code needs to read or write plugin
+configuration. Use `usePluginOption` or `usePluginOptions` when React UI needs
+to re-render from option state.
+
+```tsx title="components/find-replace-control.tsx" showLineNumbers
+import { FindReplacePlugin } from '@platejs/find-replace';
+import { useEditorRef, usePluginOption } from 'platejs/react';
+
+export function FindReplaceControl() {
+  const editor = useEditorRef();
+  const search = usePluginOption(FindReplacePlugin, 'search');
+
+  return (
+    <input
+      value={search}
+      onChange={(event) => {
+        editor.setOption(FindReplacePlugin, 'search', event.target.value);
+      }}
+    />
+  );
+}
 ```
 
-## Option Methods
+```ts title="plugin-options.ts"
+const options = editor.getOptions(FindReplacePlugin);
 
-### getOption
-
-Get a specific option value for a plugin:
-
-```ts
-const search = editor.getOption(FindReplacePlugin, 'search');
-```
-
-To subscribe to options changes, use `usePluginOption` or `usePluginOptions` hooks.
-
-### getOptions
-
-Get all options for a plugin:
-
-```ts
-const linkOptions = editor.getOptions(LinkPlugin);
-```
-
-### setOption
-
-Set a specific option value for a plugin:
-
-```ts
-editor.setOption(FindReplacePlugin, 'search', 'hello');
-```
-
-### setOptions
-
-Set multiple options for a plugin:
-
-```ts
 editor.setOptions(FindReplacePlugin, {
-  search: 'hello',
-  caseSensitive: true,
+  search: 'Plate',
 });
-```
 
-You can also use a function to update options using Immer:
-
-```ts
 editor.setOptions(FindReplacePlugin, (draft) => {
-  draft.search = 'hello';
-  draft.caseSensitive = true;
+  draft.search = draft.search.trim();
 });
 ```
 
-### getOptionsStore
+| Method | Use for |
+| --- | --- |
+| `editor.getOption(plugin, key, ...args)` | One option or selector value. |
+| `editor.getOptions(plugin)` | Current option state for a plugin. |
+| `editor.setOption(plugin, key, value)` | One option update. |
+| `editor.setOptions(plugin, partial)` | Merge multiple option fields. |
+| `editor.setOptions(plugin, updater)` | Mutate option state through a draft updater. |
+| `editor.getOptionsStore(plugin)` | Low-level access to the plugin options store. |
 
-Get the [zustand-x](https://github.com/udecode/zustand-x) options store for a plugin:
+## Next Steps
 
-```ts
-const store = editor.getOptionsStore(FindReplacePlugin);
-```
+| Task | Guide |
+| --- | --- |
+| Configure editor creation. | [Editor Configuration](/docs/editor) |
+| Add plugin APIs and transforms. | [Plugin Methods](/docs/plugin-methods) |
+| Read plugin context inside components. | [Plugin Context](/docs/plugin-context) |
+| Browse editor query contracts. | [Editor API](/docs/api/slate/editor-api) |
+| Browse editor transform contracts. | [Editor Transforms](/docs/api/slate/editor-transforms) |

@@ -3,90 +3,187 @@ title: React Utils
 description: API reference for @udecode/react-utils.
 ---
 
-`@udecode/react-utils` contains utility functions for React.
+`@udecode/react-utils` provides small React primitives used across Plate UI packages. It is also re-exported from `platejs/react` and `@udecode/cn`.
+
+## Installation
+
+```bash
+npm install @udecode/react-utils
+```
+
+Use direct imports in shared UI packages. Use `platejs/react` when you are already inside a Plate app surface.
 
 ## Components
 
-### `<PortalBody>`
+| Component | Renders | Notes |
+| --- | --- | --- |
+| `PortalBody` | `ReactDOM.createPortal(children, element ?? document.body)` | Returns children directly when no DOM container is available. |
+| `Box` | Slot-aware `div` | Created with `createSlotComponent('div')`. Supports `as` and `asChild`. |
+| `Text` | Slot-aware `span` | Created with `createSlotComponent('span')`. Supports `as` and `asChild`. |
+| `MemoizedChildren` | `React.memo(({ children }) => <>{children}</>)` | Prevents child-only rerenders when parent props are stable. |
 
-Renders a React component in the `document.body` using a portal.
+```tsx title="Portal to body"
+import { PortalBody } from '@udecode/react-utils';
 
-### `<Text>`
+export function BodyOverlay() {
+  return (
+    <PortalBody>
+      <div role="status">Saving</div>
+    </PortalBody>
+  );
+}
+```
 
-Generic component for rendering a span.
+## Primitive Factories
 
-### `<Box>`
-
-Generic component for rendering a div.
-
-## API
-
-### `createPrimitiveComponent`
-
-Creates a primitive component factory which utilizes hooks for managing state, props, and forwards references to child components.
-
-<API name="createPrimitiveComponent">
-<APIParameters>
-  <APIItem name="element" type="React.ElementType">
-    The base component or native HTML element.
-  </APIItem>
-</APIParameters>
-
-<APIReturns type="Function">
-  A function returning a primitive component with hooks for state and props management.
-</APIReturns>
-</API>
-
-### `createPrimitiveElement`
-
-Creates a component from an element type.
-
-<API name="createPrimitiveElement">
-<APIParameters>
-  <APIItem name="element" type="React.ElementType">
-    The native HTML element.
-  </APIItem>
-</APIParameters>
-
-<APIReturns type="React.FC">
-  A function component that renders the specified element.
-</APIReturns>
-</API>
-
-### `createSlotComponent`
-
-Creates a Slot component, which is useful when you want a component to behave as its child.
+Use primitive factories when a component needs `asChild`, composed refs, hook-provided props, or hook-provided state.
 
 <API name="createSlotComponent">
 <APIParameters>
   <APIItem name="element" type="React.ElementType">
-    The base component or native HTML element.
+    Default element or component.
   </APIItem>
 </APIParameters>
-
-<APIReturns type="Function">
-  A function returning a Slot component.
+<APIReturns type="React.ForwardRefExoticComponent">
+  A component that renders `Slot` when `asChild` is true, `as` when provided, otherwise the default element.
 </APIReturns>
 </API>
 
-### `withProviders`
+<API name="createPrimitiveElement">
+<APIParameters>
+  <APIItem name="tag" type="keyof HTMLElementTagNameMap">
+    HTML tag to render.
+  </APIItem>
+</APIParameters>
+<APIReturns type="React.ForwardRefExoticComponent">
+  A typed `forwardRef` component for that intrinsic element.
+</APIReturns>
+</API>
 
-A function that wraps a component in multiple providers.
+<API name="createPrimitiveComponent">
+<APIParameters>
+  <APIItem name="element" type="React.ElementType">
+    Default element or component.
+  </APIItem>
+  <APIItem name="stateHook" type="(options: any) => any" optional>
+    Hook used to create state when the caller does not provide `state`.
+  </APIItem>
+  <APIItem name="propsHook" type="(state: any) => { hidden?: boolean; props?: object; ref?: React.Ref<any> }" optional>
+    Hook used to derive props, hidden state, and a ref from state.
+  </APIItem>
+</APIParameters>
+<APIReturns type="React.ForwardRefExoticComponent">
+  A primitive component with `as`, `asChild`, `options`, `state`, `className`, `style`, and `setProps`.
+</APIReturns>
+</API>
+
+`createPrimitiveComponent` merges hook class names before consumer class names, merges hook style before consumer style, composes forwarded refs with hook refs, and returns `null` when `hidden` is true unless `asChild` is set.
+
+## Ref and Effect Hooks
+
+| API | Type | Behavior |
+| --- | --- | --- |
+| `composeRefs(...refs)` | `(...refs) => (node) => cleanup?` | Sets callback refs and ref objects to the same node. If refs return cleanup functions, the composed ref returns a cleanup. |
+| `useComposedRef(...refs)` | `(...refs) => refCallback` | Memoized `composeRefs` callback. |
+| `useStableFn(fn, deps?)` | `(fn, deps = []) => stableFn` | Returns a stable function that calls the latest `fn`. |
+| `useStableMemo(producer, deps?)` | `(producer, deps?) => value` | Stores a produced value in state and updates it in a layout effect. |
+| `useEffectOnce(effect, deps)` | `(effect, deps) => void` | Runs the effect on first render and again when the dependency values change. |
+| `useIsomorphicLayoutEffect` | `React.useLayoutEffect \| React.useEffect` | Uses layout effect in the browser and effect during SSR. |
+
+```tsx title="Compose refs"
+import * as React from 'react';
+import { useComposedRef } from '@udecode/react-utils';
+
+export const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<'input'>>(
+  (props, ref) => {
+    const localRef = React.useRef<HTMLInputElement>(null);
+    const composedRef = useComposedRef(ref, localRef);
+
+    return <input ref={composedRef} {...props} />;
+  }
+);
+```
+
+## Outside Click
+
+`useOnClickOutside` returns a callback ref unless you pass explicit refs.
+
+<API name="useOnClickOutside">
+<APIParameters>
+  <APIItem name="callback" type="(event: Event) => void">
+    Called when a configured event lands outside every tracked element.
+  </APIItem>
+  <APIItem name="options.disabled" type="boolean" optional>
+    Removes listeners while true.
+  </APIItem>
+  <APIItem name="options.eventTypes" type="string[]" optional>
+    Defaults to `['mousedown', 'touchstart']`.
+  </APIItem>
+  <APIItem name="options.ignoreClass" type="string | string[]" optional>
+    Defaults to `ignore-onclickoutside`. Matching ancestors are ignored.
+  </APIItem>
+  <APIItem name="options.excludeScrollbar" type="boolean" optional>
+    Ignores scrollbar clicks.
+  </APIItem>
+  <APIItem name="options.detectIFrame" type="boolean" optional>
+    Defaults to `true`. Uses window blur to detect iframe focus.
+  </APIItem>
+  <APIItem name="options.refs" type="React.RefObject<HTMLElement | null>[]" optional>
+    Explicit refs to observe instead of the returned callback ref.
+  </APIItem>
+</APIParameters>
+<APIReturns type="(element: HTMLElement | null) => void">
+  Callback ref that registers an element for outside-click detection.
+</APIReturns>
+</API>
+
+## Memo and Event Helpers
+
+| API | Type | Behavior |
+| --- | --- | --- |
+| `useMemoizedSelector(selector, deps, equalityFn?)` | `(selector, deps, equalityFn?) => value` | Re-renders only when the selector result changes. The default equality is strict equality. |
+| `composeEventHandlers(original, next, options?)` | `(event) => void` | Calls `original`, then calls `next` unless `event.defaultPrevented` and `checkForDefaultPrevented` is true. |
+
+## Component Wrappers
+
+<API name="withRef">
+<APIParameters>
+  <APIItem name="renderFunction" type="React.ForwardRefRenderFunction">
+    Forward-ref render function.
+  </APIItem>
+</APIParameters>
+<APIReturns type="React.ForwardRefExoticComponent">
+  Typed `React.forwardRef` result.
+</APIReturns>
+</API>
 
 <API name="withProviders">
 <APIParameters>
-  <APIItem name="providers" type="any[]">
-    Providers with which to wrap the component. If there are any props that you want a provider to receive, simply pass an array.
+  <APIItem name="...providers" type="React.ComponentType | [React.ComponentType, props][]">
+    Providers to wrap around the component. Array entries pass props to a provider.
   </APIItem>
-  <APIItem name="WrappedComponent" type="FunctionComponent<T>">
-    The component to be wrapped.
-  </APIItem>
-  <APIItem name="props" type="T">
-    The props to be passed to the wrapped component.
+  <APIItem name="WrappedComponent" type="React.FC<T>">
+    Component to wrap.
   </APIItem>
 </APIParameters>
-
-<APIReturns type="FunctionComponent<T>">
-  A new component that is wrapped by the specified providers.
+<APIReturns type="(props: T) => React.ReactElement">
+  Component wrapped by the providers from right to left.
 </APIReturns>
 </API>
+
+```tsx title="Wrap providers"
+import { withProviders } from '@udecode/react-utils';
+
+const ThemeProvider = ({ children }: { children: React.ReactNode }) => (
+  <div data-theme="dark">{children}</div>
+);
+
+const Page = () => <main>Docs</main>;
+
+export const ThemedPage = withProviders(ThemeProvider)(Page);
+```
+
+## Related APIs
+
+- [cn](/docs/api/cn) covers `@udecode/cn`, which re-exports this package.
+- [Plate](/docs/api/plate) covers the `platejs/react` umbrella export.

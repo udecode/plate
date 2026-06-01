@@ -6,6 +6,7 @@ import {
   Bot,
   Check,
   ChevronDown,
+  Code2,
   Copy,
   FileText,
   Github,
@@ -32,6 +33,14 @@ import { cn } from '@/lib/utils';
 
 const getMarkdownUrl = (url: string) => `${url}.md`;
 
+const getGitHubSourceUrl = (sourcePath: string | undefined) =>
+  sourcePath
+    ? `https://github.com/udecode/plate/blob/main/content/docs/${sourcePath
+        .split('/')
+        .map(encodeURIComponent)
+        .join('/')}`
+    : undefined;
+
 const getGitHubDiscussionUrl = (url: string) =>
   `https://github.com/udecode/plate/discussions/new?${new URLSearchParams({
     body: `I have a question about the Plate documentation at ${url}.`,
@@ -41,13 +50,20 @@ const getGitHubDiscussionUrl = (url: string) =>
 
 const menuItems = [
   {
-    getHref: getMarkdownUrl,
+    getHref: ({ url }: DocsCopyPageItemContext) => getMarkdownUrl(url),
     icon: FileText,
     key: 'markdown',
     label: 'View as Markdown',
   },
   {
-    getHref: (url: string) =>
+    getHref: ({ sourcePath }: DocsCopyPageItemContext) =>
+      getGitHubSourceUrl(sourcePath),
+    icon: Code2,
+    key: 'source',
+    label: 'View Source',
+  },
+  {
+    getHref: ({ url }: DocsCopyPageItemContext) =>
       getPlateLLMPromptUrl({
         baseUrl: 'https://chatgpt.com',
         docUrl: getMarkdownUrl(url),
@@ -57,7 +73,7 @@ const menuItems = [
     label: 'Ask in ChatGPT',
   },
   {
-    getHref: (url: string) =>
+    getHref: ({ url }: DocsCopyPageItemContext) =>
       getPlateLLMPromptUrl({
         baseUrl: 'https://claude.ai/new',
         docUrl: getMarkdownUrl(url),
@@ -67,30 +83,38 @@ const menuItems = [
     label: 'Ask in Claude',
   },
   {
-    getHref: getGitHubDiscussionUrl,
+    getHref: ({ url }: DocsCopyPageItemContext) => getGitHubDiscussionUrl(url),
     icon: Github,
     key: 'github',
     label: 'Ask in GitHub',
   },
 ] as const;
 
+type DocsCopyPageItemContext = {
+  sourcePath?: string;
+  url: string;
+};
+
 function DocsCopyPageItem({
+  context,
   item,
   ref,
-  url,
   ...props
 }: ComponentPropsWithoutRef<'a'> & {
+  context: DocsCopyPageItemContext;
   item: (typeof menuItems)[number];
   ref?: Ref<HTMLAnchorElement>;
-  url: string;
 }) {
   const Icon = item.icon;
+  const href = item.getHref(context);
+
+  if (!href) return null;
 
   return (
     <a
       {...props}
       ref={ref}
-      href={item.getHref(url)}
+      href={href}
       target="_blank"
       rel="noopener noreferrer"
     >
@@ -120,8 +144,18 @@ function DocsCopyPageTrigger({
   );
 }
 
-export function DocsCopyPage({ page, url }: { page: string; url: string }) {
+export function DocsCopyPage({
+  page,
+  sourcePath,
+  url,
+}: {
+  page: string;
+  sourcePath?: string;
+  url: string;
+}) {
   const { copyToClipboard, isCopied } = useCopyToClipboard();
+  const context = { sourcePath, url };
+  const visibleMenuItems = menuItems.filter((item) => item.getHref(context));
 
   return (
     <Popover>
@@ -144,9 +178,9 @@ export function DocsCopyPage({ page, url }: { page: string; url: string }) {
             align="end"
             className="animate-none! rounded-lg shadow-none"
           >
-            {menuItems.map((item) => (
+            {visibleMenuItems.map((item) => (
               <DropdownMenuItem key={item.key} asChild>
-                <DocsCopyPageItem item={item} url={url} />
+                <DocsCopyPageItem context={context} item={item} />
               </DropdownMenuItem>
             ))}
           </DropdownMenuContent>
@@ -162,7 +196,7 @@ export function DocsCopyPage({ page, url }: { page: string; url: string }) {
           align="start"
           className="w-52 origin-center! rounded-lg bg-background/70 p-1 shadow-none backdrop-blur-sm dark:bg-background/60"
         >
-          {menuItems.map((item) => (
+          {visibleMenuItems.map((item) => (
             <Button
               key={item.key}
               asChild
@@ -170,7 +204,7 @@ export function DocsCopyPage({ page, url }: { page: string; url: string }) {
               variant="ghost"
               className="w-full justify-start font-normal text-base *:[svg]:text-muted-foreground"
             >
-              <DocsCopyPageItem item={item} url={url} />
+              <DocsCopyPageItem context={context} item={item} />
             </Button>
           ))}
         </PopoverContent>

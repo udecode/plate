@@ -1,9 +1,18 @@
 ---
 title: Code
+description: Add inline code formatting.
 docs:
+  - route: /docs/basic-marks
+    title: Basic Marks
+  - route: /docs/components/code-node
+    title: Code Leaf
   - route: /docs/components/mark-toolbar-button
     title: Mark Toolbar Button
+  - route: /docs/code-block
+    title: Code Block
 ---
+
+Code applies the `code` leaf mark to inline text. Use [Code Block](/docs/code-block) for fenced or multiline code; this page is only for inline code spans.
 
 <ComponentPreview name="basic-marks-demo" />
 
@@ -11,9 +20,12 @@ docs:
 
 ## Features
 
-- Format inline code snippets and technical terms
-- Keyboard shortcut support for quick formatting
-- Renders as `<code>` HTML element by default
+- `KEYS.code` leaf mark.
+- Hard selection affinity.
+- HTML deserialization from `code` tags and Consolas font styles.
+- `<code>` rendering by default.
+- Registry `CodeLeaf` for styled inline code.
+- Optional Markdown-style input rule through `CodeRules`.
 
 </PackageInfo>
 
@@ -21,95 +33,113 @@ docs:
 
 <Steps>
 
-### Installation
+### Add Basic Marks
 
-The fastest way to add the code plugin is with the `BasicMarksKit`, which includes pre-configured `CodePlugin` along with other basic marks and their [Plate UI](/docs/installation/plate-ui) components.
+`BasicMarksKit` includes `CodePlugin`, `CodeLeaf`, the backtick input rule, and a `mod+e` shortcut.
 
 <ComponentSource name="basic-marks-kit" />
 
-- [`CodeLeaf`](/docs/components/code-node): Renders inline code elements.
-
-### Add Kit
-
-Add the kit to your plugins:
-
 ```tsx
 import { createPlateEditor } from 'platejs/react';
+
 import { BasicMarksKit } from '@/components/editor/plugins/basic-marks-kit';
 
-const editor = createPlateEditor({
-  plugins: [
-    // ...otherPlugins,
-    ...BasicMarksKit,
-  ],
+export const editor = createPlateEditor({
+  plugins: [...BasicMarksKit],
 });
+```
+
+### Add A Toolbar Button
+
+Use `MarkToolbarButton` with `KEYS.code`.
+
+```tsx
+import { Code2Icon } from 'lucide-react';
+import { KEYS } from 'platejs';
+
+import { MarkToolbarButton } from '@/components/ui/mark-toolbar-button';
+
+export function CodeToolbarButton() {
+  return (
+    <MarkToolbarButton nodeType={KEYS.code} tooltip="Code (⌘+E)">
+      <Code2Icon />
+    </MarkToolbarButton>
+  );
+}
 ```
 
 </Steps>
 
 ## Manual Usage
 
-<Steps>
-
-### Installation
+Install the mark package.
 
 ```bash
 npm install @platejs/basic-nodes
 ```
 
-### Add Plugin
-
-Include `CodePlugin` in your Plate plugins array when creating the editor.
+Add `CodePlugin` directly when you want the default `<code>` render.
 
 ```tsx
 import { CodePlugin } from '@platejs/basic-nodes/react';
 import { createPlateEditor } from 'platejs/react';
 
-const editor = createPlateEditor({
-  plugins: [
-    // ...otherPlugins,
-    CodePlugin,
-  ],
+export const editor = createPlateEditor({
+  plugins: [CodePlugin],
 });
 ```
 
-### Configure Plugin
-
-You can configure the `CodePlugin` with a custom component and keyboard shortcuts.
+Configure the registry leaf, input rule, and shortcut when you want the same behavior as the kit.
 
 ```tsx
+import { CodeRules } from '@platejs/basic-nodes';
 import { CodePlugin } from '@platejs/basic-nodes/react';
-import { createPlateEditor } from 'platejs/react';
+
 import { CodeLeaf } from '@/components/ui/code-node';
 
-const editor = createPlateEditor({
-  plugins: [
-    // ...otherPlugins,
-    CodePlugin.configure({
-      node: { component: CodeLeaf },
-      shortcuts: { toggle: { keys: 'mod+e' } },
-    }),
-  ],
+export const codePlugin = CodePlugin.configure({
+  inputRules: [CodeRules.markdown()],
+  node: { component: CodeLeaf },
+  shortcuts: { toggle: { keys: 'mod+e' } },
 });
 ```
 
-- `node.component`: Assigns [`CodeLeaf`](/docs/components/code-node) to render inline code elements.
-- `shortcuts.toggle`: Defines a keyboard [shortcut](/docs/plugin-shortcuts) to toggle code formatting.
+## Ownership
 
-### Add Toolbar Button
+| Surface | Owner | What It Does |
+|---------|-------|--------------|
+| `BaseCodePlugin` | `@platejs/basic-nodes` | Headless inline code mark, HTML parser, render tag, selection rule, and `toggle` transform. |
+| `CodePlugin` | `@platejs/basic-nodes/react` | React wrapper for the headless code mark. |
+| `CodeRules.markdown` | `@platejs/basic-nodes` | Optional backtick input rule. |
+| `CodeLeaf` | Registry UI | Styled inline code leaf using `PlateLeaf`. |
+| `CodeLeafStatic` | Registry UI | Static rendering version using `SlateLeaf`. |
+| `BasicMarksKit` | Registry | Adds `CodePlugin`, `CodeLeaf`, `CodeRules.markdown()`, and `mod+e`. |
+| `MarkToolbarButton` | Registry UI | Reads active mark state and calls the mark toggle hook. |
 
-You can add [`MarkToolbarButton`](/docs/components/mark-toolbar-button) to your [Toolbar](/docs/toolbar) to toggle code formatting.
+The package owns inline code semantics. The registry owns visual styling and toolbar placement.
 
-</Steps>
+## Behavior
 
-## Plugins
+| Behavior | Source |
+|----------|--------|
+| Mark key | `KEYS.code` |
+| Leaf behavior | `node.isLeaf: true` |
+| Toggle transform | `editor.tf.code.toggle()` calls `editor.tf.toggleMark(type)`. |
+| Selection affinity | `hard` |
+| HTML tags | `code` |
+| HTML styles | `font-family: Consolas` |
+| HTML guard | Skips code inside `pre` and paragraph-level Consolas blocks. |
+| Render output | `code` |
+| Kit shortcut | `mod+e` |
 
-### `CodePlugin`
+## API Reference
 
-Plugin for inline code text formatting. Renders as `<code>` HTML element by default.
+| API | Package | Use |
+|-----|---------|-----|
+| `BaseCodePlugin` | `@platejs/basic-nodes` | Headless inline code plugin. |
+| `CodePlugin` | `@platejs/basic-nodes/react` | React inline code plugin. |
+| `CodeRules.markdown()` | `@platejs/basic-nodes` | Creates the backtick mark input rule. |
+| `tf.code.toggle()` | `@platejs/basic-nodes` | Toggles the inline code mark at the selection. |
+| `CodeLeaf` | Registry UI | Styled client inline code leaf. |
+| `CodeLeafStatic` | Registry UI | Styled static inline code leaf. |
 
-## Transforms
-
-### `tf.code.toggle`
-
-Toggles the code formatting for the selected text. 

@@ -26,8 +26,12 @@ const MDX_EXTENSION_REGEX = /\.mdx$/;
 const CN_EXTENSION_REGEX = /\.cn$/;
 const CONTENT_DIR = path.join(process.cwd(), '../../content/docs');
 const META_FILE = path.join(CONTENT_DIR, 'meta.json');
-const SOURCE_INDEX = path.join(process.cwd(), '.source/index.ts');
+const SOURCE_FILES = [
+  path.join(process.cwd(), '.source/index.ts'),
+  path.join(process.cwd(), '.source/server.ts'),
+];
 const SOURCE_INFO_PATH_REGEX = /info: {"path":"([^"]+)"/g;
+const SOURCE_SERVER_DOC_PATH_REGEX = /"([^"]+\.mdx)":\s*__fd_glob_\d+/g;
 const ROUTE_GROUP_REGEX = /^\(.+\)$/;
 
 const appOnlyDocsRoutes = new Set([
@@ -127,9 +131,33 @@ async function countCnMdxFiles(dir: string): Promise<number> {
 }
 
 async function getGeneratedSourcePaths() {
-  const sourceIndex = await fs.readFile(SOURCE_INDEX, 'utf8');
-  return [...sourceIndex.matchAll(SOURCE_INFO_PATH_REGEX)].map(
-    (match) => match[1]
+  for (const sourceFile of SOURCE_FILES) {
+    let source: string;
+
+    try {
+      source = await fs.readFile(sourceFile, 'utf8');
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+        continue;
+      }
+
+      throw error;
+    }
+
+    const sourcePaths = [
+      ...[...source.matchAll(SOURCE_INFO_PATH_REGEX)].map((match) => match[1]),
+      ...[...source.matchAll(SOURCE_SERVER_DOC_PATH_REGEX)].map(
+        (match) => match[1]
+      ),
+    ];
+
+    if (sourcePaths.length > 0) {
+      return sourcePaths;
+    }
+  }
+
+  throw new Error(
+    'Expected Fumadocs generated source file to include MDX paths'
   );
 }
 

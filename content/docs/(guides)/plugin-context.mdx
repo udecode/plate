@@ -1,168 +1,203 @@
 ---
 title: Plugin Context
-description: Understanding and utilizing the Plugin Context in Plate plugins.
+description: Use editor, plugin, option, API, and transform context inside Plate plugins.
 ---
 
-The Plugin Context is an object available in all plugin methods, providing access to the editor instance, plugin configuration, and utility functions.
+Plugin context is the object Plate passes to plugin configuration callbacks,
+handlers, extensions, transforms, and render components. It gives you the
+resolved editor, current plugin, node type, `api`, `tf`, and option helpers
+without reaching through global state. Use it inside plugin-owned code; use
+editor methods or React hooks when code runs outside a plugin callback.
 
-## Accessing Plugin Context
+## Context Shape
 
-### Plugin Methods
+`PlatePluginContext` extends the shared plugin context with a React
+`PlateEditor`. The same helper names are available in headless Slate plugins,
+but the editor type is `SlateEditor`.
 
-The Plugin Context is available as the first parameter in all plugin methods:
+| Property | Use for |
+| --- | --- |
+| `editor` | The resolved editor instance. |
+| `plugin` | The resolved plugin configuration for the current plugin. |
+| `type` | The plugin node type, usually `plugin.node.type`. |
+| `api` | Editor API plus plugin-specific API methods. |
+| `tf` | Editor transforms plus plugin-specific transforms. |
+| `getOption(key, ...args)` | Read an option, selector, or `'state'` from the current plugin. |
+| `getOptions()` | Read the full option state for the current plugin. |
+| `setOption(key, value)` | Update one option in the current plugin store. |
+| `setOptions(optionsOrDraft)` | Update multiple options or mutate a draft. |
 
-```ts
-const MyPlugin = createPlatePlugin({
-  key: 'myPlugin',
+## Plugin Methods
+
+Handlers receive context plus the event or payload for that handler. Use the
+context helpers instead of closing over editor state.
+
+```ts title="counter-plugin.ts" showLineNumbers
+import { createPlatePlugin } from 'platejs/react';
+
+export const CounterPlugin = createPlatePlugin({
+  key: 'counter',
+  options: {
+    count: 0,
+    enabled: true,
+  },
   handlers: {
-    onKeyDown: (ctx) => {
-      // ctx is the Plugin Context
-      console.info(ctx.editor, ctx.plugin);
+    onKeyDown: ({ event, getOption, setOption, type }) => {
+      if (!getOption('enabled')) return;
+
+      if (event.key === '+') {
+        setOption('count', getOption('count') + 1);
+        console.info(`${type} count incremented`);
+      }
     },
   },
 });
 ```
 
-### `getEditorPlugin`
+`getOption` and `setOption` are scoped to `CounterPlugin` in this example.
 
-This function is particularly useful when you need to access the context of another plugin. It allows for cross-plugin communication and interaction, enabling more complex and interconnected plugin behaviors.
+## Extension Callbacks
 
-```ts
-const MyPlugin = createPlatePlugin({
-  key: 'myPlugin',
+Configuration, extension, selector, API, transform, and editor override callbacks
+also receive plugin context.
+
+```ts title="counter-plugin.ts" showLineNumbers
+import { createPlatePlugin } from 'platejs/react';
+
+export const CounterPlugin = createPlatePlugin({
+  key: 'counter',
+  options: {
+    count: 0,
+  },
+})
+  .extendSelectors(({ getOptions }) => ({
+    label: () => `Count: ${getOptions().count}`,
+  }))
+  .extendApi(({ getOption }) => ({
+    isEmpty: () => getOption('count') === 0,
+  }));
+```
+
+Selectors are readable through `getOption` and subscribable through
+`usePluginOption`.
+
+## Another Plugin
+
+Use `getEditorPlugin(editor, Plugin)` when plugin-owned code needs another
+plugin's context. The editor argument is required.
+
+```ts title="link-aware-plugin.ts" showLineNumbers
+import { LinkPlugin } from '@platejs/link/react';
+import { createPlatePlugin, getEditorPlugin } from 'platejs/react';
+
+export const LinkAwarePlugin = createPlatePlugin({
+  key: 'linkAware',
   handlers: {
-    onKeyDown: ({ editor }) => {
-      const linkCtx = getEditorPlugin(LinkPlugin);
+    onKeyDown: ({ editor, event }) => {
+      if (event.key !== 'Enter') return;
+
+      const link = getEditorPlugin(editor, LinkPlugin);
+
+      console.info(`Link node type: ${link.type}`);
     },
   },
 });
 ```
 
-### `useEditorPlugin`
+Use this for cross-plugin reads. Keep cross-plugin writes rare; they couple two
+plugins tightly.
 
-In React components, you can use the `useEditorPlugin` hook to access the Plugin Context:
+## React Components
 
-```ts
-const MyComponent = () => {
-  const { editor, plugin, type } = useEditorPlugin(MyPlugin);
-  
-  return <div>{type}</div>;
-};
+Use `useEditorPlugin` inside a component rendered under `<Plate>`. It returns
+the same context plus the editor store.
+
+```tsx title="counter-badge.tsx" showLineNumbers
+import { useEditorPlugin, usePluginOption } from 'platejs/react';
+
+import { CounterPlugin } from './counter-plugin';
+
+export function CounterBadge() {
+  const { type } = useEditorPlugin(CounterPlugin);
+  const count = usePluginOption(CounterPlugin, 'count');
+  const label = usePluginOption(CounterPlugin, 'label');
+
+  return (
+    <span data-plugin-type={type}>
+      {label} ({count})
+    </span>
+  );
+}
 ```
 
-## Plugin Context Properties
+Use `usePluginOptions` when a component needs a derived value from several
+options.
 
-### `editor`
+```tsx title="counter-badge.tsx" showLineNumbers
+import { usePluginOptions } from 'platejs/react';
 
-The current `PlateEditor` instance:
+import { CounterPlugin } from './counter-plugin';
 
-```ts
-const MyPlugin = createPlatePlugin({
-  key: 'myPlugin',
-  handlers: {
-    onChange: ({ editor }) => {
-      console.info('Editor value:', editor.children);
+export function CounterStatus() {
+  const status = usePluginOptions(CounterPlugin, (state) =>
+    state.count === 0 ? 'empty' : 'active'
+  );
+
+  return <span>{status}</span>;
+}
+```
+
+For code outside the nearest `<Plate>` provider, pass an editor explicitly with
+`useEditorPluginOption` or `useEditorPluginOptions`.
+
+## Option State
+
+Plugin options are stored per editor. Updating one editor's plugin options does
+not update another editor.
+
+```ts title="counter-plugin.ts" showLineNumbers
+export const CounterPluginWithInitialCount = CounterPlugin.configure(
+  ({ getOptions }) => ({
+    options: {
+      count: getOptions().count + 1,
     },
-  },
-});
+  })
+);
 ```
 
-### `plugin`
+`setOptions` accepts either a partial object or a draft callback.
 
-The current plugin configuration:
+```ts title="counter-actions.ts" showLineNumbers
+import { getEditorPlugin, type PlateEditor } from 'platejs/react';
 
-```ts
-const MyPlugin = createPlatePlugin({
-  key: 'myPlugin',
-  handlers: {
-    onKeyDown: ({ plugin }) => {
-      console.info('Plugin key:', plugin.key);
-    },
-  },
-});
+import { CounterPlugin } from './counter-plugin';
+
+export function resetCounter(editor: PlateEditor) {
+  const { setOptions } = getEditorPlugin(editor, CounterPlugin);
+
+  setOptions({
+    count: 1,
+  });
+
+  setOptions((draft) => {
+    draft.count += 1;
+  });
+}
 ```
 
-### `getOption`
+Plate reports `OPTION_UNDEFINED` through the debug API when `getOption`,
+`setOption`, or `usePluginOption` targets a missing option or selector.
 
-A function to get a specific option value for the plugin:
+## API Reference
 
-```ts
-const MyPlugin = createPlatePlugin({
-  key: 'myPlugin',
-  options: { myOption: 'default' },
-  handlers: {
-    onClick: ({ getOption }) => {
-      const myOption = getOption('myOption');
-      console.info('My option value:', myOption);
-    },
-  },
-});
-```
+| Helper | Scope | Notes |
+| --- | --- | --- |
+| `getEditorPlugin(editor, plugin)` | Any editor code. | Returns plugin context for the given editor and plugin. |
+| `useEditorPlugin(plugin, id?)` | React under `<Plate>`. | Returns plugin context plus `store`. |
+| `usePluginOption(plugin, key, ...args)` | React under `<Plate>`. | Subscribes to one option, selector, or `'state'`. |
+| `usePluginOptions(plugin, selector, options?)` | React under `<Plate>`. | Subscribes to a selected value from the option state. |
+| `useEditorPluginOption(editor, plugin, key, ...args)` | React with explicit editor. | Use outside the closest editor provider. |
+| `useEditorPluginOptions(editor, plugin, selector, options?)` | React with explicit editor. | Explicit-editor variant of `usePluginOptions`. |
 
-### `getOptions`
-
-A function to get all options for the plugin:
-
-```ts
-const MyPlugin = createPlatePlugin({
-  key: 'myPlugin',
-  options: { option1: 'value1', option2: 'value2' },
-  handlers: {
-    onClick: ({ getOptions }) => {
-      const options = getOptions();
-      console.info('All options:', options);
-    },
-  },
-});
-```
-
-### `setOption`
-
-A function to set a specific option value for the plugin:
-
-```ts
-const MyPlugin = createPlatePlugin({
-  key: 'myPlugin',
-  options: { count: 0 },
-  handlers: {
-    onClick: ({ setOption }) => {
-      setOption('count', 1);
-    },
-  },
-});
-```
-
-### `setOptions`
-
-A function to set multiple options for the plugin:
-
-```ts
-const MyPlugin = createPlatePlugin({
-  key: 'myPlugin',
-  options: { option1: 'value1', option2: 'value2' },
-  handlers: {
-    onClick: ({ setOptions }) => {
-      setOptions({
-        option1: 'newValue1',
-        option2: 'newValue2',
-      });
-    },
-  },
-});
-```
-
-### `type`
-
-The node type associated with the plugin:
-
-```ts
-const MyPlugin = createPlatePlugin({
-  key: 'myPlugin',
-  node: { type: 'myNodeType' },
-  handlers: {
-    onKeyDown: ({ type }) => {
-      console.info('Node type:', type);
-    },
-  },
-});
-```
+For plugin extension methods, see [Plugin Methods](/docs/plugin-methods). For
+plugin configuration, see [Plugin](/docs/plugin).

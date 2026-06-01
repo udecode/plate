@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 
 import fs from 'node:fs';
+import { spawnSync } from 'node:child_process';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(scriptDir, '../../../..');
@@ -13,9 +14,41 @@ const dashboardJsonPath = path.join(syncDir, 'dashboard.json');
 const dashboardHtmlPath = path.join(syncDir, 'dashboard.html');
 
 const args = process.argv.slice(2);
-if (args.length > 0 && args[0] !== 'dashboard') {
-  console.error('Usage: pnpm sync-shadcn dashboard');
+const shouldOpenDashboard = !args.includes('--no-open');
+const commandArgs = args.filter((arg) => arg !== '--no-open');
+
+if (commandArgs.length > 0 && commandArgs[0] !== 'dashboard') {
+  console.error('Usage: pnpm sync-shadcn dashboard [--no-open]');
   process.exit(1);
+}
+
+function openFile(filePath) {
+  if (!shouldOpenDashboard || process.env.SYNC_SHADCN_NO_OPEN === '1') {
+    return { skipped: true };
+  }
+
+  if (process.env.CI === 'true') {
+    return { skipped: true, reason: 'CI=true' };
+  }
+
+  const opener =
+    process.platform === 'darwin'
+      ? { command: 'open', args: [filePath] }
+      : process.platform === 'win32'
+        ? { command: 'cmd', args: ['/c', 'start', '', filePath] }
+        : { command: 'xdg-open', args: [filePath] };
+
+  const result = spawnSync(opener.command, opener.args, {
+    stdio: 'ignore',
+  });
+
+  if (result.error || result.status !== 0) {
+    return {
+      error: result.error?.message ?? `${opener.command} exited ${result.status}`,
+    };
+  }
+
+  return { opened: true };
 }
 
 const stateMeta = {
@@ -1331,6 +1364,14 @@ fs.writeFileSync(dashboardHtmlPath, renderHtml(dashboard));
 
 console.log(`Dashboard: ${path.relative(repoRoot, dashboardHtmlPath)}`);
 console.log(`Data: ${path.relative(repoRoot, dashboardJsonPath)}`);
+const openResult = openFile(dashboardHtmlPath);
+if (openResult.opened) {
+  console.log(`Opened: ${pathToFileURL(dashboardHtmlPath).href}`);
+} else if (openResult.error) {
+  console.warn(`Open failed: ${openResult.error}`);
+} else if (openResult.reason) {
+  console.log(`Open skipped: ${openResult.reason}`);
+}
 if (deletedScreenshotFiles.length > 0) {
   console.log(`Deleted screenshots: ${deletedScreenshotFiles.length}`);
 }

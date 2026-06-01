@@ -1,9 +1,18 @@
 ---
 title: Superscript
+description: Format inline text above the baseline.
 docs:
-  - route: /docs/components/mark-toolbar-button
-    title: Mark Toolbar Button
+  - route: /docs/basic-marks
+    title: Basic Marks
+  - route: /docs/subscript
+    title: Subscript
+  - route: /docs/components/more-toolbar-button
+    title: More Toolbar Button
+  - route: /docs/plugin-shortcuts
+    title: Plugin Shortcuts
 ---
+
+Superscript applies the `superscript` leaf mark to selected text. Its toggle transform removes `subscript`, so the same text cannot keep both vertical-position marks through the plugin API.
 
 <ComponentPreview name="basic-marks-demo" />
 
@@ -11,9 +20,12 @@ docs:
 
 ## Features
 
-- Format text as superscript for mathematical expressions or footnotes
-- Keyboard shortcut support for quick formatting
-- Renders as `<sup>` HTML element by default
+- `KEYS.sup` leaf mark.
+- Directional selection affinity.
+- HTML deserialization from `sup` and `vertical-align: super`.
+- `<sup>` rendering by default.
+- Optional Markdown-style input rule through `SuperscriptRules`.
+- Mutual exclusion with `KEYS.sub`.
 
 </PackageInfo>
 
@@ -21,90 +33,98 @@ docs:
 
 <Steps>
 
-### Installation
+### Add Basic Marks
 
-The fastest way to add the superscript plugin is with the `BasicMarksKit`, which includes pre-configured `SuperscriptPlugin` along with other basic marks and their [Plate UI](/docs/installation/plate-ui) components.
+`BasicMarksKit` includes `SuperscriptPlugin`, the `^` input rule, and a `mod+period` shortcut.
 
 <ComponentSource name="basic-marks-kit" />
 
-### Add Kit
-
-Add the kit to your plugins:
-
 ```tsx
 import { createPlateEditor } from 'platejs/react';
+
 import { BasicMarksKit } from '@/components/editor/plugins/basic-marks-kit';
 
-const editor = createPlateEditor({
-  plugins: [
-    // ...otherPlugins,
-    ...BasicMarksKit,
-  ],
+export const editor = createPlateEditor({
+  plugins: [...BasicMarksKit],
 });
+```
+
+### Add a Toolbar Control
+
+The registry `MoreToolbarButton` toggles superscript from the More menu and removes subscript.
+
+```tsx
+import { MoreToolbarButton } from '@/components/ui/more-toolbar-button';
+
+export function FormattingMoreMenu() {
+  return <MoreToolbarButton />;
+}
 ```
 
 </Steps>
 
 ## Manual Usage
 
-<Steps>
-
-### Installation
+Install the mark package.
 
 ```bash
 npm install @platejs/basic-nodes
 ```
 
-### Add Plugin
-
-Include `SuperscriptPlugin` in your Plate plugins array when creating the editor.
+Add `SuperscriptPlugin` directly when you want the default `<sup>` render.
 
 ```tsx
 import { SuperscriptPlugin } from '@platejs/basic-nodes/react';
 import { createPlateEditor } from 'platejs/react';
 
-const editor = createPlateEditor({
-  plugins: [
-    // ...otherPlugins,
-    SuperscriptPlugin,
-  ],
+export const editor = createPlateEditor({
+  plugins: [SuperscriptPlugin],
 });
 ```
 
-### Configure Plugin
-
-You can configure the `SuperscriptPlugin` with custom keyboard shortcuts.
+Configure the input rule and shortcut when you want the same behavior as the kit.
 
 ```tsx
+import { SuperscriptRules } from '@platejs/basic-nodes';
 import { SuperscriptPlugin } from '@platejs/basic-nodes/react';
-import { createPlateEditor } from 'platejs/react';
 
-const editor = createPlateEditor({
-  plugins: [
-    // ...otherPlugins,
-    SuperscriptPlugin.configure({
-      shortcuts: { toggle: { keys: 'mod+period' } },
-    }),
-  ],
+export const superscriptPlugin = SuperscriptPlugin.configure({
+  inputRules: [SuperscriptRules.markdown()],
+  shortcuts: { toggle: { keys: 'mod+period' } },
 });
 ```
 
-- `shortcuts.toggle`: Defines a keyboard [shortcut](/docs/plugin-shortcuts) to toggle superscript formatting.
+## Ownership
 
-### Add Toolbar Button
+| Surface | Owner | What It Does |
+|---------|-------|--------------|
+| `BaseSuperscriptPlugin` | `@platejs/basic-nodes` | Headless superscript mark, HTML parser, render tag, selection rule, and `toggle` transform. |
+| `SuperscriptPlugin` | `@platejs/basic-nodes/react` | React wrapper for the headless superscript mark. |
+| `SuperscriptRules.markdown` | `@platejs/basic-nodes` | Optional `^` mark input rule factory. |
+| `BasicMarksKit` | Registry | Adds `SuperscriptPlugin`, the input rule, and `mod+period`. |
+| `MoreToolbarButton` | Registry UI | Calls `editor.tf.toggleMark(KEYS.sup, { remove: KEYS.sub })`. |
 
-You can add [`MarkToolbarButton`](/docs/components/mark-toolbar-button) to your [Toolbar](/docs/toolbar) to toggle superscript formatting.
+The package owns superscript semantics. The registry owns shortcut configuration and toolbar placement.
 
-</Steps>
+## Behavior
 
-## Plugins
+| Behavior | Source |
+|----------|--------|
+| Mark key | `KEYS.sup` (`superscript`) |
+| Leaf behavior | `node.isLeaf: true` |
+| Toggle transform | `editor.tf.superscript.toggle()` calls `editor.tf.toggleMark(type, { remove: editor.getType(KEYS.sub) })`. |
+| Selection affinity | `directional` |
+| HTML tags | `sup` |
+| HTML styles | `vertical-align: super` |
+| Render output | `sup` |
+| Kit input rule | `SuperscriptRules.markdown()` |
+| Kit shortcut | `mod+period` |
 
-### `SuperscriptPlugin`
+## API Reference
 
-Plugin for superscript text formatting. Renders as `<sup>` HTML element by default.
-
-## Transforms
-
-### `tf.superscript.toggle`
-
-Toggles the superscript formatting for the selected text. 
+| API | Package | Use |
+|-----|---------|-----|
+| `BaseSuperscriptPlugin` | `@platejs/basic-nodes` | Headless superscript plugin. |
+| `SuperscriptPlugin` | `@platejs/basic-nodes/react` | React superscript plugin. |
+| `SuperscriptRules.markdown()` | `@platejs/basic-nodes` | Creates the `^` mark input rule. |
+| `tf.superscript.toggle()` | `@platejs/basic-nodes` | Toggles superscript and removes subscript. |

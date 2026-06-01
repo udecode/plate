@@ -1,170 +1,187 @@
 ---
 title: Plate Controller
-description: API reference for PlateController component.
+description: API reference for PlateController.
 ---
 
-**`PlateController`** is an optional provider component that facilitates accessing specific [Plate Stores](/docs/api/core/store) from outside their respective **`Plate`** components.
+`PlateController` lets UI outside a single `<Plate>` subtree read the active editor store. Use it for shared toolbars, side panels, inspectors, and multi-editor shells.
 
-## PlateController Store
+## Quick Use
+
+Wrap the shared UI and all editors in `PlateController`. `PlateContent` registers each mounted editor store through `PlateControllerEffect`.
+
+```tsx title="components/editor-shell.tsx" showLineNumbers
+import {
+  Plate,
+  PlateContent,
+  PlateController,
+  usePlateEditor,
+} from 'platejs/react';
+
+export function EditorShell() {
+  return (
+    <PlateController>
+      <ActiveEditorLabel />
+      <MainEditor />
+      <SecondaryEditor />
+    </PlateController>
+  );
+}
+
+function MainEditor() {
+  const editor = usePlateEditor({ id: 'main' });
+
+  return (
+    <Plate editor={editor}>
+      <PlateContent />
+    </Plate>
+  );
+}
+
+function SecondaryEditor() {
+  const editor = usePlateEditor({ id: 'secondary' });
+
+  return (
+    <Plate editor={editor} primary={false}>
+      <PlateContent />
+    </Plate>
+  );
+}
+```
+
+`primary` belongs on `Plate`, not on `createPlateEditor` or `usePlateEditor`.
+
+## Active Editor Lookup
+
+Hooks such as `useEditorRef()` and `useEditorMounted()` normally read the nearest `Plate` store. Inside `PlateController`, the same hooks can resolve a store outside a specific editor tree.
+
+| Lookup | Behavior |
+|--------|----------|
+| `useEditorRef('main')` | Resolves the store registered for `main`. |
+| `useEditorRef()` | Resolves the active editor store, then the first mounted primary editor store. |
+| Missing store with controller | Returns the fallback store, so `useEditorRef()` returns a fallback editor. |
+| Missing store without controller | Throws `Plate hooks must be used inside a Plate or PlateController`. |
+
+Controller lookup order without an explicit ID:
+
+1. `activeId`
+2. each ID in `primaryEditorIds`
+3. fallback store when no store is available
+
+## Fallback Editors
+
+The fallback editor exists so read-only UI can render while no editor is active. It is not safe for transforms.
+
+```tsx title="components/active-editor-label.tsx"
+import { useEditorMounted, useEditorRef } from 'platejs/react';
+
+export function ActiveEditorLabel() {
+  const editor = useEditorRef();
+  const mounted = useEditorMounted();
+
+  if (!mounted || editor.meta.isFallback) {
+    return <p>No editor selected.</p>;
+  }
+
+  return <p>Active editor: {editor.id}</p>;
+}
+```
+
+<Callout type="warning" title="Guard transforms">
+  Check `useEditorMounted(id?)` or `!editor.meta.isFallback` before running
+  transforms from UI that lives under `PlateController`.
+</Callout>
+
+## Registration
+
+`PlateControllerEffect` runs inside `PlateContent`. It registers the current `Plate` store by editor ID, appends primary editors to `primaryEditorIds`, removes them on unmount, and sets `activeId` when Slate focus enters that editor.
+
+| State | Owner | Behavior |
+|-------|-------|----------|
+| `editorStores` | `PlateControllerEffect` | Maps mounted editor IDs to their Jotai stores. Unmounted IDs are set to `null`. |
+| `primaryEditorIds` | `PlateControllerEffect` | Appends mounted editors whose `Plate` store has `primary: true`; removes them on unmount. |
+| `activeId` | `PlateControllerEffect` | Set to the focused editor ID. Cleared on unmount when the unmounted editor was active. |
+
+## API Reference
+
+### `PlateController`
+
+Provider for cross-editor lookup state.
 
 <API name="PlateController">
-The PlateController Store contains the information required to fetch a Plate Store based on its **`id`**, and to determine which **`id`** is currently active.
-
-<APIState>
-<APIItem name="activeId" type="string | null">
-The **`id`** of the most recently focused Plate editor.
-
-- **Default:** `null`
-</APIItem>
-
-<APIItem name="primaryEditorIds" type="string[]">
-The **`id`**'s of all primary Plate editors. By default, an editor is considered primary unless **`primary={false}`** was passed to its **`Plate`** component.
-
-- **Default:** `[]`
-</APIItem>
-
-<APIItem name="editorStores" type="Record<string, JotaiStore | null>">
-A map from the **`id`** of each mounted Plate editor to the **`JotaiStore`** corresponding to that editor's Plate Store.
-
-- **Default:** `{}`
-</APIItem>
-</APIState>
+<APIProps>
+  <APIItem name="children" type="React.ReactNode">
+    Shared UI and editor trees that should participate in controller lookup.
+  </APIItem>
+  <APIItem name="activeId" type="string | null" optional>
+    Initial active editor ID.
+  </APIItem>
+  <APIItem name="editorStores" type="Record<string, JotaiStore | null>" optional>
+    Initial editor-store map.
+  </APIItem>
+  <APIItem name="primaryEditorIds" type="string[]" optional>
+    Initial primary editor ID list.
+  </APIItem>
+</APIProps>
 </API>
 
-## Usage Patterns
+### Controller Store State
 
-### Specific Editor by ID
+| State | Type | Default |
+|-------|------|---------|
+| `activeId` | `string \| null` | `null` |
+| `editorStores` | `Record<string, JotaiStore \| null>` | `{}` |
+| `primaryEditorIds` | `string[]` | `[]` |
 
-**`PlateController`** can be used to access the store of a specific editor using its **`id`**. Note that if a matching editor cannot be found, an immutable fallback editor will be returned instead.
+### `usePlateControllerStore`
 
-```tsx
-const App = withHoc(PlateController, () => {
-  const mainEditor = useEditorRef('main');
-  
-  useEffect(() => {
-    if (!mainEditor.meta.isFallback) {
-      console.info('Editor mounted', mainEditor);
-    }
-  }, [mainEditor]);
-  
-  return (
-    <>
-      <Plate editor={createPlateEditor({ id: 'main' })}>
-        <PlateContent />
-      </Plate>
-    
-      <Plate editor={createPlateEditor({ id: 'secondary' })}>
-        <PlateContent />
-      </Plate>
-    </>
-  );
-});
-```
+Resolve a Plate Jotai store from the controller.
 
-### Active Editor
+<API name="usePlateControllerStore">
+<APIParameters>
+  <APIItem name="idProp" type="string" optional>
+    Editor ID to resolve directly.
+  </APIItem>
+</APIParameters>
+<APIReturns type="JotaiStore | null">
+  Matching editor store, active editor store, first mounted primary editor store, or `null`.
+</APIReturns>
+</API>
 
-If hooks like **`useEditorRef`** are used inside a **`PlateController`** without an explicit **`id`**, they will resolve to the currently active editor.
+### `usePlateControllerExists`
 
-The active editor is determined as follows:
+Check whether a local controller provider exists.
 
-1. If some editor has been focused, return the last such editor.
-2. If some editor is primary, return the first-mounted such editor.
-3. Otherwise, return an immutable fallback editor.
+<API name="usePlateControllerExists">
+<APIReturns type="boolean">
+  `true` when `usePlateControllerLocalStore()` finds a controller store.
+</APIReturns>
+</API>
 
-```tsx
-const App = withHoc(PlateController, () => {
-  const activeEditorId = useEditorId();
-  const isFallback = !useEditorMounted();
-  
-  const message = isFallback
-    ? 'Please focus an editor'
-    : `Active editor: ${activeEditorId}`;
-  
-  return (
-    <main>
-      <p>{message}</p>
-      
-      <Plate editor={createPlateEditor({ id: 'main', primary: false })}>
-        <PlateContent />
-      </Plate>
-    
-      <Plate editor={createPlateEditor({ id: 'secondary', primary: false })}>
-        <PlateContent />
-      </Plate>
-    </main>
-  );
-});
-```
+### `usePlateControllerLocalStore`
 
-## Dealing with Fallback Editors
+Read the local controller atom store.
 
-When a hook called inside a **`PlateController`** fails to locate a matching Plate Store, it will use Plate Store's default values. The default value for **`editor`** is **`createPlateFallbackEditor()`**. A fallback editor works like an empty Plate editor with no plugins, except it throws a runtime error if it receives a Slate operation (i.e. it is immutable and must not be used in transforms).
+<API name="usePlateControllerLocalStore">
+<APIParameters>
+  <APIItem name="options" type="string | { scope?: string; warnIfNoStore?: boolean }" optional>
+    Scope options passed to the generated controller store hook. A string is treated as `scope`.
+  </APIItem>
+</APIParameters>
+<APIReturns type="PlateControllerStore">
+  Local controller store hook result.
+</APIReturns>
+</API>
 
-The rationale behind this is to ensure that code that queries the editor (such as determining whether toolbar buttons are active) fails silently with a sensible default value, while code that transforms the editor (such as pressing a toolbar button) fails loudly with an error.
+### `PlateControllerEffect`
 
-There are two ways to determine if you're working with a fallback editor or a real editor:
+Register a `Plate` store with the nearest controller.
 
-- **`useEditorMounted`** returns **`false`** if no mounted editor could be resolved
-- **`editor.meta.isFallback`** is **`true`** for fallback editors
+<API name="PlateControllerEffect">
+<APIProps>
+  <APIItem name="id" type="string" optional>
+    Editor ID to register. Defaults to the ID from the current Plate store.
+  </APIItem>
+</APIProps>
+</API>
 
-When using hooks like **`useEditorRef`** inside a **`PlateController`**, you should code defensively to ensure that fallback editors are handled appropriately should they arise. For example, you can disable toolbar buttons if **`useEditorMounted`** returns **`false`**, or ignore events if **`editor.meta.isFallback`** is **`true`**.
-
-```tsx
-import { KEYS } from 'platejs';
-
-const App = withHoc(PlateController, () => {
-  const activeEditor = useEditorRef();
-  
-  const toggleBold = () => {
-    if (activeEditor.meta.isFallback) return;
-    activeEditor.tf.toggleMark(KEYS.bold);
-  };
-  
-  return (
-    <main>
-      <button type="button" onClick={toggleBold}>
-        Bold
-      </button>
-      
-      <Plate editor={createPlateEditor({ id: 'main', primary: false })}>
-        <PlateContent />
-      </Plate>
-    
-      <Plate editor={createPlateEditor({ id: 'secondary', primary: false })}>
-        <PlateContent />
-      </Plate>
-    </main>
-  );
-});
-```
-
-```tsx
-const App = withHoc(PlateController, () => {
-  const activeEditor = useEditorRef();
-  const isFallback = !useEditorMounted();
-  
-  const toggleBold = () => {
-    activeEditor.tf.toggleMark(KEYS.bold);
-  };
-  
-  return (
-    <main>
-      <button
-        type="button"
-        onClick={toggleBold}
-        disabled={isFallback}
-      >
-        Bold
-      </button>
-      
-      <Plate editor={createPlateEditor({ id: 'main', primary: false })}>
-        <PlateContent />
-      </Plate>
-    
-      <Plate editor={createPlateEditor({ id: 'secondary', primary: false })}>
-        <PlateContent />
-      </Plate>
-    </main>
-  );
-});
-```
+`PlateContent` renders `PlateControllerEffect` for you. Render it directly only when you build a custom content surface that still needs controller registration.

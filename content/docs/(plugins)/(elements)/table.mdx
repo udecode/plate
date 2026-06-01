@@ -640,6 +640,10 @@ Checks if the border of a table cell or the table itself is hidden based on the 
 </APIReturns>
 </API>
 
+## Editing Behavior
+
+Table editing behavior is split across table transforms and plugin extensions. Use `tf.table.merge` and `tf.table.split` for merge controls, `tf.moveSelectionFromCell` for keyboard navigation out of cells, and the table extension hooks below for deletion, paste, normalization, and fragment handling.
+
 ## Transforms
 
 ### `tf.insert.table`
@@ -1185,4 +1189,3 @@ A hook that returns the size (width and minimum height) of a table cell.
   </APIItem>
 </APIReturns>
 </API>
-

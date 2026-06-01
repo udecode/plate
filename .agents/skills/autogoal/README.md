@@ -26,8 +26,9 @@ can carry the evidence.
 
 1. Define the outcome, completion threshold, verification surface, constraints,
    boundaries, and blocked condition.
-2. Create or continue the active Codex goal.
-3. Create a plan from a built-in or project template.
+2. Create or continue the active Codex goal with a short objective handle.
+3. Create a plan from a built-in or project template and put the full contract
+   there.
 4. Work in slices and record evidence as you go.
 5. Run autoreview, then fix or record accepted findings.
 6. Run the completion check.

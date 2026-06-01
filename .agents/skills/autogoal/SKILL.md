@@ -288,22 +288,25 @@ A strong goal defines eight things:
 8. Blocked stop condition: when to stop and report the blocker, evidence, and
    next input needed.
 
-Use this objective shape:
+The `create_goal.objective` field is only a short handle for the active goal.
+Keep it under 240 characters. Put the full contract in the goal plan, not in
+the tool objective.
+
+Use this tool-objective shape:
 
 ```txt
-<desired end state>, complete only when <quantitative or auditable threshold>,
-verified by <specific evidence>, and when the active goal plan passes
-`node .agents/skills/autogoal/scripts/check-complete.mjs <docs/plans/path>`, while
-preserving <constraints>. Use flow mode <one-shot execution | agent-led plan
-hardening | collaborative planning> and <allowed inputs/tools/boundaries>.
-Maintain goal plan <docs/plans/path>. Between iterations, <progress log and
-next-move policy>. If blocked or no valid path remains, report <attempts,
-evidence, blocker, and needed input>.
+<desired end state>; done when <short threshold>; plan <docs/plans/path>.
 ```
+
+Do not put commands, full pass schedules, long issue lists, constraints,
+boundaries, iteration policy, or blocked reports in `create_goal.objective`.
+Those belong in the plan sections.
 
 ## Measurable Outcome Gate
 
-Before calling `create_goal`, rewrite vague objectives into measurable ones.
+Before calling `create_goal`, rewrite vague objectives into measurable ones,
+then compress the tool objective to a short handle. The plan records the full
+contract.
 
 Required:
 
@@ -345,9 +348,9 @@ closed, not that the work is true.
 
 Use the hybrid rule for every goal:
 
-1. The goal objective names the real outcome, threshold, verification surface,
-   constraints, boundaries, and blocked condition.
-2. The `docs/plans` goal plan records the fresh evidence for that threshold.
+1. The goal tool objective names the outcome, short threshold, and plan path.
+2. The `docs/plans` goal plan records the verification surface, constraints,
+   boundaries, blocked condition, fresh evidence, and completion threshold.
 3. `node .agents/skills/autogoal/scripts/check-complete.mjs <docs/plans/path>` is
    the final mechanical gate before `update_goal(status: complete)`.
 
@@ -548,32 +551,36 @@ Gate closure rules:
    collaborative planning.
 4. Rewrite the desired objective until it has a measurable or auditable
    completion threshold.
-5. If no active goal exists and the user or governing skill asked for a goal,
-   create one with `create_goal`.
-6. If an active goal already matches the desired end state, continue under it.
-7. If an active goal exists but points at a different objective, do not overwrite
+5. Choose the title, template, and `docs/plans` path needed by the objective.
+   If the helper is the only reliable way to know the path, create only the
+   static plan shell before `create_goal`.
+6. If no active goal exists and the user or governing skill asked for a goal,
+   create one with a short `create_goal.objective` handle under 240 characters.
+7. If an active goal already matches the desired end state, continue under it.
+8. If an active goal exists but points at a different objective, do not overwrite
    it. Resolve the current goal honestly before starting another one. If the
    tool does not allow that transition, report the mismatch and ask for the
    smallest decision needed. A governing lane goal may proceed only when it can
    honestly complete or fit within the current active goal.
-8. Create the `docs/plans` goal plan from the checklist template before
-   substantive work.
-9. Fill the generated plan itself before substantive work: write the objective,
+9. Ensure the `docs/plans` goal plan exists before substantive work.
+10. Fill the generated plan itself before substantive work: write the objective,
    threshold, verification surface, constraints, boundaries, blocked condition,
    flow mode, and goal plan path; resolve generated gates as yes/no/N/A instead
    of deleting or replacing the template output.
-10. Record the output-budget strategy before exploratory commands: which
+11. Record the output-budget strategy before exploratory commands: which
     searches or reads are allowed, which high-volume paths are excluded, and
     how large results will be capped, counted, or saved as artifacts instead of
     streamed into the goal context.
-11. Use that exact path for
+12. Use that exact path for
    `check-complete.mjs`.
-12. Do not start durable work until the goal is set, verified as already matching,
+13. Do not start durable work until the goal is set, verified as already matching,
    or the user explicitly resolves the missing-goal path.
 
-Set the goal before mutable lane state when the workflow depends on a goal. For
-pass-gated planning or accepted-plan execution lanes, the goal is the first
-durable action after the minimum read needed to derive the objective.
+Set or verify the goal before mutable lane state when the workflow depends on a
+goal. The only exception is creating the static plan shell needed to get the
+path for the short objective. For pass-gated planning or accepted-plan execution
+lanes, the goal is the first durable action after the minimum read and optional
+static plan shell needed to derive the objective.
 
 ## Template Init
 
@@ -793,7 +800,7 @@ Required goal-plan sections:
 # <Goal title>
 
 Objective:
-<exact active goal objective>
+<short create_goal objective, under 240 characters>
 
 Flow mode:
 <one-shot execution | agent-led plan hardening | collaborative planning>
@@ -867,49 +874,30 @@ Before `update_goal(status: complete)`, the goal plan must include the final
 verification evidence, checked checklist, current reboot status, and any
 remaining risks.
 
-## Good Goal Examples
+## Good Goal Handles
 
 Performance:
 
 ```txt
-Reduce p95 checkout latency below 120 ms, complete only when the checkout
-benchmark reports p95 < 120 ms and the correctness suite passes, while keeping
-public API behavior unchanged. Use only checkout service code, benchmark
-fixtures, and related tests. Maintain goal plan
-`docs/plans/YYYY-MM-DD-checkout-latency.md`. After each iteration, record the
-change, benchmark result, and next experiment. If the benchmark cannot run or no
-valid path remains, stop with attempted paths, evidence, blocker, and needed
-input.
+Reduce checkout p95; done when p95 < 120 ms and checks pass; plan docs/plans/YYYY-MM-DD-checkout-latency.md.
 ```
 
 Bug hunt:
 
 ```txt
-Fix the flaky checkout test on the current branch, complete only when a focused
-repro fails before the fix and passes 5 consecutive runs after, while preserving
-public API behavior. If the failure cannot be reproduced after the agreed
-attempts, produce an evidence-backed blocker report.
+Fix flaky checkout test; done when repro passes 5 consecutive runs; plan docs/plans/YYYY-MM-DD-checkout-flake.md.
 ```
 
 Research:
 
 ```txt
-Produce the strongest evidence-backed reproduction of the target paper
-using available materials and local resources, complete only when every headline
-claim has a status row: confirmed, approximate, proxy-supported, blocked, or
-uncertain. Attempt every headline result where feasible and end with a report
-separating confirmed mechanics, approximate reconstructions, blocked exact
-replay, and remaining uncertainty.
+Reproduce target paper evidence; done when every headline claim has a status row; plan docs/plans/YYYY-MM-DD-paper-repro.md.
 ```
 
 Pass-gated planning:
 
 ```txt
-Close the layout plan for user review by running the scheduled passes
-one activation at a time, complete only when score >= 0.92, no dimension is
-below 0.85, every scheduled pass row is complete or skipped with evidence,
-issue/reference sync rows are closed, closure gates pass, and final handoff is
-emitted. Do not edit implementation code.
+Close layout plan; done when score >= 0.92 and closure gates pass; plan docs/plans/YYYY-MM-DD-layout-plan.md.
 ```
 
 ## Weak Goal Examples
@@ -928,8 +916,9 @@ scope boundary.
 ## Pass-Gated Goals
 
 For pass-gated lanes, prefer one lane goal when the goal tool can persist across
-turns. Put the pass schedule in the goal objective, run one pass per activation,
-and complete the goal only when closure gates prove no pass remains runnable.
+turns. Put the pass schedule in the plan, keep the goal objective short, run
+one pass per activation, and complete the goal only when closure gates prove no
+pass remains runnable.
 
 Use this when a workflow has scheduled passes such as current-state read,
 issue discovery, intent boundary, research refresh, steelman, revision,
@@ -937,8 +926,10 @@ verification sweep, or closure.
 
 Rules:
 
-- The goal objective should describe the lane outcome, full pass schedule,
-  one-pass-per-activation policy, proof gates, and closure condition.
+- The goal objective should describe only the lane outcome, short completion
+  threshold, and plan path.
+- The plan should describe the full pass schedule, one-pass-per-activation
+  policy, proof gates, and closure condition.
 - Complete the current pass in the plan or progress ledger, not by closing the
   goal.
 - Complete the goal only when every required pass is complete or intentionally
@@ -1035,6 +1026,9 @@ Budget exhaustion is not success.
 Goal token budgets are real work budgets, not decorative counters. A goal run
 that burns its budget on tool output has failed the workflow even when no app
 code was touched.
+
+Oversized goal objectives are budget failures too. If the tool objective starts
+to read like a plan, stop and move that detail into `docs/plans`.
 
 Before running exploratory commands inside an active goal:
 

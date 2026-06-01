@@ -1,5 +1,52 @@
 ---
 title: Editable Voids
+description: Nest editable controls and a Plate editor inside a void element.
 ---
 
+This example renders form controls and a nested Plate editor inside a void
+element. It is app-local demo code built with `createPlatePlugin`, not a packaged
+feature plugin.
+
+## Demo
+
 <ComponentPreview name="editable-voids-demo" />
+
+## Source
+
+The demo registers an `editable-void` element plugin and renders custom React UI
+for that node.
+
+<ComponentSource name="editable-voids-demo" />
+
+The initial value contains a normal paragraph, one `editable-void` element, and
+an empty paragraph after it.
+
+<ComponentSource src="examples/values/editable-voids-value.tsx" />
+
+## Runtime Shape
+
+| Piece | Owner | Notes |
+| --- | --- | --- |
+| `EditableVoidPlugin` | Registry example | Uses `createPlatePlugin` with `node.isElement: true` and `node.isVoid: true`. |
+| `EditableVoidElement` | Registry example | Renders inputs, radio controls, and a nested `<Plate>` instance. |
+| Outer editor | Registry example | Loads `EditorKit` plus `EditableVoidPlugin` and the `editableVoidsValue`. |
+| Inner editor | Registry example | Creates a separate `usePlateEditor({ plugins: EditorKit })` inside the void element. |
+| Value shape | Slate | Keeps an empty text child inside the void node so Slate can select it. |
+
+## Void Element Rules
+
+Set `contentEditable={false}` on the custom void wrapper. Without it, browser
+editing behavior can leak into the nested controls; the demo notes Firefox input
+issues specifically.
+
+Render `{children}` after the non-editable UI. Slate still needs the hidden void
+child mounted even when your visible element is fully custom React.
+
+The nested editor is a separate Plate editor. It does not share the outer
+editor's value, selection, plugins, or undo history.
+
+## Related
+
+- [Plate Plugin](/docs/api/core/plate-plugin) covers `node.isVoid`, `node.component`, and plugin rendering.
+- [Plugin Components](/docs/plugin-components) covers custom node components.
+- [Plate Components](/docs/api/core/plate-components) covers `<Plate>`, editor providers, and node primitives.

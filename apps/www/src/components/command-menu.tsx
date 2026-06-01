@@ -462,6 +462,7 @@ export function CommandMenu({
     search: docsSearch,
     setSearch: setDocsSearch,
   } = useFumadocsSearch({
+    locale,
     type: 'fetch',
   });
   const isDocsSearchActive = docsSearch.trim().length >= MIN_DOC_SEARCH_LENGTH;

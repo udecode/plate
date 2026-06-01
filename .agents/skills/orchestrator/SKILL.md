@@ -1,11 +1,6 @@
 ---
-description: Turn the current Codex thread into an orchestration thread that routes per-branch work to reusable child threads without worktrees
-argument-hint: on | off | status | [routing/status instruction]
-disable-model-invocation: true
 name: orchestrator
-metadata:
-  skiller:
-    source: .agents/rules/orchestrator.mdc
+description: Turn the current Codex thread into a coordination thread that routes per-branch implementation work to durable reusable child threads without worktrees.
 ---
 
 # Orchestrator
@@ -42,8 +37,8 @@ continue a code branch, PR, or branch-scoped implementation plan.
 
 Examples:
 
-- Linear ticket execution.
-- GitHub issue execution.
+- Ticket execution.
+- Issue execution.
 - API migration work.
 - PR feedback resolution.
 - Code-changing bug, feature, refactor, or migration.
@@ -56,7 +51,7 @@ Not per-branch by default:
 - One-off answers.
 - Read-only status summaries.
 - Cross-thread triage.
-- Slack/Linear context intake.
+- External context intake.
 - Asking which child thread owns a branch when the mapping is missing.
 
 ## Routing Rules
@@ -66,7 +61,7 @@ Not per-branch by default:
 3. If it is per-branch, find the branch key:
    - explicit branch name
    - PR branch
-   - Linear/GitHub issue branch already recorded
+   - tracker issue branch already recorded
    - child thread title or prior status mentioning the branch
    - if no branch exists yet, use the tracker/workstream key until the child
      creates and reports the branch
@@ -117,7 +112,7 @@ You are the child execution thread for `<branch-or-ticket>`.
 Run: <exact user skill/request>
 
 Context from orchestrator:
-- <source links, Slack/Linear notes, blockers, branch/PR if known>
+- <source links, external notes, blockers, branch/PR if known>
 
 Rules:
 - Do not create a worktree.

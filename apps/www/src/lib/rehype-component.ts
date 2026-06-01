@@ -31,8 +31,11 @@ export function rehypeComponent() {
         node.name === 'ComponentInstallation'
       ) {
         const name = getNodeAttributeByName(node, 'name')?.value as string;
+        const src = getNodeAttributeByName(node, 'src')?.value as
+          | string
+          | undefined;
 
-        if (name) {
+        if (name || (node.name === 'ComponentSource' && src)) {
           if (node.name === 'ComponentPreviewPro') {
             const registryItem = proExamples.find((item) => item.name === name);
             if (registryItem?.description) {
@@ -125,15 +128,22 @@ export function rehypeComponent() {
           }
           if (node.name === 'ComponentSource') {
             try {
-              const component = getRegistryDefinition(name);
+              let sourcePath: string | undefined = src;
 
-              if (!component) {
-                throw new Error(`Component ${name} not found`);
+              if (!sourcePath) {
+                const component = getRegistryDefinition(name);
+
+                if (!component) {
+                  throw new Error(`Component ${name} not found`);
+                }
+
+                const firstFile = component.files?.[0];
+                if (typeof firstFile === 'string') {
+                  sourcePath = firstFile;
+                } else {
+                  sourcePath = firstFile?.path;
+                }
               }
-
-              const firstFile = component.files?.[0];
-              const sourcePath =
-                typeof firstFile === 'string' ? firstFile : firstFile?.path;
 
               if (!sourcePath) {
                 throw new Error(`Component ${name} has no source file`);

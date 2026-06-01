@@ -1,44 +1,94 @@
 ---
 title: Controlled Editor Value
-description: How to control the editor value.
+description: Control initial values, persistence, replacement, and async initialization.
 ---
 
-Implementing a fully controlled editor value in Plate is complex due to several factors:
+Plate is not a normal controlled text input. The editor owns content, selection, history, plugin state, and normalization. This guide shows the safe control points: initial values, change persistence, explicit replacement, reset, and delayed initialization.
 
-1. The editor state includes more than just the content (`editor.children`). It also includes `editor.selection` and `editor.history`.
+## Value Ownership
 
-2. Directly replacing `editor.children` can break the selection and history, leading to unexpected behavior or crashes.
-
-3. All changes to the editor's value should ideally happen through [Transforms](https://docs.slatejs.org/api/transforms) to maintain consistency with selection and history.
-
-Given these challenges, it's generally recommended to use Plate as an uncontrolled input. However, if you need to make external changes to the editor's content, you can use `editor.tf.setValue(value)` function.
-
-<Callout type="warning" title="Performance Consideration">
-  Using `editor.tf.setValue` will re-render all nodes on each call, so it
-  should be used carefully and sparingly. It may impact performance if used
-  frequently or with large documents.
+<Callout type="warning" title="Do not control every keystroke">
+  Do not mirror `editor.children` into React state and pass it back on every
+  change. That fights Slate selection/history and turns normal typing into a
+  full-document replacement loop.
 </Callout>
 
-Alternatively, you can use `editor.tf.reset()` to reset the editor state, which will reset the selection and history.
+| Goal | API |
+| --- | --- |
+| Set initial content. | `value` in `usePlateEditor` or `createPlateEditor`. |
+| Persist edits. | `<Plate onValueChange>` or `<Plate onChange>`. |
+| Replace content from outside the editor. | `editor.tf.setValue(value)`. |
+| Reset editor state. | `editor.tf.reset()`. |
+| Delay initialization. | `skipInitialization: true` plus `editor.tf.init(...)`. |
 
-### Async Initial Value
+<Steps>
 
-You can pass an async function directly to the `value` option. The editor will handle the async loading automatically:
+### Set the Initial Value
 
-```tsx
-function AsyncControlledEditor() {
+Pass a `Value`, an HTML string, a function, or an async function to `value`.
+
+```tsx title="components/editor.tsx" showLineNumbers
+import type { Value } from 'platejs';
+import { Plate, usePlateEditor } from 'platejs/react';
+
+import { Editor, EditorContainer } from '@/components/ui/editor';
+
+const initialValue: Value = [
+  {
+    children: [{ text: 'Initial value' }],
+    type: 'p',
+  },
+];
+
+export function MyEditor() {
   const editor = usePlateEditor({
-    value: async () => {
-      // Simulate fetching data from an API
-      const response = await fetch('/api/document');
-      const data = await response.json();
-      return data.content;
+    value: initialValue,
+  });
+
+  return (
+    <Plate editor={editor}>
+      <EditorContainer>
+        <Editor />
+      </EditorContainer>
+    </Plate>
+  );
+}
+```
+
+### Persist Changes
+
+Use `onValueChange` when you only need the document value.
+
+```tsx title="components/editor.tsx" showLineNumbers {15-19,25}
+import type { Value } from 'platejs';
+import { Plate, usePlateEditor } from 'platejs/react';
+
+import { Editor, EditorContainer } from '@/components/ui/editor';
+
+const STORAGE_KEY = 'plate-value';
+
+const initialValue: Value = [
+  {
+    children: [{ text: 'Autosaved value' }],
+    type: 'p',
+  },
+];
+
+function saveValue(value: Value) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(value));
+}
+
+export function MyEditor() {
+  const editor = usePlateEditor({
+    value: () => {
+      const saved = localStorage.getItem(STORAGE_KEY);
+
+      return saved ? JSON.parse(saved) : initialValue;
     },
-    autoSelect: 'end',
   });
 
   return (
-    <Plate editor={editor}>
+    <Plate editor={editor} onValueChange={({ value }) => saveValue(value)}>
       <EditorContainer>
         <Editor />
       </EditorContainer>
@@ -47,44 +97,127 @@ function AsyncControlledEditor() {
 }
 ```
 
-For more control over initialization timing, you can use `shouldInitialize: false` and manually call `editor.tf.init`:
+Use `onChange` when the callback needs the editor instance too.
 
-```tsx
-function AsyncControlledEditor() {
-  const [data, setData] = React.useState(null);
-  const editor = usePlateEditor({
-    shouldInitialize: false,
-  });
+```tsx title="components/editor.tsx"
+<Plate
+  editor={editor}
+  onChange={({ editor, value }) => {
+    console.info(editor.id, value);
+  }}
+/>
+```
 
-  React.useEffect(() => {
-    const loadData = async () => {
-      const response = await fetch('/api/document');
-      const data = await response.json();
-      setData(data);
-      
-      editor.tf.init({
-        value: data.content,
-        autoSelect: 'end',
-        onReady: ({ editor, value }) => {
-          console.info('Editor ready with value:', value);
-        },
-      });
-    };
-    
-    loadData();
-  }, [editor]);
+### Replace or Reset Content
 
-  if (!data) return <div>Loading…</div>;
+Use transforms for external changes. `setValue` replaces the document and
+`reset` returns the editor to its initialized state.
+
+```tsx title="components/replace-controls.tsx" showLineNumbers
+import type { Value } from 'platejs';
+import { useEditorRef } from 'platejs/react';
+
+import { Button } from '@/components/ui/button';
+
+const replacementValue: Value = [
+  {
+    children: [{ text: 'Replaced value' }],
+    type: 'p',
+  },
+];
+
+export function ReplaceControls() {
+  const editor = useEditorRef();
 
   return (
-    <Plate editor={editor}>
-      <EditorContainer>
-        <Editor />
-      </EditorContainer>
-    </Plate>
+    <div className="flex gap-2">
+      <Button onClick={() => editor.tf.setValue(replacementValue)}>
+        Replace Value
+      </Button>
+      <Button onClick={() => editor.tf.reset()}>Reset Editor</Button>
+    </div>
   );
 }
 ```
+
+<Callout type="info">
+  `editor.tf.setValue` replaces nodes at the document root. Use it for explicit
+  outside-editor changes, not for every `onValueChange`.
+</Callout>
 
 <ComponentPreview name="controlled-demo" padding="md" />
 
+### Load Async Initial Content
+
+Use an async `value` function when the editor can initialize as soon as the data
+resolves.
+
+```tsx title="components/async-editor.tsx" showLineNumbers
+import { Plate, usePlateEditor } from 'platejs/react';
+
+import { Editor, EditorContainer } from '@/components/ui/editor';
+
+export function AsyncEditor() {
+  const editor = usePlateEditor({
+    autoSelect: 'end',
+    value: async () => {
+      const response = await fetch('/api/document');
+      const data = await response.json();
+
+      return data.content;
+    },
+    onReady: ({ isAsync, value }) => {
+      if (isAsync) console.info('Loaded value:', value);
+    },
+  });
+
+  return (
+    <Plate editor={editor}>
+      <EditorContainer>
+        <Editor />
+      </EditorContainer>
+    </Plate>
+  );
+}
+```
+
+### Initialize Manually
+
+Use `skipInitialization` when another system owns the startup moment, such as
+collaboration or a multi-step loader.
+
+```tsx title="components/manual-init-editor.tsx" showLineNumbers {8,13-18}
+import * as React from 'react';
+import { Plate, usePlateEditor } from 'platejs/react';
+
+import { Editor, EditorContainer } from '@/components/ui/editor';
+
+export function ManualInitEditor() {
+  const editor = usePlateEditor({
+    skipInitialization: true,
+  });
+
+  React.useEffect(() => {
+    void fetch('/api/document')
+      .then((response) => response.json())
+      .then((data) => {
+        editor.tf.init({
+          autoSelect: 'end',
+          value: data.content,
+        });
+      });
+  }, [editor]);
+
+  return (
+    <Plate editor={editor}>
+      <EditorContainer>
+        <Editor />
+      </EditorContainer>
+    </Plate>
+  );
+}
+```
+
+</Steps>
+
+Done. Plate owns live editor state; your app controls the entry points around it.

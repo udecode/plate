@@ -1,7 +1,7 @@
 # {{TITLE}}
 
 Objective:
-TODO: Write the exact active goal objective after creating this file.
+TODO: Write the short create_goal objective, under 240 characters. Put the full contract in the sections below.
 
 Goal plan:
 {{PLAN_PATH}}

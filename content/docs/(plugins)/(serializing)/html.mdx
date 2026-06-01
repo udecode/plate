@@ -191,7 +191,7 @@ function MyHtmlImporter({ htmlString }: { htmlString: string }) {
   });
 
   const handleImport = () => {
-    const slateValue = editor.api.html.deserialize(htmlString);
+    const slateValue = editor.api.html.deserialize({ element: htmlString });
     editor.tf.setValue(slateValue);
   };
 
@@ -276,7 +276,7 @@ const MyCustomCodeBlockPlugin = CodeBlockPlugin.configure({
     html: {
       deserializer: {
         // Inherit most rules and properties, then override or add
-      o  ...CdeBlockPlugin.parsers.html.deserializer,
+        ...CodeBlockPlugin.parsers.html.deserializer,
         parse: ({ element, editor }) => { // editor might be needed for getType
           const language = element.getAttribute('data-custom-lang') || element.className.match(/language-(?<lang>[^\s]+)/)?.groups?.lang;
           const textContent = element.textContent || '';
@@ -366,14 +366,14 @@ Converts Plate nodes from `editor.children` (or a provided `value`) into an HTML
   <APIItem name="value" type="Descendant[]" optional>
     Plate nodes to serialize. If not provided, `editor.children` will be used.
   </APIItem>
-  <APIItem name="preserveClassNames" type="string[] | null" optional>
-    An array of class name prefixes to preserve if `stripClassNames` is true. `null` preserves all if `stripClassNames` is true. Default: `['slate-', 'line-clamp']`.
+  <APIItem name="preserveClassNames" type="string[]" optional>
+    Class name prefixes to preserve when `stripClassNames` is true. Default preserve list in the stripping helper: `['slate-']`.
   </APIItem>
   <APIItem name="stripClassNames" type="boolean" optional>
-    If `true`, removes all class names from the output HTML except those whose prefixes are listed in `preserveClassNames`. Default: `true`.
+    If `true`, removes all class names from the output HTML except those whose prefixes are listed in `preserveClassNames`. Default: `false`.
   </APIItem>
   <APIItem name="stripDataAttributes" type="boolean" optional>
-    If `true`, removes all `data-*` attributes from the output HTML. Default: `true`.
+    If `true`, removes all `data-*` attributes from the output HTML. Default: `false`.
   </APIItem>
 </APIOptions>
 <APIReturns>

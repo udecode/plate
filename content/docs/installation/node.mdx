@@ -1,181 +1,187 @@
 ---
 title: Node.js
-description: Install and configure Plate for Node.js
+description: Install and configure Plate for Node.js.
 ---
 
-This guide demonstrates how to use Plate in a Node.js environment. This is useful for backend tasks such as data processing, content migration, validation, or any scenario where you need to interact with Plate editor content without a browser or a full React frontend.
+Use Plate in Node.js when you need to read, validate, transform, or serialize editor values outside the browser. Node scripts use the base runtime imports, while React editors use `/react` subpaths. This guide walks through a server-safe editor, Markdown IO, and a content transform.
 
-<Callout type="warning" title="Key Node.js Constraint">
-  When using Plate in a Node.js environment, you **must not** import from `/react` subpaths of any `platejs*` package. Always use the base imports (e.g., `@platejs/basic-nodes` instead of `@platejs/basic-nodes/react`).
+## Node.js Setup
 
-  This means you cannot use `createPlateEditor` from `platejs/react`. Instead, use `createSlateEditor` from `platejs`.
+<Callout type="warning" title="Use base imports">
+  Do not import from `platejs/react` or `@platejs/*/react` in Node.js scripts.
+  Use `createSlateEditor` from `platejs` and base plugins from `@platejs/*`
+  packages.
 </Callout>
 
 <Steps>
 
-### Install Plate
+### Install Packages
 
-Install the core Plate package and any specific plugin packages required for your data processing needs.
+Install the core runtime and the packages your pipeline needs.
 
 ```bash
-npm install platejs @platejs/basic-nodes
+npm install platejs @platejs/basic-nodes @platejs/markdown
 ```
 
--   `platejs`: The core Plate editor functionality.
--   `@platejs/basic-nodes`: Plugin for basic nodes like headings, bold, italic, underline, etc.
+| Package | Owns |
+| --- | --- |
+| `platejs` | `createSlateEditor`, core editor APIs, core paragraph behavior. |
+| `@platejs/basic-nodes` | Base headings, blockquotes, horizontal rules, and text marks. |
+| `@platejs/markdown` | Markdown serialization, deserialization, and the `MarkdownPlugin` API. |
 
-### Create an Editor Instance
+### Create a Server Editor
 
-In your Node.js script, use `createSlateEditor` from `platejs` to initialize an editor instance. This function is framework-agnostic and doesn't depend on React or browser APIs.
+Create the editor with base plugins only. The editor exposes the same `editor.api`
+and `editor.tf` surfaces without mounting a React tree.
 
-```typescript title="scripts/process-content.ts"
-import { createSlateEditor } from 'platejs';
+```ts showLineNumbers title="scripts/process-content.ts"
+import type { Value } from 'platejs';
+
 import {
-  BaseBoldPlugin,
-  BaseItalicPlugin,
-  BaseUnderlinePlugin,
-  BaseH1Plugin,
-  BaseH2Plugin,
-  BaseH3Plugin,
-  BaseBlockquotePlugin,
+  BaseBasicBlocksPlugin,
+  BaseBasicMarksPlugin,
 } from '@platejs/basic-nodes';
+import { createSlateEditor } from 'platejs';
 
-const initialValue = [
+const value: Value = [
   {
-    type: 'h3',
     children: [{ text: 'Document Title' }],
+    type: 'h1',
   },
   {
-    type: 'blockquote',
     children: [
-      {
-        type: 'p',
-        children: [{ text: 'This is a quote.' }],
-      },
+      { text: 'With ' },
+      { bold: true, text: 'bold' },
+      { text: ' text.' },
     ],
-  },
-  {
     type: 'p',
-    children: [
-      { text: 'With some ' },
-      { text: 'bold', bold: true },
-      { text: ' text for emphasis!' },
-    ],
   },
 ];
 
 const editor = createSlateEditor({
-  plugins: [
-    BaseBoldPlugin,
-    BaseItalicPlugin,
-    BaseUnderlinePlugin,
-    BaseH1Plugin,
-    BaseH2Plugin,
-    BaseH3Plugin,
-    BaseBlockquotePlugin,
-  ],
-  value: initialValue,
+  plugins: [BaseBasicBlocksPlugin, BaseBasicMarksPlugin],
+  value,
 });
 
-// You can now use editor.children, editor.api, editor.tf, etc.
-console.debug('Editor content:', editor.children);
+const plainText = editor.api.string([]);
+
+console.info(plainText);
 ```
 
-<Callout type="info">
-  `createSlateEditor` creates a raw Plate editor instance suitable for server-side logic, data transformation, or preparing content for static rendering. It provides the same API as the React version but without browser dependencies.
-</Callout>
+### Read and Write Markdown
 
-### Content Manipulation
+Add `MarkdownPlugin` when the script needs Markdown helpers through
+`editor.getApi(MarkdownPlugin)`. You can also call `deserializeMd` and
+`serializeMd` directly.
 
-The primary use case for Plate in Node.js is programmatic content manipulation:
-
-```typescript title="scripts/transform-content.ts"
-import { createSlateEditor } from 'platejs';
+```ts showLineNumbers title="scripts/markdown-io.ts"
 import {
-  BaseBoldPlugin,
-  BaseItalicPlugin,
-  BaseH1Plugin,
-  BaseH2Plugin,
-  BaseH3Plugin,
-  BaseBlockquotePlugin,
+  BaseBasicBlocksPlugin,
+  BaseBasicMarksPlugin,
 } from '@platejs/basic-nodes';
+import {
+  MarkdownPlugin,
+  deserializeMd,
+  serializeMd,
+} from '@platejs/markdown';
+import { createSlateEditor } from 'platejs';
 
-async function processDocument(value: any[]) {
+const editor = createSlateEditor({
+  plugins: [BaseBasicBlocksPlugin, BaseBasicMarksPlugin, MarkdownPlugin],
+});
+
+const value = deserializeMd(
+  editor,
+  [
+    '# Migration Note',
+    '',
+    'Move legacy content into **Plate** format.',
+  ].join('\n')
+);
+
+const markdown = serializeMd(editor, { value });
+
+console.info(markdown);
+```
+
+### Transform Content
+
+Use transforms for migrations and bulk cleanup. Pass `at: []` when the operation
+should scan the whole document.
+
+```ts showLineNumbers title="scripts/normalize-headings.ts"
+import type { Value } from 'platejs';
+
+import {
+  BaseBasicBlocksPlugin,
+  BaseBasicMarksPlugin,
+} from '@platejs/basic-nodes';
+import { MarkdownPlugin, serializeMd } from '@platejs/markdown';
+import { createSlateEditor } from 'platejs';
+
+export function normalizeHeadings(value: Value) {
   const editor = createSlateEditor({
-    plugins: [
-      BaseBoldPlugin,
-      BaseItalicPlugin,
-      BaseH1Plugin,
-      BaseH2Plugin,
-      BaseH3Plugin,
-      BaseBlockquotePlugin,
-    ],
+    plugins: [BaseBasicBlocksPlugin, BaseBasicMarksPlugin, MarkdownPlugin],
     value,
   });
 
-  // Extract text content
-  const textContent = editor.api.string([]);
-  console.debug('Extracted Text:', textContent);
-
-  // Transform all H1s to H2s
   editor.tf.setNodes(
     { type: 'h2' },
-    { at: [], match: (n) => n.type === 'h1' }
+    {
+      at: [],
+      match: (node) => 'type' in node && node.type === 'h1',
+    }
   );
 
-  // Add a new paragraph at the end
   editor.tf.insertNodes(
-    [{ type: 'p', children: [{ text: 'Added by Node.js script!' }] }],
+    [{ children: [{ text: 'Imported from the legacy CMS.' }], type: 'p' }],
     { at: [editor.children.length] }
   );
 
   return {
-    textContent,
-    transformedValue: editor.children,
+    markdown: serializeMd(editor),
+    text: editor.api.string([]),
+    value: editor.children,
   };
 }
-
-// Example usage
-const mySlateValue = [
-  { type: 'h1', children: [{ text: 'Original Document Title' }] },
-  { type: 'p', children: [{ text: 'Some paragraph content.' }] },
-  {
-    type: 'p',
-    children: [
-      { text: 'Text with ' },
-      { text: 'bold', bold: true },
-      { text: ' formatting.' },
-    ],
-  },
-];
-
-processDocument(mySlateValue).then(result => {
-  console.debug('Processing complete:', result);
-});
 ```
-
-### Available APIs
-
--   **[`editor.api`](/docs/api/slate/editor-api)**: Access various utility functions for querying the editor state:
-    -   `editor.api.nodes({ at: [], match })`: Find specific nodes
-    -   `editor.api.string([])`: Extract text content
-    -   [HTML Serialization](/docs/html)
-    -   [Markdown Serialization](/docs/markdown)
-
--   **[`editor.tf`](/docs/api/slate/editor-transforms)**: Use transform functions to modify the editor content:
-    -   `editor.tf.insertNodes(nodes, opts)`: Insert new nodes
-    -   `editor.tf.removeNodes(opts)`: Delete nodes
-    -   `editor.tf.setNodes(props, opts)`: Update properties of existing nodes
-    -   `editor.tf.normalize({ force: true })`: Normalize the editor
 
 </Steps>
 
-### Next Steps
+## Runtime Boundaries
 
-With Plate configured in your Node.js environment, you can now:
+| Runtime | Import from | Use for |
+| --- | --- | --- |
+| Node.js scripts | `platejs`, `@platejs/*` | Migration, validation, serialization, search indexing. |
+| React editors | `platejs/react`, `@platejs/*/react` | Editable UI, hooks, rendered components, toolbar behavior. |
+| Static rendering | `platejs/static` | Server-rendered read-only content. |
 
-*   **Build Content Pipelines:** Create scripts for migrating content from other systems into Plate format
-*   **Bulk Operations:** Perform bulk updates or transformations on your existing Plate documents
-*   **Data Extraction:** Validate content structure or extract specific data from your documents
-*   **Backend Integration:** Integrate with other backend services for content processing pipelines
-*   **Static Generation:** Explore [Markdown Serialization](/docs/markdown), [HTML Serialization](/docs/html), and [`PlateStatic`](/docs/plate-static) for generating static content
+<Callout type="info">
+  Plugin packages can expose both base and React entrypoints. In Node.js, choose
+  the base entrypoint even when the same feature has React components for the
+  browser editor.
+</Callout>
+
+## API Reference
+
+| API | Package | Notes |
+| --- | --- | --- |
+| `createSlateEditor` | `platejs` | Creates a non-React editor instance. |
+| `editor.api.string([])` | `platejs` | Reads text from the whole document. |
+| `editor.tf.setNodes` | `platejs` | Updates matching nodes. Use `at: []` for document-wide transforms. |
+| `editor.tf.insertNodes` | `platejs` | Inserts nodes at a path. |
+| `deserializeMd` | `@platejs/markdown` | Converts Markdown into a Plate value. |
+| `serializeMd` | `@platejs/markdown` | Converts the editor value or an explicit `value` option to Markdown. |
+
+## Next Steps
+
+| Task | Guide |
+| --- | --- |
+| Serialize to Markdown | [Markdown](/docs/markdown) |
+| Serialize to HTML | [HTML](/docs/html) |
+| Render read-only content | [Static Rendering](/docs/static) |
+| Query editor state | [Editor API](/docs/api/slate/editor-api) |
+| Apply transforms | [Editor Transforms](/docs/api/slate/editor-transforms) |
+
+Done. You now have a server-safe Plate runtime that can power migration scripts,
+validation jobs, and content serialization.

@@ -1641,6 +1641,29 @@ Get the paths that need to be normalized after an operation.
 </APIReturns>
 </API>
 
+### `shouldMergeNodes`
+
+Decide whether two adjacent node entries should merge. Plate calls this before
+`editor.tf.mergeNodes()` applies a merge operation.
+
+<API name="shouldMergeNodes">
+<APIParameters>
+  <APIItem name="prevNodeEntry" type="NodeEntry">
+    Previous node entry at the merge boundary.
+  </APIItem>
+  <APIItem name="nextNodeEntry" type="NodeEntry">
+    Next node entry at the merge boundary.
+  </APIItem>
+  <APIItem name="options" type="{ reverse?: boolean }" optional>
+    Merge direction metadata.
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  True when the nodes should merge, false when the merge should stop.
+</APIReturns>
+</API>
+
 ### `shouldNormalizeNode`
 
 Override this method to prevent normalizing a specific node. Defaults to returning `true`.

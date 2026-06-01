@@ -1,89 +1,166 @@
 ---
 title: Troubleshooting
-description: Solutions for common issues when working with Plate.
+description: Diagnose common Plate setup and runtime issues.
 ---
 
-## Dependency Conflicts
+Most Plate issues come from version skew, duplicate React/Slate runtimes, or
+crossing the server/client import boundary. Start with package alignment, then
+check runtime ownership, then inspect plugin resolution with `DebugPlugin`.
 
-A common source of issues in projects using Plate is mismatched or conflicting versions of dependencies. This section outlines how to identify and resolve such conflicts.
+## Start Here
 
-### Managing Plate Package Versions with `depset`
+| Symptom | First check |
+| --- | --- |
+| Invalid hook call, null dispatcher, or React hook crashes. | Duplicate `react` / `react-dom` or mixed package-manager installs. |
+| Plugins render as plain text or components do not attach. | Missing plugin, wrong `/react` versus base import, or wrong component map. |
+| Server Component crashes on import. | A Server Component imported `platejs/react` or `@platejs/*/react`. |
+| `OPTION_UNDEFINED` in the console. | Code reads or writes an option that is not declared in the plugin. |
+| `PLUGIN_DEPENDENCY_MISSING` in the console. | A plugin dependency key is not present in the editor plugin list. |
+| Markdown, HTML, or static rendering misses nodes. | The static/base plugin kit does not include the serializer or node plugin. |
 
-The recommended way to ensure all your ``@platejs/*`` packages (including Plate and its related plugins) are synchronized to a consistent and compatible set of versions is by using the [`depset`](https://npmjs.com/package/depset) command-line tool.
+Use the focused guide when the issue belongs to one area:
 
-**Why `depset`?**
-- It simplifies upgrading or aligning multiple packages within the ``@platejs`` scope.
-- It helps prevent issues caused by having some Plate packages on one version and others on a different, potentially incompatible, version.
+| Area | Guide |
+| --- | --- |
+| Editor creation and options | [Editor](/docs/editor) |
+| Plugin configuration | [Plugin](/docs/plugin) |
+| Plugin option state | [Plugin Context](/docs/plugin-context) |
+| Debug logging | [Debugging](/docs/debugging) |
+| Server Components | [RSC](/docs/installation/rsc) |
+| Static rendering | [Static Rendering](/docs/static) |
 
-**Usage:**
+## Align Plate Packages
 
-To upgrade or align all packages in the ``@platejs`` scope to a specific target version (e.g., ``52.0.1``), run the following in your project root:
+Keep `platejs` and every `@platejs/*` package on the same release family.
+`depset` is the fastest way to update a project that already has several Plate
+packages installed.
+
 ```bash
-npx depset@latest @platejs 52.0.1 && npx depset@latest platejs 52.0.1
+npx depset@latest @platejs --latest --install --yes
+npx depset@latest platejs --latest --install --yes
 ```
 
-To upgrade all ``@platejs`` packages to the latest versions that are less than major version ``46`` (e.g., if ``52.x.y`` are the latest releases, it will pick those):
+For pnpm projects:
+
 ```bash
-npx depset@latest @platejs 52 && npx depset@latest platejs 52 
+pnpm dlx depset@latest @platejs --latest --install --yes
+pnpm dlx depset@latest platejs --latest --install --yes
 ```
 
-- Replace ``<target_version>`` (e.g., ``52.0.1`` or ``52``) with your desired version specifier.
-- ``depset`` will update your ``package.json``.
-
-### Example: Multiple Plate Instances
-
-**Problem:** Unexpected behavior or "hooks can only be called inside a component" errors.
-
-**Root Cause:** Having incompatible versions of Plate packages in your project. This often means different ``platejs*`` packages or ``@platejs/core`` are at different versions that weren't designed to work together.
-
-**Diagnosis:** Check for multiple Plate package versions:
+Then inspect what actually resolved.
 
 ```bash
-# npm
-npm ls platejs @platejs/core
+npm ls platejs @platejs/core @platejs/slate react react-dom slate slate-dom slate-react
+```
 
-# pnpm
+```bash
 pnpm why platejs
 pnpm why @platejs/core
+pnpm why @platejs/slate
+pnpm why react react-dom slate slate-dom slate-react
 ```
 
-**Solution:**
-The primary solution is to ensure all your ``@platejs/*`` packages are updated to their latest respective versions that are compatible and designed to work together. This prevents mismatches where one Plate package might be too old or too new for others in your project. Use the ``depset`` tool as described above.
+If the tree shows multiple Plate majors, align the Plate packages first. If it
+shows multiple React or Slate copies, fix the package that pulls the extra copy
+instead of papering over the tree with a random override.
 
-### Example: Multiple Slate Instances
+## Fix Runtime Boundaries
 
-**Problem:** Editor features may not work correctly.
+Use React entrypoints only in client-side editor code.
 
-**Root Cause:** Package managers sometimes install mismatched versions of Slate dependencies. For example, `pnpm` might install `slate` version 0.112.2 instead of the required 0.111.0.
+| Runtime | Import from |
+| --- | --- |
+| Editable React editor | `platejs/react`, `@platejs/*/react` |
+| Server Component static output | `platejs/static`, `platejs`, `@platejs/*` |
+| Node script or route handler without React UI | `platejs`, `@platejs/*` |
 
-**Diagnosis:** Check for multiple Slate versions:
+<Callout type="warning" title="No React plugins on the server">
+  Server Components and Node scripts should not import `platejs/react` or
+  `@platejs/*/react`. Use base plugins such as `BaseH1Plugin` from
+  `@platejs/basic-nodes`, not `H1Plugin` from `@platejs/basic-nodes/react`.
+</Callout>
+
+If a server route only needs serialization or transforms, use the Node path from
+[Node.js](/docs/installation/node). If it renders read-only React output, use
+[Static Rendering](/docs/static).
+
+## Check Component Wiring
+
+When a node appears as plain text or a default `div`, check the component path.
+
+```tsx title="components/editor/plugins.tsx" showLineNumbers
+import { H1Plugin } from '@platejs/basic-nodes/react';
+
+import { H1Element } from '@/components/ui/heading-node';
+
+export const plugins = [H1Plugin.withComponent(H1Element)];
+```
+
+For copied Plate UI kits, inspect the kit that owns the feature before adding
+manual component overrides. Feature kits usually wire plugins, components,
+shortcuts, and options together.
+
+| Component surface | Guide |
+| --- | --- |
+| Copied registry components | [Plate UI](/docs/installation/plate-ui) |
+| Feature-owned kits | [Feature Kits](/docs/feature-kits) |
+| Manual node components | [Plugin Components](/docs/plugin-components) |
+
+## Inspect Plugin Resolution
+
+Enable `DebugPlugin` when plugin options, dependencies, or runtime behavior do
+not match what the editor receives.
+
+```tsx title="components/editor/plugins.tsx" showLineNumbers
+import { DebugPlugin } from 'platejs';
+
+export const plugins = [
+  DebugPlugin.configure({
+    options: {
+      logLevel: 'warn',
+    },
+  }),
+];
+```
+
+Common debug errors:
+
+| Message | Meaning |
+| --- | --- |
+| `OPTION_UNDEFINED` | `editor.getOption`, `editor.setOption`, or plugin context used an option key missing from `plugin.options`. |
+| `PLUGIN_DEPENDENCY_MISSING` | A plugin lists a dependency key that is not registered. |
+
+Use [Plugin](/docs/plugin#advanced-plugin-configuration) to check `dependencies`,
+`priority`, `enabled`, `plugins`, and `override.*` behavior.
+
+## Reset The Install
+
+When the dependency tree looks correct but the runtime still behaves like two
+React or Slate copies are loaded, reinstall from the existing lockfile.
 
 ```bash
-# npm
-npm ls slate slate-react slate-dom
-
-# pnpm
-pnpm why slate
-pnpm why slate-react
-pnpm why slate-dom
+rm -rf node_modules
+npm install
 ```
 
-**Solution:** Try these solutions in the order they are listed:
-
-1. Remove `slate*` dependencies from your `package.json` if any. Plate is managing those.
-
-2. Use the ``depset`` tool as described above.
-
-2. Force consistent Slate dependency versions:
-
-```jsonc
-// package.json
-{
-  "resolutions": {
-    "slate": "0.114.0",
-    "slate-dom": "0.114.0",
-    "slate-react": "0.114.2"
-  }
-}
+```bash
+rm -rf node_modules
+pnpm install
 ```
 
+Delete the lockfile only when you intentionally want a fresh dependency
+resolution. That is a package-management decision, not a Plate fix.
+
+## Report A Reproduction
+
+When you open an issue, include the smallest editor that reproduces the problem:
+
+- Package manager and lockfile type.
+- Output from the relevant `npm ls` or `pnpm why` commands.
+- The plugin list passed to `usePlateEditor`, `createPlateEditor`,
+  `createSlateEditor`, or `createStaticEditor`.
+- The failing value, if the issue depends on document content.
+- The exact error message from `DebugPlugin` or the browser console.
+
+Small reproductions beat screenshots. The package tree and plugin list usually
+tell the story.

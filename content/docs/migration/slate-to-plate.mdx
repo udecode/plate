@@ -1,219 +1,222 @@
 ---
-title: Migrating from Slate to Plate
-description: Learn how to migrate from Slate to Plate.
+title: From Slate to Plate
+description: Move a Slate React editor to Plate's editor, plugin, and rendering model.
 ---
 
-Plate is built on top of Slate, so migrating from a pure Slate implementation to Plate is relatively straightforward. This guide will help you transition your Slate-based editor to Plate.
+Plate keeps Slate's document model and moves editor setup, rendering, handlers,
+and command wiring into plugins. Migrate the editor shell first, then move
+custom rendering and behavior into plugins.
 
-## 1. Install Plate
-
-First, install the necessary Plate packages. If you're new to Plate, you might want to start by reading the [Introduction](/docs/installation) to get an overview of the library.
+## Install
 
 ```bash
 npm install platejs
 ```
 
-## 2. Replace Slate Imports
+Use feature packages only for the nodes, marks, or behavior you add to the
+editor. Plate UI users should start with [Plate UI](/docs/installation/plate-ui)
+instead of rebuilding every component by hand.
 
-Replace your Slate imports with Plate imports. Plate re-exports most Slate types and functions:
+## Migration Map
 
-```ts
-// Before
-import { createEditor } from 'slate';
-import { Slate, Editable, withReact } from 'slate-react';
+| Slate surface | Plate surface |
+| --- | --- |
+| `createEditor()` plus `withReact()` | `usePlateEditor()` in React components, or `createPlateEditor()` in factories and tests. |
+| `<Slate>` plus `<Editable>` | `<Plate>` plus `<PlateContent>`. |
+| `renderElement` / `renderLeaf` switch statements | Plugin components through `.withComponent()` or `node.component`. |
+| `withX(editor)` plugin functions | `.overrideEditor()` for wrappers, `.extend*()` for new APIs and transforms. |
+| Top-level event handlers on `Editable` | Plugin `handlers` or `shortcuts`. |
+| `Transforms.*` imports | `editor.tf.*` transforms. |
+| `Editor.*` imports | `editor.api.*` queries. |
 
-// After
-import { createPlateEditor, Plate, PlateContent } from 'platejs/react';
+## Editor Shell
+
+Move the editor value into the editor creation call and render the editable with `PlateContent`.
+
+```tsx title="components/editor.tsx" showLineNumbers
+'use client';
+
+import { Plate, PlateContent, usePlateEditor } from 'platejs/react';
+
+const initialValue = [
+  {
+    children: [{ text: 'Hello Plate.' }],
+    type: 'p',
+  },
+];
+
+export function Editor() {
+  const editor = usePlateEditor({
+    value: initialValue,
+  });
+
+  return (
+    <Plate editor={editor}>
+      <PlateContent className="p-4" />
+    </Plate>
+  );
+}
 ```
 
-## 3. Create a Plate Editor
+Use `createPlateEditor()` when the editor is created outside React memoization.
 
-Replace `createEditor`, `withHistory` and `withReact` with `createPlateEditor`:
+```ts title="lib/create-editor.ts"
+import { createPlateEditor } from 'platejs/react';
 
-```ts
-// Before
-const editor = useMemo(() => withReact(withHistory(createEditor()))), []);
-
-// After
-const editor = createPlateEditor({
-  value,
-  plugins: [
-    // Additional plugins here
+export const editor = createPlateEditor({
+  value: [
+    {
+      children: [{ text: 'Draft' }],
+      type: 'p',
+    },
   ],
 });
 ```
 
-For more details on editor configuration, check out the [Editor Configuration guide](/docs/editor).
+## Custom Elements
 
-## 4. Replace Slate and Editable Components
+Replace `renderElement` branches with node plugins. Use `.withComponent()` when the only change is the React component.
 
-Replace the `Slate` and `Editable` components with Plate's `Plate` component:
+```tsx title="components/editor/paragraph-plugin.tsx" showLineNumbers
+import {
+  ParagraphPlugin,
+  PlateElement,
+  type PlateElementProps,
+} from 'platejs/react';
 
-```tsx
-// Before
-<Slate editor={editor} value={value}>
-  <Editable className="p-4" />
-</Slate>
-
-// After
-<Plate editor={editor}>
-  <PlateContent className="p-4" />
-</Plate>
-```
-
-## 5. Convert Custom Elements and Leaves
-
-For custom elements and leaves, create Plate plugins:
-
-```tsx
-// Before
-const renderElement = useCallback(({ attributes, children, element }) => {
-  switch (element.type) {
-    case 'paragraph':
-      return <p {...attributes}>{children}</p>;
-    // ... other cases
-  }
-}, []);
-
-// After
-import { type PlateElement, type PlateElementProps } from 'platejs/react';
-import { cn } from '@/lib/utils';
-
-export function ParagraphElement(props: PlateElementProps) {
+export function ParagraphElement({
+  children,
+  ...props
+}: PlateElementProps) {
   return (
-    <PlateElement {...props} className="m-0 px-0 py-1'">
-      {props.children}
+    <PlateElement className="m-0 px-0 py-1" {...props}>
+      {children}
     </PlateElement>
   );
 }
 
-const ParagraphPlugin = createPlatePlugin({
-  key: 'p',
-  node: {
-    isElement: true,
-    type: 'paragraph',
-    component: ParagraphElement,
-  },
-});
+export const AppParagraphPlugin = ParagraphPlugin.withComponent(
+  ParagraphElement
+);
 ```
 
-Learn more about creating plugins in the [Plugin Configuration guide](/docs/plugin) and [Plugin Components guide](/docs/plugin-components).
+If your Slate document stores a custom type like `paragraph`, keep that type on the plugin.
 
-## 6. Convert Slate Plugins to Plate Plugins
+```tsx title="components/editor/paragraph-plugin.tsx" showLineNumbers
+export const AppParagraphPlugin = ParagraphPlugin.configure({
+  node: { type: 'paragraph' },
+}).withComponent(ParagraphElement);
+```
 
-If you have custom Slate plugins, convert them to Plate plugins:
+## Custom Behavior
 
-```ts
-// Before
-const withMyPlugin = (editor) => {
-  const { insertText } = editor;
-  editor.insertText = (text) => {
-    // Custom logic
-    insertText(text);
-  };
-  return editor;
-};
+Use `.overrideEditor()` when the Slate plugin wrapped an existing editor method.
 
-// After
-const MyPlugin = createPlatePlugin({
-  key: 'myPlugin',
-}).overrideEditor(({ editor, tf: { insertText } }) => ({
+```tsx title="components/editor/limit-exclamation-plugin.tsx" showLineNumbers
+import { createPlatePlugin } from 'platejs/react';
+
+export const LimitExclamationPlugin = createPlatePlugin({
+  key: 'limitExclamation',
+}).overrideEditor(({ tf: { insertText } }) => ({
   transforms: {
     insertText(text, options) {
-      // Custom logic
-      insertText(text, options);
+      insertText(text === '!' ? '.' : text, options);
     },
-  }
-}));
-
-// For adding new methods:
-const MyOtherPlugin = createPlatePlugin({
-  key: 'myOtherPlugin',
-}).extendEditorTransforms(({ editor }) => ({
-  newMethod(text) {
-    // Add new functionality
-  }
+  },
 }));
 ```
 
-For more information on working with the plugin context, see the [Plugin Context guide](/docs/plugin-context).
+Use `.extendEditorApi()` or `.extendEditorTransforms()` when the plugin adds a new method.
 
-## 7. Update Event Handlers
+```tsx title="components/editor/signature-plugin.tsx" showLineNumbers
+import { createPlatePlugin } from 'platejs/react';
 
-Update your event handlers to use Plate's plugin system:
+export const SignaturePlugin = createPlatePlugin({
+  key: 'signature',
+}).extendEditorTransforms(({ editor }) => ({
+  insertSignature() {
+    editor.tf.insertText(' - Plate');
+  },
+}));
+```
 
-```ts
-// Before
-const onKeyDown = (event) => {
-  if (event.key === 'Tab') {
-    // Handle tab
-  }
-};
+## Handlers And Shortcuts
 
-// After
-const TabPlugin = createPlatePlugin({
+Move editor events into the plugin that owns the behavior.
+
+```tsx title="components/editor/tab-plugin.tsx" showLineNumbers
+import { createPlatePlugin } from 'platejs/react';
+
+export const TabPlugin = createPlatePlugin({
   key: 'tab',
   handlers: {
-    onKeyDown: ({ editor, event }) => {
-      if (event.key === 'Tab') {
-        // Handle tab
-      }
+    onKeyDown: ({ event }) => {
+      if (event.key !== 'Tab') return false;
+
+      event.preventDefault();
+
+      return true;
     },
   },
 });
 ```
 
-Alternatively, you can use Plate's powerful shortcuts system:
+Use `shortcuts` when the key combination should call a plugin API, transform, or explicit handler.
 
-```ts
-const TabPlugin = createPlatePlugin({
-  key: 'tab',
+```tsx title="components/editor/save-plugin.tsx" showLineNumbers
+import { createPlatePlugin } from 'platejs/react';
+
+export const SavePlugin = createPlatePlugin({
+  key: 'save',
+}).extend({
   shortcuts: {
-    indent: {
-      handler: ({ editor }) => {
-        // Handle tab
+    draft: {
+      keys: 'mod+s',
+      handler: ({ event }) => {
+        event.preventDefault();
+
+        return true;
       },
-      keys: ['Tab'],
     },
   },
 });
 ```
 
-For more details on using shortcuts, check out the [Plugin Shortcuts guide](/docs/plugin-shortcuts).
+## API Calls
 
-## 8. Adapt to Plate's API
+Plate keeps Slate-style direct methods for compatibility, but plugin code should use the namespaced API and transform surfaces.
 
-Familiarize yourself with Plate's API and use its utilities and hooks:
-
-```ts
-// Using Plate's transforms
+```ts title="editor-commands.ts"
 editor.tf.toggleMark('bold');
+editor.tf.insertText('Hello');
 
-// Using Plate's debug API
-editor.api.debug.log('Hello, Plate!');
+const text = editor.api.string([]);
+
+if (editor.selection) {
+  const isStart = editor.api.isStart(editor.selection.anchor, []);
+}
 ```
 
-For a comprehensive list of editor methods, see the [Editor Methods guide](/docs/editor-methods).
+## Headless Code
 
-## 9. Leverage Plate's Built-in Plugins
+Use `createSlateEditor` from `platejs` for non-React importers, serializers, transforms, and tests.
 
-Plate comes with many built-in plugins that you can see in the sidebar. Use them to quickly add functionality:
+```ts title="lib/headless-editor.ts"
+import { createSlateEditor } from 'platejs';
 
-```ts
-import { BoldPlugin, ItalicPlugin, UnderlinePlugin } from 'platejs/react';
-
-const plugins = [
-  BoldPlugin,
-  ItalicPlugin,
-  UnderlinePlugin,
-  // ... other plugins
-];
-
-const editor = createPlateEditor({ plugins });
+export const editor = createSlateEditor({
+  value: [
+    {
+      children: [{ text: 'Headless document.' }],
+      type: 'p',
+    },
+  ],
+});
 ```
 
-## 10. Testing and Refinement
+## Related
 
-After migrating, thoroughly test your editor to ensure all functionality works as expected. Refine and optimize your implementation using Plate's features and best practices.
-
-For debugging tips and strategies, check out our [Debugging guide](/docs/debugging).
+- [Editor](/docs/editor) for editor creation options.
+- [Plugin Components](/docs/plugin-components) for replacing `renderElement` and `renderLeaf`.
+- [Plugin Methods](/docs/plugin-methods) for `.configure()`, `.extend*()`, and `.overrideEditor()`.
+- [Plugin Shortcuts](/docs/plugin-shortcuts) for keyboard command wiring.

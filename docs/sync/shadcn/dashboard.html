@@ -561,7 +561,7 @@
         <h1>sync-shadcn dashboard</h1>
         <p>Feature-owned delta board for deciding what Plate should land, defer, reject, fork, or keep pending from upstream shadcn.</p>
         <div class="meta">
-          <span>Generated 2026-05-31T06:58:19.248Z</span>
+          <span>Generated 2026-05-31T21:05:18.831Z</span>
           <span>Baseline 4a4dc8e</span>
           <span>Planned efdec3c</span>
           <span>Plan docs/sync/shadcn/runs/2026-05-29-4a4dc8e-to-efdec3c-editors-blocks-style/plan.md</span>
@@ -575,7 +575,7 @@
         </div>
         <div class="summary-card">
           <span class="muted">Items</span>
-          <strong>23</strong>
+          <strong>24</strong>
         </div>
         <div class="summary-card">
           <span class="muted">Partial Syncs</span>
@@ -595,9 +595,9 @@
         </div>
         <div class="filter-row">
           <span class="filter-label">Done</span>
-          <button type="button" data-filter="done">All Done <span>20</span></button>
-          <button type="button" data-filter="fork">Fork <span>8</span></button><button type="button" data-filter="rejected">Rejected <span>0</span></button><button type="button" data-filter="synced">Synced <span>12</span></button>
-          <button type="button" data-filter="all">Everything <span>23</span></button>
+          <button type="button" data-filter="done">All Done <span>21</span></button>
+          <button type="button" data-filter="fork">Fork <span>9</span></button><button type="button" data-filter="rejected">Rejected <span>0</span></button><button type="button" data-filter="synced">Synced <span>12</span></button>
+          <button type="button" data-filter="all">Everything <span>24</span></button>
           
         </div>
       </nav>
@@ -1424,7 +1424,7 @@
             <div>
               <p class="eyebrow">docs-engine</p>
               <h2>Docs Engine</h2>
-              <p>Plate keeps the docs shell, source loader, and search wiring as product-owned forks.</p>
+              <p>Plate keeps the docs shell, source loader, LLM routes, and search wiring as product-owned forks.</p>
             </div>
             <span class="badge fork" data-state-label="fork">Fork</span>
           </div>
@@ -1525,6 +1525,56 @@
                   <section>
                     <h4>Owner Files</h4>
                     <ul class="files"><li><code>apps/www/src/lib/source.ts</code></li><li><code>apps/www/src/app/api/search/route.ts</code></li><li><code>../shadcn/apps/v4/lib/source.ts</code></li><li><code>../shadcn/apps/v4/app/api/search/route.ts</code></li></ul>
+                  </section>
+                </div>
+              </div>
+            </article>
+            <article class="item-card" data-state="fork" data-feature="docs-engine" data-feature-label="Docs Engine" data-item-id="fumadocs-latest-llms" data-item-title="Fumadocs latest and LLM routes" data-current-state="fork">
+              <div class="review-cell">
+                <div class="review-options">
+                  <span>Review</span>
+                  <input type="hidden" data-review-state value="fork" />
+                  <div class="quick-actions" aria-label="Review actions">
+                    <div class="quick-action-row">
+    <button type="button" data-question-action aria-pressed="false">Ask</button>
+    <button type="button" role="radio" aria-checked="false" data-preset-state="defer">Defer</button>
+  </div>
+  <div class="quick-action-row" role="radiogroup" aria-label="Apply review state">
+    <button type="button" role="radio" aria-checked="false" data-preset-state="synced">Sync</button>
+    <button type="button" role="radio" aria-checked="false" data-preset-state="rejected">Reject</button>
+    <button type="button" role="radio" aria-checked="true" data-preset-state="fork">Fork</button>
+  </div>
+                  </div>
+                </div>
+                <label>
+                  <span>Note</span>
+                  <textarea data-review-note rows="3" placeholder="Pick an action first" disabled></textarea>
+                </label>
+              </div>
+              <div class="item-body">
+                <div class="item-heading">
+                  <div>
+                    <h3>Fumadocs latest and LLM routes</h3>
+                    <p>Upgrade Plate docs to latest Fumadocs core/MDX, use the upstream llms(source) index helper, and keep Plate-owned raw-MDX full-page LLM markdown with registry context to avoid processed-markdown compile cost across the large Plate docs corpus.</p>
+                  </div>
+                  <span class="badge fork" data-state-label="fork">Fork</span>
+                </div>
+                <div class="comparison-grid">
+                  <section>
+                    <h4>shadcn</h4>
+                    <p>Shadcn tracks Fumadocs docs-engine patterns but currently pins an older Fumadocs 16 line and does not own Plate registry or CN LLM context.</p>
+                  </section>
+                  <section>
+                    <h4>Suggestion</h4>
+                    <p>Keep following Fumadocs engine upgrades here, but do not enable collection-wide processed Markdown unless it is proven fast enough for Plate's docs corpus.</p>
+                    <button type="button" class="note-action" data-use-suggestion-note="Keep following Fumadocs engine upgrades here, but do not enable collection-wide processed Markdown unless it is proven fast enough for Plate's docs corpus.">Apply</button>
+                  </section>
+                </div>
+                
+                <div class="item-meta-grid">
+                  <section>
+                    <h4>Owner Files</h4>
+                    <ul class="files"><li><code>apps/www/package.json</code></li><li><code>pnpm-lock.yaml</code></li><li><code>apps/www/source.config.ts</code></li><li><code>apps/www/src/lib/source.ts</code></li><li><code>apps/www/src/lib/llm.ts</code></li><li><code>apps/www/src/lib/llm-source.ts</code></li><li><code>apps/www/src/app/(app)/llms.txt/route.ts</code></li><li><code>apps/www/src/app/(app)/llms-full.txt/route.ts</code></li></ul>
                   </section>
                 </div>
               </div>

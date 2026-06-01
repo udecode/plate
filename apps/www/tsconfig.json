@@ -7,7 +7,8 @@
     "incremental": true,
     "paths": {
       "@/*": ["./src/*"],
-      "@/.source": ["./.source"],
+      "collections/browser": ["./.source/browser"],
+      "collections/server": ["./.source/server"],
       "@platejs/ai/react": ["../../packages/ai/src/react"],
       "@platejs/basic-nodes/react": ["../../packages/basic-nodes/src/react"],
       "@platejs/basic-styles/react": ["../../packages/basic-styles/src/react"],

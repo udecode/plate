@@ -1,62 +1,77 @@
 ---
 title: Getting Started
-description: Choose your path to integrate the Plate rich-text editor framework into your React project.
+description: Choose the right Plate installation path for your React project.
 ---
 
-Plate offers multiple integration paths depending on your project needs and environment. Choose the approach that best matches your requirements.
+Plate has different setup paths for UI-first editors, headless React editors, server components, and backend processing. Start with Plate UI when you want a complete editor surface. Use the lower-level guides when you need to own the rendering, runtime environment, or server-only pipeline.
 
-## Client-Side Integration
+## Choose a Path
 
-### Option 1: With Plate UI (Recommended)
-
-Leverage [Plate UI](/docs/plate-ui) for a rich, pre-configured editor experience, especially if you're using or plan to use [shadcn/ui](https://ui.shadcn.com/).
+<Cards>
+  <Card
+    href="/docs/installation/plate-ui"
+    title="Plate UI"
+    description="Recommended. Install the shadcn-based editor UI, kits, and starter components."
+  />
+  <Card
+    href="/docs/installation/next"
+    title="Next.js"
+    description="Use Plate in a server-rendered React app."
+  />
+  <Card
+    href="/docs/installation/react"
+    title="React"
+    description="Use Plate in Vite, React Router, or another client-side React app."
+  />
+  <Card
+    href="/docs/installation/manual"
+    title="Manual"
+    description="Build a headless editor with direct package installs."
+  />
+</Cards>
 
 <Steps>
 
-#### Install Plate UI
+### Install Plate UI
 
-Begin by following the **[Plate UI Installation Guide](./installation/plate-ui)**. This guide covers installing core dependencies and setting up Plate UI components.
+Use Plate UI when you want the fastest working editor path.
 
-#### Basic Usage
+```bash
+npx shadcn@latest add @plate/plate-ui
+```
 
-Once Plate UI is set up, choose the guide that matches your React application type:
+### Pick the Runtime Guide
 
-*   **[Next.js](./installation/next)** - For server-side rendered applications
-*   **[React](./installation/react)** - For client-side applications (Vite, React Router, etc.)
+After Plate UI is installed, choose the runtime guide that matches your app:
+
+- [Next.js](/docs/installation/next) for server-rendered React apps.
+- [React](/docs/installation/react) for Vite, React Router, and other client-side apps.
+
+### Add Features
+
+Use feature kits when you want complete plugin + UI wiring. Use manual plugin docs when you want only the headless package behavior.
 
 </Steps>
 
-### Option 2: Manual Setup
+## Other Environments
 
-For projects not using shadcn/ui, Tailwind CSS, or those requiring a framework-agnostic solution, follow the **[Manual Installation Guide](./installation/manual)** for detailed instructions.
+| Environment | Use it when | Guide |
+| --- | --- | --- |
+| Manual React | You do not want Plate UI or shadcn/ui. | [Manual Installation](/docs/installation/manual) |
+| React Server Components | You need static content generation or server-side editor processing without client-side interactivity. | [RSC](/docs/installation/rsc) |
+| Node.js | You need backend migration, validation, or serialization scripts. | [Node.js](/docs/installation/node) |
 
 <Callout type="note">
-  You can always integrate Plate UI components into a manual setup later.
+  Server-only environments use base package imports like `platejs` and `@platejs/basic-nodes`. Do not import from `/react` subpaths in RSC or Node.js.
 </Callout>
-
-## Server-Side Integration
-
-### React Server Components
-
-For leveraging Plate in React Server Components (RSC) for tasks like static content generation or server-side data processing without client-side interactivity.
-
-Follow the **[RSC Guide](./installation/rsc)** for detailed instructions.
-
-### Node.js Environment
-
-For using Plate in a Node.js environment for backend tasks such as data processing, content migration, or validation.
-
-Follow the **[Node.js Guide](./installation/node)** for detailed instructions.
 
 ## Next Steps
 
-After setting up Plate, explore these resources to further customize and enhance your editor:
+Once the editor runs, use these docs to customize it:
 
--   **Configuration:**
-    -   [Editor Configuration](/docs/editor)
-    -   [Plugin Configuration](/docs/plugin)
-    -   [Plugin Components](/docs/plugin-components)
--   **Support & Community:**
-    -   [Troubleshooting Guide](/docs/troubleshooting)
-    -   Join our [Discord Community](https://discord.gg/mAZRuBzGM3)
-    -   Participate in [GitHub Discussions](https://github.com/udecode/plate/discussions)
+- [Editor](/docs/editor) explains the editor instance.
+- [Plugin](/docs/plugin) explains plugin configuration.
+- [Plugin Components](/docs/plugin-components) explains node and mark rendering.
+- [Troubleshooting](/docs/troubleshooting) covers common setup issues.
+
+Done. You now have the right install path for your app surface.

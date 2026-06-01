@@ -196,7 +196,7 @@ const nextConfig = async (_phase: string) => {
           destination: '/cn/:path*',
           has: [{ key: 'locale', type: 'query', value: 'cn' }],
           permanent: true,
-          source: '/:path*',
+          source: '/:path((?!api|cn).*)',
         },
       ];
     },

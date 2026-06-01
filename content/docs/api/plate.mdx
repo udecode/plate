@@ -1,11 +1,94 @@
 ---
 title: Plate
-description: API reference for platejs.
+description: API reference for the platejs package.
 ---
 
-`platejs` contains common types and functions for Plate:
+`platejs` is the umbrella package for Plate's base, React, and static APIs. It re-exports the core runtime, Slate runtime, utilities, React helpers, and static renderer through three public subpaths.
 
-- [Slate](/docs/api/slate)
-- [Plate Core](/docs/api/core)
-- [Plate Utils](/docs/api/utils)
-- [React Utils](/docs/api/react-utils)
+## Installation
+
+```bash
+npm install platejs
+```
+
+`platejs` has React peer dependencies because the package also owns `platejs/react`.
+
+## Import Paths
+
+| Import | Re-exports | Use |
+| --- | --- | --- |
+| `platejs` | `@platejs/core`, `@platejs/slate`, `@platejs/utils`, `@udecode/utils` | Headless editor creation, Slate APIs, core types, and shared utilities. |
+| `platejs/react` | `@platejs/core/react`, `@platejs/utils/react`, `@udecode/react-hotkeys`, `@udecode/react-utils` | React editors, components, hooks, stores, plugins, and React utility hooks. |
+| `platejs/static` | `@platejs/core/static` | Static editor creation, static rendering, HTML serialization, and static node renderers. |
+
+Use the umbrella imports in application code. Package code can import direct package surfaces such as `@platejs/core/react` when it needs a tighter dependency boundary.
+
+## Base Runtime
+
+Use `platejs` for non-React editor work and shared types.
+
+```ts title="lib/create-headless-editor.ts"
+import { createSlateEditor } from 'platejs';
+
+export const editor = createSlateEditor({
+  value: [
+    {
+      type: 'p',
+      children: [{ text: 'Headless editor.' }],
+    },
+  ],
+});
+```
+
+## React Runtime
+
+Use `platejs/react` for app editors.
+
+```tsx title="components/basic-editor.tsx"
+import { Plate, PlateContent, usePlateEditor } from 'platejs/react';
+
+export function BasicEditor() {
+  const editor = usePlateEditor({
+    value: [
+      {
+        type: 'p',
+        children: [{ text: 'React editor.' }],
+      },
+    ],
+  });
+
+  return (
+    <Plate editor={editor}>
+      <PlateContent />
+    </Plate>
+  );
+}
+```
+
+## Static Runtime
+
+Use `platejs/static` for rendering or serialization paths that do not mount an editable React editor.
+
+```tsx title="lib/create-static-editor.ts"
+import { createStaticEditor } from 'platejs/static';
+
+export const staticEditor = createStaticEditor({
+  value: [
+    {
+      type: 'p',
+      children: [{ text: 'Static editor.' }],
+    },
+  ],
+});
+```
+
+## API Pages
+
+| Page | Covers |
+| --- | --- |
+| [Plate Core](/docs/api/core) | Editor creation, React runtime, plugins, stores, and render primitives. |
+| [Slate](/docs/api/slate) | Slate-compatible editor API, transforms, nodes, locations, operations, and refs. |
+| [Plate Utils](/docs/api/utils) | Shared non-React utilities. |
+| [React Utils](/docs/api/react-utils) | React utility hooks and helpers re-exported through `platejs/react`. |
+| [Plate Components](/docs/api/core/plate-components) | `Plate`, `PlateContent`, `PlateView`, and component primitives. |
+| [Plate Editor](/docs/api/core/plate-editor) | Runtime editor type, core APIs, transforms, DOM state, and metadata. |

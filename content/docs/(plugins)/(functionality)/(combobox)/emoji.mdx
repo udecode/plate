@@ -1,13 +1,16 @@
 ---
 title: Emoji
+description: Inline emoji search and toolbar emoji picking.
 docs:
   - route: /docs/combobox
     title: Combobox
   - route: /docs/components/emoji-node
     title: Emoji Input Element
-  - route: /docs/components/emoji-dropdown-menu
+  - route: /docs/components/emoji-toolbar-button
     title: Emoji Toolbar Button
 ---
+
+Emoji adds two insertion paths: a `:` trigger that opens an inline combobox, and a toolbar popover for browsing categories. The package owns emoji data, trigger behavior, index search, picker state, frequent emoji storage, and insertion. The registry owns the inline input element and toolbar picker UI.
 
 <ComponentPreview name="emoji-demo" />
 
@@ -15,45 +18,71 @@ docs:
 
 ## Features
 
-- Insert emojis inline with autocomplete suggestions
-- Triggered by `:` character followed by emoji name (e.g., `:apple:` 🍎)
-- Customizable emoji data source and rendering
+- `:` trigger powered by `@platejs/combobox`.
+- Edit-only inline void `emoji_input` node.
+- Emoji search from `@emoji-mart/data`.
+- Default insertion as Unicode text.
+- Custom inserted node support through `createEmojiNode`.
+- Toolbar popover with categories, search, preview, and frequent emoji tracking.
+- Markdown shortcode deserialization to Unicode text.
 
 </PackageInfo>
 
-## Kit Usage
+## Fast Path
 
 <Steps>
 
-### Installation
+### Add The Kit
 
-The fastest way to add emoji functionality is with the `EmojiKit`, which includes pre-configured `EmojiPlugin` and `EmojiInputPlugin` along with their [Plate UI](/docs/installation/plate-ui) components.
+`EmojiKit` installs `EmojiPlugin` with `@emoji-mart/data` and renders `EmojiInputPlugin` with the registry inline combobox.
 
 <ComponentSource name="emoji-kit" />
 
-- [`EmojiInputElement`](/docs/components/emoji-node): Renders the emoji input combobox
-
-### Add Kit
-
 ```tsx
 import { createPlateEditor } from 'platejs/react';
+
 import { EmojiKit } from '@/components/editor/plugins/emoji-kit';
 
-const editor = createPlateEditor({
-  plugins: [
-    // ...otherPlugins,
-    ...EmojiKit,
-  ],
+export const editor = createPlateEditor({
+  plugins: EmojiKit,
 });
 ```
 
+### Render The Inline Input
+
+`emoji-node` debounces the search text, queries `EmojiInlineIndexSearch`, and inserts the selected emoji.
+
+<ComponentSource name="emoji-node" />
+
+### Add Toolbar Picking
+
+`emoji-toolbar-button` renders the Radix popover picker backed by `useEmojiDropdownMenuState`.
+
+<ComponentSource name="emoji-toolbar-button" />
+
 </Steps>
 
-## Manual Usage
+## Ownership
+
+| Layer | Owner | What It Does |
+|-------|-------|--------------|
+| `@platejs/emoji` | Package | Exports `BaseEmojiPlugin`, `BaseEmojiInputPlugin`, `insertEmoji`, emoji search libraries, settings, categories, and types. |
+| `@platejs/emoji/react` | Package | Exports `EmojiPlugin`, `EmojiInputPlugin`, picker hooks, and frequent emoji storage. |
+| `@platejs/combobox` | Package | Provides trigger detection and transient input cleanup for the `:` flow. |
+| `@emoji-mart/data` | Dependency | Provides the emoji dataset used by the registry kit. |
+| `emoji-kit` | Registry | Adds `EmojiPlugin` with emoji-mart data and `EmojiInputPlugin.withComponent(EmojiInputElement)`. |
+| `emoji-node` | Registry UI | Renders inline emoji search with `InlineCombobox`. |
+| `emoji-toolbar-button` | Registry UI | Renders the toolbar popover, category grid, search bar, and preview. |
+| `inline-combobox` | Registry UI | Renders the inline trigger input and popover primitives. |
+| `@platejs/markdown` | Package | Deserializes emoji shortcodes such as `:fire:` to Unicode text. |
+
+The emoji plugin is edit-only. It inserts text or your custom node, then the transient `emoji_input` disappears.
+
+## Manual Setup
 
 <Steps>
 
-### Installation
+### Install Packages
 
 ```bash
 npm install @platejs/emoji @emoji-mart/data
@@ -61,36 +90,20 @@ npm install @platejs/emoji @emoji-mart/data
 
 ### Add Plugins
 
-```tsx
-import { EmojiPlugin, EmojiInputPlugin } from '@platejs/emoji/react';
-import { createPlateEditor } from 'platejs/react';
-
-const editor = createPlateEditor({
-  plugins: [
-    // ...otherPlugins,
-    EmojiPlugin,
-    EmojiInputPlugin,
-  ],
-});
-```
-
-### Configure Plugins
+Use `@emoji-mart/data` when you want the full emoji dataset instead of the package default library.
 
 ```tsx
-import { EmojiPlugin, EmojiInputPlugin } from '@platejs/emoji/react';
-import { createPlateEditor } from 'platejs/react';
-import { EmojiInputElement } from '@/components/ui/emoji-node';
 import emojiMartData from '@emoji-mart/data';
+import { EmojiInputPlugin, EmojiPlugin } from '@platejs/emoji/react';
+import { createPlateEditor } from 'platejs/react';
 
-const editor = createPlateEditor({
+import { EmojiInputElement } from '@/components/ui/emoji-node';
+
+export const editor = createPlateEditor({
   plugins: [
-    // ...otherPlugins,
     EmojiPlugin.configure({
       options: {
-        data: emojiMartData,
-        trigger: ':',
-        triggerPreviousCharPattern: /^\s?$/,
-        createEmojiNode: (emoji) => ({ text: emoji.skins[0].native }),
+        data: emojiMartData as any,
       },
     }),
     EmojiInputPlugin.withComponent(EmojiInputElement),
@@ -98,48 +111,97 @@ const editor = createPlateEditor({
 });
 ```
 
-- `options.data`: Emoji data from @emoji-mart/data package
-- `options.trigger`: Character that triggers the emoji combobox (default: `:`)
-- `options.triggerPreviousCharPattern`: RegExp pattern for character before trigger
-- `options.createEmojiNode`: Function to create the emoji node when selected. Default inserts Unicode character as text
-- `withComponent`: Assigns the UI component for the emoji input combobox
+### Add A Toolbar Button
 
-### Add Toolbar Button
+Render `EmojiToolbarButton` in your toolbar when users should browse emoji without typing `:`.
 
-You can add [`EmojiToolbarButton`](/docs/components/emoji-toolbar-button) to your [Toolbar](/docs/toolbar) to insert emojis.
+```tsx
+import { EmojiToolbarButton } from '@/components/ui/emoji-toolbar-button';
+
+export function FixedToolbarButtons() {
+  return <EmojiToolbarButton />;
+}
+```
 
 </Steps>
 
-## Plugins
+## Inline Flow
 
-### EmojiPlugin
+The inline path is a combobox flow.
 
-Plugin for emoji functionality. Extends [TriggerComboboxPluginOptions](/docs/combobox#triggercomboboxpluginoptions).
+| Step | Source |
+|------|--------|
+| Type `:` | `BaseEmojiPlugin` trigger. |
+| Previous character must match `/^\s?$/` | Start of block or whitespace by default. |
+| Insert transient input | `createComboboxInput` creates `{ type: KEYS.emojiInput, children: [{ text: '' }] }`. |
+| Search emoji data | `EmojiInputElement` calls `EmojiInlineIndexSearch.getInstance(data).search(query).get()`. |
+| Select a result | `InlineComboboxItem` removes the input and calls `insertEmoji(editor, emoji)`. |
+| Insert final content | `insertEmoji` calls `createEmojiNode(emoji)` and inserts that node. |
 
-<API name="EmojiPlugin">
-<APIOptions>
-  <APIItem name="data" type="EmojiMartData" optional>
-    The emoji data from @emoji-mart/data package.
-    - **Default:** Built-in emoji library
-  </APIItem>
-  <APIItem name="createEmojiNode" type="(emoji: Emoji) => Descendant" optional>
-    Function to specify the node inserted when an emoji is selected.
-    - **Default:** Inserts a text node with the emoji Unicode character
-  </APIItem>
-  <APIItem name="trigger" type="string" optional>
-    Character that triggers the emoji combobox.
-    - **Default:** `':'`
-  </APIItem>
-  <APIItem name="triggerPreviousCharPattern" type="RegExp" optional>
-    Pattern to match the character before trigger.
-    - **Default:** `/^\s?$/`
-  </APIItem>
-  <APIItem name="createComboboxInput" type="() => TElement" optional>
-    Function to create the input element when trigger is activated.
-  </APIItem>
-</APIOptions>
-</API>
+`EmojiInputElement` sets `filter={false}` because emoji search already returns filtered results. It also uses `hideWhenNoValue`, so the popover stays closed until the user types a search value after `:`.
 
-### EmojiInputPlugin
+## Inserted Value
 
-Handles the input behavior for emoji insertion.
+By default, selecting an emoji inserts the first native skin as text.
+
+```tsx
+EmojiPlugin.configure({
+  options: {
+    createEmojiNode: ({ skins }) => ({ text: skins[0].native }),
+  },
+});
+```
+
+Use `createEmojiNode` when your app stores emoji as structured inline nodes instead of text.
+
+```tsx
+EmojiPlugin.configure({
+  options: {
+    createEmojiNode: (emoji) => ({
+      children: [{ text: emoji.id }],
+      emojiId: emoji.id,
+      type: 'emoji-chip',
+    }),
+  },
+});
+```
+
+## Toolbar Picker
+
+`EmojiToolbarButton` calls `useEmojiDropdownMenuState`, then passes the picker state into `EmojiPicker`.
+
+| Option | Default | Use |
+|--------|---------|-----|
+| `closeOnSelect` | `true` | Close the toolbar popover after insertion. |
+| `settings` | `EmojiSettings` | Configure categories, per-line count, button size, and frequent emoji behavior. |
+| `settings.showFrequent.limit` | Package setting | Limits the frequent emoji category. |
+
+Frequent emoji counts are stored in `window.localStorage` through `FrequentEmojiStorage`. On the server, the storage class returns the default frequent set.
+
+## Markdown
+
+`@platejs/markdown` deserializes emoji shortcodes to Unicode text.
+
+```md
+Launch :fire: soon
+```
+
+Serializing the resulting value writes the Unicode emoji:
+
+```md
+Launch 🔥 soon
+```
+
+## API Reference
+
+| API | Package | Use |
+|-----|---------|-----|
+| `BaseEmojiPlugin` | `@platejs/emoji` | Edit-only trigger plugin with default `:`, emoji data, input creation, and text insertion. |
+| `BaseEmojiInputPlugin` | `@platejs/emoji` | Edit-only inline void `emoji_input` plugin. |
+| `EmojiPlugin` | `@platejs/emoji/react` | React emoji plugin with nested `EmojiInputPlugin`. |
+| `EmojiInputPlugin` | `@platejs/emoji/react` | React input plugin for `EmojiInputElement`. |
+| `insertEmoji(editor, emoji)` | `@platejs/emoji` | Inserts `createEmojiNode(emoji)`. |
+| `EmojiInlineIndexSearch` | `@platejs/emoji` | Inline search index used by `emoji-node`. |
+| `useEmojiDropdownMenuState(options?)` | `@platejs/emoji/react` | Builds toolbar popover state and picker state. |
+| `useEmojiPicker(options)` | `@platejs/emoji/react` | Handles search, category focus, preview, selection, and frequent emoji updates. |
+| `FrequentEmojiStorage` | `@platejs/emoji/react` | Reads and writes frequent emoji counts through localStorage. |

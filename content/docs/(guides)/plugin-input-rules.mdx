@@ -3,20 +3,40 @@ title: Plugin Input Rules
 description: Typed editor rules for markdown shortcuts, block fences, autolinks, and text substitutions.
 ---
 
-Plugin Input Rules are Plate's runtime for typed editor conversions. As you type, paste, or press Enter, Plate walks the rules registered for that input and lets the first matching rule transform the editor on the spot — a markdown prefix becomes a heading, a fence becomes a code block, a URL becomes a link, `->` becomes `→`.
+Plugin Input Rules convert typed editor patterns: markdown prefixes become headings, fences become code blocks, URLs become links, and `->` becomes `→`.
+Use [Plugin Rules](/docs/plugin-rules) for node behavior policy such as how `Enter` or `Backspace` works inside a block.
+This page covers shipped markdown rules, local substitutions, custom authoring, execution order, and helper reference.
 
-Not to be confused with [Plugin Rules](/docs/plugin-rules), which control node behavior policy (what `Enter` and `Backspace` do inside a block). This page is about what happens when you *type a pattern*.
+## On This Page
 
-This guide walks you through turning on the shipped markdown rules, adding local text substitutions, authoring custom rules, and — at the end — the exact helper reference.
+- [What Plugin Input Rules Are](#what-plugin-input-rules-are)
+- [Quick Start](#quick-start)
+- [Feature-Owned Markdown Rules](#feature-owned-markdown-rules)
+- [Local Copied Shortcuts](#local-copied-shortcuts)
+- [Custom Rules](#custom-rules)
+- [How Rule Execution Works](#how-rule-execution-works)
+- [API Reference](#api-reference)
 
 ## What Plugin Input Rules Are
 
-When you type a character, press Enter, or paste data, Plate asks every registered input rule "does this fire?" before running the default transform. Each rule declares a target (`insertText`, `insertBreak`, or `insertData`), an optional `enabled` gate, a `resolve` function that looks at the current selection and returns a match payload, and an `apply` function that performs the transform. The first rule whose `resolve` returns a non-undefined payload gets to run; if nothing matches, the default transform runs as usual.
+When you type a character, press Enter, or paste data, Plate asks every
+registered input rule "does this fire?" before running the default transform.
+Each rule declares a target (`insertText`, `insertBreak`, or `insertData`), an
+optional `enabled` gate, a `resolve` function that looks at the current
+selection and returns a match payload, and an `apply` function that performs the
+transform. The first rule whose `resolve` returns a non-undefined payload gets
+to run; if nothing matches, the default transform runs as usual.
 
 Ownership splits cleanly into three lanes:
 
-- **Core.** Owns dispatch, selection helpers, and the low-level authoring surfaces: `createMarkInputRule`, `createBlockStartInputRule`, `createBlockFenceInputRule`, `createTextSubstitutionInputRule`, `createRuleFactory`, and `defineInputRule`.
-- **Feature packages.** Own semantic rule families like `HeadingRules`, `BlockquoteRules`, `CodeBlockRules`, `BulletedListRules`, `MathRules`, `LinkRules`. Each family exports factory functions that return concrete rule instances.
+- **Core.** Owns dispatch, selection helpers, and the low-level authoring
+  surfaces: `createMarkInputRule`, `createBlockStartInputRule`,
+  `createBlockFenceInputRule`, `createTextSubstitutionInputRule`,
+  `createRuleFactory`, and `defineInputRule`.
+- **Feature packages.** Own semantic rule families like `HeadingRules`,
+  `BlockquoteRules`, `CodeBlockRules`, `BulletedListRules`, `MathRules`,
+  `LinkRules`. Each family exports factory functions that return concrete rule
+  instances.
 - **Kits and apps.** Own activation. Nothing is turned on just because a plugin exists — you pass rule instances to `inputRules: [...]` when you configure a plugin.
 
 | Lane | Owner | Example |
@@ -27,7 +47,9 @@ Ownership splits cleanly into three lanes:
 | Raw custom rule | App or package | `defineInputRule({ target, trigger, resolve, apply })` |
 
 <Callout>
-**Input rules are always explicit.** Registering a plugin does not activate any rules; you must pass them to `inputRules`. There is no hidden default set and no string-keyed activation layer.
+**Input rules are always explicit.** Registering a plugin does not activate any
+rules; you must pass them to `inputRules`. There is no hidden default set and no
+string-keyed activation layer.
 </Callout>
 
 ## Quick Start
@@ -65,11 +87,16 @@ const editor = createPlateEditor({
 });
 ```
 
-Typing `# ` creates an H1, `**bold**` turns on the bold mark, a triple-backtick fence creates a code block, `- ` starts a bulleted list, `[label](url)` creates a link, and so on. Each kit owns its rule wiring — the kit source shows exactly which rules it registers and on which plugins.
+Typing `# ` creates an H1, `**bold**` turns on the bold mark, a triple-backtick
+fence creates a code block, `- ` starts a bulleted list, `[label](url)` creates
+a link, and so on. Each kit owns its rule wiring — the kit source shows exactly
+which rules it registers and on which plugins.
 
 ### Add Local Text Substitutions
 
-`AutoformatKit` is a small plugin that lives in your app and uses `createTextSubstitutionInputRule` under the hood. It is not a published package — you own the code and can edit the patterns.
+`AutoformatKit` is copied registry code that lives in your app and uses
+`createTextSubstitutionInputRule` under the hood. You own the code and can edit
+the patterns.
 
 ```tsx showLineNumbers
 import { createPlateEditor } from 'platejs/react';
@@ -77,36 +104,50 @@ import { createPlateEditor } from 'platejs/react';
 import { AutoformatKit } from '@/components/editor/plugins/autoformat-kit';
 
 const editor = createPlateEditor({
-  plugins: [
-    // ...otherPlugins,
-    ...AutoformatKit,
-  ],
+  plugins: [...AutoformatKit],
 });
 ```
 
 Type `->` and get `→`. Type `(c)` and get `©`. The full pattern list is visible in the kit source — change it however you like.
 
 <Callout>
-**Feature-owned rules and text substitutions are different lanes.** Markdown shortcuts live in the feature packages that own the semantics (`@platejs/basic-nodes`, `@platejs/link`, `@platejs/math`, ...). Text substitutions are glyph-for-glyph replacements that live in your app.
+**Feature-owned rules and text substitutions are different lanes.** Markdown
+shortcuts live in the feature packages that own the semantics
+(`@platejs/basic-nodes`, `@platejs/link`, `@platejs/math`, ...). Text
+substitutions are glyph-for-glyph replacements that live in your app.
 </Callout>
 
-Kits are the quick path. If you'd rather wire rules by hand — pick which markdown variants are active, override priorities, or gate a rule per-app — jump to [Feature-Owned Markdown Rules](#feature-owned-markdown-rules) for the manual path.
+Kits are the quick path. If you'd rather wire rules by hand — pick which
+markdown variants are active, override priorities, or gate a rule per-app — jump
+to [Feature-Owned Markdown Rules](#feature-owned-markdown-rules) for the manual
+path.
 
 That's the whole surface in under a minute. Type `# `, type `->`, watch them land.
 
 ## Feature-Owned Markdown Rules
 
-Feature packages export semantic rule families. Each family exposes one or more factory functions that return a concrete rule you pass into the matching plugin's `inputRules`.
+Feature packages export semantic rule families. Each family exposes one or more
+factory functions that return a concrete rule you pass into the matching
+plugin's `inputRules`.
 
 ### Basic Blocks
 
 Basic block rules ship with `@platejs/basic-nodes`. Register them per plugin.
 
-**Headings.** `HeadingRules.markdown()` is the same factory for H1 through H6. It derives the markdown prefix from the plugin key (`#`, `##`, `###`, ...), so you pass it once on each heading plugin.
+**Headings.** `HeadingRules.markdown()` is the same factory for H1 through H6.
+It derives the markdown prefix from the plugin key (`#`, `##`, `###`, ...), so
+you pass it once on each heading plugin.
 
 ```tsx showLineNumbers
 import { HeadingRules } from '@platejs/basic-nodes';
-import { H1Plugin, H2Plugin, H3Plugin } from '@platejs/basic-nodes/react';
+import {
+  H1Plugin,
+  H2Plugin,
+  H3Plugin,
+  H4Plugin,
+  H5Plugin,
+  H6Plugin,
+} from '@platejs/basic-nodes/react';
 
 H1Plugin.configure({
   inputRules: [HeadingRules.markdown()],
@@ -117,10 +158,22 @@ H2Plugin.configure({
 H3Plugin.configure({
   inputRules: [HeadingRules.markdown()],
 }),
-// ... same for H4, H5, H6
+H4Plugin.configure({
+  inputRules: [HeadingRules.markdown()],
+}),
+H5Plugin.configure({
+  inputRules: [HeadingRules.markdown()],
+}),
+H6Plugin.configure({
+  inputRules: [HeadingRules.markdown()],
+}),
 ```
 
-**Blockquote.** `BlockquoteRules.markdown()` fires on `>` followed by space and wraps the current block. Because blockquote is a wrapper/container node, the rule nests cleanly inside an existing quote instead of trying to retag the paragraph in place. The rule is gated with `enabled` so it won't fire inside a code block.
+**Blockquote.** `BlockquoteRules.markdown()` fires on `>` followed by space and
+wraps the current block. Because blockquote is a wrapper/container node, the
+rule nests cleanly inside an existing quote instead of trying to retag the
+paragraph in place. The rule is gated with `enabled` so it won't fire inside a
+code block.
 
 ```tsx showLineNumbers
 import { BlockquoteRules } from '@platejs/basic-nodes';
@@ -184,7 +237,9 @@ UnderlinePlugin.configure({
 
 Register both `*` and `_` variants to accept `**bold**` and `__bold__`. Underline uses a fixed `__x__` form, so its factory takes no options.
 
-**Combos.** `MarkComboRules.markdown()` is a single factory that covers multi-delimiter patterns like `***bold italic***`. Register combos alongside the single-mark rules on the plugin that owns the dominant mark.
+**Combos.** `MarkComboRules.markdown()` is a single factory that covers
+multi-delimiter patterns like `***bold italic***`. Register combos alongside the
+single-mark rules on the plugin that owns the dominant mark.
 
 ```tsx showLineNumbers
 import { BoldRules, MarkComboRules } from '@platejs/basic-nodes';
@@ -242,7 +297,9 @@ HighlightPlugin.configure({
 }),
 ```
 
-Inline code uses `` `x` ``. Strikethrough uses `~~x~~`. Subscript is `~x~`. Superscript is `^x^`. Highlight accepts `==x==` or `≡x≡` — pick either, both, or pass a different variant.
+Inline code uses `` `x` ``. Strikethrough uses `~~x~~`. Subscript is `~x~`.
+Superscript is `^x^`. Highlight accepts `==x==` or `≡x≡` — pick either, both,
+or pass a different variant.
 
 ### Code Blocks
 
@@ -326,7 +383,10 @@ EquationPlugin.configure({
 }),
 ```
 
-`variant: '$'` is inline — a delimited mark rule. `variant: '$$'` is a block fence, so — like `CodeBlockRules` — it takes `on: 'match' | 'break'`. The example uses `on: 'break'`, which commits the block equation when you press Enter after the fence.
+`variant: '$'` is inline — a delimited mark rule. `variant: '$$'` is a block
+fence, so — like `CodeBlockRules` — it takes `on: 'match' | 'break'`. The
+example uses `on: 'break'`, which commits the block equation when you press
+Enter after the fence.
 
 ### Links
 
@@ -357,7 +417,9 @@ That's the full feature-owned catalog. Every package you add contributes its own
 
 ## Local Copied Shortcuts
 
-Sometimes you want small text substitutions — smart quotes, arrows, fractions, trademarks — that don't belong to any feature package. Use `createTextSubstitutionInputRule` for this.
+Sometimes you want small text substitutions — smart quotes, arrows, fractions,
+trademarks — that don't belong to any feature package. Use
+`createTextSubstitutionInputRule` for this.
 
 ### createTextSubstitutionInputRule
 
@@ -401,7 +463,10 @@ A few details worth knowing:
 
 ### Use AutoformatKit As A Starting Point
 
-The `autoformat-kit.tsx` file in Plate's registry wires up a full set of substitutions — arrows, comparisons, equalities, fractions, legal symbols, smart quotes, sub/superscript numerals — all gated against code blocks. Copy it into your app and edit the patterns.
+The `autoformat-kit.tsx` file in Plate's registry wires up a full set of
+substitutions — arrows, comparisons, equalities, fractions, legal symbols, smart
+quotes, sub/superscript numerals — all gated against code blocks. Copy it into
+your app and edit the patterns.
 
 ```tsx showLineNumbers title="autoformat-kit.tsx"
 import {
@@ -443,33 +508,44 @@ const smartQuotesRule = createAutoformatTextSubstitutionRule({
 
 const AutoformatShortcutsPlugin = createSlatePlugin({
   key: 'autoformatShortcuts',
-  inputRules: [legalRule, smartQuotesRule /* ...more */],
+  inputRules: [legalRule, smartQuotesRule],
 });
 
 export const AutoformatKit = [AutoformatShortcutsPlugin];
 ```
 
 <Callout>
-**`AutoformatKit` is not a package.** It's local copied code you own. There is no `@platejs/autoformat`. Treat the registry file as a starting template.
+**Use copied code for local substitutions.** `@platejs/autoformat` still ships
+as a compatibility package for autoformat imports. Author project-specific
+substitutions in copied registry code or your own local kit so the rules stay
+visible and editable.
 </Callout>
 
 ### When To Reach For defineInputRule
 
-Text substitution covers the glyph-for-glyph case. When you need more — reading the current block, dispatching a richer transform, or detecting a pattern that isn't a simple character match — drop down to `defineInputRule` or one of the low-level builders.
+Text substitution covers the glyph-for-glyph case. When you need more — reading
+the current block, dispatching a richer transform, or detecting a pattern that
+isn't a simple character match — drop down to `defineInputRule` or one of the
+low-level builders.
 
 ## Custom Rules
 
 Everything above is sugar on top of three low-level authoring surfaces:
 
 - `defineInputRule`, an identity function that types a raw rule inline.
-- The specialized builders: `createMarkInputRule`, `createBlockStartInputRule`, `createBlockFenceInputRule`, `createTextSubstitutionInputRule`.
-- `createRuleFactory`, the package-authoring helper used to expose semantic families like `MathRules.markdown(...)` or `LinkRules.autolink(...)` without re-declaring shared runtime fields.
+- The specialized builders: `createMarkInputRule`, `createBlockStartInputRule`,
+  `createBlockFenceInputRule`, `createTextSubstitutionInputRule`.
+- `createRuleFactory`, the package-authoring helper used to expose semantic
+  families like `MathRules.markdown(...)` or `LinkRules.autolink(...)` without
+  re-declaring shared runtime fields.
 
 Use this section when none of the shipped families fit your need or when you're authoring your own reusable rule family.
 
 ### Register Explicit Rule Instances
 
-Rules are concrete objects. You pass them into `inputRules` exactly as-is. To override a field like `priority` or `enabled` on a finished instance, spread the rule and replace the field:
+Rules are concrete objects. You pass them into `inputRules` exactly as-is. To
+override a field like `priority` or `enabled` on a finished instance, spread the
+rule and replace the field:
 
 ```tsx showLineNumbers
 import { HeadingRules } from '@platejs/basic-nodes';
@@ -488,7 +564,10 @@ LinkPlugin.configure({
 }),
 ```
 
-Why the spread? Package factories are intentionally narrow — most don't take a `priority` option. Overriding is the caller's job, and spreading the returned rule keeps it obvious that you're changing one field on an already-built instance.
+Why the spread? Package factories are intentionally narrow — most don't take a
+`priority` option. Overriding is the caller's job, and spreading the returned
+rule keeps it obvious that you're changing one field on an already-built
+instance.
 
 The same pattern works for `enabled`. If a family ships with a sensible default but you need stricter gating in one app, spread the rule and override:
 
@@ -501,10 +580,12 @@ The same pattern works for `enabled`. If a family ships with a sensible default 
 
 ### Plugin-Side Factories
 
-For plugin authors, the `inputRules` option also accepts a function that receives a `rule` builder. Use this form when your rules depend on plugin-local state or when you want your rule wiring to live next to the plugin's types.
+For plugin authors, the `inputRules` option also accepts a function that
+receives a `rule` builder. Use this form when your rules depend on plugin-local
+state or when you want your rule wiring to live next to the plugin's types.
 
 ```tsx showLineNumbers
-import { createSlatePlugin } from 'platejs';
+import { createSlatePlugin, KEYS } from 'platejs';
 
 const CustomPlugin = createSlatePlugin({
   key: 'custom',
@@ -523,7 +604,11 @@ const CustomPlugin = createSlatePlugin({
       fence: '```',
       on: 'match',
       apply: (context, match) => {
-        // convert to code block
+        context.editor.tf.delete({ at: match.range });
+        context.editor.tf.setNodes(
+          { type: context.editor.getType(KEYS.codeBlock) },
+          { at: match.path }
+        );
       },
     }),
   ],
@@ -545,7 +630,9 @@ Use the factory form when you need that co-location; use the array form when you
 
 ### Author A Rule Family
 
-When you're shipping a package, you usually want a public factory like `MyNodeRules.markdown(...)` that takes a narrow options object and hides the low-level rule plumbing. Reach for `createRuleFactory`.
+When you're shipping a package, you usually want a public factory like
+`MyNodeRules.markdown(...)` that takes a narrow options object and hides the
+low-level rule plumbing. Reach for `createRuleFactory`.
 
 ```tsx showLineNumbers
 import { createRuleFactory, KEYS } from 'platejs';
@@ -566,18 +653,29 @@ export const BlockquoteRules = {
 A few things to notice:
 
 - `type` picks the underlying builder. Use `'mark'`, `'blockStart'`, `'blockFence'`, or `'textSubstitution'`.
-- The two generic parameters model your public API: `TRequired` (the first) are options callers must pass; `TDefaults` (the second) are options you supply a default for — here, `marker: '>'`.
-- Factory values can be plain values (`'>'`) or functions of the input (`({ marker }) => marker`). The input includes the runtime context, your defaults, and any required options the caller passes.
-- For `blockStart`, core already owns the base match payload: `{ range, text }`. If you provide `resolveMatch`, return only your extra fields — core merges them onto the base payload before `apply` runs.
+- The two generic parameters model your public API: `TRequired` (the first) are
+  options callers must pass; `TDefaults` (the second) are options you supply a
+  default for — here, `marker: '>'`.
+- Factory values can be plain values (`'>'`) or functions of the input
+  (`({ marker }) => marker`). The input includes the runtime context, your
+  defaults, and any required options the caller passes.
+- For `blockStart`, core already owns the base match payload: `{ range, text }`.
+  If you provide `resolveMatch`, return only your extra fields — core merges
+  them onto the base payload before `apply` runs.
 - `enabled` and `priority` stay available as runtime overrides on the returned rule instance — callers can override them even when your factory sets a default.
 
 That's the pattern every `*Rules.markdown(...)` family in Plate uses. Clone it when you need your own.
 
-Done. Between `defineInputRule`, the four specialized builders, the plugin-side `rule` builder, and `createRuleFactory`, every rule in Plate — yours included — comes from the same small core.
+Done. Between `defineInputRule`, the four specialized builders, the plugin-side
+`rule` builder, and `createRuleFactory`, every rule in Plate — yours included —
+comes from the same small core.
 
 ## How Rule Execution Works
 
-Input rules run inside the `insertText`, `insertBreak`, and `insertData` transforms. For each call, the runtime walks every registered rule for that target in priority order, and the first rule that passes `enabled` and produces a non-undefined `resolve` gets to call `apply`.
+Input rules run inside the `insertText`, `insertBreak`, and `insertData`
+transforms. For each call, the runtime walks every registered rule for that
+target in priority order, and the first rule that passes `enabled` and produces
+a non-undefined `resolve` gets to call `apply`.
 
 ### Targets
 
@@ -627,7 +725,9 @@ For each transform call, the runtime walks rules in priority order (highest firs
 
 1. **`enabled`.** A boolean gate. If it returns `false`, skip to the next rule.
 2. **`resolve`.** Computes a match payload. If it returns `undefined`, skip to the next rule.
-3. **`apply`.** Performs the transform. If it returns `false`, the runtime treats the rule as not consumed and continues; any other return value consumes the input and short-circuits the rest of the walk.
+3. **`apply`.** Performs the transform. If it returns `false`, the runtime
+   treats the rule as not consumed and continues; any other return value
+   consumes the input and short-circuits the rest of the walk.
 
 If no rule consumes the input, the default Slate transform runs as normal.
 
@@ -642,7 +742,11 @@ If no rule consumes the input, the default Slate transform runs as normal.
 | `mimeTypes` | Narrows an `insertData` rule to specific MIME types |
 
 <Callout>
-**Use `enabled` for policy, not `match`.** The matcher should own the *syntax* of a rule (what pattern counts as a hit). Gating — "don't fire in code blocks", "only fire when this plugin is active" — belongs in `enabled`. Returning `undefined` from `resolve` just to suppress a rule works, but it hides intent and makes rules harder to compose.
+**Use `enabled` for policy, not `match`.** The matcher should own the *syntax*
+of a rule (what pattern counts as a hit). Gating — "don't fire in code blocks",
+"only fire when this plugin is active" — belongs in `enabled`. Returning
+`undefined` from `resolve` just to suppress a rule works, but it hides intent
+and makes rules harder to compose.
 </Callout>
 
 ## API Reference
@@ -666,14 +770,18 @@ function defineInputRule<TRule extends AnyInputRule>(rule: TRule): TRule;
 ```ts
 import { defineInputRule } from 'platejs';
 
-const myRule = defineInputRule({
+const copyrightRule = defineInputRule({
   target: 'insertText',
   trigger: ')',
   resolve: (context) => {
-    // compute and return a match payload, or undefined to skip
+    if (context.text !== ')') return;
+    if (!context.getBlockTextBeforeSelection().endsWith('(c')) return;
+
+    return { replacement: '©' };
   },
-  apply: (context, match) => {
-    // perform the transform
+  apply: ({ editor }, match) => {
+    editor.tf.delete({ distance: 2, reverse: true, unit: 'character' });
+    editor.tf.insertText(match.replacement);
   },
 });
 ```
@@ -682,10 +790,13 @@ Use it when you want a raw rule object typed against `InsertTextInputRule`, `Ins
 
 ### createRuleFactory
 
-Package-facing helper for semantic rule families. Use it when you want to expose a narrow public factory like `BlockquoteRules.markdown(...)`, keep shared runtime fields like `enabled` and `priority`, and hide the low-level rule construction details.
+Package-facing helper for semantic rule families. Use it when you want to expose
+a narrow public factory like `BlockquoteRules.markdown(...)`, keep shared
+runtime fields like `enabled` and `priority`, and hide the low-level rule
+construction details.
 
 ```ts
-import { createRuleFactory } from 'platejs';
+import { createRuleFactory, KEYS } from 'platejs';
 
 export const BlockquoteRules = {
   markdown: createRuleFactory<{}, { marker: string }>({
@@ -694,12 +805,18 @@ export const BlockquoteRules = {
     trigger: ' ',
     match: ({ marker }) => marker,
     mode: 'wrap',
-    enabled: ({ editor }) => !isInCodeBlock(editor),
+    enabled: ({ editor }) =>
+      !editor.api.some({
+        match: { type: [editor.getType(KEYS.codeBlock)] },
+      }),
   }),
 };
 ```
 
-The returned function is your public rule family. Concrete values in the config become default public options (`marker: '>'`), while the generic type parameters let you model required options and defaults for the family. The created rule instance still supports the shared runtime overrides: `enabled` and `priority`.
+The returned function is your public rule family. Concrete values in the config
+become default public options (`marker: '>'`), while the generic type parameters
+let you model required options and defaults for the family. The created rule
+instance still supports the shared runtime overrides: `enabled` and `priority`.
 
 ### createMarkInputRule
 
@@ -728,7 +845,11 @@ createMarkInputRule({
 });
 ```
 
-`start` is the opening delimiter. `end` is an optional closing delimiter; when omitted, the rule does not look for a separate closing delimiter before the trigger. `trigger` is the character that commits the match. `trim: 'reject'` refuses spans with leading or trailing whitespace. `mark` and `marks` restrict which mark(s) the rule applies.
+`start` is the opening delimiter. `end` is an optional closing delimiter; when
+omitted, the rule does not look for a separate closing delimiter before the
+trigger. `trigger` is the character that commits the match. `trim: 'reject'`
+refuses spans with leading or trailing whitespace. `mark` and `marks` restrict
+which mark(s) the rule applies.
 
 ### createBlockStartInputRule
 
@@ -772,7 +893,9 @@ createBlockStartInputRule({
 - `match` is the block-start text: a string, a `RegExp`, or a function that returns one based on context.
 - `mode` picks the transform: `'set'` replaces the block type, `'toggle'` flips it, `'wrap'` wraps the block in a new element.
 - `node` is the target element type used by `mode`.
-- `apply` overrides the built-in transform entirely — supply your own when none of the modes fit. That also means you own matched-text cleanup; if you still want the shorthand removed, delete `match.range` yourself.
+- `apply` overrides the built-in transform entirely — supply your own when none
+  of the modes fit. That also means you own matched-text cleanup; if you still
+  want the shorthand removed, delete `match.range` yourself.
 - `resolveMatch` returns extra fields only. Core still provides the base `{ range, text }` payload automatically, and `apply` receives the merged object.
 
 ### createBlockFenceInputRule
@@ -797,20 +920,30 @@ function createBlockFenceInputRule<TMatch>(config: {
 ```
 
 ```ts
-import { createBlockFenceInputRule } from 'platejs';
+import { createBlockFenceInputRule, KEYS } from 'platejs';
 
 createBlockFenceInputRule({
   fence: '```',
   on: 'match',
   apply: (context, match) => {
-    // perform the replacement
+    context.editor.tf.delete({ at: match.range });
+    context.editor.tf.setNodes(
+      { type: context.editor.getType(KEYS.codeBlock) },
+      { at: match.path }
+    );
   },
 });
 ```
 
-`on: 'match'` commits when the fence becomes complete inside the current paragraph. `on: 'break'` commits when Enter is pressed after the fence is complete — useful when the user may want to type more before committing.
+`on: 'match'` commits when the fence becomes complete inside the current
+paragraph. `on: 'break'` commits when Enter is pressed after the fence is
+complete — useful when the user may want to type more before committing.
 
-The runtime owns the matcher: it checks that the selection is collapsed, the cursor is at the block's end, and the block text equals `fence`. If you pass `block`, the matcher also requires that block type. You own `apply`, which performs the replacement. The returned rule targets `insertText` when `on: 'match'` and `insertBreak` when `on: 'break'`.
+The runtime owns the matcher: it checks that the selection is collapsed, the
+cursor is at the block's end, and the block text equals `fence`. If you pass
+`block`, the matcher also requires that block type. You own `apply`, which
+performs the replacement. The returned rule targets `insertText` when
+`on: 'match'` and `insertBreak` when `on: 'break'`.
 
 ### createTextSubstitutionInputRule
 
@@ -839,7 +972,10 @@ createTextSubstitutionInputRule({
 });
 ```
 
-`format` is either a replacement string or a `[open, close]` tuple that wraps the typed content. `match` is a string or array of strings that trigger the replacement. `trigger` defaults to the last character of each match and rarely needs overriding.
+`format` is either a replacement string or a `[open, close]` tuple that wraps
+the typed content. `match` is a string or array of strings that trigger the
+replacement. `trigger` defaults to the last character of each match and rarely
+needs overriding.
 
 ### matchDelimitedInline
 
@@ -851,7 +987,8 @@ import { matchDelimitedInline } from 'platejs';
 const match = matchDelimitedInline(context, {
   open: '**',
   close: '*',
-  // optional: boundaryRe, followRe, rejectRepeatedOpen, requireClosingDelimiter, trim
+  requireClosingDelimiter: true,
+  trim: 'reject',
 });
 ```
 
@@ -859,7 +996,9 @@ Use it when you're authoring a custom `insertText` rule that needs the same matc
 
 ### matchBlockStart / matchBlockFence
 
-Companion matchers for block-start and block-fence rules. Both take the current context plus a matcher config and return a match payload or `undefined`. Use them when you want the matcher logic without the factory's `apply` wiring.
+Companion matchers for block-start and block-fence rules. Both take the current
+context plus a matcher config and return a match payload or `undefined`. Use
+them when you want the matcher logic without the factory's `apply` wiring.
 
 ```ts
 import { matchBlockFence, matchBlockStart } from 'platejs';

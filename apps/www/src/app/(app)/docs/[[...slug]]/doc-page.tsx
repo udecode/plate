@@ -3,6 +3,7 @@ import type { RegistryItem } from 'shadcn/schema';
 
 import type { Metadata } from 'next';
 
+import { frontmatter } from 'fumadocs-core/content/md/frontmatter';
 import { notFound } from 'next/navigation';
 
 import { DocContent } from '@/app/(app)/docs/[[...slug]]/doc-content';
@@ -14,7 +15,7 @@ import { siteConfig } from '@/config/site';
 import { absoluteUrl } from '@/lib/absoluteUrl';
 import { getPagerForDoc } from '@/lib/docs-page-tree';
 import { getDocsNavMeta, slugToCategory } from '@/lib/docs-nav-metadata';
-import { getPlateLLMPageMarkdown, processMdxForLLMs } from '@/lib/llm';
+import { getPlateLLMPageMarkdownFromPage } from '@/lib/llm';
 import {
   getCachedDependencies,
   getCachedFileTree,
@@ -32,6 +33,15 @@ import { proExamples } from '@/registry/registry-pro';
 import { registryUI } from '@/registry/registry-ui';
 
 export type DocsLocale = 'cn' | 'en';
+
+type PlateDocFrontmatter = {
+  docs?: { route?: string; title?: string }[];
+  links?: {
+    api?: string;
+    doc?: string;
+  };
+  toc?: boolean;
+};
 
 export type DocPageProps = {
   params: Promise<{
@@ -271,28 +281,32 @@ export async function renderDocPage(props: DocPageProps, locale: DocsLocale) {
   }
 
   const raw = await doc.data.getText('raw');
+  const { data: frontmatterData } = frontmatter(raw) as {
+    data: PlateDocFrontmatter;
+  };
   const localizedDocUrl = localizeDocsUrl(doc.url, locale);
   const description =
     doc.data.description ?? getDocsNavMeta(localizedDocUrl)?.description;
   const MDX = doc.data.body;
   const toc = await getTableOfContents(raw);
   const neighbours = getPagerForDoc({ slug: doc.url }, locale);
+  const docUrl = `https://platejs.org${localizedDocUrl}`;
 
   return (
     <DocContent
       category={category as any}
       doc={{
         description,
-        copyMarkdown: getPlateLLMPageMarkdown({
-          content: processMdxForLLMs(raw),
-          docUrl: `https://platejs.org${localizedDocUrl}`,
-          title: doc.data.title,
+        copyMarkdown: await getPlateLLMPageMarkdownFromPage({
+          docUrl,
+          page: doc,
         }),
-        docs: doc.data.docs,
-        links: doc.data.links,
+        docs: frontmatterData.docs,
+        links: frontmatterData.links,
         slug: localizedDocUrl,
+        sourcePath: doc.path,
         title: doc.data.title,
-        toc: doc.data.toc,
+        toc: frontmatterData.toc ?? true,
       }}
       neighbours={neighbours}
       toc={toc}

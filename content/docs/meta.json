@@ -22,6 +22,7 @@
     "[Plugin Context](/docs/plugin-context)",
     "[Plugin Components](/docs/plugin-components)",
     "[Plugin Rules](/docs/plugin-rules)",
+    "[Editing Behavior](/docs/editing-behavior)",
     "[Plugin Input Rules](/docs/plugin-input-rules)",
     "[Editor](/docs/editor)",
     "[Editor Methods](/docs/editor-methods)",
@@ -1201,11 +1202,6 @@
               "titleCn": "Single Block"
             },
             {
-              "href": "/docs/examples/editable-voids",
-              "title": "Editable Voids Demo",
-              "titleCn": "Editable Voids"
-            },
-            {
               "description": "List creation and formatting.",
               "href": "/docs/examples/list-classic",
               "title": "List Classic Demo",
@@ -1534,6 +1530,11 @@
                   "href": "/docs/plugin-rules",
                   "title": "Plugin Rules",
                   "titleCn": "插件规则"
+                },
+                {
+                  "href": "/docs/editing-behavior",
+                  "title": "Editing Behavior",
+                  "titleCn": "编辑行为"
                 },
                 {
                   "href": "/docs/plugin-input-rules",
@@ -2193,6 +2194,10 @@
       "/docs/plugin-rules": {
         "title": "Plugin Rules",
         "titleCn": "插件规则"
+      },
+      "/docs/editing-behavior": {
+        "title": "Editing Behavior",
+        "titleCn": "编辑行为"
       },
       "/docs/plugin-input-rules": {
         "label": "New",

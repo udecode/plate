@@ -1,72 +1,139 @@
 ---
 title: Feature Kits
-description: Understand how to use Feature Kits for rapid editor setup with pre-configured plugins and UI components.
+description: Use registry kits to add groups of Plate plugins and UI wiring.
 ---
 
-Feature Kits bundle related plugins and their UI components. They provide the fastest way to add editor features.
+Feature kits are app-owned registry files that group related Plate plugins, components, shortcuts, input rules, and helper UI.
+Use them to start from working Plate UI wiring, then edit the installed kit when your app needs different behavior.
 
-## What are Feature Kits?
+## Kit Types
 
-Feature Kits are pre-assembled packages. They include multiple plugins and components for specific editor features.
+| Kit type | Example | Use for |
+| --- | --- | --- |
+| Client/UI kit | `basic-nodes-kit`, `table-kit`, `media-kit` | Editable React editors with Plate UI components. |
+| Base kit | `basic-blocks-base-kit`, `table-base-kit` | Static rendering and server-safe editor setup. |
+| Full editor kit | `editor-kit` | A complete client editor feature stack. |
+| Full base kit | `editor-base-kit` | A broad static/base plugin stack. |
 
-For example, `BasicBlocksKit` includes plugins for paragraphs, headings, blockquotes, and horizontal rules. It also includes their UI components.
+Feature kits live under `components/editor/plugins` after installation. Full
+editor kits like `editor-kit` and `editor-base-kit` live under
+`components/editor`. They are normal TypeScript files in your app, not package
+exports locked inside `node_modules`.
 
-## Benefits of Using Kits
+## Use a Kit
 
-- **Fast setup**: Add multiple features with one import
-- **Best practices**: Kits use sensible defaults and configurations
-- **UI included**: Most kits include [Plate UI](/docs/installation/plate-ui) components
-- **Simple dependencies**: Kits handle plugin dependencies automatically
+Install the kit through the Plate registry, then import it from your app.
 
-## Kit Usage vs Manual Usage
+```tsx title="components/editor.tsx" showLineNumbers
+import { Plate, usePlateEditor } from 'platejs/react';
 
-Plugin documentation shows two approaches:
+import { BasicNodesKit } from '@/components/editor/plugins/basic-nodes-kit';
+import { TableKit } from '@/components/editor/plugins/table-kit';
+import { Editor, EditorContainer } from '@/components/ui/editor';
 
-- **Kit Usage**: Use a pre-configured kit. This is the recommended approach for most users.
-- **Manual Usage**: Install and configure each plugin individually. Use this when you need:
-  - Custom plugin options beyond kit defaults
-  - Different UI components or no UI (headless)
-  - Only specific plugins from a kit
+export function MyEditor() {
+  const editor = usePlateEditor({
+    plugins: [...BasicNodesKit, ...TableKit],
+  });
 
-Kits are mostly the same as manual setup, but pre-configured.
+  return (
+    <Plate editor={editor}>
+      <EditorContainer>
+        <Editor />
+      </EditorContainer>
+    </Plate>
+  );
+}
+```
 
-## Finding Available Kits
+`BasicNodesKit` composes `BasicBlocksKit` and `BasicMarksKit`. For example,
+`BasicBlocksKit` wires paragraph, headings, blockquote, and horizontal rule
+plugins to their Plate UI components; `BasicMarksKit` wires marks, input rules,
+shortcuts, and mark leaf components.
 
-Look for "Kit Usage" sections in plugin documentation. These sections show which kit to use and include the kit's source code.
+## Choose the Right Kit
 
-## Example: BasicBlocksKit
+| Need | Start with |
+| --- | --- |
+| Paragraphs, headings, blockquotes, marks. | `basic-nodes-kit` |
+| Tables with table UI components. | `table-kit` |
+| Images, video, audio, files, embeds, captions. | `media-kit` |
+| Comments and discussions. | `comment-kit` plus `discussion-kit` |
+| AI menu, AI nodes, cursor overlay, and Markdown support. | `ai-kit` |
+| Full editable editor stack. | `editor-kit` |
+| Static or server-rendered output. | `editor-base-kit` or focused `*-base-kit` files |
 
-The [`BasicBlocksKit`](/docs/basic-blocks#installation) includes these plugins and components:
+Plugin pages show the recommended kit in their installation section. Use the kit
+source when you need the exact plugin list, imported UI components, shortcuts,
+or registry dependencies.
 
-- `ParagraphPlugin` with `ParagraphElement`
-- `H1Plugin` with `H1Element`
-- `H2Plugin` with `H2Element`
-- `H3Plugin` with `H3Element`
-- `BlockquotePlugin` with `BlockquoteElement`
-- `HorizontalRulePlugin` with `HrElement`
+## Base Kits
 
-Instead of adding each plugin separately, use the kit:
+Base kits use base plugins and static components. They are the right starting
+point for [Static Rendering](/docs/static), [Node.js](/docs/installation/node),
+and other non-editable pipelines.
 
-```tsx
-import { createPlateEditor } from 'platejs/react';
-import { BasicBlocksKit } from '@/components/editor/plugins/basic-blocks-kit';
+```ts title="static-editor.ts"
+import { BaseEditorKit } from '@/components/editor/editor-base-kit';
+import { createStaticEditor } from 'platejs/static';
 
-const editor = createPlateEditor({
-  plugins: [
-    // ...otherPlugins,
-    ...BasicBlocksKit,
-  ],
+const editor = createStaticEditor({
+  plugins: BaseEditorKit,
 });
 ```
 
-This adds all block elements with their UI components.
+Use client kits in editable React editors. Use base kits when React editor hooks,
+editable components, floating UI, or browser-only behavior should stay out of
+the runtime.
 
-## When to Use Manual Setup
+## Customize a Kit
 
-Use manual setup when you need:
+Because kits are copied into your app, the cleanest customization is usually to
+edit the installed kit file.
 
-- **Custom options**: Kit defaults don't meet your needs
-- **Custom UI**: You're not using [Plate UI](/docs/installation/plate-ui) components
-- **Minimal setup**: You only need one or two plugins from a kit
-- **Learning**: You want to understand how plugins work together
+```tsx title="components/editor/plugins/my-basic-kit.tsx"
+import { H1Plugin } from '@platejs/basic-nodes/react';
+import { ParagraphPlugin } from 'platejs/react';
 
+import { H1Element } from '@/components/ui/heading-node';
+import { ParagraphElement } from '@/components/ui/paragraph-node';
+
+export const MyBasicKit = [
+  ParagraphPlugin.withComponent(ParagraphElement),
+  H1Plugin.configure({
+    node: {
+      component: H1Element,
+    },
+    shortcuts: {
+      toggle: { keys: 'mod+alt+1' },
+    },
+  }),
+];
+```
+
+Use manual plugin setup when you only need a small part of a kit, when the app
+does not use Plate UI components, or when a feature needs a different dependency
+boundary.
+
+## Registry Names
+
+Kits are registry items. These names map to files in
+`components/editor/plugins` or `components/editor`.
+
+| Registry item | Installs |
+| --- | --- |
+| `basic-nodes-kit` | `BasicNodesKit`, `BasicBlocksKit`, and `BasicMarksKit` dependencies. |
+| `table-kit` | `TableKit` and table UI components. |
+| `media-kit` | `MediaKit` without a media upload API route. |
+| `media-uploadthing-kit` | `media-kit` plus the UploadThing API route. |
+| `editor-kit` | The full editable editor kit. |
+| `editor-base-kit` | The full static/base kit. |
+
+## Next Steps
+
+| Task | Guide |
+| --- | --- |
+| Install registry items. | [Plate UI Installation](/docs/installation/plate-ui) |
+| Configure editor creation. | [Editor Configuration](/docs/editor) |
+| Compose plugin APIs and options. | [Plugin Methods](/docs/plugin-methods) |
+| Render without an editable React editor. | [Static Rendering](/docs/static) |

@@ -1,7 +1,7 @@
 # {{TITLE}}
 
 Objective:
-TODO: Write the exact active task objective.
+TODO: Write the short create_goal objective, under 240 characters. Put the full task contract in the sections below.
 
 Goal plan:
 {{PLAN_PATH}}
@@ -50,7 +50,7 @@ Start Gates:
 | Browser proof decision for browser surface | pending | pending |
 
 Work Checklist:
-- [ ] Objective includes outcome, completion threshold, verification surface, constraints, boundaries, and blocked condition.
+- [ ] Short objective plus threshold, verification surface, constraints, boundaries, and blocked condition are concrete.
 - [ ] Task source and acceptance criteria are captured.
 - [ ] Nearby implementation patterns are read before edits.
 - [ ] Implementation fixes the right ownership boundary.

@@ -1,13 +1,16 @@
 ---
 title: Mention
+description: Inline markable void mentions backed by trigger combobox input.
 docs:
-  - route: https://pro.platejs.org/docs/examples/mention
-    title: Plus
   - route: /docs/combobox
     title: Combobox
   - route: /docs/components/mention-node
     title: Mention Nodes
+  - route: /docs/components/inline-combobox
+    title: Inline Combobox
 ---
+
+Mention turns trigger text such as `@` into an inline combobox input and inserts a markable void `mention` node when the user selects an item. The package owns trigger detection, input node creation, mention insertion, selection movement, and Markdown mention serialization. The registry owns the demo item list and the inline combobox UI.
 
 <ComponentPreview name="mention-demo" />
 
@@ -15,47 +18,68 @@ docs:
 
 ## Features
 
-- Smart autocompletion for mentioning users, pages, or any reference
-- Triggered by configurable characters (default: `@`)
-- Keyboard navigation and selection
-- Customizable mention data and rendering
+- Inline void `mention` nodes with `value` and optional `key`.
+- Inline void `mention_input` nodes created by trigger text.
+- Trigger combobox support from `@platejs/combobox`.
+- Configurable trigger strings, regexes, and trigger queries.
+- Markable void rendering so bold, italic, and underline can style a mention.
+- Optional trailing space after selected mention items.
+- Markdown format through `[display text](mention:id)` plus bare `@name` deserialization.
 
 </PackageInfo>
 
-## Kit Usage
+## Fast Path
 
 <Steps>
 
-### Installation
+### Add The Kit
 
-The fastest way to add mentions is with the `MentionKit`, which includes pre-configured `MentionPlugin` and `MentionInputPlugin` along with their [Plate UI](/docs/installation/plate-ui) components.
+`MentionKit` installs `MentionPlugin`, `MentionInputPlugin`, the registry mention nodes, and a trigger rule that allows `@` at the start of a line, after whitespace, or after quotes.
 
 <ComponentSource name="mention-kit" />
 
-- [`MentionElement`](/docs/components/mention-node): Renders mention elements
-- [`MentionInputElement`](/docs/components/mention-node): Renders the mention input combobox
-
-### Add Kit
-
 ```tsx
 import { createPlateEditor } from 'platejs/react';
+
 import { MentionKit } from '@/components/editor/plugins/mention-kit';
 
-const editor = createPlateEditor({
-  plugins: [
-    // ...otherPlugins,
-    ...MentionKit,
-  ],
+export const editor = createPlateEditor({
+  plugins: MentionKit,
 });
 ```
 
+### Render Mentions
+
+`mention-node` renders both the selected mention and the temporary combobox input. The demo data lives in that registry UI file, so replace it with your app users, pages, or records.
+
+<ComponentSource name="mention-node" />
+
+### Add Static Rendering
+
+`mention-base-kit` uses `BaseMentionPlugin` with the static mention node for read-only output.
+
+<ComponentSource name="mention-base-kit" />
+
 </Steps>
 
-## Manual Usage
+## Ownership
+
+| Layer | Owner | What It Does |
+|-------|-------|--------------|
+| `@platejs/mention` | Package | Exports `BaseMentionPlugin`, `BaseMentionInputPlugin`, and `getMentionOnSelectItem`. |
+| `@platejs/mention/react` | Package | Exports `MentionPlugin` and `MentionInputPlugin`. |
+| `@platejs/combobox` | Package | Provides `withTriggerCombobox`, trigger options, and combobox input hooks. |
+| `mention-kit` | Registry | Adds mention plugins with editable mention and input components. |
+| `mention-base-kit` | Registry | Adds `BaseMentionPlugin.withComponent(MentionElementStatic)`. |
+| `mention-node` | Registry UI | Renders mention atoms, the inline combobox input, and demo items. |
+| `inline-combobox` | Registry UI | Renders the Ariakit-backed popover, input, groups, items, and empty state. |
+| `@platejs/markdown` | Package | Serializes mentions as `mention:` links and deserializes mention links or bare mentions. |
+
+## Manual Setup
 
 <Steps>
 
-### Installation
+### Install Package
 
 ```bash
 npm install @platejs/mention
@@ -63,34 +87,22 @@ npm install @platejs/mention
 
 ### Add Plugins
 
-```tsx
-import { MentionPlugin, MentionInputPlugin } from '@platejs/mention/react';
-import { createPlateEditor } from 'platejs/react';
-
-const editor = createPlateEditor({
-  plugins: [
-    // ...otherPlugins,
-    MentionPlugin,
-    MentionInputPlugin,
-  ],
-});
-```
-
-### Configure Plugins
+Configure the mention plugin with the trigger behavior and render both node types.
 
 ```tsx
-import { MentionPlugin, MentionInputPlugin } from '@platejs/mention/react';
+import { MentionInputPlugin, MentionPlugin } from '@platejs/mention/react';
 import { createPlateEditor } from 'platejs/react';
-import { MentionElement, MentionInputElement } from '@/components/ui/mention-node';
 
-const editor = createPlateEditor({
+import {
+  MentionElement,
+  MentionInputElement,
+} from '@/components/ui/mention-node';
+
+export const editor = createPlateEditor({
   plugins: [
-    // ...otherPlugins,
     MentionPlugin.configure({
       options: {
-        trigger: '@',
         triggerPreviousCharPattern: /^$|^[\s"']$/,
-        insertSpaceAfterMention: false,
       },
     }).withComponent(MentionElement),
     MentionInputPlugin.withComponent(MentionInputElement),
@@ -98,84 +110,99 @@ const editor = createPlateEditor({
 });
 ```
 
-- `options.trigger`: Character that triggers the mention combobox
-- `options.triggerPreviousCharPattern`: RegExp pattern for the character before trigger. The kit uses `/^$|^[\s"']$/` to allow mentions at start of line, after whitespace, or after quotes
-- `options.insertSpaceAfterMention`: Whether to automatically insert a space after inserting a mention
-- `withComponent`: Assigns the UI components for rendering mentions and mention input
+### Select An Item
+
+Use `getMentionOnSelectItem` from your combobox item renderer. It inserts the mention, moves the cursor after it, and inserts a trailing space only when `insertSpaceAfterMention` is enabled and the mention lands at the end of the block.
+
+```tsx
+import { getMentionOnSelectItem } from '@platejs/mention';
+
+const onSelectItem = getMentionOnSelectItem();
+
+<InlineComboboxItem
+  value={item.text}
+  onClick={() => onSelectItem(editor, item, search)}
+>
+  {item.text}
+</InlineComboboxItem>;
+```
 
 </Steps>
 
-## Plate Plus
+## Value Shape
 
-<ComponentPreviewPro name="mention-pro" />
+`BaseMentionPlugin` uses `KEYS.mention`, which resolves to the `mention` node type. The input plugin uses `KEYS.mentionInput`, which resolves to `mention_input`.
 
-## Plugins
+```tsx
+const value = [
+  {
+    children: [
+      { text: 'Assigned to ' },
+      {
+        children: [{ text: '' }],
+        key: 'user_123',
+        type: 'mention',
+        value: 'Jane Smith',
+      },
+      { text: '.' },
+    ],
+    type: 'p',
+  },
+];
+```
 
-### MentionPlugin
+| Field | Type | Notes |
+|-------|------|-------|
+| `type` | `'mention'` | Inline void mention node. |
+| `value` | `string` | Display text rendered by the registry node. |
+| `key` | `unknown` | Optional stable id used by selection handlers and Markdown serialization. |
+| `children` | `[{ text: '' }]` | Empty child required for Slate inline void nodes. |
 
-Plugin for mention functionality. Extends [TriggerComboboxPluginOptions](/docs/combobox#triggercomboboxpluginoptions).
+The mention node is `isMarkableVoid`, so marks on its empty child can style the rendered mention.
 
-<API name="MentionPlugin">
-<APIOptions>
-  <APIItem name="insertSpaceAfterMention" type="boolean" optional>
-    Whether to insert a space after the mention.
-    - **Default:** `false`
-  </APIItem>
-  <APIItem name="trigger" type="string" optional>
-    Character that triggers the mention combobox.
-    - **Default:** `'@'`
-  </APIItem>
-  <APIItem name="triggerPreviousCharPattern" type="RegExp" optional>
-    Pattern to match the character before trigger.
-    - **Default:** `/^\s?$/`
-  </APIItem>
-  <APIItem name="createComboboxInput" type="(trigger: string) => TElement" optional>
-    Function to create the input element when trigger is activated.
-  </APIItem>
-</APIOptions>
-</API>
+## Trigger Flow
 
-### MentionInputPlugin
+`withTriggerCombobox` overrides `insertText`. It creates a combobox input only when every gate passes.
 
-Plugin for mention input functionality.
+| Gate | Source |
+|------|--------|
+| Inserted text matches `trigger` | `string`, `string[]`, or `RegExp`. |
+| Insert is not using `options.at` | Programmatic text insertion bypasses the trigger. |
+| Editor has a selection | No selection means no inline input target. |
+| `triggerQuery(editor)` returns true | Optional app veto for custom contexts. |
+| Previous character matches `triggerPreviousCharPattern` | Defaults to `/^\s?$/`; registry kit uses `/^$\|^[\s"']$/`. |
 
-## API
+The default `createComboboxInput` creates:
 
-### api.insert.mention
+```tsx
+{
+  children: [{ text: '' }],
+  trigger: '@',
+  type: KEYS.mentionInput,
+}
+```
 
-Inserts a mention element at the current selection.
+If `editor.meta.userId` exists, the combobox input stores that `userId` so only the creator sees the transient input in collaborative editors.
 
-<API name="api.insert.mention">
-<APIParameters>
-  <APIItem name="options" type="object">
-    <APISubList>
-      <APISubListItem parent="options" name="search" type="string">
-        The search text that triggered the mention.
-      </APISubListItem>
-      <APISubListItem parent="options" name="value" type="any">
-        The value to store in the mention element.
-      </APISubListItem>
-      <APISubListItem parent="options" name="key" type="any" optional>
-        Optional key for the mention element.
-      </APISubListItem>
-    </APISubList>
-  </APIItem>
-</APIParameters>
-</API>
+## Markdown
 
-### getMentionOnSelectItem
+`@platejs/markdown` serializes mentions as link-style `mention:` URLs. It uses `key` for the URL when present and `value` for the visible text.
 
-Gets handler for selecting mention combobox item.
+```md
+Hello [Jane Smith](mention:user_123).
+```
 
-<API name="getMentionOnSelectItem">
-<APIOptions>
-  <APIItem name="key" type="string" optional>
-    Plugin key for mention plugin.
-    - **Default:** `MentionPlugin.key`
-  </APIItem>
-</APIOptions>
+Deserialization supports link-style mentions and bare `@alice` text. Normal links such as `[@docs](/docs/mention)` stay links.
 
-<APIReturns>
-  Handler function for mention item selection.
-</APIReturns>
-</API>
+## API Reference
+
+| API | Package | Use |
+|-----|---------|-----|
+| `BaseMentionPlugin` | `@platejs/mention` | Headless inline markable void mention plugin with trigger-combobox behavior. |
+| `BaseMentionInputPlugin` | `@platejs/mention` | Inline void input node inserted while the combobox is active. |
+| `MentionPlugin` | `@platejs/mention/react` | React mention plugin. |
+| `MentionInputPlugin` | `@platejs/mention/react` | React mention input plugin. |
+| `editor.tf.insert.mention({ key, value })` | `BaseMentionPlugin` transform | Inserts the mention node at the current selection. |
+| `getMentionOnSelectItem({ key? })` | `@platejs/mention` | Returns an item handler for mention combobox selection. |
+| `withTriggerCombobox` | `@platejs/combobox` | Creates temporary combobox input nodes from trigger text. |
+| `useComboboxInput` | `@platejs/combobox/react` | Handles focus, cancellation, arrow/backspace/escape behavior, and undo/redo forwarding for custom input UI. |

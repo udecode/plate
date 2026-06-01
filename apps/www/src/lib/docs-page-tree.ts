@@ -1,8 +1,11 @@
 import type { SidebarNavItem } from '@/types/nav';
-import type { PageTree } from 'fumadocs-core/server';
+import type {
+  Item as PageTreeItem,
+  Node as PageTreeNode,
+} from 'fumadocs-core/page-tree';
 import type React from 'react';
 
-import { findNeighbour } from 'fumadocs-core/server';
+import { findNeighbour } from 'fumadocs-core/page-tree';
 
 import {
   getDocsNavMeta,
@@ -43,7 +46,7 @@ function withDocsOverlayDeep(item: SidebarNavItem): SidebarNavItem {
   };
 }
 
-function pageTreeNodeToNavItem(node: PageTree.Node): SidebarNavItem | null {
+function pageTreeNodeToNavItem(node: PageTreeNode): SidebarNavItem | null {
   if (node.type === 'separator') return null;
 
   if (node.type === 'page') {
@@ -117,7 +120,7 @@ export function getSidebarNavFromPageTree(locale = 'en') {
     .filter((section) => section.items?.length);
 }
 
-function toPagerItem(item: PageTree.Item | undefined, locale: string) {
+function toPagerItem(item: PageTreeItem | undefined, locale: string) {
   if (!item) return null;
 
   const href = normalizeDocsHref(item.url);
