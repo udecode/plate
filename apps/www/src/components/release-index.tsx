@@ -11,8 +11,11 @@ import { CodeBlock } from '@/components/ui/codeblock';
 import releaseIndexData from '@/generated/release-index.json';
 import {
   formatReleaseDate,
+  getCurrentReleaseMajorGroups,
   getReleaseAnchor,
-  NUMBER_OF_LATEST_RELEASES,
+  getReleaseMajorAnchor,
+  getReleaseMajorGroups,
+  type ReleaseMajorGroup,
   type ReleaseIndexRelease,
 } from '@/lib/releases';
 import { cn } from '@/lib/utils';
@@ -33,17 +36,26 @@ const releaseHeadingLabels: Record<string, string> = {
 
 export function ReleaseIndex({
   className,
-  releases = releaseIndexData,
+  releases,
+  showMajorHeadings = false,
 }: HTMLAttributes<HTMLDivElement> & {
   releases?: ReleaseIndexRelease[];
+  showMajorHeadings?: boolean;
 }) {
-  const messages = releases.map((release) => ({
+  const releaseList =
+    releases ??
+    getCurrentReleaseMajorGroups(
+      releaseIndexData as ReleaseIndexRelease[]
+    ).flatMap((group) => group.releases);
+  const messages = releaseList.map((release) => ({
     ...release,
     date: formatReleaseDate(release.date),
     expandable: getContentLineCount(release.content) > expandableLineThreshold,
   }));
-  const latestMessages = messages.slice(0, NUMBER_OF_LATEST_RELEASES);
-  const olderMessages = messages.slice(NUMBER_OF_LATEST_RELEASES);
+  const messageGroups: ReleaseMajorGroup<ReleaseIndexMessage>[] =
+    showMajorHeadings
+      ? getReleaseMajorGroups(messages)
+      : [{ major: '', releases: messages }];
 
   if (messages.length === 0) {
     return (
@@ -76,13 +88,13 @@ export function ReleaseIndex({
     >
       <ReleaseSeparator className="top-0" />
 
-      {latestMessages.map((release) => (
-        <ReleaseRow key={release.tag} release={release} />
+      {messageGroups.map((group) => (
+        <ReleaseMajorSection
+          key={group.major || 'releases'}
+          group={group}
+          showHeading={showMajorHeadings}
+        />
       ))}
-
-      {olderMessages.length > 0 ? (
-        <MoreUpdates releases={olderMessages} />
-      ) : null}
     </section>
   );
 }
@@ -91,10 +103,54 @@ function getContentLineCount(content: string) {
   return content.split('\n').filter((line) => line.trim().length > 0).length;
 }
 
-function ReleaseRow({ release }: { release: ReleaseIndexMessage }) {
+function ReleaseMajorSection({
+  group,
+  showHeading,
+}: {
+  group: ReleaseMajorGroup<ReleaseIndexMessage>;
+  showHeading: boolean;
+}) {
+  return (
+    <div>
+      {showHeading && group.major ? (
+        <header
+          className="scroll-mt-24 pt-10 pb-1"
+          id={getReleaseMajorAnchor(group.major)}
+        >
+          <h2 className="font-heading font-semibold text-2xl tracking-tight">
+            v{group.major}
+          </h2>
+          <p className="mt-1 text-muted-foreground text-sm">
+            {group.releases.length}{' '}
+            {group.releases.length === 1 ? 'release' : 'releases'}
+          </p>
+        </header>
+      ) : null}
+
+      {group.releases.map((release, index) => (
+        <ReleaseRow
+          key={release.tag}
+          release={release}
+          isFirst={!showHeading && index === 0}
+        />
+      ))}
+    </div>
+  );
+}
+
+function ReleaseRow({
+  isFirst = false,
+  release,
+}: {
+  isFirst?: boolean;
+  release: ReleaseIndexMessage;
+}) {
   return (
     <article
-      className="group relative scroll-mt-24 pt-10 pb-8 first:pt-6"
+      className={cn(
+        'group relative scroll-mt-24 pt-10 pb-8',
+        isFirst && 'pt-6'
+      )}
       id={getReleaseAnchor(release)}
     >
       <header className="mb-4 flex flex-wrap items-baseline gap-x-4 gap-y-2">
@@ -122,32 +178,6 @@ function ReleaseRow({ release }: { release: ReleaseIndexMessage }) {
 
       <ReleaseSeparator className="bottom-0" />
     </article>
-  );
-}
-
-function MoreUpdates({ releases }: { releases: ReleaseIndexMessage[] }) {
-  return (
-    <div className="relative scroll-mt-24 pt-10 pb-20" id="more-updates">
-      <h2 className="mb-6 font-heading font-semibold text-xl tracking-tight">
-        More Updates
-      </h2>
-      <div className="grid auto-rows-fr gap-3 sm:grid-cols-2">
-        {releases.map((release) => (
-          <a
-            key={release.tag}
-            className="flex w-full flex-col rounded-xl bg-surface px-4 py-3 text-surface-foreground transition-colors hover:bg-surface/80"
-            href={release.url}
-            rel="noreferrer"
-            target="_blank"
-          >
-            <span className="text-muted-foreground text-xs">
-              {release.date}
-            </span>
-            <span className="font-medium text-sm">{release.title}</span>
-          </a>
-        ))}
-      </div>
-    </div>
   );
 }
 

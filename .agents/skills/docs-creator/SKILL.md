@@ -286,6 +286,18 @@ Adding, moving, merging, or deleting a docs page is a routing change.
 Do not leave orphan pages: every new page needs a route, a nav decision, and at
 least one useful inbound link from the owning neighborhood.
 
+### Release Docs
+
+`/docs/releases` is docs topology, not changeset policy.
+
+- Keep the latest two major release groups on `/docs/releases`.
+- Move older v49+ major groups to dedicated `/docs/releases/<major>` pages
+  instead of burying them in a catch-all archive.
+- Link each older major page from `/docs/releases` under `Older releases`.
+- Link `v48 and earlier` from `Older releases` to `/docs/migration/v48`.
+- Changesets own package-release bullets. They do not own release-page
+  retention, routing, or archive shape.
+
 ## Code Example Rules
 
 - Repo-backed examples only. If a kit does what you're teaching, cite the exact kit file.

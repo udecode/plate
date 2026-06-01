@@ -234,7 +234,7 @@ export async function renderDocPage(props: DocPageProps, locale: DocsLocale) {
       locale,
       registryNames,
     });
-    const item = await getCachedRegistryItem(docName);
+    const item = await getCachedRegistryItem(docName, true);
 
     if (!item?.files) {
       notFound();
@@ -453,7 +453,7 @@ async function getExampleCode(name?: string) {
     throw new Error(`Component ${name} not found`);
   }
 
-  const item = await getCachedRegistryItem(name);
+  const item = await getCachedRegistryItem(name, true);
   let highlightedFiles: any = [];
   let tree: any = null;
   let dependencies: string[] = [];

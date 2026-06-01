@@ -149,10 +149,16 @@ function BlockViewerProvider({
   const isSettledRef = React.useRef(false);
 
   React.useEffect(() => {
+    const hasMissingFiles = files.some(
+      (file) =>
+        typeof file.content !== 'string' ||
+        typeof file.highlightedContent !== 'string'
+    );
+
     if (
       view === 'code' &&
-      files[1] &&
-      !files[1].content &&
+      files.length > 0 &&
+      hasMissingFiles &&
       !isLoading &&
       !hasErrorRef.current &&
       !isSettledRef.current
@@ -450,11 +456,15 @@ function BlockViewerView({
 }
 
 function BlockViewerCode({ size }: { size?: 'default' | 'sm' }) {
-  const { activeFile, dependencies, highlightedFiles, isLoading } =
+  const { activeFile, dependencies, highlightedFiles, isLoading, view } =
     useBlockViewer();
   const deps = dependencies.join(' ');
 
   const file = highlightedFiles?.find((file) => file.target === activeFile);
+
+  if (view !== 'code') {
+    return null;
+  }
 
   if (!file?.content && isLoading) {
     return (

@@ -3,10 +3,9 @@
   "version": "0.0.1",
   "private": true,
   "description": "Plate documentation website",
-  "type": "module",
   "scripts": {
-    "prebuild": "pnpm build:source",
-    "build": "pnpm build:registry && next build",
+    "prebuild": "PLATE_WWW_ASYNC_DOCS=1 pnpm build:source",
+    "build": "PLATE_WWW_ASYNC_DOCS=1 pnpm build:registry && PLATE_WWW_ASYNC_DOCS=1 next build",
     "build:registry": "tsx --tsconfig ./scripts/tsconfig.scripts.json scripts/build-registry.mts",
     "build:source": "fumadocs-mdx source.config.ts .source",
     "build:source:dev": "fumadocs-mdx source.config.ts .source-dev",

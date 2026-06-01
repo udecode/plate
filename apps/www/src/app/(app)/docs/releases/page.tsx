@@ -1,16 +1,18 @@
 import type { Metadata } from 'next';
 
-import { IconRss } from '@tabler/icons-react';
 import Link from 'next/link';
 
-import { ReleaseIndex } from '@/components/release-index';
-import { Button } from '@/components/ui/button';
 import releaseIndexData from '@/generated/release-index.json';
 import {
+  formatReleaseDate,
+  getCurrentReleaseMajorGroups,
+  getOlderReleaseMajorGroups,
   getReleaseAnchor,
-  NUMBER_OF_LATEST_RELEASES,
+  getReleaseMajorPath,
+  type ReleaseMajorGroup,
   type ReleaseIndexRelease,
 } from '@/lib/releases';
+import { ReleasePageContent } from './release-page-content';
 
 export const dynamic = 'force-static';
 export const revalidate = false;
@@ -18,8 +20,9 @@ export const revalidate = false;
 const title = 'Releases';
 const description = 'Latest updates and announcements.';
 const releases = releaseIndexData as ReleaseIndexRelease[];
-const latestReleases = releases.slice(0, NUMBER_OF_LATEST_RELEASES);
-const olderReleases = releases.slice(NUMBER_OF_LATEST_RELEASES);
+const currentMajorGroups = getCurrentReleaseMajorGroups(releases);
+const olderMajorGroups = getOlderReleaseMajorGroups(releases);
+const currentReleases = currentMajorGroups.flatMap((group) => group.releases);
 
 export const metadata: Metadata = {
   description,
@@ -46,66 +49,59 @@ export const metadata: Metadata = {
 
 export default function ReleasesPage() {
   return (
-    <div
-      className="flex scroll-mt-24 items-stretch pb-8 text-[1.05rem] sm:text-[15px] xl:w-full"
-      data-slot="docs"
-    >
-      <div className="flex min-w-0 flex-1 flex-col">
-        <div className="h-(--top-spacing) shrink-0" />
-        <div className="mx-auto flex w-full min-w-0 max-w-[56rem] flex-1 flex-col gap-6 px-4 py-6 text-foreground md:px-0 lg:py-8 dark:text-foreground">
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center justify-between">
-              <h1 className="scroll-m-24 font-semibold text-3xl tracking-tight">
-                {title}
-              </h1>
-              <Button
-                asChild
-                size="sm"
-                variant="secondary"
-                className="shadow-none"
-              >
-                <a href="/rss.xml" rel="noopener noreferrer" target="_blank">
-                  <IconRss />
-                  RSS
-                </a>
-              </Button>
-            </div>
-            <p className="text-[1.05rem] text-muted-foreground sm:text-balance sm:text-base md:max-w-[80%]">
-              {description}
-            </p>
-          </div>
-          <div className="w-full flex-1 pb-16 sm:pb-0">
-            <ReleaseIndex releases={releases} />
-          </div>
-        </div>
+    <ReleasePageContent
+      after={<OlderReleases groups={olderMajorGroups} />}
+      description={description}
+      releases={currentReleases}
+      sidebarLinks={[
+        ...currentMajorGroups.map((group) => ({
+          href: `#${getReleaseAnchor(group.releases[0])}`,
+          label: `v${group.major}`,
+        })),
+        ...olderMajorGroups.map((group) => ({
+          href: getReleaseMajorPath(group.major),
+          label: `v${group.major}`,
+        })),
+      ]}
+      title={title}
+    />
+  );
+}
+
+function OlderReleases({
+  groups,
+}: {
+  groups: ReleaseMajorGroup<ReleaseIndexRelease>[];
+}) {
+  return (
+    <section className="not-prose mt-12 border-border border-t pt-8">
+      <h2 className="font-heading font-semibold text-2xl tracking-tight">
+        Older releases
+      </h2>
+      <div className="mt-4 grid auto-rows-fr gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        {groups.map((group) => (
+          <Link
+            key={group.major}
+            className="flex flex-col rounded-md bg-surface px-4 py-3 text-surface-foreground no-underline transition-colors hover:bg-surface/80"
+            href={getReleaseMajorPath(group.major)}
+          >
+            <span className="font-medium text-sm">v{group.major}</span>
+            <span className="mt-1 text-muted-foreground text-xs">
+              {formatReleaseDate(group.releases.at(-1)?.date ?? '')} -{' '}
+              {formatReleaseDate(group.releases[0]?.date ?? '')}
+            </span>
+          </Link>
+        ))}
+        <Link
+          className="flex flex-col rounded-md bg-surface px-4 py-3 text-surface-foreground no-underline transition-colors hover:bg-surface/80"
+          href="/docs/migration/v48"
+        >
+          <span className="font-medium text-sm">v48 and earlier</span>
+          <span className="mt-1 text-muted-foreground text-xs">
+            Migration archive
+          </span>
+        </Link>
       </div>
-      <div className="sticky top-[calc(var(--header-height)+1px)] z-30 ml-auto hidden h-[90svh] w-(--sidebar-width) flex-col gap-4 overflow-hidden overscroll-none pb-8 xl:flex">
-        <div className="h-(--top-spacing) shrink-0" />
-        <div className="no-scrollbar flex flex-col gap-8 overflow-y-auto px-8">
-          <div className="flex flex-col gap-2 p-4 pt-0 text-sm">
-            <p className="sticky top-0 h-6 bg-background font-medium text-muted-foreground text-xs">
-              On This Page
-            </p>
-            {latestReleases.map((release) => (
-              <Link
-                key={release.tag}
-                className="text-[0.8rem] text-muted-foreground no-underline transition-colors hover:text-foreground"
-                href={`#${getReleaseAnchor(release)}`}
-              >
-                {release.title}
-              </Link>
-            ))}
-            {olderReleases.length > 0 ? (
-              <Link
-                className="text-[0.8rem] text-muted-foreground no-underline transition-colors hover:text-foreground"
-                href="#more-updates"
-              >
-                More Updates
-              </Link>
-            ) : null}
-          </div>
-        </div>
-      </div>
-    </div>
+    </section>
   );
 }

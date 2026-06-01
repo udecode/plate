@@ -40,6 +40,7 @@ import {
 import { Spinner } from '@/components/ui/spinner';
 import { useMutationObserver } from '@/hooks/use-mutation-observer';
 import { useLocale } from '@/hooks/useLocale';
+import { getCommandMenuSearchState } from '@/lib/command-menu-search';
 import {
   getRegistryClipboardInstallCommand,
   getRegistryInstallCommand,
@@ -319,6 +320,7 @@ function SearchResults({
   locale,
   query,
   search,
+  showResults,
   onHighlight,
   setOpen,
 }: {
@@ -326,6 +328,7 @@ function SearchResults({
   locale: string;
   query: Query;
   search: string;
+  showResults: boolean;
   onHighlight: HighlightCommand;
   setOpen: (open: boolean) => void;
 }) {
@@ -371,7 +374,7 @@ function SearchResults({
     [uniqueResults]
   );
 
-  if (!search.trim() || !query.data || query.data === 'empty') {
+  if (!showResults || !search.trim() || !query.data || query.data === 'empty') {
     return null;
   }
 
@@ -493,6 +496,7 @@ export function CommandMenu({
   const [renderDelayedGroups, setRenderDelayedGroups] = React.useState(false);
   const [copyLabel, setCopyLabel] = React.useState('');
   const [copyPayload, setCopyPayload] = React.useState('');
+  const [commandSearch, setCommandSearch] = React.useState('');
   const [selectedAction, setSelectedAction] = React.useState(content.goToPage);
   const docsSearchTimeoutRef = React.useRef<NodeJS.Timeout | undefined>(
     undefined
@@ -503,10 +507,16 @@ export function CommandMenu({
     search: docsSearch,
     setSearch: setDocsSearch,
   } = useFumadocsSearch({
+    delayMs: 0,
     locale,
     type: 'fetch',
   });
-  const isDocsSearchActive = docsSearch.trim().length >= MIN_DOC_SEARCH_LENGTH;
+  const docsSearchState = getCommandMenuSearchState({
+    docsSearch,
+    inputSearch: commandSearch,
+    isQueryLoading: query.isLoading,
+    minSearchLength: MIN_DOC_SEARCH_LENGTH,
+  });
 
   const updateOpen = React.useCallback(
     (nextOpen: boolean) => {
@@ -518,6 +528,7 @@ export function CommandMenu({
         setCopyPayload('');
       } else {
         setRenderDelayedGroups(false);
+        setCommandSearch('');
         setDocsSearch('');
         setCopyLabel('');
         setCopyPayload('');
@@ -617,15 +628,27 @@ export function CommandMenu({
 
   const handleSearchChange = React.useCallback(
     (value: string) => {
+      const nextDocsSearch =
+        value.trim().length >= MIN_DOC_SEARCH_LENGTH ? value : '';
+
+      setCommandSearch(value);
+
       if (docsSearchTimeoutRef.current) {
         clearTimeout(docsSearchTimeoutRef.current);
       }
 
+      if (!nextDocsSearch) {
+        docsSearchTimeoutRef.current = undefined;
+
+        React.startTransition(() => {
+          setDocsSearch('');
+        });
+        return;
+      }
+
       docsSearchTimeoutRef.current = setTimeout(() => {
         React.startTransition(() => {
-          setDocsSearch(
-            value.trim().length >= MIN_DOC_SEARCH_LENGTH ? value : ''
-          );
+          setDocsSearch(nextDocsSearch);
         });
       }, DOC_SEARCH_DEBOUNCE_MS);
     },
@@ -663,14 +686,14 @@ export function CommandMenu({
                 onValueChange={handleSearchChange}
                 placeholder={content.searchDocumentation}
               />
-              {isDocsSearchActive && query.isLoading && (
+              {docsSearchState.isPending && (
                 <div className="-translate-y-1/2 pointer-events-none absolute top-1/2 right-3 flex items-center justify-center">
                   <Spinner />
                 </div>
               )}
             </div>
             <CommandEmpty className="py-12 text-center text-muted-foreground text-sm">
-              {isDocsSearchActive && query.isLoading
+              {docsSearchState.isPending
                 ? content.searching
                 : content.noResults}
             </CommandEmpty>
@@ -680,6 +703,7 @@ export function CommandMenu({
                 locale={locale}
                 query={query}
                 search={docsSearch}
+                showResults={docsSearchState.shouldShowSearchResults}
                 onHighlight={setHighlightedCommand}
                 setOpen={setOpen}
               />
