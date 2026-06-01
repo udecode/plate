@@ -1,0 +1,187 @@
+---
+title: Node.js
+description: Install and configure Plate for Node.js.
+---
+
+Use Plate in Node.js when you need to read, validate, transform, or serialize editor values outside the browser. Node scripts use the base runtime imports, while React editors use `/react` subpaths. This guide walks through a server-safe editor, Markdown IO, and a content transform.
+
+## Node.js Setup
+
+<Callout type="warning" title="Use base imports">
+  Do not import from `platejs/react` or `@platejs/*/react` in Node.js scripts.
+  Use `createSlateEditor` from `platejs` and base plugins from `@platejs/*`
+  packages.
+</Callout>
+
+<Steps>
+
+### Install Packages
+
+Install the core runtime and the packages your pipeline needs.
+
+```bash
+npm install platejs @platejs/basic-nodes @platejs/markdown
+```
+
+| Package | Owns |
+| --- | --- |
+| `platejs` | `createSlateEditor`, core editor APIs, core paragraph behavior. |
+| `@platejs/basic-nodes` | Base headings, blockquotes, horizontal rules, and text marks. |
+| `@platejs/markdown` | Markdown serialization, deserialization, and the `MarkdownPlugin` API. |
+
+### Create a Server Editor
+
+Create the editor with base plugins only. The editor exposes the same `editor.api`
+and `editor.tf` surfaces without mounting a React tree.
+
+```ts showLineNumbers title="scripts/process-content.ts"
+import type { Value } from 'platejs';
+
+import {
+  BaseBasicBlocksPlugin,
+  BaseBasicMarksPlugin,
+} from '@platejs/basic-nodes';
+import { createSlateEditor } from 'platejs';
+
+const value: Value = [
+  {
+    children: [{ text: 'Document Title' }],
+    type: 'h1',
+  },
+  {
+    children: [
+      { text: 'With ' },
+      { bold: true, text: 'bold' },
+      { text: ' text.' },
+    ],
+    type: 'p',
+  },
+];
+
+const editor = createSlateEditor({
+  plugins: [BaseBasicBlocksPlugin, BaseBasicMarksPlugin],
+  value,
+});
+
+const plainText = editor.api.string([]);
+
+console.info(plainText);
+```
+
+### Read and Write Markdown
+
+Add `MarkdownPlugin` when the script needs Markdown helpers through
+`editor.getApi(MarkdownPlugin)`. You can also call `deserializeMd` and
+`serializeMd` directly.
+
+```ts showLineNumbers title="scripts/markdown-io.ts"
+import {
+  BaseBasicBlocksPlugin,
+  BaseBasicMarksPlugin,
+} from '@platejs/basic-nodes';
+import {
+  MarkdownPlugin,
+  deserializeMd,
+  serializeMd,
+} from '@platejs/markdown';
+import { createSlateEditor } from 'platejs';
+
+const editor = createSlateEditor({
+  plugins: [BaseBasicBlocksPlugin, BaseBasicMarksPlugin, MarkdownPlugin],
+});
+
+const value = deserializeMd(
+  editor,
+  [
+    '# Migration Note',
+    '',
+    'Move legacy content into **Plate** format.',
+  ].join('\n')
+);
+
+const markdown = serializeMd(editor, { value });
+
+console.info(markdown);
+```
+
+### Transform Content
+
+Use transforms for migrations and bulk cleanup. Pass `at: []` when the operation
+should scan the whole document.
+
+```ts showLineNumbers title="scripts/normalize-headings.ts"
+import type { Value } from 'platejs';
+
+import {
+  BaseBasicBlocksPlugin,
+  BaseBasicMarksPlugin,
+} from '@platejs/basic-nodes';
+import { MarkdownPlugin, serializeMd } from '@platejs/markdown';
+import { createSlateEditor } from 'platejs';
+
+export function normalizeHeadings(value: Value) {
+  const editor = createSlateEditor({
+    plugins: [BaseBasicBlocksPlugin, BaseBasicMarksPlugin, MarkdownPlugin],
+    value,
+  });
+
+  editor.tf.setNodes(
+    { type: 'h2' },
+    {
+      at: [],
+      match: (node) => 'type' in node && node.type === 'h1',
+    }
+  );
+
+  editor.tf.insertNodes(
+    [{ children: [{ text: 'Imported from the legacy CMS.' }], type: 'p' }],
+    { at: [editor.children.length] }
+  );
+
+  return {
+    markdown: serializeMd(editor),
+    text: editor.api.string([]),
+    value: editor.children,
+  };
+}
+```
+
+</Steps>
+
+## Runtime Boundaries
+
+| Runtime | Import from | Use for |
+| --- | --- | --- |
+| Node.js scripts | `platejs`, `@platejs/*` | Migration, validation, serialization, search indexing. |
+| React editors | `platejs/react`, `@platejs/*/react` | Editable UI, hooks, rendered components, toolbar behavior. |
+| Static rendering | `platejs/static` | Server-rendered read-only content. |
+
+<Callout type="info">
+  Plugin packages can expose both base and React entrypoints. In Node.js, choose
+  the base entrypoint even when the same feature has React components for the
+  browser editor.
+</Callout>
+
+## API Reference
+
+| API | Package | Notes |
+| --- | --- | --- |
+| `createSlateEditor` | `platejs` | Creates a non-React editor instance. |
+| `editor.api.string([])` | `platejs` | Reads text from the whole document. |
+| `editor.tf.setNodes` | `platejs` | Updates matching nodes. Use `at: []` for document-wide transforms. |
+| `editor.tf.insertNodes` | `platejs` | Inserts nodes at a path. |
+| `deserializeMd` | `@platejs/markdown` | Converts Markdown into a Plate value. |
+| `serializeMd` | `@platejs/markdown` | Converts the editor value or an explicit `value` option to Markdown. |
+
+## Next Steps
+
+| Task | Guide |
+| --- | --- |
+| Serialize to Markdown | [Markdown](/docs/markdown) |
+| Serialize to HTML | [HTML](/docs/html) |
+| Render read-only content | [Static Rendering](/docs/static) |
+| Query editor state | [Editor API](/docs/api/slate/editor-api) |
+| Apply transforms | [Editor Transforms](/docs/api/slate/editor-transforms) |
+
+Done. You now have a server-safe Plate runtime that can power migration scripts,
+validation jobs, and content serialization.

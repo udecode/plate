@@ -34,17 +34,24 @@ export const useCopyToClipboard = ({
       return;
     }
 
-    void navigator.clipboard.writeText(value).then(() => {
-      setIsCopied(true);
+    void navigator.clipboard
+      .writeText(value)
+      .then(() => {
+        setIsCopied(true);
 
-      setTimeout(() => {
-        setIsCopied(false);
-      }, timeout);
-    });
+        setTimeout(() => {
+          setIsCopied(false);
+        }, timeout);
 
-    if (tooltip) {
-      toast.success(tooltip, data);
-    }
+        if (tooltip) {
+          toast.success(tooltip, data);
+        }
+      })
+      .catch(() => {
+        if (tooltip) {
+          toast.error('Failed to copy', data);
+        }
+      });
   };
 
   return { copyToClipboard, isCopied };

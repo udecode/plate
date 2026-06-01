@@ -1,0 +1,149 @@
+---
+title: Plate Utils
+description: API reference for @platejs/utils.
+---
+
+`@platejs/utils` contains Plate's shared key constants, editor value types, and
+small utility plugins. `@platejs/utils/react` adds React hooks and the block
+placeholder plugin used by registry UI.
+
+## Installation
+
+```bash
+npm install @platejs/utils
+```
+
+Application code usually imports this surface from `platejs` and `platejs/react`.
+Direct package imports are useful inside packages that should not depend on the
+umbrella `platejs` package.
+
+## Import Paths
+
+| Import | Re-exports | Use |
+| --- | --- | --- |
+| `@platejs/utils` | `plate-keys`, `plate-types`, utility plugins | Shared node keys, Plate element/mark types, and headless utility plugins. |
+| `@platejs/utils/react` | React hooks, `BlockPlaceholderPlugin` | Registry controls and React-only utility behavior. |
+| `platejs` | `@platejs/utils` | App-level imports for headless constants, types, and utility plugins. |
+| `platejs/react` | `@platejs/utils/react` | App-level imports for React hooks and `BlockPlaceholderPlugin`. |
+
+## Key Constants
+
+`KEYS` is the canonical key map used by Plate packages, registry components, and
+plugin configuration.
+
+| Export | Contains | Notes |
+| --- | --- | --- |
+| `NODES` | Element and mark node keys such as `p`, `blockquote`, `codeBlock`, `table`, `bold`, and `link` | `link` maps to the same node type as `a`. |
+| `STYLE_KEYS` | Style property keys such as `color`, `fontSize`, `indent`, and `textAlign` | Used by style plugins and registry controls. |
+| `KEYS` | `NODES`, `STYLE_KEYS`, and plugin keys such as `exitBreak`, `normalizeTypes`, `singleBlock`, and `trailingBlock` | Also includes grouped values such as `heading`. |
+| `NodeKey` | Union of values from `NODES` | Use for node-type values. |
+| `StyleKey` | Union of values from `STYLE_KEYS` | Use for style keys. |
+| `PlateKey` | Union of values from `KEYS` | Includes string values and grouped key arrays. |
+
+```ts title="Use Plate keys"
+import { KEYS, TrailingBlockPlugin } from 'platejs';
+
+export const trailingBlock = TrailingBlockPlugin.configure({
+  options: {
+    type: KEYS.p,
+  },
+});
+```
+
+## Shared Types
+
+`plate-types` exports common element, prop, media, list, table, mark, and
+suggestion shapes used across feature packages.
+
+| Type group | Examples | Use |
+| --- | --- | --- |
+| Block elements | `TCalloutElement`, `TCodeBlockElement`, `TColumnElement`, `TDateElement`, `TEquationElement` | Typed element props for feature packages and registry nodes. |
+| Media elements | `TImageElement`, `TAudioElement`, `TFileElement`, `TVideoElement`, `TMediaEmbedElement` | Media nodes with `url`, `id`, upload, provider, and source metadata. |
+| Table elements | `TTableElement`, `TTableRowElement`, `TTableCellElement`, `TTableCellBorder` | Table structure, spans, sizes, backgrounds, and borders. |
+| Shared props | `TIdProps`, `TCaptionProps`, `TIndentProps`, `TResizableProps`, `TListProps` | Reusable node property contracts. |
+| Marks | `TBasicMarks`, `TFontMarks`, `TCommentText`, `TSuggestionText` | Text marks and collaboration text state. |
+| Suggestions | `TSuggestionData`, `TInsertSuggestionData`, `TRemoveSuggestionData`, `TUpdateSuggestionData` | Suggestion metadata stored on elements or text. |
+
+```ts title="Type a media element"
+import type { TImageElement } from 'platejs';
+
+export function getImageUrl(element: TImageElement) {
+  return element.url;
+}
+```
+
+## Utility Plugins
+
+| Plugin | Key | Behavior |
+| --- | --- | --- |
+| `ExitBreakPlugin` | `KEYS.exitBreak` | Adds `editor.tf.insert` and `editor.tf.insertBefore` wrappers around `insertExitBreak`. |
+| `NormalizeTypesPlugin` | `KEYS.normalizeTypes` | Normalizes configured root paths to a required `type` or `strictType`. |
+| `SingleBlockPlugin` | `KEYS.singleBlock` | Forces the editor value into one block and turns hard breaks into soft breaks. |
+| `SingleLinePlugin` | `KEYS.singleLine` | Forces one block and strips line-break characters from text nodes. |
+| `TrailingBlockPlugin` | `KEYS.trailingBlock` | Ensures a trailing block exists at the configured level and type. |
+| `withTrailingBlock` | Override editor helper | Implements the trailing block normalization logic used by `TrailingBlockPlugin`. |
+
+Use the plugin guide pages for options and examples:
+[Exit Break](/docs/exit-break), [Forced Layout](/docs/forced-layout),
+[Single Block](/docs/single-block), and [Trailing Block](/docs/trailing-block).
+
+## React Hooks
+
+| Hook | Returns | Use |
+| --- | --- | --- |
+| `useEditorString()` | `string` | Reads `editor.api.string([])` through `useEditorSelector`. |
+| `useFormInputProps(options?)` | `{ props }` | Adds an optional `onKeyDownCapture` handler that prevents Enter from submitting a wrapper form. |
+| `useMarkToolbarButtonState({ nodeType, clear? })` | `{ clear, nodeType, pressed }` | Reads whether a mark is active. |
+| `useMarkToolbarButton(state)` | `{ props }` | Provides `pressed`, `onClick`, and `onMouseDown` props that toggle a mark and focus the editor. |
+| `useRemoveNodeButton({ element })` | `{ props }` | Provides button props that remove an element by path. |
+| `useSelectionCollapsed()` | `boolean` | Selection is collapsed. |
+| `useSelectionExpanded()` | `boolean` | Selection is expanded. |
+| `useSelectionWithinBlock()` | `boolean` | Selection is inside one block. |
+| `useSelectionAcrossBlocks()` | `boolean` | Selection spans blocks. |
+| `useSelectionFragment()` | `Descendant[]` | Reads the selected fragment while unwrapping container types. |
+| `useSelectionFragmentProp(options?)` | `unknown` | Reads a property from the selected fragment. |
+
+```tsx title="registry/ui/mark-toolbar-button.tsx"
+import {
+  useMarkToolbarButton,
+  useMarkToolbarButtonState,
+} from 'platejs/react';
+
+export function MarkToolbarButton({ nodeType }: { nodeType: string }) {
+  const state = useMarkToolbarButtonState({ nodeType });
+  const { props } = useMarkToolbarButton(state);
+
+  return <button type="button" aria-pressed={props.pressed} {...props} />;
+}
+```
+
+## React Plugins
+
+| Plugin | Key | Behavior |
+| --- | --- | --- |
+| `BlockPlaceholderPlugin` | `KEYS.blockPlaceholder` | Tracks the current empty block and injects `placeholder` and optional `className` props into matching block components. |
+
+`BlockPlaceholderPlugin` defaults to paragraph placeholders and only targets a
+focused, editable, collapsed selection. Configure `placeholders` by plugin key
+and `query` by node/path.
+
+```tsx title="components/editor/plugins/block-placeholder-kit.tsx"
+import { KEYS } from 'platejs';
+import { BlockPlaceholderPlugin } from 'platejs/react';
+
+export const blockPlaceholderPlugin = BlockPlaceholderPlugin.configure({
+  options: {
+    placeholders: {
+      [KEYS.p]: 'Type something...',
+    },
+    query: ({ path }) => path.length === 1,
+  },
+});
+```
+
+## Related APIs
+
+- [Plate](/docs/api/plate) covers the umbrella package that re-exports these APIs.
+- [Plate Core](/docs/api/core) covers editor creation, plugin contracts, and stores.
+- [React Utils](/docs/api/react-utils) covers `@udecode/react-utils`, which is re-exported through `platejs/react`.
+- [Toolbar](/docs/toolbar) covers registry controls that use the React hook helpers.

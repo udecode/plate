@@ -1,4 +1,8 @@
+minimumReleaseAge: 10080
+
 packages:
   - "apps/*"
   - "packages/*"
   - "packages/udecode/*"
+
+trustPolicy: no-downgrade

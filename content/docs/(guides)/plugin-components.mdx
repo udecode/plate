@@ -1,0 +1,231 @@
+---
+title: Plugin Components
+description: Render Plate plugin nodes with React components.
+---
+
+Plugin components are the React rendering layer for Plate node plugins. Use
+Plate UI components first when the registry already has the node you need, then
+customize with `PlateElement`, `PlateLeaf`, `.withComponent`, or the editor
+`components` map. This page shows which registration path to use.
+
+## Start with Plate UI
+
+Plate UI components are copied into your app. That makes them the fastest path
+for production styling and the safest starting point for customization.
+
+| Start here | Use when |
+| --- | --- |
+| [Plate UI](/docs/installation/plate-ui) | You want registry components copied into your app. |
+| [Feature Kits](/docs/feature-kits) | You want plugin groups that already wire components, shortcuts, and options. |
+| This page | You are writing or replacing a component by hand. |
+
+The package owns plugin behavior. Your app owns copied component files and their
+styles.
+
+## Component Primitives
+
+Use `PlateElement` for element nodes and `PlateLeaf` for mark or leaf nodes.
+Both components merge Slate attributes, Plate node props, `className`, and
+`style` onto the rendered DOM element.
+
+<Callout type="info" title="Render children">
+  Always render `children`. Slate needs the children in the DOM even when the
+  element is void or the visible UI comes from surrounding controls.
+</Callout>
+
+### PlateElement
+
+Element components render block, inline, and void element nodes.
+
+```tsx title="components/ui/blockquote-node.tsx" showLineNumbers
+'use client';
+
+import { type PlateElementProps, PlateElement } from 'platejs/react';
+
+export function BlockquoteElement({
+  children,
+  ...props
+}: PlateElementProps) {
+  return (
+    <PlateElement
+      as="blockquote"
+      className="my-1 border-l-2 pl-6 italic"
+      {...props}
+    >
+      {children}
+    </PlateElement>
+  );
+}
+```
+
+`PlateElement` renders a `div` by default. Pass `as` when the node should render
+as a specific HTML element.
+
+### PlateLeaf
+
+Leaf components render marks and decorated text ranges.
+
+```tsx title="components/ui/code-node.tsx" showLineNumbers
+'use client';
+
+import { type PlateLeafProps, PlateLeaf } from 'platejs/react';
+
+export function CodeLeaf({ children, ...props }: PlateLeafProps) {
+  return (
+    <PlateLeaf
+      as="code"
+      className="whitespace-pre-wrap rounded-md bg-muted px-[0.3em] py-[0.2em] font-mono text-sm"
+      {...props}
+    >
+      {children}
+    </PlateLeaf>
+  );
+}
+```
+
+`PlateLeaf` renders a `span` by default. Use it for plugins with
+`node.isLeaf: true`.
+
+## Register Components
+
+Use the narrowest registration path that fits the job.
+
+### withComponent
+
+Use `.withComponent()` when you only need to attach a React component to a
+plugin.
+
+```tsx title="components/editor/plugins.tsx" showLineNumbers
+import {
+  BlockquotePlugin,
+  CodePlugin,
+} from '@platejs/basic-nodes/react';
+
+import { BlockquoteElement } from '@/components/ui/blockquote-node';
+import { CodeLeaf } from '@/components/ui/code-node';
+
+export const plugins = [
+  BlockquotePlugin.withComponent(BlockquoteElement),
+  CodePlugin.withComponent(CodeLeaf),
+];
+```
+
+`.withComponent(Component)` sets both `node.component` and `render.node` for the
+plugin.
+
+### node.component
+
+Use `node.component` inside `.configure()` when the same plugin call also owns
+rules, shortcuts, options, or parser behavior.
+
+```tsx title="components/editor/plugins.tsx" showLineNumbers
+import { CodeRules } from '@platejs/basic-nodes';
+import { CodePlugin } from '@platejs/basic-nodes/react';
+
+import { CodeLeaf } from '@/components/ui/code-node';
+
+export const plugins = [
+  CodePlugin.configure({
+    inputRules: [CodeRules.markdown()],
+    node: { component: CodeLeaf },
+    shortcuts: { toggle: { keys: 'mod+e' } },
+  }),
+];
+```
+
+During plugin resolution, Plate keeps `node.component` and `render.node` in sync.
+
+### Editor components
+
+Use the editor `components` option when a single editor owns the component map.
+This is useful for replacing several components in one place.
+
+```tsx title="components/editor.tsx" showLineNumbers
+import {
+  BlockquotePlugin,
+  CodePlugin,
+} from '@platejs/basic-nodes/react';
+import { Plate, usePlateEditor } from 'platejs/react';
+
+import { BlockquoteElement } from '@/components/ui/blockquote-node';
+import { CodeLeaf } from '@/components/ui/code-node';
+import { Editor, EditorContainer } from '@/components/ui/editor';
+
+export function AppEditor() {
+  const editor = usePlateEditor({
+    components: {
+      [BlockquotePlugin.key]: BlockquoteElement,
+      [CodePlugin.key]: CodeLeaf,
+    },
+    plugins: [BlockquotePlugin, CodePlugin],
+  });
+
+  return (
+    <Plate editor={editor}>
+      <EditorContainer>
+        <Editor />
+      </EditorContainer>
+    </Plate>
+  );
+}
+```
+
+The keys are plugin keys, not file names or component names.
+
+## Render Without a Custom Component
+
+Use `render.as` when the default `PlateElement` or `PlateLeaf` wrapper is enough
+and you only need a different HTML tag.
+
+```ts title="quote-plugin.ts" showLineNumbers
+import { createPlatePlugin } from 'platejs/react';
+
+export const QuotePlugin = createPlatePlugin({
+  key: 'quote',
+  node: {
+    isElement: true,
+    type: 'quote',
+  },
+  render: {
+    as: 'blockquote',
+  },
+});
+```
+
+Reach for a custom component once you need classes, nested controls, popovers,
+toolbars, resize handles, or plugin options inside the render tree.
+
+## Styling
+
+Prefer component-local styles. Plate also adds a `slate-<node-type>` class while
+rendering plugin nodes, so global CSS can target stable node types when you need
+editor-wide styling.
+
+```css title="app/globals.css"
+.slate-p {
+  margin-block: 0.25rem;
+}
+
+.slate-code {
+  border-radius: 0.375rem;
+  font-family: var(--font-mono);
+}
+```
+
+Use global selectors sparingly. Component files are easier to copy, inspect, and
+replace from the registry.
+
+## API Reference
+
+| API | Use for | Notes |
+| --- | --- | --- |
+| `PlateElement` | Element nodes. | Defaults to `div`; accepts `as`, `className`, `style`, and Plate render props. |
+| `PlateLeaf` | Leaf and mark nodes. | Defaults to `span`; use with plugins where `node.isLeaf` is true. |
+| `plugin.withComponent(Component)` | Simple component attachment. | Sets `node.component` and `render.node`. |
+| `plugin.configure({ node: { component } })` | Component plus plugin config. | Plate syncs `node.component` to `render.node` during resolution. |
+| `render.as` | Default wrapper with a different tag. | Works when no custom `render.node` component is set. |
+| `components` | Editor-wide component overrides. | Merged into the root plugin's component overrides. |
+| `override.components` | Advanced plugin-level component overrides. | Higher-priority plugins win when a target already has a component. |
+
+For plugin method details, see [Plugin Methods](/docs/plugin-methods). For static
+rendering components, see [Static Rendering](/docs/static).

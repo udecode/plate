@@ -204,16 +204,13 @@ export function APIList({
 }: APIListProps) {
   const { name } = React.useContext(APIContext);
   const childCount = React.Children.count(children);
-  const hasItems = React.Children.toArray(children).some(
-    (child) => (child as any)?.type?.name === 'APIItem'
-  );
+  const hasItems = childCount > 0;
   const newValues = Array.from(Array.from({ length: childCount }).keys()).map(
     (i) => i.toString()
   );
   const defaultValues = collapsed ? [] : newValues;
 
   const [values, setValues] = useState<string[]>(defaultValues);
-  const [expanded, setExpanded] = useState(!collapsed);
 
   if (listType === 'returns' && !childCount) return null;
 
@@ -278,7 +275,6 @@ export function APIList({
                     } else {
                       setValues(newValues);
                     }
-                    setExpanded(!expanded);
                   }}
                 >
                   {values.length === childCount ? 'Collapse all' : 'Expand all'}
@@ -298,10 +294,12 @@ export function APIList({
                   type="multiple"
                 >
                   {React.Children.map(children, (child, i) =>
-                    React.cloneElement(child as any, {
-                      className: 'pt-4',
-                      value: i.toString(),
-                    })
+                    React.isValidElement(child)
+                      ? React.cloneElement(child as any, {
+                          className: 'pt-4',
+                          value: i.toString(),
+                        })
+                      : child
                   )}
                 </Accordion>
               ) : childCount > 0 ? (

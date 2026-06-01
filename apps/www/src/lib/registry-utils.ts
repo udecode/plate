@@ -1,4 +1,4 @@
-import type { RegistryItem } from 'shadcn/registry';
+import type { RegistryItem } from 'shadcn/schema';
 
 export function getRegistryTitle(item: Partial<RegistryItem>): string {
   return (

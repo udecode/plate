@@ -3,7 +3,7 @@ import * as React from 'react';
 export const useMutationObserver = (
   ref: React.MutableRefObject<HTMLElement | null>,
   callback: MutationCallback,
-  options = {
+  options: MutationObserverInit = {
     attributes: true,
     characterData: true,
     childList: true,

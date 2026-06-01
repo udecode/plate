@@ -4,17 +4,15 @@ import type { Metadata } from 'next';
 
 import Link from 'next/link';
 
-import CustomizerDrawer from '@/components/customizer-drawer';
 import {
   PageHeader,
+  PageActions,
   PageHeaderDescription,
   PageHeaderHeading,
 } from '@/components/page-header';
 import { PlaygroundPreview } from '@/components/playground-preview';
-import { SiteFooter } from '@/components/site-footer';
-import { ThemesButton } from '@/components/themes-button';
 import { Button } from '@/components/ui/button';
-import { siteConfig } from '@/config/site';
+import { getPlaygroundPreviewData } from '@/lib/playground-preview-data';
 
 import { AnnouncementButton } from './_components/announcement-button';
 import { PotionLazyBlock } from './_components/potion-lazy-block';
@@ -22,16 +20,14 @@ import { PotionLazyBlock } from './_components/potion-lazy-block';
 const i18n = {
   cn: {
     buildYourRichTextEditor: '构建你的富文本编辑器',
-    description: '框架 · 插件 · 组件 · 主题',
+    description: '框架 · 插件 · 组件',
     getStarted: '开始使用',
-    github: 'GitHub',
     potionDescription: '一个类似 Notion 的 AI 模板。',
   },
   en: {
     buildYourRichTextEditor: 'Build your rich-text editor',
-    description: 'Framework · Plugins · Components · Themes',
+    description: 'Framework · Plugins · Components',
     getStarted: 'Get Started',
-    github: 'GitHub',
     potionDescription: 'A Notion-like AI template.',
   },
 };
@@ -66,60 +62,48 @@ export const metadata: Metadata = {
 
 export const dynamic = 'force-static';
 
-// SYNC
-
 export default async function IndexPage() {
   const content = i18n.en;
+  const playgroundPreviewData = await getPlaygroundPreviewData();
 
   return (
-    <>
-      <div className="relative">
-        <div className="flex items-center justify-between">
-          <PageHeader className="w-full pb-8">
-            <AnnouncementButton />
+    <div className="flex flex-1 flex-col" data-home-page>
+      <PageHeader className="md:**:[.container]:pb-8 lg:**:[.container]:pb-12">
+        <AnnouncementButton />
 
-            <div className="flex w-full items-center justify-between">
-              <PageHeaderHeading>
-                {content.buildYourRichTextEditor}
-              </PageHeaderHeading>
-              <ThemesButton />
+        <PageHeaderHeading className="max-w-4xl text-balance font-semibold text-primary xl:text-5xl">
+          {content.buildYourRichTextEditor}
+        </PageHeaderHeading>
+        <PageHeaderDescription className="max-w-4xl font-normal text-base sm:text-lg">
+          {content.description}
+        </PageHeaderDescription>
+        <PageActions className="justify-center **:data-[slot=button]:shadow-none">
+          <Button asChild size="sm" className="h-[31px] rounded-lg text-xs">
+            <Link href="/docs">{content.getStarted}</Link>
+          </Button>
+        </PageActions>
+      </PageHeader>
+
+      <div className="container-wrapper relative flex-1 overflow-hidden bg-muted pb-6 md:px-0 dark:bg-background">
+        <div className="pointer-events-none absolute inset-x-0 top-0 z-0 h-120 bg-linear-to-b from-background via-muted to-transparent dark:hidden" />
+        <div className="container relative z-10 max-w-screen-2xl overflow-hidden md:px-0">
+          <section
+            className="theme-neutral relative overflow-hidden p-2 pb-0 md:p-6 md:pb-0"
+            data-home-preview
+          >
+            <div className="relative z-10">
+              {playgroundPreviewData && (
+                <PlaygroundPreview {...playgroundPreviewData} />
+              )}
             </div>
-            <PageHeaderDescription>{content.description}</PageHeaderDescription>
-            <section className="flex w-full items-center space-x-2 py-2">
-              <Button asChild size="sm" className="rounded-md text-xs">
-                <Link href="/docs">{content.getStarted}</Link>
-              </Button>
-              <Button
-                asChild
-                size="sm"
-                variant="ghost"
-                className="rounded-md text-xs"
-              >
-                <Link
-                  href={siteConfig.links.github}
-                  rel="noreferrer"
-                  target="_blank"
-                >
-                  {content.github}
-                </Link>
-              </Button>
-            </section>
-          </PageHeader>
-        </div>
-
-        <div className="container py-6">
-          <section className="relative">
-            <PlaygroundPreview />
-
-            <CustomizerDrawer />
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-48 bg-linear-to-t from-muted via-muted/80 to-transparent lg:h-80 xl:h-64 dark:from-background dark:via-background/80" />
           </section>
 
-          <div className="relative mt-12 scroll-m-16 pb-48 md:mt-24 lg:mt-36">
+          <div className="relative mt-12 scroll-m-16 px-2 pb-48 md:mt-24 md:px-6 lg:mt-36">
             <PotionLazyBlock />
           </div>
         </div>
       </div>
-      <SiteFooter />
-    </>
+    </div>
   );
 }

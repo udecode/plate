@@ -1,7 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn-prose";
-@import "./themes.css";
 
 @plugin "tailwind-scrollbar-hide";
 
@@ -200,28 +199,15 @@
     @apply opacity-60 md:opacity-100;
   }
 
-  /* Custom scrollbar styling (remove after sync). */
-  ::-webkit-scrollbar {
-    width: 5px;
-  }
-  ::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  ::-webkit-scrollbar-thumb {
-    background: hsl(var(--border));
-    border-radius: 5px;
-  }
-  * {
-    scrollbar-width: thin;
-    scrollbar-color: hsl(var(--border)) transparent;
-  }
-
-  /* Custom prose styling (remove after sync). */
-  .prose {
-    --tw-prose-body: var(--foreground);
-    --tw-prose-bold: inherit;
-    --tw-prose-links: inherit;
-    --tw-prose-bullets: var(--foreground);
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      scroll-behavior: auto !important;
+      transition-duration: 0.01ms !important;
+    }
   }
 }
 
@@ -238,9 +224,7 @@
 }
 
 @utility container-wrapper {
-  /* @apply 3xl:fixed:max-w-[calc(var(--breakpoint-2xl)+2rem)] mx-auto w-full px-2; */
-
-  @apply px-2 mx-auto w-full max-w-[calc(var(--breakpoint-xl)+2rem)];
+  @apply 3xl:fixed:max-w-[calc(var(--breakpoint-2xl)+2rem)] mx-auto w-full px-2;
 }
 
 @utility container {
@@ -279,6 +263,56 @@
 }
 
 @layer components {
+  [data-rehype-pretty-code-fragment] > :not(code)[data-theme="light"] {
+    display: block;
+  }
+
+  [data-rehype-pretty-code-fragment] > :not(code)[data-theme="dark"] {
+    display: none;
+  }
+
+  .dark [data-rehype-pretty-code-fragment] > :not(code)[data-theme="light"] {
+    display: none;
+  }
+
+  .dark [data-rehype-pretty-code-fragment] > :not(code)[data-theme="dark"] {
+    display: block;
+  }
+
+  [data-rehype-pretty-code-fragment] > code[data-theme="light"] {
+    display: inline;
+  }
+
+  [data-rehype-pretty-code-fragment] > code[data-theme="dark"] {
+    display: none;
+  }
+
+  .dark [data-rehype-pretty-code-fragment] > code[data-theme="light"] {
+    display: none;
+  }
+
+  .dark [data-rehype-pretty-code-fragment] > code[data-theme="dark"] {
+    display: inline;
+  }
+
+  [data-rehype-pretty-code-fragment]:has([data-rehype-pretty-code-title]) {
+    background-color: var(--color-code);
+    color: var(--color-code-foreground);
+    border-radius: var(--radius-lg);
+    border-width: 0px;
+    border-color: var(--border);
+    margin-top: calc(var(--spacing) * 6);
+    margin-bottom: calc(var(--spacing) * 4);
+    overflow: hidden;
+    font-size: var(--text-sm);
+    outline: none;
+    position: relative;
+
+    &:has([data-rehype-pretty-code-title]) [data-slot="copy-button"] {
+      top: calc(var(--spacing) * 1.5) !important;
+    }
+  }
+
   .steps {
     &:first-child {
       @apply !mt-0;
@@ -316,6 +350,8 @@
   }
 
   [data-rehype-pretty-code-title] {
+    align-items: center;
+    gap: calc(var(--spacing) * 2);
     border-bottom: color-mix(in oklab, var(--border) 30%, transparent);
     border-bottom-width: 1px;
     border-bottom-style: solid;
@@ -324,6 +360,46 @@
     font-size: var(--text-sm);
     font-family: var(--font-mono);
     color: var(--color-code-foreground);
+  }
+
+  [data-rehype-pretty-code-fragment]
+    > [data-rehype-pretty-code-title][data-theme="light"] {
+    display: flex !important;
+  }
+
+  [data-rehype-pretty-code-fragment]
+    > [data-rehype-pretty-code-title][data-theme="dark"] {
+    display: none !important;
+  }
+
+  .dark
+    [data-rehype-pretty-code-fragment]
+    > [data-rehype-pretty-code-title][data-theme="light"] {
+    display: none !important;
+  }
+
+  .dark
+    [data-rehype-pretty-code-fragment]
+    > [data-rehype-pretty-code-title][data-theme="dark"] {
+    display: flex !important;
+  }
+
+  [data-rehype-pretty-code-title][data-file-icon-label]::before {
+    content: attr(data-file-icon-label);
+    display: inline-flex;
+    width: calc(var(--spacing) * 4);
+    height: calc(var(--spacing) * 4);
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    border-radius: 1px;
+    background-color: var(--foreground);
+    color: var(--color-code);
+    font-family: var(--font-sans);
+    font-size: 0.55rem;
+    font-weight: 700;
+    line-height: 1;
+    opacity: 0.7;
   }
 
   [data-line-numbers] {
@@ -363,11 +439,12 @@
     display: inline-block;
   }
 
-  [data-line] span {
+  [data-line] span[style*="--shiki-light"] {
     color: var(--shiki-light);
+  }
 
+  [data-line] span[style*="--shiki-dark"] {
     @variant dark {
-      /* biome-ignore lint/suspicious/noDuplicateProperties: shiki */
       color: var(--shiki-dark) !important;
     }
   }
@@ -400,77 +477,5 @@
     padding-block: 0.1rem;
     font-family: var(--font-mono);
     font-size: 0.8rem;
-  }
-}
-
-/* MDX (remove after sync). */
-
-@layer base {
-  [data-theme="light"] {
-    display: block;
-  }
-
-  [data-theme="dark"] {
-    display: none;
-  }
-
-  .dark [data-theme="light"] {
-    display: none;
-  }
-
-  .dark [data-theme="dark"] {
-    display: block;
-  }
-
-  [data-rehype-pretty-code-fragment] {
-    @apply relative text-white;
-  }
-
-  [data-rehype-pretty-code-fragment] code {
-    @apply grid min-w-full rounded-none border-0 bg-transparent p-0 break-words;
-    counter-reset: line;
-    box-decoration-break: clone;
-  }
-
-  [data-rehype-pretty-code-fragment] .line {
-    @apply inline-block min-h-[1rem] w-full px-4 py-0.5;
-  }
-
-  [data-rehype-pretty-code-fragment] [data-line-numbers] .line {
-    @apply px-2;
-  }
-
-  [data-rehype-pretty-code-fragment] [data-line-numbers] > .line::before {
-    @apply text-xs text-zinc-50/40;
-    counter-increment: line;
-    content: counter(line);
-    display: inline-block;
-    width: 1.8rem;
-    margin-right: 1.4rem;
-    text-align: right;
-  }
-
-  [data-rehype-pretty-code-fragment] .line--highlighted {
-    @apply bg-zinc-700/50;
-  }
-
-  [data-rehype-pretty-code-fragment] .line-highlighted span {
-    @apply relative;
-  }
-
-  [data-rehype-pretty-code-fragment] .word--highlighted {
-    @apply rounded-md border-zinc-700/70 bg-zinc-700/50 p-1;
-  }
-
-  .dark [data-rehype-pretty-code-fragment] .word--highlighted {
-    @apply bg-zinc-900;
-  }
-
-  [data-rehype-pretty-code-title] {
-    @apply mt-2 px-4 pt-6 text-sm font-medium text-foreground;
-  }
-
-  [data-rehype-pretty-code-title] + pre {
-    @apply !mt-2;
   }
 }

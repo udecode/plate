@@ -25,12 +25,14 @@ const buttonVariants = cva('rounded bg-[rgba(0,0,0,0.5)] px-1', {
 });
 
 const SCROLL_SPEED = 4;
+const DEFAULT_DOWNLOAD_FILENAME = 'image';
 
 export function MediaPreviewDialog() {
   const editor = useEditorRef();
   const isOpen = useImagePreviewValue('isOpen', editor.id);
   const scale = useImagePreviewValue('scale');
   const isEditingScale = useImagePreviewValue('isEditingScale');
+  const currentPreview = useImagePreviewValue('currentPreview');
   const {
     closeProps,
     currentUrlIndex,
@@ -45,6 +47,18 @@ export function MediaPreviewDialog() {
     zoomInProps,
     zoomOutDisabled,
   } = useImagePreview({ scrollSpeed: SCROLL_SPEED });
+  const downloadDisabled = !currentPreview?.url;
+  const handleDownload = () => {
+    if (!currentPreview?.url) return;
+
+    const link = document.createElement('a');
+    link.download = getImageDownloadFilename(currentPreview.url);
+    link.href = currentPreview.url;
+    link.rel = 'noopener noreferrer';
+    document.body.append(link);
+    link.click();
+    link.remove();
+  };
 
   return (
     <div
@@ -127,8 +141,16 @@ export function MediaPreviewDialog() {
                 <Plus className="size-4" />
               </button>
             </div>
-            {/* TODO: downLoad the image */}
-            <button className={cn(buttonVariants())} type="button">
+            <button
+              className={cn(
+                buttonVariants({
+                  variant: downloadDisabled ? 'disabled' : 'default',
+                })
+              )}
+              disabled={downloadDisabled}
+              onClick={handleDownload}
+              type="button"
+            >
               <Download className="size-4" />
             </button>
             <button
@@ -149,4 +171,15 @@ function ScaleInput(props: React.ComponentProps<'input'>) {
   const { props: scaleInputProps, ref } = useScaleInput();
 
   return <input {...scaleInputProps} {...props} ref={ref} />;
+}
+
+function getImageDownloadFilename(url: string) {
+  try {
+    const pathname = new URL(url, window.location.href).pathname;
+    const filename = pathname.split('/').filter(Boolean).pop();
+
+    return filename || DEFAULT_DOWNLOAD_FILENAME;
+  } catch {
+    return DEFAULT_DOWNLOAD_FILENAME;
+  }
 }

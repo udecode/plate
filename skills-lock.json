@@ -10,12 +10,14 @@
     "autoreview": {
       "source": "openclaw/agent-skills",
       "sourceType": "github",
-      "computedHash": "b65c6f42c3f6cc87c993666796c2e79f978e89e34430ebd594d678c98a30a86e"
+      "skillPath": "skills/autoreview/SKILL.md",
+      "computedHash": "5ca6dcf5c2cc0f21735b66c28267bd1f15f01bbfdcf69ffd8a6c21039b8af381"
     },
     "debug": {
       "source": "udecode/dotai",
       "sourceType": "github",
-      "computedHash": "09c9096e132640e201c4ffd592ffa144d949243ca7a71c5ef020e111927c495a"
+      "skillPath": "skills/debug/SKILL.md",
+      "computedHash": "0c74e2022d4b01170526cc5aabd386dd76f9a65e8b23df92a947bb52504e26b1"
     },
     "frontend-design": {
       "source": "EveryInc/compound-engineering-plugin",
@@ -31,6 +33,11 @@
       "source": "EveryInc/compound-engineering-plugin",
       "sourceType": "github",
       "computedHash": "20c90be5091df67d3f889a781473a6426d471405cead3dbe61d33d0c9a4ad0e9"
+    },
+    "orchestrator": {
+      "source": "udecode/dotai",
+      "sourceType": "github",
+      "computedHash": "02a6d9c3931f0af4b6d0a04344082c90dd7d9cb9dbe1e4962bd98471591f02d8"
     },
     "react-useeffect": {
       "source": "softaworks/agent-toolkit",
@@ -60,6 +67,7 @@
     "tdd": {
       "source": "udecode/dotai",
       "sourceType": "github",
+      "skillPath": "skills/tdd/SKILL.md",
       "computedHash": "117755128a6b66a3faf32d0bb9740837b1ab4471286dda6c4c5674d803fbbbe5"
     },
     "typescript-advanced-types": {
@@ -71,6 +79,12 @@
       "source": "vercel-labs/agent-skills",
       "sourceType": "github",
       "computedHash": "1be892a3ea68b74654326ef836a58dd528d99ae0ab8d879764e2519c39068e67"
+    },
+    "video-transcripts": {
+      "source": "udecode/dotai",
+      "sourceType": "github",
+      "skillPath": "skills/video-transcripts/SKILL.md",
+      "computedHash": "dfce0b8ea81350223ee9967acbad18eb589e17aebf91e87e94b07dfaa86db471"
     }
   }
 }

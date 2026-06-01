@@ -59,6 +59,19 @@ normalize_relative_ts_imports() {
   done < <(rg -l "from ['\"](?:\\.?\\.\\/)[^'\"]+\\.(?:ts|tsx)['\"]" "$root")
 }
 
+normalize_react_day_picker_api() {
+  local calendar_file="$1/src/components/ui/calendar.tsx"
+  local date_node_file="$1/src/components/ui/date-node.tsx"
+
+  if [[ -f "$calendar_file" ]] && grep -q "react-day-picker" "$calendar_file"; then
+    perl -0pi -e 's/(\n\s*)table:/${1}month_grid:/g; s/defaultClassNames\.table/defaultClassNames.month_grid/g' "$calendar_file"
+  fi
+
+  if [[ -f "$date_node_file" ]] && grep -q "@/components/ui/calendar" "$date_node_file"; then
+    perl -0pi -e 's/(\n\s*)initialFocus(\n)/${1}autoFocus$2/g' "$date_node_file"
+  fi
+}
+
 # Map mode to template and registry
 case "$MODE" in
   basic)
@@ -123,6 +136,7 @@ fi
 
 # shadcn local-file installs can reintroduce relative `.ts/.tsx` import extensions.
 normalize_relative_ts_imports "$TEMPLATE_DIR/src"
+normalize_react_day_picker_api "$TEMPLATE_DIR"
 
 echo "Running bun lint:fix..."
 bun lint:fix

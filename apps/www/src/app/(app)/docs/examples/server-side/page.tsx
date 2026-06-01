@@ -1,5 +1,3 @@
-import type { Doc } from '@/.contentlayer/generated';
-
 import type { Metadata } from 'next';
 
 import { DocxPlugin } from '@platejs/docx';
@@ -9,7 +7,10 @@ import {
   TrailingBlockPlugin,
 } from 'platejs';
 
-import { DocContent } from '@/app/(app)/docs/[[...slug]]/doc-content';
+import {
+  type DocContentDoc,
+  DocContent,
+} from '@/app/(app)/docs/[[...slug]]/doc-content';
 import { Code } from '@/components/code';
 import { Link } from '@/components/link';
 import { Markdown } from '@/components/markdown';
@@ -42,7 +43,7 @@ export const metadata: Metadata = {
 };
 
 export default function RSCPage() {
-  const mockDoc: Partial<Doc> = {
+  const mockDoc: DocContentDoc = {
     description: 'Server-side rendering.',
     title: 'Server-Side',
     // name: 'server-side',

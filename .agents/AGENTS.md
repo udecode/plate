@@ -32,7 +32,7 @@
   - package-local `node_modules/react` or `node_modules/react-dom` paths under `packages/*`
   - mixed `.bun` and `.pnpm` React paths in the same failing stack
 - If `pnpm test`, `bun test`, or `pnpm check` suddenly fails with those signals and the failure does not line up with the current diff, run `pnpm run reinstall` once before blocking on the task.
-- `pnpm run reinstall` is the repo reset button: it deletes root/workspace/app `node_modules`, `.turbo`, `apps/www/.next`, `apps/www/.contentlayer`, and `tsconfig.tsbuildinfo`, then runs `pnpm install`.
+- `pnpm run reinstall` is the repo reset button: it deletes root/workspace/app `node_modules`, `.turbo`, `apps/www/.next`, and `tsconfig.tsbuildinfo`, then runs `pnpm install`.
 - Do not use `pnpm run reinstall` as a lazy substitute for fixing real code errors.
 - For `react-dnd` / DnD fixes, do not treat a follow-up Bun `Invalid hook call`, `resolveDispatcher()`, or mixed `.bun` + `.pnpm` React stack as proof the DnD fix is wrong. In this repo, run `pnpm run reinstall` once before reopening the diagnosis; that failure shape is usually local env rot, not duplicate deps or broken DnD logic.
 
@@ -43,19 +43,10 @@ Use those skills when relevant:
 - `autogoal` for any prompt with a verifiable and quantitative outcome. Always use
   the autogoal skill before durable work when the task has a measurable completion
   threshold
+- `orchestrator` when the current thread should route per-branch work to child threads instead of executing locally
 - `task` for normal repo task execution
 - `major-task` for heavyweight architecture, framework comparison, migration, benchmark, or proposal work
-- `slate-ar` for generic measured Slate v2 Codex Autoresearch loops:
-  continue/status/dashboard/finalize/deep-research/quality-gap
-- `slate-ar-quality` for Slate v2 deep-research and quality-gap loops
-- `slate-ar-gate` for repeated Slate v2 proof gates, including full editor
-  behavior suites when the command/oracle already exists
-- `slate-ar-recipe` for Codex Autoresearch recipe selection and setup-plan
-- `slate-ar-perf` for measured Slate v2 performance optimization loops,
-  especially pagination/virtualization
-- `slate-ar-status` for read-only Slate v2 Autoresearch state/dashboard checks
-- `slate-ar-finalize` for Slate v2 Autoresearch finalization preview
-- `clawsweeper` for Slate issue-ledger triage, duplicate/stale/invalid classification, small high-confidence issue processing, and exact claim sync
+- `clawsweeper` f[text](cid:f_mpqm0jua0)or Slate issue-ledger triage, duplicate/stale/invalid classification, small high-confidence issue processing, and exact claim sync
 - `clawpatch` for Clawpatch init/map/review/report/fix/revalidate workflows
 - `editor-test-harvester` for mining external editor repositories for portable editor-behavior tests, Slate v2 coverage gaps, and copy/refactor/create decisions
 - `editor-harvest-plan` for turning an `editor-test-harvester` result into a lane-specific Slate v2 or Plate execution plan
@@ -77,6 +68,7 @@ Goal plans:
 
 Browser usage:
 
+- When updating `content/**`, `apps/www/**`, or `packages/**`, start the relevant dev server and verify the affected route, UI, or package-facing behavior with `[@Browser](plugin://browser@openai-bundled)` before handoff. If the surface has no runnable browser path or the server/browser is blocked, say that explicitly.
 - Always try `[@browser-use](plugin://browser-use@openai-bundled)` first for browser usage.
 - Do not substitute Puppeteer, standalone Playwright, or raw Chrome DevTools for browser usage.
 - For Plate registry/browser proof, prefer `/blocks/[id]-demo` over docs wrappers when that standalone demo route exists.

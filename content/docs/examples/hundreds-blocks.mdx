@@ -1,0 +1,47 @@
+---
+title: Hundreds Blocks
+description: Render a large Plate document next to a raw Slate baseline.
+---
+
+This example compares a Plate editor with a raw Slate editor using the same large
+document value. The value generator creates 300 heading groups, each followed by
+ten paragraphs, so the page stresses root-block rendering and scrolling.
+
+## Demo
+
+<ComponentPreview name="hundreds-blocks-demo" />
+
+## Source
+
+The demo renders Plate on the left and raw Slate on the right.
+
+<ComponentSource name="hundreds-blocks-demo" />
+
+## Runtime Shape
+
+| Surface | Owner | Notes |
+| --- | --- | --- |
+| Plate editor | Registry example | Uses `usePlateEditor`, `Plate`, `EditorContainer`, `Editor`, `BasicBlocksPlugin`, and `BasicMarksPlugin`. |
+| Raw Slate editor | Registry example | Uses `withReact(createEditor())`, `Slate`, and `Editable` directly. |
+| Huge value | Registry example | `createHugeDocumentValue()` creates heading and paragraph blocks with JSX test-utils syntax. |
+| Chunk renderer | `platejs/react` | Raw Slate side passes `ContentVisibilityChunk` to `Editable.renderChunk`. |
+| Chunk size | Raw Slate editor | `getChunkSize` returns `1000` for the editor root and `null` elsewhere. |
+
+## What It Shows
+
+The Plate side exercises the normal app path: plugin resolution, editor store,
+node rendering, handlers, and the registry editor shell.
+
+The raw Slate side keeps only the minimum comparable rendering path. It provides
+a custom `renderElement`, sets the same initial value, and uses
+`ContentVisibilityChunk` so both sides can avoid painting every chunk
+immediately.
+
+Use this demo to inspect large-document rendering cost. It is not a full
+benchmark harness; it is a side-by-side browser page for manual profiling.
+
+## Related
+
+- [Plate Components](/docs/api/core/plate-components) covers `ContentVisibilityChunk` and `renderChunk`.
+- [Plate Editor](/docs/api/core/plate-editor) covers editor construction and plugin resolution.
+- [Basic Blocks](/docs/basic-blocks) covers the block plugins used by the Plate side.

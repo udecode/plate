@@ -1,5 +1,3 @@
-import React from 'react';
-
 import type { UnistNode } from '@/types/unist';
 import type { z } from 'zod';
 
@@ -11,11 +9,10 @@ import {
   type RegistryItem,
   type registryItemFileSchema,
   registryItemSchema,
-} from 'shadcn/registry';
+} from 'shadcn/schema';
 import { Project, ScriptKind } from 'ts-morph';
 
 import registryShadcnData from '../../registry-shadcn.json';
-import { Index } from '../__registry__';
 import { registry } from '../registry/registry';
 
 const registryShadcn = registryShadcnData as unknown as Registry;
@@ -59,6 +56,18 @@ export function fixImport(content: string) {
 
 export function getNodeAttributeByName(node: UnistNode, name: string) {
   return node.attributes?.find((attribute) => attribute.name === name);
+}
+
+export function normalizeRegistryFilePath(filePath: string) {
+  return filePath.startsWith('src/registry/')
+    ? filePath
+    : `src/registry/${filePath}`;
+}
+
+export function getRegistryDefinition(name: string, isShadcn?: boolean) {
+  const registryTarget = isShadcn ? registryShadcn : registry;
+
+  return registryTarget.items.find((item) => item.name === name);
 }
 
 // export function getComponentSourceFileContent(node: UnistNode) {
@@ -228,36 +237,25 @@ export function getAllDependencies(
 //     .filter(Boolean) as any;
 // }
 
-const memoizedIndex: typeof Index = Object.fromEntries(
-  Object.entries(Index).map(([style, items]) => [style, { ...items }])
-);
-
-export function getRegistryComponent(name: string) {
-  if (name === 'slate-to-html') {
-    return React.lazy(() => import('@/registry/blocks/slate-to-html/page'));
-  }
-
-  return memoizedIndex[name]?.component;
-}
-
 export async function getRegistryItem(
   name: string,
   prefetch = false
 ): Promise<RegistryItem | null> {
-  const item = memoizedIndex[name];
+  const item = getRegistryDefinition(name);
 
   if (!item) {
     return null;
   }
 
-  // Convert all file paths to object.
-  // TODO: remove when we migrate to new registry.
-  item.files = item.files.map((file: unknown) =>
-    typeof file === 'string' ? { path: file } : file
-  );
+  const registryItem = {
+    ...item,
+    files: item.files?.map((file: unknown) =>
+      typeof file === 'string' ? { path: file } : file
+    ),
+  };
 
   // Fail early before doing expensive file operations.
-  const result = registryItemSchema.safeParse(item);
+  const result = registryItemSchema.safeParse(registryItem);
 
   if (!result.success) {
     return null;
@@ -265,6 +263,9 @@ export async function getRegistryItem(
 
   let files: typeof result.data.files = [];
   const seen = new Set<string>();
+  const firstFilePath = result.data.files?.[0]?.path
+    ? normalizeRegistryFilePath(result.data.files[0].path)
+    : undefined;
 
   // Get all files including dependencies
   const allFiles = await getAllItemFiles(name, seen);
@@ -273,7 +274,7 @@ export async function getRegistryItem(
     const relativePath = path.relative(process.cwd(), file.path);
 
     const content =
-      !prefetch || file.path === item.files[0].path
+      !prefetch || file.path === firstFilePath
         ? await getFileContent(file as any)
         : undefined;
 
@@ -473,7 +474,14 @@ export function createFileTreeForRegistryItemFiles(
     for (let i = 0; i < parts.length; i++) {
       const part = parts[i];
       const isFile = i === parts.length - 1;
-      const existingNode = currentLevel.find((node) => node.name === part);
+      let existingNode: FileTree | undefined;
+
+      for (const node of currentLevel) {
+        if (node.name === part) {
+          existingNode = node;
+          break;
+        }
+      }
 
       if (existingNode) {
         if (isFile) {

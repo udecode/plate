@@ -26,7 +26,6 @@
       "!!**/dist",
       "!!**/public",
       "!!**/skills",
-      "!!**/.contentlayer",
       "!!**/*otf.json",
       "!!**/*.html",
       "!!tooling/config/global.d.ts",

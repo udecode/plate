@@ -1,0 +1,133 @@
+---
+title: Keyboard Input
+description: Style keyboard shortcuts and key names.
+docs:
+  - route: /docs/basic-marks
+    title: Basic Marks
+  - route: /docs/components/kbd-node
+    title: Keyboard Input Leaf
+  - route: /docs/components/more-toolbar-button
+    title: More Toolbar Button
+---
+
+Keyboard Input applies the `kbd` leaf mark to selected text. Use it for shortcuts, key names, and command hints that should render as `<kbd>`.
+
+<ComponentPreview name="basic-marks-demo" />
+
+<PackageInfo>
+
+## Features
+
+- `KEYS.kbd` leaf mark.
+- Hard selection affinity.
+- HTML deserialization from `kbd`.
+- `<kbd>` rendering by default.
+- Registry `KbdLeaf` for styled keyboard input.
+- Static rendering support through `KbdLeafStatic`.
+
+</PackageInfo>
+
+## Kit Usage
+
+<Steps>
+
+### Add Basic Marks
+
+`BasicMarksKit` includes `KbdPlugin.withComponent(KbdLeaf)`. It does not add a shortcut or input rule for keyboard input.
+
+<ComponentSource name="basic-marks-kit" />
+
+```tsx
+import { createPlateEditor } from 'platejs/react';
+
+import { BasicMarksKit } from '@/components/editor/plugins/basic-marks-kit';
+
+export const editor = createPlateEditor({
+  plugins: [...BasicMarksKit],
+});
+```
+
+### Add the Leaf
+
+`KbdLeaf` provides the registry styling for the `<kbd>` element.
+
+<ComponentSource name="kbd-node" />
+
+### Add a Toolbar Control
+
+The registry `MoreToolbarButton` toggles keyboard input from the More menu.
+
+```tsx
+import { MoreToolbarButton } from '@/components/ui/more-toolbar-button';
+
+export function FormattingMoreMenu() {
+  return <MoreToolbarButton />;
+}
+```
+
+</Steps>
+
+## Manual Usage
+
+Install the mark package.
+
+```bash
+npm install @platejs/basic-nodes
+```
+
+Add `KbdPlugin` directly when you want the default `<kbd>` render.
+
+```tsx
+import { KbdPlugin } from '@platejs/basic-nodes/react';
+import { createPlateEditor } from 'platejs/react';
+
+export const editor = createPlateEditor({
+  plugins: [KbdPlugin],
+});
+```
+
+Attach the registry leaf when you want the same visual treatment as the kit.
+
+```tsx
+import { KbdPlugin } from '@platejs/basic-nodes/react';
+
+import { KbdLeaf } from '@/components/ui/kbd-node';
+
+export const kbdPlugin = KbdPlugin.withComponent(KbdLeaf);
+```
+
+## Ownership
+
+| Surface | Owner | What It Does |
+|---------|-------|--------------|
+| `BaseKbdPlugin` | `@platejs/basic-nodes` | Headless keyboard-input mark, HTML parser, render tag, selection rule, and `toggle` transform. |
+| `KbdPlugin` | `@platejs/basic-nodes/react` | React wrapper for the headless keyboard-input mark. |
+| `KbdLeaf` | Registry UI | Styled client `<kbd>` leaf using `PlateLeaf`. |
+| `KbdLeafStatic` | Registry UI | Static rendering version using `SlateLeaf`. |
+| `BasicMarksKit` | Registry | Adds `KbdPlugin.withComponent(KbdLeaf)`. |
+| `MoreToolbarButton` | Registry UI | Calls `editor.tf.toggleMark(KEYS.kbd)` from the More menu. |
+
+The package owns the mark. The registry owns keycap styling and toolbar placement.
+
+## Behavior
+
+| Behavior | Source |
+|----------|--------|
+| Mark key | `KEYS.kbd` |
+| Leaf behavior | `node.isLeaf: true` |
+| Toggle transform | `editor.tf.kbd.toggle()` calls `editor.tf.toggleMark(type)`. |
+| Selection affinity | `hard` |
+| HTML tags | `kbd` |
+| Render output | `kbd` |
+| Kit component | `KbdLeaf` |
+| Registry toolbar | `MoreToolbarButton` toggles `KEYS.kbd`. |
+
+## API Reference
+
+| API | Package | Use |
+|-----|---------|-----|
+| `BaseKbdPlugin` | `@platejs/basic-nodes` | Headless keyboard-input plugin. |
+| `KbdPlugin` | `@platejs/basic-nodes/react` | React keyboard-input plugin. |
+| `tf.kbd.toggle()` | `@platejs/basic-nodes` | Toggles the keyboard-input mark at the selection. |
+| `KbdLeaf` | Registry UI | Styled client keyboard-input leaf. |
+| `KbdLeafStatic` | Registry UI | Styled static keyboard-input leaf. |

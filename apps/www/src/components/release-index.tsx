@@ -9,17 +9,13 @@ import remarkGfm from 'remark-gfm';
 
 import { CodeBlock } from '@/components/ui/codeblock';
 import releaseIndexData from '@/generated/release-index.json';
+import {
+  formatReleaseDate,
+  getReleaseAnchor,
+  NUMBER_OF_LATEST_RELEASES,
+  type ReleaseIndexRelease,
+} from '@/lib/releases';
 import { cn } from '@/lib/utils';
-
-export type ReleaseIndexRelease = {
-  content: string;
-  date: string;
-  packageTag?: string;
-  tag: string;
-  title: string;
-  url: string;
-  versionPackagePrUrl?: string;
-};
 
 export type ReleaseIndexMessage = ReleaseIndexRelease & {
   expandable: boolean;
@@ -46,6 +42,8 @@ export function ReleaseIndex({
     date: formatReleaseDate(release.date),
     expandable: getContentLineCount(release.content) > expandableLineThreshold,
   }));
+  const latestMessages = messages.slice(0, NUMBER_OF_LATEST_RELEASES);
+  const olderMessages = messages.slice(NUMBER_OF_LATEST_RELEASES);
 
   if (messages.length === 0) {
     return (
@@ -74,24 +72,17 @@ export function ReleaseIndex({
   return (
     <section
       aria-label="Releases"
-      className={cn('not-prose relative my-8 flex flex-col', className)}
+      className={cn('not-prose relative mt-6 flex flex-col', className)}
     >
       <ReleaseSeparator className="top-0" />
 
-      {messages.map((release) => (
+      {latestMessages.map((release) => (
         <ReleaseRow key={release.tag} release={release} />
       ))}
 
-      <div className="py-12">
-        <a
-          className="font-mono text-muted-foreground text-xs underline decoration-dashed underline-offset-4 transition-colors hover:text-foreground"
-          href={githubReleasesUrl}
-          rel="noreferrer"
-          target="_blank"
-        >
-          View all releases on GitHub
-        </a>
-      </div>
+      {olderMessages.length > 0 ? (
+        <MoreUpdates releases={olderMessages} />
+      ) : null}
     </section>
   );
 }
@@ -102,7 +93,10 @@ function getContentLineCount(content: string) {
 
 function ReleaseRow({ release }: { release: ReleaseIndexMessage }) {
   return (
-    <article className="group relative pt-12 pb-10 first:pt-8">
+    <article
+      className="group relative scroll-mt-24 pt-10 pb-8 first:pt-6"
+      id={getReleaseAnchor(release)}
+    >
       <header className="mb-4 flex flex-wrap items-baseline gap-x-4 gap-y-2">
         <a
           className="font-heading font-medium text-2xl text-foreground tracking-tight transition-colors hover:text-foreground/75"
@@ -128,6 +122,32 @@ function ReleaseRow({ release }: { release: ReleaseIndexMessage }) {
 
       <ReleaseSeparator className="bottom-0" />
     </article>
+  );
+}
+
+function MoreUpdates({ releases }: { releases: ReleaseIndexMessage[] }) {
+  return (
+    <div className="relative scroll-mt-24 pt-10 pb-20" id="more-updates">
+      <h2 className="mb-6 font-heading font-semibold text-xl tracking-tight">
+        More Updates
+      </h2>
+      <div className="grid auto-rows-fr gap-3 sm:grid-cols-2">
+        {releases.map((release) => (
+          <a
+            key={release.tag}
+            className="flex w-full flex-col rounded-xl bg-surface px-4 py-3 text-surface-foreground transition-colors hover:bg-surface/80"
+            href={release.url}
+            rel="noreferrer"
+            target="_blank"
+          >
+            <span className="text-muted-foreground text-xs">
+              {release.date}
+            </span>
+            <span className="font-medium text-sm">{release.title}</span>
+          </a>
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -202,7 +222,7 @@ function MarkdownContent({ content }: { content: string }) {
   return (
     <ReactMarkdown
       components={{
-        a: ({ className, ...props }) => (
+        a: ({ children, className, ...props }) => (
           <a
             className={cn(
               'font-medium text-foreground underline decoration-dashed underline-offset-4 transition-colors hover:text-primary',
@@ -211,7 +231,9 @@ function MarkdownContent({ content }: { content: string }) {
             rel="noreferrer"
             target="_blank"
             {...props}
-          />
+          >
+            {children}
+          </a>
         ),
         blockquote: ({ className, ...props }) => (
           <blockquote
@@ -265,7 +287,10 @@ function MarkdownContent({ content }: { content: string }) {
         ),
         li: ({ className, ...props }) => (
           <li
-            className={cn('text-muted-foreground text-sm leading-7', className)}
+            className={cn(
+              'mt-2 text-muted-foreground text-sm leading-7',
+              className
+            )}
             {...props}
           />
         ),
@@ -334,10 +359,7 @@ function MarkdownContent({ content }: { content: string }) {
         ),
         ul: ({ className, ...props }) => (
           <ul
-            className={cn(
-              'my-3 space-y-1.5 [&>li]:relative [&>li]:pl-5 [&>li]:before:absolute [&>li]:before:left-0 [&>li]:before:text-muted-foreground [&>li]:before:content-["-"]',
-              className
-            )}
+            className={cn('my-4 ml-6 list-disc space-y-1.5', className)}
             {...props}
           />
         ),
@@ -347,15 +369,6 @@ function MarkdownContent({ content }: { content: string }) {
       {content}
     </ReactMarkdown>
   );
-}
-
-function formatReleaseDate(date: string) {
-  return new Intl.DateTimeFormat('en-US', {
-    day: 'numeric',
-    month: 'short',
-    timeZone: 'UTC',
-    year: 'numeric',
-  }).format(new Date(date));
 }
 
 function formatReleaseHeading(children: ReactNode) {

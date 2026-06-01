@@ -4,10 +4,9 @@ import path from 'node:path';
 import { rimraf } from 'rimraf';
 import {
   type RegistryItem,
-  registryItemSchema,
+  registrySchema,
   type Registry,
-} from 'shadcn/registry';
-import { z } from 'zod';
+} from 'shadcn/schema';
 
 import { registryBlocks } from '@/registry/registry-blocks';
 import { registryLib } from '@/registry/registry-lib';
@@ -18,6 +17,7 @@ import { registryComponents } from '@/registry/registry-components';
 import { registryInit } from '@/registry/registry';
 import { registryStyles } from '@/registry/registry-styles';
 import { buildDocsRegistry } from './build-docs-registry.mts';
+import { toRegistryDependencySpecifier } from './registry-dependencies.mts';
 
 const HOMEPAGE = 'https://platejs.org';
 const NAME = 'plate';
@@ -25,48 +25,30 @@ const BASE_URL = 'src/';
 
 const isDev = process.env.NODE_ENV === 'development';
 const MERGE_DOCS = true;
-const REGISTRY_URL = isDev ? 'http://localhost:3000/rd' : `${HOMEPAGE}/r`;
 const TARGET = isDev ? 'public/rd/registry.json' : 'public/r/registry.json';
-const REGISTRY_ITEM_SUFFIX =
-  REGISTRY_URL.startsWith('http://') || REGISTRY_URL.startsWith('https://')
-    ? '.json'
-    : '';
 
-function resolveRegistryDependency(dep: string) {
-  if (dep.startsWith('@')) {
-    return dep;
-  }
-
-  return `${REGISTRY_URL}/${dep}${REGISTRY_ITEM_SUFFIX}`;
-}
-
-const registry: Registry = {
+const registry: Registry = registrySchema.parse({
   name: NAME,
   homepage: HOMEPAGE,
-  items: z.array(registryItemSchema).parse(
-    [
-      ...registryInit,
-      ...registryUI,
-      ...registryComponents,
-      ...registryBlocks.map((block) => ({
-        ...block,
-        registryDependencies: [
-          'plate-ui',
-          ...(block.registryDependencies ?? []),
-        ],
-      })),
-      ...registryLib,
-      ...registryStyles,
-      ...registryHooks,
-      ...registryExamples,
-    ].map((item) => ({
-      ...item,
-      registryDependencies: item.registryDependencies?.map(
-        resolveRegistryDependency
-      ),
-    }))
-  ),
-} satisfies Registry;
+  items: [
+    ...registryInit,
+    ...registryUI,
+    ...registryComponents,
+    ...registryBlocks.map((block) => ({
+      ...block,
+      registryDependencies: ['plate-ui', ...(block.registryDependencies ?? [])],
+    })),
+    ...registryLib,
+    ...registryStyles,
+    ...registryHooks,
+    ...registryExamples,
+  ].map((item) => ({
+    ...item,
+    registryDependencies: item.registryDependencies?.map(
+      toRegistryDependencySpecifier
+    ),
+  })),
+});
 
 async function buildRegistryIndex() {
   let index = `// @ts-nocheck

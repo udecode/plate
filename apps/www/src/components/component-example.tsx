@@ -27,15 +27,15 @@ export function ComponentExample({
     children
   ) as React.ReactElement<any>[];
 
-  const codeString = React.useMemo(() => {
-    if (Code?.props['data-rehype-pretty-code-fragment'] !== undefined) {
-      const [, Button] = React.Children.toArray(
-        Code.props.children
-      ) as React.ReactElement<any>[];
+  let codeString: string | null = null;
 
-      return Button?.props?.value || Button?.props?.__rawString__ || null;
-    }
-  }, [Code]);
+  if (Code?.props['data-rehype-pretty-code-fragment'] !== undefined) {
+    const [, Button] = React.Children.toArray(
+      Code.props.children
+    ) as React.ReactElement<any>[];
+
+    codeString = Button?.props?.value || Button?.props?.__rawString__ || null;
+  }
 
   return (
     <div
@@ -58,7 +58,7 @@ export function ComponentExample({
               Code
             </TabsTrigger>
           </TabsList>
-          {extractedClassNames ? (
+          {extractedClassNames && codeString ? (
             <CopyWithClassNames
               className="absolute top-20 right-4"
               value={codeString}
@@ -85,7 +85,7 @@ export function ComponentExample({
           </div>
         </TabsContent>
         <TabsContent value="code">
-          <div className="flex flex-col space-y-4">
+          <div className="flex flex-col gap-y-4">
             <div className="w-full rounded-md [&_button]:hidden [&_pre]:my-0 [&_pre]:max-h-[350px] [&_pre]:overflow-auto">
               {Code}
             </div>

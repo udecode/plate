@@ -7,7 +7,7 @@ apps/www/public/rd
 templates/my-app
 .cursor/local
 .bun
-
+**/screenshots
 .pnpm-store/*
 .repo_ignore
 

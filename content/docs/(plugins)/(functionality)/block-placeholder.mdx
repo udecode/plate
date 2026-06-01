@@ -1,0 +1,165 @@
+---
+title: Block Placeholder
+description: Placeholder text for the active empty block.
+docs:
+  - route: /docs/examples/block-placeholder
+    title: Demo
+---
+
+Block Placeholder injects a `placeholder` prop into the active empty block. It is block-level UI state, not stored document content. Use the editor-level `placeholder` prop for the globally empty editor state.
+
+<ComponentPreview name="block-placeholder-demo" />
+
+<PackageInfo>
+
+## Features
+
+- Active-block placeholder text.
+- Per-type placeholder map through `placeholders`.
+- Root-level filtering through `query`.
+- Custom placeholder styling through `className`.
+- Focus, read-only, composition, selection, and empty-editor guards.
+
+</PackageInfo>
+
+## Fast Path
+
+<Steps>
+
+### Add The Kit
+
+`BlockPlaceholderKit` configures `BlockPlaceholderPlugin` for paragraph blocks.
+
+<ComponentSource name="block-placeholder-kit" />
+
+```tsx
+import { createPlateEditor } from 'platejs/react';
+
+import { BlockPlaceholderKit } from '@/components/editor/plugins/block-placeholder-kit';
+
+export const editor = createPlateEditor({
+  plugins: BlockPlaceholderKit,
+});
+```
+
+### Style The Placeholder
+
+The registry kit uses a `before:` pseudo-element that reads the injected `placeholder` attribute.
+
+```tsx
+BlockPlaceholderPlugin.configure({
+  options: {
+    className:
+      'before:absolute before:cursor-text before:text-muted-foreground/80 before:content-[attr(placeholder)]',
+  },
+});
+```
+
+</Steps>
+
+## Ownership
+
+| Surface | Owner | What It Does |
+|---------|-------|--------------|
+| `BlockPlaceholderPlugin` | `platejs/react` / `@platejs/utils/react` | Tracks the current placeholder target and injects block node props. |
+| `BlockPlaceholderKit` | Registry | Configures the default paragraph placeholder and styling. |
+| `block-placeholder-demo` | Registry example | Shows the placeholder on an empty paragraph inside a non-empty editor. |
+| `Editor` `placeholder` prop | `platejs/react` | Covers the globally empty editor state. |
+
+The plugin stores its current target in `_target`. That option is runtime state for rendering; do not serialize it.
+
+## Manual Setup
+
+<Steps>
+
+### Add The Plugin
+
+`BlockPlaceholderPlugin` is available from `platejs/react`.
+
+```tsx
+import { KEYS } from 'platejs';
+import { BlockPlaceholderPlugin, createPlateEditor } from 'platejs/react';
+
+export const editor = createPlateEditor({
+  plugins: [
+    BlockPlaceholderPlugin.configure({
+      options: {
+        className:
+          'before:absolute before:cursor-text before:text-muted-foreground/80 before:content-[attr(placeholder)]',
+        placeholders: {
+          [KEYS.p]: 'Type something...',
+        },
+        query: ({ path }) => path.length === 1,
+      },
+    }),
+  ],
+});
+```
+
+### Add Type-Specific Copy
+
+Keys in `placeholders` are plugin keys. The plugin resolves each key with `editor.getType(key)` before matching the active block type.
+
+```tsx
+BlockPlaceholderPlugin.configure({
+  options: {
+    placeholders: {
+      [KEYS.p]: 'Type something...',
+      [KEYS.h1]: 'Untitled',
+      [KEYS.blockquote]: 'Quote',
+      [KEYS.codeBlock]: 'Code',
+    },
+  },
+});
+```
+
+</Steps>
+
+## Visibility Rules
+
+The plugin shows a placeholder only when every gate passes.
+
+| Gate | Requirement |
+|------|-------------|
+| Editor mode | Not read-only and not composing. |
+| Focus | Editor is focused and has a selection. |
+| Selection | Selection is collapsed. |
+| Active block | `editor.api.block()` returns an empty block. |
+| Whole editor | `editor.api.isEmpty()` is false. |
+| Placeholder map | The block type matches one entry in `placeholders`. |
+| Query | `query({ editor, node, path, ...ctx })` returns `true`. |
+
+The default `query` returns `true` for root blocks only.
+
+```tsx
+query: ({ path }) => path.length === 1
+```
+
+Use `query` when placeholders should skip nested content, tables, columns, or app-specific containers.
+
+## Styling
+
+The plugin injects two props on the target block:
+
+| Prop | Source |
+|------|--------|
+| `placeholder` | Resolved string from `placeholders`. |
+| `className` | `options.className`. |
+
+Use CSS that reads `attr(placeholder)`. Tailwind arbitrary content works well for this because the placeholder text stays in the DOM attribute instead of document data.
+
+```tsx
+className:
+  'before:absolute before:pointer-events-none before:text-muted-foreground/80 before:content-[attr(placeholder)]'
+```
+
+## API Reference
+
+| API | Package | Use |
+|-----|---------|-----|
+| `BlockPlaceholderPlugin` | `platejs/react` / `@platejs/utils/react` | Adds block placeholders through injected node props. |
+| `options.placeholders` | `Record<string, string>` | Maps plugin keys to placeholder text. Default: `{ [KEYS.p]: 'Type something...' }`. |
+| `options.query` | `(context) => boolean` | Filters eligible blocks. Default: `({ path }) => path.length === 1`. |
+| `options.className` | `string` | Class applied to the block only while its placeholder is active. |
+| `options._target` | Internal runtime state | Stores the current target node and placeholder string. |
+| `selectors.placeholder(node)` | Plugin selector | Returns the placeholder string for the current target node. |

@@ -1,0 +1,269 @@
+---
+title: Resizable
+description: API reference for @platejs/resizable.
+---
+
+`@platejs/resizable` provides the headless resize wrapper, resize handle primitive,
+shared resize stores, and length utilities used by Plate media components. It
+owns behavior; registry components own styling.
+
+## Installation
+
+```bash
+npm install @platejs/resizable
+```
+
+## Ownership
+
+| Surface | Owner | Use |
+| --- | --- | --- |
+| `Resizable` | `@platejs/resizable` | Wraps a Plate element, tracks width, clamps resize values, and writes the final width to the node. |
+| `ResizeHandle` | `@platejs/resizable` | Primitive handle that starts mouse/touch resizing and emits `ResizeEvent` values. |
+| `ResizableProvider` | `@platejs/resizable` | Stores the active width for the current resizable subtree. |
+| `ResizeHandleProvider` | `@platejs/resizable` | Shares the wrapper `onResize` callback with nested handles. |
+| Resize hooks | `@platejs/resizable` | Split state from DOM props for custom wrappers and handles. |
+| Length utilities | `@platejs/resizable` | Convert and clamp static pixel widths and relative percent widths. |
+
+## Media Pattern
+
+Wrap each resizable element with `ResizableProvider`. Media components use the
+provider width for captions and use `Resizable` plus left/right handles around
+the media body.
+
+```tsx title="Resizable media element"
+import type { TImageElement } from 'platejs';
+import type { PlateElementProps } from 'platejs/react';
+
+import {
+  Resizable,
+  ResizableProvider,
+  ResizeHandle,
+  useResizableValue,
+} from '@platejs/resizable';
+import { PlateElement, withHOC } from 'platejs/react';
+
+export const ImageElement = withHOC(
+  ResizableProvider,
+  function ImageElement(props: PlateElementProps<TImageElement>) {
+    const width = useResizableValue('width');
+
+    return (
+      <PlateElement {...props}>
+        <figure contentEditable={false}>
+          <Resizable
+            options={{
+              align: 'center',
+              maxWidth: '100%',
+              minWidth: 120,
+            }}
+          >
+            <ResizeHandle options={{ direction: 'left' }} />
+            <img alt="" src={props.element.url as string} />
+            <ResizeHandle options={{ direction: 'right' }} />
+          </Resizable>
+
+          <figcaption style={{ width }}>Caption</figcaption>
+        </figure>
+
+        {props.children}
+      </PlateElement>
+    );
+  }
+);
+```
+
+The registry `resize-handle` component imports these primitives and adds the absolute positioning, hover affordance, and alignment classes.
+
+## Resizable Wrapper
+
+`Resizable` composes `useResizableState` and `useResizable`. It renders a
+relative outer wrapper and a relative inner wrapper, then provides its resize
+callback to descendants through `ResizeHandleProvider`.
+
+<API name="Resizable">
+<APIOptions type="{ options: ResizableOptions } & React.HTMLAttributes<HTMLDivElement>">
+  <APIItem name="options" type="ResizableOptions" required>
+    Width constraints and alignment used by the resize calculation.
+  </APIItem>
+  <APIItem name="children" type="React.ReactNode" optional>
+    Media body, resize handles, or custom controls.
+  </APIItem>
+</APIOptions>
+</API>
+
+<API name="useResizableState">
+<APIOptions type="ResizableOptions">
+  <APIItem name="align" type="'center' | 'left' | 'right'" optional>
+    Alignment used to calculate resize delta. Defaults to `center`.
+  </APIItem>
+  <APIItem name="maxWidth" type="ResizeLength" optional>
+    Maximum width. Defaults to `100%`.
+  </APIItem>
+  <APIItem name="minWidth" type="ResizeLength" optional>
+    Minimum width. Defaults to `92`.
+  </APIItem>
+  <APIItem name="readOnly" type="boolean" optional>
+    Reserved in the options type. `Resizable` itself does not read this value.
+  </APIItem>
+</APIOptions>
+<APIReturns type="ReturnType<typeof useResizableState>">
+  <APIItem name="align" type="'center' | 'left' | 'right'">
+    Alignment used by resize math.
+  </APIItem>
+  <APIItem name="maxWidth" type="ResizeLength">
+    Maximum width passed to the wrapper style and clamp utility.
+  </APIItem>
+  <APIItem name="minWidth" type="ResizeLength">
+    Minimum width passed to the wrapper style and clamp utility.
+  </APIItem>
+  <APIItem name="setNodeWidth" type="(width: number) => void">
+    Writes the finished width to the current `TResizableElement`. If the width is unchanged, it selects the node.
+  </APIItem>
+  <APIItem name="setWidth" type="(width: React.CSSProperties['width']) => void">
+    Updates the transient provider width while dragging.
+  </APIItem>
+  <APIItem name="width" type="React.CSSProperties['width']">
+    Current provider width. It is synced from `element.width ?? '100%'`.
+  </APIItem>
+</APIReturns>
+</API>
+
+<API name="useResizable">
+<APIParameters>
+  <APIItem name="state" type="ReturnType<typeof useResizableState>">
+    State returned by `useResizableState`.
+  </APIItem>
+</APIParameters>
+<APIReturns type="object">
+  <APIItem name="context.onResize" type="(event: ResizeEvent) => void">
+    Converts a handle delta into a new width, clamps it, stores it while dragging, and writes it to the node when `finished` is true.
+  </APIItem>
+  <APIItem name="props" type="{ style: React.CSSProperties }">
+    Inner wrapper props with `position: 'relative'`, `width`, `minWidth`, and `maxWidth`.
+  </APIItem>
+  <APIItem name="wrapperProps" type="{ style: React.CSSProperties }">
+    Outer wrapper props with `position: 'relative'`.
+  </APIItem>
+  <APIItem name="wrapperRef" type="React.RefObject<HTMLDivElement>">
+    Measures the static wrapper width for percent-to-pixel conversion.
+  </APIItem>
+</APIReturns>
+</API>
+
+For centered elements, left and right handles double the delta so the element grows from both sides. Left handles invert the delta before clamping.
+
+## Resize Handles
+
+`ResizeHandle` is a primitive `div` created with `createPrimitiveComponent`. It
+returns `null` in read-only mode because `useResizeHandle` sets `hidden` from
+`useReadOnly()`.
+
+<API name="ResizeHandle">
+<APIOptions type="ResizeHandleProps">
+  <APIItem name="options" type="ResizeHandleOptions" optional>
+    Direction, initial size, and lifecycle callbacks for the handle.
+  </APIItem>
+  <APIItem name="state" type="ReturnType<typeof useResizeHandleState>" optional>
+    Precomputed state when composing your own handle pipeline.
+  </APIItem>
+</APIOptions>
+</API>
+
+<API name="useResizeHandleState">
+<APIOptions type="ResizeHandleOptions">
+  <APIItem name="direction" type="ResizeDirection" optional>
+    Resize edge. Defaults to `left`.
+  </APIItem>
+  <APIItem name="initialSize" type="number" optional>
+    Starting width or height. If omitted, the handle reads its parent element on pointer start.
+  </APIItem>
+  <APIItem name="onHover" type="() => void" optional>
+    Called on mouse over and touch move.
+  </APIItem>
+  <APIItem name="onHoverEnd" type="() => void" optional>
+    Called after hover ends or resizing finishes.
+  </APIItem>
+  <APIItem name="onMouseDown" type="React.MouseEventHandler" optional>
+    Called after the hook records the starting pointer position and size.
+  </APIItem>
+  <APIItem name="onResize" type="(event: ResizeEvent) => void" optional>
+    Resize callback. Defaults to the nearest `ResizeHandleProvider` value.
+  </APIItem>
+  <APIItem name="onTouchStart" type="React.TouchEventHandler" optional>
+    Called after the hook records the starting touch position and size.
+  </APIItem>
+</APIOptions>
+<APIReturns type="ReturnType<typeof useResizeHandleState>">
+  Direction, pointer state, horizontal/vertical mode, read-only state, setters, and callbacks consumed by `useResizeHandle`.
+</APIReturns>
+</API>
+
+<API name="useResizeHandle">
+<APIParameters>
+  <APIItem name="state" type="ReturnType<typeof useResizeHandleState>">
+    State returned by `useResizeHandleState`.
+  </APIItem>
+</APIParameters>
+<APIReturns type="object">
+  <APIItem name="hidden" type="boolean">
+    `true` while the editor is read-only.
+  </APIItem>
+  <APIItem name="props" type="React.HTMLAttributes<HTMLDivElement>">
+    Mouse and touch handlers for starting resize, tracking hover, and finishing resize.
+  </APIItem>
+</APIReturns>
+</API>
+
+Resize handles listen on `window` while dragging. Mouse and touch move events emit `finished: false`; mouse up and touch end emit `finished: true`.
+
+## Stores
+
+| API | State | Use |
+| --- | --- | --- |
+| `ResizableProvider` | `{ width: React.CSSProperties['width'] }` | Wrap a resizable node and expose the active width to captions or overlays. |
+| `useResizableValue('width')` | `React.CSSProperties['width']` | Read the current width. |
+| `useResizableSet('width')` | setter | Set the current width. |
+| `useResizableStore` / `resizableStore` | atom store | Advanced access to the resizable store. |
+| `ResizeHandleProvider` | `{ onResize: (event: ResizeEvent) => void }` | Provides the wrapper resize callback to nested handles. |
+| `useResizeHandleValue('onResize')` | callback | Read the current resize callback. |
+| `useResizeHandleSet('onResize')` | setter | Replace the current resize callback. |
+| `useResizeHandleStore` | atom store | Advanced access to the handle store. |
+
+## Types
+
+| Type | Value |
+| --- | --- |
+| `ResizeDirection` | `'bottom' \| 'left' \| 'right' \| 'top'` |
+| `ResizeLength` | `number \| string` |
+| `ResizeLengthStatic` | `number` |
+| `ResizeLengthRelative` | `string` |
+| `ResizeEvent` | `{ delta: number; direction: ResizeDirection; finished: boolean; initialSize: number }` |
+
+## Length Utilities
+
+<API name="Length utilities">
+<APIMethods>
+  <APIItem name="resizeLengthClampStatic" type="(length: number, options: { min?: number; max?: number }) => number">
+    Clamps a pixel length to pixel min/max values.
+  </APIItem>
+  <APIItem name="resizeLengthClamp" type="<T extends ResizeLength>(length: T, parentLength: number, options: { min?: ResizeLength; max?: ResizeLength }) => T">
+    Converts length and constraints to pixels, clamps the value, then returns the same length kind as the input.
+  </APIItem>
+  <APIItem name="resizeLengthToRelative" type="(length: ResizeLength, parentLength: number) => string">
+    Converts a pixel length to a percent string. Percent strings pass through unchanged.
+  </APIItem>
+  <APIItem name="resizeLengthToStatic" type="(length: ResizeLength, parentLength: number) => number">
+    Converts a percent string to pixels. Numbers pass through unchanged.
+  </APIItem>
+  <APIItem name="isTouchEvent" type="(event: MouseEvent | TouchEvent) => event is TouchEvent">
+    Narrows pointer events by checking for `touches`.
+  </APIItem>
+</APIMethods>
+</API>
+
+`resizeLengthToStatic` parses strings as percentages. Use numeric pixel lengths when the source value is not a percentage.
+
+## Related Components
+
+- [Media](/docs/media) covers the image, video, audio, and embed elements that consume the resizable primitives.
+- [Resize Handle](/docs/components/resize-handle) covers the styled registry wrapper.

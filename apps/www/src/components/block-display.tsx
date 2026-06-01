@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import type { RegistryItem } from 'shadcn/registry';
+import type { RegistryItem } from 'shadcn/schema';
 
 import { BlockViewer } from '@/components/block-viewer';
 import {
@@ -32,7 +32,7 @@ export async function BlockDisplay({
     );
   }
 
-  const item = await getCachedRegistryItem(block.name, true);
+  const item = await getCachedRegistryItem(block.name);
 
   if (!item?.files) {
     return null;

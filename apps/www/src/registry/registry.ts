@@ -1,4 +1,4 @@
-import type { Registry, RegistryItem } from 'shadcn/registry';
+import type { Registry, RegistryItem } from 'shadcn/schema';
 
 import { registryBlocks } from './registry-blocks';
 import { registryComponents } from './registry-components';
@@ -41,13 +41,18 @@ export const registryInit: RegistryItem[] = [
   },
 ];
 
+const registryBlockItems = registryBlocks.map((block) => ({
+  ...block,
+  registryDependencies: ['plate-ui', ...(block.registryDependencies ?? [])],
+}));
+
 export const registry = {
   homepage: url,
   items: [
     ...registryInit,
     ...registryUI,
     ...registryComponents,
-    ...registryBlocks,
+    ...registryBlockItems,
     ...registryLib,
     ...registryStyles,
     ...registryHooks,

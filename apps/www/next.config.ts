@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { createMDX } from 'fumadocs-mdx/next';
 import type { NextConfig } from 'next';
 import { PHASE_DEVELOPMENT_SERVER } from 'next/constants';
 
@@ -18,9 +19,11 @@ const toAppImportPath = (targetPath: string) => {
 const getIndexEntry = (dir: string) => {
   const tsEntry = path.join(dir, 'index.ts');
   const tsxEntry = path.join(dir, 'index.tsx');
+  const jsEntry = path.join(dir, 'index.js');
 
   if (fs.existsSync(tsEntry)) return tsEntry;
   if (fs.existsSync(tsxEntry)) return tsxEntry;
+  if (fs.existsSync(jsEntry)) return jsEntry;
 
   return null;
 };
@@ -28,12 +31,13 @@ const getIndexEntry = (dir: string) => {
 const addAliasEntries = (
   aliases: Record<string, string>,
   importPath: string,
-  packageDir: string
+  packageDir: string,
+  rootDirName: 'dist' | 'src'
 ) => {
-  const srcDir = path.join(packageDir, 'src');
-  const rootEntry = getIndexEntry(srcDir);
-  const reactEntry = getIndexEntry(path.join(srcDir, 'react'));
-  const staticEntry = getIndexEntry(path.join(srcDir, 'static'));
+  const rootDir = path.join(packageDir, rootDirName);
+  const rootEntry = getIndexEntry(rootDir);
+  const reactEntry = getIndexEntry(path.join(rootDir, 'react'));
+  const staticEntry = getIndexEntry(path.join(rootDir, 'static'));
 
   if (rootEntry) aliases[importPath] = toAppImportPath(rootEntry);
   if (reactEntry) aliases[`${importPath}/react`] = toAppImportPath(reactEntry);
@@ -42,10 +46,15 @@ const addAliasEntries = (
   }
 };
 
-const buildWorkspaceSourceAliases = () => {
+const buildWorkspaceAliases = (rootDirName: 'dist' | 'src') => {
   const aliases: Record<string, string> = {};
 
-  addAliasEntries(aliases, 'platejs', path.join(PACKAGES_ROOT, 'plate'));
+  addAliasEntries(
+    aliases,
+    'platejs',
+    path.join(PACKAGES_ROOT, 'plate'),
+    rootDirName
+  );
 
   for (const entry of fs.readdirSync(PACKAGES_ROOT, { withFileTypes: true })) {
     if (!entry.isDirectory()) continue;
@@ -61,7 +70,8 @@ const buildWorkspaceSourceAliases = () => {
         addAliasEntries(
           aliases,
           `@udecode/${udecodeEntry.name}`,
-          path.join(udecodeRoot, udecodeEntry.name)
+          path.join(udecodeRoot, udecodeEntry.name),
+          rootDirName
         );
       }
 
@@ -71,12 +81,40 @@ const buildWorkspaceSourceAliases = () => {
     addAliasEntries(
       aliases,
       `@platejs/${entry.name}`,
-      path.join(PACKAGES_ROOT, entry.name)
+      path.join(PACKAGES_ROOT, entry.name),
+      rootDirName
     );
   }
 
   return aliases;
 };
+
+const buildWorkspaceDevAliases = () => {
+  const sourceAliases = buildWorkspaceAliases('src');
+  const distAliases = buildWorkspaceAliases('dist');
+  const docsSourceAlias: Record<string, string> = {};
+
+  if (process.env.PLATE_WWW_DYNAMIC_DOCS === '1') {
+    docsSourceAlias['collections/server'] = toAppImportPath(
+      path.join(APP_ROOT, '.source-dev/dynamic.ts')
+    );
+  }
+
+  if (process.env.PLATE_WWW_DEV_SOURCE === '1') {
+    return {
+      ...sourceAliases,
+      ...docsSourceAlias,
+    };
+  }
+
+  return {
+    ...sourceAliases,
+    ...distAliases,
+    ...docsSourceAlias,
+  };
+};
+
+const withMDX = createMDX({});
 
 const nextConfig = async (_phase: string) => {
   const isDev = _phase === PHASE_DEVELOPMENT_SERVER;
@@ -87,6 +125,7 @@ const nextConfig = async (_phase: string) => {
 
     experimental: {
       externalDir: isDev,
+      // The OOM came from the docs/import graph, not Turbopack's dev cache itself.
       turbopackFileSystemCacheForDev: true,
     },
     productionBrowserSourceMaps: false,
@@ -112,11 +151,12 @@ const nextConfig = async (_phase: string) => {
       ],
     },
     outputFileTracingIncludes: {
-      '/api/registry/[name]': ['./src/registry/**/*', './public/r/**/*'],
+      '/api/registry-source/[name]': ['./src/registry/**/*', './public/r/**/*'],
       '/blocks/slate-to-html': ['./public/tailwind.css'],
       '/cn/docs/[[...slug]]': ['./src/registry/**/*', './public/r/**/*'],
       '/docs/[[...slug]]': ['./src/registry/**/*', './public/r/**/*'],
       '/docs/examples/slate-to-html': ['./public/tailwind.css'],
+      '/view/slate-to-html': ['./public/tailwind.css'],
     },
     reactCompiler: !isDev,
     // Configure domains to allow for optimized image loading.
@@ -127,7 +167,7 @@ const nextConfig = async (_phase: string) => {
 
     turbopack: isDev
       ? {
-          resolveAlias: buildWorkspaceSourceAliases(),
+          resolveAlias: buildWorkspaceDevAliases(),
         }
       : undefined,
 
@@ -144,6 +184,26 @@ const nextConfig = async (_phase: string) => {
           destination: '/cn/docs/releases',
           permanent: true,
           source: '/cn/docs/migration',
+        },
+        {
+          destination: '/docs',
+          permanent: true,
+          source: '/docs.mdx',
+        },
+        {
+          destination: '/docs/:path*.md',
+          permanent: true,
+          source: '/docs/:path*.mdx',
+        },
+        {
+          destination: '/cn/docs',
+          permanent: true,
+          source: '/cn/docs.mdx',
+        },
+        {
+          destination: '/cn/docs/:path*.md',
+          permanent: true,
+          source: '/cn/docs/:path*.mdx',
         },
         {
           destination: '/r/:path.json',
@@ -172,7 +232,32 @@ const nextConfig = async (_phase: string) => {
           destination: '/cn/:path*',
           has: [{ key: 'locale', type: 'query', value: 'cn' }],
           permanent: true,
-          source: '/:path*',
+          source: '/:path((?!api|cn).*)',
+        },
+      ];
+    },
+
+    async rewrites() {
+      return [
+        {
+          destination: '/llm',
+          source: '/docs.md',
+        },
+        {
+          destination: '/llm/:path*',
+          source: '/docs/:path*.md',
+        },
+        {
+          destination: '/cn/llm',
+          source: '/cn/docs.md',
+        },
+        {
+          destination: '/cn/llm/:path*',
+          source: '/cn/docs/:path*.md',
+        },
+        {
+          destination: '/init/md',
+          source: '/init.md',
         },
       ];
     },
@@ -206,7 +291,7 @@ const nextConfig = async (_phase: string) => {
     // },
   };
 
-  return config;
+  return withMDX(config);
 };
 
 export default nextConfig;

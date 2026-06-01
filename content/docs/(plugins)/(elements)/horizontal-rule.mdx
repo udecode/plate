@@ -1,0 +1,184 @@
+---
+title: Horizontal Rule
+description: Void divider blocks rendered as horizontal rules.
+docs:
+  - route: /docs/components/hr-node
+    title: Horizontal Rule Element
+  - route: /docs/basic-blocks
+    title: Basic Blocks
+  - route: https://pro.platejs.org/docs/components/hr-node
+    title: Plus
+---
+
+Horizontal Rule adds a void `hr` block for separating sections. The package owns the element type, HTML parser, default `<hr>` render tag, and Markdown-style input rules. The registry kit adds the Plate UI divider component, static renderer, and insert toolbar item.
+
+<ComponentPreview name="basic-blocks-demo" />
+
+<PackageInfo>
+
+## Features
+
+- Void block `hr` element.
+- HTML deserialization from `<hr>`.
+- Default render tag of `<hr>`.
+- `---` and `___ ` input rules through `HorizontalRuleRules.markdown()`.
+- Editable and static registry divider components.
+- Insert toolbar item labeled `Divider`.
+
+</PackageInfo>
+
+## Fast Path
+
+<Steps>
+
+### Add Basic Blocks
+
+`BasicBlocksKit` installs `HorizontalRulePlugin` with the registry `HrElement` and both default input rules.
+
+<ComponentSource name="basic-blocks-kit" />
+
+```tsx
+import { createPlateEditor } from 'platejs/react';
+
+import { BasicBlocksKit } from '@/components/editor/plugins/basic-blocks-kit';
+
+export const editor = createPlateEditor({
+  plugins: BasicBlocksKit,
+});
+```
+
+### Render The Divider
+
+`hr-node` renders the editable divider with selected/focused ring styles and a static companion component.
+
+<ComponentSource name="hr-node" />
+
+### Add Static Rendering
+
+Use `BaseBasicBlocksKit` when rendering read-only content with `platejs/static`.
+
+<ComponentSource name="basic-blocks-base-kit" />
+
+</Steps>
+
+## Ownership
+
+| Layer | Owner | What It Does |
+|-------|-------|--------------|
+| `@platejs/basic-nodes` | Package | Exports `BaseHorizontalRulePlugin` and `HorizontalRuleRules`. |
+| `@platejs/basic-nodes/react` | Package | Exports `HorizontalRulePlugin`. |
+| `basic-blocks-kit` | Registry | Adds `HorizontalRulePlugin` with dash and underscore input rules plus `HrElement`. |
+| `basic-blocks-base-kit` | Registry | Adds `BaseHorizontalRulePlugin.withComponent(HrElementStatic)`. |
+| `hr-node` | Registry UI | Renders editable and static divider components. |
+| Insert toolbar | Registry UI | Inserts `KEYS.hr` through the generic `insertBlock` path. |
+
+There is no package-specific `insertHorizontalRule` helper. App UI usually inserts `KEYS.hr` through the same block insertion helper used by other registry blocks.
+
+## Manual Setup
+
+<Steps>
+
+### Install Package
+
+```bash
+npm install @platejs/basic-nodes
+```
+
+### Add The Plugin
+
+Use the React plugin when the editor renders the divider UI.
+
+```tsx
+import { HorizontalRuleRules } from '@platejs/basic-nodes';
+import { HorizontalRulePlugin } from '@platejs/basic-nodes/react';
+import { createPlateEditor } from 'platejs/react';
+
+import { HrElement } from '@/components/ui/hr-node';
+
+export const editor = createPlateEditor({
+  plugins: [
+    HorizontalRulePlugin.configure({
+      inputRules: [
+        HorizontalRuleRules.markdown({ variant: '-' }),
+        HorizontalRuleRules.markdown({ variant: '_' }),
+      ],
+      node: { component: HrElement },
+    }),
+  ],
+});
+```
+
+### Add Static Rendering
+
+Use the base plugin with the static component in static rendering paths.
+
+```tsx
+import { BaseHorizontalRulePlugin } from '@platejs/basic-nodes';
+import { createStaticEditor } from 'platejs';
+
+import { HrElementStatic } from '@/components/ui/hr-node-static';
+
+export const staticEditor = createStaticEditor({
+  plugins: [BaseHorizontalRulePlugin.withComponent(HrElementStatic)],
+});
+```
+
+</Steps>
+
+## Value Shape
+
+Horizontal rules are void block elements. Keep the empty text child so the node remains a valid Slate element.
+
+```tsx
+const value = [
+  {
+    children: [{ text: 'Before the divider' }],
+    type: 'p',
+  },
+  {
+    children: [{ text: '' }],
+    type: 'hr',
+  },
+  {
+    children: [{ text: 'After the divider' }],
+    type: 'p',
+  },
+];
+```
+
+| Field | Type | Notes |
+|-------|------|-------|
+| `type` | `'hr'` | Plugin key and node type from `KEYS.hr`. |
+| `children` | `[{ text: '' }]` | Required child for the void element. |
+
+## Input Rules
+
+`HorizontalRuleRules.markdown()` converts a paragraph into an `hr` block and inserts an empty paragraph after it.
+
+| Rule | Trigger | Behavior |
+|------|---------|----------|
+| `HorizontalRuleRules.markdown({ variant: '-' })` | type the third `-` after `--` | Converts `---` to `hr`, then inserts a paragraph. |
+| `HorizontalRuleRules.markdown({ variant: '_' })` | type a space after `___` | Converts `___ ` to `hr`, then inserts a paragraph. |
+
+The rule uses `editor.tf.setNodes({ type: KEYS.hr })`, so it transforms the current block instead of inserting a second divider elsewhere.
+
+## Registry UI
+
+| Surface | Behavior |
+|---------|----------|
+| Editable element | Renders a non-editable padded wrapper with an `<hr>` inside it. |
+| Selected + focused | Adds a focus ring around the divider. |
+| Read-only | Removes the pointer cursor from the editable component. |
+| Static element | Renders the same divider inside `SlateElement`. |
+| Insert toolbar | Adds a `Divider` item with `MinusIcon` and `KEYS.hr`. |
+
+The divider component renders `{props.children}` after the non-editable wrapper so Slate can still keep the void child mounted.
+
+## API Reference
+
+| API | Package | Use |
+|-----|---------|-----|
+| `BaseHorizontalRulePlugin` | `@platejs/basic-nodes` | Headless void `hr` block with HTML deserialization and default render tag. |
+| `HorizontalRulePlugin` | `@platejs/basic-nodes/react` | React horizontal rule plugin. |
+| `HorizontalRuleRules.markdown({ variant: '-' })` | `@platejs/basic-nodes` | Creates the dash input rule for `---`. |
+| `HorizontalRuleRules.markdown({ variant: '_' })` | `@platejs/basic-nodes` | Creates the underscore input rule for `___ `. |

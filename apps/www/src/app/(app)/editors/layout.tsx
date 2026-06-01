@@ -1,10 +1,6 @@
-import { Suspense } from 'react';
-
 import type { Metadata } from 'next';
 
 import { EditorDescription } from './editor-description';
-
-// SYNC
 
 const title = 'Building Editors for the Web';
 const description =
@@ -34,19 +30,22 @@ export const metadata: Metadata = {
   },
 };
 
-export default function BlocksLayout({
+export default function EditorsLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <div className="container relative">
-      <Suspense fallback={null}>
-        <EditorDescription />
-      </Suspense>
-      <section id="blocks" className="scroll-mt-24">
-        {children}
-      </section>
+    <div className="flex flex-1 flex-col">
+      <EditorDescription />
+
+      <div className="container-wrapper section-soft flex-1 md:py-12">
+        <div className="container">
+          <section id="blocks" className="scroll-mt-24">
+            {children}
+          </section>
+        </div>
+      </div>
     </div>
   );
 }

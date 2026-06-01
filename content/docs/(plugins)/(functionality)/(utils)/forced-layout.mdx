@@ -1,0 +1,131 @@
+---
+title: Forced Layout
+description: Path-based normalization for required document structure.
+docs:
+  - route: /docs/trailing-block
+    title: Trailing Block
+  - route: /docs/single-block
+    title: Single Block
+  - route: /docs/plugin-rules
+    title: Plugin Rules
+---
+
+Forced Layout is the `NormalizeTypesPlugin` pattern for pinning document positions to required node types. Use it for fixed slots such as "the first block is an H1." Use [Trailing Block](/docs/trailing-block) when the requirement is "the document always ends with a paragraph."
+
+<PackageInfo>
+
+## Features
+
+- Path-indexed normalization rules.
+- `strictType` for rewriting an existing node to a required type.
+- `type` for inserting a missing node without rewriting an existing node.
+- Root-only normalization pass.
+- Automatic block creation through `editor.api.create.block`.
+- `onError` callback when insertion fails.
+- Conditional enabling through normal plugin `enabled` configuration.
+
+</PackageInfo>
+
+## Fast Path
+
+Add `NormalizeTypesPlugin` when specific paths must exist or hold a specific block type.
+
+```tsx
+import { KEYS, NormalizeTypesPlugin } from 'platejs';
+import { createPlateEditor } from 'platejs/react';
+
+export const editor = createPlateEditor({
+  plugins: [
+    NormalizeTypesPlugin.configure({
+      options: {
+        rules: [
+          { path: [0], strictType: KEYS.h1 },
+          { path: [1], type: KEYS.p },
+        ],
+      },
+    }),
+  ],
+});
+```
+
+This keeps the first block as an H1 and inserts a paragraph at path `[1]` when that node is missing.
+
+## Ownership
+
+| Layer | Owner | What It Does |
+|-------|-------|--------------|
+| `NormalizeTypesPlugin` | `platejs` / `@platejs/utils` | Stores `rules` and `onError`, then overrides normalization. |
+| `withNormalizeTypes` | `@platejs/utils` | Runs the path rules during root normalization. |
+| `NodeApi.get(editor, path)` | `@platejs/slate` | Reads the node at the configured path. |
+| `editor.api.create.block` | Core editor API | Creates inserted or replacement block props. |
+| Playground demo | Registry example | Enables a first-block H1 rule when the playground id is `forced-layout`. |
+
+There is no `ForcedLayoutPlugin` and no `forced-layout-kit`. The public plugin is `NormalizeTypesPlugin`.
+
+## Rule Semantics
+
+`NormalizeTypesPlugin` runs only when the root editor node normalizes. It checks rules in order and stops the current normalization pass after the first rule that changes the document.
+
+| Rule Shape | Existing Node | Missing Node |
+|------------|---------------|--------------|
+| `{ path, strictType }` | If the node is an element with a different type, Plate sets its block props to `strictType` and preserves children. | Plate inserts `editor.api.create.block({ type: strictType })`. |
+| `{ path, type }` | Plate leaves the node alone. | Plate inserts `editor.api.create.block({ type })`. |
+
+Use `strictType` for required slots. Use `type` for optional slots that should be filled only when empty.
+
+## Error Handling
+
+If inserting a missing node fails, `withNormalizeTypes` calls `onError(error)` and falls through to the editor's normal `normalizeNode`.
+
+```tsx
+import { NormalizeTypesPlugin } from 'platejs';
+
+export const requiredTitle = NormalizeTypesPlugin.configure({
+  options: {
+    onError: (error) => {
+      console.error(error);
+    },
+    rules: [{ path: [0], strictType: 'h1' }],
+  },
+});
+```
+
+Keep `onError` small. A normalization callback should report or collect the failure, not mutate the same path again.
+
+## Choosing The Right Utility
+
+| Need | Use |
+|------|-----|
+| First block must be a title | `NormalizeTypesPlugin` with `strictType`. |
+| A missing slot should be inserted | `NormalizeTypesPlugin` with `type`. |
+| Editor may only contain one root block | [Single Block](/docs/single-block). |
+| Editor must end with a paragraph | [Trailing Block](/docs/trailing-block). |
+| Pressing Enter should exit or reset a block | [Plugin Rules](/docs/plugin-rules). |
+
+Forced layout is for absolute paths. It is not a schema engine for every possible nested node shape.
+
+## Playground Toggle
+
+The registry playground demonstrates this pattern by enabling the plugin only for the `forced-layout` example id.
+
+```tsx
+NormalizeTypesPlugin.configure({
+  enabled: id === 'forced-layout',
+  options: {
+    rules: [{ path: [0], strictType: 'h1' }],
+  },
+});
+```
+
+That example keeps the first playground block as an H1 while leaving the rest of the editor to normal Plate behavior.
+
+## API Reference
+
+| API | Package | Use |
+|-----|---------|-----|
+| `NormalizeTypesPlugin` | `platejs` / `@platejs/utils` | Path-based type normalization plugin. |
+| `NormalizeTypesConfig.options.rules` | `@platejs/utils` | Ordered list of path rules. Defaults to `[]`. |
+| `Rule.path` | `@platejs/utils` | Slate `Path` where the rule applies. |
+| `Rule.strictType` | `@platejs/utils` | Required type for an existing or missing node. |
+| `Rule.type` | `@platejs/utils` | Type for a missing node only. |
+| `NormalizeTypesConfig.options.onError` | `@platejs/utils` | Called when inserting a missing node throws. |
