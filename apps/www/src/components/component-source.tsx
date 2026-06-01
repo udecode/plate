@@ -6,8 +6,8 @@ import { Check, Terminal } from 'lucide-react';
 import { isDefined } from 'platejs';
 
 import { Button } from '@/components/ui/button';
-import { siteConfig } from '@/config/site';
 import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard';
+import { getRegistryInstallCommand } from '@/lib/registry-install';
 import { cn } from '@/lib/utils';
 
 import { CodeBlockWrapper } from './code-block-wrapper';
@@ -36,6 +36,7 @@ export function ComponentSource({
   }
 
   const displaySrc = title ?? src?.split('/').pop() ?? `${name}.tsx`;
+  const installCommand = name ? getRegistryInstallCommand(name) : null;
   const { copyToClipboard, isCopied } = useCopyToClipboard();
 
   return (
@@ -56,23 +57,19 @@ export function ComponentSource({
           </Button>
         )}
 
-        {!internal && (
+        {!internal && installCommand && (
           <div className="ml-auto flex items-center gap-2">
             <Button
               size="icon"
               variant="secondary"
               className={cn('flex h-7 px-1.5 shadow-none xl:w-auto')}
               onClick={() => {
-                copyToClipboard(
-                  `npx shadcn@latest add ${siteConfig.registryUrl}${name}`
-                );
+                copyToClipboard(installCommand);
               }}
             >
               {isCopied ? <Check /> : <Terminal />}
 
-              <span className="hidden xl:inline">
-                npx shadcn@latest add {name}
-              </span>
+              <span className="hidden xl:inline">{installCommand}</span>
             </Button>
           </div>
         )}

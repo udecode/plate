@@ -1,10 +1,7 @@
 ---
+name: video-transcripts
 description: Generate structured video transcripts from local files or video URLs using Gemini Files API. Use when a GitHub or Linear tracker item, comment, or attachment includes a screen recording, .mov, .mp4, or tracker-hosted video and you need a <video-transcripts> block instead of hand-written notes.
 disable-model-invocation: true
-name: video-transcripts
-metadata:
-  skiller:
-    source: .agents/rules/video-transcripts.mdc
 ---
 
 # Video Transcripts
@@ -61,26 +58,23 @@ For auth-gated Linear uploads, the helper automatically retries with cookies fro
 4. If the video is in the issue or PR body, use a top-level tracker comment.
 5. If the video is in a Linear comment, post the transcript cache as a reply to that specific comment.
 6. If the video is in a GitHub issue or PR comment, use one dedicated top-level cache comment for that source comment's video set. GitHub has no replies, so keep cache comments separated by source container instead of merging unrelated comment videos together.
-7. Cache comment or reply body should be XML only:
+7. Cache comment or reply body should start with a transcript source link, then
+   the timestamp lines:
 
 ````md
-```xml
-<video-transcripts>
-<video-transcript
-  source-key="https://tracker-hosted-video/<stable-path-without-query>"
->
+[[Transcript](link to video or comment if not available)]
 [00:00] (...)
-</video-transcript>
-</video-transcripts>
-```
 ````
 
-8. Keep the raw XML exactly as returned if it already matches the XML contract.
-9. If there are multiple videos in the same source container, combine the returned `<video-transcript ...>` blocks under a single `<video-transcripts>` wrapper in that cache comment or reply.
+8. When caching helper XML, strip the `<video-transcripts>` and
+   `<video-transcript ...>` wrapper lines and paste only timestamp lines after
+   the source link.
+9. If there are multiple videos in the same source container, repeat the
+   `[[Transcript](...)]` source link plus timestamp lines for each video.
 10. Do not hand-write or paraphrase video behavior when the helper can run. Use the actual transcript output.
-11. `source-key` is the normalized stable identifier for the media. For signed tracker-hosted URLs like `uploads.linear.app`, strip the query string so a new signature does not invalidate an otherwise valid cache entry.
-12. Do not add decorative metadata like `title` to cached `<video-transcript>` entries unless a later workflow truly needs it.
-13. Keep the cache body pure XML. Do not prepend markers, prose, or YAML.
+11. Link `[[Transcript](...)]` to the video URL when available. If the video URL is not available or is unstable, link to the source comment that contains the video.
+12. For signed tracker-hosted URLs like `uploads.linear.app`, strip the query string so a new signature does not invalidate an otherwise valid cache entry.
+13. Do not add decorative metadata like `title` to cached transcript entries unless a later workflow truly needs it.
 14. Before re-transcribing for tracked work, match cache entries by source container first:
     - one cache comment for issue or PR body videos
     - one Linear reply per comment containing video(s)

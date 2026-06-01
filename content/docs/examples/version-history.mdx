@@ -1,0 +1,44 @@
+---
+title: Version History
+description: Save Plate value snapshots and render a diff against the live editor.
+---
+
+This example stores immutable Plate value snapshots in local React state. It compares the selected revision with the current value through `@platejs/diff`.
+
+## Demo
+
+<ComponentPreview name="version-history-demo" />
+
+## Source
+
+<ComponentSource name="version-history-demo" />
+
+## Runtime Shape
+
+| Piece | Owner | Role |
+| --- | --- | --- |
+| `createVersionSnapshot` | registry example | Clones each `Value` with `cloneDeep` before saving or diffing. |
+| `revisions` | registry example | Stores the saved Plate values and feeds the revision picker. |
+| `computeDiff` | `@platejs/diff` | Compares the selected revision and live value, then returns diff-marked nodes. |
+| `DiffPlugin` | registry example | Renders diff leaves and wraps diff elements with insert, delete, or update styling. |
+| `InlinePlugin` and `InlineVoidPlugin` | registry example | Keep inline and inline-void nodes in the demo value so the diff path covers mixed content. |
+| `withGetFragmentExcludeDiff` | `@platejs/diff` | Removes `diff` and `diffOperation` metadata from copied fragments. |
+
+## Snapshot Flow
+
+1. The editor starts from `initialValue` and keeps the live value in local state.
+2. `Save revision` clones the live value and appends it to `revisions`.
+3. The select menu chooses one saved revision for comparison.
+4. `computeDiff` receives the selected revision, current value, `editor.api.isInline`, and `lineBreakChar: '¶'`.
+5. The read-only diff editor renders the returned value with the same inline plugins plus `DiffPlugin`.
+
+## Product Preview
+
+Potion uses the same document-history idea in a full app surface with stored versions, restore actions, and visual comparison.
+
+<ComponentPreview name="potion-iframe-demo" />
+
+## Related
+
+- [Controlled Value](/docs/controlled) for owning editor value from React state.
+- [Plate Plugin](/docs/api/core/plate-plugin) for render hooks like `render.node` and `render.aboveNodes`.

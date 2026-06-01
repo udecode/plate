@@ -117,7 +117,7 @@ only one active goal per thread.
 Create the lane plan from the project template:
 
 ```bash
-node .agents/rules/autogoal/scripts/create-goal-scratchpad.mjs \
+node .agents/skills/autogoal/scripts/create-goal-scratchpad.mjs \
   --template editor-harvest-plan \
   --title "<Lane> <Repo> Harvest Plan"
 ```
@@ -139,7 +139,7 @@ Complete the goal only when the plan records:
 - no behavior-only source material copied or mechanically translated into
   versioned output;
 - no row that still needs autonomous routing;
-- `node .agents/rules/autogoal/scripts/check-complete.mjs <plan>` passing.
+- `node .agents/skills/autogoal/scripts/check-complete.mjs <plan>` passing.
 
 Keep `pending` while any lane row can still be mapped, deduped, split, or routed.
 Use `blocked` only when the harvest artifact, target checkout, browser/device
@@ -309,7 +309,7 @@ Planning-only verification in `plate-2`:
 
 ```bash
 rg -n "Harvest grounding|Lane contract|Full harvest row accounting|In-lane candidate matrix|Execution queue|Downstream lane application|Accepted-plan execution handoff" docs/plans/<plan>.md
-node .agents/rules/autogoal/scripts/check-complete.mjs docs/plans/<plan>.md
+node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/<plan>.md
 ```
 
 Source sync verification after editing this skill:

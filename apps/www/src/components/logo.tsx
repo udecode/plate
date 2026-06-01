@@ -16,7 +16,7 @@ export function Logo() {
       asChild
       size="icon"
       variant="ghost"
-      className="hidden size-8 md:flex"
+      className="hidden size-8 lg:flex"
     >
       <Link href={getLocalizedPath(locale, '/')}>
         <Icons.logo className="size-5" />

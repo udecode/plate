@@ -1,0 +1,177 @@
+{
+  "upstream": {
+    "repo": "shadcn-ui/ui",
+    "clonePath": "../shadcn",
+    "appPath": "apps/v4",
+    "remote": "origin",
+    "branch": "main"
+  },
+  "plate": {
+    "docsApp": "apps/www",
+    "docsContent": "content/docs"
+  },
+  "lastSyncedCommit": "4a4dc8eb0fc793d8e9225e780183ad605f15d2c2",
+  "lastSyncedAt": "2026-05-28",
+  "lastSyncPlan": "docs/plans/2026-05-24-shadcn-base-migration-progress.md",
+  "lastPlannedCommit": "efdec3ca4523e5edd8a714f633002a7addc203a1",
+  "lastPlan": "docs/sync/shadcn/runs/2026-05-29-4a4dc8e-to-efdec3c-editors-blocks-style/plan.md",
+  "baselineNotes": [
+    "Initial tracker seeded from the current codex/fumadocs-migration branch and the local ../shadcn origin/main checkout.",
+    "The original migration plan did not record an exact upstream SHA; future syncs must not advance this value without a complete range plan and verification."
+  ],
+  "partialSyncs": [
+    {
+      "range": "4a4dc8eb0fc793d8e9225e780183ad605f15d2c2..360e8a19c3ee13ac78b656027462007c8bdaa6d5",
+      "implementedAt": "2026-05-28",
+      "plan": "docs/sync/shadcn/runs/2026-05-28-4a4dc8e-to-360e8a1/plan.md",
+      "baselineAdvanced": false,
+      "slices": [
+        "Docs shell parity polish: adopted docs foreground text tokens and removed sidebar divider; command-menu deferred",
+        "Package bump: adopted shadcn 4.8.2"
+      ],
+      "deferred": ["/r/registries.json registry directory route"],
+      "excluded": ["Rhea/style/theme/create/homepage upstream surfaces"],
+      "verification": [
+        "pnpm install",
+        "pnpm --filter www exec tsx --tsconfig ./scripts/tsconfig.scripts.json scripts/check-registry-source.mts",
+        "pnpm --filter www typecheck",
+        "pnpm lint:fix"
+      ]
+    },
+    {
+      "range": "4a4dc8eb0fc793d8e9225e780183ad605f15d2c2..360e8a19c3ee13ac78b656027462007c8bdaa6d5",
+      "implementedAt": "2026-05-29",
+      "plan": "docs/sync/shadcn/runs/2026-05-28-4a4dc8e-to-360e8a1-header/plan.md",
+      "baselineAdvanced": false,
+      "slices": [
+        "Header parity: shadcn-style GitHub button with hardcoded 16k stars, command-menu trigger styling, removed MCP from header, kept Discord and Plate logo-owned Home"
+      ],
+      "deferred": [
+        "Default full sync lane remains pending for out-of-scope rows"
+      ],
+      "excluded": [
+        "Upstream create/v0/header project actions",
+        "MCP header entry"
+      ],
+      "verification": [
+        "pnpm --filter www exec eslint src/components/site-header.tsx src/components/command-menu.tsx src/components/github-link.tsx --fix",
+        "pnpm --filter www typecheck",
+        "Browser proof on http://localhost:3002/docs/installation/next: no desktop Home text, Discord present, MCP absent, GitHub 16k present, shadcn command trigger classes present"
+      ]
+    },
+    {
+      "range": "4a4dc8eb0fc793d8e9225e780183ad605f15d2c2..360e8a19c3ee13ac78b656027462007c8bdaa6d5",
+      "implementedAt": "2026-05-29",
+      "plan": "docs/sync/shadcn/runs/2026-05-29-4a4dc8e-to-360e8a1-home-page/plan.md",
+      "baselineAdvanced": false,
+      "slices": [
+        "Home layout polish only: adopted shadcn-style centered PageHeader wrapper, centered single docs CTA, muted announcement badge, full-bleed muted preview field with max-w-screen-2xl centered preview content, upstream-style demo gradient overlays, and muted background through the home page footer on English and CN home routes while preserving Plate copy, editor preview, and Pro/Potion path"
+      ],
+      "deferred": [
+        "Default full sync lane remains pending for out-of-scope rows"
+      ],
+      "excluded": [
+        "Upstream home CardsDemo/card mosaic files",
+        "Upstream /create?preset homepage CTA",
+        "Home GitHub CTA because GitHub is already in the shared header",
+        "Rhea/style/theme/create product surfaces"
+      ],
+      "verification": [
+        "pnpm --filter www exec eslint src/app/(app)/page.tsx src/app/cn/page.tsx src/app/(app)/_components/announcement-button.tsx --fix",
+        "pnpm --filter www typecheck",
+        "Screenshot proof in docs/sync/shadcn/runs/2026-05-29-4a4dc8e-to-360e8a1-home-page/screenshots comparing upstream shadcn and Plate home pages",
+        "Browser proof on http://localhost:3003/ and http://localhost:3003/cn: centered hero/actions with only docs CTA, header GitHub still present, muted announcement badge, 2 gradient nodes on the retained Plate preview surface, full-bleed muted lower wrapper/footer background, max-w-screen-2xl container computed at 1536px on 2048px desktop with no centered gray slab, no horizontal overflow on desktop/mobile, no console/page errors, Plate headings preserved"
+      ]
+    },
+    {
+      "range": "4a4dc8eb0fc793d8e9225e780183ad605f15d2c2..efdec3ca4523e5edd8a714f633002a7addc203a1",
+      "implementedAt": "2026-05-29",
+      "plan": "docs/sync/shadcn/runs/2026-05-29-4a4dc8e-to-efdec3c-editors-blocks-style/plan.md",
+      "baselineAdvanced": false,
+      "slices": [
+        "Editors page shell parity: smart-merged upstream /blocks centered PageHeader, section-soft content band, and vertical block-list rhythm into Plate /editors while preserving Plate editor demos and excluding PageNav/BlocksNav, Open in v0, Browse all blocks, and Browse more editors",
+        "Editors BlockViewer toolbar parity: adopted upstream /blocks device/open/refresh group order and command-pill rhythm while preserving Plate install/source behavior, Pro/Get the code behavior, and no v0 button"
+      ],
+      "deferred": [
+        "Default full sync lane remains pending for out-of-scope rows"
+      ],
+      "excluded": [
+        "Upstream PageNav/BlocksNav category strip",
+        "Open in v0",
+        "Browse all blocks / Browse more blocks / Browse more editors CTA",
+        "Upstream block gallery content"
+      ],
+      "verification": [
+        "pnpm --filter www exec eslint src/app/(app)/editors/layout.tsx src/app/(app)/editors/editor-description.tsx src/app/(app)/editors/page.tsx --fix",
+        "pnpm --filter www exec eslint src/components/block-viewer.tsx --fix",
+        "pnpm --filter www typecheck",
+        "Browser proof on http://localhost:3003/editors: centered PageHeader, section-soft content band, Plate editor demos retained, no PageNav/BlocksNav, no Featured/Sidebar/Login/Signup category nav, no Browse all blocks, no Open in v0, no Browse more editors, and no horizontal overflow on desktop/mobile; screenshots saved under docs/sync/shadcn/runs/2026-05-29-4a4dc8e-to-efdec3c-editors-blocks-style/screenshots/",
+        "Browser proof on http://localhost:3002/editors: first block toolbar has upstream-style device/open/refresh group before the Plate command pill, refresh reloads iframe content, Open in v0 remains absent, mobile has no horizontal overflow; screenshots saved as plate-editors-toolbar-desktop-after.png and plate-editors-toolbar-mobile-after.png"
+      ]
+    },
+    {
+      "range": "4a4dc8eb0fc793d8e9225e780183ad605f15d2c2..efdec3ca4523e5edd8a714f633002a7addc203a1",
+      "implementedAt": "2026-05-30",
+      "plan": "docs/sync/shadcn/runs/2026-05-29-4a4dc8e-to-efdec3c-editors-blocks-style/plan.md",
+      "baselineAdvanced": false,
+      "slices": [
+        "Shared PageHeader parity: adopted upstream shadcn PageHeader heading, description, and action-row default classes while preserving Plate route copy and route-specific overrides"
+      ],
+      "deferred": [
+        "Default full sync lane remains pending for out-of-scope rows"
+      ],
+      "excluded": [
+        "Upstream announcement text and route-specific CTA copy",
+        "Upstream create/v0 product actions"
+      ],
+      "verification": [
+        "pnpm --filter www exec eslint src/components/page-header.tsx 'src/app/(app)/editors/editor-description.tsx' 'src/app/(app)/page.tsx' src/app/cn/page.tsx --fix",
+        "pnpm --filter www typecheck",
+        "Browser proof on http://localhost:3002/editors and http://localhost:3002/: PageHeader headings render with shadcn-style 30px/600 desktop metrics at 1175px viewport, centered text, and no route content loss"
+      ]
+    },
+    {
+      "range": "4a4dc8eb0fc793d8e9225e780183ad605f15d2c2..efdec3ca4523e5edd8a714f633002a7addc203a1",
+      "implementedAt": "2026-05-30",
+      "plan": "docs/sync/shadcn/runs/2026-05-30-releases-changelog-page/plan.md",
+      "baselineAdvanced": false,
+      "slices": [
+        "Releases page parity: smart-merged upstream shadcn /docs/changelog page shell into Plate /docs/releases with RSS action, latest-five inline releases, More Updates grid, and right-side page anchors while preserving Plate release data, title, RSS feed, and no v0 CTA"
+      ],
+      "deferred": [
+        "Default full sync lane remains pending for out-of-scope rows"
+      ],
+      "excluded": ["Upstream Changelog title copy", "Open in v0 CTA"],
+      "verification": [
+        "pnpm --filter www exec eslint src/components/release-index.tsx 'src/app/(app)/docs/releases/page.tsx' --fix",
+        "pnpm --filter www typecheck",
+        "Browser proof on http://localhost:3002/docs/releases: h1 Releases, RSS link to /rss.xml, 5 inline release articles, More Updates with 130 older release cards, v48 intro absent, docs shell present, no horizontal overflow at 1175px viewport; screenshots saved under docs/sync/shadcn/runs/2026-05-30-releases-changelog-page/screenshots/"
+      ]
+    },
+    {
+      "range": "4a4dc8eb0fc793d8e9225e780183ad605f15d2c2..efdec3ca4523e5edd8a714f633002a7addc203a1",
+      "implementedAt": "2026-05-30",
+      "plan": "docs/sync/shadcn/runs/2026-05-30-editors-preview-frame-polish/plan.md",
+      "baselineAdvanced": false,
+      "slices": [
+        "Editors preview-frame polish: smart-merged upstream /blocks radial dotted preview background, soft resizable-panel backing layer, overflow-hidden rounded frame, and upstream handle breakpoint into Plate BlockViewer while preserving Plate iframe/source/install behavior, Pro action, editor demos, and no v0 CTA"
+      ],
+      "deferred": [
+        "Default full sync lane remains pending for out-of-scope rows"
+      ],
+      "excluded": [
+        "Upstream mobile static image fallback",
+        "Open in v0",
+        "Upstream block gallery content"
+      ],
+      "verification": [
+        "pnpm --filter www exec eslint src/components/block-viewer.tsx --fix",
+        "pnpm --filter www typecheck",
+        "Browser proof on http://localhost:3002/editors: radial dotted preview background present, soft backing layer present, iframe /view/editor-ai present, panel overflow hidden, v0 absent, no horizontal overflow at 1175px viewport; screenshots saved under docs/sync/shadcn/runs/2026-05-30-editors-preview-frame-polish/screenshots/"
+      ]
+    }
+  ],
+  "lastPlannedAt": "2026-05-29",
+  "lastFullPlan": "docs/sync/shadcn/runs/2026-05-28-4a4dc8e-to-360e8a1/plan.md",
+  "lastPlannedScope": "editors blocks style"
+}

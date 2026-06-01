@@ -14,6 +14,7 @@ if (!sourceDir || !targetDir) {
 
 const sourcePath = path.resolve(sourceDir);
 const targetPath = path.resolve(targetDir);
+const PLATE_REGISTRY_NAMESPACE = '@plate/';
 
 await mkdir(targetPath, { recursive: true });
 
@@ -55,6 +56,10 @@ function rewriteRegistryDependencies(value) {
 
 function toLocalDependency(dependency) {
   if (typeof dependency !== 'string') return dependency;
+
+  if (dependency.startsWith(PLATE_REGISTRY_NAMESPACE)) {
+    return `${dependency.slice(PLATE_REGISTRY_NAMESPACE.length)}.json`;
+  }
 
   try {
     const url = new URL(dependency);

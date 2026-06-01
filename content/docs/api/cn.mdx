@@ -1,0 +1,161 @@
+---
+title: cn
+description: API reference for @udecode/cn.
+---
+
+`@udecode/cn` provides class-name helpers and component wrappers for React UI primitives. The package also re-exports `@udecode/react-utils` from its root entry.
+
+## Install
+
+```bash
+npm install @udecode/cn
+```
+
+## Quick Use
+
+```tsx
+import * as React from 'react';
+
+import { cn, withCn, withProps, withVariants } from '@udecode/cn';
+
+const active = true;
+const className = cn('px-2', active && 'bg-accent', 'px-4');
+
+const ButtonBase = React.forwardRef<
+  HTMLButtonElement,
+  React.ComponentProps<'button'>
+>((props, ref) => <button ref={ref} {...props} />);
+
+const Button = withCn(ButtonBase, 'inline-flex items-center rounded-md');
+
+const PrimaryButton = withProps(Button, {
+  type: 'button',
+  className: 'bg-primary text-primary-foreground',
+});
+```
+
+## Ownership
+
+| Surface | Owner | What It Does |
+|---------|-------|--------------|
+| `cn` | `@udecode/cn` | Combines `class-variance-authority` `cx` with `tailwind-merge`. |
+| `withCn` | `@udecode/cn` | Creates a component with a default merged `className`. |
+| `withProps` | `@udecode/cn` | Creates a `forwardRef` component with default props. |
+| `withVariants` | `@udecode/cn` | Creates a `forwardRef` component that computes classes from `cva` variants. |
+| React utility exports | `@udecode/react-utils` | Re-exported from the `@udecode/cn` root entry. |
+
+## Behavior
+
+| Helper | Behavior |
+|--------|----------|
+| `cn(...inputs)` | Runs values through `cx`, then resolves Tailwind conflicts with `twMerge`. |
+| `withCn(Component, ...inputs)` | Calls `withProps` with a default `className` created from `cn`. |
+| `withProps(Component, defaultProps)` | Merges default props first and consumer props second. |
+| `withProps` class names | Merges `defaultProps.className` and `props.className` with `cn`. |
+| `withProps` refs | Returns `React.forwardRef`. |
+| `withVariants(Component, variants, onlyVariantsProps?)` | Applies `variants(variantProps)` and merges the result with `className`. |
+| `onlyVariantsProps` | Removes variant-only props from the rendered component props. |
+
+## API Reference
+
+### `cn`
+
+Merge conditional class values and resolve Tailwind conflicts.
+
+```tsx
+cn('px-2', active && 'bg-accent', 'px-4');
+```
+
+<API name="cn">
+<APIParameters>
+  <APIItem name="...inputs" type="CxOptions">
+    Values accepted by `class-variance-authority` `cx`.
+  </APIItem>
+</APIParameters>
+<APIReturns type="string">
+  The merged class name.
+</APIReturns>
+</API>
+
+### `withCn`
+
+Create a component with default classes.
+
+```tsx
+const Card = withCn('div', 'rounded-md border bg-card');
+```
+
+<API name="withCn">
+<APIParameters>
+  <APIItem name="Component" type="React.ComponentType">
+    Component receiving the default class name.
+  </APIItem>
+  <APIItem name="...inputs" type="CxOptions">
+    Default class values.
+  </APIItem>
+</APIParameters>
+<APIReturns type="React.ForwardRefExoticComponent">
+  A component that merges the default class name with consumer `className`.
+</APIReturns>
+</API>
+
+### `withProps`
+
+Create a component with default props. Consumer props override default props, except class names are merged.
+
+```tsx
+const SubmitButton = withProps('button', {
+  type: 'submit',
+  className: 'font-medium',
+});
+```
+
+<API name="withProps">
+<APIParameters>
+  <APIItem name="Component" type="React.ElementType">
+    Component receiving default props.
+  </APIItem>
+  <APIItem name="defaultProps" type="Partial<React.ComponentPropsWithoutRef<T>>">
+    Props applied before consumer props.
+  </APIItem>
+</APIParameters>
+<APIReturns type="React.ForwardRefExoticComponent">
+  A `forwardRef` component with merged class names.
+</APIReturns>
+</API>
+
+### `withVariants`
+
+Create a component backed by `class-variance-authority` variants.
+
+```tsx
+import { cva } from 'class-variance-authority';
+
+const buttonVariants = cva('inline-flex items-center', {
+  variants: {
+    size: {
+      sm: 'h-8 px-2',
+      md: 'h-9 px-3',
+    },
+  },
+});
+
+const Button = withVariants('button', buttonVariants, ['size']);
+```
+
+<API name="withVariants">
+<APIParameters>
+  <APIItem name="Component" type="React.ElementType">
+    Component receiving variant classes.
+  </APIItem>
+  <APIItem name="variants" type="V extends ReturnType<typeof cva>">
+    `cva` variant function.
+  </APIItem>
+  <APIItem name="onlyVariantsProps" type="(keyof VariantProps<V>)[]" optional>
+    Variant props to remove before rendering the component.
+  </APIItem>
+</APIParameters>
+<APIReturns type="React.ForwardRefExoticComponent">
+  A `forwardRef` component with variant props and merged class names.
+</APIReturns>
+</API>

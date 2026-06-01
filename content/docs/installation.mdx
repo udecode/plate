@@ -1,0 +1,77 @@
+---
+title: Getting Started
+description: Choose the right Plate installation path for your React project.
+---
+
+Plate has different setup paths for UI-first editors, headless React editors, server components, and backend processing. Start with Plate UI when you want a complete editor surface. Use the lower-level guides when you need to own the rendering, runtime environment, or server-only pipeline.
+
+## Choose a Path
+
+<Cards>
+  <Card
+    href="/docs/installation/plate-ui"
+    title="Plate UI"
+    description="Recommended. Install the shadcn-based editor UI, kits, and starter components."
+  />
+  <Card
+    href="/docs/installation/next"
+    title="Next.js"
+    description="Use Plate in a server-rendered React app."
+  />
+  <Card
+    href="/docs/installation/react"
+    title="React"
+    description="Use Plate in Vite, React Router, or another client-side React app."
+  />
+  <Card
+    href="/docs/installation/manual"
+    title="Manual"
+    description="Build a headless editor with direct package installs."
+  />
+</Cards>
+
+<Steps>
+
+### Install Plate UI
+
+Use Plate UI when you want the fastest working editor path.
+
+```bash
+npx shadcn@latest add @plate/plate-ui
+```
+
+### Pick the Runtime Guide
+
+After Plate UI is installed, choose the runtime guide that matches your app:
+
+- [Next.js](/docs/installation/next) for server-rendered React apps.
+- [React](/docs/installation/react) for Vite, React Router, and other client-side apps.
+
+### Add Features
+
+Use feature kits when you want complete plugin + UI wiring. Use manual plugin docs when you want only the headless package behavior.
+
+</Steps>
+
+## Other Environments
+
+| Environment | Use it when | Guide |
+| --- | --- | --- |
+| Manual React | You do not want Plate UI or shadcn/ui. | [Manual Installation](/docs/installation/manual) |
+| React Server Components | You need static content generation or server-side editor processing without client-side interactivity. | [RSC](/docs/installation/rsc) |
+| Node.js | You need backend migration, validation, or serialization scripts. | [Node.js](/docs/installation/node) |
+
+<Callout type="note">
+  Server-only environments use base package imports like `platejs` and `@platejs/basic-nodes`. Do not import from `/react` subpaths in RSC or Node.js.
+</Callout>
+
+## Next Steps
+
+Once the editor runs, use these docs to customize it:
+
+- [Editor](/docs/editor) explains the editor instance.
+- [Plugin](/docs/plugin) explains plugin configuration.
+- [Plugin Components](/docs/plugin-components) explains node and mark rendering.
+- [Troubleshooting](/docs/troubleshooting) covers common setup issues.
+
+Done. You now have the right install path for your app surface.

@@ -1,0 +1,221 @@
+---
+title: Floating
+description: API reference for @platejs/floating.
+---
+
+`@platejs/floating` contains the React hooks and rectangle utilities used by floating toolbars, cursor-anchored UI, and virtual elements in Plate. It wraps Floating UI and exports the Floating UI primitives Plate components use.
+
+## Installation
+
+```bash
+npm install @platejs/floating
+```
+
+## Ownership
+
+| Surface | Owner | Use |
+| --- | --- | --- |
+| `useVirtualFloating` | `@platejs/floating` | `useFloating` with a controlled virtual reference element. |
+| `useFloatingToolbarState` | `@platejs/floating` | Builds toolbar state from editor focus, selection, read-only state, and Floating UI options. |
+| `useFloatingToolbar` | `@platejs/floating` | Turns toolbar state into DOM props, ref, outside-click ref, and hidden state. |
+| Rect utilities | `@platejs/floating` | Convert editor ranges, DOM selection, and client rect arrays into Floating UI-compatible rects. |
+| Floating UI exports | `@platejs/floating` | Re-exported middleware and hooks from `@floating-ui/react`. |
+
+## Virtual Floating
+
+`useVirtualFloating` creates a Floating UI virtual reference. Use it when the floating element follows a selection, cursor, or computed rectangle instead of a real DOM reference element.
+
+```tsx title="Virtual floating element"
+import {
+  flip,
+  getDefaultBoundingClientRect,
+  offset,
+  useVirtualFloating,
+} from '@platejs/floating';
+
+export function SelectionPopover({
+  open,
+  rect,
+}: {
+  open: boolean;
+  rect?: DOMRect;
+}) {
+  const floating = useVirtualFloating({
+    getBoundingClientRect: () => rect ?? getDefaultBoundingClientRect(),
+    middleware: [offset(8), flip()],
+    open,
+    placement: 'top',
+  });
+
+  return (
+    <div ref={floating.refs.setFloating} style={floating.style}>
+      Selection actions
+    </div>
+  );
+}
+```
+
+<API name="useVirtualFloating">
+<APIOptions type="UseVirtualFloatingOptions">
+  <APIItem name="getBoundingClientRect" type="() => ClientRectObject" optional>
+    Supplies the virtual element rect. Defaults to `getDefaultBoundingClientRect`.
+  </APIItem>
+  <APIItem name="open" type="boolean" optional>
+    When `false`, the returned style sets `display: 'none'`.
+  </APIItem>
+  <APIItem name="whileElementsMounted" type="UseFloatingOptions['whileElementsMounted']" optional>
+    Defaults to Floating UI `autoUpdate`.
+  </APIItem>
+  <APIItem name="...floatingOptions" type="Partial<UseFloatingOptions>" optional>
+    Forwarded to Floating UI `useFloating`.
+  </APIItem>
+</APIOptions>
+<APIReturns type="UseVirtualFloatingReturn">
+  <APIItem name="style" type="React.CSSProperties">
+    Absolute/fixed position style: `position`, `left`, `top`, `display`, and `visibility`.
+  </APIItem>
+  <APIItem name="virtualElementRef" type="React.MutableRefObject<VirtualElement>">
+    Mutable virtual reference element. The hook updates its `getBoundingClientRect`.
+  </APIItem>
+  <APIItem name="refs" type="UseFloatingReturn['refs']">
+    Floating UI refs. Attach `refs.setFloating` to the floating element.
+  </APIItem>
+  <APIItem name="update" type="UseFloatingReturn['update']">
+    Floating UI manual position update.
+  </APIItem>
+</APIReturns>
+</API>
+
+## Floating Toolbar
+
+Floating toolbar setup is split into two hooks. Build state first, then pass that state to `useFloatingToolbar`.
+
+```tsx title="Floating toolbar state"
+import {
+  flip,
+  offset,
+  useFloatingToolbar,
+  useFloatingToolbarState,
+} from '@platejs/floating';
+import { useEditorId, useEventEditorValue } from 'platejs/react';
+
+export function ToolbarShell() {
+  const editorId = useEditorId();
+  const focusedEditorId = useEventEditorValue('focus');
+
+  const state = useFloatingToolbarState({
+    editorId,
+    focusedEditorId,
+    floatingOptions: {
+      middleware: [offset(12), flip({ padding: 12 })],
+      placement: 'top',
+    },
+  });
+
+  const { clickOutsideRef, hidden, props, ref } = useFloatingToolbar(state);
+
+  if (hidden) return null;
+
+  return (
+    <div ref={clickOutsideRef}>
+      <div ref={ref} {...props}>
+        Toolbar
+      </div>
+    </div>
+  );
+}
+```
+
+<API name="useFloatingToolbarState">
+<APIOptions type="FloatingToolbarState & { editorId: string; focusedEditorId: string | null }">
+  <APIItem name="editorId" type="string" required>
+    Current editor id.
+  </APIItem>
+  <APIItem name="focusedEditorId" type="string | null" required>
+    Focused editor id from `useEventEditorValue('focus')`.
+  </APIItem>
+  <APIItem name="floatingOptions" type="UseVirtualFloatingOptions" optional>
+    Options passed to `useVirtualFloating`.
+  </APIItem>
+  <APIItem name="hideToolbar" type="boolean" optional>
+    Force the toolbar closed.
+  </APIItem>
+  <APIItem name="showWhenReadOnly" type="boolean" optional>
+    Allow the toolbar to show when the editor is read-only.
+  </APIItem>
+</APIOptions>
+<APIReturns type="ReturnType<typeof useFloatingToolbarState>">
+  Internal toolbar state for `useFloatingToolbar`.
+</APIReturns>
+</API>
+
+<API name="useFloatingToolbar">
+<APIOptions type="ReturnType<typeof useFloatingToolbarState>">
+  <APIItem name="state" type="ReturnType<typeof useFloatingToolbarState>" required>
+    State returned by `useFloatingToolbarState`.
+  </APIItem>
+</APIOptions>
+<APIReturns type="object">
+  <APIItem name="clickOutsideRef" type="React.RefObject<HTMLElement>">
+    Ref from `useOnClickOutside`. It closes the toolbar and ignores `.ignore-click-outside/toolbar`.
+  </APIItem>
+  <APIItem name="hidden" type="boolean">
+    `true` when the toolbar should not render.
+  </APIItem>
+  <APIItem name="props" type="{ style: React.CSSProperties }">
+    Props to spread on the toolbar root.
+  </APIItem>
+  <APIItem name="ref" type="UseFloatingReturn['refs']['setFloating']">
+    Floating element ref callback.
+  </APIItem>
+</APIReturns>
+</API>
+
+The toolbar opens only for an expanded selection with text. It stays hidden while the mouse is down, when `hideToolbar` is true, when a different editor owns focus, or when the editor is read-only and `showWhenReadOnly` is not set.
+
+## Rectangle Utilities
+
+These helpers normalize editor locations and DOM ranges into rectangles.
+
+<API name="Rectangle utilities">
+<APIMethods>
+  <APIItem name="getDefaultBoundingClientRect" type="() => ClientRectObject">
+    Returns a zero-size offscreen rect used as a safe Floating UI fallback.
+  </APIItem>
+  <APIItem name="createVirtualElement" type="() => VirtualElement">
+    Creates a Floating UI virtual element with `getDefaultBoundingClientRect`.
+  </APIItem>
+  <APIItem name="createVirtualRef" type="(editor: Editor, at?: TLocation | TLocation[], options?: { fallbackRect?: ClientRect }) => VirtualRef">
+    Creates a ref-like object whose `current.getBoundingClientRect()` reads editor locations. It throws when no rect exists and no `fallbackRect` is provided.
+  </APIItem>
+  <APIItem name="getBoundingClientRect" type="(editor: Editor, at?: TLocation | TLocation[]) => DOMRect | undefined">
+    Reads one or more editor locations, converts them to DOM ranges, and returns the merged bounding rect. If `at` is omitted, it uses `editor.selection`.
+  </APIItem>
+  <APIItem name="getRangeBoundingClientRect" type="(editor: Editor, at: TRange | null) => ClientRectObject">
+    Returns the DOM rect for a range, or `getDefaultBoundingClientRect()` when the range or DOM range is missing.
+  </APIItem>
+  <APIItem name="getSelectionBoundingClientRect" type="(editor: PlateEditor) => ClientRectObject">
+    Returns the selection rect only when the editor selection is expanded. Collapsed selections return the default rect.
+  </APIItem>
+  <APIItem name="getDOMSelectionBoundingClientRect" type="() => ClientRectObject">
+    Returns `window.getSelection().getRangeAt(0).getBoundingClientRect()`, or the default rect when no DOM selection exists.
+  </APIItem>
+  <APIItem name="makeClientRect" type="(rect: { bottom: number; left: number; right: number; top: number }) => DOMRect">
+    Creates a DOMRect-like object and computes `width`, `height`, `x`, and `y`.
+  </APIItem>
+  <APIItem name="mergeClientRects" type="(clientRects: DOMRect[]) => DOMRect">
+    Merges client rects by min left/top and max right/bottom. It throws when the array is empty.
+  </APIItem>
+</APIMethods>
+</API>
+
+## Floating UI Re-exports
+
+`@platejs/floating` re-exports the Floating UI middleware and React hooks used by Plate UI, including `autoUpdate`, `flip`, `hide`, `inline`, `offset`, `shift`, `size`, `useFloating`, `useInteractions`, `useClick`, `useDismiss`, `FloatingPortal`, and related types.
+
+Use those exports when a Plate UI component already imports from `@platejs/floating`; use `@floating-ui/react` directly only when the component is not coupled to Plate.
+
+## Related Components
+
+- [Toolbar](/docs/toolbar) covers the registry floating-toolbar component that consumes these hooks.
+- [Plate Store](/docs/api/core/plate-store) covers `useEditorId` and `useEventEditorValue`.

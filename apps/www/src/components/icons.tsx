@@ -318,3 +318,18 @@ export const Icons = {
     </svg>
   ),
 };
+
+export function getIconForLanguageExtension(language: string) {
+  switch (language) {
+    case 'css':
+    case 'json':
+    case 'js':
+    case 'jsx':
+    case 'ts':
+    case 'tsx':
+    case 'typescript':
+      return <Icons.codeblock />;
+    default:
+      return <Icons.page />;
+  }
+}

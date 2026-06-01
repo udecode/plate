@@ -1,0 +1,185 @@
+---
+title: Block Menu
+description: Context-menu actions for selected editor blocks.
+docs:
+  - route: /docs/block-selection
+    title: Block Selection
+  - route: /docs/components/block-context-menu
+    title: Block Context Menu
+  - route: /docs/examples/block-menu
+    title: Demo
+  - route: https://pro.platejs.org/docs/examples/block-menu
+    title: Plus
+---
+
+Block Menu adds a right-click menu on top of block selection. `BlockMenuPlugin` owns the open state and pointer position; `BlockSelectionPlugin` decides which blocks the menu edits. The registry `BlockContextMenu` renders the menu actions.
+
+<ComponentPreview name="block-menu-demo" />
+
+<PackageInfo>
+
+## Features
+
+- Right-click block selection.
+- Context menu open state through `openId` and `position`.
+- Delete, duplicate, turn-into, indent, outdent, align, and Ask AI actions.
+- Touch-device and read-only guards.
+- Element-level opt in/out with `data-plate-open-context-menu`.
+- Plus menu with drag-handle entry, combobox filtering, nested actions, colors, comments, and AI.
+
+</PackageInfo>
+
+## Fast Path
+
+<Steps>
+
+### Add The Kit
+
+`BlockMenuKit` spreads `BlockSelectionKit` and renders `BlockContextMenu` above the editable.
+
+<ComponentSource name="block-menu-kit" />
+
+```tsx
+import { createPlateEditor } from 'platejs/react';
+
+import { BlockMenuKit } from '@/components/editor/plugins/block-menu-kit';
+
+export const editor = createPlateEditor({
+  plugins: BlockMenuKit,
+});
+```
+
+### Render The Menu
+
+`block-context-menu` is the registry UI used by the kit.
+
+<ComponentSource name="block-context-menu" />
+
+### Try The Plus Menu
+
+<ComponentPreviewPro name="block-menu-pro" />
+
+</Steps>
+
+## Ownership
+
+| Surface | Owner | What It Does |
+|---------|-------|--------------|
+| `BlockMenuPlugin` | `@platejs/selection/react` | Stores `openId` and pointer `position`, then exposes menu show/hide APIs. |
+| `BlockSelectionPlugin` | `@platejs/selection/react` | Selects the block under the context-menu event and applies actions to selected blocks. |
+| `BlockSelectionKit` | Registry | Enables context-menu selection and filters non-selectable blocks such as columns, code lines, and table cells. |
+| `BlockMenuKit` | Registry | Combines `BlockSelectionKit` with `BlockMenuPlugin.render.aboveEditable`. |
+| `BlockContextMenu` | Registry UI | Renders Radix context-menu items and calls block-selection transforms. |
+| `block-menu-demo` | Registry example | Shows the default menu in the full editor. |
+| `block-menu-pro` | Plus example | Adds drag-handle entry, nested filtering, colors, comments, and AI actions. |
+
+The menu is UI state, not document state. The document stores block ids and node properties; it does not store whether a menu is open.
+
+## Manual Setup
+
+<Steps>
+
+### Install Packages
+
+```bash
+npm install @platejs/selection @platejs/ai
+```
+
+`@platejs/ai` is needed only when you keep the `Ask AI` item from the registry menu.
+
+### Add Plugins
+
+Use `BlockSelectionKit` when you want to keep the registry selection behavior but replace the menu wiring.
+
+```tsx
+import { BlockMenuPlugin } from '@platejs/selection/react';
+import { createPlateEditor } from 'platejs/react';
+
+import { BlockSelectionKit } from '@/components/editor/plugins/block-selection-kit';
+import { BlockContextMenu } from '@/components/ui/block-context-menu';
+
+export const editor = createPlateEditor({
+  plugins: [
+    ...BlockSelectionKit,
+    BlockMenuPlugin.configure({
+      render: { aboveEditable: BlockContextMenu },
+    }),
+  ],
+});
+```
+
+Use this lower-level shape only when you are replacing both registry kits.
+
+```tsx
+import {
+  BlockMenuPlugin,
+  BlockSelectionPlugin,
+} from '@platejs/selection/react';
+import { createPlateEditor } from 'platejs/react';
+
+import { BlockContextMenu } from '@/components/ui/block-context-menu';
+
+export const editor = createPlateEditor({
+  plugins: [
+    BlockSelectionPlugin.configure({
+      options: {
+        enableContextMenu: true,
+      },
+    }),
+    BlockMenuPlugin.configure({
+      render: { aboveEditable: BlockContextMenu },
+    }),
+  ],
+});
+```
+
+</Steps>
+
+## Context Menu Rules
+
+| Case | Behavior |
+|------|----------|
+| Right-click on a selectable block | Selects that block, then opens the context menu at the pointer position. |
+| Shift + right-click | Adds the block to the current block selection. |
+| Right-click inside a focused text selection | Leaves the browser context menu unless the block is already selected, void, or explicitly opted in. |
+| Left-click while the menu is open | Prevents the click and hides the menu. |
+| Touch device | Renders children without the context-menu wrapper. |
+| Read-only editor | Prevents the context menu. |
+
+Disable the Plate context menu for a specific surface with `data-plate-open-context-menu={false}`.
+
+```tsx
+<PlateElement data-plate-open-context-menu={false} {...props}>
+  {children}
+</PlateElement>
+```
+
+Force it open from a focused block with `data-plate-open-context-menu="true"` when the block should bypass the focused-selection guard.
+
+## Menu Actions
+
+`BlockContextMenu` acts on the current block selection.
+
+| Action | Source |
+|--------|--------|
+| Ask AI | Opens `AIChatPlugin` after the menu closes. |
+| Delete | Calls `editor.getTransforms(BlockSelectionPlugin).blockSelection.removeNodes()`. |
+| Duplicate | Calls `editor.getTransforms(BlockSelectionPlugin).blockSelection.duplicate()`. |
+| Turn into | Calls the registry `setBlockType` helper for paragraph, headings, blockquote, and code drawing. |
+| Indent / Outdent | Calls `blockSelection.setIndent(1)` or `blockSelection.setIndent(-1)`. |
+| Align | Calls `blockSelection.setNodes({ align })`. |
+
+The menu focuses block selection after close so keyboard selection remains active.
+
+## API Reference
+
+| API | Package | Use |
+|-----|---------|-----|
+| `BLOCK_CONTEXT_MENU_ID` | `@platejs/selection/react` | Built-in open id for the registry context menu. |
+| `BlockMenuPlugin` | `@platejs/selection/react` | Menu state plugin with `openId` and `position` options. |
+| `api.blockMenu.hide()` | `@platejs/selection/react` | Closes the menu and moves its stored position offscreen. |
+| `api.blockMenu.show(id, position?)` | `@platejs/selection/react` | Opens a menu by id and optionally sets pointer coordinates. |
+| `api.blockMenu.showContextMenu(blockId, position)` | `@platejs/selection/react` | Selects one block by id, then opens the context menu at the pointer coordinates. |
+| `BlockSelectionPlugin.options.enableContextMenu` | `@platejs/selection/react` | Enables block selection from right-click events. |
+| `api.blockSelection.addOnContextMenu` | `@platejs/selection/react` | Shared right-click handler used by selectable block node props. |
+| `BlockContextMenu` | Registry UI | Default context menu component used by `BlockMenuKit`. |

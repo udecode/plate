@@ -73,7 +73,7 @@ they earn their keep, and verify before calling the task done.
      - browser/UI route or interaction touched: add `--with browser`
      - package exports, public API, release artifacts, or package boundary
        touched: add `--with package-api`
-     `node .agents/rules/autogoal/scripts/create-goal-scratchpad.mjs --template <task|docs> --with <pack> --title "<short task title>"`
+     `node .agents/skills/autogoal/scripts/create-goal-scratchpad.mjs --template <task|docs> --with <pack> --title "<short task title>"`
    - follow local repo overrides for where planning files live
 10. If testing or coverage work, load `testing` before `tdd` and choose the
     smallest honest slice.

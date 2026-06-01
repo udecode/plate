@@ -2,6 +2,7 @@ import React from 'react';
 
 import { Agentation } from 'agentation';
 import type { Metadata, Viewport } from 'next';
+import Script from 'next/script';
 
 import { NuqsAdapter } from 'nuqs/adapters/next/app';
 
@@ -42,6 +43,11 @@ export const metadata: Metadata = {
   ],
   manifest: `${siteConfig.url}/site.webmanifest`,
   metadataBase: new URL(siteConfig.url),
+  alternates: {
+    types: {
+      'application/rss+xml': `${siteConfig.url}/rss.xml`,
+    },
+  },
   openGraph: {
     description: siteConfig.description,
     images: [
@@ -83,7 +89,9 @@ export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <script
+        <Script
+          id="theme-color-script"
+          strategy="beforeInteractive"
           dangerouslySetInnerHTML={{
             __html: `
               try {
@@ -98,8 +106,8 @@ export default function RootLayout({ children }: RootLayoutProps) {
       </head>
       <body
         className={cn(
-          'min-h-svh bg-background font-sans antialiased',
-          '[--footer-height:calc(var(--spacing)*14)] [--header-height:calc(var(--spacing)*14)] xl:[--footer-height:calc(var(--spacing)*24)]',
+          'group/body min-h-svh bg-background font-sans antialiased',
+          '[--footer-height:calc(var(--spacing)*14)] [--header-height:calc(var(--spacing)*14)] lg:[--header-height:calc(var(--spacing)*16)] xl:[--footer-height:calc(var(--spacing)*24)]',
           fontSans.variable,
           fontMono.variable
         )}
@@ -107,10 +115,8 @@ export default function RootLayout({ children }: RootLayoutProps) {
       >
         <NuqsAdapter>
           <Providers>
-            <div vaul-drawer-wrapper="">
-              <div className="relative flex min-h-svh flex-col bg-background">
-                {children}
-              </div>
+            <div className="relative flex min-h-svh flex-col bg-background">
+              {children}
             </div>
           </Providers>
         </NuqsAdapter>

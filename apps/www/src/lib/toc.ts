@@ -1,3 +1,4 @@
+import matter from 'gray-matter';
 import { toc } from 'mdast-util-toc';
 import { remark } from 'remark';
 import { visit } from 'unist-util-visit';
@@ -102,7 +103,7 @@ export type TocItem = {
 };
 
 export async function getTableOfContents(content: string): Promise<TocItem[]> {
-  const result = await remark().use(getToc).process(content);
+  const result = await remark().use(getToc).process(matter(content).content);
   const nestedResult = result.data as Items;
 
   if (!nestedResult.items) {

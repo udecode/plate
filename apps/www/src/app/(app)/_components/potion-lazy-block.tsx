@@ -1,16 +1,19 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 
-import type { RegistryItem } from 'shadcn/registry';
+import type { RegistryItem } from 'shadcn/schema';
 
+import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 
 import { BlockViewer } from '@/components/block-viewer';
+import { Button } from '@/components/ui/button';
 import { siteConfig } from '@/config/site';
 
 const i18n = {
   cn: {
+    browseMoreEditors: 'Browse more editors',
     buildYourRichTextEditor: '构建你的富文本编辑器',
     description: '框架 · 插件 · 组件 · 主题',
     getStarted: '开始使用',
@@ -18,6 +21,7 @@ const i18n = {
     potionDescription: '一个类似 Notion 的 AI 模板。',
   },
   en: {
+    browseMoreEditors: 'Browse more editors',
     buildYourRichTextEditor: 'Build your rich-text editor',
     description: 'Framework · Plugins · Components · Themes',
     getStarted: 'Get Started',
@@ -26,22 +30,16 @@ const i18n = {
   },
 };
 
-export function PotionLazyBlock() {
+function PotionLazyBlockContent() {
   const searchParams = useSearchParams();
 
-  const [locale, setLocale] = useState<keyof typeof i18n>('en');
   const ref = useRef<HTMLDivElement>(null);
   const [shouldRender, setShouldRender] = useState(false);
-
-  useEffect(() => {
-    const getLocale = async () => {
-      const resolvedLocale = (searchParams?.get('locale') ||
-        'en') as keyof typeof i18n;
-      setLocale(resolvedLocale);
-    };
-
-    void getLocale();
-  }, [searchParams]);
+  const localeParam = searchParams?.get('locale');
+  const locale =
+    localeParam && localeParam in i18n
+      ? (localeParam as keyof typeof i18n)
+      : 'en';
 
   useEffect(() => {
     const handleScroll = () => {
@@ -51,7 +49,7 @@ export function PotionLazyBlock() {
       }
     };
 
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
 
     // Check initial scroll position
     handleScroll();
@@ -78,13 +76,28 @@ export function PotionLazyBlock() {
   return (
     <div ref={ref}>
       {shouldRender && (
-        <BlockViewer
-          dependencies={[]}
-          highlightedFiles={[]}
-          item={block}
-          tree={[]}
-        />
+        <>
+          <BlockViewer
+            dependencies={[]}
+            highlightedFiles={[]}
+            item={block}
+            tree={[]}
+          />
+          <div className="flex justify-center py-6">
+            <Button asChild variant="outline">
+              <Link href="/editors">{content.browseMoreEditors}</Link>
+            </Button>
+          </div>
+        </>
       )}
     </div>
+  );
+}
+
+export function PotionLazyBlock() {
+  return (
+    <Suspense fallback={null}>
+      <PotionLazyBlockContent />
+    </Suspense>
   );
 }

@@ -1,0 +1,47 @@
+---
+title: Preview Markdown
+description: Decorate text ranges so Markdown syntax previews inline.
+---
+
+This example previews Markdown syntax with Slate decorations. It does not
+deserialize Markdown into Plate nodes; it keeps the text as text and styles
+matching ranges with a custom leaf renderer.
+
+## Demo
+
+<ComponentPreview name="preview-markdown-demo" />
+
+## Source
+
+The demo tokenizes each text node with Prism's Markdown grammar and returns
+decoration ranges for token types such as title, bold, italic, blockquote, list,
+horizontal rule, and code.
+
+<ComponentSource name="preview-markdown-demo" />
+
+## Initial Value
+
+The value is plain Plate content whose paragraph text includes Markdown
+characters.
+
+<ComponentSource src="examples/values/preview-md-value.tsx" />
+
+## Runtime Shape
+
+| Surface | Owner | Notes |
+| --- | --- | --- |
+| `decoratePreview` | Registry example | Reads text nodes, tokenizes `node.text`, and returns Slate ranges with token-type flags. |
+| `PreviewLeaf` | Registry example | Applies CSS classes when a decorated leaf has `bold`, `italic`, `title`, `list`, `hr`, `blockquote`, or `code`. |
+| `preview-markdown` plugin | Registry example | Local `createSlatePlugin({ decorate })` plugin. |
+| `BasicNodesKit` | Registry kit | Supplies the editor's normal paragraph and heading plugins. |
+| `prismjs` | Dependency | Supplies the Markdown tokenizer used by the decoration function. |
+
+Use this pattern when the editor should keep raw Markdown characters visible.
+Use [Markdown](/docs/markdown) when the editor should convert Markdown text into
+Plate nodes.
+
+## Related
+
+- [Markdown](/docs/markdown) covers Markdown deserialization and serialization.
+- [Plate Plugin](/docs/api/core/plate-plugin) covers `decorate`.
+- [Text](/docs/api/slate/text) covers text decorations and decorated leaves.

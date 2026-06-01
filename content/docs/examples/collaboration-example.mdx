@@ -1,0 +1,55 @@
+---
+title: Collaboration Demo
+description: Real-time Plate collaboration example with Yjs providers and remote cursors.
+---
+
+This example shows a Plate editor bound to a shared Yjs document. It uses the
+`collaboration-demo` registry example with `YjsPlugin`, Hocuspocus, WebRTC, room
+state, connection controls, and remote cursor rendering.
+
+## Demo
+
+<ComponentPreview name="collaboration-demo" />
+
+## Source
+
+The demo creates a room id in `localStorage`, gives each tab a random user name
+and cursor color, then initializes Yjs after mount.
+
+<ComponentSource name="collaboration-demo" />
+
+## Runtime Shape
+
+| Piece | Owner | Notes |
+| --- | --- | --- |
+| `YjsPlugin` | `@platejs/yjs/react` | Binds Plate to a shared `Y.Doc`, provider list, awareness data, and cursor data. |
+| Hocuspocus provider | App infrastructure | The demo points to `ws://localhost:8888`; run your own server for durable collaboration. |
+| WebRTC provider | `y-webrtc` | The demo uses `ws://localhost:4444` in dev and `wss://signaling.yjs.dev` in production. |
+| Room state | Registry example | The room id is stored in `localStorage` and passed to every provider plus `yjs.init`. |
+| Connection controls | Registry example | The status bar reads `_providers` and `_isConnected`, then calls `connect` or `disconnect`. |
+
+Set `skipInitialization: true` on the editor. Yjs owns the initial document
+load, and `editor.getApi(YjsPlugin).yjs.init()` seeds the value only when the
+shared document is empty.
+
+## Remote Cursors
+
+The demo renders remote selections with the registry `remote-cursor-overlay`
+component.
+
+<ComponentSource name="remote-cursor-overlay" />
+
+`RemoteCursorOverlay` waits for `_isSynced`, reads cursor positions with
+`useRemoteCursorOverlayPositions`, then paints selection rectangles and a named
+caret.
+
+## Try It
+
+Open the same demo in two tabs and use the same room id. Each tab receives a
+different random user name and cursor color, so typing and selections are easy
+to distinguish.
+
+## Related
+
+- [Yjs](/docs/yjs) covers provider setup, lifecycle methods, and API reference.
+- [Remote Cursor Overlay](/docs/components/remote-cursor-overlay) covers the reusable cursor UI component.

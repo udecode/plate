@@ -5,7 +5,6 @@ import path from 'node:path';
 import { u } from 'unist-builder';
 import { visit } from 'unist-util-visit';
 
-import { Index } from '../__registry__';
 import { registryExamples } from '../registry/registry-examples';
 import { proExamples } from '../registry/registry-pro';
 import { highlightFiles } from './highlight-code';
@@ -14,7 +13,9 @@ import {
   fixImport,
   getAllDependencies,
   getNodeAttributeByName,
+  getRegistryDefinition,
   getRegistryItem,
+  normalizeRegistryFilePath,
 } from './rehype-utils';
 
 // NOTE: shadcn fork
@@ -30,8 +31,11 @@ export function rehypeComponent() {
         node.name === 'ComponentInstallation'
       ) {
         const name = getNodeAttributeByName(node, 'name')?.value as string;
+        const src = getNodeAttributeByName(node, 'src')?.value as
+          | string
+          | undefined;
 
-        if (name) {
+        if (name || (node.name === 'ComponentSource' && src)) {
           if (node.name === 'ComponentPreviewPro') {
             const registryItem = proExamples.find((item) => item.name === name);
             if (registryItem?.description) {
@@ -94,9 +98,9 @@ export function rehypeComponent() {
                     });
                   }
 
-                  const component = Index[name];
+                  const component = getRegistryDefinition(name);
 
-                  if (component.meta?.preview) {
+                  if (component?.meta?.preview) {
                     const example = registryExamples.find(
                       (ex) => ex.name === name
                     );
@@ -124,13 +128,28 @@ export function rehypeComponent() {
           }
           if (node.name === 'ComponentSource') {
             try {
-              const component = Index[name];
+              let sourcePath: string | undefined = src;
 
-              if (!component) {
-                throw new Error(`Component ${name} not found`);
+              if (!sourcePath) {
+                const component = getRegistryDefinition(name);
+
+                if (!component) {
+                  throw new Error(`Component ${name} not found`);
+                }
+
+                const firstFile = component.files?.[0];
+                if (typeof firstFile === 'string') {
+                  sourcePath = firstFile;
+                } else {
+                  sourcePath = firstFile?.path;
+                }
               }
 
-              const file = component.files[0]?.path;
+              if (!sourcePath) {
+                throw new Error(`Component ${name} has no source file`);
+              }
+
+              const file = normalizeRegistryFilePath(sourcePath);
 
               let source = fs.readFileSync(file, 'utf8');
               source = fixImport(source);

@@ -1,0 +1,130 @@
+---
+title: Subscript
+description: Format inline text below the baseline.
+docs:
+  - route: /docs/basic-marks
+    title: Basic Marks
+  - route: /docs/superscript
+    title: Superscript
+  - route: /docs/components/more-toolbar-button
+    title: More Toolbar Button
+  - route: /docs/plugin-shortcuts
+    title: Plugin Shortcuts
+---
+
+Subscript applies the `subscript` leaf mark to selected text. Its toggle transform removes `superscript`, so the same text cannot keep both vertical-position marks through the plugin API.
+
+<ComponentPreview name="basic-marks-demo" />
+
+<PackageInfo>
+
+## Features
+
+- `KEYS.sub` leaf mark.
+- Directional selection affinity.
+- HTML deserialization from `sub` and `vertical-align: sub`.
+- `<sub>` rendering by default.
+- Optional Markdown-style input rule through `SubscriptRules`.
+- Mutual exclusion with `KEYS.sup`.
+
+</PackageInfo>
+
+## Kit Usage
+
+<Steps>
+
+### Add Basic Marks
+
+`BasicMarksKit` includes `SubscriptPlugin`, the `~` input rule, and a `mod+comma` shortcut.
+
+<ComponentSource name="basic-marks-kit" />
+
+```tsx
+import { createPlateEditor } from 'platejs/react';
+
+import { BasicMarksKit } from '@/components/editor/plugins/basic-marks-kit';
+
+export const editor = createPlateEditor({
+  plugins: [...BasicMarksKit],
+});
+```
+
+### Add a Toolbar Control
+
+The registry `MoreToolbarButton` toggles subscript from the More menu and removes superscript.
+
+```tsx
+import { MoreToolbarButton } from '@/components/ui/more-toolbar-button';
+
+export function FormattingMoreMenu() {
+  return <MoreToolbarButton />;
+}
+```
+
+</Steps>
+
+## Manual Usage
+
+Install the mark package.
+
+```bash
+npm install @platejs/basic-nodes
+```
+
+Add `SubscriptPlugin` directly when you want the default `<sub>` render.
+
+```tsx
+import { SubscriptPlugin } from '@platejs/basic-nodes/react';
+import { createPlateEditor } from 'platejs/react';
+
+export const editor = createPlateEditor({
+  plugins: [SubscriptPlugin],
+});
+```
+
+Configure the input rule and shortcut when you want the same behavior as the kit.
+
+```tsx
+import { SubscriptRules } from '@platejs/basic-nodes';
+import { SubscriptPlugin } from '@platejs/basic-nodes/react';
+
+export const subscriptPlugin = SubscriptPlugin.configure({
+  inputRules: [SubscriptRules.markdown()],
+  shortcuts: { toggle: { keys: 'mod+comma' } },
+});
+```
+
+## Ownership
+
+| Surface | Owner | What It Does |
+|---------|-------|--------------|
+| `BaseSubscriptPlugin` | `@platejs/basic-nodes` | Headless subscript mark, HTML parser, render tag, selection rule, and `toggle` transform. |
+| `SubscriptPlugin` | `@platejs/basic-nodes/react` | React wrapper for the headless subscript mark. |
+| `SubscriptRules.markdown` | `@platejs/basic-nodes` | Optional `~` mark input rule factory. |
+| `BasicMarksKit` | Registry | Adds `SubscriptPlugin`, the input rule, and `mod+comma`. |
+| `MoreToolbarButton` | Registry UI | Calls `editor.tf.toggleMark(KEYS.sub, { remove: KEYS.sup })`. |
+
+The package owns subscript semantics. The registry owns shortcut configuration and toolbar placement.
+
+## Behavior
+
+| Behavior | Source |
+|----------|--------|
+| Mark key | `KEYS.sub` (`subscript`) |
+| Leaf behavior | `node.isLeaf: true` |
+| Toggle transform | `editor.tf.subscript.toggle()` calls `editor.tf.toggleMark(type, { remove: editor.getType(KEYS.sup) })`. |
+| Selection affinity | `directional` |
+| HTML tags | `sub` |
+| HTML styles | `vertical-align: sub` |
+| Render output | `sub` |
+| Kit input rule | `SubscriptRules.markdown()` |
+| Kit shortcut | `mod+comma` |
+
+## API Reference
+
+| API | Package | Use |
+|-----|---------|-----|
+| `BaseSubscriptPlugin` | `@platejs/basic-nodes` | Headless subscript plugin. |
+| `SubscriptPlugin` | `@platejs/basic-nodes/react` | React subscript plugin. |
+| `SubscriptRules.markdown()` | `@platejs/basic-nodes` | Creates the `~` mark input rule. |
+| `tf.subscript.toggle()` | `@platejs/basic-nodes` | Toggles subscript and removes superscript. |

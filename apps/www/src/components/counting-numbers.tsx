@@ -1,8 +1,6 @@
-/* eslint-disable react-hooks/rules-of-hooks */
-
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { useInView } from 'framer-motion';
 
@@ -74,25 +72,18 @@ export function CountingNumbers({
   value,
 }: CountingNumbersProps) {
   const ref = useRef(null);
+  const isInView = useInView(ref);
+  const animatedNumber = useCounting({
+    duration,
+    end: value,
+    interval,
+    isInView: !noAnimation && isInView,
+    reverse,
+    start,
+  });
+  const number = noAnimation ? value : animatedNumber;
 
-  let number = value;
-
-  if (!noAnimation) {
-    const isInView = useInView(ref);
-    number = useCounting({
-      duration,
-      end: value,
-      interval,
-      isInView,
-      reverse,
-      start,
-    });
-  }
-
-  const formattedNumber = useMemo(
-    () => Intl.NumberFormat().format(number),
-    [number]
-  );
+  const formattedNumber = Intl.NumberFormat().format(number);
 
   return (
     <p ref={ref} className={className}>

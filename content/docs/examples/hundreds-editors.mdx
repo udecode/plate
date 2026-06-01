@@ -1,0 +1,42 @@
+---
+title: Hundreds Editors
+description: Render many independent Plate editors on one page.
+---
+
+This example mounts 300 separate Plate editors in a single React tree. Each
+editor gets its own id and value, so the page stresses editor creation, store
+isolation, and repeated editable surfaces.
+
+## Demo
+
+<ComponentPreview name="hundreds-editors-demo" />
+
+## Source
+
+The demo maps generated values to `<WithPlate id={idx + 1} value={value} />`.
+
+<ComponentSource name="hundreds-editors-demo" />
+
+## Value Generator
+
+Each generated editor value contains one heading and two paragraphs.
+
+<ComponentSource src="examples/values/multi-editors-value.tsx" />
+
+## Runtime Shape
+
+| Surface | Owner | Notes |
+| --- | --- | --- |
+| `createMultiEditorsValue()` | Registry example | Creates 300 editor values with JSX test-utils syntax. |
+| `WithPlate` | Registry example | Calls `usePlateEditor({ id, value })` for each editor. |
+| `<Plate>` | `platejs/react` | Creates one editor store provider per editor instance. |
+| `<EditorContainer>` / `<Editor>` | Registry UI | Renders the shared editor shell for every instance. |
+
+Use this demo to inspect many-editor mounting cost, store isolation, and focus
+behavior. It is a browser stress page, not a production layout recommendation.
+
+## Related
+
+- [Plate Components](/docs/api/core/plate-components) covers `<Plate>` and editor store providers.
+- [Plate Controller](/docs/api/core/plate-controller) covers cross-editor coordination.
+- [Plate Store](/docs/api/core/plate-store) covers scoped editor store access.

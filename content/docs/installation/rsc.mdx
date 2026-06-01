@@ -1,0 +1,138 @@
+---
+title: RSC
+description: Install and configure Plate for React Server Components.
+---
+
+Use Plate in React Server Components when you need to render read-only editor content or generate HTML on the server. Interactive editors still belong in client components with `platejs/react`. This guide shows the server-safe static editor path, HTML serialization, and the boundary with Node-only processing.
+
+## RSC Setup
+
+<Callout type="warning" title="Use static imports">
+  Do not import `platejs/react` or `@platejs/*/react` from a Server Component.
+  Use `platejs/static`, `platejs`, and base `@platejs/*` entrypoints.
+</Callout>
+
+<Steps>
+
+### Install the Base Kit
+
+Install the copied base editor kit when you want Plate UI static components and
+the default serializer plugins.
+
+```bash
+npx shadcn@latest add @plate/editor-base-kit
+```
+
+The `editor-base-kit` item installs `BaseEditorKit`, static node components, and
+the `editor-static` UI component used by server rendering.
+
+### Render Static Content
+
+Create a static editor in the Server Component and render it with
+`<PlateStatic>`.
+
+```tsx title="app/documents/page.tsx" showLineNumbers
+import type { Value } from 'platejs';
+import { createStaticEditor, PlateStatic } from 'platejs/static';
+
+import { BaseEditorKit } from '@/components/editor/editor-base-kit';
+
+const value: Value = [
+  {
+    children: [{ text: 'Server-rendered document' }],
+    type: 'h1',
+  },
+  {
+    children: [{ text: 'This content is rendered without editor state.' }],
+    type: 'p',
+  },
+];
+
+export default function DocumentsPage() {
+  const editor = createStaticEditor({
+    plugins: BaseEditorKit,
+    value,
+  });
+
+  return <PlateStatic editor={editor} />;
+}
+```
+
+### Serialize HTML
+
+Use `serializeHtml` when a route needs an HTML string instead of React output.
+
+```tsx title="app/api/document-html/route.ts" showLineNumbers
+import type { Value } from 'platejs';
+import { createStaticEditor, serializeHtml } from 'platejs/static';
+
+import { BaseEditorKit } from '@/components/editor/editor-base-kit';
+import { EditorStatic } from '@/components/ui/editor-static';
+
+const value: Value = [
+  {
+    children: [{ text: 'Exported document' }],
+    type: 'h1',
+  },
+  {
+    children: [{ text: 'This HTML is generated on the server.' }],
+    type: 'p',
+  },
+];
+
+export async function GET() {
+  const editor = createStaticEditor({
+    plugins: BaseEditorKit,
+    value,
+  });
+
+  const html = await serializeHtml(editor, {
+    editorComponent: EditorStatic,
+  });
+
+  return new Response(html, {
+    headers: { 'content-type': 'text/html; charset=utf-8' },
+  });
+}
+```
+
+### Use Base Packages Without Plate UI
+
+If you only need data transforms or Markdown IO, use the Node.js path instead
+of static React rendering.
+
+```bash
+npm install platejs @platejs/basic-nodes @platejs/markdown
+```
+
+That path uses `createSlateEditor` from `platejs` and does not need copied UI
+components.
+
+</Steps>
+
+## Runtime Boundaries
+
+| Runtime | Import from | Use for |
+| --- | --- | --- |
+| Server Component | `platejs/static` | Read-only React output with `<PlateStatic>`. |
+| Route handler | `platejs/static` | HTML export with `serializeHtml`. |
+| Node script | `platejs`, `@platejs/*` | Validation, migration, Markdown IO. |
+| Client editor | `platejs/react`, `@platejs/*/react` | Editable UI, hooks, toolbar interactions. |
+
+<Callout type="info">
+  `createStaticEditor` includes the static `ViewPlugin` before your plugins.
+  Use it for rendered output. Use `createSlateEditor` when the script only
+  reads or transforms a value.
+</Callout>
+
+## Next Steps
+
+| Task | Guide |
+| --- | --- |
+| Learn the static renderer. | [Static Rendering](/docs/static) |
+| Generate HTML. | [HTML](/docs/html) |
+| Read or write Markdown. | [Markdown](/docs/markdown) |
+| Transform content without React. | [Node.js](/docs/installation/node) |
+
+Done. Your Server Component can render Plate content without shipping the
+interactive editor runtime.

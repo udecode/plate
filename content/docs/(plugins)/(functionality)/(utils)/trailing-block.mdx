@@ -1,0 +1,148 @@
+---
+title: Trailing Block
+description: Keep a required block at the end of an editor or nested level.
+docs:
+  - route: /docs/single-block
+    title: Single Block
+  - route: /docs/forced-layout
+    title: Forced Layout
+---
+
+Trailing Block inserts a required block when the last node at a target level is missing or has the wrong type. `EditorKit` includes `TrailingBlockPlugin` so full Plate editors always end with a paragraph. Single-block and single-line editors disable it because they intentionally keep one root block.
+
+<PackageInfo>
+
+## Features
+
+- Default trailing type from the editor paragraph plugin.
+- Empty-editor protection.
+- Root or nested target level.
+- `allow`, `exclude`, `filter`, and `maxLevel` query filters.
+- Custom insertion wrapper through `options.insert`.
+- Built into `EditorKit`.
+
+</PackageInfo>
+
+## Fast Path
+
+Add `TrailingBlockPlugin` when users need a safe place to continue typing after blocks such as headings, tables, media, or columns.
+
+```tsx
+import { TrailingBlockPlugin } from 'platejs';
+import { createPlateEditor } from 'platejs/react';
+
+export const editor = createPlateEditor({
+  plugins: [TrailingBlockPlugin],
+});
+```
+
+`TrailingBlockPlugin` defaults to the editor's paragraph type.
+
+## Ownership
+
+| Layer | Owner | What It Does |
+|-------|-------|--------------|
+| `TrailingBlockPlugin` | `platejs` / `@platejs/utils` | Stores trailing block options and overrides normalization. |
+| `withTrailingBlock` | `@platejs/utils` | Checks the last node and inserts the trailing block when needed. |
+| `editor.api.last([], { level })` | Core editor API | Finds the last node at the configured depth. |
+| `queryNode(lastChild, query)` | `@platejs/slate` | Applies `allow`, `exclude`, `filter`, and `maxLevel`. |
+| `EditorKit` | Registry | Adds `TrailingBlockPlugin` after editing plugins. |
+| `SuggestionKit` | Registry | Wraps trailing block insertion in `suggestion.withoutSuggestions`. |
+
+There is no dedicated trailing-block UI. The plugin is a normalizer.
+
+## Configure The Type
+
+Use `type` when the trailing block should be something other than the default paragraph.
+
+```tsx
+import { KEYS, TrailingBlockPlugin } from 'platejs';
+
+export const trailingBlockPlugin = TrailingBlockPlugin.configure({
+  options: {
+    type: KEYS.p,
+  },
+});
+```
+
+The default is already `editor.getType(KEYS.p)`, so most editors can use the plugin directly.
+
+## Query Filters
+
+The plugin inserts only when there is no last node, or when the last node type differs from `type` and passes the query filters.
+
+```tsx
+import { KEYS, TrailingBlockPlugin } from 'platejs';
+
+export const trailingBlockPlugin = TrailingBlockPlugin.configure({
+  options: {
+    exclude: [KEYS.h1],
+    type: KEYS.p,
+  },
+});
+```
+
+With that configuration, a trailing paragraph is not inserted after an H1. Use `allow` for the inverse rule, `filter` for a custom node-entry predicate, and `maxLevel` to limit which paths pass the query.
+
+## Nested Level
+
+`level` changes where the plugin looks for the last node.
+
+| `level` | Target |
+|---------|--------|
+| `0` | Last root block. |
+| `1` | Last child inside the last root-level container. |
+
+```tsx
+TrailingBlockPlugin.configure({
+  options: {
+    level: 1,
+    type: 'p',
+  },
+});
+```
+
+Use nested levels when a constrained container must always end with a text block.
+
+## Custom Insert
+
+`options.insert` lets another plugin wrap the generated insertion. The registry suggestion kit uses it so normalization-generated paragraphs do not create suggestion marks.
+
+```tsx
+import { SuggestionPlugin } from '@platejs/suggestion/react';
+import { TrailingBlockPlugin } from 'platejs';
+
+TrailingBlockPlugin.configure({
+  options: {
+    insert: (editor, { insert }) => {
+      editor.getApi(SuggestionPlugin).suggestion.withoutSuggestions(insert);
+    },
+  },
+});
+```
+
+The callback receives the editor, insertion path, target type, and an `insert()` function. Call `insert()` exactly once unless you are intentionally replacing the default insertion.
+
+## Behavior
+
+| Case | Result |
+|------|--------|
+| Empty editor | Inserts a block at `[0]`. |
+| Last node already matches `type` | Falls through to the base `normalizeNode`. |
+| Last node has another type and passes query filters | Inserts the trailing block at `PathApi.next(lastChildPath)`. |
+| Last node is excluded by query filters | Does not insert. |
+
+The inserted node comes from `editor.api.create.block({ type: trailingType }, at)`.
+
+## API Reference
+
+| API | Package | Use |
+|-----|---------|-----|
+| `TrailingBlockPlugin` | `platejs` / `@platejs/utils` | Normalizer that ensures a trailing block exists. |
+| `TrailingBlockConfig.options.type` | `@platejs/utils` | Block type to insert. Defaults to the editor paragraph type. |
+| `TrailingBlockConfig.options.level` | `@platejs/utils` | Depth used by `editor.api.last`. Defaults to `0`. |
+| `TrailingBlockConfig.options.insert` | `@platejs/utils` | Custom wrapper around the generated insertion. |
+| `TrailingBlockConfig.options.allow` | `@platejs/slate` query | Only insert after matching types. |
+| `TrailingBlockConfig.options.exclude` | `@platejs/slate` query | Skip insertion after matching types. |
+| `TrailingBlockConfig.options.filter` | `@platejs/slate` query | Custom predicate for the last node entry. |
+| `TrailingBlockConfig.options.maxLevel` | `@platejs/slate` query | Skip entries deeper than this path length. |

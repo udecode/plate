@@ -1,6 +1,5 @@
 'use client';
 
-import { memo } from 'react';
 import ReactMarkdown from 'react-markdown';
 
 import remarkGfm from 'remark-gfm';
@@ -14,14 +13,7 @@ import { CodeBlock } from './ui/codeblock';
 const LANGUAGE_REGEX = /language-(\w+)/;
 const TRAILING_NEWLINE_REGEX = /\n$/;
 
-export const Markdown = memo(
-  PureMarkdown,
-  (prevProps, nextProps) =>
-    prevProps.children === nextProps.children &&
-    prevProps.className === nextProps.className
-);
-
-function PureMarkdown({
+export function Markdown({
   children,
   className,
 }: {
@@ -44,11 +36,12 @@ function PureMarkdown({
           ),
           code({ children, className, node, ...props }) {
             const match = LANGUAGE_REGEX.exec(className || '');
+            const value = String(children).replace(TRAILING_NEWLINE_REGEX, '');
 
             return match ? (
               <CodeBlock
-                key={Math.random()}
-                value={String(children).replace(TRAILING_NEWLINE_REGEX, '')}
+                key={`${match[1]}:${value}`}
+                value={value}
                 language={match?.[1] || ''}
                 {...props}
               />

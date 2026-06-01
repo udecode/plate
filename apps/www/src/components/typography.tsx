@@ -4,6 +4,7 @@ import type { Event } from '@/lib/events';
 import type { NpmCommands } from '@/types/unist';
 
 import { CodeBlockCommand } from '@/components/code-block-command';
+import { getNpmCommands } from '@/lib/npm-command';
 import { cn } from '@/lib/utils';
 
 import { CopyButton } from './copy-button';
@@ -213,42 +214,86 @@ export const Pre = ({
   __npmCommand__,
   __pnpmCommand__,
   __rawString__,
+  __showLineNumbers__,
   __src__,
   __withMeta__,
+  __yarnCommand__,
   className,
   ...props
 }: {
   __event__?: Event['name'];
   __rawString__?: string;
+  __showLineNumbers__?: boolean;
   __src__?: string;
   __withMeta__?: boolean;
 } & NpmCommands &
   React.HTMLAttributes<HTMLPreElement>) => {
-  const isNpmCommand = __npmCommand__ && __pnpmCommand__ && __bunCommand__;
+  const rawCommands = getNpmCommands(__rawString__);
+  const npmCommands = {
+    __bunCommand__: __bunCommand__ ?? rawCommands?.__bunCommand__,
+    __npmCommand__: __npmCommand__ ?? rawCommands?.__npmCommand__,
+    __pnpmCommand__: __pnpmCommand__ ?? rawCommands?.__pnpmCommand__,
+    __yarnCommand__: __yarnCommand__ ?? rawCommands?.__yarnCommand__,
+  };
+  const isNpmCommand =
+    npmCommands.__npmCommand__ &&
+    npmCommands.__pnpmCommand__ &&
+    npmCommands.__yarnCommand__ &&
+    npmCommands.__bunCommand__;
+
   if (isNpmCommand) {
+    const dataProps = props as React.HTMLAttributes<HTMLPreElement> & {
+      'data-language'?: string;
+      'data-theme'?: string;
+    };
+
     return (
       <CodeBlockCommand
-        __bunCommand__={__bunCommand__}
-        __npmCommand__={__npmCommand__}
-        __pnpmCommand__={__pnpmCommand__}
+        className={className}
+        data-language={dataProps['data-language']}
+        data-theme={dataProps['data-theme']}
+        __bunCommand__={npmCommands.__bunCommand__}
+        __npmCommand__={npmCommands.__npmCommand__}
+        __pnpmCommand__={npmCommands.__pnpmCommand__}
+        __yarnCommand__={npmCommands.__yarnCommand__}
       />
     );
   }
 
+  const showLineNumbers =
+    __showLineNumbers__ ?? Boolean(__rawString__?.includes('\n'));
+  const children = showLineNumbers
+    ? React.Children.map(props.children, (child) => {
+        if (!React.isValidElement(child) || child.type !== 'code') {
+          return child;
+        }
+
+        return React.cloneElement(
+          child as React.ReactElement<React.HTMLAttributes<HTMLElement>>,
+          { 'data-line-numbers': '' } as React.HTMLAttributes<HTMLElement> &
+            Record<'data-line-numbers', string>
+        );
+      })
+    : props.children;
+
   return (
     <pre
       className={cn(
-        'relative mt-6 mb-4 max-h-[650px] overflow-x-auto rounded-xl bg-zinc-950 py-4 text-white dark:bg-zinc-900 *:[code]:bg-inherit',
+        'max-h-[650px] overflow-x-auto bg-code py-4 text-code-foreground *:[code]:bg-inherit',
+        __withMeta__ ? 'mb-0 rounded-none' : 'relative mt-6 mb-4 rounded-lg',
         className
       )}
       {...props}
     >
-      {props.children}
+      {children}
 
       {__rawString__ && (
         <CopyButton
-          variant="default"
-          className={cn('absolute top-4 right-4')}
+          data-slot="copy-button"
+          variant="ghost"
+          className={cn(
+            'absolute top-3 right-2 size-7 bg-code text-code-foreground opacity-70 hover:bg-muted-foreground/15 hover:text-code-foreground hover:opacity-100 focus-visible:opacity-100'
+          )}
           value={__rawString__}
           event={__event__}
           src={__src__}

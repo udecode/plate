@@ -1,0 +1,263 @@
+---
+title: Plugin Shortcuts
+description: Configure keyboard shortcuts on Plate plugins.
+---
+
+Plugin shortcuts map key combinations to plugin methods or explicit handlers. Plate resolves shortcuts during plugin setup, stores them on `editor.meta.shortcuts`, and renders them through `EditorHotkeysEffect` inside the editable. This guide covers linked methods, custom handlers, overrides, priorities, and default shortcut ownership.
+
+## How Shortcuts Resolve
+
+Each plugin owns a `shortcuts` object. At resolution time Plate namespaces every shortcut as `${plugin.key}.${shortcutName}`.
+
+When a shortcut has no `handler`, Plate looks for a matching plugin-specific method in this order:
+
+1. `editor.tf[plugin.key][shortcutName]`
+2. `editor.api[plugin.key][shortcutName]`
+
+If neither method exists and no `handler` is provided, the shortcut is ignored by `EditorHotkeysEffect`.
+
+| Field | Meaning |
+| --- | --- |
+| `keys` | Key combination passed to `useHotkeys`. Use a string like `'mod+b'` or arrays like `[[Key.Mod, 'b']]`. |
+| `handler` | Explicit callback receiving `{ editor, event, eventDetails }`. |
+| `priority` | Shortcut priority. Defaults to the parent plugin priority. |
+| `preventDefault` | Passed through to `useHotkeys`. When omitted, Plate calls `event.preventDefault()` and `event.stopPropagation()` after handled shortcuts. |
+| `null` | Removes that named shortcut from the plugin. |
+
+## Linked Transform Shortcuts
+
+Use a linked transform when the shortcut name and plugin transform name are the same.
+
+```tsx title="plugins/signature-plugin.tsx" showLineNumbers
+import { Key, createPlatePlugin } from 'platejs/react';
+
+export const SignaturePlugin = createPlatePlugin({
+  key: 'signature',
+})
+  .extendTransforms(({ editor }) => ({
+    insertSignature: () => {
+      editor.tf.insertText(' - Plate');
+    },
+  }))
+  .extend({
+    shortcuts: {
+      insertSignature: {
+        keys: [[Key.Mod, Key.Shift, 's']],
+      },
+    },
+  });
+```
+
+Pressing `Mod+Shift+S` calls `editor.tf.signature.insertSignature()`.
+
+## Linked API Shortcuts
+
+If there is no matching transform, Plate falls back to the plugin-specific API method.
+
+```tsx title="plugins/inspect-plugin.tsx" showLineNumbers
+import { Key, createPlatePlugin } from 'platejs/react';
+
+export const InspectPlugin = createPlatePlugin({
+  key: 'inspect',
+})
+  .extendApi(({ editor }) => ({
+    logText: () => {
+      editor.api.debug.info('Editor text', editor.api.string([]));
+    },
+  }))
+  .extend({
+    shortcuts: {
+      logText: {
+        keys: [[Key.Mod, Key.Alt, 'l']],
+      },
+    },
+  });
+```
+
+Pressing `Mod+Alt+L` calls `editor.api.inspect.logText()`.
+
+<Callout type="info" title="Transforms win">
+  If a transform and an API method share the same shortcut name, Plate uses the
+  transform. Pick distinct names when you need both actions.
+</Callout>
+
+## Custom Handlers
+
+Use a `handler` when the shortcut needs the keyboard event, custom branching, or work that should not live as a plugin API/transform method.
+
+```tsx title="plugins/draft-plugin.tsx" showLineNumbers
+import { Key, createPlatePlugin } from 'platejs/react';
+
+export const DraftPlugin = createPlatePlugin({
+  key: 'draft',
+}).extend({
+  shortcuts: {
+    saveDraft: {
+      keys: [[Key.Mod, 's']],
+      handler: ({ editor }) => {
+        const text = editor.api.string([]);
+
+        if (text.trim().length === 0) return false;
+
+        editor.api.debug.info('Draft text', text);
+
+        return true;
+      },
+    },
+  },
+});
+```
+
+Returning `false` means "not handled"; Plate will not call `preventDefault()` for that key press. Returning `true` or `undefined` means handled when `preventDefault` is omitted.
+
+## Prevent Default
+
+Plate has two layers of default-prevention behavior:
+
+| Configuration | Behavior |
+| --- | --- |
+| `preventDefault` omitted and handler returns anything except `false` | Plate calls `event.preventDefault()` and `event.stopPropagation()`. |
+| Handler returns `false` | Plate leaves the event alone. |
+| `preventDefault` is set | Plate passes the option to `useHotkeys` and skips its own `preventDefault()` call. |
+
+Use the default omission for normal editor commands. Set `preventDefault` only when you intentionally want `useHotkeys` to own that behavior.
+
+## Configure Existing Shortcuts
+
+Configure a named shortcut to change its keys.
+
+```tsx title="plugins/basic-marks.tsx" showLineNumbers
+import { BoldPlugin } from '@platejs/basic-nodes/react';
+import { Key } from 'platejs/react';
+
+export const AppBoldPlugin = BoldPlugin.configure({
+  shortcuts: {
+    toggle: {
+      keys: [[Key.Mod, Key.Shift, 'b']],
+    },
+  },
+});
+```
+
+Set a shortcut to `null` to remove it.
+
+```tsx title="plugins/basic-marks.tsx" showLineNumbers
+import { ItalicPlugin } from '@platejs/basic-nodes/react';
+
+export const AppItalicPlugin = ItalicPlugin.configure({
+  shortcuts: {
+    toggle: null,
+  },
+});
+```
+
+The `null` value removes `italic.toggle` from `editor.meta.shortcuts`.
+
+## Multiple Shortcuts
+
+A plugin can declare multiple shortcut names. Keep each name aligned with the method it should call.
+
+```tsx title="plugins/review-plugin.tsx" showLineNumbers
+import { Key, createPlatePlugin } from 'platejs/react';
+
+export const ReviewPlugin = createPlatePlugin({
+  key: 'review',
+})
+  .extendTransforms(({ editor }) => ({
+    accept: () => editor.tf.insertText('Accepted'),
+    reject: () => editor.tf.insertText('Rejected'),
+  }))
+  .extend({
+    shortcuts: {
+      accept: {
+        keys: [[Key.Mod, Key.Alt, 'a']],
+      },
+      reject: {
+        keys: [[Key.Mod, Key.Alt, 'r']],
+      },
+    },
+  });
+```
+
+This creates `review.accept` and `review.reject` in `editor.meta.shortcuts`.
+
+## Priority
+
+Shortcut priority defaults to the parent plugin priority. Set `priority` on a shortcut when two handlers use the same key combination and one should win.
+
+```tsx title="plugins/priority-plugin.tsx" showLineNumbers
+import { createPlatePlugin } from 'platejs/react';
+
+export const PriorityPlugin = createPlatePlugin({
+  key: 'priority',
+  priority: 20,
+}).extend({
+  shortcuts: {
+    openCommandMenu: {
+      keys: 'mod+k',
+      priority: 200,
+      handler: ({ editor }) => {
+        editor.api.debug.info('Open command menu');
+
+        return true;
+      },
+    },
+  },
+});
+```
+
+Plate stores the resolved priority with the shortcut and passes it to `useHotkeys`.
+
+## Editor-Level Shortcuts
+
+`createPlateEditor({ shortcuts })` attaches shortcuts to the root plugin. Use it for editor-wide commands that do not belong to one feature plugin.
+
+```tsx title="editor.ts" showLineNumbers
+import { createPlateEditor } from 'platejs/react';
+
+export const editor = createPlateEditor({
+  shortcuts: {
+    reportWordCount: {
+      keys: 'mod+shift+w',
+      handler: ({ editor }) => {
+        const words = editor.api.string([]).trim().split(/\s+/).filter(Boolean);
+
+        editor.api.debug.info('Word count', words.length);
+
+        return true;
+      },
+    },
+  },
+});
+```
+
+Internally this becomes a root shortcut, so plugin-owned shortcuts are still the better fit for feature-owned behavior.
+
+## Default Shortcuts
+
+| Plugin | Shortcut name | Keys |
+| --- | --- | --- |
+| `BoldPlugin` | `toggle` | `Mod+B` |
+| `ItalicPlugin` | `toggle` | `Mod+I` |
+| `UnderlinePlugin` | `toggle` | `Mod+U` |
+| `ParagraphPlugin` | `toggleParagraph` | `Mod+Alt+0`, `Mod+Shift+0` |
+| `CopilotPlugin` | `accept` | `Tab` |
+| `CopilotPlugin` | `reject` | `Escape` |
+
+Other plugins often expose `toggle`, `insert`, or feature-specific transforms without default keys. Add shortcuts in your app when those commands should be keyboard-accessible.
+
+## API Reference
+
+```ts title="Shortcut type"
+type Shortcut = HotkeysOptions & {
+  keys?: Keys | null;
+  priority?: number;
+  handler?: (ctx: {
+    editor: PlateEditor;
+    event: KeyboardEvent;
+    eventDetails: HotkeysEvent;
+  }) => boolean | void;
+};
+```
+
+Done. Name shortcuts after plugin-specific transforms or API methods by default, and use handlers only when the keyboard event is part of the behavior.

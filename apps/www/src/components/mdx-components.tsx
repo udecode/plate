@@ -1,19 +1,20 @@
-'use client';
-
 import * as React from 'react';
 import type { HTMLAttributes, ReactNode } from 'react';
 
-import { cva } from 'class-variance-authority';
-import { Provider } from 'jotai';
-import { CircleCheck, CircleX, Info, TriangleAlert } from 'lucide-react';
 import dynamic from 'next/dynamic';
-import { useMDXComponent } from 'next-contentlayer2/hooks';
 import Image from 'next/image';
 
 import { Card, Cards } from '@/components/cards';
 import { CodeTabs } from '@/components/code-tabs';
 import { ComponentInstallation } from '@/components/component-installation';
-import { packageInfoAtom } from '@/hooks/use-package-info';
+import { File, Files, Folder } from '@/components/docs-files';
+import { TypeTable } from '@/components/docs-type-table';
+import {
+  type CalloutType,
+  type CalloutVariant,
+  getCalloutVariant,
+  getCalloutVariantClassName,
+} from '@/lib/callout-variants';
 import { cn } from '@/lib/utils';
 
 import {
@@ -39,7 +40,6 @@ import { ComponentExample } from './component-example';
 import { ComponentPreview } from './component-preview';
 import { ComponentPreviewPro } from './component-preview-pro';
 import { ComponentSource } from './component-source';
-import { HydrateAtoms } from './context/hydrate-atoms';
 import { FrameworkDocs } from './framework-docs';
 import { Link } from './link';
 import { PackageInfo } from './package-info';
@@ -47,11 +47,12 @@ import * as Typography from './typography';
 import {
   AccordionContent,
   AccordionItem,
-  Accordion as AccordionPrimitive,
+  Accordion as AccordionRoot,
   AccordionTrigger,
 } from './ui/accordion';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
 import { AspectRatio } from './ui/aspect-ratio';
+import { Button } from './ui/button';
 import {
   Table,
   TableBody,
@@ -66,7 +67,7 @@ const ReleaseIndex = dynamic(() =>
   import('./release-index').then((module) => module.ReleaseIndex)
 );
 
-const components = {
+export const mdxComponents = {
   a: Link,
   Accordion,
   AccordionContent,
@@ -94,6 +95,7 @@ const components = {
   BadgeList,
   BadgePopover,
   blockquote: Typography.Blockquote,
+  Button,
   Callout,
   Card,
   Cards,
@@ -104,6 +106,9 @@ const components = {
   ComponentPreview,
   ComponentPreviewPro,
   ComponentSource,
+  File,
+  Files,
+  Folder,
   h1: Typography.H1,
   h2: Typography.H2,
   h3: Typography.H3,
@@ -125,6 +130,7 @@ const components = {
   td: Typography.TD,
   th: Typography.TH,
   tr: Typography.TR,
+  TypeTable,
   ul: Typography.UL,
   CodeBlockWrapper: ({ ...props }) => (
     <CodeBlockWrapper className="rounded-md border" {...props} />
@@ -169,7 +175,7 @@ const components = {
   LinkedCard: ({ className, ...props }: React.ComponentProps<typeof Link>) => (
     <Link
       className={cn(
-        'flex h-auto w-full flex-col items-center rounded-xl border bg-card p-6 text-card-foreground shadow-sm transition-colors *:shrink-0 hover:bg-muted/50 sm:p-10',
+        'flex w-full flex-col items-center rounded-xl bg-surface p-6 text-surface-foreground transition-colors hover:bg-surface/80 sm:p-10',
         className
       )}
       {...props}
@@ -216,37 +222,13 @@ const components = {
   ),
 };
 
-// Type names that may appear as MDX expressions in API docs - provide as scope to avoid "X is not defined"
-
-export function Mdx({
-  code,
-  packageInfo,
-}: {
-  code: string;
-  packageInfo?: {
-    gzip: string | null;
-  };
-}) {
-  const Component = useMDXComponent(code);
-
-  return (
-    <div className="typography">
-      <Provider>
-        <HydrateAtoms initialValues={[[packageInfoAtom, packageInfo]]}>
-          {/* eslint-disable-next-line react-hooks/static-components -- useMDXComponent is designed to return dynamic MDX components */}
-          <Component components={components as any} />
-        </HydrateAtoms>
-      </Provider>
-    </div>
-  );
-}
-
 // Fumadocs
 function Accordions({
   children,
-  disabled = false,
-  orientation = 'vertical',
-  type = 'single',
+  className,
+  disabled: _disabled = false,
+  orientation: _orientation = 'vertical',
+  type: _type = 'single',
   ...props
 }: {
   children: ReactNode;
@@ -257,14 +239,9 @@ function Accordions({
   type?: 'multiple' | 'single';
 }) {
   return (
-    <AccordionPrimitive
-      orientation={orientation}
-      disabled={disabled}
-      type={type}
-      {...props}
-    >
+    <div className={cn('flex flex-col gap-2', className)} {...props}>
       {children}
-    </AccordionPrimitive>
+    </div>
   );
 }
 
@@ -284,79 +261,46 @@ function Accordion({
   value?: string;
 }) {
   return (
-    <AccordionItem value={value ?? title} {...props}>
-      <AccordionTrigger disabled={disabled}>{title}</AccordionTrigger>
-      <AccordionContent>{children}</AccordionContent>
-    </AccordionItem>
+    <AccordionRoot type="single" collapsible>
+      <AccordionItem value={value ?? title} {...props}>
+        <AccordionTrigger disabled={disabled}>{title}</AccordionTrigger>
+        <AccordionContent>{children}</AccordionContent>
+      </AccordionItem>
+    </AccordionRoot>
   );
 }
 
-const calloutVariants = cva(
-  cn(
-    'my-4 flex gap-2 rounded-lg border border-s-2 bg-neutral-50 p-3 text-sm shadow-md first:mt-0 dark:bg-neutral-900',
-    '**:[[data-slot="mdx-link"]]:hover:after:bottom-0'
-  ),
-  {
-    variants: {
-      type: {
-        error: 'border-s-red-500/50',
-        info: 'border-s-blue-500/50',
-        success: 'border-s-green-500/50',
-        warn: 'border-s-orange-500/50',
-      },
-    },
-  }
-);
-
-// Fumadocs
 function Callout({
   children,
   className,
   icon,
   title,
-  type = 'info',
+  type,
+  variant = 'default',
   ...props
 }: Omit<HTMLAttributes<HTMLDivElement>, 'icon' | 'title' | 'type'> & {
-  /** Force an icon */
   icon?: ReactNode;
   title?: ReactNode;
-  /** @defaultValue info */
-  type?:
-    | 'destructive'
-    | 'error'
-    | 'info'
-    | 'note'
-    | 'success'
-    | 'warn'
-    | 'warning';
+  type?: CalloutType;
+  variant?: CalloutVariant;
 }) {
-  if (type === 'warning') type = 'warn';
-  if (type === 'note') type = 'info';
-  if (type === 'destructive') type = 'error';
+  const resolvedVariant = getCalloutVariant({ type, variant });
 
   return (
-    <div
+    <Alert
+      data-variant={resolvedVariant}
       className={cn(
-        calloutVariants({
-          type,
-        }),
+        'md:-mx-1 mt-6 w-auto rounded-xl border-surface bg-surface text-surface-foreground **:[code]:border',
+        getCalloutVariantClassName(resolvedVariant),
         className
       )}
       {...props}
     >
-      {icon ??
-        {
-          error: <CircleX className="size-5 text-red-500" />,
-          info: <Info className="size-5 text-blue-500" />,
-          success: <CircleCheck className="size-5 text-green-500" />,
-          warn: <TriangleAlert className="size-5 text-orange-500" />,
-        }[type]}
-      <div className="flex min-w-0 flex-1 flex-col gap-2">
-        {title ? <p className="!my-0 font-medium">{title}</p> : null}
-        <div className="prose-no-margin text-neutral-600 **:leading-[calc(1.25/.875)] empty:hidden dark:text-neutral-400">
-          {children}
-        </div>
-      </div>
-    </div>
+      {icon}
+      {title && <AlertTitle>{title}</AlertTitle>}
+      <AlertDescription className="text-card-foreground/80">
+        {children}
+      </AlertDescription>
+    </Alert>
   );
 }

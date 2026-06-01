@@ -69,7 +69,7 @@ Handle $ARGUMENTS. Use this for architectural, comparative, benchmark, migration
    from the major primary template plus packs:
 
    ```bash
-   node .agents/rules/autogoal/scripts/create-goal-scratchpad.mjs \
+   node .agents/skills/autogoal/scripts/create-goal-scratchpad.mjs \
      --template major-task \
      --title "<short major task title>"
    ```

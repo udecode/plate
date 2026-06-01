@@ -1,0 +1,133 @@
+---
+title: Underline
+description: Add underlined inline text.
+docs:
+  - route: /docs/basic-marks
+    title: Basic Marks
+  - route: /docs/components/mark-toolbar-button
+    title: Mark Toolbar Button
+  - route: /docs/plugin-shortcuts
+    title: Plugin Shortcuts
+---
+
+Underline applies the `underline` leaf mark to selected text. `UnderlinePlugin` owns the mark key, shortcut, HTML parsing, render tag, and toggle transform.
+
+<ComponentPreview name="basic-marks-demo" />
+
+<PackageInfo>
+
+## Features
+
+- `KEYS.underline` leaf mark.
+- Default `⌘U` / `Ctrl+U` shortcut.
+- HTML deserialization from `u` and underline text decoration.
+- `<u>` rendering by default.
+- Optional Markdown-style input rule through `UnderlineRules`.
+- Toolbar support through `MarkToolbarButton`.
+
+</PackageInfo>
+
+## Kit Usage
+
+<Steps>
+
+### Add Basic Marks
+
+`BasicMarksKit` includes `UnderlinePlugin`, the underscore input rule, and the standard toolbar buttons that use `KEYS.underline`.
+
+<ComponentSource name="basic-marks-kit" />
+
+```tsx
+import { createPlateEditor } from 'platejs/react';
+
+import { BasicMarksKit } from '@/components/editor/plugins/basic-marks-kit';
+
+export const editor = createPlateEditor({
+  plugins: [...BasicMarksKit],
+});
+```
+
+### Add A Toolbar Button
+
+Use `MarkToolbarButton` with `KEYS.underline`.
+
+```tsx
+import { UnderlineIcon } from 'lucide-react';
+import { KEYS } from 'platejs';
+
+import { MarkToolbarButton } from '@/components/ui/mark-toolbar-button';
+
+export function UnderlineToolbarButton() {
+  return (
+    <MarkToolbarButton nodeType={KEYS.underline} tooltip="Underline (⌘+U)">
+      <UnderlineIcon />
+    </MarkToolbarButton>
+  );
+}
+```
+
+</Steps>
+
+## Manual Usage
+
+Install the mark package.
+
+```bash
+npm install @platejs/basic-nodes
+```
+
+Add `UnderlinePlugin` directly when you do not want the whole kit.
+
+```tsx
+import { UnderlinePlugin } from '@platejs/basic-nodes/react';
+import { createPlateEditor } from 'platejs/react';
+
+export const editor = createPlateEditor({
+  plugins: [UnderlinePlugin],
+});
+```
+
+Register the Markdown-style input rule when users should type underline delimiters.
+
+```tsx
+import { UnderlineRules } from '@platejs/basic-nodes';
+import { UnderlinePlugin } from '@platejs/basic-nodes/react';
+
+export const underlinePlugin = UnderlinePlugin.configure({
+  inputRules: [UnderlineRules.markdown()],
+});
+```
+
+## Ownership
+
+| Surface | Owner | What It Does |
+|---------|-------|--------------|
+| `BaseUnderlinePlugin` | `@platejs/basic-nodes` | Headless underline mark, HTML parser, render tag, and `toggle` transform. |
+| `UnderlinePlugin` | `@platejs/basic-nodes/react` | React wrapper with default `mod+u` shortcut. |
+| `UnderlineRules.markdown` | `@platejs/basic-nodes` | Optional mark input rule factory. |
+| `BasicMarksKit` | Registry | Adds `UnderlinePlugin` with the underscore input rule. |
+| `MarkToolbarButton` | Registry UI | Reads active mark state and calls the mark toggle hook. |
+
+The package owns the mark. The registry owns toolbar placement and icon choice.
+
+## Behavior
+
+| Behavior | Source |
+|----------|--------|
+| Mark key | `KEYS.underline` |
+| Leaf behavior | `node.isLeaf: true` |
+| Toggle transform | `editor.tf.underline.toggle()` calls `editor.tf.toggleMark(type)`. |
+| Shortcut | `UnderlinePlugin` registers `mod+u`. |
+| HTML tags | `u` |
+| HTML styles | `text-decoration: underline` |
+| HTML guard | Ignores descendants where `textDecoration` is `none`. |
+| Render output | `u` |
+
+## API Reference
+
+| API | Package | Use |
+|-----|---------|-----|
+| `BaseUnderlinePlugin` | `@platejs/basic-nodes` | Headless underline plugin. |
+| `UnderlinePlugin` | `@platejs/basic-nodes/react` | React underline plugin with shortcut defaults. |
+| `UnderlineRules.markdown()` | `@platejs/basic-nodes` | Creates the underline mark input rule. |
+| `tf.underline.toggle()` | `@platejs/basic-nodes` | Toggles the underline mark at the selection. |

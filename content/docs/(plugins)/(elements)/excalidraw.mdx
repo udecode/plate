@@ -1,0 +1,187 @@
+---
+title: Excalidraw
+description: Void Excalidraw drawing blocks stored inside Plate values.
+docs:
+  - route: /docs/components/excalidraw-node
+    title: Excalidraw Element
+---
+
+Excalidraw adds a void `excalidraw` element that embeds the Excalidraw canvas in the editor. The node stores Excalidraw `elements` and `state` under `data`. This page covers kit setup, insertion, persistence shape, and the client-only registry UI.
+
+<ComponentPreview name="excalidraw-demo" />
+
+<PackageInfo>
+
+## Features
+
+- Void `excalidraw` block element.
+- Direct `insertExcalidraw(editor, props, options)` helper.
+- Excalidraw `elements` and app `state` stored on the node.
+- Dynamic Excalidraw component loading in the React hook.
+- Change deduplication before writing canvas data back to Slate.
+- Read-only mode through Excalidraw `viewModeEnabled`.
+
+</PackageInfo>
+
+## Fast Path
+
+<Steps>
+
+### Add The Kit
+
+`ExcalidrawKit` installs `ExcalidrawPlugin` with the registry `ExcalidrawElement`.
+
+<ComponentSource name="excalidraw-kit" />
+
+```tsx
+import { createPlateEditor } from 'platejs/react';
+
+import { ExcalidrawKit } from '@/components/editor/plugins/excalidraw-kit';
+
+export const editor = createPlateEditor({
+  plugins: ExcalidrawKit,
+});
+```
+
+### Render The Element
+
+`excalidraw-node` owns the client component, Excalidraw CSS import, fixed canvas frame, and read-only view mode.
+
+<ComponentSource name="excalidraw-node" />
+
+### Add An Insert Action
+
+The registry insert toolbar maps `KEYS.excalidraw` to `insertExcalidraw(editor, {}, { select: true })`.
+
+```tsx title="components/editor/transforms.ts"
+import { insertExcalidraw } from '@platejs/excalidraw';
+import { KEYS } from 'platejs';
+
+export const insertBlockMap = {
+  [KEYS.excalidraw]: (editor) =>
+    insertExcalidraw(editor, {}, { select: true }),
+};
+```
+
+</Steps>
+
+## Ownership
+
+| Layer | Owner | What It Does |
+|-------|-------|--------------|
+| `@platejs/excalidraw` | Package | Exports `BaseExcalidrawPlugin`, `TExcalidrawElement`, `ExcalidrawDataState`, and `insertExcalidraw`. |
+| `@platejs/excalidraw/react` | Package | Exports `ExcalidrawPlugin`, `useExcalidrawElement`, and React Excalidraw prop types. |
+| `excalidraw-kit` | Registry | Adds `ExcalidrawPlugin.withComponent(ExcalidrawElement)`. |
+| `excalidraw-node` | Registry UI | Dynamically renders `@excalidraw/excalidraw` inside a Plate element. |
+| App persistence | App code | Stores the Plate value that contains Excalidraw element data. |
+
+`ExcalidrawPlugin` does not bind an `editor.tf.insert.excalidraw` transform. Use `insertExcalidraw` directly.
+
+## Manual Setup
+
+<Steps>
+
+### Install Package
+
+```bash
+npm install @platejs/excalidraw
+```
+
+### Add The Plugin
+
+Use the React plugin when the editor renders the Excalidraw canvas.
+
+```tsx
+import { ExcalidrawPlugin } from '@platejs/excalidraw/react';
+import { createPlateEditor } from 'platejs/react';
+
+import { ExcalidrawElement } from '@/components/ui/excalidraw-node';
+
+export const editor = createPlateEditor({
+  plugins: [ExcalidrawPlugin.withComponent(ExcalidrawElement)],
+});
+```
+
+### Insert A Drawing
+
+`insertExcalidraw` inserts after the current selection parent with `nextBlock: true`. If the editor has no selection or no selection parent, it returns without inserting.
+
+```tsx
+import { insertExcalidraw } from '@platejs/excalidraw';
+
+insertExcalidraw(
+  editor,
+  {
+    data: {
+      elements: [],
+      state: {
+        viewBackgroundColor: '#ffffff',
+      },
+    },
+  },
+  { select: true }
+);
+```
+
+</Steps>
+
+## Value Shape
+
+`TExcalidrawElement` is a void element. The drawing payload lives in `data`, not in text children.
+
+```tsx
+const value = [
+  {
+    children: [{ text: '' }],
+    data: {
+      elements: [
+        {
+          id: 'shape-1',
+          type: 'rectangle',
+          x: 100,
+          y: 100,
+        },
+      ],
+      state: {
+        viewBackgroundColor: '#ffffff',
+      },
+    },
+    type: 'excalidraw',
+  },
+];
+```
+
+| Field | Type | Notes |
+|-------|------|-------|
+| `type` | `'excalidraw'` | Plugin key and node type from `KEYS.excalidraw`. |
+| `children` | `[{ text: '' }]` | Required Slate child for the void element. |
+| `data.elements` | Excalidraw elements | Stored as partial Excalidraw elements. |
+| `data.state` | Excalidraw app state | Stored as imported Excalidraw app state. |
+
+Markdown serialization is not owned by `@platejs/excalidraw`. Persist the Plate value when you need to keep drawings.
+
+## UI Behavior
+
+`useExcalidrawElement` bridges the Plate node and the Excalidraw React component.
+
+| Surface | Behavior |
+|---------|----------|
+| Component loading | Dynamically imports `@excalidraw/excalidraw` and returns the loaded component. |
+| Initial data | Deep-clones `element.data.state`, `element.data.elements`, `libraryItems`, and `scrollToContent`. |
+| Editing | `onChange` writes `{ elements, state }` back to the node. |
+| Deduplication | Uses deep equality to skip writes when canvas data did not change. |
+| Read-only mode | Removes the write handler and enables Excalidraw `viewModeEnabled`. |
+| Canvas frame | Registry UI renders a bordered `aspect-video` frame capped at `600px`. |
+
+The registry element imports `@excalidraw/excalidraw/index.css`, so custom copies need the same stylesheet.
+
+## API Reference
+
+| API | Package | Use |
+|-----|---------|-----|
+| `BaseExcalidrawPlugin` | `@platejs/excalidraw` | Headless void element plugin. |
+| `ExcalidrawPlugin` | `@platejs/excalidraw/react` | React Excalidraw plugin. |
+| `insertExcalidraw(editor, props?, options?)` | `@platejs/excalidraw` | Inserts a void Excalidraw node after the current selection parent. |
+| `useExcalidrawElement(options)` | `@platejs/excalidraw/react` | Returns the dynamically loaded `Excalidraw` component and props for the registry element. |
+| `TExcalidrawElement` | `@platejs/excalidraw` | Element shape with optional `data`. |
+| `ExcalidrawDataState` | `@platejs/excalidraw` | Data shape for stored Excalidraw elements and app state. |

@@ -1,15 +1,27 @@
-// Pre is deeply coupled to Contentlayer, so we need a wrapper to make it work
-import * as React from 'react';
-import type { ReactNode } from 'react';
-import { type SyntaxHighlighterProps, Prism } from 'react-syntax-highlighter';
-import { vscDarkPlus as theme } from 'react-syntax-highlighter/dist/esm/styles/prism';
+// Pre expects MDX code metadata, so this wrapper keeps install snippets copyable.
+import type { CSSProperties, ReactNode } from 'react';
 
 import { CopyButton, CopyNpmCommandButton } from '@/components/copy-button';
+import { ThemedSyntaxHighlighter } from '@/components/themed-syntax-highlighter';
 import * as Typography from '@/components/typography';
 import { cn } from '@/lib/utils';
 
-const SyntaxHighlighter =
-  Prism as unknown as typeof React.Component<SyntaxHighlighterProps>;
+const codeCustomStyle = {
+  background: 'transparent',
+  margin: 0,
+  padding: '1rem',
+  width: '100%',
+};
+
+const codeTagStyle = {
+  fontFamily: 'var(--font-mono)',
+  fontSize: '0.9rem',
+};
+
+const lineNumberStyle: CSSProperties = {
+  color: 'var(--color-code-number)',
+  userSelect: 'none',
+};
 
 export function InstallationCode({
   bash,
@@ -21,32 +33,39 @@ export function InstallationCode({
   children?: ReactNode;
 }) {
   const npmCommand = code.startsWith('npm install');
+  const showLineNumbers = !npmCommand && code.includes('\n');
 
   return (
     <div>
       {!!children && <Typography.P className="mt-6">{children}</Typography.P>}
 
-      <div className="relative">
-        <SyntaxHighlighter
-          className="rounded-lg border py-4!"
-          style={theme}
+      <div className="relative overflow-hidden rounded-lg border bg-code text-code-foreground">
+        <ThemedSyntaxHighlighter
+          className="no-scrollbar"
+          codeTagProps={{ style: codeTagStyle }}
+          customStyle={codeCustomStyle}
           language={bash ? 'bash' : 'typescript'}
-          showLineNumbers={false}
+          lineNumberStyle={lineNumberStyle}
+          showLineNumbers={showLineNumbers}
         >
           {code}
-        </SyntaxHighlighter>
+        </ThemedSyntaxHighlighter>
 
         {npmCommand ? (
           <CopyNpmCommandButton
-            className={cn('absolute top-4 right-4')}
+            className={cn('absolute top-3 right-2 size-7')}
             commands={{
               __bunCommand__: code.replaceAll('npm install', 'bun add'),
               __npmCommand__: code,
               __pnpmCommand__: code.replaceAll('npm install', 'pnpm add'),
+              __yarnCommand__: code.replaceAll('npm install', 'yarn add'),
             }}
           />
         ) : (
-          <CopyButton className={cn('absolute top-4 right-4')} value={code} />
+          <CopyButton
+            className={cn('absolute top-3 right-2 size-7')}
+            value={code}
+          />
         )}
       </div>
     </div>

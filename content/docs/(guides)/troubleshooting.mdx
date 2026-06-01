@@ -1,0 +1,166 @@
+---
+title: Troubleshooting
+description: Diagnose common Plate setup and runtime issues.
+---
+
+Most Plate issues come from version skew, duplicate React/Slate runtimes, or
+crossing the server/client import boundary. Start with package alignment, then
+check runtime ownership, then inspect plugin resolution with `DebugPlugin`.
+
+## Start Here
+
+| Symptom | First check |
+| --- | --- |
+| Invalid hook call, null dispatcher, or React hook crashes. | Duplicate `react` / `react-dom` or mixed package-manager installs. |
+| Plugins render as plain text or components do not attach. | Missing plugin, wrong `/react` versus base import, or wrong component map. |
+| Server Component crashes on import. | A Server Component imported `platejs/react` or `@platejs/*/react`. |
+| `OPTION_UNDEFINED` in the console. | Code reads or writes an option that is not declared in the plugin. |
+| `PLUGIN_DEPENDENCY_MISSING` in the console. | A plugin dependency key is not present in the editor plugin list. |
+| Markdown, HTML, or static rendering misses nodes. | The static/base plugin kit does not include the serializer or node plugin. |
+
+Use the focused guide when the issue belongs to one area:
+
+| Area | Guide |
+| --- | --- |
+| Editor creation and options | [Editor](/docs/editor) |
+| Plugin configuration | [Plugin](/docs/plugin) |
+| Plugin option state | [Plugin Context](/docs/plugin-context) |
+| Debug logging | [Debugging](/docs/debugging) |
+| Server Components | [RSC](/docs/installation/rsc) |
+| Static rendering | [Static Rendering](/docs/static) |
+
+## Align Plate Packages
+
+Keep `platejs` and every `@platejs/*` package on the same release family.
+`depset` is the fastest way to update a project that already has several Plate
+packages installed.
+
+```bash
+npx depset@latest @platejs --latest --install --yes
+npx depset@latest platejs --latest --install --yes
+```
+
+For pnpm projects:
+
+```bash
+pnpm dlx depset@latest @platejs --latest --install --yes
+pnpm dlx depset@latest platejs --latest --install --yes
+```
+
+Then inspect what actually resolved.
+
+```bash
+npm ls platejs @platejs/core @platejs/slate react react-dom slate slate-dom slate-react
+```
+
+```bash
+pnpm why platejs
+pnpm why @platejs/core
+pnpm why @platejs/slate
+pnpm why react react-dom slate slate-dom slate-react
+```
+
+If the tree shows multiple Plate majors, align the Plate packages first. If it
+shows multiple React or Slate copies, fix the package that pulls the extra copy
+instead of papering over the tree with a random override.
+
+## Fix Runtime Boundaries
+
+Use React entrypoints only in client-side editor code.
+
+| Runtime | Import from |
+| --- | --- |
+| Editable React editor | `platejs/react`, `@platejs/*/react` |
+| Server Component static output | `platejs/static`, `platejs`, `@platejs/*` |
+| Node script or route handler without React UI | `platejs`, `@platejs/*` |
+
+<Callout type="warning" title="No React plugins on the server">
+  Server Components and Node scripts should not import `platejs/react` or
+  `@platejs/*/react`. Use base plugins such as `BaseH1Plugin` from
+  `@platejs/basic-nodes`, not `H1Plugin` from `@platejs/basic-nodes/react`.
+</Callout>
+
+If a server route only needs serialization or transforms, use the Node path from
+[Node.js](/docs/installation/node). If it renders read-only React output, use
+[Static Rendering](/docs/static).
+
+## Check Component Wiring
+
+When a node appears as plain text or a default `div`, check the component path.
+
+```tsx title="components/editor/plugins.tsx" showLineNumbers
+import { H1Plugin } from '@platejs/basic-nodes/react';
+
+import { H1Element } from '@/components/ui/heading-node';
+
+export const plugins = [H1Plugin.withComponent(H1Element)];
+```
+
+For copied Plate UI kits, inspect the kit that owns the feature before adding
+manual component overrides. Feature kits usually wire plugins, components,
+shortcuts, and options together.
+
+| Component surface | Guide |
+| --- | --- |
+| Copied registry components | [Plate UI](/docs/installation/plate-ui) |
+| Feature-owned kits | [Feature Kits](/docs/feature-kits) |
+| Manual node components | [Plugin Components](/docs/plugin-components) |
+
+## Inspect Plugin Resolution
+
+Enable `DebugPlugin` when plugin options, dependencies, or runtime behavior do
+not match what the editor receives.
+
+```tsx title="components/editor/plugins.tsx" showLineNumbers
+import { DebugPlugin } from 'platejs';
+
+export const plugins = [
+  DebugPlugin.configure({
+    options: {
+      logLevel: 'warn',
+    },
+  }),
+];
+```
+
+Common debug errors:
+
+| Message | Meaning |
+| --- | --- |
+| `OPTION_UNDEFINED` | `editor.getOption`, `editor.setOption`, or plugin context used an option key missing from `plugin.options`. |
+| `PLUGIN_DEPENDENCY_MISSING` | A plugin lists a dependency key that is not registered. |
+
+Use [Plugin](/docs/plugin#advanced-plugin-configuration) to check `dependencies`,
+`priority`, `enabled`, `plugins`, and `override.*` behavior.
+
+## Reset The Install
+
+When the dependency tree looks correct but the runtime still behaves like two
+React or Slate copies are loaded, reinstall from the existing lockfile.
+
+```bash
+rm -rf node_modules
+npm install
+```
+
+```bash
+rm -rf node_modules
+pnpm install
+```
+
+Delete the lockfile only when you intentionally want a fresh dependency
+resolution. That is a package-management decision, not a Plate fix.
+
+## Report A Reproduction
+
+When you open an issue, include the smallest editor that reproduces the problem:
+
+- Package manager and lockfile type.
+- Output from the relevant `npm ls` or `pnpm why` commands.
+- The plugin list passed to `usePlateEditor`, `createPlateEditor`,
+  `createSlateEditor`, or `createStaticEditor`.
+- The failing value, if the issue depends on document content.
+- The exact error message from `DebugPlugin` or the browser console.
+
+Small reproductions beat screenshots. The package tree and plugin list usually
+tell the story.

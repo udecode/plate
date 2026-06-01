@@ -1,26 +1,34 @@
-import type { SidebarNavItem } from '@/types/nav';
-import type { Registry, RegistryItem } from 'shadcn/registry';
+import {
+  type Registry,
+  type RegistryItem,
+  registrySchema,
+} from 'shadcn/schema';
 
 import matter from 'gray-matter';
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import { rimraf } from 'rimraf';
 
-import { docsConfig } from '../src/config/docs';
+import { toRegistryDependencySpecifier } from './registry-dependencies.mts';
 
 const HOMEPAGE = 'https://platejs.org';
 const NAME = 'plate';
 
 const isDev = process.env.NODE_ENV === 'development';
-const REGISTRY_URL = isDev ? 'http://localhost:3000/rd' : `${HOMEPAGE}/r`;
-const RELATIVE_SOURCE_DIR = '../../content';
+const RELATIVE_SOURCE_DIR = '../../content/docs';
 const SOURCE_DIR = path.join(process.cwd(), RELATIVE_SOURCE_DIR);
+const META_FILE = 'meta.json';
 const TARGET_FILE = 'registry-docs.json';
 const TARGET_DIR = isDev ? 'public/rd' : 'public/r';
 const TARGET = `${TARGET_DIR}/${TARGET_FILE}`;
 
 const DIRECTORY_PATTERN_REGEX = /\(([^)]*)\)\//g;
-const DOCS_PREFIX_REGEX = /^\/docs\//;
+const DOCS_ROUTE_PREFIX = '/docs';
+const INSTALLED_DOCS_ROUTE_PREFIX = `${DOCS_ROUTE_PREFIX}/${NAME}`;
+const DOCS_MARKDOWN_LINK_REGEX = /\]\(\/docs(?=\/|#|\?|\))/g;
+const DOCS_HREF_ATTRIBUTE_REGEX = /\bhref=(["'])\/docs(?=\/|#|\?|\1)/g;
+
+type JsonRecord = Record<string, unknown>;
 
 async function getFiles(dir: string): Promise<string[]> {
   const entries = await fs.readdir(dir, { withFileTypes: true });
@@ -52,97 +60,99 @@ function pathToTitle(filePath: string): string {
     .join(' ');
 }
 
-async function getFrontmatter(filePath: string) {
+function rewriteInstalledDocsContent(content: string) {
+  return rewriteDocsHref(content)
+    .replace(DOCS_MARKDOWN_LINK_REGEX, `](${INSTALLED_DOCS_ROUTE_PREFIX}`)
+    .replace(
+      DOCS_HREF_ATTRIBUTE_REGEX,
+      (_match, quote: string) => `href=${quote}${INSTALLED_DOCS_ROUTE_PREFIX}`
+    );
+}
+
+async function getDocFile(filePath: string) {
   const source = await fs.readFile(filePath, 'utf8');
   const { data } = matter(source);
   return {
+    content: rewriteInstalledDocsContent(source),
     description: data.description,
     title: data.title,
   };
 }
 
-export async function buildDocsRegistry() {
-  rimraf.sync(path.join(process.cwd(), TARGET));
+function isRecord(value: unknown): value is JsonRecord {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
 
-  // Build the complete path map from navigation structure
-  buildPathMap(docsConfig.sidebarNav);
+function rewriteDocsHref(value: string) {
+  if (value === DOCS_ROUTE_PREFIX) {
+    return INSTALLED_DOCS_ROUTE_PREFIX;
+  }
 
+  if (
+    value.startsWith(`${DOCS_ROUTE_PREFIX}/`) ||
+    value.startsWith(`${DOCS_ROUTE_PREFIX}#`) ||
+    value.startsWith(`${DOCS_ROUTE_PREFIX}?`)
+  ) {
+    return `${INSTALLED_DOCS_ROUTE_PREFIX}${value.slice(DOCS_ROUTE_PREFIX.length)}`;
+  }
+
+  return value;
+}
+
+function rewriteInstalledDocsMetaValue(value: unknown): unknown {
+  if (typeof value === 'string') {
+    return rewriteInstalledDocsContent(value);
+  }
+
+  if (Array.isArray(value)) {
+    return value.map(rewriteInstalledDocsMetaValue);
+  }
+
+  if (isRecord(value)) {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, entry]) => [
+        rewriteDocsHref(key),
+        rewriteInstalledDocsMetaValue(entry),
+      ])
+    );
+  }
+
+  return value;
+}
+
+async function createInstalledDocsMetaContent() {
+  const source = await fs.readFile(path.join(SOURCE_DIR, META_FILE), 'utf8');
+  const meta = rewriteInstalledDocsMetaValue(JSON.parse(source));
+
+  return `${JSON.stringify(meta, null, 2)}\n`;
+}
+
+export async function createDocsRegistry(): Promise<Registry> {
   const files = await getFiles(SOURCE_DIR);
-
-  // Transform sidebarNav into fumadocs structure
-  const docsStructure = transformNavToFumadocs(docsConfig.sidebarNav);
-
-  // Create meta.json content
-  const _metaContent = {
-    description: 'Rich-text editor framework',
-    pages: ['index', ...Object.keys(docsStructure)],
-    root: true,
-    title: NAME.charAt(0).toUpperCase() + NAME.slice(1),
-  };
-
-  // Generate all meta files recursively
-  // const metaFiles = generateMetaFiles(docsConfig.sidebarNav);
-
-  // const docsMetaJson: RegistryItem = {
-  //   description: 'Rich-text editor framework',
-  //   files: [
-  // {
-  //   content: JSON.stringify(metaContent, null, 2),
-  //   path: `../../content/${NAME}/meta.json`,
-  //   target: `content/docs/${NAME}/meta.json`,
-  //   type: 'registry:file' as const,
-  // },
-  // // Add all meta.json files recursively
-  // ...metaFiles.map((file) => ({
-  //   content: file.content,
-  //   path: file.path,
-  //   target: file.target,
-  //   type: 'registry:file' as const,
-  // })),
-  //   ],
-  //   name: 'docs-meta',
-  //   title: 'Fumadocs Meta',
-  //   type: 'registry:file',
-  // };
+  const docsMetaContent = await createInstalledDocsMetaContent();
 
   const items = await Promise.all(
     files.map(async (filePath) => {
       const relativePath = path.relative(SOURCE_DIR, filePath);
       const pathWithoutExt = relativePath.replace('.mdx', '');
 
-      // Apply the same (directory) pattern removal as contentlayer
+      // Match Fumadocs route-group stripping for registry item names.
       const cleanPath = pathWithoutExt.replace(DIRECTORY_PATTERN_REGEX, '');
 
       const name = `${cleanPath
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, '-')}-docs`;
 
-      const { description, title } = await getFrontmatter(filePath);
+      const { content, description, title } = await getDocFile(filePath);
 
-      // Get the target path based on the navigation hierarchy
-      // let targetPath: string;
-      // const section = pathMap.get(cleanPath);
-      // if (section) {
-      //   const fileName = path.basename(cleanPath);
-      //   // If the filename matches the last part of the section path, use index.mdx
-      //   const lastSection = section.split('/').pop()!;
-      //   const finalFileName = fileName === lastSection ? 'index' : fileName;
-      //   // Skip get-started section and place those files at root
-      //   if (section.startsWith('get-started')) {
-      //     targetPath = `content/docs/${NAME}/${finalFileName}.mdx`;
-      //   } else {
-      //     targetPath = `content/docs/${NAME}/${section}/${finalFileName}.mdx`;
-      //   }
-      // } else {
-      //   // Default fallback if no mapping found
       const targetPath = `content/docs/${NAME}/${pathWithoutExt}.mdx`;
-      // }
 
       return {
         description:
           description || `Documentation for ${title || pathToTitle(filePath)}`,
         files: [
           {
+            content,
             path: `${RELATIVE_SOURCE_DIR}/${relativePath}`,
             target: targetPath,
             type: 'registry:file',
@@ -155,15 +165,31 @@ export async function buildDocsRegistry() {
     })
   );
 
-  const registry: Registry = {
+  const docsMetaItem: RegistryItem = {
+    description: `Fumadocs metadata for ${NAME} documentation`,
+    files: [
+      {
+        content: docsMetaContent,
+        path: `${RELATIVE_SOURCE_DIR}/${META_FILE}`,
+        target: `content/docs/${NAME}/${META_FILE}`,
+        type: 'registry:file',
+      },
+    ],
+    name: 'docs-meta',
+    title: 'Documentation metadata',
+    type: 'registry:file',
+  };
+
+  return registrySchema.parse({
     homepage: HOMEPAGE,
     items: [
+      docsMetaItem,
       {
         description: `All documentation files for ${NAME}`,
         files: [],
         name: 'docs',
-        registryDependencies: items.map(
-          (item) => `${REGISTRY_URL}/${item.name}`
+        registryDependencies: [docsMetaItem, ...items].map((item) =>
+          toRegistryDependencySpecifier(item.name)
         ),
         title: 'Documentation',
         type: 'registry:file',
@@ -196,183 +222,25 @@ export async function buildDocsRegistry() {
           },
         ],
         name: 'fumadocs',
-        registryDependencies: [
-          `${REGISTRY_URL}/docs`,
-          // `${REGISTRY_URL}/docs-meta`,
-        ],
+        registryDependencies: [toRegistryDependencySpecifier('docs')],
         title: 'Fumadocs app',
         type: 'registry:file',
       },
       ...items,
     ],
     name: `${NAME}-docs`,
-  };
+  });
+}
 
+export async function buildDocsRegistry() {
+  rimraf.sync(path.join(process.cwd(), TARGET));
+
+  const registry = await createDocsRegistry();
   const docsJson = JSON.stringify(registry, null, 2);
 
   const docsTargetDir = path.dirname(path.join(process.cwd(), TARGET));
   await fs.mkdir(docsTargetDir, { recursive: true });
   await fs.writeFile(path.join(process.cwd(), TARGET), docsJson);
 
-  // await fs.writeFile(
-  //   path.join(TARGET_DIR, 'docs-meta.json'),
-  //   JSON.stringify(docsMetaJson, null, 2)
-  // );
-
   return registry.items;
-}
-
-// (optional) Ordering from docs.ts
-
-// Store the complete path hierarchy for each href
-const pathMap = new Map<string, string>();
-
-function buildPathMap(nav: SidebarNavItem[], parentTitle?: string) {
-  nav.forEach((item) => {
-    if (!item.title) return;
-
-    const currentTitle = item.title.toLowerCase().replace(/\s+/g, '-');
-    const fullTitle = parentTitle
-      ? `${parentTitle}/${currentTitle}`
-      : currentTitle;
-
-    // Map this item's href if it has one
-    if (item.href) {
-      const href = item.href.replace(DOCS_PREFIX_REGEX, '');
-      // Apply the same (directory) pattern removal as contentlayer
-      const cleanHref = href.replace(DIRECTORY_PATTERN_REGEX, '');
-      // Skip get-started section mapping except for installation
-      if (
-        !fullTitle.startsWith('get-started') ||
-        cleanHref === 'installation'
-      ) {
-        pathMap.set(cleanHref, fullTitle);
-      }
-    }
-
-    // If this item has subitems, process them with the current title as parent
-    if (item.items) {
-      item.items.forEach((subItem) => {
-        if (!subItem.href) return;
-
-        const href = subItem.href.replace(DOCS_PREFIX_REGEX, '');
-        // Apply the same (directory) pattern removal as contentlayer
-        const cleanHref = href.replace(DIRECTORY_PATTERN_REGEX, '');
-
-        // If subItem has its own items, it's a parent
-        if (subItem.items) {
-          const subTitle =
-            subItem.title?.toLowerCase().replace(/\s+/g, '-') ??
-            path.basename(cleanHref);
-          pathMap.set(cleanHref, `${fullTitle}/${subTitle}`);
-
-          // Process its children
-          subItem.items.forEach((nestedItem) => {
-            if (!nestedItem.href) return;
-            const nestedHref = nestedItem.href.replace(DOCS_PREFIX_REGEX, '');
-            const cleanNestedHref = nestedHref.replace(
-              DIRECTORY_PATTERN_REGEX,
-              ''
-            );
-            pathMap.set(cleanNestedHref, `${fullTitle}/${subTitle}`);
-          });
-        } else {
-          // Regular subitem
-          pathMap.set(cleanHref, fullTitle);
-        }
-      });
-    }
-  });
-}
-
-function transformNavToFumadocs(
-  nav: SidebarNavItem[]
-): Record<string, { pages: string[]; title: string }> {
-  const result: Record<string, { pages: string[]; title: string }> = {};
-
-  nav.forEach((item) => {
-    // Skip only the Get Started section, but keep Installation
-    if (
-      !item.items ||
-      !item.title ||
-      (item.title === 'Get Started' && !item.href?.includes('installation'))
-    )
-      return;
-
-    const folderName = item.title.toLowerCase().replace(/\s+/g, '-');
-
-    result[folderName] = {
-      pages: item.items.map((subItem) => {
-        if (!subItem.href) return 'index';
-        const pagePath = subItem.href.split('/').pop();
-        return pagePath === folderName ? 'index' : pagePath || 'index';
-      }),
-      title: item.title,
-    };
-  });
-
-  return result;
-}
-
-function _generateMetaFiles(
-  nav: SidebarNavItem[],
-  parentPath = ''
-): { content: string; path: string; target: string }[] {
-  const files: { content: string; path: string; target: string }[] = [];
-
-  nav.forEach((item) => {
-    // Skip only the Get Started section, but keep Installation
-    if (
-      !item.title ||
-      (item.title === 'Get Started' && !item.href?.includes('installation'))
-    )
-      return;
-
-    const currentPath = parentPath
-      ? `${parentPath}/${item.title.toLowerCase().replace(/\s+/g, '-')}`
-      : item.title.toLowerCase().replace(/\s+/g, '-');
-
-    if (item.items) {
-      // Add meta.json for this section
-      const content = {
-        pages: item.items.map((subItem) => {
-          if (!subItem.href) return 'index';
-          // Get the last part of the href
-          const parts = subItem.href.split('/');
-          const lastPart = parts.at(-1);
-          return lastPart === currentPath ? 'index' : lastPart;
-        }),
-        title: item.title,
-      };
-
-      files.push({
-        content: JSON.stringify(content, null, 2),
-        path: `content/docs/${NAME}/${currentPath}/meta.json`,
-        target: `content/docs/${NAME}/${currentPath}/meta.json`,
-      });
-
-      // Process nested items that have their own subitems
-      item.items.forEach((subItem) => {
-        if (subItem.items && subItem.title) {
-          const subPath = `${currentPath}/${subItem.title.toLowerCase().replace(/\s+/g, '-')}`;
-          const subContent = {
-            pages: subItem.items.map((nestedItem) => {
-              if (!nestedItem.href) return 'index';
-              const parts = nestedItem.href.split('/');
-              return parts.at(-1);
-            }),
-            title: subItem.title,
-          };
-
-          files.push({
-            content: JSON.stringify(subContent, null, 2),
-            path: `content/docs/${NAME}/${subPath}/meta.json`,
-            target: `content/docs/${NAME}/${subPath}/meta.json`,
-          });
-        }
-      });
-    }
-  });
-
-  return files;
 }

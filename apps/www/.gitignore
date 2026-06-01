@@ -2,4 +2,5 @@
 .contentlayer
 .content-collections
 .source
+.source-dev
 *.tsbuildinfo

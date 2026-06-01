@@ -1,0 +1,242 @@
+---
+title: Equation
+description: Block and inline LaTeX equation nodes rendered with KaTeX.
+docs:
+  - route: /docs/components/equation-node
+    title: Equation Element
+  - route: /docs/components/equation-toolbar-button
+    title: Equation Toolbar Button
+  - route: https://pro.platejs.org/docs/examples/equation
+    title: Plus
+---
+
+Equation adds block and inline void nodes for LaTeX expressions. Both nodes store source in `texExpression` and render through KaTeX. This page covers kit setup, block versus inline ownership, insertion, input rules, Markdown serialization, and registry UI behavior.
+
+<ComponentPreview name="equation-demo" />
+
+<PackageInfo>
+
+## Features
+
+- Block `equation` element.
+- Inline void `inline_equation` element.
+- Bound `editor.tf.insert.equation` and `editor.tf.insert.inlineEquation` transforms.
+- Direct `insertEquation` and `insertInlineEquation` helpers.
+- KaTeX rendering in editable and static UI.
+- `$...$` inline input rule and `$$` block input rule.
+- Markdown round-trip for inline math and block math.
+
+</PackageInfo>
+
+## Fast Path
+
+<Steps>
+
+### Add The Kit
+
+`MathKit` installs both equation plugins, their registry components, and the default math input rules.
+
+<ComponentSource name="math-kit" />
+
+```tsx
+import { createPlateEditor } from 'platejs/react';
+
+import { MathKit } from '@/components/editor/plugins/math-kit';
+
+export const editor = createPlateEditor({
+  plugins: MathKit,
+});
+```
+
+### Render The Nodes
+
+`equation-node` owns the block equation, inline equation, editable popover, textarea input, KaTeX render target, static elements, and DOCX fallback elements.
+
+<ComponentSource name="equation-node" />
+
+### Add The Toolbar Button
+
+`equation-toolbar-button` inserts an inline equation with `insertInlineEquation(editor)`.
+
+<ComponentSource name="equation-toolbar-button" />
+
+</Steps>
+
+## Ownership
+
+| Layer | Owner | What It Does |
+|-------|-------|--------------|
+| `@platejs/math` | Package | Exports base plugins, transforms, `MathRules`, and `getEquationHtml`. |
+| `@platejs/math/react` | Package | Exports React plugins plus `useEquationElement` and `useEquationInput`. |
+| `math-kit` | Registry | Adds block and inline React plugins with input rules and interactive UI components. |
+| `math-base-kit` | Registry | Adds static equation components for read-only rendering. |
+| `equation-node` | Registry UI | Renders editable, static, and DOCX equation elements. |
+| `equation-toolbar-button` | Registry UI | Inserts inline equations from the toolbar. |
+| `@platejs/markdown` | Package | Serializes and deserializes `math` and `inlineMath` nodes when `remark-math` is configured. |
+
+Block and inline equations share the `TEquationElement` shape, but they are different node types with different plugin keys.
+
+## Manual Setup
+
+<Steps>
+
+### Install Package
+
+```bash
+npm install @platejs/math
+```
+
+### Add Plugins
+
+Use both React plugins when your editor supports block and inline equations.
+
+```tsx
+import { MathRules } from '@platejs/math';
+import {
+  EquationPlugin,
+  InlineEquationPlugin,
+} from '@platejs/math/react';
+import { createPlateEditor } from 'platejs/react';
+
+import {
+  EquationElement,
+  InlineEquationElement,
+} from '@/components/ui/equation-node';
+
+export const editor = createPlateEditor({
+  plugins: [
+    InlineEquationPlugin.configure({
+      inputRules: [MathRules.markdown({ variant: '$' })],
+      node: { component: InlineEquationElement },
+    }),
+    EquationPlugin.configure({
+      inputRules: [MathRules.markdown({ on: 'break', variant: '$$' })],
+      node: { component: EquationElement },
+    }),
+  ],
+});
+```
+
+### Add Static Rendering
+
+Use the base kit when rendering read-only output with `platejs/static`.
+
+<ComponentSource name="math-base-kit" />
+
+### Insert Equations
+
+Use plugin-bound transforms when you already have a configured editor.
+
+```tsx
+editor.tf.insert.equation({ select: true });
+editor.tf.insert.inlineEquation('E = mc^2', { select: true });
+```
+
+Use package helpers directly from toolbar, slash-command, or app-local action code.
+
+```tsx
+import { insertEquation, insertInlineEquation } from '@platejs/math';
+
+insertEquation(editor, { select: true });
+insertInlineEquation(editor, 'E = mc^2', { select: true });
+```
+
+</Steps>
+
+## Value Shape
+
+Both equation nodes store source in `texExpression`. The child text is only the Slate-required child for a void element.
+
+```tsx
+const value = [
+  {
+    children: [
+      { text: 'Mass-energy equivalence: ' },
+      {
+        children: [{ text: '' }],
+        texExpression: 'E = mc^2',
+        type: 'inline_equation',
+      },
+      { text: '.' },
+    ],
+    type: 'p',
+  },
+  {
+    children: [{ text: '' }],
+    texExpression: '\\\\int_{a}^{b} f(x) \\\\, dx = F(b) - F(a)',
+    type: 'equation',
+  },
+];
+```
+
+| Node | Type | Behavior |
+|------|------|----------|
+| `BaseEquationPlugin` | `equation` | Block void equation. |
+| `BaseInlineEquationPlugin` | `inline_equation` | Inline void equation. |
+| `TEquationElement.texExpression` | `string` | LaTeX source rendered by KaTeX. |
+
+## Input Rules
+
+`MathRules.markdown` creates editor input rules. It is separate from Markdown serialization.
+
+| Rule | Trigger | Behavior |
+|------|---------|----------|
+| `MathRules.markdown({ variant: '$' })` | `$...$` | Deletes the delimited text and inserts an inline equation with the matched expression. |
+| `MathRules.markdown({ on: 'break', variant: '$$' })` | `$$` then line break | Replaces the paragraph fence with a block equation. |
+| `MathRules.markdown({ on: 'match', variant: '$$' })` | `$$...$$` match | Creates a block equation on match. |
+
+Math input rules are disabled inside code blocks, block equations, and inline equations.
+
+## Rendering
+
+The registry components render KaTeX and keep source editing in a popover.
+
+| Surface | Behavior |
+|---------|----------|
+| Editable block equation | `useEquationElement` calls `katex.render` with display-mode options. |
+| Editable inline equation | Opens a popover when the inline void node is selected and the selection is collapsed. |
+| Popover input | `useEquationInput` writes `texExpression` as the textarea changes. |
+| `Enter` | Submits and closes the input. |
+| `Escape` | Dismisses; inline equations restore the initial expression. |
+| Inline left/right edge arrows | Move selection out of the inline equation. |
+| Static rendering | `getEquationHtml` calls `katex.renderToString`. |
+
+KaTeX is configured with `throwOnError: false`, `strict: 'warn'`, and `trust: false` in the registry UI.
+
+## Markdown
+
+Markdown math support comes from `@platejs/markdown` plus `remark-math`, as configured by the registry `MarkdownKit`.
+
+```mdx
+Inline $x+1$ math
+```
+
+```mdx
+$$
+x+1
+$$
+```
+
+Inline math deserializes to `inline_equation`. Block math deserializes to `equation`. Serialization writes the same Markdown math shapes from `texExpression`.
+
+## Plate Plus
+
+<ComponentPreviewPro name="equation-pro" />
+
+## API Reference
+
+| API | Package | Use |
+|-----|---------|-----|
+| `BaseEquationPlugin` | `@platejs/math` | Headless block equation plugin. |
+| `BaseInlineEquationPlugin` | `@platejs/math` | Headless inline equation plugin. |
+| `EquationPlugin` | `@platejs/math/react` | React block equation plugin. |
+| `InlineEquationPlugin` | `@platejs/math/react` | React inline equation plugin. |
+| `insertEquation(editor, options)` | `@platejs/math` | Inserts a blank block equation. |
+| `insertInlineEquation(editor, texExpression?, options?)` | `@platejs/math` | Inserts an inline equation. Defaults to the selected string when no expression is passed. |
+| `editor.tf.insert.equation(options)` | plugin-bound transform | Bound block equation insert transform. |
+| `editor.tf.insert.inlineEquation(texExpression?, options?)` | plugin-bound transform | Bound inline equation insert transform. |
+| `MathRules.markdown(options)` | `@platejs/math` | Creates inline or block math input rules. |
+| `useEquationElement(options)` | `@platejs/math/react` | Renders an equation into a KaTeX DOM target. |
+| `useEquationInput(options)` | `@platejs/math/react` | Wires the equation textarea and keyboard behavior. |
+| `getEquationHtml(options)` | `@platejs/math` | Returns static KaTeX HTML. |
+| `TEquationElement` | `platejs` | Element shape with `texExpression`. |

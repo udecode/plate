@@ -1,0 +1,136 @@
+---
+title: Italic
+description: Add emphasized inline text.
+docs:
+  - route: /docs/basic-marks
+    title: Basic Marks
+  - route: /docs/components/mark-toolbar-button
+    title: Mark Toolbar Button
+  - route: /docs/plugin-shortcuts
+    title: Plugin Shortcuts
+---
+
+Italic applies the `italic` leaf mark to selected text. `ItalicPlugin` owns the mark key, shortcut, HTML parsing, render tag, and toggle transform.
+
+<ComponentPreview name="basic-marks-demo" />
+
+<PackageInfo>
+
+## Features
+
+- `KEYS.italic` leaf mark.
+- Default `⌘I` / `Ctrl+I` shortcut.
+- HTML deserialization from `em`, `i`, and italic font style.
+- `<em>` rendering by default.
+- Optional Markdown-style input rules through `ItalicRules`.
+- Toolbar support through `MarkToolbarButton`.
+
+</PackageInfo>
+
+## Kit Usage
+
+<Steps>
+
+### Add Basic Marks
+
+`BasicMarksKit` includes `ItalicPlugin`, `*` and `_` Markdown-style input rules, and the standard toolbar buttons that use `KEYS.italic`.
+
+<ComponentSource name="basic-marks-kit" />
+
+```tsx
+import { createPlateEditor } from 'platejs/react';
+
+import { BasicMarksKit } from '@/components/editor/plugins/basic-marks-kit';
+
+export const editor = createPlateEditor({
+  plugins: [...BasicMarksKit],
+});
+```
+
+### Add A Toolbar Button
+
+Use `MarkToolbarButton` with `KEYS.italic`.
+
+```tsx
+import { ItalicIcon } from 'lucide-react';
+import { KEYS } from 'platejs';
+
+import { MarkToolbarButton } from '@/components/ui/mark-toolbar-button';
+
+export function ItalicToolbarButton() {
+  return (
+    <MarkToolbarButton nodeType={KEYS.italic} tooltip="Italic (⌘+I)">
+      <ItalicIcon />
+    </MarkToolbarButton>
+  );
+}
+```
+
+</Steps>
+
+## Manual Usage
+
+Install the mark package.
+
+```bash
+npm install @platejs/basic-nodes
+```
+
+Add `ItalicPlugin` directly when you do not want the whole kit.
+
+```tsx
+import { ItalicPlugin } from '@platejs/basic-nodes/react';
+import { createPlateEditor } from 'platejs/react';
+
+export const editor = createPlateEditor({
+  plugins: [ItalicPlugin],
+});
+```
+
+Register Markdown-style input rules when users should type italic delimiters.
+
+```tsx
+import { ItalicRules } from '@platejs/basic-nodes';
+import { ItalicPlugin } from '@platejs/basic-nodes/react';
+
+export const italicPlugin = ItalicPlugin.configure({
+  inputRules: [
+    ItalicRules.markdown({ variant: '*' }),
+    ItalicRules.markdown({ variant: '_' }),
+  ],
+});
+```
+
+## Ownership
+
+| Surface | Owner | What It Does |
+|---------|-------|--------------|
+| `BaseItalicPlugin` | `@platejs/basic-nodes` | Headless italic mark, HTML parser, render tag, and `toggle` transform. |
+| `ItalicPlugin` | `@platejs/basic-nodes/react` | React wrapper with default `mod+i` shortcut. |
+| `ItalicRules.markdown` | `@platejs/basic-nodes` | Optional mark input rule factory. |
+| `BasicMarksKit` | Registry | Adds `ItalicPlugin` with `*` and `_` Markdown-style input rules. |
+| `MarkToolbarButton` | Registry UI | Reads active mark state and calls the mark toggle hook. |
+
+The package owns the mark. The registry owns toolbar placement and icon choice.
+
+## Behavior
+
+| Behavior | Source |
+|----------|--------|
+| Mark key | `KEYS.italic` |
+| Leaf behavior | `node.isLeaf: true` |
+| Toggle transform | `editor.tf.italic.toggle()` calls `editor.tf.toggleMark(type)`. |
+| Shortcut | `ItalicPlugin` registers `mod+i`. |
+| HTML tags | `em`, `i` |
+| HTML styles | `font-style: italic` |
+| HTML guard | Ignores descendants where `fontStyle` is `normal`. |
+| Render output | `em` |
+
+## API Reference
+
+| API | Package | Use |
+|-----|---------|-----|
+| `BaseItalicPlugin` | `@platejs/basic-nodes` | Headless italic plugin. |
+| `ItalicPlugin` | `@platejs/basic-nodes/react` | React italic plugin with shortcut defaults. |
+| `ItalicRules.markdown(options)` | `@platejs/basic-nodes` | Creates an italic mark input rule. |
+| `tf.italic.toggle()` | `@platejs/basic-nodes` | Toggles the italic mark at the selection. |

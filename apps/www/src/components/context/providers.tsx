@@ -5,6 +5,8 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 
 import { Provider as JotaiProvider } from 'jotai';
 
+import { TooltipProvider } from '@/components/ui/tooltip';
+
 import { ThemeProvider } from './theme-provider';
 
 export function Providers({ children }: { children: React.ReactNode }) {
@@ -17,7 +19,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
         enableColorScheme
         enableSystem
       >
-        <DndProvider backend={HTML5Backend}>{children}</DndProvider>
+        <TooltipProvider delayDuration={0}>
+          <DndProvider backend={HTML5Backend}>{children}</DndProvider>
+        </TooltipProvider>
       </ThemeProvider>
     </JotaiProvider>
   );

@@ -1,0 +1,130 @@
+---
+title: Superscript
+description: Format inline text above the baseline.
+docs:
+  - route: /docs/basic-marks
+    title: Basic Marks
+  - route: /docs/subscript
+    title: Subscript
+  - route: /docs/components/more-toolbar-button
+    title: More Toolbar Button
+  - route: /docs/plugin-shortcuts
+    title: Plugin Shortcuts
+---
+
+Superscript applies the `superscript` leaf mark to selected text. Its toggle transform removes `subscript`, so the same text cannot keep both vertical-position marks through the plugin API.
+
+<ComponentPreview name="basic-marks-demo" />
+
+<PackageInfo>
+
+## Features
+
+- `KEYS.sup` leaf mark.
+- Directional selection affinity.
+- HTML deserialization from `sup` and `vertical-align: super`.
+- `<sup>` rendering by default.
+- Optional Markdown-style input rule through `SuperscriptRules`.
+- Mutual exclusion with `KEYS.sub`.
+
+</PackageInfo>
+
+## Kit Usage
+
+<Steps>
+
+### Add Basic Marks
+
+`BasicMarksKit` includes `SuperscriptPlugin`, the `^` input rule, and a `mod+period` shortcut.
+
+<ComponentSource name="basic-marks-kit" />
+
+```tsx
+import { createPlateEditor } from 'platejs/react';
+
+import { BasicMarksKit } from '@/components/editor/plugins/basic-marks-kit';
+
+export const editor = createPlateEditor({
+  plugins: [...BasicMarksKit],
+});
+```
+
+### Add a Toolbar Control
+
+The registry `MoreToolbarButton` toggles superscript from the More menu and removes subscript.
+
+```tsx
+import { MoreToolbarButton } from '@/components/ui/more-toolbar-button';
+
+export function FormattingMoreMenu() {
+  return <MoreToolbarButton />;
+}
+```
+
+</Steps>
+
+## Manual Usage
+
+Install the mark package.
+
+```bash
+npm install @platejs/basic-nodes
+```
+
+Add `SuperscriptPlugin` directly when you want the default `<sup>` render.
+
+```tsx
+import { SuperscriptPlugin } from '@platejs/basic-nodes/react';
+import { createPlateEditor } from 'platejs/react';
+
+export const editor = createPlateEditor({
+  plugins: [SuperscriptPlugin],
+});
+```
+
+Configure the input rule and shortcut when you want the same behavior as the kit.
+
+```tsx
+import { SuperscriptRules } from '@platejs/basic-nodes';
+import { SuperscriptPlugin } from '@platejs/basic-nodes/react';
+
+export const superscriptPlugin = SuperscriptPlugin.configure({
+  inputRules: [SuperscriptRules.markdown()],
+  shortcuts: { toggle: { keys: 'mod+period' } },
+});
+```
+
+## Ownership
+
+| Surface | Owner | What It Does |
+|---------|-------|--------------|
+| `BaseSuperscriptPlugin` | `@platejs/basic-nodes` | Headless superscript mark, HTML parser, render tag, selection rule, and `toggle` transform. |
+| `SuperscriptPlugin` | `@platejs/basic-nodes/react` | React wrapper for the headless superscript mark. |
+| `SuperscriptRules.markdown` | `@platejs/basic-nodes` | Optional `^` mark input rule factory. |
+| `BasicMarksKit` | Registry | Adds `SuperscriptPlugin`, the input rule, and `mod+period`. |
+| `MoreToolbarButton` | Registry UI | Calls `editor.tf.toggleMark(KEYS.sup, { remove: KEYS.sub })`. |
+
+The package owns superscript semantics. The registry owns shortcut configuration and toolbar placement.
+
+## Behavior
+
+| Behavior | Source |
+|----------|--------|
+| Mark key | `KEYS.sup` (`superscript`) |
+| Leaf behavior | `node.isLeaf: true` |
+| Toggle transform | `editor.tf.superscript.toggle()` calls `editor.tf.toggleMark(type, { remove: editor.getType(KEYS.sub) })`. |
+| Selection affinity | `directional` |
+| HTML tags | `sup` |
+| HTML styles | `vertical-align: super` |
+| Render output | `sup` |
+| Kit input rule | `SuperscriptRules.markdown()` |
+| Kit shortcut | `mod+period` |
+
+## API Reference
+
+| API | Package | Use |
+|-----|---------|-----|
+| `BaseSuperscriptPlugin` | `@platejs/basic-nodes` | Headless superscript plugin. |
+| `SuperscriptPlugin` | `@platejs/basic-nodes/react` | React superscript plugin. |
+| `SuperscriptRules.markdown()` | `@platejs/basic-nodes` | Creates the `^` mark input rule. |
+| `tf.superscript.toggle()` | `@platejs/basic-nodes` | Toggles superscript and removes subscript. |

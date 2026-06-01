@@ -33,7 +33,7 @@ Plugin pages are a lane inside `docs-creator`, not a separate skill.
 Use the docs goal template for non-trivial docs work:
 
 ```bash
-node .agents/rules/autogoal/scripts/create-goal-scratchpad.mjs \
+node .agents/skills/autogoal/scripts/create-goal-scratchpad.mjs \
   --template docs \
   --title "<short docs title>"
 ```
@@ -46,7 +46,7 @@ When docs are only a supporting surface under another dominant task, do not
 switch the primary template to `docs`. Add the docs pack to the owning plan:
 
 ```bash
-node .agents/rules/autogoal/scripts/create-goal-scratchpad.mjs \
+node .agents/skills/autogoal/scripts/create-goal-scratchpad.mjs \
   --template task \
   --with docs \
   --title "<short task title>"
@@ -56,7 +56,7 @@ For heavyweight architecture or proposal work that also changes docs, use the
 major primary template plus packs, for example:
 
 ```bash
-node .agents/rules/autogoal/scripts/create-goal-scratchpad.mjs \
+node .agents/skills/autogoal/scripts/create-goal-scratchpad.mjs \
   --template major-task \
   --with docs \
   --title "<short major task title>"
@@ -69,6 +69,16 @@ the caller explicitly asks for a goal-backed docs task.
 closeout contract: lane classification, source-backed claims, ownership map,
 link/demo checks, content build, and anti-slop audit.
 
+## Source Of Truth
+
+This file is the source. Generated skill copies are output.
+
+- Edit `.agents/rules/docs-creator.mdc`, not `.agents/skills/docs-creator/SKILL.md`.
+- After changing this rule, run `pnpm install` to regenerate the skill copy.
+- Verify the generated skill contains the intended rule text before handoff.
+- If generated output drifts, fix this source file and regenerate. Do not patch
+  generated skill text by hand.
+
 ## Read First
 
 Before writing, read only what actually grounds the page:
@@ -77,24 +87,110 @@ Before writing, read only what actually grounds the page:
 - nearest sibling docs in the same lane
 - the source code for the behavior or API being documented
 - strongest baselines:
-  - `content/index.mdx`
-  - `content/installation.mdx`
-  - `content/installation/plate-ui.mdx`
-  - `content/(guides)/plugin-rules.mdx`
-  - `content/(guides)/plugin-input-rules.mdx`
-  - `content/(plugins)/(serializing)/html.mdx`
-  - `content/(plugins)/(serializing)/markdown.mdx`
-  - `content/(plugins)/(ai)/ai.mdx`
+  - `content/docs/index.mdx`
+  - `content/docs/installation.mdx`
+  - `content/docs/installation/plate-ui.mdx`
+  - `content/docs/(guides)/plugin-rules.mdx`
+  - `content/docs/(guides)/plugin-input-rules.mdx`
+  - `content/docs/(plugins)/(serializing)/html.mdx`
+  - `content/docs/(plugins)/(serializing)/markdown.mdx`
+  - `content/docs/(plugins)/(ai)/ai.mdx`
 - relevant `docs/solutions/*` learnings when the lane touches ownership, spec
   truth, docs drift, or authoring doctrine
 
 Start from code plus the best baseline doc. Not from old prose alone.
 
+When the task is a docs gap review, read sideways before writing:
+
+- the likely target lane
+- the nearest reference page
+- the nearest concept guide
+- the feature/plugin page, if one owns the behavior
+- the docs nav surface (`content/docs/meta.json`) when adding, moving, merging,
+  or deleting pages
+
+The question is not "can this become a page?" The question is "which page shape
+will keep the concept findable without duplicating the reference?"
+
+When the work touches docs style, shadcn parity, registry components, install
+pages, or MDX component usage, also read the local shadcn reference corpus:
+
+- `../shadcn/apps/v4/content/docs/components/base/button.mdx`
+- `../shadcn/apps/v4/content/docs/components/base/chart.mdx`
+- `../shadcn/apps/v4/content/docs/components/base/sidebar.mdx`
+- `../shadcn/apps/v4/content/docs/installation/next.mdx`
+- `../shadcn/apps/v4/content/docs/registry/getting-started.mdx`
+- `../shadcn/apps/v4/mdx-components.tsx`
+- `docs/sync/shadcn/docs-style-corpus-2026-05-31.md` when present
+
+Use shadcn as the reference for density, MDX component grammar, and page
+scaffolding. Use Plate source as the authority for behavior, ownership, package
+names, and examples.
+
+## Gap Review And Page Topology
+
+When asked whether docs have gaps, answer with a page-topology decision, not a
+pile of possible pages.
+
+Classify each gap:
+
+| Gap | Fix |
+| --- | --- |
+| Missing mental model across several APIs or packages | Add a guide/system concept page. |
+| Missing exact options, signatures, or return values | Improve the API/reference section. |
+| Missing setup path for one capability | Improve the plugin/feature page. |
+| Same concept split across two small pages | Merge into the stronger page and redirect links. |
+| A page only repeats an existing reference | Delete or shrink it into a link from the canonical page. |
+| A behavior is source-real but hard to discover | Add a concept guide plus cross-links from the owning references. |
+
+Strong default: **concept page over primitive pages** when a behavior is a
+pipeline. For example, do not create separate "Delete" and "Merge" pages when
+the reader needs the editing lifecycle. Create one "Editing Behavior" guide with
+delete and merge as headings, then link the rule/API references into it.
+
+Keep references as references:
+
+- `Plugin Rules` owns `plugin.rules` keys and actions.
+- API pages own exact signatures and tables.
+- Plugin pages own feature setup and feature-specific behavior.
+- Concept guides own the mental model that crosses those pages.
+
+When adding a concept page, update the adjacent references with one precise
+cross-link. Do not copy the same explanation into every page.
+
+## Shadcn Style Layer
+
+The shadcn docs style is not "more words with friendlier tone." It is dense,
+structured, and component-driven:
+
+- Frontmatter owns the page title and description. The body starts fast.
+- Lead prose is usually one short paragraph. Copy that density unless Plate
+  needs extra disambiguation.
+- One section does one job. Install, usage, examples, RTL, composition, and API
+  reference are separate lanes.
+- MDX components carry structure. Use `<ComponentPreview>`, `<CodeTabs>`,
+  `<Steps>`, `<ComponentSource>`, `<Callout>`, `<LinkedCard>`, and `<Tabs>` when
+  they express real choices or workflow, not as decoration.
+- Package-manager commands stay as plain install/run fences so Plate can render
+  package-manager command tabs. Reserve `<CodeTabs>` for CLI/manual choices.
+- Titled code fences are the default for file edits. Use `title="..."` and
+  `showLineNumbers` when a path or line context matters.
+- Examples come as visible previews first, then terse explanation. Do not
+  explain a visual variant for three paragraphs when the preview and one line
+  do the job.
+- API reference is compact: exact prop/option tables and short caveats, not a
+  tutorial restart.
+
+Plate docs can stay more explanatory where the editor runtime is genuinely
+harder than a UI component, but the default should be shadcn-dense: short lead,
+clear section shape, real MDX affordances, no filler.
+
 ## Voice
 
 This is where docs usually go wrong.
 
-- **Conversational.** Use "you" and "we". "Let's start with...", "We'll pass...", "You can now...".
+- **Direct.** Use "you" when it helps, but do not pad every section with "we" or "let's".
+- **Shadcn-dense.** Short paragraphs, concrete verbs, visible examples, no essay before the first working path.
 - **Progressive.** One new idea per paragraph. Never land an advanced pattern before the fundamentals.
 - **Why before what.** Every non-obvious choice gets a one-line reason.
 - **Guide, don't just show.** One sentence of context before every code block. Code is never a substitute for prose.
@@ -133,12 +229,24 @@ Nothing else above the first `##`. No feature brag, no marketing adjectives, no 
 - Always state where behavior lives: core runtime, feature package, kit, app-local copied code.
 - If the page says "the kit also adds X", the ownership boundary matters — surface it in a table or callout.
 - For every named API, the reader should be able to tell you which package/layer owns it within 10 seconds of scanning.
+- For behavior that spans packages, name each layer: input rule, plugin rule,
+  transform, normalization, selection, UI component, registry kit, app-local
+  copy. If a layer is not involved, do not imply it is.
+- Use an ownership table when prose would blur the boundary.
 
 ### Quick path first
 
 - The reader does the thing before hitting the appendix.
 - The kit-based path is the default quick path in this repo.
 - Manual/headless path comes after, labelled as such.
+- When there are multiple valid starts, use a small branch selector near the
+  top: cards or links that jump to exact sections like "Use the CLI" and
+  "Existing Project".
+- For CLI/manual install choices, prefer `<CodeTabs>` with `Command` and
+  `Manual` tabs over stacked sections.
+- For package-manager variants, write the canonical install/run command in a
+  plain code fence and let Plate's command renderer produce the package-manager
+  tabs.
 
 ### Reference last
 
@@ -157,6 +265,26 @@ Nothing else above the first `##`. No feature brag, no marketing adjectives, no 
 
 - If the page passes ~300 lines, add an anchor list or "On this page" jump block near the top.
 - If the page passes ~600 lines, consider splitting. Ask first.
+
+### Navigation And Routing
+
+Adding, moving, merging, or deleting a docs page is a routing change.
+
+- Add the MDX page in the lane folder that matches its route.
+- Update `content/docs/meta.json` root `pages` when the raw page tree order
+  should change.
+- Update `_plate.categoryGroups` in `content/docs/meta.json` when the sidebar
+  overlay should show nested grouping, labels, descriptions, or CN titles.
+- Update `_plate.items` when the route needs title, label, description,
+  keywords, or CN title metadata.
+- Add links from the nearest owning pages, not from every vaguely related page.
+- If no `.cn.mdx` page is added, know that CN docs may fall back to English.
+  Record that as a caveat rather than pretending the page is translated.
+- Verify the route itself, not just the source file. Pager order and sidebar
+  grouping are rendered contracts.
+
+Do not leave orphan pages: every new page needs a route, a nav decision, and at
+least one useful inbound link from the owning neighborhood.
 
 ## Code Example Rules
 
@@ -224,13 +352,15 @@ Silence in the source code is a gap, not an agreement.
 
 1. Classify the lane.
 2. Lock the owner map.
-3. Define the fastest success path.
-4. Gather 1–3 real examples from code.
-5. Write the quick path.
-6. Add deeper explanation and boundaries.
-7. Add API or reference material only where it earns its keep.
-8. Trim repetition, vague adjectives, and fake completeness.
-9. Verify every claim against the current repo.
+3. Decide page topology: add, merge, delete, or cross-link.
+4. Define the fastest success path.
+5. Gather 1–3 real examples from code.
+6. Write the quick path.
+7. Add deeper explanation and boundaries.
+8. Add API or reference material only where it earns its keep.
+9. Wire navigation, neighbor links, and metadata.
+10. Trim repetition, vague adjectives, and fake completeness.
+11. Verify every claim against the current repo.
 
 ## Lane Map
 
@@ -239,6 +369,7 @@ Use the page shape that matches the job, not the one you wrote last time.
 | Lane | Job | What readers need first |
 | --- | --- | --- |
 | Install / get-started | help someone adopt Plate | choose a path, install, next step |
+| Component / registry item | teach a copied UI component or registry item | preview, install, usage |
 | Guide / system | teach a runtime or concept | mental model, ownership, quick start |
 | Plugin / feature | teach one capability | what it does, quickest setup, manual path |
 | Serialization / conversion | explain import/export or round-trip | direction split, environment constraints |
@@ -250,14 +381,16 @@ Use the page shape that matches the job, not the one you wrote last time.
 
 ### Install / Get Started
 
-Entry docs like `content/index.mdx`, `content/installation.mdx`.
+Entry docs like `content/docs/index.mdx`, `content/docs/installation.mdx`.
 
 Required shape:
 
 1. Short opening: what Plate is or what the guide does.
-2. Recommended path first.
-3. Alternative paths after.
-4. Next steps / where to go next.
+2. If there are multiple starts, add a compact branch selector that links to
+   exact sections.
+3. Recommended path first.
+4. Alternative paths after.
+5. Next steps / where to go next.
 
 Voice moves:
 
@@ -265,6 +398,38 @@ Voice moves:
 - "Let's start with the fastest setup" beats "Several setup options are available".
 - Keep branching shallow.
 - Link the exact next leaf, not a vague hub.
+- Use `<Steps>` with `###` step headings for actual procedures.
+- Show a working command, then the smallest real file edit that proves the
+  install worked.
+
+### Component / Registry Item
+
+Pages like Plate UI component docs or registry-item docs should follow the
+shadcn component shape unless Plate source proves a different ownership model.
+
+Required shape:
+
+1. Frontmatter title and description.
+2. Real `<ComponentPreview name="..." />` immediately after the frontmatter when
+   the demo exists.
+3. `## Installation` with `<CodeTabs>`:
+   - `Command` tab for the CLI command
+   - `Manual` tab with `<Steps>` only when manual install is realistic
+   - `<ComponentSource>` for the source file being copied
+4. `## Usage` with imports first, then the smallest working JSX.
+5. `## Examples` with one visible variant per `###` section.
+6. Optional `## RTL`, `## Composition`, or other behavior sections when the
+   source/demo actually supports them.
+7. `## API Reference` last with compact prop/option tables.
+
+Voice moves:
+
+- Preview before explanation when the component is visual.
+- One sentence before each variant preview is enough.
+- Use exact registry names and file paths.
+- Do not add `<PackageInfo>` to UI component pages unless the package itself is
+  the thing being taught.
+- Do not fake a manual path. If the CLI is the only supported path, say that.
 
 ### Guide / System
 
@@ -286,6 +451,46 @@ Voice moves:
 - Happy path before the full primitive catalog.
 - If something is explicit, say "explicit" — never imply hidden defaults.
 - End each mechanics section with a one-line landing.
+- If the guide explains a pipeline, use predictable section names for each
+  stage. Example: `Runtime Pipeline`, `Break Behavior`, `Delete Behavior`,
+  `Merge Behavior`, `Normalize Behavior`, `Selection Behavior`, `Recipes`,
+  `API Reference`.
+- Keep the concept guide above the details but below the reference. It should
+  make reference pages easier to use, not replace them.
+
+### Behavior / Runtime Concept
+
+Pages like `editing-behavior.mdx`.
+
+Use this lane when behavior crosses multiple source files, plugins, or docs
+lanes. The reader needs the lifecycle, not a dump of every option.
+
+Required shape:
+
+1. Opening with sibling disambiguation. Example: "Use Plugin Rules for
+   declarative node policy; use Editor Methods for imperative transforms."
+2. `## Choose the Right Surface` or equivalent decision table.
+3. `## Runtime Pipeline` with owner map.
+4. One section per pipeline stage.
+5. `## Recipes` for common outcomes.
+6. `## API Reference` linking to the canonical references.
+
+Source audit:
+
+- Read the public reference docs.
+- Read the core dispatcher or override layer.
+- Read the transform implementation that actually mutates the document.
+- Read feature-package defaults for examples.
+- Read UI/registry code only when the behavior is UI-owned.
+
+Voice moves:
+
+- Say which stage owns the behavior.
+- Keep primitive APIs in reference links, not repeated in prose.
+- Use tables for decision paths and stage behavior.
+- If two terms sound similar, split them early. Example: document-level merge
+  rules are not table cell merge commands.
+- End with what the reader can now decide or configure.
 
 ### Plugin / Feature
 
@@ -407,6 +612,10 @@ Voice moves:
 - Prefer binary wording over vibes.
 - If the docs claim behavior the runtime does not implement, the docs are wrong until the code changes.
 
+This lane is stricter than a normal concept guide. Use it when the doc becomes
+the contract for future implementation or review. Use Behavior / Runtime
+Concept when the runtime already exists and the reader needs to understand it.
+
 ## Writing Voice Examples
 
 **Opening — bad:**
@@ -459,6 +668,11 @@ Voice moves:
 
 - `<Steps>` for real multi-step procedures.
 - `###` inside `<Steps>` for sub-steps.
+- `<CodeTabs>` for CLI/manual choices only.
+- Plain install/run command fences for package-manager variants.
+- `<ComponentPreview>` near the top of component pages when the preview exists.
+- `<ComponentSource>` when the page asks the reader to copy a registry file.
+- `<LinkedCard>` or compact cards for branch selection, not for decoration.
 - Code blocks with `title="..."` when file context matters.
 - `showLineNumbers` + `{n-m}` line highlights when a large snippet needs focus.
 - Tables for option matrices, ownership boundaries, or variant comparisons.
@@ -473,16 +687,23 @@ Do not force `<ComponentPreview>`, `<PackageInfo>`, or a giant feature list just
 
 Before finishing a docs change:
 
-- `pnpm --filter www build:contentlayer` parses the MDX cleanly.
+- `pnpm --filter www build:source` parses the MDX cleanly.
+- `pnpm --filter www check:docs` passes when docs source parity or generated
+  source can be affected.
 - Every named API, option, transform, and component exists in the source.
 - Every import path matches the current repo/package layout.
 - Every ownership claim matches the code.
 - Every link target or route is real and not about to be removed.
 - Every `<ComponentPreview>` name points at a demo that exists.
+- `content/docs/meta.json` parses when docs nav metadata changes.
+- A local route check proves new or moved pages render. Curl is enough for
+  text-only pages; use Browser proof for visual/component behavior.
 - Opening lands in 3 sentences or fewer.
 - A first-time reader could complete the happy path before reaching `## API Reference`.
 - No placeholder comments, no `TODO`, no dead anchors.
 - No changelog voice ("previously", "now supports", "has been removed").
 - Neighboring lanes are split cleanly enough that a reader can answer "where does this behavior live?".
+- If `.agents/rules/docs-creator.mdc` changed, `pnpm install` regenerated the
+  skill copy and the generated `SKILL.md` reflects the source.
 
 If the page still reads like stitched-together notes, it is not done.

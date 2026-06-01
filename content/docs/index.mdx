@@ -1,0 +1,92 @@
+---
+title: Introduction
+description: Build rich-text editors with Plate, Plate UI, AI, MCP, and shadcn/ui.
+---
+
+Plate is a React framework for building rich-text editors. It gives you a headless editor runtime, composable plugins, and optional Plate UI components that you copy into your app. Start with Plate UI for a complete editor, or use the packages directly when you need a headless setup.
+
+## Choose a Path
+
+<Cards>
+  <Card
+    href="/docs/installation/plate-ui"
+    title="Install Plate UI"
+    description="Use the shadcn CLI to add the editor UI, kits, and starter components."
+  />
+  <Card
+    href="/docs/installation"
+    title="Pick an install guide"
+    description="Choose Next.js, React, RSC, Node.js, or manual setup."
+  />
+  <Card
+    href="/docs/plugin"
+    title="Learn plugins"
+    description="Understand the headless plugin model before customizing behavior."
+  />
+  <Card
+    href="/editors"
+    title="Start from a template"
+    description="Copy a complete editor configuration and adapt it in your app."
+  />
+</Cards>
+
+## What Plate Owns
+
+| Layer | What it owns | Start here |
+| --- | --- | --- |
+| `platejs` | Core editor runtime, React bindings, and editor APIs. | [Installation](/docs/installation) |
+| `@platejs/*` packages | Headless plugins for nodes, marks, serialization, collaboration, AI, and editor behavior. | [Plugin guide](/docs/plugin) |
+| Plate UI registry | App-local UI components, kits, editor templates, and API routes installed through the shadcn CLI. | [Plate UI Installation](/docs/installation/plate-ui) |
+| Your app | The copied component code, styling, routing, data model, and product-specific editor behavior. | [Plugin Components](/docs/plugin-components) |
+
+## Why Plate UI?
+
+Plate UI follows the shadcn/ui model: you copy the code, own it, and keep editing it in your app.
+
+- **Open code:** The UI layer is app-local code, not a sealed component package.
+- **Composition:** Components use predictable React and shadcn/ui conventions.
+- **CLI distribution:** Add kits, templates, components, API routes, and docs through the shadcn CLI.
+- **AI-ready:** Open component code and consistent registry metadata give agents real context.
+- **MCP-ready:** The [MCP setup](/docs/installation/mcp) lets AI tools inspect and apply Plate registry items.
+
+Done. You can install the full UI path, drop down to headless packages, or start from an editor template.
+
+## FAQ
+
+<Accordions>
+  <Accordion title="Which frameworks are Plate compatible with?">
+    Plate works in React environments. Use the [Next.js guide](/docs/installation/next) for server-rendered apps, the [React guide](/docs/installation/react) for Vite and client-side apps, [RSC](/docs/installation/rsc) for server components, and [Node.js](/docs/installation/node) for backend-only processing.
+  </Accordion>
+
+  <Accordion title="What's the difference between Plate and Plate UI?">
+    **Plate** is the headless editor framework: runtime, plugins, transforms, APIs, and React bindings. **Plate UI** is the copied UI layer: components, kits, editor templates, and API routes installed into your app.
+  </Accordion>
+
+  <Accordion title="Can I use Plate / Plate UI in my project?">
+    Yes. Plate and Plate UI are free for personal and commercial projects. Attribution is not required.
+  </Accordion>
+
+  <Accordion title="Is Plate UI a replacement for shadcn/ui?">
+    No. Plate UI uses [shadcn/ui](https://ui.shadcn.com/) conventions for editor-specific UI. Use shadcn/ui for the rest of your application.
+  </Accordion>
+
+  <Accordion title="How do I manage updates with an Open Code approach?">
+    Package behavior updates through `platejs` and `@platejs/*` dependencies. Copied UI code is yours, so update it by comparing the Plate registry source with your local files or by using the [MCP setup](/docs/installation/mcp).
+  </Accordion>
+
+  <Accordion title="Why copy/paste components instead of using an npm package?">
+    The copied component layer lets you change markup, styles, toolbar behavior, and product details without waiting for a package API to expose every option.
+  </Accordion>
+
+  <Accordion title="Will Plate UI be published as an npm package?">
+    No. Plate UI is distributed as registry code through the shadcn CLI so the UI layer stays owned by your app.
+  </Accordion>
+</Accordions>
+
+## Credits
+
+- [shadcn/ui](https://ui.shadcn.com/) - For UI inspiration, documentation, and the CLI.
+- [Radix UI](https://radix-ui.com) - For the unstyled, accessible primitives.
+- [Vercel](https://vercel.com) - For hosting.
+- [Shu Ding](https://shud.in) - Typography style adapted from [Nextra](https://nextra.site).
+- [cmdk](https://cmdk.paco.me) - For the `<Command />` component.

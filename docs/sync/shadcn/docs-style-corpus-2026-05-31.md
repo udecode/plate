@@ -1,0 +1,441 @@
+# shadcn docs style corpus - 2026-05-31
+
+Corpus root: `../shadcn/apps/v4`
+Files scanned: 220 (217 content docs, 3 readme/support markdown)
+Average lines: 175.6; median lines: 134
+Average lead paragraph words: 14.9; median lead words: 11
+
+## directory distribution
+- components/base: 59
+- components/radix: 59
+- changelog: 44
+- (root): 17
+- installation: 11
+- registry: 11
+- dark-mode: 6
+- forms: 5
+- rtl: 4
+- .: 1
+- components: 1
+- examples: 1
+- registry/bases: 1
+
+## top mdx components
+- <ComponentPreview>: 879
+- <Step>: 365
+- <TabsContent>: 234
+- <TabsTrigger>: 234
+- <Steps>: 184
+- <ComponentSource>: 124
+- <TabsList>: 114
+- <Button>: 112
+- <CodeTabs>: 110
+- <Field>: 104
+- <Callout>: 71
+- <CarouselItem>: 64
+- <LinkedCard>: 58
+- <FieldLabel>: 49
+- <Input>: 44
+- <FieldDescription>: 41
+- <FieldError>: 41
+- <Image>: 35
+- <Link>: 32
+- <TData>: 32
+- <DropdownMenuItem>: 27
+- <ButtonGroup>: 25
+- <Bar>: 22
+- <Carousel>: 22
+- <CarouselContent>: 22
+- <DataTable>: 22
+- <Table>: 22
+- <Checkbox>: 21
+- <FieldGroup>: 21
+- <DropdownMenu>: 20
+- <Sidebar>: 20
+- <Calendar>: 18
+- <FieldLegend>: 18
+- <Item>: 18
+- <NativeSelectOption>: 18
+- <Switch>: 17
+- <FieldSet>: 16
+- <InputGroupAddon>: 16
+- <SidebarGroup>: 16
+- <SidebarMenuButton>: 16
+
+## top headings
+- ## Installation: 114
+- ## RTL: 112
+- ## Usage: 111
+- ## Examples: 102
+- ## API Reference: 92
+- ## Composition: 78
+- ### Basic: 32
+- ### Disabled: 28
+- ### Add Components: 21
+- ### Create Project: 19
+- ### Invalid: 16
+- ## About: 14
+- ### Size: 14
+- ## Changelog: 12
+- ### Button: 12
+- ### Input Group: 11
+- ### Avatar: 10
+- ### Destructive: 10
+- ### Field: 10
+- ### Groups: 10
+- ### Update `<DataTable>`: 10
+- ### Vertical: 10
+- ### Input: 9
+- ### Badge: 8
+- ### Description: 8
+- ### Dropdown: 8
+- ### Outline: 8
+- ### Run the CLI: 8
+- ## Use shadcn/create: 7
+- ## Use the CLI: 7
+- ### Checkbox: 7
+- ### Form: 7
+- ### Select: 7
+- ### Textarea: 7
+- ## Accessibility: 6
+- ## Anatomy: 6
+- ## Existing Project: 6
+- ### Build Your Preset: 6
+- ### Card: 6
+- ### Choice Card: 6
+
+## code fences
+- plain: 1486
+- bash: 408
+- tsx showLineNumbers: 239
+- tsx: 190
+- text: 90
+- diff: 36
+- json title="components.json": 28
+- json title="components.json" showLineNumbers: 28
+- json title="registry-item.json" showLineNumbers: 23
+- txt: 22
+- tsx showLineNumbers title="form.tsx": 16
+- tsx title="components/example-chart.tsx": 16
+- json title="registry.json" showLineNumbers: 12
+- tsx title="components/example-chart.tsx" showLineNumbers: 10
+- typescript: 8
+- json title="package.json" showLineNumbers: 7
+- css title="app/globals.css" showLineNumbers: 6
+- bash title=".env.local": 5
+- json: 4
+- json title="example-style.json" showLineNumbers: 4
+- tsx showLineNumbers {2-5}: 4
+- tsx showLineNumbers {4-6}: 4
+- tsx showLineNumbers /browser/: 4
+- tsx showLineNumbers /data-invalid/ /aria-invalid/: 4
+- tsx showLineNumbers title="components/app-sidebar.tsx": 4
+- tsx showLineNumbers title="components/ui/sidebar.tsx": 4
+- tsx title="app/layout.tsx" showLineNumbers {1,7}: 4
+- astro title="src/pages/index.astro" showLineNumbers: 3
+- css: 3
+- json title="components.json" showLineNumbers {4}: 3
+- json title="components/ui/registry.json" showLineNumbers: 3
+- json title="example-theme.json" showLineNumbers: 3
+- json title="tsconfig.json" showLineNumbers: 3
+- ts: 3
+- tsx showLineNumbers title="app/page.tsx": 3
+- tsx showLineNumbers title="app/routes/home.tsx": 3
+- tsx showLineNumbers title="src/App.tsx": 3
+- tsx showLineNumbers title="src/routes/index.tsx": 3
+- tsx title="components/mode-toggle.tsx" showLineNumbers: 3
+- tsx title="components/theme-provider.tsx" showLineNumbers: 3
+
+## lane counts
+- component pages: 119
+- registry pages: 11
+- install/rtl pages: 15
+- pages with ComponentPreview: 128
+- pages with ComponentSource: 116
+- pages with Steps: 135
+- pages with Callout: 43
+- pages with tabs components: 112
+
+## derived style rules
+- Body leads are short. Frontmatter carries title and description; the first body paragraph usually routes the reader instead of re-explaining the product.
+- Component docs use a stable shape: preview, `## Installation`, `## Usage`, `## Examples`, optional behavior sections, and `## API Reference`.
+- Install docs branch early. `installation/next.mdx` and `installation/vite.mdx` use compact linked cards before long procedural sections.
+- Procedures use `<Steps>` and `###` headings. The corpus has 184 `<Steps>` tags and 365 `<Step>` tags.
+- Command or manual install variants use tabs. The corpus has 110 `<CodeTabs>` and 112 pages with tab components.
+- Visual component pages put `<ComponentPreview>` before explanation when the demo exists. The corpus has 879 previews across 128 pages.
+- Copyable registry source is explicit. The corpus has 124 `<ComponentSource>` tags, usually inside manual install paths.
+- File edits use titled code fences with `showLineNumbers`; API/reference prose stays terse and table-driven.
+- Callouts are used for constraints and important notes, not for every sibling concept or minor caveat.
+
+## representative pages
+### content/docs/components/base/button.mdx
+- title: Button
+- description: Displays a button or a component that looks like a button.
+- lead: Tailwind v4 [switched](https://tailwindcss.com/docs/upgrade-guide#buttons-use-the-default-cursor) from `cursor: pointer` to `cursor: default` for the button component.
+- headings: ## Installation | ## Usage | ## Cursor | ## Examples | ### Size | ### Default | ### Outline | ### Secondary | ### Ghost | ### Destructive | ### Link | ### Icon
+- components: ComponentPreview, CodeTabs, TabsList, TabsTrigger, TabsContent, Steps, Step, ComponentSource, Button, Spinner
+- fences: bash, plain, tsx, css showLineNumbers title="globals.css"
+### content/docs/components/base/chart.mdx
+- title: Chart
+- description: Beautiful charts. Built using Recharts. Copy and paste into your apps.
+- lead: **Updated:** The `chart` component now uses Recharts v3. If you're upgrading existing chart code, see [Updating to Recharts v3](#updating-to-recharts-v3).
+- headings: ## Component | ## Updating to Recharts v3 | ## Installation | ## Your First Chart | ### Add a Grid | ### Add an Axis | ### Add Tooltip | ### Add Legend | ## Chart Config | ## Theming | ### CSS Variables | ### hex, hsl or oklch
+- components: Callout, ComponentPreview, ChartContainer, BarChart, Bar, ChartTooltip, ChartTooltipContent, CodeTabs, TabsList, TabsTrigger, TabsContent, Steps, Step, ComponentSource, CartesianGrid, XAxis, ChartLegend, ChartLegendContent, LabelList, LineChart
+- fences: tsx showLineNumbers /ChartContainer/ /ChartTooltipContent/, plain, bash, css title="app/globals.css" showLineNumbers, tsx title="components/example-chart.tsx" showLineNumbers, tsx /CartesianGrid/, tsx showLineNumbers {3}, tsx /XAxis/, tsx showLineNumbers {4-10}, tsx, tsx showLineNumbers {11}, tsx showLineNumbers {12}, tsx showLineNumbers /ChartConfig/, tsx title="components/example-chart.tsx", tsx showLineNumbers /browser/
+### content/docs/components/base/sidebar.mdx
+- title: Sidebar
+- description: A composable, themeable and customizable sidebar component.
+- lead: Sidebars are one of the most complex components to build. They are central to any application and often contain a lot of moving parts.
+- headings: ## Installation | ## Usage | ## Composition | ## Structure | ## SidebarProvider | ### Props | ### Width | ### Keyboard Shortcut | ## Sidebar | ### Props | ## useSidebar | ## SidebarHeader
+- components: ComponentPreview, CodeTabs, TabsList, TabsTrigger, TabsContent, ComponentSource, SidebarProvider, AppSidebar, SidebarTrigger, Sidebar, SidebarHeader, SidebarContent, SidebarGroup, SidebarFooter, Image, Callout, SidebarInset, SidebarMenu, SidebarMenuItem, DropdownMenu, DropdownMenuTrigger, SidebarMenuButton, ChevronDown, DropdownMenuContent, DropdownMenuItem, User2, SidebarGroupLabel, SidebarGroupAction, Plus, SidebarGroupContent, Collapsible, CollapsibleTrigger, CollapsibleContent, Home, SidebarMenuAction, SidebarMenuSub, SidebarMenuSubItem, SidebarMenuSubButton, SidebarMenuBadge, SidebarMenuSkeleton, SidebarRail, Button, ExternalLinkIcon, Steps, Step, Sheet, SheetContent, PanelLeftIcon
+- fences: bash, plain, tsx showLineNumbers title="app/layout.tsx", tsx showLineNumbers title="components/app-sidebar.tsx", text, tsx showLineNumbers title="components/ui/sidebar.tsx", tsx showLineNumbers, css, tsx, diff
+### content/docs/installation/next.mdx
+- title: Next.js
+- description: Install and configure shadcn/ui for Next.js.
+- lead: Choose the setup that matches your starting point.
+- headings: ## Use shadcn/create | ### Build Your Preset | ### Create Project | ### Add Components | ## Use the CLI | ### Create Project | ### Add Components | ## Existing Project | ### Create Project | ### Configure Tailwind CSS and Import Aliases | ### Run the CLI | ### Add Components
+- components: LinkedCard, Steps, Button, Link, Card, CardHeader, CardTitle, CardDescription, CardContent
+- fences: bash, plain, tsx showLineNumbers title="app/page.tsx", json title="tsconfig.json" showLineNumbers
+### content/docs/installation/vite.mdx
+- title: Vite
+- description: Install and configure shadcn/ui for Vite.
+- lead: Choose the setup that matches your starting point.
+- headings: ## Use shadcn/create | ### Build Your Preset | ### Create Project | ### Add Components | ## Use the CLI | ### Create Project | ### Add Components | ## Existing Project | ### Create Project | ### Add Tailwind CSS | ### Edit tsconfig.json file | ### Edit tsconfig.app.json file
+- components: LinkedCard, Steps, Button, Link, Card, CardHeader, CardTitle, CardDescription, CardContent
+- fences: bash, plain, tsx showLineNumbers title="src/App.tsx", css title="src/index.css", ts title="tsconfig.json" {11-16} showLineNumbers, ts title="tsconfig.app.json" {4-9} showLineNumbers, typescript title="vite.config.ts" showLineNumbers {1,2,8-13}
+### content/docs/registry/getting-started.mdx
+- title: Getting Started
+- description: Learn how to get setup and run your own component registry.
+- lead: This guide will walk you through the process of setting up your own component registry. It assumes you already have a project with components and would like to turn it into a registry.
+- headings: ## Requirements | ## registry.json | ## Structure your registry | ### Option A: Single registry.json | ### Option B: Using include | ## Add an item | ### Create a UI component | ### Add the item to the registry | ## Serve your registry | ### Option A: Static JSON files | ### Option B: Dynamic route handlers | #### Request headers
+- components: Button, Callout, Accordion, AccordionItem, AccordionTrigger, AccordionContent
+- fences: json title="registry.json" showLineNumbers, plain, txt, json title="components/ui/registry.json" showLineNumbers, json title="hooks/registry.json" showLineNumbers, tsx title="components/ui/button.tsx" showLineNumbers, json title="registry.json" showLineNumbers {6-17}, bash, ts title="app/r/registry.json/route.ts" showLineNumbers, ts title="app/r/[name].json/route.ts" showLineNumbers, typescript title="next.config.ts" showLineNumbers, javascript title="server.js" showLineNumbers, json title="components.json" showLineNumbers
+### content/docs/registry/registry-item-json.mdx
+- title: registry-item.json
+- description: Specification for registry items.
+- lead: The `registry-item.json` schema is used to define your custom registry items.
+- headings: ## Definitions | ### $schema | ### name | ### title | ### description | ### type | ### author | ### dependencies | ### devDependencies | ### registryDependencies | ### files | #### path
+- components: Link, Callout
+- fences: json title="registry-item.json" showLineNumbers, plain
+
+## per-file inventory
+- README.md | lines=2 | tags=- | headings=-
+- content/docs/(root)/_blocks.mdx | lines=239 | tags=Steps,Callout,Image | headings=## Setup your workspace / ### Fork the repository / ### Create a new branch / ### Install dependencies / ### Start the dev server / ## Add a block
+- content/docs/(root)/_v0.mdx | lines=31 | tags=Image | headings=-
+- content/docs/(root)/cli.mdx | lines=506 | tags=- | headings=## init / ## add / ## apply / ## preset / ### preset decode / ### preset resolve
+- content/docs/(root)/components-json.mdx | lines=380 | tags=Callout,Link | headings=## $schema / ## style / ## tailwind / ### tailwind.config / ### tailwind.css / ### tailwind.baseColor
+- content/docs/(root)/directory.mdx | lines=75 | tags=Callout,DirectoryList,LinkedCard | headings=## Documentation
+- content/docs/(root)/figma.mdx | lines=23 | tags=Callout | headings=## Free / ## Paid
+- content/docs/(root)/index.mdx | lines=78 | tags=Accordion,AccordionItem,AccordionTrigger,AccordionContent | headings=## Open Code / ## Composition / ## Distribution / ## Beautiful Defaults / ## AI-Ready
+- content/docs/(root)/javascript.mdx | lines=45 | tags=- | headings=-
+- content/docs/(root)/legacy.mdx | lines=13 | tags=Button,Link | headings=-
+- content/docs/(root)/mcp.mdx | lines=339 | tags=Tabs,TabsList,TabsTrigger,TabsContent,Callout | headings=## Quick Start / ## What is MCP? / ## How It Works / ## Supported Registries / ## Configuration / ### Claude Code
+- content/docs/(root)/monorepo.mdx | lines=255 | tags=Steps,Callout | headings=## Getting started / ### Create a new monorepo project / ### Add components to your project / ### Importing components / ## File Structure / ## Requirements
+- content/docs/(root)/new.mdx | lines=107 | tags=Button,Login03 | headings=## Add Components / ## Customize Your Theme / ## Add a block / ## Install from Registries / ## Use AI to Build / ## Install the shadcn Skills
+- content/docs/(root)/package-imports.mdx | lines=235 | tags=Callout,Steps | headings=## Example / ## App / ### Configure `package.json` / ### Configure TypeScript / ### Configure `components.json` / ## Monorepo
+- content/docs/(root)/react-19.mdx | lines=167 | tags=Callout,Accordion,AccordionItem,AccordionTrigger,AccordionContent,Steps,Step | headings=## TL;DR / ## What's happening? / ## How to fix this / ### Solution 1: `--force` or `--legacy-peer-deps` / ### Solution 2: Use React 18 / ## Using shadcn/ui on Next.js 15
+- content/docs/(root)/skills.mdx | lines=72 | tags=- | headings=## Install / ## What's Included / ### Project Context / ### CLI Commands / ### Theming and Customization / ### Registry Authoring
+- content/docs/(root)/tailwind-v4.mdx | lines=334 | tags=LinkedCard,Callout,AccordionPrimitive.Item,Steps,Step | headings=## What's New / ## Try It Out / ## Upgrade Your Project / ### 1. Follow the Tailwind v4 Upgrade Guide / ### 2. Update your CSS variables / ### 3. Update colors for charts
+- content/docs/(root)/theming.mdx | lines=305 | tags=Callout,CodeCollapsibleWrapper | headings=## Token Convention / ## Theme Tokens / ## Radius Scale / ## Adding New Tokens / ## Base Colors / ## Default Theme CSS
+- content/docs/changelog/2023-06-new-cli.mdx | lines=479 | tags=Image,ComponentPreview,Callout,Steps,SheetPrimitive.Portal,SheetPrimitive.Overlay,SheetPortal,SheetOverlay,SheetPrimitive.Content,SheetPrimitive.Close,X,HTMLDivElement,SheetPrimitive.Title,SheetPrimitive.Description,Sheet | headings=### New CLI / ### `init` / ### `add` / ### `diff` (experimental) / ### Theming with CSS Variables or Tailwind Colors / #### Utility classes
+- content/docs/changelog/2023-07-javascript.mdx | lines=46 | tags=- | headings=-
+- content/docs/changelog/2023-12-new-components.mdx | lines=69 | tags=ComponentPreview,Link,Resizable,AlertDialog | headings=### Carousel / ### Drawer / ### Pagination / ### Resizable / ### Sonner / ### CLI updates
+- content/docs/changelog/2024-03-blocks.mdx | lines=100 | tags=Image | headings=### Open Source / ### Request a Block / ### v0
+- content/docs/changelog/2024-03-breadcrumb-otp.mdx | lines=26 | tags=Link,ComponentPreview | headings=### Breadcrumb / ### Input OTP
+- content/docs/changelog/2024-04-lift-mode.mdx | lines=32 | tags=Image | headings=-
+- content/docs/changelog/2024-08-npx-shadcn-init.mdx | lines=46 | tags=- | headings=### Update Your Project
+- content/docs/changelog/2024-10-react-19.mdx | lines=12 | tags=- | headings=-
+- content/docs/changelog/2024-10-sidebar.mdx | lines=14 | tags=- | headings=-
+- content/docs/changelog/2024-11-icons.mdx | lines=14 | tags=- | headings=-
+- content/docs/changelog/2024-12-monorepo.mdx | lines=19 | tags=- | headings=-
+- content/docs/changelog/2025-01-blocks.mdx | lines=12 | tags=- | headings=-
+- content/docs/changelog/2025-02-registry-schema.mdx | lines=14 | tags=- | headings=-
+- content/docs/changelog/2025-02-tailwind-v4.mdx | lines=23 | tags=- | headings=-
+- content/docs/changelog/2025-04-cross-framework.mdx | lines=10 | tags=- | headings=-
+- content/docs/changelog/2025-04-mcp.mdx | lines=18 | tags=Image | headings=-
+- content/docs/changelog/2025-04-shadcn-2-5.mdx | lines=12 | tags=- | headings=-
+- content/docs/changelog/2025-05-new-site.mdx | lines=12 | tags=- | headings=-
+- content/docs/changelog/2025-06-calendar.mdx | lines=14 | tags=Image | headings=-
+- content/docs/changelog/2025-06-radix-ui.mdx | lines=23 | tags=- | headings=-
+- content/docs/changelog/2025-07-local-file-support.mdx | lines=23 | tags=- | headings=-
+- content/docs/changelog/2025-07-universal-registry.mdx | lines=12 | tags=- | headings=-
+- content/docs/changelog/2025-08-cli-3-mcp.mdx | lines=207 | tags=Image | headings=### What's New / ### Namespaced Registries / ### Private Registries / ### Search & Discovery / ### MCP Server / ### Faster Everything
+- content/docs/changelog/2025-09-registry-index.mdx | lines=20 | tags=- | headings=-
+- content/docs/changelog/2025-10-new-components.mdx | lines=400 | tags=Spinner,ComponentPreview,Kbd,KbdGroup,ButtonGroup,Button,ButtonGroupText,Input,InputGroup,InputGroupInput,InputGroupAddon,SearchIcon,Field,FieldLabel,FieldDescription,FieldSet,FieldLegend,FieldGroup,Item,ItemMedia,HomeIcon,ItemContent,ItemTitle,ItemDescription,Empty,EmptyMedia,InboxIcon,EmptyTitle,EmptyDescription,EmptyContent | headings=### Spinner / ### Kbd / ### Button Group / ### Input Group / ### Field / ### Item
+- content/docs/changelog/2025-10-registry-directory.mdx | lines=12 | tags=- | headings=-
+- content/docs/changelog/2025-12-shadcn-create.mdx | lines=47 | tags=Button,Link | headings=-
+- content/docs/changelog/2026-01-base-ui.mdx | lines=46 | tags=Button,Link | headings=### What's New / ### Same Abstraction, Different Primitives
+- content/docs/changelog/2026-01-inline-side-styles.mdx | lines=70 | tags=PopoverPrimitive.Popup,Popover,PopoverTrigger,PopoverContent | headings=### What Changed / ### Usage / ### LLM Prompt
+- content/docs/changelog/2026-01-rtl.mdx | lines=83 | tags=ComponentPreview | headings=### Our approach to RTL / ### How it works / ### RTL examples for every component / ### CLI updates / ## Try it out / ### Links
+- content/docs/changelog/2026-02-blocks.mdx | lines=19 | tags=- | headings=-
+- content/docs/changelog/2026-02-radix-ui.mdx | lines=39 | tags=- | headings=### What's Changed / ### Migrating Existing Projects
+- content/docs/changelog/2026-03-cli-v4.mdx | lines=154 | tags=- | headings=## shadcn/skills / ## Introducing --preset / ## Switching presets / ## Skills + Presets / ## New shadcn/create / ## New --dry-run, --diff, and --view flags
+- content/docs/changelog/2026-03-luma.mdx | lines=38 | tags=Image,Button,Link | headings=-
+- content/docs/changelog/2026-04-component-composition.mdx | lines=32 | tags=- | headings=## Why we added this / ### Bring docs into your agent
+- content/docs/changelog/2026-04-partial-preset-apply.mdx | lines=36 | tags=Button,Link | headings=-
+- content/docs/changelog/2026-04-pointer-cursor.mdx | lines=25 | tags=- | headings=-
+- content/docs/changelog/2026-04-preset-commands.mdx | lines=94 | tags=Button,Link | headings=## Decode a preset / ## Resolve from a project / ## Share or open
+- content/docs/changelog/2026-04-sera.mdx | lines=38 | tags=Image,Button,Link | headings=-
+- content/docs/changelog/2026-04-shadcn-apply.mdx | lines=22 | tags=Button,Link | headings=-
+- content/docs/changelog/2026-05-package-imports-target-aliases.mdx | lines=64 | tags=- | headings=## Package imports / ## Target aliases
+- content/docs/changelog/2026-05-registry-include.mdx | lines=121 | tags=- | headings=## Build output / ## Validate your registry / ## Registry loaders
+- content/docs/changelog/2026-05-rhea.mdx | lines=46 | tags=Image,Button,Link | headings=## Why a new style?
+- content/docs/changelog/index.mdx | lines=7 | tags=- | headings=-
+- content/docs/components/base/accordion.mdx | lines=168 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,Accordion,AccordionItem,AccordionTrigger,AccordionContent | headings=## Installation / ## Usage / ## Composition / ## Examples / ### Basic / ### Multiple
+- content/docs/components/base/alert-dialog.mdx | lines=188 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,AlertDialog,AlertDialogTrigger,Button,AlertDialogContent,AlertDialogHeader,AlertDialogTitle,AlertDialogDescription,AlertDialogFooter,AlertDialogCancel,AlertDialogAction | headings=## Installation / ## Usage / ## Composition / ## Examples / ### Basic / ### Small
+- content/docs/components/base/alert.mdx | lines=168 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,Alert,InfoIcon,AlertTitle,AlertDescription,AlertAction,Button | headings=## Installation / ## Usage / ## Composition / ## Examples / ### Basic / ### Destructive
+- content/docs/components/base/aspect-ratio.mdx | lines=105 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,AspectRatio,Image | headings=## Installation / ## Usage / ## Examples / ### Square / ### Portrait / ## RTL
+- content/docs/components/base/avatar.mdx | lines=223 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,Avatar,AvatarImage,AvatarFallback,AvatarBadge,AvatarGroupCount | headings=## Installation / ## Usage / ## Composition / ## Examples / ### Basic / ### Badge
+- content/docs/components/base/badge.mdx | lines=104 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,Badge | headings=## Installation / ## Usage / ## Examples / ### Variants / ### With Icon / ### With Spinner
+- content/docs/components/base/breadcrumb.mdx | lines=205 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,Breadcrumb,BreadcrumbList,BreadcrumbItem,BreadcrumbLink,BreadcrumbSeparator,BreadcrumbPage,DropdownMenu,BreadcrumbEllipsis | headings=## Installation / ## Usage / ## Composition / ## Examples / ### Basic / ### Custom separator
+- content/docs/components/base/button-group.mdx | lines=246 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,ButtonGroup,Button,Kbd,ButtonGroupSeparator,ButtonGroupText,Label,Input | headings=## Installation / ## Usage / ## Composition / ## Accessibility / ## ButtonGroup vs ToggleGroup / ## Examples
+- content/docs/components/base/button.mdx | lines=164 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,Button,Spinner | headings=## Installation / ## Usage / ## Cursor / ## Examples / ### Size / ### Default
+- content/docs/components/base/calendar.mdx | lines=405 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,Date,Calendar,DayPicker,Locale,Button,CalendarDayButton | headings=## Installation / ## Usage / ## About / ## Date Picker / ## Persian / Hijri / Jalali Calendar / ## Selected Date (With TimeZone)
+- content/docs/components/base/card.mdx | lines=185 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,Card,CardHeader,CardTitle,CardDescription,CardAction,CardContent,CardFooter | headings=## Installation / ## Usage / ## Composition / ## Examples / ### Size / ### Image
+- content/docs/components/base/carousel.mdx | lines=336 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,Carousel,CarouselContent,CarouselItem,CarouselPrevious,CarouselNext,CarouselApi | headings=## About / ## Installation / ## Usage / ## Composition / ## Examples / ### Sizes
+- content/docs/components/base/chart.mdx | lines=603 | tags=Callout,ComponentPreview,ChartContainer,BarChart,Bar,ChartTooltip,ChartTooltipContent,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,CartesianGrid,XAxis,ChartLegend,ChartLegendContent,LabelList,LineChart | headings=## Component / ## Updating to Recharts v3 / ## Installation / ## Your First Chart / ### Add a Grid / ### Add an Axis
+- content/docs/components/base/checkbox.mdx | lines=139 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,Checkbox,Field | headings=## Installation / ## Usage / ## Checked State / ## Invalid State / ## Examples / ### Basic
+- content/docs/components/base/collapsible.mdx | lines=145 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,Collapsible,CollapsibleTrigger,CollapsibleContent | headings=## Installation / ## Usage / ## Composition / ## Controlled State / ## Examples / ### Basic
+- content/docs/components/base/combobox.mdx | lines=329 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,Combobox,ComboboxInput,ComboboxContent,ComboboxEmpty,ComboboxList,ComboboxItem,ComboboxChips,ComboboxValue,ComboboxChip,ComboboxChipsInput | headings=## Installation / ## Usage / ## Composition / ### Simple / ### With chips / ### With groups and collection
+- content/docs/components/base/command.mdx | lines=156 | tags=ComponentPreview,Command,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,CommandInput,CommandList,CommandEmpty,CommandGroup,CommandItem,CommandSeparator | headings=## About / ## Installation / ## Usage / ## Composition / ## Examples / ### Basic
+- content/docs/components/base/context-menu.mdx | lines=196 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,ContextMenu,ContextMenuTrigger,ContextMenuContent,ContextMenuItem | headings=## Installation / ## Usage / ## Composition / ## Examples / ### Basic / ### Submenu
+- content/docs/components/base/data-table.mdx | lines=899 | tags=ComponentPreview,Table,Callout,DataTable,Steps,Payment,TData,TableHeader,TableRow,TableHead,TableBody,TableCell,DropdownMenu,DropdownMenuTrigger,Button,MoreHorizontal,DropdownMenuContent,DropdownMenuLabel,DropdownMenuItem,DropdownMenuSeparator,SortingState,ArrowUpDown,ColumnFiltersState,Input,VisibilityState,DropdownMenuCheckboxItem,Checkbox,ComponentSource,DataTableColumnHeader,DataTablePagination,DataTableViewOptions | headings=## Introduction / ## Table of Contents / ## Installation / ## Prerequisites / ## Project Structure / ## Basic Table
+- content/docs/components/base/date-picker.mdx | lines=119 | tags=ComponentPreview,Popover,Calendar,Date,PopoverTrigger,Button,CalendarIcon,PopoverContent | headings=## Installation / ## Usage / ## Composition / ## Examples / ### Basic / ### Range Picker
+- content/docs/components/base/dialog.mdx | lines=137 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,Dialog,DialogTrigger,DialogContent,DialogHeader,DialogTitle,DialogDescription | headings=## Installation / ## Usage / ## Composition / ## Examples / ### Custom Close Button / ### No Close Button
+- content/docs/components/base/direction.mdx | lines=94 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,DirectionProvider | headings=## Installation / ## Usage / ## useDirection
+- content/docs/components/base/drawer.mdx | lines=134 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,Drawer,DrawerTrigger,DrawerContent,DrawerHeader,DrawerTitle,DrawerDescription,DrawerFooter,Button,DrawerClose | headings=## About / ## Installation / ## Usage / ## Composition / ## Examples / ### Scrollable Content
+- content/docs/components/base/dropdown-menu.mdx | lines=208 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,DropdownMenu,DropdownMenuTrigger,Button,DropdownMenuContent,DropdownMenuGroup,DropdownMenuLabel,DropdownMenuItem,DropdownMenuSeparator | headings=## Installation / ## Usage / ## Composition / ## Examples / ### Basic / ### Submenu
+- content/docs/components/base/empty.mdx | lines=243 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,Empty,EmptyHeader,EmptyMedia,Icon,EmptyTitle,EmptyDescription,EmptyContent,Button,Avatar,AvatarImage,AvatarFallback | headings=## Installation / ## Usage / ## Composition / ## Examples / ### Outline / ### Background
+- content/docs/components/base/field.mdx | lines=408 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,FieldSet,FieldLegend,FieldDescription,FieldGroup,Field,FieldLabel,Input,FieldError,Switch,Checkbox,FieldContent,FieldTitle,FieldSeparator | headings=## Installation / ## Usage / ## Composition / ### Field / ### FieldGroup / ### FieldSet
+- content/docs/components/base/hover-card.mdx | lines=147 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,HoverCard,HoverCardTrigger,HoverCardContent | headings=## Installation / ## Usage / ## Composition / ## Trigger Delays / ## Positioning / ## Examples
+- content/docs/components/base/input-group.mdx | lines=319 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,InputGroup,InputGroupInput,InputGroupAddon,SearchIcon,Callout,IconInfoCircle,InputGroupTextarea,InputGroupButton,CopyIcon,Input,Textarea | headings=## Installation / ## Usage / ## Composition / ## Align / ### inline-start / ### inline-end
+- content/docs/components/base/input-otp.mdx | lines=175 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,InputOTP,InputOTPGroup,InputOTPSlot,InputOTPSeparator | headings=## About / ## Installation / ## Usage / ## Composition / ## Pattern / ## Examples
+- content/docs/components/base/input.mdx | lines=202 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,Input | headings=## Installation / ## Usage / ## Examples / ### Basic / ### Field / ### Field Group
+- content/docs/components/base/item.mdx | lines=299 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,Item,ItemMedia,Icon,ItemContent,ItemTitle,ItemDescription,ItemActions,Button,HomeIcon,ItemGroup,ItemSeparator,ItemHeader,ItemFooter | headings=## Installation / ## Usage / ## Composition / ## Item vs Field / ## Variant / ## Size
+- content/docs/components/base/kbd.mdx | lines=127 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,Kbd,KbdGroup | headings=## Installation / ## Usage / ## Composition / ## Examples / ### Group / ### Button
+- content/docs/components/base/label.mdx | lines=97 | tags=ComponentPreview,Callout,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,Label,Field,FieldLabel,Input | headings=## Installation / ## Usage / ## Label in Field / ## RTL / ## API Reference
+- content/docs/components/base/menubar.mdx | lines=164 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,Menubar,MenubarMenu,MenubarTrigger,MenubarContent,MenubarGroup,MenubarItem,MenubarShortcut,MenubarSeparator | headings=## Installation / ## Usage / ## Composition / ## Examples / ### Checkbox / ### Radio
+- content/docs/components/base/native-select.mdx | lines=173 | tags=Callout,InfoIcon,ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,NativeSelect,NativeSelectOption,NativeSelectOptGroup | headings=## Installation / ## Usage / ## Composition / ### Simple / ### With groups / ## Examples
+- content/docs/components/base/navigation-menu.mdx | lines=143 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,NavigationMenu,NavigationMenuList,NavigationMenuItem,NavigationMenuTrigger,NavigationMenuContent,NavigationMenuLink,Link | headings=## Installation / ## Usage / ## Composition / ## Link Component / ## RTL / ## API Reference
+- content/docs/components/base/pagination.mdx | lines=213 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,Pagination,PaginationContent,PaginationItem,PaginationPrevious,PaginationLink,PaginationEllipsis,PaginationNext,Link,Callout,ChevronLeftIcon,ChevronRightIcon | headings=## Installation / ## Usage / ## Composition / ## Examples / ### Simple / ### Icons Only
+- content/docs/components/base/popover.mdx | lines=121 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,Popover,PopoverTrigger,Button,PopoverContent,PopoverHeader,PopoverTitle,PopoverDescription | headings=## Installation / ## Usage / ## Composition / ## Examples / ### Basic / ### Align
+- content/docs/components/base/progress.mdx | lines=115 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,Progress,ProgressLabel,ProgressValue | headings=## Installation / ## Usage / ## Composition / ### With label and value / ## Examples / ### Label
+- content/docs/components/base/radio-group.mdx | lines=130 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,RadioGroup,RadioGroupItem,Label | headings=## Installation / ## Usage / ## Composition / ## Examples / ### Description / ### Choice Card
+- content/docs/components/base/resizable.mdx | lines=139 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,ResizablePanelGroup,ResizablePanel,ResizableHandle,Callout | headings=## About / ## Installation / ## Usage / ## Composition / ## Examples / ### Vertical
+- content/docs/components/base/scroll-area.mdx | lines=102 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,ScrollArea | headings=## Installation / ## Usage / ## Composition / ## Examples / ### Horizontal / ## RTL
+- content/docs/components/base/select.mdx | lines=160 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,Select,SelectTrigger,SelectValue,SelectContent,SelectGroup,SelectItem,Field,FieldLabel | headings=## Installation / ## Usage / ## Composition / ## Examples / ### Align Item With Trigger / ### Groups
+- content/docs/components/base/separator.mdx | lines=94 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,Separator | headings=## Installation / ## Usage / ## Examples / ### Vertical / ### Menu / ### List
+- content/docs/components/base/sheet.mdx | lines=119 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,Sheet,SheetTrigger,SheetContent,SheetHeader,SheetTitle,SheetDescription | headings=## Installation / ## Usage / ## Composition / ## Examples / ### Side / ### No Close Button
+- content/docs/components/base/sidebar.mdx | lines=665 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,ComponentSource,SidebarProvider,AppSidebar,SidebarTrigger,Sidebar,SidebarHeader,SidebarContent,SidebarGroup,SidebarFooter,Image,Callout,SidebarInset,SidebarMenu,SidebarMenuItem,DropdownMenu,DropdownMenuTrigger,SidebarMenuButton,ChevronDown,DropdownMenuContent,DropdownMenuItem,User2,SidebarGroupLabel,SidebarGroupAction,Plus,SidebarGroupContent,Collapsible,CollapsibleTrigger,CollapsibleContent,Home,SidebarMenuAction,SidebarMenuSub,SidebarMenuSubItem,SidebarMenuSubButton,SidebarMenuBadge,SidebarMenuSkeleton,SidebarRail,Button,ExternalLinkIcon,Steps,Step,Sheet,SheetContent,PanelLeftIcon | headings=## Installation / ## Usage / ## Composition / ## Structure / ## SidebarProvider / ### Props
+- content/docs/components/base/skeleton.mdx | lines=87 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,Skeleton | headings=## Installation / ## Usage / ## Examples / ### Avatar / ### Card / ### Text
+- content/docs/components/base/slider.mdx | lines=104 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,Slider | headings=## Installation / ## Usage / ## Examples / ### Range / ### Multiple Thumbs / ### Vertical
+- content/docs/components/base/sonner.mdx | lines=127 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,Toaster,ComponentSource | headings=## About / ## Installation / ## Usage / ## Examples / ### Types / ### Description
+- content/docs/components/base/spinner.mdx | lines=114 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,Spinner,LoaderIcon | headings=## Installation / ## Usage / ## Customization / ## Examples / ### Size / ### Button
+- content/docs/components/base/switch.mdx | lines=104 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,Switch | headings=## Installation / ## Usage / ## Examples / ### Description / ### Choice Card / ### Disabled
+- content/docs/components/base/table.mdx | lines=145 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,Table,TableCaption,TableHeader,TableRow,TableHead,TableBody,TableCell,TableFooter,DropdownMenu | headings=## Installation / ## Usage / ## Composition / ## Examples / ### Footer / ### Actions
+- content/docs/components/base/tabs.mdx | lines=120 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,Tabs | headings=## Installation / ## Usage / ## Composition / ## Examples / ### Line / ### Vertical
+- content/docs/components/base/textarea.mdx | lines=107 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,Textarea | headings=## Installation / ## Usage / ## Examples / ### Field / ### Disabled / ### Invalid
+- content/docs/components/base/toast.mdx | lines=9 | tags=- | headings=-
+- content/docs/components/base/toggle-group.mdx | lines=138 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,ToggleGroup,ToggleGroupItem | headings=## Installation / ## Usage / ## Composition / ## Examples / ### Outline / ### Size
+- content/docs/components/base/toggle.mdx | lines=96 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,Toggle | headings=## Installation / ## Usage / ## Examples / ### Outline / ### With Text / ### Size
+- content/docs/components/base/tooltip.mdx | lines=149 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,TooltipProvider,ComponentSource,Tooltip,TooltipTrigger,TooltipContent | headings=## Installation / ## Usage / ## Composition / ## Examples / ### Side / ### With Keyboard Shortcut
+- content/docs/components/base/typography.mdx | lines=79 | tags=ComponentPreview | headings=## h1 / ## h2 / ## h3 / ## h4 / ## p / ## blockquote
+- content/docs/components/index.mdx | lines=11 | tags=ComponentsList | headings=-
+- content/docs/components/radix/accordion.mdx | lines=168 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,Accordion,AccordionItem,AccordionTrigger,AccordionContent | headings=## Installation / ## Usage / ## Composition / ## Examples / ### Basic / ### Multiple
+- content/docs/components/radix/alert-dialog.mdx | lines=188 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,AlertDialog,AlertDialogTrigger,Button,AlertDialogContent,AlertDialogHeader,AlertDialogTitle,AlertDialogDescription,AlertDialogFooter,AlertDialogCancel,AlertDialogAction | headings=## Installation / ## Usage / ## Composition / ## Examples / ### Basic / ### Small
+- content/docs/components/radix/alert.mdx | lines=172 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,Alert,InfoIcon,AlertTitle,AlertDescription,AlertAction,Button | headings=## Installation / ## Usage / ## Composition / ## Examples / ### Basic / ### Destructive
+- content/docs/components/radix/aspect-ratio.mdx | lines=108 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,AspectRatio,Image | headings=## Installation / ## Usage / ## Examples / ### Square / ### Portrait / ## RTL
+- content/docs/components/radix/avatar.mdx | lines=239 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,Avatar,AvatarImage,AvatarFallback,AvatarBadge,AvatarGroupCount | headings=## Installation / ## Usage / ## Composition / ## Examples / ### Basic / ### Badge
+- content/docs/components/radix/badge.mdx | lines=100 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,Badge | headings=## Installation / ## Usage / ## Examples / ### Variants / ### With Icon / ### With Spinner
+- content/docs/components/radix/breadcrumb.mdx | lines=199 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,Breadcrumb,BreadcrumbList,BreadcrumbItem,BreadcrumbLink,BreadcrumbSeparator,BreadcrumbPage,DropdownMenu,BreadcrumbEllipsis | headings=## Installation / ## Usage / ## Composition / ## Examples / ### Basic / ### Custom separator
+- content/docs/components/radix/button-group.mdx | lines=246 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,ButtonGroup,Button,Kbd,ButtonGroupSeparator,ButtonGroupText,Label,Input | headings=## Installation / ## Usage / ## Composition / ## Accessibility / ## ButtonGroup vs ToggleGroup / ## Examples
+- content/docs/components/radix/button.mdx | lines=163 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,Button,Spinner | headings=## Installation / ## Usage / ## Cursor / ## Examples / ### Size / ### Default
+- content/docs/components/radix/calendar.mdx | lines=405 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,Date,Calendar,DayPicker,Locale,Button,CalendarDayButton | headings=## Installation / ## Usage / ## About / ## Date Picker / ## Persian / Hijri / Jalali Calendar / ## Selected Date (With TimeZone)
+- content/docs/components/radix/card.mdx | lines=185 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,Card,CardHeader,CardTitle,CardDescription,CardAction,CardContent,CardFooter | headings=## Installation / ## Usage / ## Composition / ## Examples / ### Size / ### Image
+- content/docs/components/radix/carousel.mdx | lines=336 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,Carousel,CarouselContent,CarouselItem,CarouselPrevious,CarouselNext,CarouselApi | headings=## About / ## Installation / ## Usage / ## Composition / ## Examples / ### Sizes
+- content/docs/components/radix/chart.mdx | lines=603 | tags=Callout,ComponentPreview,ChartContainer,BarChart,Bar,ChartTooltip,ChartTooltipContent,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,CartesianGrid,XAxis,ChartLegend,ChartLegendContent,LabelList,LineChart | headings=## Component / ## Updating to Recharts v3 / ## Installation / ## Your First Chart / ### Add a Grid / ### Add an Axis
+- content/docs/components/radix/checkbox.mdx | lines=139 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,Checkbox,Field | headings=## Installation / ## Usage / ## Checked State / ## Invalid State / ## Examples / ### Basic
+- content/docs/components/radix/collapsible.mdx | lines=149 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,Collapsible,CollapsibleTrigger,CollapsibleContent | headings=## Installation / ## Usage / ## Composition / ## Controlled State / ## Examples / ### Basic
+- content/docs/components/radix/combobox.mdx | lines=329 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,Combobox,ComboboxInput,ComboboxContent,ComboboxEmpty,ComboboxList,ComboboxItem,ComboboxChips,ComboboxValue,ComboboxChip,ComboboxChipsInput | headings=## Installation / ## Usage / ## Composition / ### Simple / ### With chips / ### With groups and collection
+- content/docs/components/radix/command.mdx | lines=156 | tags=ComponentPreview,Command,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,CommandInput,CommandList,CommandEmpty,CommandGroup,CommandItem,CommandSeparator | headings=## About / ## Installation / ## Usage / ## Composition / ## Examples / ### Basic
+- content/docs/components/radix/context-menu.mdx | lines=176 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,ContextMenu,ContextMenuTrigger,ContextMenuContent,ContextMenuItem | headings=## Installation / ## Usage / ## Composition / ## Examples / ### Basic / ### Submenu
+- content/docs/components/radix/data-table.mdx | lines=899 | tags=ComponentPreview,Table,Callout,DataTable,Steps,Payment,TData,TableHeader,TableRow,TableHead,TableBody,TableCell,DropdownMenu,DropdownMenuTrigger,Button,MoreHorizontal,DropdownMenuContent,DropdownMenuLabel,DropdownMenuItem,DropdownMenuSeparator,SortingState,ArrowUpDown,ColumnFiltersState,Input,VisibilityState,DropdownMenuCheckboxItem,Checkbox,ComponentSource,DataTableColumnHeader,DataTablePagination,DataTableViewOptions | headings=## Introduction / ## Table of Contents / ## Installation / ## Prerequisites / ## Project Structure / ## Basic Table
+- content/docs/components/radix/date-picker.mdx | lines=117 | tags=ComponentPreview,Popover,Calendar,Date,PopoverTrigger,Button,CalendarIcon,PopoverContent | headings=## Installation / ## Usage / ## Composition / ## Examples / ### Basic / ### Range Picker
+- content/docs/components/radix/dialog.mdx | lines=137 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,Dialog,DialogTrigger,DialogContent,DialogHeader,DialogTitle,DialogDescription | headings=## Installation / ## Usage / ## Composition / ## Examples / ### Custom Close Button / ### No Close Button
+- content/docs/components/radix/direction.mdx | lines=94 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,DirectionProvider | headings=## Installation / ## Usage / ## useDirection
+- content/docs/components/radix/drawer.mdx | lines=134 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,Drawer,DrawerTrigger,DrawerContent,DrawerHeader,DrawerTitle,DrawerDescription,DrawerFooter,Button,DrawerClose | headings=## About / ## Installation / ## Usage / ## Composition / ## Examples / ### Scrollable Content
+- content/docs/components/radix/dropdown-menu.mdx | lines=211 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,DropdownMenu,DropdownMenuTrigger,Button,DropdownMenuContent,DropdownMenuGroup,DropdownMenuLabel,DropdownMenuItem,DropdownMenuSeparator | headings=## Installation / ## Usage / ## Composition / ## Examples / ### Basic / ### Submenu
+- content/docs/components/radix/empty.mdx | lines=243 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,Empty,EmptyHeader,EmptyMedia,Icon,EmptyTitle,EmptyDescription,EmptyContent,Button,Avatar,AvatarImage,AvatarFallback | headings=## Installation / ## Usage / ## Composition / ## Examples / ### Outline / ### Background
+- content/docs/components/radix/field.mdx | lines=408 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,FieldSet,FieldLegend,FieldDescription,FieldGroup,Field,FieldLabel,Input,FieldError,Switch,Checkbox,FieldContent,FieldTitle,FieldSeparator | headings=## Installation / ## Usage / ## Composition / ### Field / ### FieldGroup / ### FieldSet
+- content/docs/components/radix/hover-card.mdx | lines=145 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,HoverCard,HoverCardTrigger,HoverCardContent | headings=## Installation / ## Usage / ## Composition / ## Trigger Delays / ## Positioning / ## Examples
+- content/docs/components/radix/input-group.mdx | lines=325 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,InputGroup,InputGroupInput,InputGroupAddon,SearchIcon,Callout,IconInfoCircle,InputGroupTextarea,InputGroupButton,CopyIcon,Input,Textarea | headings=## Installation / ## Usage / ## Composition / ## Align / ### inline-start / ### inline-end
+- content/docs/components/radix/input-otp.mdx | lines=175 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,InputOTP,InputOTPGroup,InputOTPSlot,InputOTPSeparator | headings=## About / ## Installation / ## Usage / ## Composition / ## Pattern / ## Examples
+- content/docs/components/radix/input.mdx | lines=202 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,Input | headings=## Installation / ## Usage / ## Examples / ### Basic / ### Field / ### Field Group
+- content/docs/components/radix/item.mdx | lines=301 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,Item,ItemMedia,Icon,ItemContent,ItemTitle,ItemDescription,ItemActions,Button,HomeIcon,ItemGroup,ItemSeparator,ItemHeader,ItemFooter | headings=## Installation / ## Usage / ## Composition / ## Item vs Field / ## Variant / ## Size
+- content/docs/components/radix/kbd.mdx | lines=127 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,Kbd,KbdGroup | headings=## Installation / ## Usage / ## Composition / ## Examples / ### Group / ### Button
+- content/docs/components/radix/label.mdx | lines=97 | tags=ComponentPreview,Callout,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,Label,Field,FieldLabel,Input | headings=## Installation / ## Usage / ## Label in Field / ## RTL / ## API Reference
+- content/docs/components/radix/menubar.mdx | lines=164 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,Menubar,MenubarMenu,MenubarTrigger,MenubarContent,MenubarGroup,MenubarItem,MenubarShortcut,MenubarSeparator | headings=## Installation / ## Usage / ## Composition / ## Examples / ### Checkbox / ### Radio
+- content/docs/components/radix/native-select.mdx | lines=173 | tags=Callout,InfoIcon,ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,NativeSelect,NativeSelectOption,NativeSelectOptGroup | headings=## Installation / ## Usage / ## Composition / ### Simple / ### With groups / ## Examples
+- content/docs/components/radix/navigation-menu.mdx | lines=141 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,NavigationMenu,NavigationMenuList,NavigationMenuItem,NavigationMenuTrigger,NavigationMenuContent,NavigationMenuLink,Link | headings=## Installation / ## Usage / ## Composition / ## Link Component / ## RTL / ## API Reference
+- content/docs/components/radix/pagination.mdx | lines=217 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,Pagination,PaginationContent,PaginationItem,PaginationPrevious,PaginationLink,PaginationEllipsis,PaginationNext,Link,Callout,ChevronLeftIcon,ChevronRightIcon | headings=## Installation / ## Usage / ## Composition / ## Examples / ### Simple / ### Icons Only
+- content/docs/components/radix/popover.mdx | lines=121 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,Popover,PopoverTrigger,Button,PopoverContent,PopoverHeader,PopoverTitle,PopoverDescription | headings=## Installation / ## Usage / ## Composition / ## Examples / ### Basic / ### Align
+- content/docs/components/radix/progress.mdx | lines=88 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,Progress | headings=## Installation / ## Usage / ## Examples / ### Label / ### Controlled / ## RTL
+- content/docs/components/radix/radio-group.mdx | lines=130 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,RadioGroup,RadioGroupItem,Label | headings=## Installation / ## Usage / ## Composition / ## Examples / ### Description / ### Choice Card
+- content/docs/components/radix/resizable.mdx | lines=139 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,ResizablePanelGroup,ResizablePanel,ResizableHandle,Callout | headings=## About / ## Installation / ## Usage / ## Composition / ## Examples / ### Vertical
+- content/docs/components/radix/scroll-area.mdx | lines=102 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,ScrollArea | headings=## Installation / ## Usage / ## Composition / ## Examples / ### Horizontal / ## RTL
+- content/docs/components/radix/select.mdx | lines=152 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,Select,SelectTrigger,SelectValue,SelectContent,SelectGroup,SelectItem,Field,FieldLabel | headings=## Installation / ## Usage / ## Composition / ## Examples / ### Align Item With Trigger / ### Groups
+- content/docs/components/radix/separator.mdx | lines=94 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,Separator | headings=## Installation / ## Usage / ## Examples / ### Vertical / ### Menu / ### List
+- content/docs/components/radix/sheet.mdx | lines=119 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,Sheet,SheetTrigger,SheetContent,SheetHeader,SheetTitle,SheetDescription | headings=## Installation / ## Usage / ## Composition / ## Examples / ### Side / ### No Close Button
+- content/docs/components/radix/sidebar.mdx | lines=665 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,ComponentSource,SidebarProvider,AppSidebar,SidebarTrigger,Sidebar,SidebarHeader,SidebarContent,SidebarGroup,SidebarFooter,Image,Callout,SidebarInset,SidebarMenu,SidebarMenuItem,DropdownMenu,DropdownMenuTrigger,SidebarMenuButton,ChevronDown,DropdownMenuContent,DropdownMenuItem,User2,SidebarGroupLabel,SidebarGroupAction,Plus,SidebarGroupContent,Collapsible,CollapsibleTrigger,CollapsibleContent,Home,SidebarMenuAction,SidebarMenuSub,SidebarMenuSubItem,SidebarMenuSubButton,SidebarMenuBadge,SidebarMenuSkeleton,SidebarRail,Button,ExternalLinkIcon,Steps,Step,Sheet,SheetContent,PanelLeftIcon | headings=## Installation / ## Usage / ## Composition / ## Structure / ## SidebarProvider / ### Props
+- content/docs/components/radix/skeleton.mdx | lines=87 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,Skeleton | headings=## Installation / ## Usage / ## Examples / ### Avatar / ### Card / ### Text
+- content/docs/components/radix/slider.mdx | lines=104 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,Slider | headings=## Installation / ## Usage / ## Examples / ### Range / ### Multiple Thumbs / ### Vertical
+- content/docs/components/radix/sonner.mdx | lines=127 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,Toaster,ComponentSource | headings=## About / ## Installation / ## Usage / ## Examples / ### Types / ### Description
+- content/docs/components/radix/spinner.mdx | lines=114 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,Spinner,LoaderIcon | headings=## Installation / ## Usage / ## Customization / ## Examples / ### Size / ### Button
+- content/docs/components/radix/switch.mdx | lines=104 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,Switch | headings=## Installation / ## Usage / ## Examples / ### Description / ### Choice Card / ### Disabled
+- content/docs/components/radix/table.mdx | lines=145 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,Table,TableCaption,TableHeader,TableRow,TableHead,TableBody,TableCell,TableFooter,DropdownMenu | headings=## Installation / ## Usage / ## Composition / ## Examples / ### Footer / ### Actions
+- content/docs/components/radix/tabs.mdx | lines=120 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,Tabs | headings=## Installation / ## Usage / ## Composition / ## Examples / ### Line / ### Vertical
+- content/docs/components/radix/textarea.mdx | lines=107 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,Textarea | headings=## Installation / ## Usage / ## Examples / ### Field / ### Disabled / ### Invalid
+- content/docs/components/radix/toast.mdx | lines=9 | tags=- | headings=-
+- content/docs/components/radix/toggle-group.mdx | lines=138 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,ToggleGroup,ToggleGroupItem | headings=## Installation / ## Usage / ## Composition / ## Examples / ### Outline / ### Size
+- content/docs/components/radix/toggle.mdx | lines=96 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,ComponentSource,Toggle | headings=## Installation / ## Usage / ## Examples / ### Outline / ### With Text / ### Size
+- content/docs/components/radix/tooltip.mdx | lines=149 | tags=ComponentPreview,CodeTabs,TabsList,TabsTrigger,TabsContent,Steps,Step,TooltipProvider,ComponentSource,Tooltip,TooltipTrigger,TooltipContent | headings=## Installation / ## Usage / ## Composition / ## Examples / ### Side / ### With Keyboard Shortcut
+- content/docs/components/radix/typography.mdx | lines=79 | tags=ComponentPreview | headings=## h1 / ## h2 / ## h3 / ## h4 / ## p / ## blockquote
+- content/docs/dark-mode/astro.mdx | lines=115 | tags=DropdownMenu,DropdownMenuTrigger,Button,Sun,Moon,DropdownMenuContent,DropdownMenuItem,ModeToggle | headings=## Create an inline theme script / ## Add a mode toggle / ## Display the mode toggle
+- content/docs/dark-mode/index.mdx | lines=76 | tags=LinkedCard | headings=-
+- content/docs/dark-mode/next.mdx | lines=67 | tags=Steps,NextThemesProvider,ThemeProvider,ComponentPreview | headings=## Install next-themes / ## Create a theme provider / ## Wrap your root layout / ## Add a mode toggle
+- content/docs/dark-mode/remix.mdx | lines=158 | tags=Steps,ThemeProvider,App,Meta,PreventFlashOnWrongTheme,Links,Outlet,ScrollRestoration,Scripts,LiveReload,DropdownMenu,DropdownMenuTrigger,Button,Sun,Moon,DropdownMenuContent,DropdownMenuItem | headings=## Modify your tailwind.css file / ## Install remix-themes / ## Create a session storage and theme session resolver / ## Set up Remix Themes / ## Add an action route / ## Add a mode toggle
+- content/docs/dark-mode/tanstack-start.mdx | lines=192 | tags=Steps,ThemeProviderState,Theme,ThemeProviderContext,ScriptOnce,HeadContent,ThemeProvider,Outlet,Scripts,DropdownMenu,DropdownMenuTrigger,Button,Sun,Moon,DropdownMenuContent,DropdownMenuItem | headings=### Create a theme provider / ### Wrap your root layout / ### Add a mode toggle
+- content/docs/dark-mode/vite.mdx | lines=145 | tags=ThemeProviderState,Theme,ThemeProviderContext.Provider,ThemeProvider,DropdownMenu,DropdownMenuTrigger,Button,Sun,Moon,DropdownMenuContent,DropdownMenuItem | headings=## Create a theme provider / ## Wrap your root layout / ## Add a mode toggle
+- content/docs/forms/formisch.mdx | lines=670 | tags=Field,Callout,InfoIcon,ComponentPreview,Form,FieldGroup,FormischField,FieldLabel,Input,FieldDescription,FieldError,ComponentSource,SelectTrigger,Checkbox,Textarea,Select,RadioGroup,Switch,FieldContent,SelectValue,SelectContent,SelectItem,FieldSet,FieldLegend,RadioGroupItem,FieldTitle,Button,FieldArray,InputGroupAddon,InputGroupButton,XIcon | headings=## Demo / ## Approach / ## Form Methods / ## Anatomy / ## Form / ### Create a form schema
+- content/docs/forms/index.mdx | lines=61 | tags=LinkedCard,ClipboardListIcon | headings=## Pick Your Framework
+- content/docs/forms/next.mdx | lines=398 | tags=ComponentPreview,Callout,InfoIcon,Field,Form,FieldGroup,FieldLabel,Input,FieldDescription,FieldError,Button,Record,ComponentSource,Spinner | headings=## Demo / ## Approach / ## Anatomy / ## Usage / ### Create a form schema / ### Define the form state type
+- content/docs/forms/react-hook-form.mdx | lines=630 | tags=Field,Callout,InfoIcon,ComponentPreview,Controller,FieldLabel,Input,FieldDescription,FieldError,ComponentSource,SelectTrigger,Checkbox,Textarea,Select,FieldContent,SelectValue,SelectContent,SelectItem,FieldGroup,FieldSet,FieldLegend,RadioGroup,RadioGroupItem,FieldTitle,Switch,Button,InputGroup,InputGroupInput,InputGroupAddon,InputGroupButton,XIcon | headings=## Demo / ## Approach / ## Anatomy / ## Form / ### Create a form schema / ### Set up the form
+- content/docs/forms/tanstack-form.mdx | lines=699 | tags=Field,Callout,InfoIcon,ComponentPreview,FieldGroup,FieldLabel,Input,FieldDescription,FieldError,Button,ComponentSource,SelectTrigger,Checkbox,Textarea,Select,FieldContent,SelectValue,SelectContent,SelectItem,FieldSet,FieldLegend,RadioGroup,RadioGroupItem,FieldTitle,Switch,InputGroup,InputGroupInput,InputGroupAddon,InputGroupButton,XIcon | headings=## Demo / ## Approach / ## Anatomy / ## Form / ### Create a schema / ### Set up the form
+- content/docs/installation/astro.mdx | lines=253 | tags=LinkedCard,Steps,Button,Link,Layout,Card,CardHeader,CardTitle,CardDescription,CardContent | headings=## Use shadcn/create / ### Build Your Preset / ### Create Project / ### Add Components / ## Use the CLI / ### Create Project
+- content/docs/installation/gatsby.mdx | lines=110 | tags=Callout,Steps,Button | headings=### Create project / ### Configure your Gatsby project to use TypeScript and Tailwind CSS / ### Edit tsconfig.json file / ### Create gatsby-node.ts file / ### Run the CLI / ### That's it
+- content/docs/installation/index.mdx | lines=175 | tags=Callout,LinkedCard,Button,Link | headings=## Use shadcn/create / ## Use the CLI / ## Existing Project / ## Choose Your Framework
+- content/docs/installation/laravel.mdx | lines=151 | tags=Steps,LinkedCard,Button,Link,Switch | headings=### Create Project / ## Use shadcn/create / ### Build Your Preset / ### Run the Command / ### Add Components / ## Use the CLI
+- content/docs/installation/manual.mdx | lines=259 | tags=Steps,Link,CodeCollapsibleWrapper | headings=### Add Tailwind CSS / ### Add dependencies / ### Configure import aliases / #### Option A: `tsconfig.json` paths / #### Option B: `package.json#imports` / ### Configure styles
+- content/docs/installation/next.mdx | lines=257 | tags=LinkedCard,Steps,Button,Link,Card,CardHeader,CardTitle,CardDescription,CardContent | headings=## Use shadcn/create / ### Build Your Preset / ### Create Project / ### Add Components / ## Use the CLI / ### Create Project
+- content/docs/installation/react-router.mdx | lines=227 | tags=LinkedCard,Steps,Button,Link,Card,CardHeader,CardTitle,CardDescription,CardContent | headings=## Use shadcn/create / ### Build Your Preset / ### Create Project / ### Add Components / ## Use the CLI / ### Create Project
+- content/docs/installation/remix.mdx | lines=53 | tags=Callout,Steps,Button | headings=### Create project / ### Run the CLI / ### That's it
+- content/docs/installation/tanstack-router.mdx | lines=45 | tags=Steps,Button | headings=### Create project / ### Add Components
+- content/docs/installation/tanstack.mdx | lines=253 | tags=LinkedCard,Steps,Button,Link,Card,CardHeader,CardTitle,CardDescription,CardContent,Callout | headings=## Use shadcn/create / ### Build Your Preset / ### Create Project / ### Add Components / ## Use the CLI / ### Create Project
+- content/docs/installation/vite.mdx | lines=315 | tags=LinkedCard,Steps,Button,Link,Card,CardHeader,CardTitle,CardDescription,CardContent | headings=## Use shadcn/create / ### Build Your Preset / ### Create Project / ### Add Components / ## Use the CLI / ### Create Project
+- content/docs/registry/authentication.mdx | lines=400 | tags=- | headings=## Common Authentication Patterns / ### Token-Based Authentication / ### API Key Authentication / ### Query Parameter Authentication / ## Server-Side Implementation / ### Next.js API Route Example
+- content/docs/registry/examples.mdx | lines=1054 | tags=Callout | headings=## registry:style / ### Custom style that extends shadcn/ui / ### Custom style from scratch / ## registry:theme / ### Custom theme / ### Custom colors
+- content/docs/registry/faq.mdx | lines=102 | tags=- | headings=## Frequently asked questions / ### What does a complex component look like? / ### How do I add a new Tailwind color? / ### How do I add or override a Tailwind theme variable?
+- content/docs/registry/getting-started.mdx | lines=645 | tags=Button,Callout,Accordion,AccordionItem,AccordionTrigger,AccordionContent | headings=## Requirements / ## registry.json / ## Structure your registry / ### Option A: Single registry.json / ### Option B: Using include / ## Add an item
+- content/docs/registry/index.mdx | lines=80 | tags=Callout,Image,LinkedCard | headings=-
+- content/docs/registry/mcp.mdx | lines=158 | tags=Tabs,TabsList,TabsTrigger,TabsContent | headings=## Prerequisites / ## Configuring MCP / ## Best Practices
+- content/docs/registry/namespace.mdx | lines=914 | tags=- | headings=## Table of Contents / ## Overview / ## Decentralized Namespace System / ### Examples of Multi-Registry Setups / #### By Resource Type / #### By Team or Department
+- content/docs/registry/open-in-v0.mdx | lines=107 | tags=Callout,Button,OpenInV0Button | headings=## Button / ## Authentication / ### Using Query Parameter Authentication / ### Example Implementation
+- content/docs/registry/registry-index.mdx | lines=62 | tags=- | headings=## Adding a Registry / ## Requirements
+- content/docs/registry/registry-item-json.mdx | lines=473 | tags=Link,Callout | headings=## Definitions / ### $schema / ### name / ### title / ### description / ### type
+- content/docs/registry/registry-json.mdx | lines=174 | tags=- | headings=## Definitions / ### $schema / ### name / ### homepage / ### include / ### items
+- content/docs/rtl/index.mdx | lines=164 | tags=ComponentPreview,LinkedCard,Popover,PopoverTrigger,PopoverContent,Tooltip,TooltipTrigger,TooltipContent,Steps,Step,ArrowRightIcon | headings=## Get Started / ## How it works / ## Try it out / ## Supported Styles / ## Font Recommendations / ## Animations
+- content/docs/rtl/next.mdx | lines=98 | tags=Callout,Steps,DirectionProvider | headings=### Create Project / ### Add DirectionProvider / ### Add Font / ### Add Components
+- content/docs/rtl/start.mdx | lines=96 | tags=Callout,Steps,Meta,DirectionProvider,Scripts | headings=### Create Project / ### Add DirectionProvider / ### Add Font / ### Add Components
+- content/docs/rtl/vite.mdx | lines=108 | tags=Callout,Steps,StrictMode,DirectionProvider,App | headings=### Create Project / ### Add DirectionProvider / ### Add Font / ### Add Components
+- examples/README.md | lines=48 | tags=Button,ComponentPreview | headings=## Directory Structure / ## Adding a New Example / ## Notes
+- registry/bases/README.md | lines=16 | tags=- | headings=## Keep them in sync

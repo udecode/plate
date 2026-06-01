@@ -1,443 +1,407 @@
 'use client';
 
-import React, { Suspense, useState } from 'react';
-
-import type { DocsConfig } from '@/config/docs';
 import type { SidebarNavItem } from '@/types/nav';
 
-import { castArray } from 'lodash';
-import { ChevronDown, X } from 'lucide-react';
+import castArray from 'lodash/castArray.js';
+import { ChevronRightIcon } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import * as React from 'react';
 
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion';
-import { Input } from '@/components/ui/input';
 import { useLocale } from '@/hooks/useLocale';
+import {
+  getLocalizedNavTitle,
+  normalizeDocsHref,
+} from '@/lib/docs-nav-metadata';
 import { cn } from '@/lib/utils';
 import { hrefWithLocale } from '@/lib/withLocale';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible';
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+} from '@/components/ui/sidebar';
 
-const CN_PREFIX_REGEX = /^\/cn/;
-
-function filterNavItems(
-  items: SidebarNavItem[],
-  filter: string
-): SidebarNavItem[] {
-  return items.reduce<SidebarNavItem[]>((acc, item) => {
-    const { keywords = [], ...itemWithoutKeywords } = item;
-    const itemMatches =
-      item.title?.toLowerCase().includes(filter) ||
-      [...keywords, ...castArray(item.label)].some((label) =>
-        label?.toLowerCase().includes(filter)
-      );
-
-    const filteredNestedItems = item.items
-      ? itemMatches
-        ? item.items
-        : filterNavItems(item.items, filter)
-      : undefined;
-
-    if (
-      itemMatches ||
-      (filteredNestedItems && filteredNestedItems.length > 0)
-    ) {
-      acc.push({
-        ...itemWithoutKeywords,
-        ...(filteredNestedItems && { items: filteredNestedItems }),
-      });
-    }
-
-    return acc;
-  }, []);
+function getLabelValues(label: SidebarNavItem['label']) {
+  return castArray(label).filter(Boolean);
 }
 
-function hasActiveNestedItem(
-  items: SidebarNavItem[],
-  pathname: string
-): boolean {
-  return items.some((item) => {
-    if (item.href === pathname) return true;
-    if (item.items?.length) {
-      return hasActiveNestedItem(item.items, pathname);
-    }
-
-    return false;
-  });
-}
-
-export function DocsNav({ config }: { config: DocsConfig }) {
-  const locale = useLocale();
-  const pathname = usePathname();
-  const [filter, setFilter] = useState('');
-  const [activeSection, setActiveSection] = useState<string | undefined>();
-
-  // Normalize pathname by removing /cn prefix if it exists
-  const normalizedPathname = React.useMemo(
-    () => pathname?.replace(CN_PREFIX_REGEX, '') ?? '',
-    [pathname]
+function getStatusLabel(label: SidebarNavItem['label']) {
+  return getLabelValues(label).find(
+    (value) => value === 'New' || value === 'Updated'
   );
+}
 
-  const sidebarNav = config.sidebarNav;
+function getTextLabels(label: SidebarNavItem['label']) {
+  return getLabelValues(label).filter(
+    (value) => value !== 'New' && value !== 'Updated'
+  );
+}
 
-  const filteredNav = React.useMemo(() => {
-    const lowercasedFilter = filter?.toLowerCase();
+function isNavItemActive(item: SidebarNavItem, pathname: string): boolean {
+  if (item.href) {
+    const href = normalizeDocsHref(item.href);
 
-    return sidebarNav
-      .map((section) => {
-        const sectionMatches = section.title
-          ?.toLowerCase()
-          .includes(lowercasedFilter);
+    if (href === pathname) return true;
+    if (href !== '/docs' && pathname.startsWith(`${href}/`)) return true;
+  }
 
-        return {
-          ...section,
-          items: sectionMatches
-            ? section.items
-            : section.items
-              ? filterNavItems(section.items, lowercasedFilter)
-              : undefined,
-        };
-      })
-      .filter((section) => section.items && section.items.length > 0);
-  }, [sidebarNav, filter]);
+  return item.items?.some((child) => isNavItemActive(child, pathname)) ?? false;
+}
 
-  React.useEffect(() => {
-    if (!normalizedPathname) return;
+function getSectionTitle(
+  section: SidebarNavItem,
+  index: number,
+  locale: string
+) {
+  if (index === 0 && section.title === 'Get Started') {
+    return locale === 'cn' ? '概览' : 'Overview';
+  }
 
-    const activeIndex = filteredNav.findIndex((section) =>
-      section.items
-        ? hasActiveNestedItem(section.items, normalizedPathname)
-        : false
+  return getLocalizedNavTitle(section, locale);
+}
+
+const docsNavItemButtonClassName =
+  'relative h-[30px] w-fit border border-transparent text-[0.8rem] font-medium data-[active=true]:border-accent data-[active=true]:bg-accent 3xl:fixed:w-full 3xl:fixed:max-w-48';
+
+function getNavItemKey(item: SidebarNavItem, index: number, depth: number) {
+  return item.href ?? `${depth}:${index}:${String(item.title)}`;
+}
+
+function cloneNavItem(item: SidebarNavItem): SidebarNavItem {
+  return {
+    ...item,
+    items: item.items?.map(cloneNavItem),
+  };
+}
+
+function findNavItemByTitle(
+  items: SidebarNavItem[] | undefined,
+  section: SidebarNavItem
+): SidebarNavItem | undefined {
+  if (!section.title) return;
+
+  for (const item of items ?? []) {
+    if (item.href && item.title === section.title) return item;
+
+    const child = findNavItemByTitle(item.items, section);
+
+    if (child) return child;
+  }
+}
+
+function foldMatchingSectionsIntoItems(sections: SidebarNavItem[]) {
+  const foldedSections: SidebarNavItem[] = [];
+
+  for (const section of sections) {
+    const sectionItems = section.items?.map(cloneNavItem);
+    const targetItem = findNavItemByTitle(
+      foldedSections.flatMap((item) => item.items ?? []),
+      section
     );
 
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- Sync accordion state with the active route.
-    setActiveSection(activeIndex === -1 ? undefined : `item-${activeIndex}`);
-  }, [filteredNav, normalizedPathname]);
+    if (targetItem && sectionItems?.length) {
+      targetItem.items = [...(targetItem.items ?? []), ...sectionItems];
+      continue;
+    }
 
-  // Auto-scroll to active item only on mount. To be improved.
-  React.useEffect(() => {
-    if (!normalizedPathname) return;
+    foldedSections.push({
+      ...section,
+      items: sectionItems,
+    });
+  }
 
-    // Scroll to active item after a short delay to ensure accordion is open
-    const scrollToActiveItem = () => {
-      const activeElement = document.querySelector(
-        `[data-href="${normalizedPathname}"]`
-      ) as HTMLElement;
+  return foldedSections;
+}
 
-      if (activeElement) {
-        // Find the accordion item with data-state="open" that contains this element
-        const openAccordionItem = activeElement.closest(
-          '[data-state="open"][data-slot="accordion-item"]'
-        ) as HTMLElement;
+function getSectionKey(section: SidebarNavItem, index: number) {
+  return section.href ?? section.title ?? String(index);
+}
 
-        if (openAccordionItem) {
-          // Find the scrollable div inside the open accordion item
-          const scrollableDiv = openAccordionItem.querySelector(
-            'div[class*="overflow-y-auto"]'
-          ) as HTMLElement;
+function getNavItemCount(items: SidebarNavItem[] | undefined): number {
+  return (
+    items?.reduce(
+      (count, item) => count + 1 + getNavItemCount(item.items),
+      0
+    ) ?? 0
+  );
+}
 
-          if (scrollableDiv) {
-            const containerRect = scrollableDiv.getBoundingClientRect();
-            const elementRect = activeElement.getBoundingClientRect();
-            const relativeTop = elementRect.top - containerRect.top;
-            const scrollTop = scrollableDiv.scrollTop;
+function getActiveSectionKey(sections: SidebarNavItem[], pathname: string) {
+  if (sections.length === 0) return;
 
-            // Calculate the position to scroll to (position item at top with offset)
-            const targetScrollTop = scrollTop + relativeTop - 32;
+  const activeIndex = sections.findIndex((section) =>
+    isNavItemActive(section, pathname)
+  );
 
-            scrollableDiv.scrollTo({
-              top: Math.max(0, targetScrollTop),
-            });
-          }
-        }
-      }
-    };
+  if (activeIndex === -1) return getSectionKey(sections[0], 0);
 
-    // Delay to ensure accordion animation completes. Not always working well.
-    const timeoutId = setTimeout(scrollToActiveItem, 500);
+  return getSectionKey(sections[activeIndex], activeIndex);
+}
 
-    return () => clearTimeout(timeoutId);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Empty dependency array - only runs on mount
+export function DocsNav({ sidebarNav }: { sidebarNav: SidebarNavItem[] }) {
+  const locale = useLocale();
+  const pathname = usePathname();
+  const normalizedPathname = normalizeDocsHref(pathname ?? '');
+  const navSections = React.useMemo(
+    () => foldMatchingSectionsIntoItems(sidebarNav),
+    [sidebarNav]
+  );
+  const activeSectionKey = React.useMemo(
+    () => getActiveSectionKey(navSections, normalizedPathname),
+    [navSections, normalizedPathname]
+  );
+  const [openSection, setOpenSection] = React.useState<{
+    key?: string;
+    pathname: string;
+  }>(() => ({
+    key: activeSectionKey,
+    pathname: normalizedPathname,
+  }));
+  const openSectionKey =
+    openSection.pathname === normalizedPathname
+      ? openSection.key
+      : activeSectionKey;
 
-  return sidebarNav.length > 0 ? (
-    <div className="relative w-[calc(100%-1rem)] pl-4">
-      <div className="sticky top-0 z-10 flex w-full items-center bg-background/95 px-2 pb-1 backdrop-blur-sm supports-backdrop-filter:bg-background/60">
-        <div className="relative mt-1 flex w-full items-center">
-          <Input
-            className={cn(
-              'h-8 w-full rounded-lg bg-muted/50 px-3 py-1 text-muted-foreground text-sm shadow-none focus-visible:ring-transparent'
-            )}
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-            placeholder="Filter..."
-          />
-          {filter && (
-            <button
-              className="-translate-y-1/2 absolute top-1/2 right-2 text-muted-foreground hover:text-foreground"
-              onClick={() => setFilter('')}
-              type="button"
-            >
-              <X className="size-4" />
-            </button>
-          )}
-        </div>
-      </div>
+  return navSections.length > 0 ? (
+    <Sidebar
+      aria-label={locale === 'cn' ? '文档导航' : 'Docs navigation'}
+      className="sticky top-[var(--header-height)] z-30 hidden h-[calc(100svh-var(--header-height))] overscroll-none bg-transparent [--sidebar-menu-width:--spacing(56)] lg:flex"
+      collapsible="none"
+    >
+      <SidebarContent className="no-scrollbar h-full w-(--sidebar-menu-width) gap-1 overflow-hidden px-2.5 py-6">
+        {navSections.map((section, index) => {
+          const sectionKey = getSectionKey(section, index);
 
-      <Accordion
-        className="flex max-h-[calc(100vh-var(--header-height)-44px)] flex-col overflow-y-hidden"
-        value={activeSection}
-        onValueChange={setActiveSection}
-        type="single"
-        collapsible
-      >
-        {filteredNav.map((item, index) => (
-          <AccordionItem
-            key={index}
-            className="flex flex-col overflow-y-hidden data-[state=closed]:shrink-0 data-[state=open]:grow"
-            value={`item-${index}`}
-          >
-            <AccordionTrigger className="h-9 shrink-0 items-center px-2 py-1 text-sm outline-none">
-              <div className="flex items-center">
-                {locale === 'cn' ? item.titleCn || item.title : item.title}
-                {item.label && (
-                  <div className="flex gap-1">
-                    {castArray(item.label).map((label, labelIndex) => (
-                      <span
-                        key={labelIndex}
-                        className={cn(
-                          'ml-2 rounded-md bg-secondary px-1.5 py-0.5 font-medium text-foreground text-xs leading-none',
-                          label === 'Plus' &&
-                            'bg-primary text-background dark:text-background',
-                          label === 'New' && 'bg-[#adfa1d] dark:text-background'
-                        )}
-                      >
-                        {label}
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </AccordionTrigger>
-            <Suspense fallback={null}>
-              <ScrollableAccordionContent>
-                {item?.items?.length && (
-                  <DocsNavItems
-                    items={item.items}
-                    pathname={normalizedPathname}
-                  />
-                )}
-              </ScrollableAccordionContent>
-            </Suspense>
-          </AccordionItem>
-        ))}
-      </Accordion>
-    </div>
+          return (
+            <DocsNavGroup
+              key={sectionKey}
+              index={index}
+              open={openSectionKey === sectionKey}
+              pathname={normalizedPathname}
+              section={section}
+              onOpenChange={(open) => {
+                setOpenSection({
+                  key: open ? sectionKey : undefined,
+                  pathname: normalizedPathname,
+                });
+              }}
+            />
+          );
+        })}
+      </SidebarContent>
+    </Sidebar>
   ) : null;
 }
 
+function DocsNavGroup({
+  index,
+  onOpenChange,
+  open,
+  pathname,
+  section,
+}: {
+  index: number;
+  open: boolean;
+  pathname: string;
+  section: SidebarNavItem;
+  onOpenChange: (open: boolean) => void;
+}) {
+  const locale = useLocale();
+  const sectionTitle = getSectionTitle(section, index, locale);
+  const scrollable = getNavItemCount(section.items) > 24;
+
+  return (
+    <SidebarGroup
+      className={cn('min-h-0 p-0', open && scrollable ? 'flex-1' : 'shrink-0')}
+    >
+      {section.items?.length ? (
+        <Collapsible
+          open={open}
+          className={cn('min-h-0', scrollable && 'flex flex-col')}
+          onOpenChange={onOpenChange}
+        >
+          <CollapsibleTrigger asChild>
+            <SidebarGroupLabel
+              asChild
+              className="w-full cursor-pointer justify-between font-medium text-muted-foreground hover:text-foreground"
+            >
+              <button
+                type="button"
+                aria-label={
+                  open ? `Collapse ${sectionTitle}` : `Expand ${sectionTitle}`
+                }
+              >
+                <span>{sectionTitle}</span>
+                <ChevronRightIcon
+                  className={cn(
+                    'size-3.5 transition-transform',
+                    open && 'rotate-90'
+                  )}
+                />
+              </button>
+            </SidebarGroupLabel>
+          </CollapsibleTrigger>
+
+          <CollapsibleContent
+            className={cn(
+              scrollable &&
+                'min-h-0 overflow-hidden data-[state=open]:flex data-[state=open]:flex-1 data-[state=open]:flex-col'
+            )}
+          >
+            <SidebarGroupContent
+              className={cn(
+                'pr-1',
+                scrollable
+                  ? 'no-scrollbar min-h-0 overflow-y-auto overflow-x-hidden overscroll-contain'
+                  : 'overflow-visible'
+              )}
+            >
+              <DocsNavItems
+                dense={index > 0}
+                items={section.items}
+                pathname={pathname}
+              />
+            </SidebarGroupContent>
+          </CollapsibleContent>
+        </Collapsible>
+      ) : null}
+    </SidebarGroup>
+  );
+}
+
 function DocsNavItems({
-  className,
+  dense,
   depth = 0,
   items,
   pathname,
 }: {
+  dense?: boolean;
   items: SidebarNavItem[];
-  pathname: string | null;
-  className?: string;
+  pathname: string;
   depth?: number;
 }) {
-  const locale = useLocale();
-
-  // Normalize pathname by removing /cn prefix if it exists
-  const normalizedPathname = pathname?.replace(CN_PREFIX_REGEX, '') ?? '';
-
-  return items?.length ? (
-    <div
+  return items.length ? (
+    <SidebarMenu
       className={cn(
-        'grid grid-flow-row auto-rows-max gap-0.5 text-sm',
-        className
+        dense && 'gap-0.5',
+        depth > 0 && 'mt-1 ml-3 border-border/70 border-l pl-2'
       )}
     >
-      {items.map((item, index) =>
-        item.disabled ? (
-          <span
-            key={index}
-            className={cn(
-              'flex w-full items-center rounded-md p-2 text-muted-foreground hover:underline',
-              item.disabled && 'cursor-not-allowed opacity-60'
-            )}
-          >
-            {locale === 'cn' ? item.titleCn || item.title : item.title}
-            {item.label && (
-              <span className="ml-2 rounded-md bg-muted px-1.5 py-0.5 text-muted-foreground text-xs leading-none no-underline group-hover:no-underline">
-                {item.label}
-              </span>
-            )}
-          </span>
-        ) : (
-          <React.Fragment key={index}>
-            {item.href ? (
-              <Link
-                className={cn(
-                  'group relative flex h-8 w-full items-center truncate whitespace-nowrap rounded-lg px-2 after:absolute after:inset-x-0 after:inset-y-[-2px] after:rounded-lg hover:bg-accent hover:text-accent-foreground',
-                  item.disabled && 'cursor-not-allowed opacity-60',
-                  normalizedPathname === item.href
-                    ? 'bg-accent font-medium text-accent-foreground'
-                    : 'font-normal text-foreground'
-                )}
-                data-href={item.href}
-                href={hrefWithLocale(item.href, locale)}
-                rel={item.external ? 'noreferrer' : ''}
-                target={item.external ? '_blank' : ''}
-              >
-                {locale === 'cn' ? item.titleCn || item.title : item.title}
-                {item.label && (
-                  <div className="ml-2 flex gap-1">
-                    {castArray(item.label).map((label, labelIndex) => (
-                      <span
-                        key={labelIndex}
-                        className={cn(
-                          'rounded-md bg-secondary px-1.5 py-0.5 font-medium text-foreground text-xs leading-none',
-                          label === 'Plus' &&
-                            'bg-primary text-background dark:text-background',
-                          label === 'New' && 'bg-[#adfa1d] dark:text-background'
-                        )}
-                      >
-                        {label}
-                      </span>
-                    ))}
-                  </div>
-                )}
-                {/* {item.title?.toLowerCase().includes('leaf') && (
-                  <Leaf className="ml-auto size-4 text-foreground/80" />
-                )} */}
-              </Link>
-            ) : (
-              <span
-                className={cn(
-                  'flex h-8 w-full select-none items-center truncate rounded-lg px-2 font-medium text-foreground'
-                )}
-              >
-                {locale === 'cn' ? item.titleCn || item.title : item.title}
-                {item.label && (
-                  <div className="ml-2 flex gap-1">
-                    {castArray(item.label).map((label, labelIndex) => (
-                      <span
-                        key={labelIndex}
-                        className={cn(
-                          'rounded-md bg-secondary px-1.5 py-0.5 font-medium text-foreground text-xs leading-none',
-                          label === 'Plus' &&
-                            'bg-primary text-background dark:text-background',
-                          label === 'New' && 'bg-[#adfa1d] dark:text-background'
-                        )}
-                      >
-                        {label}
-                      </span>
-                    ))}
-                  </div>
-                )}
-                {/* {item.title?.toLowerCase().includes('leaf') && (
-                  <Leaf className="ml-auto size-4 text-foreground/80" />
-                )} */}
-              </span>
-            )}
-            {!!item.items?.length && (
-              <div
-                className={cn(
-                  'mb-1 ml-2 border-border/60 border-l pl-2',
-                  depth > 0 && 'ml-2'
-                )}
-              >
-                <DocsNavItems
-                  depth={depth + 1}
-                  items={item.items}
-                  pathname={normalizedPathname}
-                />
-              </div>
-            )}
-          </React.Fragment>
-        )
-      )}
-    </div>
+      {items.map((item, index) => {
+        const active = isNavItemActive(item, pathname);
+        const key = getNavItemKey(item, index, depth);
+
+        return (
+          <SidebarMenuItem key={key}>
+            <DocsNavItem active={active} item={item} pathname={pathname} />
+
+            {item.items?.length ? (
+              <DocsNavItems
+                dense={dense}
+                depth={depth + 1}
+                items={item.items}
+                pathname={pathname}
+              />
+            ) : null}
+          </SidebarMenuItem>
+        );
+      })}
+    </SidebarMenu>
   ) : null;
 }
 
-function ScrollableAccordionContent({
-  children,
-  className,
-  ...props
-}: React.ComponentProps<typeof AccordionContent>) {
-  const [showTopIndicator, setShowTopIndicator] = useState(false);
-  const [showBottomIndicator, setShowBottomIndicator] = useState(false);
-  const contentRef = React.useRef<HTMLDivElement>(null);
-  const accordionRef = React.useRef<HTMLDivElement>(null);
+function DocsNavItem({
+  active,
+  item,
+  pathname,
+}: {
+  active: boolean;
+  item: SidebarNavItem;
+  pathname: string;
+}) {
+  const locale = useLocale();
+  const title = getLocalizedNavTitle(item, locale);
+  const textLabels = getTextLabels(item.label);
+  const statusLabel = getStatusLabel(item.label);
+  const current = item.href && normalizeDocsHref(item.href) === pathname;
 
-  const handleScroll = React.useCallback(() => {
-    const element = contentRef.current;
-    if (!element) return;
-
-    const { clientHeight, scrollHeight, scrollTop } = element;
-    setShowTopIndicator(scrollTop > 5);
-    setShowBottomIndicator(scrollTop < scrollHeight - clientHeight - 5);
-  }, []);
-
-  const checkScrollState = React.useCallback(() => {
-    const element = contentRef.current;
-    if (!element) return;
-
-    const { clientHeight, scrollHeight, scrollTop } = element;
-    setShowTopIndicator(scrollTop > 5);
-    setShowBottomIndicator(scrollTop < scrollHeight - clientHeight - 5);
-  }, []);
-
-  React.useEffect(() => {
-    const element = contentRef.current;
-    if (!element) return;
-
-    // Check initial state
-    checkScrollState();
-
-    // Watch for content size changes to update scroll indicators
-    const resizeObserver = new ResizeObserver(() => {
-      checkScrollState();
-    });
-    resizeObserver.observe(element);
-
-    element.addEventListener('scroll', handleScroll);
-    window.addEventListener('resize', checkScrollState);
-
-    return () => {
-      resizeObserver.disconnect();
-      element.removeEventListener('scroll', handleScroll);
-      window.removeEventListener('resize', checkScrollState);
-    };
-  }, [handleScroll, checkScrollState, children]);
+  if (item.disabled || !item.href) {
+    return (
+      <SidebarMenuButton className={docsNavItemButtonClassName} disabled>
+        <DocsNavItemContent
+          statusLabel={statusLabel}
+          textLabels={textLabels}
+          title={title}
+        />
+      </SidebarMenuButton>
+    );
+  }
 
   return (
-    <div className="relative flex grow flex-col overflow-y-hidden">
-      <div ref={contentRef} className="grow overflow-y-auto">
-        <AccordionContent ref={accordionRef} className="pb-1" {...props}>
-          {children}
-        </AccordionContent>
-      </div>
+    <SidebarMenuButton
+      asChild
+      className={docsNavItemButtonClassName}
+      isActive={active}
+    >
+      <Link
+        aria-current={current ? 'page' : undefined}
+        href={hrefWithLocale(item.href, locale)}
+        rel={item.external ? 'noreferrer' : undefined}
+        target={item.external ? '_blank' : undefined}
+      >
+        <DocsNavItemContent
+          statusLabel={statusLabel}
+          textLabels={textLabels}
+          title={title}
+        />
+      </Link>
+    </SidebarMenuButton>
+  );
+}
 
-      {/* Top scroll indicator */}
-      {showTopIndicator && (
-        <div className="pointer-events-none absolute top-0 right-0 left-0 z-10 flex h-8 items-start justify-center bg-gradient-to-b from-background via-background/60 to-transparent pt-1">
-          <ChevronDown className="size-3.5 rotate-180 text-muted-foreground" />
-        </div>
-      )}
+function DocsNavItemContent({
+  statusLabel,
+  textLabels,
+  title,
+}: {
+  title?: string;
+  statusLabel?: string;
+  textLabels: string[];
+}) {
+  return (
+    <>
+      <span className="absolute inset-0 flex bg-transparent" />
+      {title}
 
-      {/* Bottom scroll indicator */}
-      {showBottomIndicator && (
-        <div className="pointer-events-none absolute right-0 bottom-0 left-0 z-10 flex h-8 items-end justify-center bg-gradient-to-t from-background via-background/60 to-transparent pb-1">
-          <ChevronDown className="size-3.5 text-muted-foreground" />
-        </div>
-      )}
-    </div>
+      {statusLabel ? (
+        <span
+          className="flex size-2 shrink-0 rounded-full bg-blue-500"
+          title={statusLabel}
+        />
+      ) : null}
+
+      {textLabels.length > 0 ? (
+        <span className="flex shrink-0 gap-1">
+          {textLabels.map((value) => (
+            <span
+              key={value}
+              className="rounded-sm bg-muted px-1.5 py-0.5 text-[0.65rem] text-muted-foreground leading-none"
+            >
+              {value}
+            </span>
+          ))}
+        </span>
+      ) : null}
+    </>
   );
 }

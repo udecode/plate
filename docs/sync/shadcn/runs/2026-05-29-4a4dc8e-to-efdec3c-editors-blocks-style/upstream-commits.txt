@@ -1,0 +1,13 @@
+efdec3ca4 (origin/main, origin/HEAD) fix(styles): restore primary button hover for Nova and Lyra (#10807)
+2baa86081 (tag: shadcn@4.8.3) chore(release): version packages (#10791)
+e2fa0101e (tag: shadcn@4.8.2) chore(release): version packages (#10789)
+f584f0548 fix: padding
+64afddefd chore(v4): update base-ui to 1.5.0 (#10783)
+c87371399 fix(v4): serve registries from directory (#10781)
+3751fdfa4 fix(create): update lock state during render (#10782)
+c824d6b78 (tag: shadcn@4.8.1) chore(release): version packages (#10780)
+df1752dfe feat: rhea (#10779)
+e826e543f fix(registry): restore missing @blockus object in registry JSON (#10778)
+f7eecafb4 chore(registry): add dominik-ui (#10776)
+6e6cf9ee9 Feat/add registry directory blockus (#10711)
+5b628e23e feat(registry): add @toc-cn directory entry (#10759)

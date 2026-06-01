@@ -1,0 +1,193 @@
+---
+title: Basic Marks
+description: Common inline text formatting marks.
+docs:
+  - route: /docs/components/mark-toolbar-button
+    title: Mark Toolbar Button
+  - route: /docs/toolbar
+    title: Toolbar
+---
+
+Basic Marks covers the common inline formatting marks: bold, italic, underline, strikethrough, code, subscript, superscript, highlight, and kbd. The package owns mark plugins and transforms; the registry kit adds leaf components, toolbar wiring, and Markdown-style input rules.
+
+<Cards>
+
+<Card icon="bold" title="Bold" href="/docs/bold">
+Use `bold` for strong emphasis.
+</Card>
+
+<Card icon="italic" title="Italic" href="/docs/italic">
+Use `italic` for emphasis or stylistic text.
+</Card>
+
+<Card icon="underline" title="Underline" href="/docs/underline">
+Use `underline` for underlined text.
+</Card>
+
+<Card icon="strikethrough" title="Strikethrough" href="/docs/strikethrough">
+Use `strikethrough` for deleted or replaced text.
+</Card>
+
+<Card icon="code" title="Code" href="/docs/code">
+Use `code` for inline code and technical terms.
+</Card>
+
+<Card icon="subscript" title="Subscript" href="/docs/subscript">
+Use `sub` for subscript text.
+</Card>
+
+<Card icon="superscript" title="Superscript" href="/docs/superscript">
+Use `sup` for superscript text.
+</Card>
+
+<Card icon="kbd" title="Kbd" href="/docs/kbd">
+Use `kbd` for keyboard shortcuts.
+</Card>
+
+<Card icon="highlight" title="Highlight" href="/docs/highlight">
+Use `highlight` for marked text.
+</Card>
+
+</Cards>
+
+<ComponentPreview name="basic-marks-demo" />
+
+<PackageInfo>
+
+## Features
+
+- Leaf plugins for common mark keys.
+- Toggle transforms through each mark plugin.
+- HTML deserialization for semantic tags and styles.
+- Markdown-style input rules in the registry kit.
+- Registry leaves for code, highlight, and keyboard text.
+- Toolbar support through `MarkToolbarButton`.
+
+</PackageInfo>
+
+## Kit Usage
+
+<Steps>
+
+### Add The Kit
+
+`BasicMarksKit` is the full client-side registry kit. It includes mark plugins, input rules, `CodeLeaf`, `HighlightLeaf`, and `KbdLeaf`.
+
+<ComponentSource name="basic-marks-kit" />
+
+```tsx
+import { createPlateEditor } from 'platejs/react';
+
+import { BasicMarksKit } from '@/components/editor/plugins/basic-marks-kit';
+
+export const editor = createPlateEditor({
+  plugins: [...BasicMarksKit],
+});
+```
+
+### Add Toolbar Buttons
+
+Use `MarkToolbarButton` for direct mark toggles.
+
+```tsx
+import { BoldIcon } from 'lucide-react';
+import { KEYS } from 'platejs';
+
+import { MarkToolbarButton } from '@/components/ui/mark-toolbar-button';
+
+export function BoldToolbarButton() {
+  return (
+    <MarkToolbarButton nodeType={KEYS.bold} tooltip="Bold (⌘+B)">
+      <BoldIcon />
+    </MarkToolbarButton>
+  );
+}
+```
+
+</Steps>
+
+## Ownership
+
+| Surface | Owner | What It Does |
+|---------|-------|--------------|
+| `BasicMarksPlugin` | `@platejs/basic-nodes/react` | Groups bold, code, italic, strikethrough, subscript, superscript, and underline. |
+| `BaseBasicMarksPlugin` | `@platejs/basic-nodes` | Headless grouping plugin for the same seven marks. |
+| `BasicMarksKit` | Registry | Adds the full mark set, input rules, and client leaf components. |
+| `BaseBasicMarksKit` | Registry | Adds static/base mark plugins with static code, highlight, and kbd leaves. |
+| Individual mark plugins | `@platejs/basic-nodes` | Own mark keys, HTML parsing, render tags, and `toggle` transforms. |
+| `MarkToolbarButton` | Registry UI | Reads mark state and calls the mark toolbar hook. |
+
+`BasicMarksPlugin` is smaller than `BasicMarksKit`: highlight and kbd are separate plugins that the registry kit includes.
+
+## Mark Set
+
+| Mark | Plugin | Key | Render | Notes |
+|------|--------|-----|--------|-------|
+| Bold | `BoldPlugin` | `KEYS.bold` | `strong` | Deserializes `strong`, `b`, and bold font weight. |
+| Italic | `ItalicPlugin` | `KEYS.italic` | `em` | Deserializes `em`, `i`, and italic font style. |
+| Underline | `UnderlinePlugin` | `KEYS.underline` | `u` | Deserializes `u` and underline text decoration. |
+| Strikethrough | `StrikethroughPlugin` | `KEYS.strikethrough` | `s` | Uses directional selection affinity. |
+| Code | `CodePlugin` | `KEYS.code` | `code` | Uses hard selection affinity and skips `pre` HTML parents. |
+| Subscript | `SubscriptPlugin` | `KEYS.sub` | `sub` | Toggle removes superscript. |
+| Superscript | `SuperscriptPlugin` | `KEYS.sup` | `sup` | Toggle removes subscript. |
+| Highlight | `HighlightPlugin` | `KEYS.highlight` | `mark` | Uses directional selection affinity. |
+| Kbd | `KbdPlugin` | `KEYS.kbd` | `kbd` | Uses hard selection affinity. |
+
+Each base mark plugin extends `editor.tf.<mark>.toggle()` by calling `editor.tf.toggleMark(type)`.
+
+## Input Rules
+
+`BasicMarksKit` registers input rules explicitly. The package plugins do not enable them by default.
+
+| Rule Family | Kit Registration |
+|-------------|------------------|
+| `BoldRules.markdown` | `variant: '*'` and `variant: '_'` |
+| `ItalicRules.markdown` | `variant: '*'` and `variant: '_'` |
+| `UnderlineRules.markdown` | Default underline rule |
+| `CodeRules.markdown` | Default inline code rule |
+| `StrikethroughRules.markdown` | Default strikethrough rule |
+| `SubscriptRules.markdown` | Default subscript rule |
+| `SuperscriptRules.markdown` | Default superscript rule |
+| `HighlightRules.markdown` | `variant: '=='` and `variant: '≡'` |
+| `MarkComboRules.markdown` | Bold/italic/underline combinations |
+
+See [Plugin Input Rules](/docs/plugin-input-rules) for the runtime model.
+
+## Manual Usage
+
+Install the package when you want to compose marks yourself.
+
+```bash
+npm install @platejs/basic-nodes
+```
+
+Add only the marks you need.
+
+```tsx title="components/editor/mark-plugins.tsx"
+import {
+  BoldPlugin,
+  CodePlugin,
+  ItalicPlugin,
+  UnderlinePlugin,
+} from '@platejs/basic-nodes/react';
+
+export const markPlugins = [
+  BoldPlugin,
+  ItalicPlugin,
+  UnderlinePlugin,
+  CodePlugin,
+];
+```
+
+Use the individual pages for mark-specific setup and component details.
+
+## API Reference
+
+| API | Package | Use |
+|-----|---------|-----|
+| `BasicMarksPlugin` | `@platejs/basic-nodes/react` | React grouping plugin for seven common marks. |
+| `BaseBasicMarksPlugin` | `@platejs/basic-nodes` | Headless grouping plugin for seven common marks. |
+| `BasicMarksKit` | Registry | Full client kit with highlight, kbd, input rules, and leaves. |
+| `BaseBasicMarksKit` | Registry | Static/base kit for server or static rendering. |
+| `MarkToolbarButton` | Registry UI | Toolbar control for one mark key. |
+

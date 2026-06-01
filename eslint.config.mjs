@@ -6,6 +6,7 @@ export default defineConfig([
   {
     ignores: [
       '**/.pnpm-store/**',
+      '**/.contentlayer/**',
       '**/*.spec.*',
       '**/*.slow.*',
       '**/node_modules/**',
@@ -15,7 +16,6 @@ export default defineConfig([
       '**/.turbo/**',
       '**/coverage/**',
       '**/templates/**',
-      '**/.contentlayer/**',
       '**/public/**',
       '**/*.config.*',
       '**/*.d.ts',

@@ -10,7 +10,6 @@ TARGETS=(
   "${ROOT_DIR}/node_modules"
   "${ROOT_DIR}/.turbo"
   "${ROOT_DIR}/apps/www/.next"
-  "${ROOT_DIR}/apps/www/.contentlayer"
 )
 
 while IFS= read -r path; do
