@@ -24,4 +24,13 @@ describe('Vercel runtime packaging', () => {
 
     expect(postcssConfig.plugins).toHaveProperty('@tailwindcss/postcss');
   });
+
+  it('traces raw docs into the production search function', async () => {
+    const { default: getNextConfig } = await import('../../next.config');
+    const nextConfig = await getNextConfig('phase-production-build');
+
+    expect(nextConfig.outputFileTracingIncludes?.['/api/search']).toContain(
+      '../../content/docs/**/*'
+    );
+  });
 });
