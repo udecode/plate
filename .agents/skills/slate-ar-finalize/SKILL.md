@@ -16,7 +16,7 @@ Use this when the user wants to turn kept Slate AR work into reviewable output.
 
 Default contract:
 
-- Run `pnpm slate:ar:finalize-preview` first.
+- Run Codex Autoresearch `finalize-preview --cwd .tmp/slate-v2` first.
 - Treat preview as read-only evidence.
 - Report kept evidence, excluded session artifacts, dirty-tree warnings,
   semantic-safety warnings, overlap warnings, unkept commits, and final-tree

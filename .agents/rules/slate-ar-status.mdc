@@ -13,9 +13,11 @@ Use this when the user asks where the Slate v2 Autoresearch loop stands.
 Contract:
 
 - Read `.tmp/slate-v2/autoresearch.*` state when present.
-- Run read-only commands such as `pnpm slate:ar:state`,
-  `pnpm slate:ar:onboard`, `pnpm slate:ar:recommend`, and dashboard liveness.
-- Start or restart `pnpm slate:ar:serve` only to provide a live dashboard URL.
+- Run read-only Codex Autoresearch commands such as `state`,
+  `onboarding-packet`, `recommend-next`, and dashboard liveness with
+  `--cwd .tmp/slate-v2`.
+- Start or restart Codex Autoresearch `serve` only to provide a live dashboard
+  URL.
 - Report latest, best, baseline, kept/discarded/checks-failed/crashed packet
   counts when available.
 - Do not run `next`, `log`, setup, benchmark packets, finalization, branch,

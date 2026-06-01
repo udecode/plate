@@ -23,12 +23,12 @@ holes, example quality, or broad "make this better" research.
 
 ## Commands
 
-Prefer root shortcuts:
+Use Codex Autoresearch directly through the `slate-ar` wrapper:
 
 ```bash
-pnpm slate:ar:research-setup -- --slug "<slug>" --goal "<goal>"
-pnpm slate:ar:quality-gap -- --research-slug "<slug>" --list
-pnpm slate:ar:gap-candidates -- --research-slug "<slug>"
+<autoresearch-cli> research-setup --cwd .tmp/slate-v2 --slug "<slug>" --goal "<goal>"
+<autoresearch-cli> quality-gap --cwd .tmp/slate-v2 --research-slug "<slug>" --list
+<autoresearch-cli> gap-candidates --cwd .tmp/slate-v2 --research-slug "<slug>"
 ```
 
 Use `gap-candidates --apply` only after inspecting the candidates and deciding

@@ -430,7 +430,7 @@ function renderLoopMarkdown(payload) {
   }
 
   lines.push(
-    'Next move: pick one loop only, add or verify its METRIC output, then run `pnpm slate:ar:setup-plan -- --name "<loop-id>" --metric-name "<metric>"`.'
+    'Next move: pick one loop only, add or verify its METRIC output, then invoke the matching slate-ar skill or run Codex Autoresearch `setup-plan --cwd .tmp/slate-v2 --name "<loop-id>" --metric-name "<metric>"`.'
   );
 
   return `${lines.join('\n')}\n`;
@@ -528,7 +528,8 @@ if (compactFinalizePreview) {
             latestOutputTail: payload.progress.latestOutputTail,
           }
         : null,
-      fullOutput: 'Run pnpm slate:ar:finalize-preview -- --full for raw JSON.',
+      fullOutput:
+        'Run `node tooling/scripts/slate-autoresearch.mjs finalize-preview --full` for raw JSON.',
     };
     console.log(JSON.stringify(compact, null, 2));
   } catch {

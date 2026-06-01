@@ -65,12 +65,10 @@ Default path:
 2. check registry health with `pnpm bench:targets:check`;
 3. generate or check target reports with `pnpm bench:targets:report`;
 4. dry-run the target with `pnpm bench:targets:dry-run -- <target-id>`;
-5. inspect setup with `pnpm slate:ar:setup-target -- <target-id>`;
-6. initialize the real `.tmp/slate-v2/autoresearch.*` session only when needed:
-   `pnpm slate:ar:init-target -- <target-id>`;
-7. run `pnpm slate:ar:benchmark-inspect` and `pnpm slate:ar:benchmark-lint`;
-8. attach correctness with `pnpm slate:ar:checks-inspect -- --command "<cmd>"`;
-9. use `slate-ar` / Codex Autoresearch for setup, packets, stale-run detection,
+5. initialize the real `.tmp/slate-v2/autoresearch.*` session only when needed:
+   `node tooling/scripts/bench-targets.mjs autoresearch-init <target-id>`;
+6. use `slate-ar` / Codex Autoresearch for setup inspection, benchmark lint,
+   checks inspection, packets, stale-run detection,
    ASI, dashboard, keep/discard decisions, and final evidence.
 
 The old Slate v2 `bench:*` package scripts remain workload owners during

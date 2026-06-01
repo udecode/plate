@@ -23,13 +23,14 @@ pnpm bench:targets:report
 pnpm bench:targets:report:check
 pnpm bench:targets:dry-run -- react-active-typing-breakdown
 pnpm bench:targets:run -- react-active-typing-breakdown
-pnpm slate:ar:setup-target -- react-active-typing-breakdown
-pnpm slate:ar:init-target -- react-active-typing-breakdown
+node tooling/scripts/bench-targets.mjs autoresearch-init react-active-typing-breakdown
 ```
 
-`slate:ar:setup-target` is read-only. It prints the Autoresearch setup plan for
-the target. Use `slate:ar:init-target` only when you want to create or replace
-the real `.tmp/slate-v2/autoresearch.*` session files.
+`bench:targets:dry-run` is read-only. It checks the registry and prints the
+Autoresearch setup plan for the target. Use `autoresearch-init` only when you
+want to create or replace the real `.tmp/slate-v2/autoresearch.*` session files.
+For operator workflows, invoke the `slate-ar*` skills instead of package
+scripts.
 
 Use `pnpm bench:targets:import-evidence-kit` only while migrating active rows
 from `benchmarks/editor/research/benchmark-registry.json`. After the cutover,

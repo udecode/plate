@@ -97,33 +97,17 @@ read-only status unless the user explicitly says this thread owns writes.
 
 ## Command Surface
 
-Prefer root package shortcuts from `plate-2`:
+Use the `slate-ar*` skills as the operator entrypoints. Do not invent package
+scripts for Slate AR; Plate only exposes benchmark target scripts.
+
+For exact shell execution, load `codex-autoresearch:codex-autoresearch` and use
+its CLI fallback with `--cwd .tmp/slate-v2`. For target-backed setup from the
+Plate control repo, use:
 
 ```bash
-pnpm slate:ar:guide
-pnpm slate:ar:onboard
-pnpm slate:ar:recommend
-pnpm slate:ar:state
-pnpm slate:ar:prompt-plan -- --prompt "<user target>"
-pnpm slate:ar:setup-plan -- --name "<session>" --metric-name "<metric>"
-pnpm slate:ar:benchmark-inspect
-pnpm slate:ar:benchmark-lint
-pnpm slate:ar:checks-inspect -- --command "<correctness command>"
-pnpm slate:ar:doctor
-pnpm slate:ar:serve
-pnpm slate:ar:next
-pnpm slate:ar:log -- --status measure --description "<what was measured>"
-pnpm slate:ar:research-setup -- --slug "<slug>" --goal "<goal>"
-pnpm slate:ar:quality-gap -- --research-slug "<slug>" --list
-pnpm slate:ar:gap-candidates -- --research-slug "<slug>"
-pnpm slate:ar:new-segment
-pnpm slate:ar:partial-results
-pnpm slate:ar:finalize-preview
-pnpm slate:ar:finalize-current-tree
+pnpm bench:targets:dry-run -- <target-id>
+node tooling/scripts/bench-targets.mjs autoresearch-init <target-id>
 ```
-
-If a shortcut is missing, load `codex-autoresearch:codex-autoresearch` and use
-the equivalent CLI command with `--cwd .tmp/slate-v2`.
 
 ## Start Or Resume
 
@@ -167,11 +151,12 @@ that no more Slate gaps exist.
 
 Use generic Codex Autoresearch finalization flow. Slate defaults:
 
-- run `pnpm slate:ar:finalize-preview` first;
+- run Codex Autoresearch `finalize-preview --cwd .tmp/slate-v2` first;
 - exclude `autoresearch.*`, `autoresearch.research/**`, dashboard exports, and
   finalization scratch files unless the user asks to review session artifacts;
-- use `pnpm slate:ar:finalize-current-tree` when the current tree is the review
-  unit because kept commits were later corrected, bundled, or reverted;
+- use Codex Autoresearch `finalize-current-tree --cwd .tmp/slate-v2` when the
+  current tree is the review unit because kept commits were later corrected,
+  bundled, or reverted;
 - branch creation, cleanup, commit, push, and PR work require explicit user
   approval.
 

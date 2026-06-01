@@ -45,11 +45,11 @@ the metric tracks runtime and the log status carries truth:
 For an explicit gate command:
 
 ```bash
-pnpm slate:ar:setup-plan -- --name "<gate-name>" --metric-name "seconds" --benchmark-command "<gate command>" --benchmark-prints-metric false --checks-command "<gate command>"
-pnpm slate:ar:doctor
-pnpm slate:ar:serve
-pnpm slate:ar:next
-pnpm slate:ar:log -- --status measure --description "<gate result>"
+<autoresearch-cli> setup-plan --cwd .tmp/slate-v2 --name "<gate-name>" --metric-name "seconds" --benchmark-command "<gate command>" --benchmark-prints-metric false --checks-command "<gate command>"
+<autoresearch-cli> doctor --cwd .tmp/slate-v2
+<autoresearch-cli> serve --cwd .tmp/slate-v2
+<autoresearch-cli> next --cwd .tmp/slate-v2
+<autoresearch-cli> log --cwd .tmp/slate-v2 --from-last --status measure --description "<gate result>"
 ```
 
 For full editor behavior proof, prefer one focused command first, then broaden:
