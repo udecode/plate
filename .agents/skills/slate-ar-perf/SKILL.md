@@ -1,0 +1,161 @@
+---
+description: Slate v2 performance lane for Codex Autoresearch. Delegates generic loop mechanics to slate-ar/codex-autoresearch and adds target registry, fastest-safe stop rules, exactness gates, and pagination/virtualization defaults.
+argument-hint: '[fastest | pagination | virtualization | benchmark target | Slate v2 perf surface]'
+disable-model-invocation: true
+name: slate-ar-perf
+metadata:
+  skiller:
+    source: .agents/rules/slate-ar-perf.mdc
+---
+
+# Slate AR Perf
+
+Handle $ARGUMENTS.
+
+Use this for Slate v2 performance work where "try another optimization" needs a
+measured loop, not another plan essay. This is the performance lane on top of
+`slate-ar`, which wraps `codex-autoresearch:codex-autoresearch`.
+
+Do not duplicate generic packet/dashboard/finalization mechanics here. Load
+`slate-ar` for Slate wrapper behavior and `codex-autoresearch:codex-autoresearch`
+for the underlying Autoresearch state machine.
+
+## Use When
+
+- The user invokes `slate-ar-perf`.
+- The user says `fast`, `fastest`, `max perf`, `pagination`,
+  `virtualization`, `benchmark`, or asks to make a Slate v2 surface faster.
+- Pagination, virtualization, huge-document, table, render, layout, selection,
+  typing, paste, scroll, or mount performance needs iterative optimization.
+- There is, or should be, a benchmark command that prints `METRIC name=value`.
+- The next move depends on measured results, not just architecture judgment.
+
+## Do Not Use When
+
+- The bug is primarily correctness and needs a direct fix. Use `slate-patch`.
+- No repeatable benchmark or correctness check can be defined yet. Add the
+  missing proof surface with `slate-patch` or `task` first.
+- The output is an architecture/API proposal for user review. Use `slate-plan`.
+- The target is Plate product code instead of raw Slate v2.
+
+## Natural Modes
+
+- `fast`, `fastest`, `max perf`, `make it fastest`: fastest-safe mode. Pick or
+  resume the matching target and keep running packets until target parity,
+  plateau, correctness blocker, architecture blocker, unsafe
+  finalization/dirty-tree boundary, or user interruption.
+- `pagination`, `virtualization`: use the pagination default contract unless the
+  user gives a sharper target.
+- `continue`, `resume`, `status`, `dashboard`, `finalize`: delegate to
+  `slate-ar` operator modes, then apply perf policy to any next packet.
+
+Plateau means three consecutive valid correctness-green packets improve the
+primary metric by less than 5% and no safe P0/P1 profiler hypothesis remains.
+Do not stop at the first win.
+
+## Target Registry
+
+Use `benchmarks/targets/slate-v2.json` as the migration spine when it exists.
+It is the source of truth for benchmark questions, cohorts, commands, metrics,
+correctness checks, artifacts, and supporting docs.
+
+Default path:
+
+1. list targets with `pnpm bench:targets:list`;
+2. check registry health with `pnpm bench:targets:check`;
+3. generate or check target reports with `pnpm bench:targets:report`;
+4. dry-run the target with `pnpm bench:targets:dry-run -- <target-id>`;
+5. inspect setup with `pnpm slate:ar:setup-target -- <target-id>`;
+6. initialize the real `.tmp/slate-v2/autoresearch.*` session only when needed:
+   `pnpm slate:ar:init-target -- <target-id>`;
+7. run `pnpm slate:ar:benchmark-inspect` and `pnpm slate:ar:benchmark-lint`;
+8. attach correctness with `pnpm slate:ar:checks-inspect -- --command "<cmd>"`;
+9. use `slate-ar` / Codex Autoresearch for setup, packets, stale-run detection,
+   ASI, dashboard, keep/discard decisions, and final evidence.
+
+The old Slate v2 `bench:*` package scripts remain workload owners during
+migration. The clean split is: target registry owns the decision contract,
+benchmark scripts own runtime workload, Autoresearch owns active optimization
+state, and target reports/history own historical status.
+
+## Exactness Gate
+
+Performance wins do not count when the editor is less correct.
+
+Before pagination, virtualization, hidden DOM, model-backed selection, or
+staged-render optimization:
+
+- identify the exact correctness oracle or browser proof command;
+- if no oracle exists, add it first with `slate-patch` or `tdd`;
+- classify each native behavior as preserved, intentionally degraded, or out of
+  scope before using it as a benchmark cohort;
+- keep cold-path estimates as scaffold hints only, not authoritative layout or
+  selection truth;
+- if a packet improves speed but breaks selection, input ordering, IME, copy,
+  paste, undo, focus, or follow-up typing, log `checks_failed` or `discard`,
+  never `keep`.
+
+## Pagination Default Contract
+
+For pagination or page-level virtualization, start from this contract unless the
+user gives a sharper one.
+
+Target route:
+
+```txt
+http://localhost:3100/examples/pagination?page_layout=single&strategy=virtualized&rows=800
+```
+
+Required cohorts:
+
+- small: `rows=8`, staged and virtualized
+- table-large: `rows=500`, staged and virtualized
+- stress: `rows=800` or `rows=1000`, virtualized
+- table-span: table spans at least 10 pages
+
+Primary metrics, lower is better:
+
+- fast typing burst p95 or total interaction latency
+- initial interactive time for the route
+- strategy switch latency from staged to virtualized
+- fast scroll recovery time
+
+Secondary metrics:
+
+- dropped or reordered characters count
+- DOM node count
+- mounted page count
+- page overscan count
+- React commit count or render count when available
+- heap estimate when cheap to gather
+
+Correctness checks:
+
+- no skipped/reordered characters during fast typing bursts;
+- insert break keeps following typed characters after the caret;
+- click left margin selects start of line;
+- click right margin selects end of line;
+- double click selects a word;
+- drag selection autoscroll works near top and bottom;
+- text selection across visible page content works;
+- native copy/paste/select-all behavior is preserved or explicitly classified.
+
+Benchmark output must print `METRIC` lines. Example:
+
+```txt
+METRIC typing_p95_ms=42
+METRIC dropped_chars=0
+METRIC dom_nodes=1840
+```
+
+## Handoff
+
+Report:
+
+- benchmark command and primary metric;
+- baseline, latest, and best values;
+- kept, discarded, crashed, and checks-failed packets;
+- correctness checks used;
+- files changed by kept work;
+- dashboard URL, if served;
+- next recommended packet or blocker.

@@ -50,8 +50,16 @@ Use those skills when relevant:
   threshold
 - `task` for normal repo task execution
 - `major-task` for heavyweight architecture, framework comparison, migration, benchmark, or proposal work
-- `slate-autoresearch` for measured Slate v2 performance optimization loops
-  with Codex Autoresearch, especially pagination/virtualization
+- `slate-ar` for generic measured Slate v2 Codex Autoresearch loops:
+  continue/status/dashboard/finalize/deep-research/quality-gap
+- `slate-ar-quality` for Slate v2 deep-research and quality-gap loops
+- `slate-ar-gate` for repeated Slate v2 proof gates, including full editor
+  behavior suites when the command/oracle already exists
+- `slate-ar-recipe` for Codex Autoresearch recipe selection and setup-plan
+- `slate-ar-perf` for measured Slate v2 performance optimization loops,
+  especially pagination/virtualization
+- `slate-ar-status` for read-only Slate v2 Autoresearch state/dashboard checks
+- `slate-ar-finalize` for Slate v2 Autoresearch finalization preview
 - `clawsweeper` for Slate issue-ledger triage, duplicate/stale/invalid classification, small high-confidence issue processing, and exact claim sync
 - `clawpatch` for Clawpatch init/map/review/report/fix/revalidate workflows
 - `editor-test-harvester` for mining external editor repositories for portable editor-behavior tests, Slate v2 coverage gaps, and copy/refactor/create decisions

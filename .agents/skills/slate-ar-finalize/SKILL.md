@@ -1,0 +1,30 @@
+---
+description: Finalization shortcut for Slate v2 Autoresearch. Runs finalization preview first, explains review-branch/current-tree options, and requires explicit approval before branch, commit, cleanup, push, or PR work.
+argument-hint: '[preview | current-tree | review branches]'
+disable-model-invocation: true
+name: slate-ar-finalize
+metadata:
+  skiller:
+    source: .agents/rules/slate-ar-finalize.mdc
+---
+
+# Slate AR Finalize
+
+Handle $ARGUMENTS by loading `slate-ar` and running its finalization mode.
+
+Use this when the user wants to turn kept Slate AR work into reviewable output.
+
+Default contract:
+
+- Run `pnpm slate:ar:finalize-preview` first.
+- Treat preview as read-only evidence.
+- Report kept evidence, excluded session artifacts, dirty-tree warnings,
+  semantic-safety warnings, overlap warnings, unkept commits, and final-tree
+  coverage.
+- Use `finalize-current-tree` only when the current tree is the intended review
+  unit and the user explicitly accepts that path.
+- Do not create branches, clean files, commit, push, or open PRs without
+  explicit user approval.
+
+This skill is the memorable entrypoint for finalization. The detailed safety
+rules live in `slate-ar`.

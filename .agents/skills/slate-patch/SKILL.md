@@ -51,9 +51,10 @@ the right long-term shape, verify, autoreview, hand off. It does not mean
   diagnosis.
 - Run Slate v2 commands from `.tmp/slate-v2`. `plate-2` commands do not prove
   Slate v2 behavior.
-- Evidence Kit runs from `plate-2` and is benchmark control-plane sync only. It
-  can route next work, expose gaps, and refresh dashboards, but it never replaces
-  `.tmp/slate-v2` reproduction, tests, or browser proof.
+- Benchmark target work runs from `plate-2` through
+  `benchmarks/targets/slate-v2.json` and `pnpm bench:targets:*`. It can route
+  next work, expose benchmark gaps, and hand optimization to `slate-ar-perf`,
+  but it never replaces `.tmp/slate-v2` reproduction, tests, or browser proof.
 - Reproduce first whenever practical. For browser routes, use the real route and
   behavior-level interaction, not only model-state calls.
 - Add a behavior-level regression test when sane. Prefer tests that cover the
@@ -75,6 +76,16 @@ the right long-term shape, verify, autoreview, hand off. It does not mean
   issue-backed or explicitly asks for issue accounting.
 - Final checklist item is always `autoreview` for non-trivial implementation
   changes.
+
+## Boundary With Slate AR
+
+- Correctness fails: use `slate-patch`.
+- Generic measured loop with an existing proof surface: use `slate-ar`.
+- Metric optimization with an existing correctness oracle: use `slate-ar-perf`.
+- Missing oracle for a performance loop: add repro/test/browser proof here
+  first, then hand off to `slate-ar-perf`.
+- A perf-sensitive correctness fix may end with a benchmark target handoff, not
+  an Autoresearch packet loop.
 
 ## Repair Command
 
@@ -119,9 +130,14 @@ Repair workflow:
 
 ## Goal Setup
 
-Use `autogoal` for non-trivial Slate Patch work.
+Use `autogoal` as the lifecycle kernel for non-trivial Slate Patch work.
 
-Goal shape:
+This derived lane owns repro, behavior coverage, Slate v2 proof, architecture
+pressure, autoreview, and any benchmark handoff. Autogoal owns active-goal
+conflicts, objective shape, plan state, completion rules, blocker rules, and
+repair routing.
+
+Goal handle:
 
 ```txt
 Fix Slate Patch <bug/cluster>; done when repro, behavior coverage, Slate v2
@@ -130,10 +146,6 @@ proof, and autoreview pass; target `.tmp/slate-v2`.
 
 Do not create a Slate Plan pass schedule. This skill is one implementation
 slice, not a planning lane.
-
-Keep any `create_goal.objective` short. Put repro details, cleanest-fix
-criteria, verification gates, autoreview target, and handoff proof in the goal
-plan or final ledger, not the goal text.
 
 ## Workflow
 
@@ -298,37 +310,35 @@ Pick the relevant set:
 If a gate fails for unrelated existing debt, record the exact command and why it
 is unrelated. Do not hide a relevant failure.
 
-### 7. Evidence Kit Control-Plane Sync
+### 7. Benchmark Target Handoff
 
-After Slate v2 proof is done, decide whether the patch needs benchmark
-control-plane sync.
+After Slate v2 correctness proof, decide whether the patch needs benchmark
+target sync or a `slate-ar-perf` handoff.
 
-Run this step when the bug class or patch touches performance/scalability,
+Run this when the bug class or patch touches performance/scalability,
 rendering/projection, React rerender behavior, huge documents, history,
 clipboard, collaboration, browser traces, operation replay, Slate-vs-Slate-v2
-parity, or any family already registered in
-`benchmarks/editor/research/benchmark-registry.json`.
+parity, or any behavior that should be covered by
+`benchmarks/targets/slate-v2.json`.
 
 Workflow:
 
-1. Read `benchmarks/editor/research/benchmark-registry.json`.
-2. Read `benchmarks/editor/benchmarks/results/benchmark-health-latest.json`.
-3. If the changed behavior maps to a registered family, refresh from `plate-2`:
-
-   ```bash
-   npm run bench:editor:refresh
-   ```
-
-4. Record the relevant health delta, stale/missing/over-budget rows, and next
-   action owner in the handoff.
-5. If no registered artifact covers the patch class, record
-   `Evidence Kit: candidate benchmark needed - <behavior>` or
-   `Evidence Kit: N/A - <reason>`.
+1. From `plate-2`, inspect `benchmarks/targets/slate-v2.json` and run
+   `pnpm bench:targets:check`.
+2. Use `pnpm bench:targets:list` or
+   `pnpm slate:ar:suggest-loops -- --with-checks` to find the matching target.
+3. If a target exists, run `pnpm bench:targets:dry-run -- <target-id>` and
+   record whether `slate-ar-perf` should own further optimization.
+4. If no target exists, record
+   `Benchmark target candidate needed - <behavior>` and the likely benchmark
+   plus correctness command.
+5. If the correctness oracle is missing, keep ownership in `slate-patch` until
+   the test/browser proof exists.
 
 Do not run this as a tax on tiny model-only fixes with no benchmark family.
 Also do not skip it for perf-sensitive editor behavior just because focused
-tests passed. Tests prove correctness; Evidence Kit keeps the benchmark backlog
-honest.
+tests passed. Tests prove correctness; the target registry keeps the benchmark
+backlog honest.
 
 ### 8. Autoreview
 
@@ -360,8 +370,8 @@ Keep it short. Include:
 - selection/navigation matrix slice covered or intentionally skipped when
   applicable;
 - tests/proof run with cwd when not obvious;
-- Evidence Kit result when applicable: refreshed, candidate benchmark needed,
-  or N/A with reason;
+- benchmark target handoff when applicable: target dry-run, `slate-ar-perf`
+  handoff, candidate target needed, or N/A with reason;
 - autoreview result;
 - any relevant unresolved gate or unrelated existing failure.
 
