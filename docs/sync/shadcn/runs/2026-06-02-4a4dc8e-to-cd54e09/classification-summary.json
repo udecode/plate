@@ -92,13 +92,8 @@
       "implementedAt": "2026-06-02"
     },
     {
-      "upstreamFiles": [
-        "apps/v4/package.json"
-      ],
-      "plateFiles": [
-        "apps/www/package.json",
-        "pnpm-lock.yaml"
-      ],
+      "upstreamFiles": ["apps/v4/package.json"],
+      "plateFiles": ["apps/www/package.json", "pnpm-lock.yaml"],
       "change": "Adopt shadcn@4.10.0 after registry source validation",
       "implementedAt": "2026-06-02"
     }

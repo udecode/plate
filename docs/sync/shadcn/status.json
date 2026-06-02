@@ -29,12 +29,8 @@
         "Docs shell parity polish: adopted docs foreground text tokens and removed sidebar divider; command-menu deferred",
         "Package bump: adopted shadcn 4.8.2"
       ],
-      "deferred": [
-        "/r/registries.json registry directory route"
-      ],
-      "excluded": [
-        "Rhea/style/theme/create/homepage upstream surfaces"
-      ],
+      "deferred": ["/r/registries.json registry directory route"],
+      "excluded": ["Rhea/style/theme/create/homepage upstream surfaces"],
       "verification": [
         "pnpm install",
         "pnpm --filter www exec tsx --tsconfig ./scripts/tsconfig.scripts.json scripts/check-registry-source.mts",
@@ -145,10 +141,7 @@
       "deferred": [
         "Default full sync lane remains pending for out-of-scope rows"
       ],
-      "excluded": [
-        "Upstream Changelog title copy",
-        "Open in v0 CTA"
-      ],
+      "excluded": ["Upstream Changelog title copy", "Open in v0 CTA"],
       "verification": [
         "pnpm --filter www exec eslint src/components/release-index.tsx 'src/app/(app)/docs/releases/page.tsx' --fix",
         "pnpm --filter www typecheck",
