@@ -18,7 +18,10 @@ Performance optimization lives in `slate-ar-perf`.
 ## Use When
 
 - The user invokes `slate-ar`.
-- The user invokes a wrapper shortcut: `slate-ar-status` or
+- The user invokes a mini-skill shortcut: `slate-ar-next`,
+  `slate-ar-perfect`, `slate-ar-fast`, `slate-ar-stabilize`, or
+  `slate-ar-ship`.
+- The user invokes an expert wrapper shortcut: `slate-ar-status` or
   `slate-ar-finalize`.
 - The user invokes a focused wrapper: `slate-ar-quality`, `slate-ar-gate`, or
   `slate-ar-recipe`.
@@ -44,6 +47,20 @@ Performance optimization lives in `slate-ar-perf`.
   dashboard, deep research, quality-gap, drift, finalization, and CLI mechanics.
 - `slate-ar`: wraps that engine for Slate v2 cwd, state, correctness routing,
   and operator modes.
+- `slate-ar-next`: daily driver that reads status, picks one next owner, and
+  runs one safe step.
+- `slate-ar-perfect`: primary broad surface-improvement loop backed by
+  `autogoal`; it owns architecture/API/DX gaps, behavior stability, perf, and
+  final no-regression proof for a named surface.
+- `slate-ar-fast`: expert fastest-safe perf loop backed by `slate-ar-perf` and
+  no-regression checks; normal users should reach it through
+  `slate-ar-perfect` unless they already know the perf target.
+- `slate-ar-stabilize`: expert behavior-stability loop backed by
+  `slate-ar-gate`, `slate-patch`, and `tdd` when needed; normal users should
+  reach it through `slate-ar-perfect` unless they already know the failing
+  behavior surface.
+- `slate-ar-ship`: finalization, review, and commit/PR readiness path backed by
+  `slate-ar-finalize` and `autoreview`.
 - `slate-ar-quality`: runs deep-research / quality-gap loops for Slate v2
   API/DX/architecture/test coverage gaps.
 - `slate-ar-gate`: repeats and logs existing test/typecheck/browser/editor
@@ -91,6 +108,13 @@ Interpret short user text before picking commands:
   `slate-ar-recipe`.
 - `fast`, `fastest`, `max perf`, `pagination`, `virtualization`, `benchmark`:
   route to `slate-ar-perf`.
+- `next`, `do next`, `pick best`: route to `slate-ar-next`.
+- `perfect <surface>`: route to `slate-ar-perfect`.
+- `absolute best`, `best architecture`, `best DX`, `no regressions`, or mixed
+  API/testing/perf quality requests: route to `slate-ar-perfect`.
+- `ship`, `reviewable`, `ready to commit`: route to `slate-ar-ship`.
+- `stabilize`, `regressions`, `native behavior`: route to
+  `slate-ar-stabilize`.
 
 If a mutating Slate AR loop is already running in another thread, default to
 read-only status unless the user explicitly says this thread owns writes.

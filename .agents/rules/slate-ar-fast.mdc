@@ -1,0 +1,62 @@
+---
+description: Slate v2 fastest-safe mini-skill. Picks or creates the hottest perf target, runs slate-ar-perf with no-regression checks, and stops at target, plateau, or correctness blocker.
+argument-hint: '[optional perf surface]'
+disable-model-invocation: true
+---
+
+# Slate AR Fast
+
+Handle $ARGUMENTS.
+
+Use this when the user says "make it fast", "fastest", "perf", or wants the
+agent to pick the highest-value Slate v2 performance target.
+
+This is an expert override. The normal broad workflow is
+`slate-ar-perfect <surface>`, which may call this internally.
+
+## Contract
+
+Load `slate-ar-status` first.
+
+If $ARGUMENTS names a specific target or surface, run `slate-ar-perf` on that
+target. If the target is missing but specific, `slate-ar-perf` should create the
+benchmark target and correctness contract.
+
+If no target is named, pick the hottest target from current evidence:
+
+1. user-visible behavior latency first;
+2. regression versus legacy next;
+3. broad architectural fanout next;
+4. noisy raw microbenchmarks last.
+
+Bare `slate-ar-fast` means fastest-safe loop, not a one-off benchmark probe.
+Use `autogoal` unless the user explicitly says `probe`, `status`, or asks for a
+single read-only measurement.
+
+The goal should target one primary metric and one correctness contract. If no
+target is named, choose the hottest target and record why.
+
+## No-Regression Rule
+
+Every kept perf packet needs correctness evidence. If selection, typing, copy,
+paste, undo, IME, focus, cursor placement, or follow-up input regresses, log the
+packet as `checks_failed` or route to `slate-patch`.
+
+If correctness coverage is missing, create or route to the missing oracle before
+optimizing. Do not make the metric faster by weakening behavior, delaying input,
+or hiding work behind debounce.
+
+## Stop Rules
+
+Stop when one of these is true:
+
+- target threshold is met with checks green;
+- legacy parity is met where legacy is the comparison;
+- three correctness-green packets improve the primary metric by less than 5%;
+- the next safe win needs `slate-plan`;
+- behavior correctness blocks further perf work.
+
+## Handoff
+
+Report target, benchmark command, primary metric, baseline/latest/best, checks,
+kept/discarded/checks-failed packets, and next target.

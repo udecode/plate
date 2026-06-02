@@ -29,8 +29,9 @@ for the underlying Autoresearch state machine.
 ## Do Not Use When
 
 - The bug is primarily correctness and needs a direct fix. Use `slate-patch`.
-- No repeatable benchmark or correctness check can be defined yet. Add the
-  missing proof surface with `slate-patch` or `task` first.
+- The target is too vague to infer a benchmark and correctness contract. Use
+  `slate-ar-recipe` for target discovery or `slate-plan` for architecture
+  framing.
 - The output is an architecture/API proposal for user review. Use `slate-plan`.
 - The target is Plate product code instead of raw Slate v2.
 
@@ -66,6 +67,37 @@ Default path:
 6. use `slate-ar` / Codex Autoresearch for setup inspection, benchmark lint,
    checks inspection, packets, stale-run detection,
    ASI, dashboard, keep/discard decisions, and final evidence.
+
+## Missing Target Policy
+
+A specific target id is enough instruction. Do not force the user to write a
+long prompt like "create target if missing".
+
+If `<target-id>` is missing from `benchmarks/targets/slate-v2.json` and the name
+is specific enough to infer the surface, create the first-class target contract
+in the same pass. Examples of specific-enough names:
+
+- `react-huge-document-select-all`
+- `core-observation-compare`
+- `pagination-virtualized-fast-scroll`
+- `history-fragment-undo-redo`
+
+When creating a target:
+
+- add the registry entry before initializing Autoresearch;
+- reuse or extend the nearest existing benchmark script when possible;
+- create a small benchmark owner only when no existing command can expose the
+  metric honestly;
+- make the benchmark print `METRIC` lines from the start;
+- use a primary metric that names the real surface, not generic
+  `benchmark_seconds`;
+- compare against `../slate`/`../../../slate` when legacy parity is the claim;
+- add a correctness command that covers the native editor behavior at risk;
+- dry-run the target and run `pnpm bench:targets:check` before AR init.
+
+If the target name is ambiguous, stop and recommend one or two concrete target
+ids. Do not create another `slate-ar-*` wrapper skill for a missing benchmark
+target. `slate-ar-perf` owns perf-target bootstrapping.
 
 The old Slate v2 `bench:*` package scripts remain workload owners during
 migration. The clean split is: target registry owns the decision contract,
@@ -141,6 +173,46 @@ METRIC typing_p95_ms=42
 METRIC dropped_chars=0
 METRIC dom_nodes=1840
 ```
+
+## Huge Document Select-All Default Contract
+
+For `react-huge-document-select-all`, create or use a target with this contract.
+
+Required cohorts:
+
+- 5k blocks against legacy Slate;
+- the main Slate v2 huge-document React surface;
+- staged/DOM-present or virtualized surface when that is the product path;
+- native keyboard select-all (`Mod+A`), not only programmatic model selection.
+
+Primary metrics, lower is better:
+
+- `react_huge_doc_select_all_p95_ms`;
+- `react_huge_doc_select_all_worst_p95_ratio` versus legacy;
+- `react_huge_doc_select_all_failure_count`.
+
+Secondary metrics:
+
+- DOM node count after select-all;
+- React commit count when cheap to collect;
+- selection export/import time when visible separately;
+- copy latency for the selected document when cheap to collect.
+
+Correctness checks:
+
+- `Mod+A` selects the full editor document;
+- typing after select-all replaces the selected content once;
+- undo restores the previous document and selection coherently;
+- copy returns complete plain text for the selected document;
+- broad selection stays valid in staged, partial-DOM, or virtualized rendering;
+- no hidden debounce or delayed correctness.
+
+Promotion target:
+
+- first pass: worst p95 ratio `<=1.5` with failure count `0`;
+- final target: worst p95 ratio `<=1.0` or plateau after three
+  correctness-green packets with less than 5% gain and no safe P0/P1 profiler
+  hypothesis left.
 
 ## Handoff
 
