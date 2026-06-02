@@ -45,6 +45,25 @@ export type BaseListConfig = PluginConfig<
 export const BaseListPlugin = createTSlatePlugin<BaseListConfig>({
   key: KEYS.list,
   inject: {
+    nodeProps: {
+      nodeKey: KEYS.listType,
+      query: ({ nodeProps }) => {
+        const element = nodeProps.element as TListElement | undefined;
+
+        return !!element?.listStyleType && !isOrderedList(element);
+      },
+      transformProps: ({ props }) => ({
+        ...props,
+        role: 'listitem',
+        style: {
+          ...props.style,
+          display: 'list-item',
+          margin: 0,
+          padding: 0,
+          position: 'relative',
+        },
+      }),
+    },
     plugins: {
       [KEYS.html]: {
         parser: {
@@ -202,6 +221,7 @@ export const BaseListPlugin = createTSlatePlugin<BaseListConfig>({
   render: {
     belowNodes: (props) => {
       if (!props.element.listStyleType) return;
+      if (!isOrderedList(props.element)) return;
 
       return (props) => <List {...(props as SlateRenderElementProps)} />;
     },

@@ -5,6 +5,7 @@ import { getRenderNodeProps } from './getRenderNodeProps';
 describe('getRenderNodeProps', () => {
   it('keeps plain paragraph class merging on the fast path', () => {
     const editor = createPlateEditor({
+      navigationFeedback: false,
       plugins: [],
       value: [
         {
@@ -12,10 +13,11 @@ describe('getRenderNodeProps', () => {
           type: 'p',
         },
       ],
-    });
+    } as any);
     const element = editor.children[0] as any;
 
     const result = getRenderNodeProps({
+      disableInjectNodeProps: true,
       editor,
       plugin: editor.getPlugin({ key: 'p' }) as any,
       props: {
@@ -63,6 +65,7 @@ describe('getRenderNodeProps', () => {
       key: 'align',
     });
     const editor = createPlateEditor({
+      navigationFeedback: false,
       plugins: [ParagraphPlugin, AlignPlugin],
       value: [
         {
@@ -71,7 +74,7 @@ describe('getRenderNodeProps', () => {
           type: 'p',
         },
       ],
-    });
+    } as any);
     const element = editor.children[0] as any;
 
     const result = getRenderNodeProps({

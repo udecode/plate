@@ -308,7 +308,7 @@
     outline: none;
     position: relative;
 
-    &:has([data-rehype-pretty-code-title]) [data-slot="copy-button"] {
+    & [data-slot="copy-button"] {
       top: calc(var(--spacing) * 1.5) !important;
     }
   }

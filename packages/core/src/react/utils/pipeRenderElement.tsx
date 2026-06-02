@@ -25,14 +25,12 @@ function FastElementWithPath({
   children,
   editor,
   element,
-  hasInjectNodeProps,
   plugin,
 }: {
   attributes: any;
   children: React.ReactNode;
   editor: PlateEditor;
   element: any;
-  hasInjectNodeProps: boolean;
   plugin: any;
 }) {
   const path = useNodePath(element)!;
@@ -48,7 +46,6 @@ function FastElementWithPath({
         attributes={attributes}
         editor={editor}
         element={element}
-        hasInjectNodeProps={hasInjectNodeProps}
         path={path}
         plugin={plugin}
       >
@@ -58,22 +55,20 @@ function FastElementWithPath({
   );
 }
 
-function getFastInjectedAttributes({
+function useFastInjectedAttributes({
   attributes,
   editor,
   element,
-  hasInjectNodeProps,
   path,
   readOnly,
 }: {
   attributes: any;
   editor: PlateEditor;
   element: any;
-  hasInjectNodeProps: boolean;
   path: any;
   readOnly: boolean;
 }) {
-  if (!hasInjectNodeProps) return attributes;
+  if (editor.meta.pluginCache.inject.nodeProps.length === 0) return attributes;
 
   return (
     pipeInjectNodeProps(
@@ -93,7 +88,6 @@ function FastElementBody({
   children,
   editor,
   element,
-  hasInjectNodeProps,
   path,
   plugin,
 }: {
@@ -101,16 +95,14 @@ function FastElementBody({
   children: React.ReactNode;
   editor: PlateEditor;
   element: any;
-  hasInjectNodeProps: boolean;
   path: any;
   plugin: any;
 }) {
   const readOnly = useReadOnly();
-  const injectedAttributes = getFastInjectedAttributes({
+  const injectedAttributes = useFastInjectedAttributes({
     attributes,
     editor,
     element,
-    hasInjectNodeProps,
     path,
     readOnly,
   });
@@ -136,7 +128,6 @@ function FastIntrinsicElement({
   children,
   editor,
   element,
-  hasInjectNodeProps,
   isVoidTag,
   plugin,
   renderBelowNodes,
@@ -147,7 +138,6 @@ function FastIntrinsicElement({
   children: React.ReactNode;
   editor: PlateEditor;
   element: any;
-  hasInjectNodeProps: boolean;
   isVoidTag: boolean;
   plugin: any;
   renderBelowNodes: boolean;
@@ -167,7 +157,6 @@ function FastIntrinsicElement({
         blockId={blockId}
         editor={editor}
         element={element}
-        hasInjectNodeProps={hasInjectNodeProps}
         isVoidTag={isVoidTag}
         path={path}
         plugin={plugin}
@@ -186,7 +175,6 @@ function FastIntrinsicElementBody({
   children,
   editor,
   element,
-  hasInjectNodeProps,
   isVoidTag,
   path,
   plugin,
@@ -198,7 +186,6 @@ function FastIntrinsicElementBody({
   children: React.ReactNode;
   editor: PlateEditor;
   element: any;
-  hasInjectNodeProps: boolean;
   isVoidTag: boolean;
   path: any;
   plugin: any;
@@ -206,11 +193,10 @@ function FastIntrinsicElementBody({
   tag: keyof HTMLElementTagNameMap;
 }) {
   const readOnly = useReadOnly();
-  const injectedAttributes = getFastInjectedAttributes({
+  const injectedAttributes = useFastInjectedAttributes({
     attributes,
     editor,
     element,
-    hasInjectNodeProps,
     path,
     readOnly,
   });
@@ -340,8 +326,6 @@ export const pipeRenderElement = (
   const hasAboveNodes = editor.meta.pluginCache.render.aboveNodes.length > 0;
   const hasBelowRootNodes =
     editor.meta.pluginCache.render.belowRootNodes.length > 0;
-  const hasInjectNodeProps =
-    editor.meta.pluginCache.inject.nodeProps.length > 0;
 
   return function render(props): any {
     const plugin = getPluginByType(editor, props.element.type);
@@ -391,7 +375,6 @@ export const pipeRenderElement = (
               blockId={blockId}
               editor={editor}
               element={props.element}
-              hasInjectNodeProps={hasInjectNodeProps}
               isVoidTag={isVoidTag}
               plugin={plugin}
               renderBelowNodes={false}
@@ -409,7 +392,6 @@ export const pipeRenderElement = (
               blockId={blockId}
               editor={editor}
               element={props.element}
-              hasInjectNodeProps={hasInjectNodeProps}
               isVoidTag={isVoidTag}
               plugin={plugin}
               renderBelowNodes
@@ -426,7 +408,6 @@ export const pipeRenderElement = (
               attributes={attributes}
               editor={editor}
               element={props.element}
-              hasInjectNodeProps={hasInjectNodeProps}
               plugin={plugin}
             >
               {props.children}
