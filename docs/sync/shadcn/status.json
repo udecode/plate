@@ -10,11 +10,11 @@
     "docsApp": "apps/www",
     "docsContent": "content/docs"
   },
-  "lastSyncedCommit": "4a4dc8eb0fc793d8e9225e780183ad605f15d2c2",
-  "lastSyncedAt": "2026-05-28",
-  "lastSyncPlan": "docs/plans/2026-05-24-shadcn-base-migration-progress.md",
-  "lastPlannedCommit": "efdec3ca4523e5edd8a714f633002a7addc203a1",
-  "lastPlan": "docs/sync/shadcn/runs/2026-05-29-4a4dc8e-to-efdec3c-editors-blocks-style/plan.md",
+  "lastSyncedCommit": "cd54e0927f3853a777f700a0bbf34507cf697b9c",
+  "lastSyncedAt": "2026-06-02",
+  "lastSyncPlan": "docs/sync/shadcn/runs/2026-06-02-4a4dc8e-to-cd54e09/plan.md",
+  "lastPlannedCommit": "cd54e0927f3853a777f700a0bbf34507cf697b9c",
+  "lastPlan": "docs/sync/shadcn/runs/2026-06-02-4a4dc8e-to-cd54e09/plan.md",
   "baselineNotes": [
     "Initial tracker seeded from the current codex/fumadocs-migration branch and the local ../shadcn origin/main checkout.",
     "The original migration plan did not record an exact upstream SHA; future syncs must not advance this value without a complete range plan and verification."
@@ -29,8 +29,12 @@
         "Docs shell parity polish: adopted docs foreground text tokens and removed sidebar divider; command-menu deferred",
         "Package bump: adopted shadcn 4.8.2"
       ],
-      "deferred": ["/r/registries.json registry directory route"],
-      "excluded": ["Rhea/style/theme/create/homepage upstream surfaces"],
+      "deferred": [
+        "/r/registries.json registry directory route"
+      ],
+      "excluded": [
+        "Rhea/style/theme/create/homepage upstream surfaces"
+      ],
       "verification": [
         "pnpm install",
         "pnpm --filter www exec tsx --tsconfig ./scripts/tsconfig.scripts.json scripts/check-registry-source.mts",
@@ -141,7 +145,10 @@
       "deferred": [
         "Default full sync lane remains pending for out-of-scope rows"
       ],
-      "excluded": ["Upstream Changelog title copy", "Open in v0 CTA"],
+      "excluded": [
+        "Upstream Changelog title copy",
+        "Open in v0 CTA"
+      ],
       "verification": [
         "pnpm --filter www exec eslint src/components/release-index.tsx 'src/app/(app)/docs/releases/page.tsx' --fix",
         "pnpm --filter www typecheck",
@@ -169,9 +176,42 @@
         "pnpm --filter www typecheck",
         "Browser proof on http://localhost:3002/editors: radial dotted preview background present, soft backing layer present, iframe /view/editor-ai present, panel overflow hidden, v0 absent, no horizontal overflow at 1175px viewport; screenshots saved under docs/sync/shadcn/runs/2026-05-30-editors-preview-frame-polish/screenshots/"
       ]
+    },
+    {
+      "range": "4a4dc8eb0fc793d8e9225e780183ad605f15d2c2..cd54e0927f3853a777f700a0bbf34507cf697b9c",
+      "implementedAt": "2026-06-02",
+      "plan": "docs/sync/shadcn/runs/2026-06-02-4a4dc8e-to-cd54e09/plan.md",
+      "baselineAdvanced": true,
+      "slices": [
+        "Button secondary hover micro-merge: adopted upstream color-mix hover for Plate Button secondary variant while preserving Plate Button structure.",
+        "Registry directory route: adopted upstream /r/registries.json route concept with Plate-owned @plate registry metadata only.",
+        "Package/registry contract audit: adopted shadcn@4.10.0 in apps/www and lockfile after registry validation.",
+        "Full range accounting: no Plate docs note was needed for upstream GitHub registry prose; the docs row stays a Plate fork."
+      ],
+      "deferred": [],
+      "excluded": [
+        "Upstream style variant source/generated output remains excluded/no-op except for the shared Button class fix.",
+        "Upstream external registry directory entries remain excluded; Plate exposes only the @plate registry entry.",
+        "Upstream shadcn registry/changelog prose remains excluded or Plate-forked; no direct Plate docs copy."
+      ],
+      "verification": [
+        "pnpm --filter www exec eslint src/components/ui/button.tsx --fix",
+        "pnpm --filter www typecheck",
+        "Browser proof on http://localhost:3003/docs/installation/plate-ui: 14 rendered Button slots, 5 secondary variants with the new color-mix hover class, and no console warnings/errors",
+        "pnpm exec biome check apps/www/src/lib/plate-registry-config.ts apps/www/src/app/r/registries.json/route.ts apps/www/src/app/r/registries.json/route.test.ts --write",
+        "pnpm --filter www exec bun test src/app/r/registries.json/route.test.ts src/lib/plate-init.test.ts",
+        "pnpm --filter www typecheck",
+        "Endpoint proof on http://localhost:3003/r/registries.json: one @plate registry entry with homepage https://platejs.org and URL https://platejs.org/r/{name}.json",
+        "pnpm --filter www add shadcn@4.10.0",
+        "pnpm --filter www exec shadcn --version: 4.10.0",
+        "pnpm --filter www exec tsx --tsconfig ./scripts/tsconfig.scripts.json scripts/check-registry-source.mts",
+        "pnpm --filter www exec bun test src/lib/plate-init.test.ts src/lib/registry-install.test.ts src/app/r/registries.json/route.test.ts scripts/registry-dependencies.test.mts",
+        "pnpm exec biome check apps/www/package.json pnpm-lock.yaml: package JSON checked; lockfile version verified by pnpm install and semantic assertions",
+        "Browser proof on http://localhost:3003/r/registries.json and http://localhost:3003/init: valid registry JSON, @plate URL preserved, no console warnings/errors"
+      ]
     }
   ],
-  "lastPlannedAt": "2026-05-29",
-  "lastFullPlan": "docs/sync/shadcn/runs/2026-05-28-4a4dc8e-to-360e8a1/plan.md",
-  "lastPlannedScope": "editors blocks style"
+  "lastPlannedAt": "2026-06-02",
+  "lastFullPlan": "docs/sync/shadcn/runs/2026-06-02-4a4dc8e-to-cd54e09/plan.md",
+  "lastPlannedScope": "latest full range"
 }

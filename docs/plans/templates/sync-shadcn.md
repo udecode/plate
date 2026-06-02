@@ -5,9 +5,11 @@ TODO: Write the exact active `sync-shadcn` objective after creating this file.
 
 Flow mode:
 planning mode by default: one-shot execution to write a reviewable range plan,
-then stop for user review. Implementation mode starts only on a later user
-instruction that accepts a named plan and slice. Use collaborative planning only
-when the user asks to decide policy before any range plan is written.
+directly apply qualifying micro-overlap fixes when the `sync-shadcn` rule
+allows it, then stop for user review of remaining slices. Implementation mode
+for bigger chunks starts only on a later user instruction that accepts a named
+plan and slice. Use collaborative planning only when the user asks to decide
+policy before any range plan is written.
 
 Goal plan:
 {{PLAN_PATH}}
@@ -37,9 +39,10 @@ Completion threshold:
   upstream added/modified/deleted `apps/v4` file is classified in a durable
   inventory, decision counts reconcile to the upstream TSV, the plan lists
   recommended slices and real questions, `lastPlannedCommit` points at the
-  target, `lastSyncedCommit` is unchanged, the final response asks the user to
-  review the plan and invoke `sync-shadcn` again with the accepted plan/slice,
-  and
+  target, `lastSyncedCommit` is unchanged unless the whole range is accepted
+  and complete, every direct micro-overlap merge is recorded and verified or
+  marked N/A, the final response asks the user to review the remaining plan and
+  invoke `sync-shadcn` again with the accepted plan/slice, and
   `node .agents/rules/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}`
   passes.
 - Accepted implementation run: complete only when the accepted slice is
@@ -66,7 +69,8 @@ Constraints:
   mirrors by hand.
 - Do not write `.patch` files into sync run directories. Inspect focused diffs
   on demand and summarize the relevant hunks in Markdown.
-- Do not patch `apps/www` during planning-only runs.
+- Do not patch `apps/www` during planning-only runs except for qualifying
+  micro-overlap direct merges recorded in the sync plan.
 - Do not advance `lastSyncedCommit` until every upstream row through the target
   is accounted for and the user accepts the final accounting.
 - Preserve settled Plate policy unless the user explicitly changes it: discard
@@ -75,8 +79,9 @@ Constraints:
   lazy registry-source loading, and sidebar accordion/filter UX.
 
 Boundaries:
-- Allowed planning edits: `docs/sync/shadcn/**`, this goal plan, and generated
-  run artifacts.
+- Allowed planning edits: `docs/sync/shadcn/**`, this goal plan, generated run
+  artifacts, and qualifying micro-overlap direct merges when the rule permits
+  them.
 - Allowed implementation edits only in implementation mode, after later user
   acceptance of a named plan/slice: the files named by the accepted slice plus
   required lock/config/test/doc updates.
@@ -160,6 +165,8 @@ Work Checklist:
       separated from exclusions/no-ops.
 - [ ] Recommended merge slices are ordered and include class, files, why, and
       verification.
+- [ ] Micro-overlap direct merges are recorded with upstream file, Plate file,
+      change, why direct, and verification; otherwise N/A.
 - [ ] Settled exclusions and Plate forks are recorded with policy evidence.
 - [ ] Real `needs-question` rows are isolated; settled policy is not re-asked.
 - [ ] `docs/sync/shadcn/status.json` update semantics are recorded:
@@ -180,7 +187,7 @@ Completion Gates:
 | Status JSON parse and semantics | pending | Parse `docs/sync/shadcn/status.json`; verify planned/synced commit semantics | pending |
 | Source-backed Plate mapping | pending | Record local `rg`/file evidence for every actionable adoption, fork, exclusion, or question group | pending |
 | Visual comparison screenshots | pending | For visual scopes, capture upstream shadcn and Plate screenshots at matching viewport(s), then record visible deltas; otherwise N/A | pending |
-| Planning-only no implementation edits | pending | Verify no `apps/www` implementation patch was made, or record accepted implementation scope | pending |
+| Planning-only no implementation edits | pending | Verify no `apps/www` implementation patch was made, or record and verify qualifying micro-overlap direct merges | pending |
 | Accepted implementation verification | pending | If a slice was accepted, run its focused typecheck/test/lint/browser/source proof; otherwise N/A | pending |
 | Browser surface changed | pending | Capture browser proof when accepted implementation touches visible docs UI or when visual planning needs parity evidence; otherwise N/A | pending |
 | Package manifests, lockfile, or install graph changed | pending | Run `pnpm install` and relevant package checks when touched; otherwise N/A | pending |
@@ -241,6 +248,7 @@ Final handoff:
 - Plan artifact: pending
 - Inventory artifact: pending
 - Decision counts: pending
+- Micro auto-merges: pending or N/A
 - Recommended first slice: pending
 - Review request: pending
 - Question: pending or N/A; must ask for review before implementation in

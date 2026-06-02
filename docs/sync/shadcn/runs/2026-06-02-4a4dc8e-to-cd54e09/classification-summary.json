@@ -1,0 +1,106 @@
+{
+  "runDir": "docs/sync/shadcn/runs/2026-06-02-4a4dc8e-to-cd54e09",
+  "base": "4a4dc8eb0fc793d8e9225e780183ad605f15d2c2",
+  "previousPlanned": "efdec3ca4523e5edd8a714f633002a7addc203a1",
+  "target": "cd54e0927f3853a777f700a0bbf34507cf697b9c",
+  "rows": 790,
+  "latestRows": 56,
+  "statusCounts": {
+    "A": 566,
+    "D": 22,
+    "M": 202
+  },
+  "subsystemCounts": {
+    "product-page": 65,
+    "homepage": 2,
+    "docs-engine": 7,
+    "theme-style": 136,
+    "registry-route": 1,
+    "shell-nav-sidebar": 4,
+    "docs-content": 13,
+    "deps-config": 1,
+    "assets": 4,
+    "other": 2,
+    "generated-registry-output": 525,
+    "registry-contract": 1,
+    "registry-build": 5,
+    "registry-content": 23,
+    "registry-directory": 1
+  },
+  "decisionCounts": {
+    "adopt-upstream": 1,
+    "exclude-upstream": 616,
+    "needs-question": 0,
+    "no-op": 126,
+    "plate-fork": 14,
+    "smart-merge": 33
+  },
+  "latestSubsystemCounts": {
+    "homepage": 2,
+    "docs-content": 12,
+    "docs-engine": 1,
+    "deps-config": 1,
+    "assets": 2,
+    "generated-registry-output": 14,
+    "registry-directory": 1,
+    "theme-style": 23
+  },
+  "latestDecisionCounts": {
+    "adopt-upstream": 1,
+    "exclude-upstream": 4,
+    "needs-question": 0,
+    "no-op": 21,
+    "plate-fork": 13,
+    "smart-merge": 17
+  },
+  "microAutoMerges": [
+    {
+      "upstreamFiles": [
+        "apps/v4/styles/base-luma/ui/button.tsx",
+        "apps/v4/styles/base-lyra/ui/button.tsx",
+        "apps/v4/styles/base-maia/ui/button.tsx",
+        "apps/v4/styles/base-mira/ui/button.tsx",
+        "apps/v4/styles/base-nova/ui-rtl/button.tsx",
+        "apps/v4/styles/base-nova/ui/button.tsx",
+        "apps/v4/styles/base-sera/ui/button.tsx",
+        "apps/v4/styles/base-vega/ui/button.tsx",
+        "apps/v4/styles/radix-luma/ui/button.tsx",
+        "apps/v4/styles/radix-lyra/ui/button.tsx",
+        "apps/v4/styles/radix-maia/ui/button.tsx",
+        "apps/v4/styles/radix-mira/ui/button.tsx",
+        "apps/v4/styles/radix-nova/ui-rtl/button.tsx",
+        "apps/v4/styles/radix-nova/ui/button.tsx",
+        "apps/v4/styles/radix-sera/ui/button.tsx",
+        "apps/v4/styles/radix-vega/ui/button.tsx"
+      ],
+      "plateFile": "apps/www/src/components/ui/button.tsx",
+      "change": "secondary variant hover:bg-secondary/80 -> hover:bg-[color-mix(in_oklch,var(--secondary),var(--foreground)_5%)]",
+      "implementedAt": "2026-06-02"
+    }
+  ],
+  "acceptedPartialSyncs": [
+    {
+      "upstreamFiles": [
+        "apps/v4/app/r/registries.json/route.ts",
+        "apps/v4/registry/directory.json"
+      ],
+      "plateFiles": [
+        "apps/www/src/app/r/registries.json/route.ts",
+        "apps/www/src/lib/plate-registry-config.ts"
+      ],
+      "change": "Serve /r/registries.json as a static JSON directory containing only Plate's @plate registry metadata",
+      "implementedAt": "2026-06-02"
+    },
+    {
+      "upstreamFiles": [
+        "apps/v4/package.json"
+      ],
+      "plateFiles": [
+        "apps/www/package.json",
+        "pnpm-lock.yaml"
+      ],
+      "change": "Adopt shadcn@4.10.0 after registry source validation",
+      "implementedAt": "2026-06-02"
+    }
+  ]
+}

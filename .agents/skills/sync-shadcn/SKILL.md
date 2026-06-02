@@ -13,7 +13,8 @@ Handle $ARGUMENTS.
 Goal: compare the tracked upstream shadcn docs baseline with the current
 `../shadcn/apps/v4` target, inventory every added/modified/deleted upstream
 change, map each change to Plate's docs app, classify the merge decision, write
-a reviewable plan under `docs/sync/shadcn`, then stop for user review. A later
+a reviewable plan under `docs/sync/shadcn`, directly merge any qualifying tiny
+overlap fixes, then stop for user review of the remaining slices. A later
 explicit user acceptance starts implementation mode for a named plan and slice.
 
 If $ARGUMENTS starts with a command name, dispatch to that command before the
@@ -36,10 +37,11 @@ status JSON edits, or implementation delegation.
 `sync-shadcn` is a derived `autogoal` workflow and a two-phase lane:
 
 - Planning mode is the default. It writes the range plan, updates
-  `lastPlannedCommit`, asks the user to review the plan, and stops.
+  `lastPlannedCommit`, directly applies qualifying micro-overlap merges,
+  asks the user to review the remaining plan, and stops.
 - Implementation mode starts only after the user explicitly accepts a plan and
-  slice in a later instruction. Do not use the planning goal as permission to
-  patch `apps/www`.
+  slice in a later instruction, except for the micro-overlap direct merge
+  exception below.
 - Default flow mode: one-shot execution for planning mode and one-shot
   execution for accepted implementation mode. They are separate activations.
 - Use collaborative planning only when the user is explicitly deciding policy
@@ -62,6 +64,58 @@ status JSON edits, or implementation delegation.
 - `sync-shadcn` owns shadcn range policy, commit accounting, upstream inventory
   classification, Plate fork/exclusion decisions, status JSON semantics, and
   merge-slice handoff.
+
+## Micro-Overlap Direct Merge Exception
+
+The default review boundary is still real. Do not use it as an excuse to miss
+obvious tiny upstream fixes on components Plate already mirrors.
+
+During planning, directly merge a change when all of these are true:
+
+- The upstream row maps to a retained Plate component, primitive, hook, or
+  utility with a clear local owner path, not to upstream product content.
+- The parent surface is already `synced`, an accepted partial sync, or an
+  obvious overlapping primitive such as `Button`, `Badge`, `Input`, `Command`,
+  `Tooltip`, `PageHeader`, or the copied docs-shell components.
+- The diff is tiny: one local file, one behavior/class/token/prop/import fix,
+  no new files, no deleted files, no new dependency, no route, no data model,
+  no generated output, and no package or lockfile edit.
+- The local Plate file still has the old value or an equivalent local variant
+  that should receive the same fix.
+- The change does not touch settled exclusions: v0, create, charts, colors,
+  Rhea/theme/customizer/style-registry product surfaces, upstream docs prose,
+  external registry directory content, or generated `public/r/**` output.
+- No product judgment is needed. If the change changes layout, UX, copy,
+  route shape, docs concepts, registry semantics, or multi-file architecture,
+  it is not a micro-merge.
+
+Examples of direct merges:
+
+- Replace one stale utility class on Plate's copied `Button` because upstream
+  fixed the same class on every style variant.
+- Apply one bugfix conditional to a copied `Command` or `CopyButton` primitive
+  when Plate has the same bug and no Plate product requirement changes.
+- Remove one dead prop/import from a synced component when upstream removed it
+  and Plate has no local dependency on it.
+
+Examples that still require review:
+
+- Package bumps, lockfile changes, registry schema/route changes, docs concept
+  additions, new components, deleted components, multi-file UI chunks, visual
+  layout rewrites, sidebar/search behavior changes, generated registry output,
+  and anything touching a deferred or rejected product surface.
+
+When a micro-overlap merge is found:
+
+1. Record it in the run plan under `## Micro Auto-Merges` with upstream path,
+   Plate path, focused diff summary, why it qualifies, and verification.
+2. Patch the Plate owner file directly in the same activation.
+3. Run the smallest meaningful verification: focused eslint/typecheck/source
+   audit; add browser proof when the changed component is browser-visible and a
+   stable route exists.
+4. Add a `partialSyncs` entry if the full baseline does not advance. Keep
+   `lastSyncedCommit` unchanged unless the whole range is complete.
+5. Continue to stop for review on every non-micro slice.
 
 ## Commands
 
@@ -97,8 +151,8 @@ Command parsing:
   planning/implementation flow.
 - Reserved commands are `status`, `dashboard`, `apply`, and `review`; do not
   treat them as scope labels.
-- Scopes are planning lanes, not implementation permission. A scoped
-  plan still stops for user review before patching `apps/www`.
+- Scopes are planning lanes, not broad implementation permission. A scoped
+  plan still stops for user review before non-micro `apps/www` work.
 
 ### Scoped Planning
 
@@ -612,20 +666,23 @@ Planning mode may:
 - create the active goal plan
 - write `docs/sync/shadcn/runs/<range>/` artifacts
 - update `lastPlannedCommit` and `lastPlan`
+- directly apply qualifying micro-overlap merges and record them as partial
+  syncs
 - ask one review/decision question
 
 Planning mode must not:
 
-- patch `apps/www`
+- patch `apps/www` except for qualifying micro-overlap direct merges
 - delegate to `task`
 - advance `lastSyncedCommit`
 - treat "recommended first slice" as accepted
-- combine plan creation and implementation in the same activation
+- combine plan creation and non-micro implementation in the same activation
 
 The final planning response must say:
 
 ```md
-Review the plan. To implement it, invoke `sync-shadcn` again with the accepted
+Review the plan. I directly merged these micro-overlap fixes: <list or none>.
+To implement the remaining slices, invoke `sync-shadcn` again with the accepted
 plan path and slice.
 ```
 
@@ -644,14 +701,16 @@ accepted slice and proceed through `task`.
   `lastSyncedCommit` until every upstream change in the planned range is
   accounted for as adopted, smart-merged, intentionally forked, or explicitly
   excluded.
-- Planning is the default output. Do not patch `apps/www` unless the user
-  accepts a merge slice in a later instruction after reviewing a written plan.
+- Planning is the default output. Do not patch `apps/www` unless the row
+  qualifies as a micro-overlap direct merge or the user accepts a merge slice in
+  a later instruction after reviewing a written plan.
 - Do not edit generated registry output, templates output, or generated skill
   mirrors by hand.
 - Do not run `build:registry`; local registry generation is CI-owned in this
   repo.
 - Do not delegate to `task` in the same activation that creates or materially
-  updates a sync plan. The user-review boundary is real.
+  updates a sync plan. Direct micro-overlap merges stay in-thread and tiny; all
+  bigger work waits for review.
 - Keep the active `sync-shadcn` goal plan current after every meaningful
   decision, artifact write, classification pass, status JSON edit, accepted
   implementation slice, verification run, or blocker.
@@ -697,7 +756,8 @@ in the instantiated goal plan:
   exclusion, or question group.
 - `docs/sync/shadcn/status.json` parses and its `lastPlannedCommit` /
   `lastSyncedCommit` semantics match the work actually completed.
-- Planning-only runs prove no `apps/www` implementation patch was made.
+- Planning-only runs prove no `apps/www` implementation patch was made, or
+  record and verify every qualifying micro-overlap direct merge.
 - Accepted implementation runs include focused verification for the touched
   Plate surface.
 - Browser proof exists when browser-visible docs UI changed, or when a
@@ -708,8 +768,9 @@ in the instantiated goal plan:
   framing.
 - `lastSyncedCommit` advances only after full-row accounting, verification, and
   user acceptance.
-- Planning-mode final handoff asks the user to review the plan and invoke
-  `sync-shadcn` again with the accepted plan path and slice.
+- Planning-mode final handoff lists any direct micro-overlap merges, asks the
+  user to review the remaining plan, and invokes `sync-shadcn` again with the
+  accepted plan path and slice for bigger work.
 - `check-complete.mjs` passes for the active goal plan.
 
 ## Durable Policy
@@ -966,6 +1027,14 @@ All upstream deleted files with decision.
 | Order | Slice | Class | Files | Why | Verification |
 | --- | --- | --- | --- | --- | --- |
 
+## Micro Auto-Merges
+
+List qualifying tiny overlapping-component fixes applied during this activation,
+or `None`.
+
+| Upstream file | Plate file | Change | Why direct | Verification |
+| --- | --- | --- | --- | --- |
+
 ## Explicit Exclusions
 
 List upstream changes not to import, especially v0/create/charts/colors/theme
@@ -1017,6 +1086,9 @@ Plan: <path>
 | exclude-upstream | ... | ... |
 | delete-plate-residue | ... | ... |
 | needs-question | ... | ... |
+
+Micro auto-merges:
+- <list, or none>
 
 Recommended first slice: <slice>
 
@@ -1126,6 +1198,9 @@ Plan: <path>
 | exclude-upstream | ... | ... |
 | delete-plate-residue | ... | ... |
 | needs-question | ... | ... |
+
+Micro auto-merges:
+- <list, or none>
 
 Recommended first slice: <slice>
 Question: Review the plan. Should any decision change before implementation?
