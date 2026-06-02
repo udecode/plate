@@ -5,7 +5,6 @@ import { ModeSwitcher } from '@/components/mode-switcher';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { siteConfig } from '@/config/site';
-import { getSidebarNavFromPageTree } from '@/lib/docs-page-tree';
 
 import { CommandMenu } from './command-menu';
 import { Icons } from './icons';
@@ -15,7 +14,6 @@ import { MainNav } from './main-nav';
 import { MobileNav } from './mobile-nav';
 
 export function SiteHeader() {
-  const sidebarNav = getSidebarNavFromPageTree();
   const commandNavItems = [
     {
       href: '/',
@@ -48,18 +46,14 @@ export function SiteHeader() {
     <header className="sticky top-0 z-50 w-full bg-background">
       <div className="container-wrapper 3xl:fixed:px-0 px-6 group-has-data-[slot=designer]/layout:max-w-none">
         <div className="3xl:fixed:container flex h-(--header-height) items-center group-has-data-[slot=designer]/layout:fixed:max-w-none **:data-[slot=separator]:h-4!">
-          <MobileNav
-            className="flex lg:hidden"
-            items={commandNavItems}
-            tree={sidebarNav}
-          />
+          <MobileNav className="flex lg:hidden" items={commandNavItems} />
 
           <Logo />
           <MainNav className="hidden lg:flex" items={desktopNavItems} />
 
           <div className="ml-auto flex items-center gap-2 md:flex-1 md:justify-end">
             <div className="hidden w-full flex-1 md:flex md:w-auto md:flex-none">
-              <CommandMenu navItems={commandNavItems} sidebarNav={sidebarNav} />
+              <CommandMenu navItems={commandNavItems} />
             </div>
 
             <Separator
