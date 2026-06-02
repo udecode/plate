@@ -8,6 +8,10 @@ import Link, { type LinkProps } from 'next/link';
 import { useRouter } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
+import {
+  preloadSidebarNav,
+  useLazySidebarNav,
+} from '@/hooks/use-lazy-sidebar-nav';
 import { useLocale } from '@/hooks/useLocale';
 import { cn } from '@/lib/utils';
 import { hrefWithLocale } from '@/lib/withLocale';
@@ -72,12 +76,14 @@ export function MobileNav({
   tree,
 }: {
   items: SidebarNavItem[];
-  tree: SidebarNavItem[];
   className?: string;
+  tree?: SidebarNavItem[];
 }) {
   const [open, setOpen] = React.useState(false);
   const locale = useLocale();
   const content = i18n[locale as keyof typeof i18n];
+  const { sidebarNav } = useLazySidebarNav(locale, open && !tree);
+  const navTree = tree ?? sidebarNav;
 
   const renderNavLink = (
     item: SidebarNavItem,
@@ -115,6 +121,8 @@ export function MobileNav({
             '-ml-2 mr-2 size-8 px-0 text-base lg:hidden',
             className
           )}
+          onFocus={() => preloadSidebarNav(locale)}
+          onPointerEnter={() => preloadSidebarNav(locale)}
         >
           <div className="relative flex h-8 w-4 items-center justify-center">
             <div className="relative size-4">
@@ -157,7 +165,7 @@ export function MobileNav({
             </div>
           </div>
           <div className="flex flex-col gap-8">
-            {tree.map((section, sectionIndex) => (
+            {navTree.map((section, sectionIndex) => (
               <div key={sectionIndex} className="flex flex-col gap-4">
                 <div className="font-medium text-muted-foreground text-sm">
                   {getNavTitle(section, locale)}
