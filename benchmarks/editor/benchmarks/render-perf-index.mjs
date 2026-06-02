@@ -11,6 +11,9 @@ const richTextDataPath = args.richTextData || 'docs/perf/rich-text-data.json';
 const internalsDataPath =
   args.internalsData || 'docs/perf/slate-v2-internals-data.json';
 const perfWikiPath = args.perfWiki || 'docs/perf/perf-wiki.json';
+const targetHistoryPath =
+  args.targetHistory || '../targets/history/slate-v2-latest.json';
+const targetRegistryPath = args.targetRegistry || '../targets/slate-v2.json';
 
 const sourceEvidenceHtml = readIfExists(sourceEvidencePath);
 const shouldPreserveEvidence =
@@ -26,6 +29,10 @@ const html = renderIndexHtml({
   health: summarizeHealth(healthPath),
   internals: summarizeViewerData(internalsDataPath),
   richText: summarizeViewerData(richTextDataPath),
+  targets: summarizeTargets({
+    historyPath: targetHistoryPath,
+    registryPath: targetRegistryPath,
+  }),
 });
 
 if (args.check) {
@@ -102,20 +109,51 @@ function summarizeHealth(filePath) {
   };
 }
 
-function renderIndexHtml({ evidence, health, internals, richText }) {
+function summarizeTargets({ historyPath, registryPath }) {
+  const registry = readJsonIfExists(registryPath);
+  const history = readJsonIfExists(historyPath);
+  const targets = history?.targets ?? registry?.targets ?? [];
+  const statusCounts = history?.counts?.statusCounts ?? {};
+  const families = countBy(targets, (target) => target.family ?? 'unknown');
+  const nonOkTargets = targets
+    .filter((target) => target.status && target.status !== 'ok')
+    .slice(0, 6)
+    .map((target) => ({
+      command: target.command,
+      id: target.id,
+      metric: target.metric ?? target.metrics?.primary ?? 'unknown',
+      status: target.status,
+    }));
+
+  return {
+    artifactCounts: history?.counts ?? null,
+    families,
+    nonOkTargets,
+    registryPath,
+    statusCounts,
+    targetCount: Number(history?.counts?.targets) || targets.length,
+  };
+}
+
+function renderIndexHtml({ evidence, health, internals, richText, targets }) {
   const statusSummary =
-    Object.entries(health.statusCounts)
+    Object.entries(targets.statusCounts)
       .map(([status, count]) => `${status}: ${count}`)
-      .join(', ') || 'no rows yet';
+      .join(', ') || 'no target history yet';
+  const familySummary =
+    Object.entries(targets.families)
+      .sort(([left], [right]) => left.localeCompare(right))
+      .map(([family, count]) => `${family}: ${count}`)
+      .join(', ') || 'no targets yet';
   const nextActions =
-    health.nextActions.length > 0
-      ? health.nextActions
+    targets.nonOkTargets.length > 0
+      ? targets.nonOkTargets
           .map(
-            (action) =>
-              `<li><strong>${escapeHtml(action.title)}</strong><br><span class="meta">${escapeHtml(action.reason)}</span></li>`
+            (target) =>
+              `<li><strong>${escapeHtml(target.id)}</strong><br><span class="meta">status=${escapeHtml(target.status)}; metric=${escapeHtml(target.metric)}; run <code>pnpm bench:targets:dry-run -- ${escapeHtml(target.id)}</code></span></li>`
           )
           .join('')
-      : '<li><strong>No active blockers</strong><br><span class="meta">Registered benchmark evidence is currently healthy.</span></li>';
+      : '<li><strong>No required target artifacts missing</strong><br><span class="meta">Use <code>pnpm bench:targets:list</code>, <code>pnpm bench:targets:dry-run -- &lt;target-id&gt;</code>, then <code>[$slate-ar-perf] &lt;target-id&gt;</code>.</span></li>';
 
   return `<!doctype html>
 <html lang="en">
@@ -143,35 +181,51 @@ function renderIndexHtml({ evidence, health, internals, richText }) {
   </head>
   <body>
     <h1>Editor Benchmark Index</h1>
-    <p>Evidence Kit control plane for active editor benchmarks. Unregistered old benchmark artifacts are discarded from active claims.</p>
+    <p>Slate v2 benchmark target dashboard. Active benchmark decisions come from <code>${escapeHtml(targets.registryPath)}</code>; Evidence Kit is retained as an audit archive.</p>
     <section class="health">
-      <h2>Benchmark Health</h2>
-      <p>${health.rowCount} rows from ${health.activeArtifacts} active registered artifacts. Status: ${escapeHtml(statusSummary)}.</p>
-      <p class="meta">${health.discardedUnregisteredArtifacts} unregistered historical benchmark artifacts ignored.</p>
+      <h2>Target Health</h2>
+      <p>${targets.targetCount} targets. Status: ${escapeHtml(statusSummary)}.</p>
+      <p class="meta">Families: ${escapeHtml(familySummary)}.</p>
       <ol>
         ${nextActions}
       </ol>
     </section>
     <ul>
       <li>
+        <a href="../../../targets/reports/slate-v2.md">Slate v2 target report</a>
+        <p>Generated from the active target registry for benchmark routing, Autoresearch setup, metric ownership, and artifact health.</p>
+        <p class="meta">Required artifacts: ${targets.artifactCounts?.existingArtifacts ?? 0}/${targets.artifactCounts?.requiredArtifacts ?? 0}. Missing optional: ${targets.artifactCounts?.missingOptionalArtifacts ?? 0}. Data: <code>../../../targets/history/slate-v2-latest.json</code></p>
+      </li>
+      <li>
         <a href="rich-text.html">Rich text editor comparison</a>
-        <p>Apples-to-apples benchmark rows for Slate v2 and Slate.</p>
+        <p>Evidence Kit comparison rows for Slate v2 and Slate.</p>
         <p class="meta">${richText.rowCount} rows across ${richText.groups} groups. Data: <code>rich-text-data.json</code></p>
       </li>
       <li>
         <a href="slate-v2-internals.html">Slate v2 internals</a>
-        <p>Slate v2-only runtime, React, collaboration, clipboard, and transaction proof rows.</p>
+        <p>Evidence Kit rows for Slate v2-only runtime, React, collaboration, clipboard, and transaction proof.</p>
         <p class="meta">${internals.rowCount} rows across ${internals.groups} groups. Data: <code>slate-v2-internals-data.json</code></p>
       </li>
     </ul>
     <footer>
-      Raw audit artifact:
+      Evidence Kit archive:
       <a href="evidence.html">Evidence Kit wiki</a>
-      (${evidence.benchmarkRows} benchmark rows, ${evidence.notes} notes, ${evidence.researchSources} research sources; data: <code>perf-wiki.json</code>)
+      (${evidence.benchmarkRows} benchmark rows, ${evidence.notes} notes, ${evidence.researchSources} research sources; health snapshot: ${health.rowCount} rows, ${health.discardedUnregisteredArtifacts} discarded historical artifacts)
     </footer>
   </body>
 </html>
 `;
+}
+
+function countBy(items, getKey) {
+  const counts = {};
+
+  for (const item of items) {
+    const key = getKey(item);
+    counts[key] = (counts[key] ?? 0) + 1;
+  }
+
+  return counts;
 }
 
 function escapeHtml(value) {

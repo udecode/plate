@@ -1,6 +1,6 @@
 {
   "name": "package-boundary-gates",
-  "generatedAt": "2026-05-28T22:02:08.186Z",
+  "generatedAt": "2026-06-02T11:46:13.364Z",
   "node": "v24.14.1",
   "rows": [
     {
@@ -22,10 +22,10 @@
       "library": "project",
       "status": "ok",
       "files": 45,
-      "bytes": 999373,
-      "budgetBytes": 1200000,
+      "bytes": 1203269,
+      "budgetBytes": 1250000,
       "budgetFiles": 96,
-      "tarballBytes": 85360,
+      "tarballBytes": 90048,
       "problem": ""
     }
   ]

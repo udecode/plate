@@ -102,8 +102,11 @@ Interpret short user text before picking commands:
   is unambiguous.
 - `status`, `dashboard`, `where are we`: read-only status mode. Use
   `slate-ar-status` behavior. Do not run packets or edit files.
-- `finalize`, `finalize preview`, `review branches`: finalization mode. Use
-  `slate-ar-finalize` behavior. Preview first.
+- `finalize`, `finalize preview`: finalization mode. Use `slate-ar-finalize`
+  preview behavior only.
+- `review branches`, `create review branches`, `run finalizer branches`: explicit
+  review-branch mode. Use `slate-ar-finalize` and require the user to clearly
+  approve branch creation in the same turn.
 - `research`, `quality gap`, `improve quality`, `find gaps`: use generic Codex
   Autoresearch deep-research / quality-gap flow through `slate-ar-quality`.
 - `gate`, `proof`, `repeat`, `full editor behavior`, `navigation`, `typing`:
@@ -180,13 +183,18 @@ that no more Slate gaps exist.
 Use generic Codex Autoresearch finalization flow. Slate defaults:
 
 - run Codex Autoresearch `finalize-preview --cwd .tmp/slate-v2` first;
+- default finalization is preview-only. It may generate/read finalization plan
+  JSON, but must not execute `finalize-autoresearch.mjs <plan>` or create
+  `autoresearch-review/*` branches unless the user explicitly asks to create
+  review branches;
 - exclude `autoresearch.*`, `autoresearch.research/**`, dashboard exports, and
   finalization scratch files unless the user asks to review session artifacts;
-- use Codex Autoresearch `finalize-current-tree --cwd .tmp/slate-v2` when the
-  current tree is the review unit because kept commits were later corrected,
-  bundled, or reverted;
+- use Codex Autoresearch `finalize-current-tree --cwd .tmp/slate-v2` only as a
+  readiness preview when the current tree is the review unit because kept
+  commits were later corrected, bundled, or reverted;
 - branch creation, cleanup, commit, push, and PR work require explicit user
-  approval.
+  approval. Short confirmations like `go`, `next`, `ok`, or `continue` after a
+  normal ship/perfect flow do not approve review-branch creation.
 
 ## Handoff
 

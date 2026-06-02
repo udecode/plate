@@ -24,31 +24,36 @@
   </head>
   <body>
     <h1>Editor Benchmark Index</h1>
-    <p>Evidence Kit control plane for active editor benchmarks. Unregistered old benchmark artifacts are discarded from active claims.</p>
+    <p>Slate v2 benchmark target dashboard. Active benchmark decisions come from <code>../targets/slate-v2.json</code>; Evidence Kit is retained as an audit archive.</p>
     <section class="health">
-      <h2>Benchmark Health</h2>
-      <p>801 rows from 23 active registered artifacts. Status: coverage-gap: 130, ok: 663, optional-missing-artifact: 2, unsupported: 6.</p>
-      <p class="meta">35 unregistered historical benchmark artifacts ignored.</p>
+      <h2>Target Health</h2>
+      <p>27 targets. Status: ok: 25, missing-optional-artifact: 2.</p>
+      <p class="meta">Families: browser-rich-text: 1, clipboard: 1, collaboration: 1, core-compare: 3, core-current: 7, editing-navigation: 1, history: 2, issue-replay: 1, react-large-document: 6, react-locality: 2, react-pagination: 1, react-typing: 1.</p>
       <ol>
-        <li><strong>Decide whether core-transaction-current should stay optional</strong><br><span class="meta">Optional active artifact is missing: ../../.tmp/slate-v2/tmp/slate-transaction-benchmark.json</span></li><li><strong>Decide whether history-retained-memory should stay optional</strong><br><span class="meta">Optional active artifact is missing: ../../.tmp/slate-v2/tmp/slate-history-retained-memory-benchmark.json</span></li><li><strong>Delete or ignore historical unregistered artifacts</strong><br><span class="meta">35 unregistered benchmark JSON files are ignored by the active Evidence Kit flow.</span></li>
+        <li><strong>core-transaction-current</strong><br><span class="meta">status=missing-optional-artifact; metric=core_benchmark_seconds; run <code>pnpm bench:targets:dry-run -- core-transaction-current</code></span></li><li><strong>history-retained-memory</strong><br><span class="meta">status=missing-optional-artifact; metric=benchmark_seconds; run <code>pnpm bench:targets:dry-run -- history-retained-memory</code></span></li>
       </ol>
     </section>
     <ul>
       <li>
+        <a href="../../../targets/reports/slate-v2.md">Slate v2 target report</a>
+        <p>Generated from the active target registry for benchmark routing, Autoresearch setup, metric ownership, and artifact health.</p>
+        <p class="meta">Required artifacts: 25/25. Missing optional: 2. Data: <code>../../../targets/history/slate-v2-latest.json</code></p>
+      </li>
+      <li>
         <a href="rich-text.html">Rich text editor comparison</a>
-        <p>Apples-to-apples benchmark rows for Slate v2 and Slate.</p>
-        <p class="meta">463 rows across 11 groups. Data: <code>rich-text-data.json</code></p>
+        <p>Evidence Kit comparison rows for Slate v2 and Slate.</p>
+        <p class="meta">653 rows across 11 groups. Data: <code>rich-text-data.json</code></p>
       </li>
       <li>
         <a href="slate-v2-internals.html">Slate v2 internals</a>
-        <p>Slate v2-only runtime, React, collaboration, clipboard, and transaction proof rows.</p>
-        <p class="meta">326 rows across 16 groups. Data: <code>slate-v2-internals-data.json</code></p>
+        <p>Evidence Kit rows for Slate v2-only runtime, React, collaboration, clipboard, and transaction proof.</p>
+        <p class="meta">333 rows across 16 groups. Data: <code>slate-v2-internals-data.json</code></p>
       </li>
     </ul>
     <footer>
-      Raw audit artifact:
+      Evidence Kit archive:
       <a href="evidence.html">Evidence Kit wiki</a>
-      (835 benchmark rows, 6 notes, 3 research sources; data: <code>perf-wiki.json</code>)
+      (1032 benchmark rows, 6 notes, 3 research sources; health snapshot: 998 rows, 62 discarded historical artifacts)
     </footer>
   </body>
 </html>

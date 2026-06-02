@@ -35,6 +35,7 @@ import {
 } from './api-list';
 import { BadgeList, BadgePopover } from './badge-popover';
 import { Code } from './code';
+import { CodeBlockCommand } from './code-block-command';
 import { CodeBlockWrapper } from './code-block-wrapper';
 import { ComponentExample } from './component-example';
 import { ComponentPreview } from './component-preview';
@@ -100,6 +101,7 @@ export const mdxComponents = {
   Card,
   Cards,
   code: Code,
+  CodeBlockCommand,
   CodeTabs,
   ComponentExample,
   ComponentInstallation,

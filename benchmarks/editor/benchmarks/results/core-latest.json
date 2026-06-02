@@ -1,6 +1,6 @@
 {
   "name": "editor-evidence-core",
-  "generatedAt": "2026-05-28T22:02:06.558Z",
+  "generatedAt": "2026-06-02T11:46:11.838Z",
   "node": "v24.14.1",
   "rows": [
     {
@@ -32,8 +32,8 @@
       "fixture": "benchmark-row-normalization",
       "library": "plate-editor-evidence",
       "status": "ok",
-      "medianUs": 0.129,
-      "p95Us": 0.464,
+      "medianUs": 0.126,
+      "p95Us": 0.441,
       "ops": 15,
       "note": "normalizes Evidence Kit benchmark rows into required schema fields"
     }

@@ -66,6 +66,10 @@ Stop when the surface has:
   behavior;
 - goal plan completion check green.
 
+Completion does not mean creating `autoresearch-review/*` branches. Stay on the
+source branch, normally `v2`, and use `slate-ar-ship` readiness previews unless
+the user explicitly asks for review branches.
+
 ## Handoff
 
 Report:

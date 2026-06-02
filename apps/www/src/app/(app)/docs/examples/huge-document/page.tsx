@@ -1,8 +1,9 @@
-import type { Doc } from '@/.contentlayer/generated';
-
 import type { Metadata } from 'next';
 
-import { DocContent } from '@/app/(app)/docs/[[...slug]]/doc-content';
+import {
+  type DocContentDoc,
+  DocContent,
+} from '@/app/(app)/docs/[[...slug]]/doc-content';
 import HugeDocumentDemo from '@/registry/examples/huge-document-demo';
 
 const title = 'Huge Document';
@@ -30,7 +31,7 @@ export const metadata: Metadata = {
 };
 
 export default function HugeDocumentPage() {
-  const mockDoc: Partial<Doc> = {
+  const mockDoc: DocContentDoc = {
     description,
     slug: '/docs/examples/huge-document',
     title,

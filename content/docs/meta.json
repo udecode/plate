@@ -27,6 +27,7 @@
     "[Editor](/docs/editor)",
     "[Editor Methods](/docs/editor-methods)",
     "[Controlled Value](/docs/controlled)",
+    "[Performance](/docs/performance)",
     "[Static Rendering](/docs/static)",
     "[HTML](/docs/html)",
     "[Markdown](/docs/markdown)",
@@ -1554,6 +1555,12 @@
               "titleCn": "编辑器"
             },
             {
+              "href": "/docs/performance",
+              "label": "New",
+              "title": "Performance",
+              "titleCn": "性能"
+            },
+            {
               "href": "/docs/static",
               "title": "Static Rendering",
               "titleCn": "静态渲染"
@@ -2200,6 +2207,11 @@
       "/docs/static": {
         "title": "Static Rendering",
         "titleCn": "静态渲染"
+      },
+      "/docs/performance": {
+        "label": "New",
+        "title": "Performance",
+        "titleCn": "性能"
       },
       "/docs/html": {
         "description": "Copy paste from HTML to Slate.",

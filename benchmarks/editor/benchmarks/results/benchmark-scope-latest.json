@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-05-28T22:02:08.368Z",
+  "generatedAt": "2026-06-02T11:46:13.748Z",
   "node": "v24.14.1",
   "groups": {
     "correctness": {
@@ -14,7 +14,7 @@
     },
     "performance": {
       "description": "Files that affect local benchmark behavior.",
-      "hash": "697f1ca9f58a6886bd248d13a6a3e204db104f01952e1615fba39bbf18d76eb3",
+      "hash": "03fb72849f14dbcf84caa04dbde24a26eccf67cac21a3af732c7cbf1f343af3d",
       "files": [
         "benchmarks/benchmark-health.mjs",
         "benchmarks/core-benchmark.mjs",
@@ -34,7 +34,7 @@
     },
     "evidence-docs": {
       "description": "Evidence notes and generated perf documentation.",
-      "hash": "512a712347fd4560cb6c25d54816787d1499da3f7f5ca26d6398dfedc47db04b",
+      "hash": "2c63aca828a0f78b1f9237793be6767f57b9d3d3993c7ac50ee7e53b61bce95f",
       "files": [
         "docs/perf/.gitkeep",
         "docs/perf/evidence.html",
@@ -59,7 +59,7 @@
     },
     "package-shape": {
       "description": "Package metadata, lockfiles, and TypeScript configuration.",
-      "hash": "6b3103f2f73dc96abcd02badfcd14c3c5fd08634c9160c4fcc0bc9b9528cbf60",
+      "hash": "eb41a277df972e6a521eb6afe08a1108a52bab0b2fdc9fc233eee315e569b36a",
       "files": ["package-lock.json", "package.json"]
     }
   }

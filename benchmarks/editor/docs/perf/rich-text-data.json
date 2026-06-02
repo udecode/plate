@@ -9,10 +9,10 @@
     "slate-core-observation-compare": 6,
     "slate-core-rich-text-operations-compare": 30,
     "slate-history-compare": 8,
-    "slate-react-huge-document-browser-trace": 78,
+    "slate-react-huge-document-browser-trace": 268,
     "slate-react-huge-document-legacy-compare": 27
   },
-  "generatedAt": "2026-05-29T22:32:11.758Z",
+  "generatedAt": "2026-06-02T11:46:11.953Z",
   "groups": [
     {
       "category": "rich-text-editor-target-coverage",
@@ -87,20 +87,20 @@
           "cells": {
             "slate-v2:default-render-auto": {
               "status": "ok",
-              "medianUs": 31400,
-              "p95Us": 31650,
+              "medianUs": 43410,
+              "p95Us": 43430,
               "ops": 3
             },
             "slate-v2:dom-present": {
               "status": "ok",
-              "medianUs": 18870,
-              "p95Us": 44940,
+              "medianUs": 20460,
+              "p95Us": 21340,
               "ops": 3
             },
             "slate": {
               "status": "ok",
-              "medianUs": 126830,
-              "p95Us": 166970,
+              "medianUs": 115950,
+              "p95Us": 116070,
               "ops": 3
             }
           },
@@ -110,20 +110,20 @@
           "cells": {
             "slate-v2:default-render-auto": {
               "status": "ok",
-              "medianUs": 204610,
-              "p95Us": 298300,
+              "medianUs": 275590,
+              "p95Us": 282600,
               "ops": 3
             },
             "slate-v2:dom-present": {
               "status": "ok",
-              "medianUs": 458230,
-              "p95Us": 469990,
+              "medianUs": 270560,
+              "p95Us": 272550,
               "ops": 3
             },
             "slate": {
               "status": "ok",
-              "medianUs": 65750,
-              "p95Us": 75360,
+              "medianUs": 65450,
+              "p95Us": 67180,
               "ops": 3
             }
           },
@@ -133,20 +133,20 @@
           "cells": {
             "slate-v2:default-render-auto": {
               "status": "ok",
-              "medianUs": 224240,
-              "p95Us": 233450,
+              "medianUs": 258260,
+              "p95Us": 266270,
               "ops": 3
             },
             "slate-v2:dom-present": {
               "status": "ok",
-              "medianUs": 305190,
-              "p95Us": 2601250,
+              "medianUs": 317210,
+              "p95Us": 326900,
               "ops": 3
             },
             "slate": {
               "status": "ok",
-              "medianUs": 67630,
-              "p95Us": 72510,
+              "medianUs": 66670,
+              "p95Us": 68270,
               "ops": 3
             }
           },
@@ -156,20 +156,20 @@
           "cells": {
             "slate-v2:default-render-auto": {
               "status": "ok",
-              "medianUs": 242070,
-              "p95Us": 256080,
+              "medianUs": 258830,
+              "p95Us": 407620,
               "ops": 3
             },
             "slate-v2:dom-present": {
               "status": "ok",
-              "medianUs": 2945790,
-              "p95Us": 2990280,
+              "medianUs": 280220,
+              "p95Us": 320370,
               "ops": 3
             },
             "slate": {
               "status": "ok",
-              "medianUs": 68820,
-              "p95Us": 114290,
+              "medianUs": 65090,
+              "p95Us": 66350,
               "ops": 3
             }
           },
@@ -179,20 +179,20 @@
           "cells": {
             "slate-v2:default-render-auto": {
               "status": "ok",
-              "medianUs": 23630,
-              "p95Us": 25490,
+              "medianUs": 25970,
+              "p95Us": 27030,
               "ops": 3
             },
             "slate-v2:dom-present": {
               "status": "ok",
-              "medianUs": 24370,
-              "p95Us": 25430,
+              "medianUs": 27170,
+              "p95Us": 27750,
               "ops": 3
             },
             "slate": {
               "status": "ok",
-              "medianUs": 332160,
-              "p95Us": 340170,
+              "medianUs": 324930,
+              "p95Us": 330620,
               "ops": 3
             }
           },
@@ -202,20 +202,20 @@
           "cells": {
             "slate-v2:default-render-auto": {
               "status": "ok",
-              "medianUs": 28120,
-              "p95Us": 50010,
+              "medianUs": 20640,
+              "p95Us": 31610,
               "ops": 3
             },
             "slate-v2:dom-present": {
               "status": "ok",
-              "medianUs": 18790,
-              "p95Us": 35570,
+              "medianUs": 31870,
+              "p95Us": 32500,
               "ops": 3
             },
             "slate": {
               "status": "ok",
-              "medianUs": 110470,
-              "p95Us": 132420,
+              "medianUs": 118540,
+              "p95Us": 179100,
               "ops": 3
             }
           },
@@ -225,20 +225,20 @@
           "cells": {
             "slate-v2:default-render-auto": {
               "status": "ok",
-              "medianUs": 513140,
-              "p95Us": 578530,
+              "medianUs": 394930,
+              "p95Us": 410690,
               "ops": 3
             },
             "slate-v2:dom-present": {
               "status": "ok",
-              "medianUs": 602030,
-              "p95Us": 641300,
+              "medianUs": 413850,
+              "p95Us": 416400,
               "ops": 3
             },
             "slate": {
               "status": "ok",
-              "medianUs": 830,
-              "p95Us": 1010,
+              "medianUs": 1080,
+              "p95Us": 1150,
               "ops": 3
             }
           },
@@ -248,20 +248,20 @@
           "cells": {
             "slate-v2:default-render-auto": {
               "status": "ok",
-              "medianUs": 218950,
-              "p95Us": 226480,
+              "medianUs": 275220,
+              "p95Us": 391210,
               "ops": 3
             },
             "slate-v2:dom-present": {
               "status": "ok",
-              "medianUs": 3900330,
-              "p95Us": 4066720,
+              "medianUs": 294640,
+              "p95Us": 320940,
               "ops": 3
             },
             "slate": {
               "status": "ok",
-              "medianUs": 69910,
-              "p95Us": 103960,
+              "medianUs": 65590,
+              "p95Us": 66350,
               "ops": 3
             }
           },
@@ -271,20 +271,20 @@
           "cells": {
             "slate-v2:default-render-auto": {
               "status": "ok",
-              "medianUs": 453220,
-              "p95Us": 1611550,
+              "medianUs": 265680,
+              "p95Us": 270710,
               "ops": 3
             },
             "slate-v2:dom-present": {
               "status": "ok",
-              "medianUs": 269590,
-              "p95Us": 293690,
+              "medianUs": 259420,
+              "p95Us": 353750,
               "ops": 3
             },
             "slate": {
               "status": "ok",
-              "medianUs": 63900,
-              "p95Us": 67410,
+              "medianUs": 68600,
+              "p95Us": 68950,
               "ops": 3
             }
           },
@@ -300,6 +300,23 @@
         "slate"
       ],
       "rows": [
+        {
+          "cells": {
+            "slate-v2:default-render-auto": {
+              "status": "ok",
+              "medianUs": 131200,
+              "p95Us": 156000,
+              "ops": 3
+            },
+            "slate-v2:dom-present": {
+              "status": "ok",
+              "medianUs": 131100,
+              "p95Us": 132000,
+              "ops": 3
+            }
+          },
+          "fixture": "middleBlock/burstToPaintMs"
+        },
         {
           "cells": {
             "slate-v2:default-render-auto": { "status": "ok", "ops": 20510 },
@@ -383,7 +400,7 @@
             "slate": {
               "status": "ok",
               "medianUs": 94000,
-              "p95Us": 94000,
+              "p95Us": 95000,
               "ops": 3
             }
           },
@@ -391,22 +408,553 @@
         },
         {
           "cells": {
+            "slate-v2:default-render-auto": { "status": "ok", "ops": 11 },
+            "slate-v2:dom-present": { "status": "ok", "ops": 10 }
+          },
+          "fixture": "middleBlock/profiler/core-time:build-change/count"
+        },
+        {
+          "cells": {
             "slate-v2:default-render-auto": {
               "status": "ok",
-              "medianUs": 47000,
-              "p95Us": 47900,
+              "medianUs": 800,
+              "p95Us": 800,
               "ops": 3
             },
             "slate-v2:dom-present": {
               "status": "ok",
-              "medianUs": 38800,
-              "p95Us": 39100,
+              "medianUs": 600,
+              "p95Us": 600,
+              "ops": 3
+            }
+          },
+          "fixture": "middleBlock/profiler/core-time:build-change/durationMs"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": { "status": "ok", "ops": 11 },
+            "slate-v2:dom-present": { "status": "ok", "ops": 10 }
+          },
+          "fixture": "middleBlock/profiler/core-time:copy-operations/count"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": {
+              "status": "ok",
+              "medianUs": 0,
+              "p95Us": 0,
+              "ops": 3
+            },
+            "slate-v2:dom-present": {
+              "status": "ok",
+              "medianUs": 0,
+              "p95Us": 0,
+              "ops": 3
+            }
+          },
+          "fixture": "middleBlock/profiler/core-time:copy-operations/durationMs"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": { "status": "ok", "ops": 11 },
+            "slate-v2:dom-present": { "status": "ok", "ops": 10 }
+          },
+          "fixture": "middleBlock/profiler/core-time:next-snapshot/count"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": {
+              "status": "ok",
+              "medianUs": 0,
+              "p95Us": 200,
+              "ops": 3
+            },
+            "slate-v2:dom-present": {
+              "status": "ok",
+              "medianUs": 100,
+              "p95Us": 200,
+              "ops": 3
+            }
+          },
+          "fixture": "middleBlock/profiler/core-time:next-snapshot/durationMs"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": { "status": "ok", "ops": 11 },
+            "slate-v2:dom-present": { "status": "ok", "ops": 10 }
+          },
+          "fixture": "middleBlock/profiler/core-time:notify-listeners/count"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": {
+              "status": "ok",
+              "medianUs": 1100,
+              "p95Us": 1200,
+              "ops": 3
+            },
+            "slate-v2:dom-present": {
+              "status": "ok",
+              "medianUs": 1000,
+              "p95Us": 1000,
+              "ops": 3
+            }
+          },
+          "fixture": "middleBlock/profiler/core-time:notify-listeners/durationMs"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": { "status": "ok", "ops": 11 },
+            "slate-v2:dom-present": { "status": "ok", "ops": 10 }
+          },
+          "fixture": "middleBlock/profiler/core-time:publish-range-refs/count"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": {
+              "status": "ok",
+              "medianUs": 0,
+              "p95Us": 0,
+              "ops": 3
+            },
+            "slate-v2:dom-present": {
+              "status": "ok",
+              "medianUs": 0,
+              "p95Us": 0,
+              "ops": 3
+            }
+          },
+          "fixture": "middleBlock/profiler/core-time:publish-range-refs/durationMs"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": { "status": "ok", "ops": 11 },
+            "slate-v2:dom-present": { "status": "ok", "ops": 10 }
+          },
+          "fixture": "middleBlock/profiler/core-time:run-after-commit-handlers/count"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": {
+              "status": "ok",
+              "medianUs": 0,
+              "p95Us": 0,
+              "ops": 3
+            },
+            "slate-v2:dom-present": {
+              "status": "ok",
+              "medianUs": 0,
+              "p95Us": 0,
+              "ops": 3
+            }
+          },
+          "fixture": "middleBlock/profiler/core-time:run-after-commit-handlers/durationMs"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": { "status": "ok", "ops": 11 },
+            "slate-v2:dom-present": { "status": "ok", "ops": 10 }
+          },
+          "fixture": "middleBlock/profiler/core-time:set-version/count"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": {
+              "status": "ok",
+              "medianUs": 0,
+              "p95Us": 0,
+              "ops": 3
+            },
+            "slate-v2:dom-present": {
+              "status": "ok",
+              "medianUs": 100,
+              "p95Us": 100,
+              "ops": 3
+            }
+          },
+          "fixture": "middleBlock/profiler/core-time:set-version/durationMs"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": { "status": "ok", "ops": 21 },
+            "slate-v2:dom-present": { "status": "ok", "ops": 10 }
+          },
+          "fixture": "middleBlock/profiler/core-time:transaction-callback/count"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": {
+              "status": "ok",
+              "medianUs": 2800,
+              "p95Us": 3000,
+              "ops": 3
+            },
+            "slate-v2:dom-present": {
+              "status": "ok",
+              "medianUs": 500,
+              "p95Us": 500,
+              "ops": 3
+            }
+          },
+          "fixture": "middleBlock/profiler/core-time:transaction-callback/durationMs"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": { "status": "ok", "ops": 11 },
+            "slate-v2:dom-present": { "status": "ok", "ops": 10 }
+          },
+          "fixture": "middleBlock/profiler/core-time:transaction-children-clone/count"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": {
+              "status": "ok",
+              "medianUs": 0,
+              "p95Us": 0,
+              "ops": 3
+            },
+            "slate-v2:dom-present": {
+              "status": "ok",
+              "medianUs": 0,
+              "p95Us": 0,
+              "ops": 3
+            }
+          },
+          "fixture": "middleBlock/profiler/core-time:transaction-children-clone/durationMs"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": { "status": "ok", "ops": 11 },
+            "slate-v2:dom-present": { "status": "ok", "ops": 10 }
+          },
+          "fixture": "middleBlock/profiler/core-time:transaction-command/count"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": {
+              "status": "ok",
+              "medianUs": 0,
+              "p95Us": 0,
+              "ops": 3
+            },
+            "slate-v2:dom-present": {
+              "status": "ok",
+              "medianUs": 0,
+              "p95Us": 0,
+              "ops": 3
+            }
+          },
+          "fixture": "middleBlock/profiler/core-time:transaction-command/durationMs"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": { "status": "ok", "ops": 11 },
+            "slate-v2:dom-present": { "status": "ok", "ops": 10 }
+          },
+          "fixture": "middleBlock/profiler/core-time:transaction-previous-snapshot/count"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": {
+              "status": "ok",
+              "medianUs": 0,
+              "p95Us": 0,
+              "ops": 3
+            },
+            "slate-v2:dom-present": {
+              "status": "ok",
+              "medianUs": 0,
+              "p95Us": 0,
+              "ops": 3
+            }
+          },
+          "fixture": "middleBlock/profiler/core-time:transaction-previous-snapshot/durationMs"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": { "status": "ok", "ops": 0 },
+            "slate-v2:dom-present": { "status": "ok", "ops": 10 }
+          },
+          "fixture": "middleBlock/profiler/core-time:transaction-roots-snapshot/count"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": {
+              "status": "ok",
+              "medianUs": 0,
+              "p95Us": 0,
+              "ops": 3
+            },
+            "slate-v2:dom-present": {
+              "status": "ok",
+              "medianUs": 0,
+              "p95Us": 0,
+              "ops": 3
+            }
+          },
+          "fixture": "middleBlock/profiler/core-time:transaction-roots-snapshot/durationMs"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": { "status": "ok", "ops": 20 }
+          },
+          "fixture": "middleBlock/profiler/dom-text-sync/count"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": {
+              "status": "ok",
+              "medianUs": 0,
+              "p95Us": 0,
+              "ops": 3
+            }
+          },
+          "fixture": "middleBlock/profiler/dom-text-sync/durationMs"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": { "status": "ok", "ops": 0 },
+            "slate-v2:dom-present": { "status": "ok", "ops": 10 }
+          },
+          "fixture": "middleBlock/profiler/runtime-time:beforeinput-flush-selection/count"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": {
+              "status": "ok",
+              "medianUs": 0,
+              "p95Us": 200,
+              "ops": 3
+            },
+            "slate-v2:dom-present": {
+              "status": "ok",
+              "medianUs": 100,
+              "p95Us": 100,
+              "ops": 3
+            }
+          },
+          "fixture": "middleBlock/profiler/runtime-time:beforeinput-flush-selection/durationMs"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": { "status": "ok", "ops": 10 },
+            "slate-v2:dom-present": { "status": "ok", "ops": 10 }
+          },
+          "fixture": "middleBlock/profiler/runtime-time:beforeinput-native-decision/count"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": {
+              "status": "ok",
+              "medianUs": 800,
+              "p95Us": 900,
+              "ops": 3
+            },
+            "slate-v2:dom-present": {
+              "status": "ok",
+              "medianUs": 300,
+              "p95Us": 700,
+              "ops": 3
+            }
+          },
+          "fixture": "middleBlock/profiler/runtime-time:beforeinput-native-decision/durationMs"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": { "status": "ok", "ops": 10 },
+            "slate-v2:dom-present": { "status": "ok", "ops": 0 }
+          },
+          "fixture": "middleBlock/profiler/runtime-time:beforeinput-prepare/count"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": {
+              "status": "ok",
+              "medianUs": 100,
+              "p95Us": 100,
+              "ops": 3
+            },
+            "slate-v2:dom-present": {
+              "status": "ok",
+              "medianUs": 0,
+              "p95Us": 0,
+              "ops": 3
+            }
+          },
+          "fixture": "middleBlock/profiler/runtime-time:beforeinput-prepare/durationMs"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": { "status": "ok", "ops": 10 },
+            "slate-v2:dom-present": { "status": "ok", "ops": 10 }
+          },
+          "fixture": "middleBlock/profiler/runtime-time:beforeinput-sync-selection/count"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": {
+              "status": "ok",
+              "medianUs": 100,
+              "p95Us": 200,
+              "ops": 3
+            },
+            "slate-v2:dom-present": {
+              "status": "ok",
+              "medianUs": 100,
+              "p95Us": 200,
+              "ops": 3
+            }
+          },
+          "fixture": "middleBlock/profiler/runtime-time:beforeinput-sync-selection/durationMs"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": { "status": "ok", "ops": 10 },
+            "slate-v2:dom-present": { "status": "ok", "ops": 10 }
+          },
+          "fixture": "middleBlock/profiler/runtime-time:beforeinput-trace/count"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": {
+              "status": "ok",
+              "medianUs": 200,
+              "p95Us": 200,
+              "ops": 3
+            },
+            "slate-v2:dom-present": {
+              "status": "ok",
+              "medianUs": 100,
+              "p95Us": 200,
+              "ops": 3
+            }
+          },
+          "fixture": "middleBlock/profiler/runtime-time:beforeinput-trace/durationMs"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": { "status": "ok", "ops": 0 }
+          },
+          "fixture": "middleBlock/profiler/runtime-time:dom-root-text-sync/count"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": {
+              "status": "ok",
+              "medianUs": 0,
+              "p95Us": 100,
+              "ops": 3
+            }
+          },
+          "fixture": "middleBlock/profiler/runtime-time:dom-root-text-sync/durationMs"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": { "status": "ok", "ops": 11 }
+          },
+          "fixture": "middleBlock/profiler/runtime-time:dom-text-sync/count"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": {
+              "status": "ok",
+              "medianUs": 200,
+              "p95Us": 200,
+              "ops": 3
+            }
+          },
+          "fixture": "middleBlock/profiler/runtime-time:dom-text-sync/durationMs"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": { "status": "ok", "ops": 11 },
+            "slate-v2:dom-present": { "status": "ok", "ops": 10 }
+          },
+          "fixture": "middleBlock/profiler/runtime-time:focused-state/count"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": {
+              "status": "ok",
+              "medianUs": 100,
+              "p95Us": 100,
+              "ops": 3
+            },
+            "slate-v2:dom-present": {
+              "status": "ok",
+              "medianUs": 100,
+              "p95Us": 100,
+              "ops": 3
+            }
+          },
+          "fixture": "middleBlock/profiler/runtime-time:focused-state/durationMs"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": { "status": "ok", "ops": 11 },
+            "slate-v2:dom-present": { "status": "ok", "ops": 10 }
+          },
+          "fixture": "middleBlock/profiler/runtime-time:selector-dispatch/count"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": {
+              "status": "ok",
+              "medianUs": 300,
+              "p95Us": 600,
+              "ops": 3
+            },
+            "slate-v2:dom-present": {
+              "status": "ok",
+              "medianUs": 400,
+              "p95Us": 400,
+              "ops": 3
+            }
+          },
+          "fixture": "middleBlock/profiler/runtime-time:selector-dispatch/durationMs"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": { "status": "ok", "ops": 121 },
+            "slate-v2:dom-present": { "status": "ok", "ops": 110 }
+          },
+          "fixture": "middleBlock/profiler/selector/count"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": {
+              "status": "ok",
+              "medianUs": 0,
+              "p95Us": 0,
+              "ops": 3
+            },
+            "slate-v2:dom-present": {
+              "status": "ok",
+              "medianUs": 0,
+              "p95Us": 0,
+              "ops": 3
+            }
+          },
+          "fixture": "middleBlock/profiler/selector/durationMs"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": {
+              "status": "ok",
+              "medianUs": 53500,
+              "p95Us": 56000,
+              "ops": 3
+            },
+            "slate-v2:dom-present": {
+              "status": "ok",
+              "medianUs": 53600,
+              "p95Us": 54600,
               "ops": 3
             },
             "slate": {
               "status": "ok",
-              "medianUs": 113500,
-              "p95Us": 114100,
+              "medianUs": 114100,
+              "p95Us": 114500,
               "ops": 3
             }
           },
@@ -416,20 +964,20 @@
           "cells": {
             "slate-v2:default-render-auto": {
               "status": "ok",
-              "medianUs": 163500,
-              "p95Us": 164200,
+              "medianUs": 187000,
+              "p95Us": 214500,
               "ops": 3
             },
             "slate-v2:dom-present": {
               "status": "ok",
-              "medianUs": 155800,
-              "p95Us": 156100,
+              "medianUs": 186900,
+              "p95Us": 188900,
               "ops": 3
             },
             "slate": {
               "status": "ok",
               "medianUs": 1139100,
-              "p95Us": 1146800,
+              "p95Us": 1139400,
               "ops": 3
             }
           },
@@ -439,20 +987,20 @@
           "cells": {
             "slate-v2:default-render-auto": {
               "status": "ok",
-              "medianUs": 114700,
-              "p95Us": 114800,
+              "medianUs": 23000,
+              "p95Us": 25400,
               "ops": 3
             },
             "slate-v2:dom-present": {
               "status": "ok",
-              "medianUs": 114900,
-              "p95Us": 114900,
+              "medianUs": 21800,
+              "p95Us": 22200,
               "ops": 3
             },
             "slate": {
               "status": "ok",
               "medianUs": 1023500,
-              "p95Us": 1031800,
+              "p95Us": 1023600,
               "ops": 3
             }
           },
@@ -462,20 +1010,20 @@
           "cells": {
             "slate-v2:default-render-auto": {
               "status": "ok",
-              "medianUs": 100200,
-              "p95Us": 102000,
+              "medianUs": 121900,
+              "p95Us": 145900,
               "ops": 3
             },
             "slate-v2:dom-present": {
               "status": "ok",
-              "medianUs": 98800,
-              "p95Us": 99900,
+              "medianUs": 119100,
+              "p95Us": 121000,
               "ops": 3
             },
             "slate": {
               "status": "ok",
-              "medianUs": 1011800,
-              "p95Us": 1017900,
+              "medianUs": 1011300,
+              "p95Us": 1016900,
               "ops": 3
             }
           },
@@ -483,8 +1031,25 @@
         },
         {
           "cells": {
-            "slate-v2:default-render-auto": { "status": "ok", "ops": 20511 },
-            "slate-v2:dom-present": { "status": "ok", "ops": 20511 },
+            "slate-v2:default-render-auto": {
+              "status": "ok",
+              "medianUs": 131100,
+              "p95Us": 136700,
+              "ops": 3
+            },
+            "slate-v2:dom-present": {
+              "status": "ok",
+              "medianUs": 123000,
+              "p95Us": 123100,
+              "ops": 3
+            }
+          },
+          "fixture": "startBlock/burstToPaintMs"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": { "status": "ok", "ops": 20510 },
+            "slate-v2:dom-present": { "status": "ok", "ops": 20510 },
             "slate": { "status": "ok", "ops": 20136 }
           },
           "fixture": "startBlock/domTags/domNodeCount"
@@ -543,7 +1108,7 @@
           "cells": {
             "slate-v2:default-render-auto": { "status": "ok", "ops": 0 },
             "slate-v2:dom-present": { "status": "ok", "ops": 0 },
-            "slate": { "status": "ok", "ops": 10 }
+            "slate": { "status": "ok", "ops": 11 }
           },
           "fixture": "startBlock/longTaskCount"
         },
@@ -564,7 +1129,7 @@
             "slate": {
               "status": "ok",
               "medianUs": 96000,
-              "p95Us": 99000,
+              "p95Us": 96000,
               "ops": 3
             }
           },
@@ -572,22 +1137,553 @@
         },
         {
           "cells": {
+            "slate-v2:default-render-auto": { "status": "ok", "ops": 11 },
+            "slate-v2:dom-present": { "status": "ok", "ops": 11 }
+          },
+          "fixture": "startBlock/profiler/core-time:build-change/count"
+        },
+        {
+          "cells": {
             "slate-v2:default-render-auto": {
               "status": "ok",
-              "medianUs": 22900,
-              "p95Us": 31400,
+              "medianUs": 700,
+              "p95Us": 1200,
               "ops": 3
             },
             "slate-v2:dom-present": {
               "status": "ok",
-              "medianUs": 31500,
-              "p95Us": 31700,
+              "medianUs": 400,
+              "p95Us": 900,
+              "ops": 3
+            }
+          },
+          "fixture": "startBlock/profiler/core-time:build-change/durationMs"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": { "status": "ok", "ops": 11 },
+            "slate-v2:dom-present": { "status": "ok", "ops": 11 }
+          },
+          "fixture": "startBlock/profiler/core-time:copy-operations/count"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": {
+              "status": "ok",
+              "medianUs": 0,
+              "p95Us": 0,
+              "ops": 3
+            },
+            "slate-v2:dom-present": {
+              "status": "ok",
+              "medianUs": 0,
+              "p95Us": 0,
+              "ops": 3
+            }
+          },
+          "fixture": "startBlock/profiler/core-time:copy-operations/durationMs"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": { "status": "ok", "ops": 11 },
+            "slate-v2:dom-present": { "status": "ok", "ops": 11 }
+          },
+          "fixture": "startBlock/profiler/core-time:next-snapshot/count"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": {
+              "status": "ok",
+              "medianUs": 0,
+              "p95Us": 400,
+              "ops": 3
+            },
+            "slate-v2:dom-present": {
+              "status": "ok",
+              "medianUs": 0,
+              "p95Us": 200,
+              "ops": 3
+            }
+          },
+          "fixture": "startBlock/profiler/core-time:next-snapshot/durationMs"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": { "status": "ok", "ops": 11 },
+            "slate-v2:dom-present": { "status": "ok", "ops": 11 }
+          },
+          "fixture": "startBlock/profiler/core-time:notify-listeners/count"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": {
+              "status": "ok",
+              "medianUs": 1100,
+              "p95Us": 1200,
+              "ops": 3
+            },
+            "slate-v2:dom-present": {
+              "status": "ok",
+              "medianUs": 1100,
+              "p95Us": 1500,
+              "ops": 3
+            }
+          },
+          "fixture": "startBlock/profiler/core-time:notify-listeners/durationMs"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": { "status": "ok", "ops": 11 },
+            "slate-v2:dom-present": { "status": "ok", "ops": 11 }
+          },
+          "fixture": "startBlock/profiler/core-time:publish-range-refs/count"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": {
+              "status": "ok",
+              "medianUs": 0,
+              "p95Us": 100,
+              "ops": 3
+            },
+            "slate-v2:dom-present": {
+              "status": "ok",
+              "medianUs": 0,
+              "p95Us": 0,
+              "ops": 3
+            }
+          },
+          "fixture": "startBlock/profiler/core-time:publish-range-refs/durationMs"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": { "status": "ok", "ops": 11 },
+            "slate-v2:dom-present": { "status": "ok", "ops": 11 }
+          },
+          "fixture": "startBlock/profiler/core-time:run-after-commit-handlers/count"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": {
+              "status": "ok",
+              "medianUs": 0,
+              "p95Us": 0,
+              "ops": 3
+            },
+            "slate-v2:dom-present": {
+              "status": "ok",
+              "medianUs": 0,
+              "p95Us": 0,
+              "ops": 3
+            }
+          },
+          "fixture": "startBlock/profiler/core-time:run-after-commit-handlers/durationMs"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": { "status": "ok", "ops": 11 },
+            "slate-v2:dom-present": { "status": "ok", "ops": 11 }
+          },
+          "fixture": "startBlock/profiler/core-time:set-version/count"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": {
+              "status": "ok",
+              "medianUs": 0,
+              "p95Us": 0,
+              "ops": 3
+            },
+            "slate-v2:dom-present": {
+              "status": "ok",
+              "medianUs": 0,
+              "p95Us": 0,
+              "ops": 3
+            }
+          },
+          "fixture": "startBlock/profiler/core-time:set-version/durationMs"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": { "status": "ok", "ops": 21 },
+            "slate-v2:dom-present": { "status": "ok", "ops": 13 }
+          },
+          "fixture": "startBlock/profiler/core-time:transaction-callback/count"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": {
+              "status": "ok",
+              "medianUs": 3100,
+              "p95Us": 3200,
+              "ops": 3
+            },
+            "slate-v2:dom-present": {
+              "status": "ok",
+              "medianUs": 900,
+              "p95Us": 1000,
+              "ops": 3
+            }
+          },
+          "fixture": "startBlock/profiler/core-time:transaction-callback/durationMs"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": { "status": "ok", "ops": 11 },
+            "slate-v2:dom-present": { "status": "ok", "ops": 13 }
+          },
+          "fixture": "startBlock/profiler/core-time:transaction-children-clone/count"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": {
+              "status": "ok",
+              "medianUs": 0,
+              "p95Us": 0,
+              "ops": 3
+            },
+            "slate-v2:dom-present": {
+              "status": "ok",
+              "medianUs": 0,
+              "p95Us": 0,
+              "ops": 3
+            }
+          },
+          "fixture": "startBlock/profiler/core-time:transaction-children-clone/durationMs"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": { "status": "ok", "ops": 11 },
+            "slate-v2:dom-present": { "status": "ok", "ops": 13 }
+          },
+          "fixture": "startBlock/profiler/core-time:transaction-command/count"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": {
+              "status": "ok",
+              "medianUs": 0,
+              "p95Us": 100,
+              "ops": 3
+            },
+            "slate-v2:dom-present": {
+              "status": "ok",
+              "medianUs": 0,
+              "p95Us": 100,
+              "ops": 3
+            }
+          },
+          "fixture": "startBlock/profiler/core-time:transaction-command/durationMs"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": { "status": "ok", "ops": 11 },
+            "slate-v2:dom-present": { "status": "ok", "ops": 13 }
+          },
+          "fixture": "startBlock/profiler/core-time:transaction-previous-snapshot/count"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": {
+              "status": "ok",
+              "medianUs": 0,
+              "p95Us": 100,
+              "ops": 3
+            },
+            "slate-v2:dom-present": {
+              "status": "ok",
+              "medianUs": 0,
+              "p95Us": 0,
+              "ops": 3
+            }
+          },
+          "fixture": "startBlock/profiler/core-time:transaction-previous-snapshot/durationMs"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": { "status": "ok", "ops": 20 }
+          },
+          "fixture": "startBlock/profiler/dom-text-sync/count"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": {
+              "status": "ok",
+              "medianUs": 0,
+              "p95Us": 0,
+              "ops": 3
+            }
+          },
+          "fixture": "startBlock/profiler/dom-text-sync/durationMs"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": { "status": "ok", "ops": 0 }
+          },
+          "fixture": "startBlock/profiler/runtime-time:beforeinput-flush-selection/count"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": {
+              "status": "ok",
+              "medianUs": 0,
+              "p95Us": 200,
+              "ops": 3
+            }
+          },
+          "fixture": "startBlock/profiler/runtime-time:beforeinput-flush-selection/durationMs"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": { "status": "ok", "ops": 0 }
+          },
+          "fixture": "startBlock/profiler/runtime-time:beforeinput-input-rules/count"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": {
+              "status": "ok",
+              "medianUs": 0,
+              "p95Us": 100,
+              "ops": 3
+            }
+          },
+          "fixture": "startBlock/profiler/runtime-time:beforeinput-input-rules/durationMs"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": { "status": "ok", "ops": 10 },
+            "slate-v2:dom-present": { "status": "ok", "ops": 10 }
+          },
+          "fixture": "startBlock/profiler/runtime-time:beforeinput-native-decision/count"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": {
+              "status": "ok",
+              "medianUs": 600,
+              "p95Us": 700,
+              "ops": 3
+            },
+            "slate-v2:dom-present": {
+              "status": "ok",
+              "medianUs": 600,
+              "p95Us": 600,
+              "ops": 3
+            }
+          },
+          "fixture": "startBlock/profiler/runtime-time:beforeinput-native-decision/durationMs"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": { "status": "ok", "ops": 10 },
+            "slate-v2:dom-present": { "status": "ok", "ops": 0 }
+          },
+          "fixture": "startBlock/profiler/runtime-time:beforeinput-prepare/count"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": {
+              "status": "ok",
+              "medianUs": 100,
+              "p95Us": 200,
+              "ops": 3
+            },
+            "slate-v2:dom-present": {
+              "status": "ok",
+              "medianUs": 0,
+              "p95Us": 100,
+              "ops": 3
+            }
+          },
+          "fixture": "startBlock/profiler/runtime-time:beforeinput-prepare/durationMs"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": { "status": "ok", "ops": 10 },
+            "slate-v2:dom-present": { "status": "ok", "ops": 10 }
+          },
+          "fixture": "startBlock/profiler/runtime-time:beforeinput-sync-selection/count"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": {
+              "status": "ok",
+              "medianUs": 200,
+              "p95Us": 400,
+              "ops": 3
+            },
+            "slate-v2:dom-present": {
+              "status": "ok",
+              "medianUs": 200,
+              "p95Us": 400,
+              "ops": 3
+            }
+          },
+          "fixture": "startBlock/profiler/runtime-time:beforeinput-sync-selection/durationMs"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": { "status": "ok", "ops": 10 },
+            "slate-v2:dom-present": { "status": "ok", "ops": 10 }
+          },
+          "fixture": "startBlock/profiler/runtime-time:beforeinput-trace/count"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": {
+              "status": "ok",
+              "medianUs": 200,
+              "p95Us": 300,
+              "ops": 3
+            },
+            "slate-v2:dom-present": {
+              "status": "ok",
+              "medianUs": 100,
+              "p95Us": 100,
+              "ops": 3
+            }
+          },
+          "fixture": "startBlock/profiler/runtime-time:beforeinput-trace/durationMs"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": { "status": "ok", "ops": 0 },
+            "slate-v2:dom-present": { "status": "ok", "ops": 11 }
+          },
+          "fixture": "startBlock/profiler/runtime-time:change-callbacks/count"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": {
+              "status": "ok",
+              "medianUs": 0,
+              "p95Us": 100,
+              "ops": 3
+            },
+            "slate-v2:dom-present": {
+              "status": "ok",
+              "medianUs": 0,
+              "p95Us": 100,
+              "ops": 3
+            }
+          },
+          "fixture": "startBlock/profiler/runtime-time:change-callbacks/durationMs"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": { "status": "ok", "ops": 11 },
+            "slate-v2:dom-present": { "status": "ok", "ops": 0 }
+          },
+          "fixture": "startBlock/profiler/runtime-time:dom-text-sync/count"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": {
+              "status": "ok",
+              "medianUs": 100,
+              "p95Us": 100,
+              "ops": 3
+            },
+            "slate-v2:dom-present": {
+              "status": "ok",
+              "medianUs": 0,
+              "p95Us": 100,
+              "ops": 3
+            }
+          },
+          "fixture": "startBlock/profiler/runtime-time:dom-text-sync/durationMs"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": { "status": "ok", "ops": 11 },
+            "slate-v2:dom-present": { "status": "ok", "ops": 0 }
+          },
+          "fixture": "startBlock/profiler/runtime-time:focused-state/count"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": {
+              "status": "ok",
+              "medianUs": 200,
+              "p95Us": 300,
+              "ops": 3
+            },
+            "slate-v2:dom-present": {
+              "status": "ok",
+              "medianUs": 0,
+              "p95Us": 300,
+              "ops": 3
+            }
+          },
+          "fixture": "startBlock/profiler/runtime-time:focused-state/durationMs"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": { "status": "ok", "ops": 11 },
+            "slate-v2:dom-present": { "status": "ok", "ops": 11 }
+          },
+          "fixture": "startBlock/profiler/runtime-time:selector-dispatch/count"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": {
+              "status": "ok",
+              "medianUs": 400,
+              "p95Us": 500,
+              "ops": 3
+            },
+            "slate-v2:dom-present": {
+              "status": "ok",
+              "medianUs": 600,
+              "p95Us": 700,
+              "ops": 3
+            }
+          },
+          "fixture": "startBlock/profiler/runtime-time:selector-dispatch/durationMs"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": { "status": "ok", "ops": 131 },
+            "slate-v2:dom-present": { "status": "ok", "ops": 121 }
+          },
+          "fixture": "startBlock/profiler/selector/count"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": {
+              "status": "ok",
+              "medianUs": 0,
+              "p95Us": 0,
+              "ops": 3
+            },
+            "slate-v2:dom-present": {
+              "status": "ok",
+              "medianUs": 0,
+              "p95Us": 0,
+              "ops": 3
+            }
+          },
+          "fixture": "startBlock/profiler/selector/durationMs"
+        },
+        {
+          "cells": {
+            "slate-v2:default-render-auto": {
+              "status": "ok",
+              "medianUs": 48200,
+              "p95Us": 49200,
+              "ops": 3
+            },
+            "slate-v2:dom-present": {
+              "status": "ok",
+              "medianUs": 48900,
+              "p95Us": 56700,
               "ops": 3
             },
             "slate": {
               "status": "ok",
-              "medianUs": 115000,
-              "p95Us": 115300,
+              "medianUs": 115100,
+              "p95Us": 115500,
               "ops": 3
             }
           },
@@ -597,20 +1693,20 @@
           "cells": {
             "slate-v2:default-render-auto": {
               "status": "ok",
-              "medianUs": 131200,
-              "p95Us": 139700,
+              "medianUs": 181500,
+              "p95Us": 189800,
               "ops": 3
             },
             "slate-v2:dom-present": {
               "status": "ok",
-              "medianUs": 131500,
-              "p95Us": 131700,
+              "medianUs": 174100,
+              "p95Us": 180900,
               "ops": 3
             },
             "slate": {
               "status": "ok",
-              "medianUs": 1048700,
-              "p95Us": 1139200,
+              "medianUs": 1130900,
+              "p95Us": 1140300,
               "ops": 3
             }
           },
@@ -620,19 +1716,19 @@
           "cells": {
             "slate-v2:default-render-auto": {
               "status": "ok",
-              "medianUs": 105700,
-              "p95Us": 106900,
+              "medianUs": 16300,
+              "p95Us": 17700,
               "ops": 3
             },
             "slate-v2:dom-present": {
               "status": "ok",
-              "medianUs": 98400,
-              "p95Us": 106400,
+              "medianUs": 21000,
+              "p95Us": 22400,
               "ops": 3
             },
             "slate": {
               "status": "ok",
-              "medianUs": 932200,
+              "medianUs": 1015300,
               "p95Us": 1023500,
               "ops": 3
             }
@@ -643,20 +1739,20 @@
           "cells": {
             "slate-v2:default-render-auto": {
               "status": "ok",
-              "medianUs": 92800,
-              "p95Us": 93600,
+              "medianUs": 121300,
+              "p95Us": 130100,
               "ops": 3
             },
             "slate-v2:dom-present": {
               "status": "ok",
-              "medianUs": 89700,
-              "p95Us": 89800,
+              "medianUs": 111100,
+              "p95Us": 111600,
               "ops": 3
             },
             "slate": {
               "status": "ok",
-              "medianUs": 916700,
-              "p95Us": 1014200,
+              "medianUs": 1008100,
+              "p95Us": 1017300,
               "ops": 3
             }
           },
@@ -666,20 +1762,20 @@
           "cells": {
             "slate-v2:default-render-auto": {
               "status": "ok",
-              "medianUs": 284600,
-              "p95Us": 290300,
+              "medianUs": 280900,
+              "p95Us": 289000,
               "ops": 3
             },
             "slate-v2:dom-present": {
               "status": "ok",
-              "medianUs": 281800,
-              "p95Us": 284400,
+              "medianUs": 280400,
+              "p95Us": 288400,
               "ops": 3
             },
             "slate": {
               "status": "ok",
-              "medianUs": 15300,
-              "p95Us": 15300,
+              "medianUs": 11100,
+              "p95Us": 11200,
               "ops": 3
             }
           },
@@ -692,6 +1788,111 @@
             "slate": { "status": "ok", "ops": 5000 }
           },
           "fixture": "nativeSurface/observedBlocks"
+        },
+        {
+          "cells": { "slate-v2:dom-present": { "status": "ok", "ops": 10 } },
+          "fixture": "middleBlock/profiler/runtime-time:beforeinput-apply-model/count"
+        },
+        {
+          "cells": {
+            "slate-v2:dom-present": {
+              "status": "ok",
+              "medianUs": 0,
+              "p95Us": 100,
+              "ops": 3
+            }
+          },
+          "fixture": "middleBlock/profiler/runtime-time:beforeinput-apply-model/durationMs"
+        },
+        {
+          "cells": { "slate-v2:dom-present": { "status": "ok", "ops": 10 } },
+          "fixture": "middleBlock/profiler/runtime-time:beforeinput-input-rules/count"
+        },
+        {
+          "cells": {
+            "slate-v2:dom-present": {
+              "status": "ok",
+              "medianUs": 0,
+              "p95Us": 0,
+              "ops": 3
+            }
+          },
+          "fixture": "middleBlock/profiler/runtime-time:beforeinput-input-rules/durationMs"
+        },
+        {
+          "cells": { "slate-v2:dom-present": { "status": "ok", "ops": 0 } },
+          "fixture": "middleBlock/profiler/runtime-time:change-callbacks/count"
+        },
+        {
+          "cells": {
+            "slate-v2:dom-present": {
+              "status": "ok",
+              "medianUs": 0,
+              "p95Us": 100,
+              "ops": 3
+            }
+          },
+          "fixture": "middleBlock/profiler/runtime-time:change-callbacks/durationMs"
+        },
+        {
+          "cells": { "slate-v2:dom-present": { "status": "ok", "ops": 13 } },
+          "fixture": "startBlock/profiler/core-time:transaction-roots-snapshot/count"
+        },
+        {
+          "cells": {
+            "slate-v2:dom-present": {
+              "status": "ok",
+              "medianUs": 0,
+              "p95Us": 0,
+              "ops": 3
+            }
+          },
+          "fixture": "startBlock/profiler/core-time:transaction-roots-snapshot/durationMs"
+        },
+        {
+          "cells": { "slate-v2:dom-present": { "status": "ok", "ops": 0 } },
+          "fixture": "startBlock/profiler/runtime-time:beforeinput-apply-model/count"
+        },
+        {
+          "cells": {
+            "slate-v2:dom-present": {
+              "status": "ok",
+              "medianUs": 0,
+              "p95Us": 0,
+              "ops": 3
+            }
+          },
+          "fixture": "startBlock/profiler/runtime-time:beforeinput-apply-model/durationMs"
+        },
+        {
+          "cells": { "slate-v2:dom-present": { "status": "ok", "ops": 0 } },
+          "fixture": "startBlock/profiler/runtime-time:beforeinput-root-node/count"
+        },
+        {
+          "cells": {
+            "slate-v2:dom-present": {
+              "status": "ok",
+              "medianUs": 0,
+              "p95Us": 100,
+              "ops": 3
+            }
+          },
+          "fixture": "startBlock/profiler/runtime-time:beforeinput-root-node/durationMs"
+        },
+        {
+          "cells": { "slate-v2:dom-present": { "status": "ok", "ops": 11 } },
+          "fixture": "startBlock/profiler/runtime-time:dom-root-text-sync/count"
+        },
+        {
+          "cells": {
+            "slate-v2:dom-present": {
+              "status": "ok",
+              "medianUs": 0,
+              "p95Us": 0,
+              "ops": 3
+            }
+          },
+          "fixture": "startBlock/profiler/runtime-time:dom-root-text-sync/durationMs"
         }
       ]
     },
@@ -1217,7 +2418,7 @@
             "slate:browser-replay": {
               "status": "coverage-gap",
               "ops": 0,
-              "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=3788; suite=On richtext example; family=toolbar-formatting"
+              "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=3806; suite=On richtext example; family=toolbar-formatting"
             }
           },
           "fixture": "richtext/applies-toolbar-alignment-from-browser-target-even-when-model-selection-already-has-alignment"
@@ -1228,7 +2429,7 @@
             "slate:browser-replay": {
               "status": "coverage-gap",
               "ops": 0,
-              "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=3514; suite=On richtext example; family=toolbar-formatting"
+              "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=3532; suite=On richtext example; family=toolbar-formatting"
             }
           },
           "fixture": "richtext/applies-toolbar-bold-to-the-browser-selected-text"
@@ -1239,7 +2440,7 @@
             "slate:browser-replay": {
               "status": "coverage-gap",
               "ops": 0,
-              "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=3359; suite=On richtext example; family=toolbar-formatting"
+              "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=3377; suite=On richtext example; family=toolbar-formatting"
             }
           },
           "fixture": "richtext/applies-toolbar-heading-from-browser-target-even-when-model-selection-is-already-heading"
@@ -1250,7 +2451,7 @@
             "slate:browser-replay": {
               "status": "coverage-gap",
               "ops": 0,
-              "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=3167; suite=On richtext example; family=toolbar-formatting"
+              "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=3185; suite=On richtext example; family=toolbar-formatting"
             }
           },
           "fixture": "richtext/applies-toolbar-heading-to-the-browser-selected-paragraph"
@@ -1261,7 +2462,7 @@
             "slate:browser-replay": {
               "status": "coverage-gap",
               "ops": 0,
-              "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=3837; suite=On richtext example; family=toolbar-formatting"
+              "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=3855; suite=On richtext example; family=toolbar-formatting"
             }
           },
           "fixture": "richtext/applies-toolbar-list-from-browser-target-even-when-model-selection-already-has-list"
@@ -1360,7 +2561,7 @@
             "slate:browser-replay": {
               "status": "coverage-gap",
               "ops": 0,
-              "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=4838; suite=On richtext example; family=native-input"
+              "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=4856; suite=On richtext example; family=native-input"
             }
           },
           "fixture": "richtext/does-not-duplicate-native-input-handling-after-route-remount"
@@ -1382,7 +2583,7 @@
             "slate:browser-replay": {
               "status": "coverage-gap",
               "ops": 0,
-              "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=3494; suite=On richtext example; family=general-browser-editing"
+              "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=3512; suite=On richtext example; family=general-browser-editing"
             }
           },
           "fixture": "richtext/handles-empty-block-quote-enter-behavior-from-the-browser"
@@ -1393,7 +2594,7 @@
             "slate:browser-replay": {
               "status": "coverage-gap",
               "ops": 0,
-              "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=3444; suite=On richtext example; family=toolbar-formatting"
+              "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=3462; suite=On richtext example; family=toolbar-formatting"
             }
           },
           "fixture": "richtext/handles-heading-enter-behavior-from-the-browser"
@@ -1404,7 +2605,7 @@
             "slate:browser-replay": {
               "status": "coverage-gap",
               "ops": 0,
-              "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=3304; suite=On richtext example; family=selection-navigation"
+              "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=3322; suite=On richtext example; family=selection-navigation"
             }
           },
           "fixture": "richtext/ignores-a-native-selection-that-starts-outside-the-editor-and-ends-inside-it"
@@ -1415,7 +2616,7 @@
             "slate:browser-replay": {
               "status": "coverage-gap",
               "ops": 0,
-              "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=4223; suite=On richtext example; family=selection-navigation"
+              "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=4241; suite=On richtext example; family=selection-navigation"
             }
           },
           "fixture": "richtext/imports-programmatic-dom-selection-through-explicit-browser-handle"
@@ -1536,7 +2737,7 @@
             "slate:browser-replay": {
               "status": "coverage-gap",
               "ops": 0,
-              "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=4774; suite=On richtext example; family=clipboard-paste"
+              "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=4792; suite=On richtext example; family=clipboard-paste"
             }
           },
           "fixture": "richtext/keeps-caret-editable-after-plain-text-paste-over-selected-range"
@@ -1613,7 +2814,7 @@
             "slate:browser-replay": {
               "status": "coverage-gap",
               "ops": 0,
-              "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=3567; suite=On richtext example; family=toolbar-formatting"
+              "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=3585; suite=On richtext example; family=toolbar-formatting"
             }
           },
           "fixture": "richtext/keeps-selected-word-expanded-after-toggling-toolbar-bold-off"
@@ -1635,7 +2836,7 @@
             "slate:browser-replay": {
               "status": "coverage-gap",
               "ops": 0,
-              "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=4454; suite=On richtext example; family=selection-navigation"
+              "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=4472; suite=On richtext example; family=selection-navigation"
             }
           },
           "fixture": "richtext/keeps-selection-synchronized-after-browser-line-extension"
@@ -1646,7 +2847,7 @@
             "slate:browser-replay": {
               "status": "coverage-gap",
               "ops": 0,
-              "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=4353; suite=On richtext example; family=selection-navigation"
+              "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=4371; suite=On richtext example; family=selection-navigation"
             }
           },
           "fixture": "richtext/keeps-selection-synchronized-after-browser-word-movement"
@@ -1657,7 +2858,7 @@
             "slate:browser-replay": {
               "status": "coverage-gap",
               "ops": 0,
-              "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=3414; suite=On richtext example; family=toolbar-formatting"
+              "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=3432; suite=On richtext example; family=toolbar-formatting"
             }
           },
           "fixture": "richtext/keeps-the-first-heading-unchanged-on-backspace-at-the-start"
@@ -1668,7 +2869,7 @@
             "slate:browser-replay": {
               "status": "coverage-gap",
               "ops": 0,
-              "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=4603; suite=On richtext example; family=selection-navigation"
+              "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=4621; suite=On richtext example; family=selection-navigation"
             }
           },
           "fixture": "richtext/keeps-the-visual-caret-after-browser-insertion-at-the-selected-text-end"
@@ -1679,7 +2880,7 @@
             "slate:browser-replay": {
               "status": "coverage-gap",
               "ops": 0,
-              "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=4631; suite=On richtext example; family=selection-navigation"
+              "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=4649; suite=On richtext example; family=selection-navigation"
             }
           },
           "fixture": "richtext/keeps-the-visual-caret-after-browser-insertion-before-trailing-punctuation"
@@ -1690,7 +2891,7 @@
             "slate:browser-replay": {
               "status": "coverage-gap",
               "ops": 0,
-              "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=4661; suite=On richtext example; family=selection-navigation"
+              "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=4679; suite=On richtext example; family=selection-navigation"
             }
           },
           "fixture": "richtext/keeps-the-visual-caret-after-browser-insertion-inside-a-text-leaf"
@@ -1701,7 +2902,7 @@
             "slate:browser-replay": {
               "status": "coverage-gap",
               "ops": 0,
-              "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=3610; suite=On richtext example; family=toolbar-formatting"
+              "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=3628; suite=On richtext example; family=toolbar-formatting"
             }
           },
           "fixture": "richtext/keeps-warm-toolbar-mark-selection-usable-through-arrows-without-reload"
@@ -1767,7 +2968,7 @@
             "slate:browser-replay": {
               "status": "coverage-gap",
               "ops": 0,
-              "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=3991; suite=On richtext example; family=delete-backspace"
+              "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=4009; suite=On richtext example; family=delete-backspace"
             }
           },
           "fixture": "richtext/records-core-command-metadata-for-text-input-and-delete"
@@ -1811,7 +3012,7 @@
             "slate:browser-replay": {
               "status": "coverage-gap",
               "ops": 0,
-              "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=4288; suite=On richtext example; family=selection-navigation"
+              "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=4306; suite=On richtext example; family=selection-navigation"
             }
           },
           "fixture": "richtext/records-repair-trace-with-observable-dom-and-model-selection"
@@ -1822,7 +3023,7 @@
             "slate:browser-replay": {
               "status": "coverage-gap",
               "ops": 0,
-              "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=4124; suite=On richtext example; family=selection-navigation"
+              "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=4142; suite=On richtext example; family=selection-navigation"
             }
           },
           "fixture": "richtext/records-selectionchange-and-repair-kernel-results"
@@ -1833,7 +3034,7 @@
             "slate:browser-replay": {
               "status": "coverage-gap",
               "ops": 0,
-              "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=4564; suite=On richtext example; family=selection-navigation"
+              "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=4582; suite=On richtext example; family=selection-navigation"
             }
           },
           "fixture": "richtext/removes-the-current-block-after-browser-triple-click-and-backspace"
@@ -1851,7 +3052,7 @@
             "slate:browser-replay": {
               "status": "coverage-gap",
               "ops": 0,
-              "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=4723; suite=On richtext example; family=undo-history"
+              "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=4741; suite=On richtext example; family=undo-history"
             }
           },
           "fixture": "richtext/repairs-dom-after-mac-keyboard-undo"
@@ -1961,7 +3162,7 @@
             "slate:browser-replay": {
               "status": "coverage-gap",
               "ops": 0,
-              "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=3240; suite=On richtext example; family=toolbar-formatting"
+              "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=3258; suite=On richtext example; family=toolbar-formatting"
             }
           },
           "fixture": "richtext/runs-toolbar-block-commands-on-pointerdown"
@@ -1972,7 +3173,7 @@
             "slate:browser-replay": {
               "status": "coverage-gap",
               "ops": 0,
-              "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=4523; suite=On richtext example; family=selection-navigation"
+              "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=4541; suite=On richtext example; family=selection-navigation"
             }
           },
           "fixture": "richtext/selects-the-current-block-on-browser-triple-click"
@@ -2005,7 +3206,7 @@
             "slate:browser-replay": {
               "status": "coverage-gap",
               "ops": 0,
-              "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=3945; suite=On richtext example; family=toolbar-formatting"
+              "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=3963; suite=On richtext example; family=toolbar-formatting"
             }
           },
           "fixture": "richtext/toggles-an-empty-paragraph-into-and-out-of-a-toolbar-list"
@@ -2016,7 +3217,7 @@
             "slate:browser-replay": {
               "status": "coverage-gap",
               "ops": 0,
-              "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=3889; suite=On richtext example; family=toolbar-formatting"
+              "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=3907; suite=On richtext example; family=toolbar-formatting"
             }
           },
           "fixture": "richtext/toggles-toolbar-lists-off-and-converts-between-list-types"
@@ -2038,7 +3239,7 @@
             "slate:browser-replay": {
               "status": "coverage-gap",
               "ops": 0,
-              "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=4755; suite=On richtext example; family=delete-backspace"
+              "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=4773; suite=On richtext example; family=delete-backspace"
             }
           },
           "fixture": "richtext/undo-restores-deleted-selected-text"
@@ -2060,7 +3261,7 @@
             "slate:browser-replay": {
               "status": "coverage-gap",
               "ops": 0,
-              "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=4691; suite=On richtext example; family=undo-history"
+              "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=4709; suite=On richtext example; family=undo-history"
             }
           },
           "fixture": "richtext/undoes-inserted-text"
@@ -2215,15 +3416,15 @@
           "cells": {
             "slate-v2:current": {
               "status": "ok",
-              "medianUs": 5790,
-              "p95Us": 14040,
-              "ops": 3
+              "medianUs": 7980,
+              "p95Us": 9010,
+              "ops": 10
             },
             "slate:baseline": {
               "status": "ok",
-              "medianUs": 43270,
-              "p95Us": 44900,
-              "ops": 3
+              "medianUs": 45470,
+              "p95Us": 55480,
+              "ops": 10
             }
           },
           "fixture": "blocks-5000/typeOps-10/insertFragmentFullDocumentMs"
@@ -2232,15 +3433,15 @@
           "cells": {
             "slate-v2:current": {
               "status": "ok",
-              "medianUs": 4060,
-              "p95Us": 4580,
-              "ops": 3
+              "medianUs": 860,
+              "p95Us": 1020,
+              "ops": 10
             },
             "slate:baseline": {
               "status": "ok",
-              "medianUs": 480,
-              "p95Us": 540,
-              "ops": 3
+              "medianUs": 550,
+              "p95Us": 1540,
+              "ops": 10
             }
           },
           "fixture": "blocks-5000/typeOps-10/middleBlockTypeMs"
@@ -2249,15 +3450,15 @@
           "cells": {
             "slate-v2:current": {
               "status": "ok",
-              "medianUs": 5670,
-              "p95Us": 5700,
-              "ops": 3
+              "medianUs": 8390,
+              "p95Us": 10900,
+              "ops": 10
             },
             "slate:baseline": {
               "status": "ok",
-              "medianUs": 52200,
-              "p95Us": 53780,
-              "ops": 3
+              "medianUs": 45380,
+              "p95Us": 57820,
+              "ops": 10
             }
           },
           "fixture": "blocks-5000/typeOps-10/replaceFullDocumentWithTextMs"
@@ -2266,15 +3467,15 @@
           "cells": {
             "slate-v2:current": {
               "status": "ok",
-              "medianUs": 2970,
-              "p95Us": 3180,
-              "ops": 3
+              "medianUs": 180,
+              "p95Us": 300,
+              "ops": 10
             },
             "slate:baseline": {
               "status": "ok",
               "medianUs": 10,
-              "p95Us": 10,
-              "ops": 3
+              "p95Us": 20,
+              "ops": 10
             }
           },
           "fixture": "blocks-5000/typeOps-10/selectAllMs"
@@ -2283,15 +3484,15 @@
           "cells": {
             "slate-v2:current": {
               "status": "ok",
-              "medianUs": 4870,
-              "p95Us": 7690,
-              "ops": 3
+              "medianUs": 1020,
+              "p95Us": 1540,
+              "ops": 10
             },
             "slate:baseline": {
               "status": "ok",
-              "medianUs": 730,
-              "p95Us": 1050,
-              "ops": 3
+              "medianUs": 610,
+              "p95Us": 1140,
+              "ops": 10
             }
           },
           "fixture": "blocks-5000/typeOps-10/startBlockTypeMs"
@@ -2306,14 +3507,14 @@
           "cells": {
             "slate-v2:current": {
               "status": "ok",
-              "medianUs": 6100,
-              "p95Us": 8520,
+              "medianUs": 6200,
+              "p95Us": 8890,
               "ops": 3
             },
             "slate:baseline": {
               "status": "ok",
-              "medianUs": 14940,
-              "p95Us": 14990,
+              "medianUs": 15640,
+              "p95Us": 15660,
               "ops": 3
             }
           },
@@ -2323,14 +3524,14 @@
           "cells": {
             "slate-v2:current": {
               "status": "ok",
-              "medianUs": 230990,
-              "p95Us": 241020,
+              "medianUs": 243890,
+              "p95Us": 262510,
               "ops": 3
             },
             "slate:baseline": {
               "status": "ok",
-              "medianUs": 296810,
-              "p95Us": 302370,
+              "medianUs": 306160,
+              "p95Us": 315380,
               "ops": 3
             }
           },
@@ -2340,8 +3541,8 @@
           "cells": {
             "slate-v2:current": {
               "status": "ok",
-              "medianUs": 90,
-              "p95Us": 90,
+              "medianUs": 40,
+              "p95Us": 70,
               "ops": 3
             },
             "slate:baseline": {
@@ -2357,14 +3558,14 @@
           "cells": {
             "slate-v2:current": {
               "status": "ok",
-              "medianUs": 3300,
-              "p95Us": 4220,
+              "medianUs": 2410,
+              "p95Us": 4240,
               "ops": 3
             },
             "slate:baseline": {
               "status": "ok",
-              "medianUs": 850,
-              "p95Us": 850,
+              "medianUs": 860,
+              "p95Us": 970,
               "ops": 3
             }
           },
@@ -2374,14 +3575,14 @@
           "cells": {
             "slate-v2:current": {
               "status": "ok",
-              "medianUs": 8240,
-              "p95Us": 8370,
+              "medianUs": 9150,
+              "p95Us": 9270,
               "ops": 3
             },
             "slate:baseline": {
               "status": "ok",
-              "medianUs": 12390,
-              "p95Us": 13040,
+              "medianUs": 13200,
+              "p95Us": 13240,
               "ops": 3
             }
           },
@@ -2397,14 +3598,14 @@
           "cells": {
             "slate-v2:current": {
               "status": "ok",
-              "medianUs": 6860,
-              "p95Us": 7540,
+              "medianUs": 9740,
+              "p95Us": 10740,
               "ops": 3
             },
             "slate:baseline": {
               "status": "ok",
-              "medianUs": 6970,
-              "p95Us": 7310,
+              "medianUs": 7190,
+              "p95Us": 7410,
               "ops": 3
             }
           },
@@ -2414,14 +3615,14 @@
           "cells": {
             "slate-v2:current": {
               "status": "ok",
-              "medianUs": 2340,
-              "p95Us": 2560,
+              "medianUs": 1890,
+              "p95Us": 3960,
               "ops": 3
             },
             "slate:baseline": {
               "status": "ok",
-              "medianUs": 1350,
-              "p95Us": 1360,
+              "medianUs": 1270,
+              "p95Us": 1400,
               "ops": 3
             }
           },
@@ -2431,14 +3632,14 @@
           "cells": {
             "slate-v2:current": {
               "status": "ok",
-              "medianUs": 2750,
-              "p95Us": 3080,
+              "medianUs": 2940,
+              "p95Us": 4280,
               "ops": 3
             },
             "slate:baseline": {
               "status": "ok",
-              "medianUs": 1110,
-              "p95Us": 1170,
+              "medianUs": 1140,
+              "p95Us": 1210,
               "ops": 3
             }
           },
@@ -2454,14 +3655,14 @@
           "cells": {
             "slate-v2:current": {
               "status": "ok",
-              "medianUs": 1114260,
-              "p95Us": 1152240,
+              "medianUs": 630,
+              "p95Us": 630,
               "ops": 3
             },
             "slate:baseline": {
               "status": "ok",
-              "medianUs": 2910,
-              "p95Us": 3980,
+              "medianUs": 2370,
+              "p95Us": 2830,
               "ops": 3
             }
           },
@@ -2471,14 +3672,14 @@
           "cells": {
             "slate-v2:current": {
               "status": "ok",
-              "medianUs": 8140,
-              "p95Us": 10590,
+              "medianUs": 5150,
+              "p95Us": 7150,
               "ops": 3
             },
             "slate:baseline": {
               "status": "ok",
-              "medianUs": 2760,
-              "p95Us": 3090,
+              "medianUs": 2410,
+              "p95Us": 2540,
               "ops": 3
             }
           },
@@ -2488,14 +3689,14 @@
           "cells": {
             "slate-v2:current": {
               "status": "ok",
-              "medianUs": 2760,
-              "p95Us": 5240,
+              "medianUs": 950,
+              "p95Us": 980,
               "ops": 3
             },
             "slate:baseline": {
               "status": "ok",
-              "medianUs": 1660,
-              "p95Us": 2170,
+              "medianUs": 1140,
+              "p95Us": 1800,
               "ops": 3
             }
           },
@@ -2505,14 +3706,14 @@
           "cells": {
             "slate-v2:current": {
               "status": "ok",
-              "medianUs": 16220,
-              "p95Us": 18430,
+              "medianUs": 440,
+              "p95Us": 530,
               "ops": 3
             },
             "slate:baseline": {
               "status": "ok",
-              "medianUs": 270,
-              "p95Us": 330,
+              "medianUs": 200,
+              "p95Us": 210,
               "ops": 3
             }
           },
@@ -2522,14 +3723,14 @@
           "cells": {
             "slate-v2:current": {
               "status": "ok",
-              "medianUs": 8740,
-              "p95Us": 17480,
+              "medianUs": 5210,
+              "p95Us": 7180,
               "ops": 3
             },
             "slate:baseline": {
               "status": "ok",
-              "medianUs": 340,
-              "p95Us": 520,
+              "medianUs": 300,
+              "p95Us": 340,
               "ops": 3
             }
           },
@@ -2539,14 +3740,14 @@
           "cells": {
             "slate-v2:current": {
               "status": "ok",
-              "medianUs": 8180,
-              "p95Us": 10220,
+              "medianUs": 3430,
+              "p95Us": 3770,
               "ops": 3
             },
             "slate:baseline": {
               "status": "ok",
-              "medianUs": 2040,
-              "p95Us": 2470,
+              "medianUs": 1660,
+              "p95Us": 1880,
               "ops": 3
             }
           },
@@ -2556,14 +3757,14 @@
           "cells": {
             "slate-v2:current": {
               "status": "ok",
-              "medianUs": 157570,
-              "p95Us": 157680,
+              "medianUs": 1100,
+              "p95Us": 1250,
               "ops": 3
             },
             "slate:baseline": {
               "status": "ok",
-              "medianUs": 1120,
-              "p95Us": 2440,
+              "medianUs": 880,
+              "p95Us": 1890,
               "ops": 3
             }
           },
@@ -2573,14 +3774,14 @@
           "cells": {
             "slate-v2:current": {
               "status": "ok",
-              "medianUs": 760,
-              "p95Us": 940,
+              "medianUs": 680,
+              "p95Us": 970,
               "ops": 3
             },
             "slate:baseline": {
               "status": "ok",
-              "medianUs": 910,
-              "p95Us": 1130,
+              "medianUs": 820,
+              "p95Us": 1020,
               "ops": 3
             }
           },
@@ -2590,14 +3791,14 @@
           "cells": {
             "slate-v2:current": {
               "status": "ok",
-              "medianUs": 22750,
-              "p95Us": 24350,
+              "medianUs": 16020,
+              "p95Us": 20710,
               "ops": 3
             },
             "slate:baseline": {
               "status": "ok",
-              "medianUs": 41180,
-              "p95Us": 42560,
+              "medianUs": 33980,
+              "p95Us": 34770,
               "ops": 3
             }
           },
@@ -2607,14 +3808,14 @@
           "cells": {
             "slate-v2:current": {
               "status": "ok",
-              "medianUs": 291450,
-              "p95Us": 330270,
+              "medianUs": 650,
+              "p95Us": 740,
               "ops": 3
             },
             "slate:baseline": {
               "status": "ok",
-              "medianUs": 630,
-              "p95Us": 1100,
+              "medianUs": 480,
+              "p95Us": 910,
               "ops": 3
             }
           },
@@ -2624,14 +3825,14 @@
           "cells": {
             "slate-v2:current": {
               "status": "ok",
-              "medianUs": 4590,
-              "p95Us": 7960,
+              "medianUs": 170,
+              "p95Us": 190,
               "ops": 3
             },
             "slate:baseline": {
               "status": "ok",
               "medianUs": 20,
-              "p95Us": 20,
+              "p95Us": 40,
               "ops": 3
             }
           },
@@ -2641,14 +3842,14 @@
           "cells": {
             "slate-v2:current": {
               "status": "ok",
-              "medianUs": 13110,
-              "p95Us": 13510,
+              "medianUs": 580,
+              "p95Us": 620,
               "ops": 3
             },
             "slate:baseline": {
               "status": "ok",
-              "medianUs": 360,
-              "p95Us": 1160,
+              "medianUs": 270,
+              "p95Us": 1020,
               "ops": 3
             }
           },
@@ -2658,14 +3859,14 @@
           "cells": {
             "slate-v2:current": {
               "status": "ok",
-              "medianUs": 8650,
-              "p95Us": 9310,
+              "medianUs": 8920,
+              "p95Us": 11860,
               "ops": 3
             },
             "slate:baseline": {
               "status": "ok",
-              "medianUs": 1100,
-              "p95Us": 1230,
+              "medianUs": 890,
+              "p95Us": 960,
               "ops": 3
             }
           },
@@ -2675,14 +3876,14 @@
           "cells": {
             "slate-v2:current": {
               "status": "ok",
-              "medianUs": 130,
-              "p95Us": 190,
+              "medianUs": 120,
+              "p95Us": 140,
               "ops": 3
             },
             "slate:baseline": {
               "status": "ok",
               "medianUs": 10,
-              "p95Us": 20,
+              "p95Us": 10,
               "ops": 3
             }
           },
@@ -2692,14 +3893,14 @@
           "cells": {
             "slate-v2:current": {
               "status": "ok",
-              "medianUs": 28960,
-              "p95Us": 32410,
+              "medianUs": 22890,
+              "p95Us": 23530,
               "ops": 3
             },
             "slate:baseline": {
               "status": "ok",
-              "medianUs": 2930,
-              "p95Us": 3280,
+              "medianUs": 2570,
+              "p95Us": 7070,
               "ops": 3
             }
           },
@@ -2715,15 +3916,15 @@
           "cells": {
             "slate-v2:current": {
               "status": "ok",
-              "medianUs": 12310,
-              "p95Us": 13530,
-              "ops": 3
+              "medianUs": 800,
+              "p95Us": 4070,
+              "ops": 15
             },
             "slate:baseline": {
               "status": "ok",
-              "medianUs": 6230,
-              "p95Us": 6620,
-              "ops": 3
+              "medianUs": 5930,
+              "p95Us": 7870,
+              "ops": 15
             }
           },
           "fixture": "blocks-5000/typeOps-20/fragmentRedoMs"
@@ -2732,15 +3933,15 @@
           "cells": {
             "slate-v2:current": {
               "status": "ok",
-              "medianUs": 11390,
-              "p95Us": 12170,
-              "ops": 3
+              "medianUs": 680,
+              "p95Us": 1080,
+              "ops": 15
             },
             "slate:baseline": {
               "status": "ok",
-              "medianUs": 2100,
-              "p95Us": 2100,
-              "ops": 3
+              "medianUs": 2210,
+              "p95Us": 2480,
+              "ops": 15
             }
           },
           "fixture": "blocks-5000/typeOps-20/fragmentUndoMs"
@@ -2749,15 +3950,15 @@
           "cells": {
             "slate-v2:current": {
               "status": "ok",
-              "medianUs": 420,
-              "p95Us": 500,
-              "ops": 3
+              "medianUs": 120,
+              "p95Us": 150,
+              "ops": 15
             },
             "slate:baseline": {
               "status": "ok",
-              "medianUs": 260,
-              "p95Us": 380,
-              "ops": 3
+              "medianUs": 240,
+              "p95Us": 470,
+              "ops": 15
             }
           },
           "fixture": "blocks-5000/typeOps-20/typingRedoMs"
@@ -2766,15 +3967,15 @@
           "cells": {
             "slate-v2:current": {
               "status": "ok",
-              "medianUs": 710,
-              "p95Us": 4680,
-              "ops": 3
+              "medianUs": 180,
+              "p95Us": 280,
+              "ops": 15
             },
             "slate:baseline": {
               "status": "ok",
-              "medianUs": 370,
-              "p95Us": 480,
-              "ops": 3
+              "medianUs": 390,
+              "p95Us": 620,
+              "ops": 15
             }
           },
           "fixture": "blocks-5000/typeOps-20/typingUndoMs"
@@ -3238,7 +4439,7 @@
       "fixture": "richtext/applies-toolbar-alignment-from-browser-target-even-when-model-selection-already-has-alignment",
       "library": "slate:browser-replay",
       "medianUs": null,
-      "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=3788; suite=On richtext example; family=toolbar-formatting",
+      "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=3806; suite=On richtext example; family=toolbar-formatting",
       "ops": 0,
       "p95Us": null,
       "status": "coverage-gap"
@@ -3248,7 +4449,7 @@
       "fixture": "richtext/applies-toolbar-bold-to-the-browser-selected-text",
       "library": "slate:browser-replay",
       "medianUs": null,
-      "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=3514; suite=On richtext example; family=toolbar-formatting",
+      "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=3532; suite=On richtext example; family=toolbar-formatting",
       "ops": 0,
       "p95Us": null,
       "status": "coverage-gap"
@@ -3258,7 +4459,7 @@
       "fixture": "richtext/applies-toolbar-heading-from-browser-target-even-when-model-selection-is-already-heading",
       "library": "slate:browser-replay",
       "medianUs": null,
-      "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=3359; suite=On richtext example; family=toolbar-formatting",
+      "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=3377; suite=On richtext example; family=toolbar-formatting",
       "ops": 0,
       "p95Us": null,
       "status": "coverage-gap"
@@ -3268,7 +4469,7 @@
       "fixture": "richtext/applies-toolbar-heading-to-the-browser-selected-paragraph",
       "library": "slate:browser-replay",
       "medianUs": null,
-      "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=3167; suite=On richtext example; family=toolbar-formatting",
+      "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=3185; suite=On richtext example; family=toolbar-formatting",
       "ops": 0,
       "p95Us": null,
       "status": "coverage-gap"
@@ -3278,7 +4479,7 @@
       "fixture": "richtext/applies-toolbar-list-from-browser-target-even-when-model-selection-already-has-list",
       "library": "slate:browser-replay",
       "medianUs": null,
-      "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=3837; suite=On richtext example; family=toolbar-formatting",
+      "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=3855; suite=On richtext example; family=toolbar-formatting",
       "ops": 0,
       "p95Us": null,
       "status": "coverage-gap"
@@ -3368,7 +4569,7 @@
       "fixture": "richtext/does-not-duplicate-native-input-handling-after-route-remount",
       "library": "slate:browser-replay",
       "medianUs": null,
-      "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=4838; suite=On richtext example; family=native-input",
+      "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=4856; suite=On richtext example; family=native-input",
       "ops": 0,
       "p95Us": null,
       "status": "coverage-gap"
@@ -3388,7 +4589,7 @@
       "fixture": "richtext/handles-empty-block-quote-enter-behavior-from-the-browser",
       "library": "slate:browser-replay",
       "medianUs": null,
-      "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=3494; suite=On richtext example; family=general-browser-editing",
+      "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=3512; suite=On richtext example; family=general-browser-editing",
       "ops": 0,
       "p95Us": null,
       "status": "coverage-gap"
@@ -3398,7 +4599,7 @@
       "fixture": "richtext/handles-heading-enter-behavior-from-the-browser",
       "library": "slate:browser-replay",
       "medianUs": null,
-      "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=3444; suite=On richtext example; family=toolbar-formatting",
+      "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=3462; suite=On richtext example; family=toolbar-formatting",
       "ops": 0,
       "p95Us": null,
       "status": "coverage-gap"
@@ -3408,7 +4609,7 @@
       "fixture": "richtext/ignores-a-native-selection-that-starts-outside-the-editor-and-ends-inside-it",
       "library": "slate:browser-replay",
       "medianUs": null,
-      "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=3304; suite=On richtext example; family=selection-navigation",
+      "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=3322; suite=On richtext example; family=selection-navigation",
       "ops": 0,
       "p95Us": null,
       "status": "coverage-gap"
@@ -3418,7 +4619,7 @@
       "fixture": "richtext/imports-programmatic-dom-selection-through-explicit-browser-handle",
       "library": "slate:browser-replay",
       "medianUs": null,
-      "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=4223; suite=On richtext example; family=selection-navigation",
+      "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=4241; suite=On richtext example; family=selection-navigation",
       "ops": 0,
       "p95Us": null,
       "status": "coverage-gap"
@@ -3528,7 +4729,7 @@
       "fixture": "richtext/keeps-caret-editable-after-plain-text-paste-over-selected-range",
       "library": "slate:browser-replay",
       "medianUs": null,
-      "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=4774; suite=On richtext example; family=clipboard-paste",
+      "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=4792; suite=On richtext example; family=clipboard-paste",
       "ops": 0,
       "p95Us": null,
       "status": "coverage-gap"
@@ -3598,7 +4799,7 @@
       "fixture": "richtext/keeps-selected-word-expanded-after-toggling-toolbar-bold-off",
       "library": "slate:browser-replay",
       "medianUs": null,
-      "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=3567; suite=On richtext example; family=toolbar-formatting",
+      "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=3585; suite=On richtext example; family=toolbar-formatting",
       "ops": 0,
       "p95Us": null,
       "status": "coverage-gap"
@@ -3618,7 +4819,7 @@
       "fixture": "richtext/keeps-selection-synchronized-after-browser-line-extension",
       "library": "slate:browser-replay",
       "medianUs": null,
-      "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=4454; suite=On richtext example; family=selection-navigation",
+      "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=4472; suite=On richtext example; family=selection-navigation",
       "ops": 0,
       "p95Us": null,
       "status": "coverage-gap"
@@ -3628,7 +4829,7 @@
       "fixture": "richtext/keeps-selection-synchronized-after-browser-word-movement",
       "library": "slate:browser-replay",
       "medianUs": null,
-      "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=4353; suite=On richtext example; family=selection-navigation",
+      "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=4371; suite=On richtext example; family=selection-navigation",
       "ops": 0,
       "p95Us": null,
       "status": "coverage-gap"
@@ -3638,7 +4839,7 @@
       "fixture": "richtext/keeps-the-first-heading-unchanged-on-backspace-at-the-start",
       "library": "slate:browser-replay",
       "medianUs": null,
-      "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=3414; suite=On richtext example; family=toolbar-formatting",
+      "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=3432; suite=On richtext example; family=toolbar-formatting",
       "ops": 0,
       "p95Us": null,
       "status": "coverage-gap"
@@ -3648,7 +4849,7 @@
       "fixture": "richtext/keeps-the-visual-caret-after-browser-insertion-at-the-selected-text-end",
       "library": "slate:browser-replay",
       "medianUs": null,
-      "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=4603; suite=On richtext example; family=selection-navigation",
+      "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=4621; suite=On richtext example; family=selection-navigation",
       "ops": 0,
       "p95Us": null,
       "status": "coverage-gap"
@@ -3658,7 +4859,7 @@
       "fixture": "richtext/keeps-the-visual-caret-after-browser-insertion-before-trailing-punctuation",
       "library": "slate:browser-replay",
       "medianUs": null,
-      "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=4631; suite=On richtext example; family=selection-navigation",
+      "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=4649; suite=On richtext example; family=selection-navigation",
       "ops": 0,
       "p95Us": null,
       "status": "coverage-gap"
@@ -3668,7 +4869,7 @@
       "fixture": "richtext/keeps-the-visual-caret-after-browser-insertion-inside-a-text-leaf",
       "library": "slate:browser-replay",
       "medianUs": null,
-      "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=4661; suite=On richtext example; family=selection-navigation",
+      "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=4679; suite=On richtext example; family=selection-navigation",
       "ops": 0,
       "p95Us": null,
       "status": "coverage-gap"
@@ -3678,7 +4879,7 @@
       "fixture": "richtext/keeps-warm-toolbar-mark-selection-usable-through-arrows-without-reload",
       "library": "slate:browser-replay",
       "medianUs": null,
-      "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=3610; suite=On richtext example; family=toolbar-formatting",
+      "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=3628; suite=On richtext example; family=toolbar-formatting",
       "ops": 0,
       "p95Us": null,
       "status": "coverage-gap"
@@ -3738,7 +4939,7 @@
       "fixture": "richtext/records-core-command-metadata-for-text-input-and-delete",
       "library": "slate:browser-replay",
       "medianUs": null,
-      "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=3991; suite=On richtext example; family=delete-backspace",
+      "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=4009; suite=On richtext example; family=delete-backspace",
       "ops": 0,
       "p95Us": null,
       "status": "coverage-gap"
@@ -3778,7 +4979,7 @@
       "fixture": "richtext/records-repair-trace-with-observable-dom-and-model-selection",
       "library": "slate:browser-replay",
       "medianUs": null,
-      "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=4288; suite=On richtext example; family=selection-navigation",
+      "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=4306; suite=On richtext example; family=selection-navigation",
       "ops": 0,
       "p95Us": null,
       "status": "coverage-gap"
@@ -3788,7 +4989,7 @@
       "fixture": "richtext/records-selectionchange-and-repair-kernel-results",
       "library": "slate:browser-replay",
       "medianUs": null,
-      "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=4124; suite=On richtext example; family=selection-navigation",
+      "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=4142; suite=On richtext example; family=selection-navigation",
       "ops": 0,
       "p95Us": null,
       "status": "coverage-gap"
@@ -3798,7 +4999,7 @@
       "fixture": "richtext/removes-the-current-block-after-browser-triple-click-and-backspace",
       "library": "slate:browser-replay",
       "medianUs": null,
-      "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=4564; suite=On richtext example; family=selection-navigation",
+      "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=4582; suite=On richtext example; family=selection-navigation",
       "ops": 0,
       "p95Us": null,
       "status": "coverage-gap"
@@ -3808,7 +5009,7 @@
       "fixture": "richtext/repairs-dom-after-mac-keyboard-undo",
       "library": "slate:browser-replay",
       "medianUs": null,
-      "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=4723; suite=On richtext example; family=undo-history",
+      "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=4741; suite=On richtext example; family=undo-history",
       "ops": 0,
       "p95Us": null,
       "status": "coverage-gap"
@@ -3908,7 +5109,7 @@
       "fixture": "richtext/runs-toolbar-block-commands-on-pointerdown",
       "library": "slate:browser-replay",
       "medianUs": null,
-      "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=3240; suite=On richtext example; family=toolbar-formatting",
+      "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=3258; suite=On richtext example; family=toolbar-formatting",
       "ops": 0,
       "p95Us": null,
       "status": "coverage-gap"
@@ -3918,7 +5119,7 @@
       "fixture": "richtext/selects-the-current-block-on-browser-triple-click",
       "library": "slate:browser-replay",
       "medianUs": null,
-      "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=4523; suite=On richtext example; family=selection-navigation",
+      "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=4541; suite=On richtext example; family=selection-navigation",
       "ops": 0,
       "p95Us": null,
       "status": "coverage-gap"
@@ -3948,7 +5149,7 @@
       "fixture": "richtext/toggles-an-empty-paragraph-into-and-out-of-a-toolbar-list",
       "library": "slate:browser-replay",
       "medianUs": null,
-      "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=3945; suite=On richtext example; family=toolbar-formatting",
+      "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=3963; suite=On richtext example; family=toolbar-formatting",
       "ops": 0,
       "p95Us": null,
       "status": "coverage-gap"
@@ -3958,7 +5159,7 @@
       "fixture": "richtext/toggles-toolbar-lists-off-and-converts-between-list-types",
       "library": "slate:browser-replay",
       "medianUs": null,
-      "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=3889; suite=On richtext example; family=toolbar-formatting",
+      "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=3907; suite=On richtext example; family=toolbar-formatting",
       "ops": 0,
       "p95Us": null,
       "status": "coverage-gap"
@@ -3978,7 +5179,7 @@
       "fixture": "richtext/undo-restores-deleted-selected-text",
       "library": "slate:browser-replay",
       "medianUs": null,
-      "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=4755; suite=On richtext example; family=delete-backspace",
+      "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=4773; suite=On richtext example; family=delete-backspace",
       "ops": 0,
       "p95Us": null,
       "status": "coverage-gap"
@@ -3998,7 +5199,7 @@
       "fixture": "richtext/undoes-inserted-text",
       "library": "slate:browser-replay",
       "medianUs": null,
-      "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=4691; suite=On richtext example; family=undo-history",
+      "note": "Slate does not list this Chromium browser replay fixture; referenceFile=integration/examples/richtext.test.ts; referenceLine=4709; suite=On richtext example; family=undo-history",
       "ops": 0,
       "p95Us": null,
       "status": "coverage-gap"
@@ -4095,6 +5296,6 @@
     }
   ],
   "name": "rich-text-editor comparison results",
-  "rowCount": 463,
-  "statusCounts": { "coverage-gap": 130, "ok": 333 }
+  "rowCount": 653,
+  "statusCounts": { "coverage-gap": 130, "ok": 523 }
 }

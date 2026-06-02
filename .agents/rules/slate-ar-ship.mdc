@@ -42,11 +42,16 @@ Plain `slate-ar-ship` is allowed to run non-mutating readiness work
 commit, branch, clean, push, or open a PR unless the user explicitly asks for
 that mutation.
 
+Plain `slate-ar-ship` must keep the operator on the source branch, normally
+`v2`. It must not create `autoresearch-review/*` branches. Review branches are
+an opt-in expert action, not part of the default ship flow.
+
 After a `READY TO COMMIT` pause, a short confirmation like "yes", "go",
 "commit", or "ok" is explicit approval to continue the same `slate-ar-ship`
 flow. Do not require parameters. That approval covers committing the reviewed
-current-tree work and rerunning current-tree finalization. It does not approve
-push, PR, branch cleanup, or destructive cleanup.
+current-tree work and rerunning current-tree readiness previews. It does not
+approve review-branch creation, push, PR, branch cleanup, or destructive
+cleanup.
 
 ## Current Tree
 
@@ -58,6 +63,11 @@ Use current-tree finalization when:
 
 Do not pretend current-tree finalization is a commit. It is review-shape and
 evidence preparation.
+
+For the default flow, "current-tree finalization" means
+`finalize-current-tree --exclude-session-artifacts` preview/readiness only. Do
+not run `finalize-autoresearch.mjs <plan>` unless the user explicitly asks to
+create review branches.
 
 ## Pre-Commit Current-Tree Review
 
@@ -75,8 +85,8 @@ Run this pre-commit path:
 5. only after review/proof is clean or blocked with accepted residual risk,
    print `READY TO COMMIT` and pause;
 6. after confirmation, delegate commit mechanics to `git-commit`;
-7. after commit, rerun `slate-ar-finalize current-tree` so the finalizer sees a
-   clean, exact `HEAD`.
+7. after commit, rerun `slate-ar-finalize current-tree` as a preview only so
+   readiness sees a clean, exact `HEAD`.
 
 `slate-ar-ship commit current-tree` is still valid, but it is not the preferred
 DX. Treat it the same as a post-pause commit confirmation.
@@ -96,6 +106,9 @@ DX. Treat it the same as a post-pause commit confirmation.
 - If uncommitted session artifacts would keep the source branch dirty after the
   review-unit commit, stash them before rerunning current-tree finalization and
   report that stash. Do not delete them.
+- Do not create `autoresearch-review/*` review branches after commit unless the
+  user explicitly asks for review branches. A clean current-tree preview is
+  enough for the default handoff.
 - Push and PR still require explicit user approval after finalization.
 
 ## Handoff
@@ -106,5 +119,5 @@ Report:
 - finalization warnings;
 - gates and autoreview status;
 - `READY TO COMMIT` when the next step is commit approval;
-- after commit/finalization, whether push/PR approval is still needed;
+- after commit/readiness preview, whether push/PR approval is still needed;
 - blockers or residual risks.

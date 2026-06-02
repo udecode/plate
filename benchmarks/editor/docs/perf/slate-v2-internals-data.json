@@ -14,10 +14,10 @@
     "slate-core-transaction-current": 1,
     "slate-history-retained-memory": 1,
     "slate-react-active-typing-breakdown": 54,
-    "slate-react-huge-document-overlays": 30,
+    "slate-react-huge-document-overlays": 37,
     "slate-react-rerender-breadth": 58
   },
-  "generatedAt": "2026-05-29T22:32:11.758Z",
+  "generatedAt": "2026-06-02T11:46:11.953Z",
   "groups": [
     {
       "category": "slate-react-rerender-breadth",
@@ -438,8 +438,8 @@
           "cells": {
             "slate-v2:react-overlays": {
               "status": "ok",
-              "medianUs": 2440,
-              "p95Us": 4380,
+              "medianUs": 2240,
+              "p95Us": 2500,
               "ops": 5
             }
           },
@@ -458,19 +458,23 @@
           "fixture": "activeEditAfterOverlay/farTextRenders"
         },
         {
-          "cells": { "slate-v2:react-overlays": { "status": "ok", "ops": 40 } },
+          "cells": {
+            "slate-v2:react-overlays": { "status": "ok", "ops": 100 }
+          },
           "fixture": "activeEditAfterOverlay/mountedTextAfter"
         },
         {
-          "cells": { "slate-v2:react-overlays": { "status": "ok", "ops": 40 } },
+          "cells": {
+            "slate-v2:react-overlays": { "status": "ok", "ops": 100 }
+          },
           "fixture": "activeEditAfterOverlay/mountedTextBefore"
         },
         {
-          "cells": { "slate-v2:react-overlays": { "status": "ok", "ops": 8 } },
+          "cells": { "slate-v2:react-overlays": { "status": "ok", "ops": 98 } },
           "fixture": "activeEditAfterOverlay/partialDOMCountAfter"
         },
         {
-          "cells": { "slate-v2:react-overlays": { "status": "ok", "ops": 8 } },
+          "cells": { "slate-v2:react-overlays": { "status": "ok", "ops": 98 } },
           "fixture": "activeEditAfterOverlay/partialDOMCountBefore"
         },
         {
@@ -494,30 +498,34 @@
           "fixture": "overlayToggle/farProjectionRenders"
         },
         {
-          "cells": { "slate-v2:react-overlays": { "status": "ok", "ops": 40 } },
+          "cells": {
+            "slate-v2:react-overlays": { "status": "ok", "ops": 100 }
+          },
           "fixture": "overlayToggle/mountedTextAfter"
         },
         {
-          "cells": { "slate-v2:react-overlays": { "status": "ok", "ops": 40 } },
+          "cells": {
+            "slate-v2:react-overlays": { "status": "ok", "ops": 100 }
+          },
           "fixture": "overlayToggle/mountedTextBefore"
         },
         {
           "cells": {
             "slate-v2:react-overlays": {
               "status": "ok",
-              "medianUs": 2830,
-              "p95Us": 3340,
+              "medianUs": 5110,
+              "p95Us": 5430,
               "ops": 5
             }
           },
           "fixture": "overlayToggle/overlayToggleMs"
         },
         {
-          "cells": { "slate-v2:react-overlays": { "status": "ok", "ops": 8 } },
+          "cells": { "slate-v2:react-overlays": { "status": "ok", "ops": 98 } },
           "fixture": "overlayToggle/partialDOMCountAfter"
         },
         {
-          "cells": { "slate-v2:react-overlays": { "status": "ok", "ops": 8 } },
+          "cells": { "slate-v2:react-overlays": { "status": "ok", "ops": 98 } },
           "fixture": "overlayToggle/partialDOMCountBefore"
         },
         {
@@ -525,19 +533,30 @@
           "fixture": "overlayToggle/projectionRecomputeCount"
         },
         {
-          "cells": { "slate-v2:react-overlays": { "status": "ok", "ops": 60 } },
+          "cells": {
+            "slate-v2:react-overlays": {
+              "status": "ok",
+              "medianUs": 35030,
+              "p95Us": 55140,
+              "ops": 5
+            }
+          },
+          "fixture": "partialDOMPromotion/coldPromotionMs"
+        },
+        {
+          "cells": { "slate-v2:react-overlays": { "status": "ok", "ops": 50 } },
           "fixture": "partialDOMPromotion/mountedTextAfter"
         },
         {
-          "cells": { "slate-v2:react-overlays": { "status": "ok", "ops": 40 } },
+          "cells": { "slate-v2:react-overlays": { "status": "ok", "ops": 50 } },
           "fixture": "partialDOMPromotion/mountedTextBefore"
         },
         {
-          "cells": { "slate-v2:react-overlays": { "status": "ok", "ops": 7 } },
+          "cells": { "slate-v2:react-overlays": { "status": "ok", "ops": 99 } },
           "fixture": "partialDOMPromotion/partialDOMCountAfter"
         },
         {
-          "cells": { "slate-v2:react-overlays": { "status": "ok", "ops": 8 } },
+          "cells": { "slate-v2:react-overlays": { "status": "ok", "ops": 99 } },
           "fixture": "partialDOMPromotion/partialDOMCountBefore"
         },
         {
@@ -548,12 +567,40 @@
           "cells": {
             "slate-v2:react-overlays": {
               "status": "ok",
-              "medianUs": 14000,
-              "p95Us": 23090,
+              "medianUs": 24370,
+              "p95Us": 39740,
               "ops": 5
             }
           },
           "fixture": "partialDOMPromotion/promotionMs"
+        },
+        {
+          "cells": { "slate-v2:react-overlays": { "status": "ok", "ops": 0 } },
+          "fixture": "partialDOMPromotion/renderElementCount"
+        },
+        {
+          "cells": { "slate-v2:react-overlays": { "status": "ok", "ops": 53 } },
+          "fixture": "partialDOMPromotion/renderLeafCount"
+        },
+        {
+          "cells": { "slate-v2:react-overlays": { "status": "ok", "ops": 1 } },
+          "fixture": "partialDOMPromotion/renderRootPlanCount"
+        },
+        {
+          "cells": {
+            "slate-v2:react-overlays": { "status": "ok", "ops": 120 }
+          },
+          "fixture": "partialDOMPromotion/renderSelectorCount"
+        },
+        {
+          "cells": { "slate-v2:react-overlays": { "status": "ok", "ops": 50 } },
+          "fixture": "partialDOMPromotion/renderTextCount"
+        },
+        {
+          "cells": {
+            "slate-v2:react-overlays": { "status": "ok", "ops": 105 }
+          },
+          "fixture": "partialDOMPromotion/renderTotalCount"
         },
         {
           "cells": { "slate-v2:react-overlays": { "status": "ok", "ops": 2 } },
@@ -561,7 +608,7 @@
         },
         {
           "cells": {
-            "slate-v2:react-overlays": { "status": "ok", "ops": 100 }
+            "slate-v2:react-overlays": { "status": "ok", "ops": 2500 }
           },
           "fixture": "partialDOMPromotion/selectionAnchorTopLevel"
         }
@@ -599,8 +646,8 @@
           "cells": {
             "slate-v2:react-active-typing": {
               "status": "ok",
-              "medianUs": 3310,
-              "p95Us": 3600,
+              "medianUs": 2400,
+              "p95Us": 3010,
               "ops": 3
             }
           },
@@ -622,8 +669,8 @@
           "cells": {
             "slate-v2:react-active-typing": {
               "status": "ok",
-              "medianUs": 213070,
-              "p95Us": 214820,
+              "medianUs": 95200,
+              "p95Us": 102070,
               "ops": 3
             }
           },
@@ -650,8 +697,8 @@
           "cells": {
             "slate-v2:react-active-typing": {
               "status": "ok",
-              "medianUs": 165890,
-              "p95Us": 169780,
+              "medianUs": 111230,
+              "p95Us": 141500,
               "ops": 3
             }
           },
@@ -661,8 +708,8 @@
           "cells": {
             "slate-v2:react-active-typing": {
               "status": "ok",
-              "medianUs": 157160,
-              "p95Us": 162040,
+              "medianUs": 104050,
+              "p95Us": 134530,
               "ops": 3
             }
           },
@@ -696,8 +743,8 @@
           "cells": {
             "slate-v2:react-active-typing": {
               "status": "ok",
-              "medianUs": 3040,
-              "p95Us": 3520,
+              "medianUs": 1240,
+              "p95Us": 1650,
               "ops": 3
             }
           },
@@ -730,8 +777,8 @@
           "cells": {
             "slate-v2:react-active-typing": {
               "status": "ok",
-              "medianUs": 129780,
-              "p95Us": 131240,
+              "medianUs": 52960,
+              "p95Us": 55330,
               "ops": 3
             }
           },
@@ -747,8 +794,8 @@
           "cells": {
             "slate-v2:react-active-typing": {
               "status": "ok",
-              "medianUs": 198160,
-              "p95Us": 206020,
+              "medianUs": 79220,
+              "p95Us": 80210,
               "ops": 3
             }
           },
@@ -758,8 +805,8 @@
           "cells": {
             "slate-v2:react-active-typing": {
               "status": "ok",
-              "medianUs": 191250,
-              "p95Us": 197090,
+              "medianUs": 75210,
+              "p95Us": 76010,
               "ops": 3
             }
           },
@@ -793,8 +840,8 @@
           "cells": {
             "slate-v2:react-active-typing": {
               "status": "ok",
-              "medianUs": 930,
-              "p95Us": 930,
+              "medianUs": 580,
+              "p95Us": 590,
               "ops": 3
             }
           },
@@ -844,8 +891,8 @@
           "cells": {
             "slate-v2:react-active-typing": {
               "status": "ok",
-              "medianUs": 174710,
-              "p95Us": 189060,
+              "medianUs": 76690,
+              "p95Us": 86670,
               "ops": 3
             }
           },
@@ -855,8 +902,8 @@
           "cells": {
             "slate-v2:react-active-typing": {
               "status": "ok",
-              "medianUs": 170620,
-              "p95Us": 184550,
+              "medianUs": 74320,
+              "p95Us": 84430,
               "ops": 3
             }
           },
@@ -878,8 +925,8 @@
           "cells": {
             "slate-v2:react-active-typing": {
               "status": "ok",
-              "medianUs": 1050,
-              "p95Us": 4840,
+              "medianUs": 580,
+              "p95Us": 800,
               "ops": 3
             }
           },
@@ -895,8 +942,8 @@
           "cells": {
             "slate-v2:react-active-typing": {
               "status": "ok",
-              "medianUs": 39910,
-              "p95Us": 40310,
+              "medianUs": 23830,
+              "p95Us": 25370,
               "ops": 3
             }
           },
@@ -936,8 +983,8 @@
           "cells": {
             "slate-v2:react-active-typing": {
               "status": "ok",
-              "medianUs": 3020,
-              "p95Us": 3190,
+              "medianUs": 1540,
+              "p95Us": 1640,
               "ops": 3
             }
           },
@@ -987,8 +1034,8 @@
           "cells": {
             "slate-v2:react-active-typing": {
               "status": "ok",
-              "medianUs": 189890,
-              "p95Us": 199100,
+              "medianUs": 90410,
+              "p95Us": 93370,
               "ops": 3
             }
           },
@@ -998,8 +1045,8 @@
           "cells": {
             "slate-v2:react-active-typing": {
               "status": "ok",
-              "medianUs": 182650,
-              "p95Us": 191270,
+              "medianUs": 86420,
+              "p95Us": 89490,
               "ops": 3
             }
           },
@@ -2746,6 +2793,6 @@
     }
   ],
   "name": "slate-v2 internal proof results",
-  "rowCount": 326,
-  "statusCounts": { "ok": 324, "optional-missing-artifact": 2 }
+  "rowCount": 333,
+  "statusCounts": { "ok": 331, "optional-missing-artifact": 2 }
 }

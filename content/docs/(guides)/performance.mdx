@@ -1,228 +1,79 @@
 ---
 title: Performance
-description: Plate vs Slate on real large-document workloads, with reproducible benchmarks and explicit caveats.
+description: Latest Plate vs Slate large-document benchmark snapshot and how to rerun it locally.
 ---
 
-If you are worried that Plate adds a heavy framework tax on top of Slate, the
-current answer is: **it depends on the workload shape**.
+Performance is about whether the editor stays usable when the document gets
+large. This page shows the latest 10k Plate vs Slate snapshot from the docs
+benchmark route and the command that reproduces it locally.
 
-On the maintained public large-document harness:
+## Latest Snapshot
 
-- `10k` mixed-document mount: Plate core `475.61 ms` vs Slate `529.58 ms`
-- `10k` mixed-document typing: Plate core `15.04 ms` vs Slate `15.28 ms`
-- `10k` mixed-document mount with the basic plugin bundle: Plate `481.72 ms` vs Slate `529.58 ms`
-- `10k` code-heavy mount: Plate code-only `500.88 ms` vs Slate `518.53 ms`
+This snapshot was captured on June 2, 2026 from the docs benchmark route in
+headless Chrome. The benchmark uses a 10,000-block document with chunked
+rendering enabled.
 
-On the richer standalone markdown benchmark in `benchmarks/editor`:
-
-- `10k` rich-markdown mount: Plate `972.70 ms` vs Slate `480.60 ms`
-- `10k` middle typing: Plate `50.00 ms` vs Slate `50.10 ms`
-- `10k` plain-text paste: Plate `49.90 ms` vs Slate `50.00 ms`
-
-That means two things at once:
-
-- Plate does **not** pay a large tax on the simpler chunked large-document
-  harness used in the docs perf route
-- Slate is still materially faster on the richer `10k` markdown mount profile
-  in the standalone benchmark lab
-
-## What This Guide Measures
-
-This guide answers one specific question:
-
-> How much overhead does Plate add over Slate on equivalent editor workloads?
-
-That is why the main public benchmark here is **Plate vs Slate**.
-
-But there are two different benchmark surfaces in this repo:
-
-- the public `apps/www` harness, which uses simplified large-document fixtures
-  and chunked rendering controls
-- the standalone `benchmarks/editor` lab, which is moving toward a fuller
-  markdown editor profile
-
-It does **not** try to answer:
-
-- whether Plate is faster than every other editor
-- whether plugin-rich Plate setups are directly comparable to unrelated editor
-  architectures
-- whether one synthetic score can summarize editor performance honestly
-
-## Comparison Points
-
-The public benchmark focuses on a small set of workload families.
-
-### 1. Large-document mount
-
-This measures the cost of creating and mounting a real editor surface with a
-large document.
-
-Why it matters:
-
-- startup cost is user-visible
-- large docs expose wasted render work quickly
-- framework overhead shows up here before smaller interactions hide it
-
-### 2. Typing latency
-
-This measures how quickly the editor responds to text changes under a large
-document workload.
-
-Why it matters:
-
-- mount can be acceptable while typing still feels bad
-- chunking and render breadth matter here more than raw editor creation cost
-
-### 3. Code-heavy mount
-
-This isolates a harder mark/render lane than plain paragraphs.
-
-Why it matters:
-
-- plain paragraphs are not the whole editor story
-- a benchmark that only measures the easiest path is a sales pitch, not a
-  benchmark
-
-## Latest Public Snapshot
-
-These numbers come from the public preset on the maintained benchmark harness:
-
-- workload size: `10,000` blocks
-- chunking: on
-- chunk size: `1000`
-- environment: production-grade benchmark route
-
-This public snapshot is intentionally narrower than the standalone benchmark
-lab. It is a simpler large-document overhead read, not the whole editor story.
-
-### Mixed Document
-
-This workload uses a large mixed block document and is the main “how much
-overhead does Plate add?” lane.
-
-| Scenario | Plate | Slate | Delta vs Slate |
+| Workload | Slate | Plate core | Plate with basic plugins |
 | --- | ---: | ---: | ---: |
-| Core mount | `475.61 ms` | `529.58 ms` | `-10.2%` |
-| Core + `nodeId` mount | `515.44 ms` | `529.58 ms` | `-2.7%` |
-| Core + seeded `nodeId` mount | `476.50 ms` | `529.58 ms` | `-10.0%` |
-| Basic plugin bundle mount | `481.72 ms` | `529.58 ms` | `-9.0%` |
-| Core typing latency | `15.04 ms` | `15.28 ms` | `-1.6%` |
-| Core + `nodeId` typing latency | `15.00 ms` | `15.28 ms` | `-1.8%` |
-| Basic plugin bundle typing latency | `15.19 ms` | `15.28 ms` | `-0.6%` |
+| Open a mixed document | `524 ms` | `866 ms` | `881 ms` |
+| Type in a mixed document | `26 ms` | `43 ms` | `35 ms` |
+| Open a code-heavy document | `526 ms` | `837 ms` | `1101 ms` |
 
-Take:
+Read this as a workload snapshot, not as a universal editor score. Mount time,
+typing latency, plugin cost, and document shape are different performance
+questions.
 
-- Plate core is currently faster than Slate on the main `10k` mixed mount lane
-- Plate stays near or better than Slate when `nodeId` is enabled
-- the basic plugin bundle does not turn Plate into a mount-time disaster
-- typing latency is effectively tied
+## Run The Benchmark
 
-### Code-Heavy Document
+Start the docs app:
 
-This workload is narrower. It answers a different question:
+<CodeBlockCommand
+  __bunCommand__="bun run --filter www dev"
+  __npmCommand__="npm run dev --workspace www"
+  __pnpmCommand__="pnpm --filter www dev"
+  __yarnCommand__="yarn workspace www dev"
+/>
 
-> Does Plate still stay competitive once the document is dominated by code-mark
-> rendering?
+Then run the public editor benchmark in another terminal:
 
-| Scenario | Plate | Slate | Delta vs Slate |
-| --- | ---: | ---: | ---: |
-| Core mount | `482.90 ms` | `518.53 ms` | `-6.9%` |
-| Core + `nodeId` mount | `517.61 ms` | `518.53 ms` | `-0.2%` |
-| Core + seeded `nodeId` mount | `473.14 ms` | `518.53 ms` | `-8.8%` |
-| Basic plugin bundle mount | `510.37 ms` | `518.53 ms` | `-1.6%` |
-| Code-only mount | `500.88 ms` | `518.53 ms` | `-3.4%` |
+<CodeBlockCommand
+  __bunCommand__="bun run --filter www perf:editor:public"
+  __npmCommand__="npm run perf:editor:public --workspace www"
+  __pnpmCommand__="pnpm --filter www perf:editor:public"
+  __yarnCommand__="yarn workspace www perf:editor:public"
+/>
 
-Take:
+The runner writes a compact JSON summary to
+`apps/www/.tmp/editor-perf-public-summary.json`.
 
-- Plate stays competitive on a harder mark-heavy workload
-- the code-specific lane is no longer a glaring overhead story
-- `nodeId` on the unseeded code lane is basically tied with Slate, not far
-  ahead of it, which is the right way to read a real benchmark
+## What It Measures
 
-## What These Results Mean
+The benchmark keeps the public comparison small on purpose:
 
-The simple reading is:
+| Measurement | What it tells you |
+| --- | --- |
+| Opening a mixed document | The cost of mounting a large editor with normal rich-text variety. |
+| Typing in a mixed document | Whether the editor still responds under a large loaded document. |
+| Opening a code-heavy document | The cost of a harder mark-heavy rendering profile. |
 
-- Plate is not paying a meaningful framework penalty over Slate on the simpler
-  chunked large-document lanes in the public harness
-- Plate core is currently at parity or better on those public workloads
-- Plate’s extra features do not automatically imply a large overhead bill
+Plate core isolates the editor wrapper cost. Plate with basic plugins adds the
+common block and mark plugins many editors start with.
 
-The more careful reading is:
+## Read The Numbers
 
-- results depend on workload shape
-- richer markdown fixtures can produce a different winner
-- some plugin classes are still more expensive than others
-- internal performance work still matters even when the headline looks good
+Compare like with like:
 
-That second reading is why Plate keeps the benchmark harness public and the
-internal decomposition visible.
+- use mount numbers for startup cost
+- use typing numbers for interaction cost
+- use the basic plugin column when you care about a real Plate setup
+- rerun the benchmark on your machine before publishing a performance claim
 
-## What This Does Not Prove
+The raw output also includes lower-level Plate diagnostics, such as node-id
+cost. Those are useful for debugging Plate itself, but they are not the public
+story.
 
-This guide does **not** claim:
+## Source
 
-- Plate is the fastest editor overall
-- Plate beats every popular editor
-- Plate rich-plugin workloads are directly comparable to every other editor’s
-  default setup
-- one benchmark lane can summarize the whole editor
-
-It answers the narrower question well:
-
-> If you choose Plate instead of raw Slate, are you buying a large overhead
-> penalty on the simpler large-document workloads used by the public docs
-> harness?
-
-Right now, the answer there is no.
-
-On the richer standalone markdown profile, the answer is not no. Slate is
-currently faster on the `10k` mount lane.
-
-## Why This Guide Stays Focused On Slate
-
-Slate is the right primary comparison for this document because it answers the
-most common overhead question cleanly:
-
-- same lineage
-- same broad editing model
-- easiest fairness argument
-- strongest signal about the cost of Plate’s framework layer
-
-Cross-editor comparisons are still valuable, but they belong in a separate
-standalone benchmark project with a much narrower shared feature set. Trying to
- cram Plate, Slate, Lexical, ProseMirror, and Tiptap into one headline chart in
- this repo would produce prettier marketing and worse evidence.
-
-## Technical Notes
-
-The public benchmark surface is:
-
-- [editor-perf/page.tsx](/Users/zbeyens/git/plate-2/apps/www/src/app/dev/editor-perf/page.tsx)
-
-The runner is:
-
-- [run-editor-perf.mts](/Users/zbeyens/git/plate-2/apps/www/scripts/run-editor-perf.mts)
-
-The public preset is:
-
-```bash
-bun run --filter www perf:editor -- --preset public-slate-vs-plate --url http://localhost:3000/dev/editor-perf
-```
-
-Supporting performance docs:
-
-- [editor-performance-master-plan.md](/Users/zbeyens/git/plate-2/docs/performance/editor-performance-master-plan.md)
-- [plate-vs-slate-benchmarks.md](/Users/zbeyens/git/plate-2/docs/performance/plate-vs-slate-benchmarks.md)
-- [performance-benchmark-spec.md](/Users/zbeyens/git/plate-2/docs/performance/performance-benchmark-spec.md)
-- [benchmarks/editor/README.md](/Users/zbeyens/git/plate-2/benchmarks/editor/README.md)
-
-If you want the full internal story:
-
-- Plate still measures `nodeId` separately
-- Plate still measures plugin tax over Plate core
-- Plate still keeps one-off deep investigations and raw benchmark artifacts out
-  of the public guide
-
-That is intentional. The public guide should answer the user-facing question
-first and leave the deeper forensics to the technical docs.
+Use the [Huge Document](/docs/examples/huge-document) demo for manual
+inspection. The benchmark route lives at `/dev/editor-perf`, and the runner
+lives in `apps/www/scripts/run-editor-perf.mts`.

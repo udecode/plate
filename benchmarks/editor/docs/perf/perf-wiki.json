@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "generatedAt": "2026-05-29T22:32:12.036Z",
+  "generatedAt": "2026-06-02T11:46:14.609Z",
   "projectName": "plate-editor-evidence",
   "noteCount": 6,
-  "benchmarkRowCount": 835,
-  "benchmarkFixtureCount": 553,
+  "benchmarkRowCount": 1032,
+  "benchmarkFixtureCount": 668,
   "notes": [
     {
       "kind": "iteration",
@@ -106,7 +106,7 @@
     }
   ],
   "benchmarkMap": {
-    "rowCount": 835,
+    "rowCount": 1032,
     "fixtures": [
       {
         "category": "contract",
@@ -4107,6 +4107,15 @@
       },
       {
         "category": "slate-react-huge-document-browser-trace",
+        "fixture": "middleBlock/burstToPaintMs",
+        "rows": 2,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 2
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
         "fixture": "middleBlock/domTags/domNodeCount",
         "rows": 3,
         "sources": ["benchmarks/results/rich-text-editors-latest.json"],
@@ -4179,6 +4188,474 @@
       },
       {
         "category": "slate-react-huge-document-browser-trace",
+        "fixture": "middleBlock/profiler/core-time:build-change/count",
+        "rows": 2,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 2
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "middleBlock/profiler/core-time:build-change/durationMs",
+        "rows": 2,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 2
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "middleBlock/profiler/core-time:copy-operations/count",
+        "rows": 2,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 2
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "middleBlock/profiler/core-time:copy-operations/durationMs",
+        "rows": 2,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 2
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "middleBlock/profiler/core-time:next-snapshot/count",
+        "rows": 2,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 2
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "middleBlock/profiler/core-time:next-snapshot/durationMs",
+        "rows": 2,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 2
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "middleBlock/profiler/core-time:notify-listeners/count",
+        "rows": 2,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 2
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "middleBlock/profiler/core-time:notify-listeners/durationMs",
+        "rows": 2,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 2
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "middleBlock/profiler/core-time:publish-range-refs/count",
+        "rows": 2,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 2
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "middleBlock/profiler/core-time:publish-range-refs/durationMs",
+        "rows": 2,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 2
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "middleBlock/profiler/core-time:run-after-commit-handlers/count",
+        "rows": 2,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 2
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "middleBlock/profiler/core-time:run-after-commit-handlers/durationMs",
+        "rows": 2,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 2
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "middleBlock/profiler/core-time:set-version/count",
+        "rows": 2,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 2
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "middleBlock/profiler/core-time:set-version/durationMs",
+        "rows": 2,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 2
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "middleBlock/profiler/core-time:transaction-callback/count",
+        "rows": 2,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 2
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "middleBlock/profiler/core-time:transaction-callback/durationMs",
+        "rows": 2,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 2
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "middleBlock/profiler/core-time:transaction-children-clone/count",
+        "rows": 2,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 2
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "middleBlock/profiler/core-time:transaction-children-clone/durationMs",
+        "rows": 2,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 2
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "middleBlock/profiler/core-time:transaction-command/count",
+        "rows": 2,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 2
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "middleBlock/profiler/core-time:transaction-command/durationMs",
+        "rows": 2,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 2
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "middleBlock/profiler/core-time:transaction-previous-snapshot/count",
+        "rows": 2,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 2
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "middleBlock/profiler/core-time:transaction-previous-snapshot/durationMs",
+        "rows": 2,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 2
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "middleBlock/profiler/core-time:transaction-roots-snapshot/count",
+        "rows": 2,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 2
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "middleBlock/profiler/core-time:transaction-roots-snapshot/durationMs",
+        "rows": 2,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 2
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "middleBlock/profiler/dom-text-sync/count",
+        "rows": 1,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 1
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "middleBlock/profiler/dom-text-sync/durationMs",
+        "rows": 1,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 1
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "middleBlock/profiler/runtime-time:beforeinput-apply-model/count",
+        "rows": 1,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 1
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "middleBlock/profiler/runtime-time:beforeinput-apply-model/durationMs",
+        "rows": 1,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 1
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "middleBlock/profiler/runtime-time:beforeinput-flush-selection/count",
+        "rows": 2,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 2
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "middleBlock/profiler/runtime-time:beforeinput-flush-selection/durationMs",
+        "rows": 2,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 2
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "middleBlock/profiler/runtime-time:beforeinput-input-rules/count",
+        "rows": 1,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 1
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "middleBlock/profiler/runtime-time:beforeinput-input-rules/durationMs",
+        "rows": 1,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 1
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "middleBlock/profiler/runtime-time:beforeinput-native-decision/count",
+        "rows": 2,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 2
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "middleBlock/profiler/runtime-time:beforeinput-native-decision/durationMs",
+        "rows": 2,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 2
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "middleBlock/profiler/runtime-time:beforeinput-prepare/count",
+        "rows": 2,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 2
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "middleBlock/profiler/runtime-time:beforeinput-prepare/durationMs",
+        "rows": 2,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 2
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "middleBlock/profiler/runtime-time:beforeinput-sync-selection/count",
+        "rows": 2,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 2
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "middleBlock/profiler/runtime-time:beforeinput-sync-selection/durationMs",
+        "rows": 2,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 2
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "middleBlock/profiler/runtime-time:beforeinput-trace/count",
+        "rows": 2,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 2
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "middleBlock/profiler/runtime-time:beforeinput-trace/durationMs",
+        "rows": 2,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 2
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "middleBlock/profiler/runtime-time:change-callbacks/count",
+        "rows": 1,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 1
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "middleBlock/profiler/runtime-time:change-callbacks/durationMs",
+        "rows": 1,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 1
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "middleBlock/profiler/runtime-time:dom-root-text-sync/count",
+        "rows": 1,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 1
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "middleBlock/profiler/runtime-time:dom-root-text-sync/durationMs",
+        "rows": 1,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 1
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "middleBlock/profiler/runtime-time:dom-text-sync/count",
+        "rows": 1,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 1
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "middleBlock/profiler/runtime-time:dom-text-sync/durationMs",
+        "rows": 1,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 1
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "middleBlock/profiler/runtime-time:focused-state/count",
+        "rows": 2,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 2
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "middleBlock/profiler/runtime-time:focused-state/durationMs",
+        "rows": 2,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 2
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "middleBlock/profiler/runtime-time:selector-dispatch/count",
+        "rows": 2,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 2
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "middleBlock/profiler/runtime-time:selector-dispatch/durationMs",
+        "rows": 2,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 2
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "middleBlock/profiler/selector/count",
+        "rows": 2,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 2
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "middleBlock/profiler/selector/durationMs",
+        "rows": 2,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 2
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
         "fixture": "middleBlock/selectMs",
         "rows": 3,
         "sources": ["benchmarks/results/rich-text-editors-latest.json"],
@@ -4229,6 +4706,15 @@
         "sources": ["benchmarks/results/rich-text-editors-latest.json"],
         "statuses": {
           "ok": 3
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "startBlock/burstToPaintMs",
+        "rows": 2,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 2
         }
       },
       {
@@ -4301,6 +4787,492 @@
         "sources": ["benchmarks/results/rich-text-editors-latest.json"],
         "statuses": {
           "ok": 3
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "startBlock/profiler/core-time:build-change/count",
+        "rows": 2,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 2
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "startBlock/profiler/core-time:build-change/durationMs",
+        "rows": 2,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 2
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "startBlock/profiler/core-time:copy-operations/count",
+        "rows": 2,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 2
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "startBlock/profiler/core-time:copy-operations/durationMs",
+        "rows": 2,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 2
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "startBlock/profiler/core-time:next-snapshot/count",
+        "rows": 2,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 2
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "startBlock/profiler/core-time:next-snapshot/durationMs",
+        "rows": 2,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 2
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "startBlock/profiler/core-time:notify-listeners/count",
+        "rows": 2,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 2
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "startBlock/profiler/core-time:notify-listeners/durationMs",
+        "rows": 2,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 2
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "startBlock/profiler/core-time:publish-range-refs/count",
+        "rows": 2,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 2
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "startBlock/profiler/core-time:publish-range-refs/durationMs",
+        "rows": 2,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 2
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "startBlock/profiler/core-time:run-after-commit-handlers/count",
+        "rows": 2,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 2
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "startBlock/profiler/core-time:run-after-commit-handlers/durationMs",
+        "rows": 2,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 2
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "startBlock/profiler/core-time:set-version/count",
+        "rows": 2,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 2
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "startBlock/profiler/core-time:set-version/durationMs",
+        "rows": 2,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 2
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "startBlock/profiler/core-time:transaction-callback/count",
+        "rows": 2,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 2
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "startBlock/profiler/core-time:transaction-callback/durationMs",
+        "rows": 2,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 2
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "startBlock/profiler/core-time:transaction-children-clone/count",
+        "rows": 2,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 2
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "startBlock/profiler/core-time:transaction-children-clone/durationMs",
+        "rows": 2,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 2
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "startBlock/profiler/core-time:transaction-command/count",
+        "rows": 2,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 2
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "startBlock/profiler/core-time:transaction-command/durationMs",
+        "rows": 2,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 2
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "startBlock/profiler/core-time:transaction-previous-snapshot/count",
+        "rows": 2,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 2
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "startBlock/profiler/core-time:transaction-previous-snapshot/durationMs",
+        "rows": 2,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 2
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "startBlock/profiler/core-time:transaction-roots-snapshot/count",
+        "rows": 1,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 1
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "startBlock/profiler/core-time:transaction-roots-snapshot/durationMs",
+        "rows": 1,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 1
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "startBlock/profiler/dom-text-sync/count",
+        "rows": 1,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 1
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "startBlock/profiler/dom-text-sync/durationMs",
+        "rows": 1,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 1
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "startBlock/profiler/runtime-time:beforeinput-apply-model/count",
+        "rows": 1,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 1
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "startBlock/profiler/runtime-time:beforeinput-apply-model/durationMs",
+        "rows": 1,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 1
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "startBlock/profiler/runtime-time:beforeinput-flush-selection/count",
+        "rows": 1,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 1
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "startBlock/profiler/runtime-time:beforeinput-flush-selection/durationMs",
+        "rows": 1,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 1
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "startBlock/profiler/runtime-time:beforeinput-input-rules/count",
+        "rows": 1,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 1
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "startBlock/profiler/runtime-time:beforeinput-input-rules/durationMs",
+        "rows": 1,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 1
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "startBlock/profiler/runtime-time:beforeinput-native-decision/count",
+        "rows": 2,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 2
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "startBlock/profiler/runtime-time:beforeinput-native-decision/durationMs",
+        "rows": 2,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 2
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "startBlock/profiler/runtime-time:beforeinput-prepare/count",
+        "rows": 2,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 2
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "startBlock/profiler/runtime-time:beforeinput-prepare/durationMs",
+        "rows": 2,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 2
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "startBlock/profiler/runtime-time:beforeinput-root-node/count",
+        "rows": 1,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 1
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "startBlock/profiler/runtime-time:beforeinput-root-node/durationMs",
+        "rows": 1,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 1
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "startBlock/profiler/runtime-time:beforeinput-sync-selection/count",
+        "rows": 2,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 2
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "startBlock/profiler/runtime-time:beforeinput-sync-selection/durationMs",
+        "rows": 2,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 2
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "startBlock/profiler/runtime-time:beforeinput-trace/count",
+        "rows": 2,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 2
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "startBlock/profiler/runtime-time:beforeinput-trace/durationMs",
+        "rows": 2,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 2
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "startBlock/profiler/runtime-time:change-callbacks/count",
+        "rows": 2,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 2
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "startBlock/profiler/runtime-time:change-callbacks/durationMs",
+        "rows": 2,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 2
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "startBlock/profiler/runtime-time:dom-root-text-sync/count",
+        "rows": 1,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 1
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "startBlock/profiler/runtime-time:dom-root-text-sync/durationMs",
+        "rows": 1,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 1
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "startBlock/profiler/runtime-time:dom-text-sync/count",
+        "rows": 2,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 2
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "startBlock/profiler/runtime-time:dom-text-sync/durationMs",
+        "rows": 2,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 2
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "startBlock/profiler/runtime-time:focused-state/count",
+        "rows": 2,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 2
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "startBlock/profiler/runtime-time:focused-state/durationMs",
+        "rows": 2,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 2
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "startBlock/profiler/runtime-time:selector-dispatch/count",
+        "rows": 2,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 2
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "startBlock/profiler/runtime-time:selector-dispatch/durationMs",
+        "rows": 2,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 2
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "startBlock/profiler/selector/count",
+        "rows": 2,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 2
+        }
+      },
+      {
+        "category": "slate-react-huge-document-browser-trace",
+        "fixture": "startBlock/profiler/selector/durationMs",
+        "rows": 2,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 2
         }
       },
       {
@@ -4647,6 +5619,15 @@
       },
       {
         "category": "slate-react-huge-document-overlays",
+        "fixture": "partialDOMPromotion/coldPromotionMs",
+        "rows": 1,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 1
+        }
+      },
+      {
+        "category": "slate-react-huge-document-overlays",
         "fixture": "partialDOMPromotion/mountedTextAfter",
         "rows": 1,
         "sources": ["benchmarks/results/rich-text-editors-latest.json"],
@@ -4693,6 +5674,60 @@
       {
         "category": "slate-react-huge-document-overlays",
         "fixture": "partialDOMPromotion/promotionMs",
+        "rows": 1,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 1
+        }
+      },
+      {
+        "category": "slate-react-huge-document-overlays",
+        "fixture": "partialDOMPromotion/renderElementCount",
+        "rows": 1,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 1
+        }
+      },
+      {
+        "category": "slate-react-huge-document-overlays",
+        "fixture": "partialDOMPromotion/renderLeafCount",
+        "rows": 1,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 1
+        }
+      },
+      {
+        "category": "slate-react-huge-document-overlays",
+        "fixture": "partialDOMPromotion/renderRootPlanCount",
+        "rows": 1,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 1
+        }
+      },
+      {
+        "category": "slate-react-huge-document-overlays",
+        "fixture": "partialDOMPromotion/renderSelectorCount",
+        "rows": 1,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 1
+        }
+      },
+      {
+        "category": "slate-react-huge-document-overlays",
+        "fixture": "partialDOMPromotion/renderTextCount",
+        "rows": 1,
+        "sources": ["benchmarks/results/rich-text-editors-latest.json"],
+        "statuses": {
+          "ok": 1
+        }
+      },
+      {
+        "category": "slate-react-huge-document-overlays",
+        "fixture": "partialDOMPromotion/renderTotalCount",
         "rows": 1,
         "sources": ["benchmarks/results/rich-text-editors-latest.json"],
         "statuses": {

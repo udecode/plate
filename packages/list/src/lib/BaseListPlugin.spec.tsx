@@ -1,8 +1,6 @@
-import React from 'react';
 import ReactDOMServer from 'react-dom/server';
 
-import { createSlateEditor, createSlatePlugin, KEYS } from 'platejs';
-import { pluginInjectNodeProps } from '../../../core/src/internal/plugin/pluginInjectNodeProps';
+import { createSlateEditor, KEYS } from 'platejs';
 import { BaseListPlugin } from './BaseListPlugin';
 
 describe('BaseListPlugin', () => {
@@ -42,7 +40,7 @@ describe('BaseListPlugin', () => {
     expect(item.dataset.listStyleType).toBe('square');
   });
 
-  it('parses list metadata and renders ordered wrappers only for list items', () => {
+  it('parses list metadata and renders list wrappers for list items', () => {
     const editor = createSlateEditor({
       plugins: [
         BaseListPlugin.configure({
@@ -62,6 +60,11 @@ describe('BaseListPlugin', () => {
       listStyleType: 'decimal',
       type: editor.getType(KEYS.p),
     } as any;
+    const unorderedElement = {
+      children: [{ text: 'Bullet' }],
+      listStyleType: 'disc',
+      type: editor.getType(KEYS.p),
+    } as any;
     const wrapper = renderBelow({
       children: 'Item',
       element: orderedElement,
@@ -70,6 +73,16 @@ describe('BaseListPlugin', () => {
       wrapper({
         children: 'Item',
         element: orderedElement,
+      } as any)
+    );
+    const unorderedWrapper = renderBelow({
+      children: 'Bullet',
+      element: unorderedElement,
+    } as any)!;
+    const unorderedMarkup = ReactDOMServer.renderToStaticMarkup(
+      unorderedWrapper({
+        children: 'Bullet',
+        element: unorderedElement,
       } as any)
     );
 
@@ -89,68 +102,13 @@ describe('BaseListPlugin', () => {
     expect(markup).toContain('<ol');
     expect(markup).toContain('start="4"');
     expect(markup).toContain('<li>Item</li>');
+    expect(unorderedMarkup).toContain('<ul');
+    expect(unorderedMarkup).toContain('<li>Bullet</li>');
     expect(
       renderBelow({
         children: 'Item',
         element: { children: [{ text: 'Item' }], type: editor.getType(KEYS.p) },
       } as any)
     ).toBeUndefined();
-  });
-
-  it('renders unordered list items with a lightweight list-item wrapper', () => {
-    const editor = createSlateEditor({
-      plugins: [BaseListPlugin],
-    });
-    const plugin = editor.getPlugin(BaseListPlugin);
-    const renderBelow = plugin.render.belowNodes as any;
-    const unorderedElement = {
-      children: [{ text: 'Item' }],
-      listStyleType: 'disc',
-      type: editor.getType(KEYS.p),
-    } as any;
-    expect(
-      renderBelow({
-        children: 'Item',
-        element: unorderedElement,
-      } as any)
-    ).toBeUndefined();
-  });
-
-  it('injects unordered list item styles onto paragraph elements', () => {
-    const editor = createSlateEditor({
-      plugins: [
-        createSlatePlugin({
-          key: KEYS.p,
-          node: { isElement: true, type: KEYS.p },
-        }),
-        BaseListPlugin,
-      ],
-    });
-    const plugin = editor.getPlugin(BaseListPlugin) as any;
-
-    expect(
-      pluginInjectNodeProps(
-        editor as any,
-        plugin,
-        {
-          element: {
-            children: [{ text: 'Item' }],
-            listStyleType: 'disc',
-            type: editor.getType(KEYS.p),
-          } as any,
-        },
-        () => [0]
-      )
-    ).toEqual({
-      className: 'slate-listStyleType-disc',
-      role: 'listitem',
-      style: {
-        display: 'list-item',
-        listStyleType: 'disc',
-        margin: 0,
-        padding: 0,
-        position: 'relative',
-      },
-    } as any);
   });
 });

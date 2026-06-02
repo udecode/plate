@@ -31,7 +31,10 @@ const COMMAND_CODE_REGEX = /^(bun|npm|npx|pnpm|yarn)\s/;
 const WHITESPACE_REGEX = /\s+/;
 const shouldCompileDocsDynamically = process.env.PLATE_WWW_DYNAMIC_DOCS === '1';
 const shouldLoadDocsAsync = process.env.PLATE_WWW_ASYNC_DOCS === '1';
-const shouldHighlightCode = !shouldCompileDocsDynamically;
+const shouldHighlightCode =
+  process.env.PLATE_WWW_CODE_HIGHLIGHT === '1' ||
+  (!shouldCompileDocsDynamically &&
+    process.env.PLATE_WWW_DISABLE_CODE_HIGHLIGHT !== '1');
 
 function addMetaToken(meta: string | undefined, token: string) {
   if (meta?.split(WHITESPACE_REGEX).includes(token)) {

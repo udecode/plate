@@ -115,6 +115,10 @@ function getMountMean(results: any, scenarioId: string) {
   return results?.results?.[scenarioId]?.mount?.mean ?? null;
 }
 
+function getInputMean(results: any, scenarioId: string) {
+  return results?.results?.[scenarioId]?.input?.mean ?? null;
+}
+
 function getPrebuiltMountMean(results: any, scenarioId: string) {
   return results?.results?.[scenarioId]?.prebuiltMount?.mean ?? null;
 }
@@ -166,21 +170,51 @@ function summarizePluginCensusEntry(
 }
 
 function summarizePresetRun(run: PresetRunPayload) {
+  const includesInput = run.benchmarks.includes('input');
+  const includesMount = run.benchmarks.includes('mount');
+  const includesPrebuiltMount = run.benchmarks.includes('prebuilt-mount');
+  const includesConstruction = run.benchmarks.includes('construction');
+
   return {
     id: run.id,
+    benchmarks: run.benchmarks,
     settings: run.settings,
     completed: run.results?.lastCompletedRun ?? null,
-    slateMountMean: getMountMean(run.results, 'slate'),
-    plateCoreMountMean: getMountMean(run.results, 'plate-core'),
-    plateCoreNodeIdMountMean: getMountMean(run.results, 'plate-core-nodeid'),
-    plateCoreNodeIdSeededMountMean: getMountMean(
-      run.results,
-      'plate-core-nodeid-seeded'
-    ),
-    plateBasicMountMean: getMountMean(run.results, 'plate-basic'),
-    slatePrebuiltMountMean: getPrebuiltMountMean(run.results, 'slate'),
-    plateCorePrebuiltMountMean: getPrebuiltMountMean(run.results, 'plate-core'),
-    plateCoreConstructionMean: getConstructionMean(run.results, 'plate-core'),
+    slateMountMean: includesMount ? getMountMean(run.results, 'slate') : null,
+    plateCoreMountMean: includesMount
+      ? getMountMean(run.results, 'plate-core')
+      : null,
+    plateCoreNodeIdMountMean: includesMount
+      ? getMountMean(run.results, 'plate-core-nodeid')
+      : null,
+    plateCoreNodeIdSeededMountMean: includesMount
+      ? getMountMean(run.results, 'plate-core-nodeid-seeded')
+      : null,
+    plateBasicMountMean: includesMount
+      ? getMountMean(run.results, 'plate-basic')
+      : null,
+    slateInputMean: includesInput ? getInputMean(run.results, 'slate') : null,
+    plateCoreInputMean: includesInput
+      ? getInputMean(run.results, 'plate-core')
+      : null,
+    plateCoreNodeIdInputMean: includesInput
+      ? getInputMean(run.results, 'plate-core-nodeid')
+      : null,
+    plateCoreNodeIdSeededInputMean: includesInput
+      ? getInputMean(run.results, 'plate-core-nodeid-seeded')
+      : null,
+    plateBasicInputMean: includesInput
+      ? getInputMean(run.results, 'plate-basic')
+      : null,
+    slatePrebuiltMountMean: includesPrebuiltMount
+      ? getPrebuiltMountMean(run.results, 'slate')
+      : null,
+    plateCorePrebuiltMountMean: includesPrebuiltMount
+      ? getPrebuiltMountMean(run.results, 'plate-core')
+      : null,
+    plateCoreConstructionMean: includesConstruction
+      ? getConstructionMean(run.results, 'plate-core')
+      : null,
     rawNodeIdInitMean: getInitOnlyMean(run.results, 'plate-core-nodeid-raw'),
     seededNodeIdInitMean: getInitOnlyMean(
       run.results,
