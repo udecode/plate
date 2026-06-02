@@ -5,7 +5,7 @@ import remarkEmoji from 'remark-emoji';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 
-// biome-ignore lint/nursery/noUnusedExpressions: required to prevent removal by compiler
+// biome-ignore lint/suspicious/noUnusedExpressions: required to prevent removal by compiler
 jsxt;
 
 import { AIChatPlugin } from '../../../../../../../packages/ai/src/react/ai-chat/AIChatPlugin';

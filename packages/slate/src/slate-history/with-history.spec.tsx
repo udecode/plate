@@ -361,6 +361,70 @@ describe('withHistory', () => {
     expect(editor.history.undos[1].operations).toHaveLength(1);
   });
 
+  it('merges setNodesBatch into the current undo batch before the flush boundary', () => {
+    const editor = createHistoryEditor(
+      (
+        <editor>
+          <hp>one</hp>
+          <hp>two</hp>
+        </editor>
+      ) as any
+    );
+
+    editor.tf.setNodes({ id: 'a' } as any, { at: [0] });
+    editor.tf.setNodesBatch([{ at: [1], props: { id: 'b' } }]);
+
+    expect(editor.history.undos).toHaveLength(1);
+    expect(editor.history.undos[0].operations).toEqual([
+      {
+        type: 'set_node',
+        path: [0],
+        properties: {},
+        newProperties: { id: 'a' },
+      },
+      {
+        type: 'set_node',
+        path: [1],
+        properties: {},
+        newProperties: { id: 'b' },
+      },
+    ]);
+  });
+
+  it('starts a fresh undo batch for setNodesBatch inside withNewBatch', () => {
+    const editor = createHistoryEditor(
+      (
+        <editor>
+          <hp>one</hp>
+          <hp>two</hp>
+        </editor>
+      ) as any
+    );
+
+    editor.tf.setNodes({ id: 'a' } as any, { at: [0] });
+    editor.tf.withNewBatch(() => {
+      editor.tf.setNodesBatch([{ at: [1], props: { id: 'b' } }]);
+    });
+
+    expect(editor.history.undos).toHaveLength(2);
+    expect(editor.history.undos[0].operations).toEqual([
+      {
+        type: 'set_node',
+        path: [0],
+        properties: {},
+        newProperties: { id: 'a' },
+      },
+    ]);
+    expect(editor.history.undos[1].operations).toEqual([
+      {
+        type: 'set_node',
+        path: [1],
+        properties: {},
+        newProperties: { id: 'b' },
+      },
+    ]);
+  });
+
   it('keeps manually applied contiguous insert_text operations in one batch across change cycles', () => {
     const editor = createHistoryEditor(
       (

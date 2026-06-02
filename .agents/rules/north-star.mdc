@@ -87,6 +87,8 @@ pattern is already chosen and the work has become plugin-authoring execution.
 ## Best Mix
 
 - ProseMirror/Tiptap: extension ownership and productized ergonomics
+- Portable Text: spec discipline, schema applicability, behavior authoring, and
+  behavior-test standards
 - Lexical: runtime contracts and perf posture
 - Premirror/Pretext: layout and measurement as first-class architecture
 - urql/TanStack DB/LSP: pipeline, state, and service-boundary patterns

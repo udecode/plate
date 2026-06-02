@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "topic": "editor-frameworks",
+  "generatedBy": "@shapeshift-labs/evidence-kit",
+  "sources": [
+    {
+      "name": "slate-v2-package",
+      "type": "file",
+      "path": "../../.tmp/slate-v2/package.json",
+      "fileName": "slate-v2-package.json",
+      "why": "Slate v2 owns current deep Slate benchmark commands and artifact families."
+    },
+    {
+      "name": "slate-package",
+      "type": "file",
+      "path": "../../../slate/package.json",
+      "fileName": "slate-package.json",
+      "why": "Slate is the local baseline for Slate v2 compare lanes."
+    }
+  ]
+}

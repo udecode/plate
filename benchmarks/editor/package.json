@@ -1,0 +1,47 @@
+{
+  "name": "plate-editor-evidence",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Evidence Kit lab for editor framework benchmark research.",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.mjs"
+  },
+  "files": [
+    "src",
+    "benchmarks",
+    "test",
+    "research",
+    "iterations",
+    "docs/perf",
+    "README.md"
+  ],
+  "scripts": {
+    "evidence:inspect": "evidence-kit inspect --json",
+    "check": "node --check src/index.mjs && node --check test/fuzz/core-fuzz.mjs && node --check benchmarks/core-benchmark.mjs && node --check benchmarks/slate-v2-legacy-benchmark.mjs && node --check benchmarks/rich-text-editors-benchmark.mjs && node --check benchmarks/benchmark-health.mjs && node --check benchmarks/render-rich-text-viewer.mjs && node --check benchmarks/render-perf-index.mjs && node --check benchmarks/startup-import.mjs && node --check benchmarks/package-boundary-gates.mjs && node --check benchmarks/fetch-editor-frameworks-research.mjs && node --check benchmarks/fetch-source-pass-research.mjs && npm run evidence:full",
+    "test:evidence": "node test/fuzz/core-fuzz.mjs --cases 200 && node benchmarks/package-boundary-gates.mjs --check --out benchmarks/results/package-boundary-gates-latest.json --bytes 200000 --files 32 --packBytes 1250000 --packFiles 96",
+    "fuzz": "node test/fuzz/core-fuzz.mjs --cases 1000 --write-repro test/fixtures/repro-latest.json",
+    "bench:evidence": "node benchmarks/core-benchmark.mjs --out benchmarks/results/core-latest.json && node benchmarks/slate-v2-legacy-benchmark.mjs --check --out benchmarks/results/slate-v2-legacy-latest.json && node benchmarks/rich-text-editors-benchmark.mjs --check --out benchmarks/results/rich-text-editors-latest.json && node benchmarks/startup-import.mjs --check --out benchmarks/results/startup-import-latest.json --p95Ms 100 --exports 32 && npm run evidence:health",
+    "bench:rich-text:check": "node benchmarks/rich-text-editors-benchmark.mjs --check --out benchmarks/results/rich-text-editors-latest.json",
+    "bench:startup:check": "node benchmarks/startup-import.mjs --check --out benchmarks/results/startup-import-latest.json --p95Ms 100 --exports 32",
+    "bench:package:gates": "node benchmarks/package-boundary-gates.mjs --check --out benchmarks/results/package-boundary-gates-latest.json --bytes 200000 --files 32 --packBytes 1250000 --packFiles 96",
+    "bench:scope": "evidence-kit scope --update",
+    "evidence:health": "node benchmarks/benchmark-health.mjs --check --out benchmarks/results/benchmark-health-latest.json",
+    "evidence:refresh": "npm run research:list && npm run bench:rich-text:check && npm run evidence:health && npm run docs:perf",
+    "docs:perf": "evidence-kit docs && npm run docs:rich-text && npm run evidence:health && npm run docs:index",
+    "docs:perf:check": "evidence-kit docs && npm run docs:rich-text:check && npm run evidence:health && npm run docs:index && npm run docs:index:check",
+    "docs:perf:search": "evidence-kit search",
+    "docs:rich-text": "node benchmarks/render-rich-text-viewer.mjs",
+    "docs:rich-text:check": "node benchmarks/render-rich-text-viewer.mjs --check",
+    "docs:index": "node benchmarks/render-perf-index.mjs",
+    "docs:index:check": "node benchmarks/render-perf-index.mjs --check",
+    "research:list": "evidence-kit research:list",
+    "research:fetch": "evidence-kit research:fetch",
+    "research:editor-frameworks:fetch": "node benchmarks/fetch-editor-frameworks-research.mjs",
+    "evidence:full": "npm run test:evidence && npm run fuzz && npm run bench:evidence && npm run bench:startup:check && npm run bench:package:gates && npm run bench:scope && npm run docs:perf && npm run docs:perf:check && npm run research:list",
+    "research:source-pass:fetch": "node benchmarks/fetch-source-pass-research.mjs"
+  },
+  "devDependencies": {
+    "@shapeshift-labs/evidence-kit": "0.1.2"
+  }
+}

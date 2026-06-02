@@ -216,7 +216,7 @@ export const BaseTablePlugin = createTSlatePlugin<TableConfig>({
     isContainer: true,
     isElement: true,
   },
-  normalizeInitialValue: normalizeInitialValueTable,
+  transformInitialValue: normalizeInitialValueTable,
   options: {
     _cellIndices: {},
     _selectedCellIds: undefined as string[] | null | undefined,

@@ -31,7 +31,7 @@ Completion rule:
   remains unchecked. If an item does not apply, check it and add `N/A: <reason>`.
 - Do not call `update_goal(status: complete)` until the named verification
   evidence is recorded below and
-  `node .agents/rules/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` passes.
+  `node .agents/skills/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` passes.
 - Do not create hook state for this goal. This
   file plus the active goal are the durable state.
 
@@ -47,8 +47,8 @@ Start Gates:
 | Output budget strategy recorded | pending | pending |
 
 Work Checklist:
-- [ ] Objective, threshold, verification surface, constraints, boundaries, and
-      blocked condition are filled from the active goal.
+- [ ] Short objective plus threshold, verification surface, constraints,
+      boundaries, and blocked condition are concrete.
 - [ ] Work phases/pass rows below are updated with evidence.
 - [ ] Workspace authority recorded: verification runs in the repo/package/app/
       route/tool that owns the changed behavior.
@@ -80,7 +80,7 @@ Completion Gates:
 | PR create or update | pending | Run `check` before PR work | pending |
 | Final lint | pending | Run `pnpm lint:fix` or scoped equivalent | pending |
 | Output budget discipline | pending | Verify no unbounded high-volume command output was streamed, or record the accidental output and recovery | pending |
-| Goal plan complete | yes | Run `node .agents/rules/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` | pending |
+| Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` | pending |
 
 Phase / pass table:
 | Phase | Status | Evidence | Next |

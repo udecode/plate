@@ -1,5 +1,4 @@
 import type { Value } from '@platejs/slate';
-import cloneDeep from 'lodash/cloneDeep.js';
 
 import type { NormalizeNodeIdOptions } from './NodeIdPlugin';
 
@@ -51,7 +50,7 @@ export const normalizeStaticValue = <V extends Value>(
   } = options;
 
   return replaceStaticMetadata(
-    normalizeNodeId(cloneDeep(value), {
+    normalizeNodeId(value, {
       ...normalizeNodeIdOptions,
       idCreator,
     }),

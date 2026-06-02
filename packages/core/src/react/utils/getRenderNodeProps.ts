@@ -21,6 +21,7 @@ export const getRenderNodeProps = ({
   disableInjectNodeProps,
   editor,
   plugin,
+  pluginContext,
   props,
   readOnly,
 }: {
@@ -29,20 +30,55 @@ export const getRenderNodeProps = ({
   attributes?: AnyObject;
   disableInjectNodeProps?: boolean;
   plugin?: AnyEditorPlatePlugin;
+  pluginContext?: AnyObject;
   readOnly?: boolean;
 }): PlateHTMLProps => {
-  let newProps = {
-    ...props,
-    ...(plugin
+  const hasInjectNodeProps =
+    !disableInjectNodeProps &&
+    editor.meta.pluginCache.inject.nodeProps.length > 0;
+  const canSkipPluginNodeProps =
+    !hasInjectNodeProps &&
+    !plugin?.node.props &&
+    !plugin?.node.dangerouslyAllowAttributes?.length;
+  const resolvedPluginContext = pluginContext
+    ? pluginContext
+    : plugin
       ? (getEditorPlugin(editor, plugin) as any)
       : {
           api: editor.api,
           editor,
           tf: editor.transforms,
-        }),
+        };
+  const { className } = props;
+
+  let newProps = {
+    ...props,
+    ...resolvedPluginContext,
   };
 
-  const { className } = props;
+  if (canSkipPluginNodeProps) {
+    newProps = {
+      ...newProps,
+      attributes: {
+        ...(props.attributes as any),
+        className:
+          clsx(
+            getSlateClass(plugin?.node.type),
+            props.attributes?.className,
+            className
+          ) || undefined,
+      },
+    };
+
+    if (
+      newProps.attributes?.style &&
+      Object.keys(newProps.attributes.style).length === 0
+    ) {
+      newProps.attributes.style = undefined;
+    }
+
+    return newProps;
+  }
 
   const pluginProps = getPluginNodeProps({
     attributes: nodeAttributes,
@@ -63,7 +99,7 @@ export const getRenderNodeProps = ({
     },
   };
 
-  if (!disableInjectNodeProps) {
+  if (hasInjectNodeProps) {
     newProps = pipeInjectNodeProps(
       editor,
       newProps,

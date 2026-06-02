@@ -132,3 +132,7 @@ packages/plate/docs/
 *.local*
 
 .omx/
+
+# Autoresearch session state
+/autoresearch.*
+/autoresearch.research/

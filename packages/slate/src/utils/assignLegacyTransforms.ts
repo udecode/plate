@@ -35,6 +35,7 @@ const LEGACY_TRANSFORMS = new Set([
   'select',
   'setFragmentData',
   'setNodes',
+  'setNodesBatch',
   'setPoint',
   'setSelection',
   'setSplittingOnce',

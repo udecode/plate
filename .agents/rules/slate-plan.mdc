@@ -63,22 +63,12 @@ as the execution goal. The user-review boundary is real.
   user-review-ready. Convert them into plan decisions and proof rows. Once the
   plan is ready and the user explicitly accepts it, the same phrases can start
   execution mode.
-- Do not mark the goal complete because the review pass is tired.
-- Score is not completion. A passing score with any pending pass, issue sync,
-  reference sync, verification gate, named next owner, or runnable next action
-  keeps the goal active.
-- The active goal is the lane status. The plan is the evidence ledger.
-- Never write contradictory closeout state. If the plan says
-  `slate_plan_lane_status: pending`, `final_handoff_status: pending`, a non-`none`
-  `next_pass`, or a runnable `next_action`, the goal must remain active.
-- If the user asks to run only one pass, close only the current pass in the plan
-  and leave the goal active with the next pass named.
-- Goal completion is legal only in the closure/final-gates pass, after the
-  active plan proves every earlier pass-state row is complete or explicitly
-  skipped with evidence.
-- Do not use `blocked` when another research, review, or plan-hardening move is
-  runnable, unless the user explicitly stops execution or tells you to mark the
-  lane blocked.
+- Requires `autogoal` as the lifecycle kernel, `--template slate-plan` as the
+  plan shell, and one scheduled pass per activation.
+- Slate Plan owns pass schedule, scorecard, ledgers, workspace proof, and final
+  handoff. Autogoal owns goal conflict, completion, and blocker semantics.
+- Never write contradictory closeout state. If the plan has pending passes,
+  pending final handoff, or a runnable next action, the lane is not closed.
 - Treat pasted review findings as context. The latest user request is the task.
 - Keep Slate v2 unopinionated. Plate owns opinionated product APIs.
 - A breaking or paradigm change needs an adoption story. "Cleaner architecture"
@@ -138,16 +128,17 @@ as the execution goal. The user-review boundary is real.
   constraints, boundaries, and blocked condition there.
 
 - Active goal for planning mode: one Slate Plan planning lane uses one
-  `create_goal` objective. The goal content must name the desired closed plan
-  state, the full pass schedule, the one-pass-per-activation policy, required
-  proof gates, user-review-ready closeout, and blocked condition. Do not split
-  the planning lane into multiple goals.
+  short `create_goal` objective. The goal content must stay under 240
+  characters and name only the desired closed plan state, short completion
+  threshold, and plan path. Put the full pass schedule,
+  one-pass-per-activation policy, proof gates, user-review-ready closeout, and
+  blocked condition in the plan. Do not split the planning lane into multiple
+  goals.
 - Active goal for execution mode: after explicit user acceptance, start a new
-  goal for the accepted plan path and implementation target. It must name the
-  exact plan, execution queue, `.tmp/slate-v2` verification gates,
-  issue/reference sync, loading `.agents/skills/autoreview/SKILL.md` when
-  implementation changes are non-trivial and uncommitted, and closeout
-  conditions. For dirty local work, the autoreview skill's target is
+  goal for the accepted plan path and implementation target. Keep that goal
+  objective short and put the execution queue, `.tmp/slate-v2` verification
+  gates, issue/reference sync, autoreview requirement, and closeout conditions
+  in the execution plan. For dirty local work, the autoreview skill's target is
   `--mode local`; do not use `--uncommitted`.
 - Research updates under `docs/research/` when the evidence lane is stale or
   incomplete.
@@ -213,54 +204,38 @@ as the execution goal. The user-review boundary is real.
 
 ## Goal Setup
 
-Before creating or resuming a Slate Plan:
+Slate Plan requires `autogoal` as the lifecycle kernel.
 
-- Use `get_goal` first. If no matching goal exists, call `create_goal` once for
-  the whole Slate Plan lane.
-- Do not call `create_goal` when `get_goal` returns any active goal. Repeated
-  goal creation fails in a thread. Continue under a matching goal, or resolve a
-  mismatched active goal before creating a new one.
-- The goal objective must include the pass schedule and say that each activation
-  completes only the next incomplete pass.
-- The goal objective must include constraints, scope, verification details, and
-  the closure condition when they materially change what completion means.
-- Create the lane plan with `--template slate-plan` so the goal plan starts
-  with Slate Plan's required plan-shape sections, pass table, scorecard,
-  issue accounting, workspace gate, objection ledger, and final handoff rows.
-- Do not create separate per-pass goals. Passes are rows inside the active plan and
-  active goal, not separate thread goals.
-- If an active goal belongs to a different lane, resolve that goal honestly
-  before starting a new Slate Plan goal. If the tool does not allow that
-  transition, report the mismatch and ask for the smallest user decision.
+- Template: `slate-plan`.
+- Planning flow mode: agent-led plan hardening.
+- Execution flow mode: one-shot execution after explicit acceptance of a named
+  ready plan.
+- Goal handle: `<lane outcome>; done when <short threshold>; plan
+  <docs/plans/path>`.
+- One pass per activation. Passes are rows in the active plan, not separate
+  goals.
+- Autogoal owns `get_goal`, `create_goal`, `update_goal`, conflict handling,
+  completion, blocker semantics, and repair routing. Do not duplicate those
+  rules here.
+- Slate Plan owns plan shape, pass table, scorecard, issue/reference ledgers,
+  workspace verification, objection ledger, and final handoff.
+- Do not start execution mode under a planning goal. After user acceptance, use
+  an execution-shaped goal that names the accepted plan and proof gates.
 - If no goal tool is available, record degraded control state in the active plan
-  and stop before starting autonomous pass work unless the user explicitly
-  accepts the degraded workflow.
-- Do not start planning pass work until the lane goal is active, already
-  matching, or the missing-goal path is explicitly resolved.
-- Do not start execution mode under the planning goal. After user acceptance,
-  complete or reuse only an execution-shaped goal that names the accepted plan
-  and proof gates.
+  and stop before autonomous pass work unless the user explicitly accepts that.
 
 Good goal:
 
 ```txt
-Slate Plan closes the callback-memoization API plan for user review:
-complete the scheduled passes one activation at a time, record evidence-backed
-score deltas, issue/reference sync, objection handling, verification gates, and
-  the final user-review handoff; keep the goal active until closure/final gates
-  prove no planning pass remains runnable.
+Close callback-memoization API plan; done when Slate Plan closure gates pass;
+plan docs/plans/YYYY-MM-DD-callback-memoization-plan.md.
 ```
 
 Good execution goal:
 
 ```txt
-Slate Plan executes docs/plans/<accepted-plan>.md against `.tmp/slate-v2`,
-complete only when every accepted execution queue row is implemented or
-explicitly deferred with evidence, focused and broad `.tmp/slate-v2` gates pass
-or have recorded owners, issue/reference sync is current, the autoreview skill
-has been loaded and its dirty-local target has no accepted/actionable findings
-for non-trivial uncommitted implementation changes or is marked N/A for
-planning-only work, and the plan's final execution closeout rows are closed.
+Execute docs/plans/<accepted-plan>.md; done when execution closeout gates pass;
+target `.tmp/slate-v2`.
 ```
 
 Bad goal:
@@ -411,22 +386,19 @@ Common command ownership examples:
 
 ## Goal And Plan State
 
-The active goal is the durable lane state. The plan is the durable evidence
-state.
+Use autogoal lifecycle rules. Slate Plan-specific state lives in the active
+plan:
 
-At activation:
+- `current_pass`
+- `current_pass_status`
+- `next_pass`
+- `next_action`
+- `slate_plan_lane_status`
+- `final_handoff_status`
 
-1. Call `get_goal`.
-2. If the active goal already matches the Slate Plan lane, continue under it.
-3. If an active goal exists but does not match, resolve that mismatch before
-   doing mutable Ralplan work.
-4. If no goal exists, call `create_goal` with the lane objective, full
-   pass schedule, one-pass-per-activation rule, verification constraints, and
-   closure condition.
-5. Resolve the target plan path from the latest user request or create the
-   default plan path.
-6. Read the active plan and pass-state ledger to find the first runnable pass.
-7. Run exactly the current pass, then update the plan.
+At activation, resolve the target plan path from the latest user request or the
+active goal, read the pass-state ledger, run exactly the first runnable pass,
+and update the plan.
 
 Allowed `current_pass_status` values:
 
@@ -437,26 +409,7 @@ Allowed `current_pass_status` values:
 - `blocked`
 - `skipped`
 
-Single-pass completion is invalid by default:
-
-- one activation may complete at most one scheduled review pass
-- a newly created or newly activated review plan keeps the goal active
-- a one-pass-only user instruction keeps the goal active after that pass
-  unless `next_pass` is `none`
-- only the closure pass may complete the goal
-- the closure pass is valid only after earlier pass-state rows are already
-  recorded as complete in the active plan before the current activation starts
-- pass rows written earlier in the same assistant turn do not make the closure
-  pass eligible
-- if the current activation creates, rewrites, or materially rescopes the plan,
-  record the next pass and keep the goal active
-- there is no single-pass bypass; user phrases like `full`, `all passes`,
-  `continue until done`, or `give me the Done Handoff` do not permit completing
-  the goal in the same activation that created, rewrote, or rescoped the plan
-- if no separate goal continuation/resume occurred between passes, it is still
-  the same activation
-
-Before calling `update_goal(status: complete)`, prove in the plan:
+Before Slate Plan closure, prove in the plan:
 
 - every scheduled pass row is `complete` or intentionally `skipped` with a
   concrete reason and evidence
@@ -472,8 +425,7 @@ Before calling `update_goal(status: complete)`, prove in the plan:
 - `final_handoff_status` is `complete`
 - the final chat response includes the exhaustive Done Handoff bullet list
 
-If any assertion fails, keep the goal active and name the earliest runnable
-`next_pass`.
+If any assertion fails, name the earliest runnable `next_pass`.
 
 ## Confidence Score
 
@@ -624,9 +576,8 @@ do not leave the required shape implicit in this rule.
 
 Run the review as passes, not one giant essay:
 
-Before starting any pass, set or verify the lane goal. The goal should contain
-the full pass schedule and say that each activation completes the next
-incomplete pass only. Do not create separate per-pass goals.
+The `slate-plan` template owns the pass table. Each activation completes the
+next incomplete pass only. Do not create per-pass goals.
 
 1. Current-state read and initial score.
 2. Related issue discovery pass: run ClawSweeper once for the plan's touched
@@ -671,8 +622,7 @@ before this activation began. Rows completed in the same assistant turn are
 current-pass work, not prior closure eligibility.
 
 After each pass, update the active plan with pass status, evidence, changes,
-and next owner. Keep the active goal open while any pass or revision remains
-runnable.
+and next owner.
 
 Pass-state ledger rows must include:
 
@@ -684,8 +634,7 @@ Pass-state ledger rows must include:
 - next owner
 
 Do not mark multiple major passes complete in one activation. Finish the current
-pass, record the next pass, keep the goal active, and let the next activation
-run the next pass.
+pass and record the next pass.
 
 If the user explicitly asks for the `Done Handoff` before the closure pass is
 eligible, do not invent one. Record the current pass result, write a pending

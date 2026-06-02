@@ -58,11 +58,18 @@ description: \@platejs/core 的 API 参考文档。
         用于存储节点 ID 的属性键。
         - **默认值:** `'id'`
       </APISubListItem>
-      <APISubListItem parent="nodeId" name="normalizeInitialValue" type="boolean" optional>
-        是否规范化初始值中的所有节点。
-        - 当 `false`: 仅检查第一个和最后一个节点
-        - 当 `true`: 规范化所有节点
-        - **默认值:** `false`
+      <APISubListItem parent="nodeId" name="initialValueIds" type="false | 'always' | 'if-needed'" optional>
+        控制如何为初始值中的缺失 ID 赋值。
+        - 当 `'if-needed'`: 仅检查首尾顶层节点
+        - 当 `'always'`: 遍历整个初始值并补齐缺失 ID
+        - 当 `false`: 跳过初始值 ID 分配
+        - **默认值:** `'if-needed'`
+      </APISubListItem>
+      <APISubListItem parent="nodeId" name="normalizeInitialValue" type="boolean | null" optional>
+        `initialValueIds` 的弃用别名。
+        - 当 `false`: 等同于 `'if-needed'`
+        - 当 `true`: 等同于 `'always'`
+        - 当 `null`: 等同于 `false`
       </APISubListItem>
       <APISubListItem parent="nodeId" name="reuseId" type="boolean" optional>
         在撤销/重做和复制/粘贴时重用 ID。
@@ -107,8 +114,12 @@ description: \@platejs/core 的 API 参考文档。
   <APIItem name="inject" type="object" optional>
     编辑器的注入配置。
   </APIItem>
+  <APIItem name="transformInitialValue" type="function" optional>
+    在编辑器准备就绪前转换初始值的函数。
+  </APIItem>
   <APIItem name="normalizeInitialValue" type="function" optional>
-    规范化初始值的函数。
+    `transformInitialValue` 的弃用别名。旧钩子既可以原地修改
+    `value`，也可以返回下一个值。
   </APIItem>
   <APIItem name="options" type="object" optional>
     编辑器的附加选项。

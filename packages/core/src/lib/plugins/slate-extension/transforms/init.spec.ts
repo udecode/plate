@@ -3,21 +3,20 @@ import type { TSelection } from '@platejs/slate';
 import { createSlateEditor } from '../../../editor';
 import { createSlatePlugin } from '../../../plugin/createSlatePlugin';
 import { init } from './init';
-import * as pipeNormalizeModule from '../../../../internal/plugin/pipeNormalizeInitialValue';
+import * as pipeTransformModule from '../../../../internal/plugin/pipeTransformInitialValue';
 
-let mockPipeNormalizeInitialValue: ReturnType<typeof mock>;
-let pipeNormalizeSpy: ReturnType<typeof spyOn>;
+let mockPipeTransformInitialValue: ReturnType<typeof mock>;
+let pipeTransformSpy: ReturnType<typeof spyOn>;
 
 describe('init', () => {
   let editor: any;
 
   beforeEach(() => {
-    // Set up spy for pipeNormalizeInitialValue
-    mockPipeNormalizeInitialValue = mock();
-    pipeNormalizeSpy = spyOn(
-      pipeNormalizeModule,
-      'pipeNormalizeInitialValue'
-    ).mockImplementation(mockPipeNormalizeInitialValue);
+    mockPipeTransformInitialValue = mock();
+    pipeTransformSpy = spyOn(
+      pipeTransformModule,
+      'pipeTransformInitialValue'
+    ).mockImplementation(mockPipeTransformInitialValue);
 
     editor = createSlateEditor({
       plugins: [createSlatePlugin({ key: 'test' })],
@@ -48,7 +47,7 @@ describe('init', () => {
   });
 
   afterEach(() => {
-    pipeNormalizeSpy?.mockRestore();
+    pipeTransformSpy?.mockRestore();
   });
 
   describe('when value is null', () => {
@@ -76,7 +75,7 @@ describe('init', () => {
       expect(editor.children).toEqual([
         { children: [{ text: 'deserialized' }], type: 'p' },
       ]);
-      expect(mockPipeNormalizeInitialValue).toHaveBeenCalledWith(editor);
+      expect(mockPipeTransformInitialValue).toHaveBeenCalledWith(editor);
     });
   });
 
@@ -89,7 +88,7 @@ describe('init', () => {
 
       expect(syncFunction).toHaveBeenCalledWith(editor);
       expect(editor.children).toEqual(syncValue);
-      expect(mockPipeNormalizeInitialValue).toHaveBeenCalledWith(editor);
+      expect(mockPipeTransformInitialValue).toHaveBeenCalledWith(editor);
     });
 
     it('handle sync function returning undefined', () => {
@@ -119,7 +118,7 @@ describe('init', () => {
       await new Promise(process.nextTick);
 
       expect(editor.children).toEqual(asyncValue);
-      expect(mockPipeNormalizeInitialValue).toHaveBeenCalledWith(editor);
+      expect(mockPipeTransformInitialValue).toHaveBeenCalledWith(editor);
     });
 
     it('handle async function returning empty array', async () => {
@@ -163,7 +162,7 @@ describe('init', () => {
       init(editor, { value: directValue });
 
       expect(editor.children).toEqual(directValue);
-      expect(mockPipeNormalizeInitialValue).toHaveBeenCalledWith(editor);
+      expect(mockPipeTransformInitialValue).toHaveBeenCalledWith(editor);
     });
 
     it('handle falsy values', () => {
@@ -246,10 +245,10 @@ describe('init', () => {
       editor.children = [{ children: [{ text: 'content' }], type: 'p' }];
     });
 
-    it('calls pipeNormalizeInitialValue when children exist', () => {
+    it('calls pipeTransformInitialValue when children exist', () => {
       init(editor, { value: null });
 
-      expect(mockPipeNormalizeInitialValue).toHaveBeenCalledWith(editor);
+      expect(mockPipeTransformInitialValue).toHaveBeenCalledWith(editor);
     });
 
     it('creates a default value and normalizes when children are empty', () => {
@@ -260,7 +259,7 @@ describe('init', () => {
 
       // Should create default value, making children non-empty
       expect(createValueSpy).toHaveBeenCalled();
-      expect(mockPipeNormalizeInitialValue).toHaveBeenCalled();
+      expect(mockPipeTransformInitialValue).toHaveBeenCalled();
     });
 
     it('forces normalization when editor normalization is enabled', () => {
@@ -304,7 +303,7 @@ describe('init', () => {
       expect(editor.children).toEqual(asyncValue);
       expect(editor.selection).toEqual(selection);
       expect(editor.tf.select).not.toHaveBeenCalled(); // selection takes priority
-      expect(mockPipeNormalizeInitialValue).toHaveBeenCalledWith(editor);
+      expect(mockPipeTransformInitialValue).toHaveBeenCalledWith(editor);
       expect(normalizeSpy).toHaveBeenCalledWith({ force: true });
     });
   });

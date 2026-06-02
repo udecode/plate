@@ -268,6 +268,16 @@ export type EditorTransforms<V extends Value = Value> = {
     options?: SetNodesOptions<V>
   ) => void;
   /**
+   * @experimental
+   * Set properties on exact node paths in one logical batch.
+   *
+   * This is the explicit fast path for many `set_node` updates on large trees.
+   * It accepts exact paths only and does not support broad traversal options.
+   */
+  setNodesBatch: <N extends DescendantIn<V>>(
+    updates: NodeBatchUpdate<N>[]
+  ) => void;
+  /**
    * Split nodes at the specified location. If no location is specified, split
    * the selection.
    */
@@ -532,6 +542,11 @@ export type SetNodesOptions<V extends Value = Value> = {
 } & QueryOptions<V> &
   QueryMode &
   QueryVoids;
+
+export type NodeBatchUpdate<N extends Descendant = Descendant> = {
+  at: Path;
+  props: Partial<NodeProps<N>>;
+};
 
 export type SplitNodesOptions<V extends Value = Value> = {
   always?: boolean;

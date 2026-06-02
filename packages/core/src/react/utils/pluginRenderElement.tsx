@@ -5,8 +5,9 @@ import type { AnyEditorPlatePlugin } from '../plugin/PlatePlugin';
 
 import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
 import { type PlateElementProps, PlateElement } from '../components';
+import { getEditorPlugin } from '../plugin';
 import { useReadOnly } from '../slate-react';
-import { useEditorRef, useElement } from '../stores';
+import { useEditorRef } from '../stores';
 import { ElementProvider } from '../stores/element/useElementStore';
 import { getRenderNodeProps } from './getRenderNodeProps';
 
@@ -19,8 +20,12 @@ export type RenderElement = (
   props: PlateElementProps
 ) => React.ReactElement<any> | undefined;
 
-function ElementContent({ editor, plugin, ...props }: PlateElementProps) {
-  const element = useElement();
+function ElementContent({
+  editor,
+  plugin,
+  pluginContext,
+  ...props
+}: PlateElementProps & { pluginContext?: Record<string, unknown> }) {
   const readOnly = useReadOnly();
 
   if (isEditOnly(readOnly, plugin, 'render')) return null;
@@ -30,9 +35,10 @@ function ElementContent({ editor, plugin, ...props }: PlateElementProps) {
   const Element = Component ?? (PlateElement as any);
 
   props = getRenderNodeProps({
-    attributes: element.attributes as any,
+    attributes: props.element.attributes as any,
     editor,
     plugin,
+    pluginContext,
     props: props as any,
     readOnly,
   }) as any;
@@ -76,7 +82,7 @@ function ElementContent({ editor, plugin, ...props }: PlateElementProps) {
   return component;
 }
 
-export function BelowRootNodes(props: any) {
+export function BelowRootNodes({ ...props }: any) {
   const editor = useEditorRef();
   const readOnly = useReadOnly();
 
@@ -103,8 +109,10 @@ export function BelowRootNodes(props: any) {
 export const pluginRenderElement = (
   editor: PlateEditor,
   plugin: AnyEditorPlatePlugin
-): RenderElement =>
-  function render(props) {
+): RenderElement => {
+  const pluginContext = getEditorPlugin(editor, plugin as any) as any;
+
+  return function render(props) {
     const { element, path } = props;
 
     return (
@@ -114,7 +122,13 @@ export const pluginRenderElement = (
         path={path}
         scope={plugin.key}
       >
-        <ElementContent editor={editor} plugin={plugin} {...(props as any)} />
+        <ElementContent
+          editor={editor}
+          plugin={plugin}
+          pluginContext={pluginContext}
+          {...(props as any)}
+        />
       </ElementProvider>
     );
   };
+};

@@ -21,7 +21,7 @@ Completion threshold:
   satisfied or explicitly narrowed, required verification evidence is recorded,
   code-review and release-artifact gates are closed when applicable, tracker/PR
   sync is complete or marked N/A with reason, and
-  `node .agents/rules/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` passes.
+  `node .agents/skills/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` passes.
 
 Verification surface:
 - TODO: Name the tests, typecheck, lint, browser proof, source audit, PR/tracker
@@ -68,7 +68,7 @@ Completion rule:
   remains unchecked. If an item does not apply, check it and add `N/A: <reason>`.
 - Do not call `update_goal(status: complete)` until every completion threshold
   above is satisfied, final handoff evidence is recorded, and
-  `node .agents/rules/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` passes.
+  `node .agents/skills/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` passes.
 - Do not create hook state for this goal. This file plus the active goal are the
   durable state.
 
@@ -90,8 +90,8 @@ Start Gates:
 | Output budget strategy recorded | pending | pending |
 
 Work Checklist:
-- [ ] Objective includes outcome, completion threshold, verification surface,
-      constraints, boundaries, and blocked condition.
+- [ ] Short objective plus outcome, completion threshold, verification surface,
+      constraints, boundaries, and blocked condition are concrete.
 - [ ] Task source classified with source type, id/link, title, task type,
       acceptance criteria, caveats, likely files/routes/packages, browser
       surface, and root-cause layer.
@@ -149,7 +149,7 @@ Completion Gates:
 | Final handoff contract | pending | Fill the final handoff fields below with exact PR/issue/confidence/tests/browser/outcome/caveats/design/verification content or N/A reason | pending |
 | Final lint | pending | Run `pnpm lint:fix` or scoped equivalent | pending |
 | Output budget discipline | pending | Verify no unbounded high-volume command output was streamed, or record the accidental output and recovery | pending |
-| Goal plan complete | yes | Run `node .agents/rules/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` | pending |
+| Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` | pending |
 
 Phase / pass table:
 | Phase | Status | Evidence | Next |

@@ -11,7 +11,6 @@ export type MentionNode = {
 };
 
 declare module 'mdast' {
-  // biome-ignore lint/style/useConsistentTypeDefinitions: module augmentation requires interface
   interface StaticPhrasingContentMap {
     mention: MentionNode;
   }

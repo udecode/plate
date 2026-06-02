@@ -2,7 +2,35 @@
   "name": "plate",
   "private": true,
   "license": "MIT",
+  "workspaces": [
+    "apps/*",
+    "packages/*",
+    "packages/udecode/*"
+  ],
   "scripts": {
+    "bench:editor:bench": "cd benchmarks/editor && npm run bench:evidence",
+    "bench:editor:check": "cd benchmarks/editor && npm run check",
+    "bench:editor:docs": "cd benchmarks/editor && npm run docs:perf",
+    "bench:editor:full": "cd benchmarks/editor && npm run evidence:full",
+    "bench:editor:fuzz": "cd benchmarks/editor && npm run fuzz",
+    "bench:editor:health": "cd benchmarks/editor && npm run evidence:health",
+    "bench:editor:inspect": "cd benchmarks/editor && npm run evidence:inspect",
+    "bench:editor:install": "cd benchmarks/editor && npm install --no-fund --no-audit",
+    "bench:editor:package": "cd benchmarks/editor && npm run bench:package:gates",
+    "bench:editor:research:fetch": "cd benchmarks/editor && npm run research:fetch",
+    "bench:editor:research:list": "cd benchmarks/editor && npm run research:list",
+    "bench:editor:refresh": "cd benchmarks/editor && npm run evidence:refresh",
+    "bench:editor:scope": "cd benchmarks/editor && npm run bench:scope",
+    "bench:editor:search": "cd benchmarks/editor && npm run docs:perf:search",
+    "bench:editor:startup": "cd benchmarks/editor && npm run bench:startup:check",
+    "bench:targets:check": "node tooling/scripts/bench-targets.mjs check",
+    "bench:targets:dry-run": "node tooling/scripts/bench-targets.mjs dry-run",
+    "bench:targets:import-evidence-kit": "node tooling/scripts/bench-targets.mjs import-evidence-kit --write",
+    "bench:targets:list": "node tooling/scripts/bench-targets.mjs list",
+    "bench:targets:report": "node tooling/scripts/bench-targets.mjs report",
+    "bench:targets:report:check": "node tooling/scripts/bench-targets.mjs report --check",
+    "bench:targets:report:dry-run": "node tooling/scripts/bench-targets.mjs report --dry-run",
+    "bench:targets:run": "node tooling/scripts/bench-targets.mjs run",
     "brl": "pnpm g:brl",
     "build": "pnpm g:build",
     "build:apps": "turbo --filter \"./apps/www\" build",
@@ -18,6 +46,7 @@
     "dev:webrtc": "PORT=4444 node ./node_modules/y-webrtc/bin/server.js",
     "devt": "pnpm --filter www devt",
     "docs:build": "cd docs && pnpm install && pnpm build",
+    "docs:slate-v2:audit": "node tooling/scripts/check-slate-v2-docs.mjs",
     "docs:start": "cd docs && pnpm install && pnpm start",
     "e2e": "pnpm exec playwright test --config tooling/config/playwright.config.ts",
     "g:brl": "turbo --filter \"./packages/**\" brl",
@@ -58,7 +87,6 @@
     "templates:ai": "./tooling/scripts/update-template.sh ai",
     "templates:basic": "./tooling/scripts/update-template.sh basic",
     "templates:check": "cd templates/plate-template && pnpm lint && pnpm typecheck && cd ../plate-playground-template && pnpm lint && pnpm typecheck",
-    "templates:skills": "./tooling/scripts/update-template-skills.sh",
     "templates:push": "./tooling/scripts/push-template.sh \"templates/*\"",
     "templates:test": "cd templates/plate-template && pnpm dlx shadcn@latest add @plate/editor-ai -o && pnpm lint && pnpm typecheck",
     "templates:update": "./tooling/scripts/update-templates.sh",
@@ -77,7 +105,7 @@
     "typecheck:all": "pnpm g:typecheck:all"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.3.6",
+    "@biomejs/biome": "2.4.16",
     "@changesets/cli": "2.30.0",
     "@changesets/get-github-info": "0.8.0",
     "@happy-dom/global-registrator": "20.0.10",
@@ -153,7 +181,7 @@
     "turbowatch": "2.29.4",
     "typescript": "6.0.2",
     "typescript-eslint": "^8.47.0",
-    "ultracite": "6.3.4",
+    "ultracite": "7.8.1",
     "y-webrtc": "10.3.0",
     "zod": "4.1.12"
   },
@@ -165,10 +193,5 @@
   "patchedDependencies": {
     "is-hotkey@0.2.0": "patches/is-hotkey@0.2.0.patch",
     "react-dnd@16.0.1": "patches/react-dnd@16.0.1.patch"
-  },
-  "workspaces": [
-    "apps/*",
-    "packages/*",
-    "packages/udecode/*"
-  ]
+  }
 }

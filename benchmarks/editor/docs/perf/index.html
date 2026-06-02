@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Editor Benchmark Index</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      body{font-family:Helvetica,Arial,sans-serif;margin:24px;line-height:1.45;color:#111}
+      h1{font-size:24px;margin:0 0 16px}
+      h2{font-size:18px;margin:0 0 8px}
+      p{margin:4px 0 12px;max-width:820px}
+      ul{margin:0;padding:0;list-style:none;max-width:900px}
+      li{border:1px solid #ccc;margin:0 0 12px;padding:12px}
+      a{font-size:18px;font-weight:700;text-decoration:none;color:#00e}
+      code{background:#eee;padding:1px 4px}
+      .meta{color:#555;font-size:13px}
+      .health{border:1px solid #999;margin:16px 0 20px;max-width:900px;padding:12px}
+      .health h2{margin-top:0}
+      .health ol{margin:8px 0 0 22px;padding:0}
+      .health li{border:0;margin:0 0 8px;padding:0}
+      footer{border-top:1px solid #ccc;margin-top:24px;padding-top:12px;color:#555;font-size:13px}
+      footer a{font-size:13px}
+    </style>
+  </head>
+  <body>
+    <h1>Editor Benchmark Index</h1>
+    <p>Slate v2 benchmark target dashboard. Active benchmark decisions come from <code>../targets/slate-v2.json</code>; Evidence Kit is retained as an audit archive.</p>
+    <section class="health">
+      <h2>Target Health</h2>
+      <p>27 targets. Status: ok: 25, missing-optional-artifact: 2.</p>
+      <p class="meta">Families: browser-rich-text: 1, clipboard: 1, collaboration: 1, core-compare: 3, core-current: 7, editing-navigation: 1, history: 2, issue-replay: 1, react-large-document: 6, react-locality: 2, react-pagination: 1, react-typing: 1.</p>
+      <ol>
+        <li><strong>core-transaction-current</strong><br><span class="meta">status=missing-optional-artifact; metric=core_benchmark_seconds; run <code>pnpm bench:targets:dry-run -- core-transaction-current</code></span></li><li><strong>history-retained-memory</strong><br><span class="meta">status=missing-optional-artifact; metric=benchmark_seconds; run <code>pnpm bench:targets:dry-run -- history-retained-memory</code></span></li>
+      </ol>
+    </section>
+    <ul>
+      <li>
+        <a href="../../../targets/reports/slate-v2.md">Slate v2 target report</a>
+        <p>Generated from the active target registry for benchmark routing, Autoresearch setup, metric ownership, and artifact health.</p>
+        <p class="meta">Required artifacts: 25/25. Missing optional: 2. Data: <code>../../../targets/history/slate-v2-latest.json</code></p>
+      </li>
+      <li>
+        <a href="rich-text.html">Rich text editor comparison</a>
+        <p>Evidence Kit comparison rows for Slate v2 and Slate.</p>
+        <p class="meta">653 rows across 11 groups. Data: <code>rich-text-data.json</code></p>
+      </li>
+      <li>
+        <a href="slate-v2-internals.html">Slate v2 internals</a>
+        <p>Evidence Kit rows for Slate v2-only runtime, React, collaboration, clipboard, and transaction proof.</p>
+        <p class="meta">333 rows across 16 groups. Data: <code>slate-v2-internals-data.json</code></p>
+      </li>
+    </ul>
+    <footer>
+      Evidence Kit archive:
+      <a href="evidence.html">Evidence Kit wiki</a>
+      (1032 benchmark rows, 6 notes, 3 research sources; health snapshot: 998 rows, 62 discarded historical artifacts)
+    </footer>
+  </body>
+</html>

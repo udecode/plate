@@ -1,0 +1,66 @@
+{
+  "version": 1,
+  "generatedAt": "2026-06-02T11:46:13.748Z",
+  "node": "v24.14.1",
+  "groups": {
+    "correctness": {
+      "description": "Files that affect unit, integration, and fuzz correctness.",
+      "hash": "62ff8f5d1670b318de30450e2f98d650577384aac8b8f675948eeef153a8ab75",
+      "files": [
+        "src/index.mjs",
+        "test/fixtures/corpus.json",
+        "test/fuzz/core-fuzz.mjs"
+      ]
+    },
+    "performance": {
+      "description": "Files that affect local benchmark behavior.",
+      "hash": "03fb72849f14dbcf84caa04dbde24a26eccf67cac21a3af732c7cbf1f343af3d",
+      "files": [
+        "benchmarks/benchmark-health.mjs",
+        "benchmarks/core-benchmark.mjs",
+        "benchmarks/data/.gitkeep",
+        "benchmarks/data/editor-frameworks/slate-package.json",
+        "benchmarks/data/editor-frameworks/slate-v2-package.json",
+        "benchmarks/fetch-editor-frameworks-research.mjs",
+        "benchmarks/fetch-source-pass-research.mjs",
+        "benchmarks/package-boundary-gates.mjs",
+        "benchmarks/render-perf-index.mjs",
+        "benchmarks/render-rich-text-viewer.mjs",
+        "benchmarks/rich-text-editors-benchmark.mjs",
+        "benchmarks/slate-v2-legacy-benchmark.mjs",
+        "benchmarks/startup-import.mjs",
+        "src/index.mjs"
+      ]
+    },
+    "evidence-docs": {
+      "description": "Evidence notes and generated perf documentation.",
+      "hash": "2c63aca828a0f78b1f9237793be6767f57b9d3d3993c7ac50ee7e53b61bce95f",
+      "files": [
+        "docs/perf/.gitkeep",
+        "docs/perf/evidence.html",
+        "docs/perf/index.html",
+        "docs/perf/perf-wiki.json",
+        "docs/perf/rich-text-data.json",
+        "docs/perf/rich-text.html",
+        "docs/perf/slate-v2-internals-data.json",
+        "docs/perf/slate-v2-internals.html",
+        "iterations/000-bootstrap-evidence.md",
+        "iterations/001-slate-v2-legacy-evidence.md",
+        "iterations/002-rich-text-editor-evidence-matrix.md",
+        "iterations/003-evidence-control-plane.md",
+        "iterations/004-clipboard-over-budget-investigation.md",
+        "research/benchmark-registry.json",
+        "research/editor-frameworks-sources.json",
+        "research/evidence-source-map.md",
+        "research/repos/.gitkeep",
+        "research/repos/editor-frameworks/manifest.json",
+        "research/source-pass-sources.json"
+      ]
+    },
+    "package-shape": {
+      "description": "Package metadata, lockfiles, and TypeScript configuration.",
+      "hash": "eb41a277df972e6a521eb6afe08a1108a52bab0b2fdc9fc233eee315e569b36a",
+      "files": ["package-lock.json", "package.json"]
+    }
+  }
+}

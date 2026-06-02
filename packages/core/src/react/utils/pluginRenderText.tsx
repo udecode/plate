@@ -3,12 +3,23 @@ import React from 'react';
 import type { PlateEditor } from '../editor/PlateEditor';
 import type { AnyEditorPlatePlugin } from '../plugin/PlatePlugin';
 
+import { getSlateClass } from '../../lib';
 import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
 import { type PlateTextProps, PlateText } from '../components/plate-nodes';
 import { useReadOnly } from '../slate-react';
 import { getRenderNodeProps } from './getRenderNodeProps';
 
 export type RenderText = (props: PlateTextProps) => React.ReactElement<any>;
+
+const getSimpleTextAttributes = (props: PlateTextProps, className?: string) => {
+  const attributes = (props.attributes ?? {}) as any;
+
+  return {
+    ...attributes,
+    className:
+      [className, attributes.className].filter(Boolean).join(' ') || undefined,
+  };
+};
 
 /**
  * Get a `Editable.renderText` handler for `plugin.node.type`. If the type is
@@ -20,16 +31,34 @@ export const pluginRenderText = (
   plugin: AnyEditorPlatePlugin
 ): RenderText =>
   function render(nodeProps) {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    const readOnly = useReadOnly();
     const {
       render: { node },
     } = plugin;
     const { children, text } = nodeProps;
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    const readOnly = useReadOnly();
+    const textKey = plugin.node.type ?? plugin.key;
 
     if (isEditOnly(readOnly, plugin, 'render')) return children;
 
-    if (text[plugin.node.type ?? plugin.key]) {
+    if (text[textKey]) {
+      const canUsePlainText =
+        !node &&
+        editor.meta.pluginCache.inject.nodeProps.length === 0 &&
+        !plugin.node.props &&
+        !plugin.node.dangerouslyAllowAttributes?.length;
+
+      if (canUsePlainText) {
+        const Tag = (plugin.render?.as ??
+          'span') as keyof HTMLElementTagNameMap;
+        const attributes = getSimpleTextAttributes(
+          nodeProps,
+          getSlateClass(plugin.node.type) || undefined
+        );
+
+        return <Tag {...attributes}>{children}</Tag>;
+      }
+
       const Text = node ?? PlateText;
 
       const ctxProps = getRenderNodeProps({

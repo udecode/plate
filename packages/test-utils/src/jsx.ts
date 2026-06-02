@@ -14,7 +14,6 @@ export { createHyperscript };
 declare global {
   // biome-ignore lint/style/noNamespace: Required for TypeScript JSX typing
   namespace JSX {
-    // biome-ignore lint/style/useConsistentTypeDefinitions: JSX.IntrinsicElements must be an interface per TypeScript specification
     interface IntrinsicElements {
       anchor: any;
       cursor: any;

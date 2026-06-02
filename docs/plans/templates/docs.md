@@ -27,7 +27,7 @@ Completion threshold:
 - Docs closure is legal only when the page teaches the fastest correct path,
   every claim is source-backed, docs-lane shape is satisfied, required MDX/link/
   preview checks are recorded, and
-  `node .agents/rules/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}`
+  `node .agents/skills/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}`
   passes.
 
 Verification surface:
@@ -71,7 +71,7 @@ Completion rule:
   remains unchecked. If an item does not apply, check it and add `N/A: <reason>`.
 - Do not call `update_goal(status: complete)` until every completion threshold
   above is satisfied, final evidence is recorded, and
-  `node .agents/rules/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}`
+  `node .agents/skills/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}`
   passes.
 - Do not create hook state for this goal. This file plus the active goal are the
   durable state.
@@ -92,8 +92,8 @@ Start Gates:
 | PR/tracker expectation decision | pending | pending |
 
 Work Checklist:
-- [ ] Objective includes outcome, completion threshold, verification surface,
-      constraints, boundaries, and blocked condition.
+- [ ] Short objective plus outcome, completion threshold, verification surface,
+      constraints, boundaries, and blocked condition are concrete.
 - [ ] Docs lane is classified as install, guide/system, plugin/feature,
       serialization/conversion, workflow/AI, API reference, or spec/law.
 - [ ] Target docs and nearest sibling docs were read before writing.
@@ -137,7 +137,7 @@ Completion Gates:
 | Agent rules or skills changed | pending | Run `pnpm install` and verify generated skill sync | pending |
 | Autoreview for non-trivial docs changes | pending | Load `.agents/skills/autoreview/SKILL.md` and run the right target, or record N/A for tiny/no-local-patch work | pending |
 | Final lint | pending | Run `pnpm lint:fix` or scoped equivalent | pending |
-| Goal plan complete | yes | Run `node .agents/rules/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` | pending |
+| Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` | pending |
 
 Phase / pass table:
 | Phase | Status | Evidence | Next |

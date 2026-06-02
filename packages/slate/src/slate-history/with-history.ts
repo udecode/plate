@@ -1,11 +1,16 @@
 import {
   type Editor,
   type LegacyEditorMethods,
+  type NodeBatchUpdate,
   type Operation,
   OperationApi,
   PathApi,
   type TRange,
 } from '../interfaces/index';
+import {
+  applySetNodeBatchOperations,
+  buildSetNodeBatchOperations,
+} from '../internal/transforms/setNodesBatch';
 import { syncLegacyMethods } from '../utils/assignLegacyTransforms';
 
 const cloneRange = (range: TRange | null | undefined) =>
@@ -126,6 +131,12 @@ export const withHistory = <T extends Editor>(editor: T) => {
     }
 
     apply(op);
+  };
+
+  e.setNodesBatch = (updates: NodeBatchUpdate[]) => {
+    const ops = buildSetNodeBatchOperations(e, updates as any);
+
+    applySetNodeBatchOperations(e, ops as any);
   };
 
   e.writeHistory = (stack: 'redos' | 'undos', batch: any) => {

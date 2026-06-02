@@ -59,9 +59,8 @@ export const TextApi: {
 export type DecoratedRange = SlateDecoratedRange;
 
 /** A utility type to get all the mark types from a root node type. */
-export type MarkKeysOf<N extends TNode> = {} extends MarksOf<N>
-  ? unknown
-  : keyof MarksOf<N>;
+export type MarkKeysOf<N extends TNode> =
+  {} extends MarksOf<N> ? unknown : keyof MarksOf<N>;
 
 export type MarksIn<V extends Value> = MarksOf<V[number]>;
 

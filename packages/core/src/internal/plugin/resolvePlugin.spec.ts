@@ -1,5 +1,6 @@
 import { createSlateEditor } from '../../lib/editor';
 import { createSlatePlugin } from '../../lib/plugin';
+import { defineInputRule } from '../../lib/plugins/input-rules';
 import { DebugPlugin } from '../../lib/plugins/debug/DebugPlugin';
 import { validatePlugin } from './resolvePlugin';
 
@@ -31,6 +32,34 @@ describe('resolvePlugin', () => {
         ],
       }).plugins.aa.node.type
     ).toBe('ac');
+  });
+
+  it('does not mutate configured inputRules reused across editors', () => {
+    const configuredRule = defineInputRule({
+      apply: () => true,
+      target: 'insertText',
+      trigger: '*',
+    });
+    const config = {
+      inputRules: [configuredRule],
+    };
+    const plugin = createSlatePlugin({
+      key: 'inputRulesPlugin',
+    }).configure(config);
+    const firstEditor = createSlateEditor({
+      plugins: [plugin],
+    });
+    const secondEditor = createSlateEditor({
+      plugins: [plugin],
+    });
+
+    expect(config.inputRules).toEqual([configuredRule]);
+    expect(
+      firstEditor.meta.inputRules.plugins.inputRulesPlugin.rules
+    ).toHaveLength(1);
+    expect(
+      secondEditor.meta.inputRules.plugins.inputRulesPlugin.rules
+    ).toHaveLength(1);
   });
 
   it('reports plugins that do not come from createSlatePlugin', () => {

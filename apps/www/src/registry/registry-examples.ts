@@ -56,10 +56,10 @@ export const examples: Registry['items'] = [
     type: 'registry:example',
   },
   {
-    dependencies: ['@platejs/basic-nodes', '@platejs/basic-nodes'],
+    dependencies: ['@faker-js/faker'],
     files: [
       {
-        path: 'examples/hundreds-blocks-demo.tsx',
+        path: 'examples/huge-document-demo.tsx',
         type: 'registry:example',
       },
       {
@@ -67,8 +67,8 @@ export const examples: Registry['items'] = [
         type: 'registry:example',
       },
     ],
-    name: 'hundreds-blocks-demo',
-    registryDependencies: ['editor'],
+    name: 'huge-document-demo',
+    registryDependencies: ['@shadcn/button'],
     type: 'registry:example',
   },
   {

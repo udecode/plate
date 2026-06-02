@@ -1,6 +1,10 @@
 {
   "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
-  "extends": ["ultracite/core", "ultracite/react", "ultracite/next"],
+  "extends": [
+    "ultracite/biome/core",
+    "ultracite/biome/react",
+    "ultracite/biome/next"
+  ],
   "assist": {
     "includes": ["!packages/**/index.ts"]
   },
@@ -12,13 +16,13 @@
   },
   "files": {
     "includes": [
-      "**",
       "!!node_modules/@opentelemetry",
       "!!node_modules/@effect-ts",
       "!!node_modules/pdf-lib",
       "!!node_modules/fast-check",
       "!!node_modules/puppeteer-core",
       "!!**/.turbo",
+      "!!.tmp",
       "!!**/dist",
       "!!**/public",
       "!!**/skills",
@@ -33,6 +37,7 @@
   "linter": {
     "rules": {
       "correctness": {
+        "noGlobalDirnameFilename": "off", // node scripts/tests
         "useExhaustiveDependencies": "off", // eslint
         "useHookAtTopLevel": "off", // eslint
         "noUndeclaredVariables": "off", // ts
@@ -57,6 +62,7 @@
         "noUnknownAtRules": "off", // allow for Tailwind @ rules
         "noEmptyBlockStatements": "off", // chill
         "useAwait": "off", // chill
+        "noReactForwardRef": "off", // public components still expose forwardRef
         "noDocumentCookie": "off", // shadcn,
         "noBitwiseOperators": "off", // chill
         "noConfusingVoidType": "off" // false +
@@ -64,19 +70,26 @@
       "style": {
         "noMagicNumbers": "off", // chill
         "useFilenamingConvention": "off", // chill
+        "noNegationElse": "off", // chill
         "noNestedTernary": "off", // chill
         "noNonNullAssertion": "off", // ts chill
+        "noSubstr": "off", // chill
+        "useConsistentTypeDefinitions": "off", // chill
         "useDefaultSwitchClause": "off", // chill
         "useBlockStatements": "off" // chill,
       },
       "nursery": {
         "noShadow": "off", // chill
+        "useSortedClasses": "off", // chill
         "noIncrementDecrement": "off" // chill
       },
       "complexity": {
+        "noExtraBooleanCast": "off", // chill
         "useSimplifiedLogicExpression": "off", // false +
         "noExcessiveCognitiveComplexity": "off", // chill
         "noForEach": "off", // chill
+        "noUselessCatchBinding": "off", // chill
+        "useOptionalChain": "off", // chill
         "noVoid": "off", // chill
         "noBannedTypes": "off" // chill
       },
@@ -108,13 +121,19 @@
       }
     },
     {
+      "includes": ["**/scripts/**", "tooling/scripts/**"],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noConsole": "off"
+          }
+        }
+      }
+    },
+    {
       "includes": ["packages/**"],
       "linter": {
         "rules": {
-          "nursery": {
-            "noReactForwardRef": "off" // react 18
-          },
-
           "correctness": {
             "noUnusedPrivateClassMembers": "off" // false +
           }
@@ -130,9 +149,6 @@
       ],
       "linter": {
         "rules": {
-          "nursery": {
-            "noUnusedExpressions": "off"
-          },
           "correctness": {
             "useJsxKeyInIterable": "off"
           },
@@ -141,6 +157,7 @@
             "noUnusedTemplateLiteral": "off"
           },
           "suspicious": {
+            "noUnusedExpressions": "off",
             "noThenProperty": "off",
             "noSkippedTests": "off",
             "noNonNullAssertedOptionalChain": "off",
@@ -187,6 +204,53 @@
           },
           "suspicious": {
             "noAlert": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["benchmarks/editor/**"],
+      "linter": {
+        "rules": {
+          "a11y": {
+            "noLabelWithoutControl": "off",
+            "noPositiveTabindex": "off",
+            "useButtonType": "off"
+          },
+          "complexity": {
+            "noStaticOnlyClass": "off",
+            "useLiteralKeys": "off",
+            "useOptionalChain": "off"
+          },
+          "correctness": {
+            "noQwikUseVisibleTask": "off",
+            "noUnusedFunctionParameters": "off",
+            "noUnusedPrivateClassMembers": "off",
+            "noUnusedVariables": "off"
+          },
+          "performance": {
+            "useTopLevelRegex": "off"
+          },
+          "style": {
+            "noDescendingSpecificity": "off",
+            "noHeadElement": "off",
+            "noParameterProperties": "off",
+            "useAtIndex": "off",
+            "useCollapsedElseIf": "off",
+            "useConsistentArrayType": "off",
+            "useConsistentMemberAccessibility": "off",
+            "useConsistentTypeDefinitions": "off",
+            "useNodejsImportProtocol": "off",
+            "useReadonlyClassProperties": "off",
+            "useTemplate": "off"
+          },
+          "suspicious": {
+            "noAlert": "off",
+            "noConsole": "off",
+            "noDuplicateJsxProps": "off",
+            "noEvolvingTypes": "off",
+            "noUnassignedVariables": "off",
+            "useIterableCallbackReturn": "off"
           }
         }
       }

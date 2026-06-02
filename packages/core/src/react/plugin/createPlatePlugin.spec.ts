@@ -87,4 +87,18 @@ describe('withComponent method', () => {
 
     expect(1).toBe(1);
   });
+
+  it('accepts legacy normalizeInitialValue handlers that mutate in place', () => {
+    createPlatePlugin({
+      key: 'normalize',
+      normalizeInitialValue: ({ value }) => {
+        value.push({
+          children: [{ text: '' }],
+          type: 'p',
+        } as any);
+      },
+    });
+
+    expect(1).toBe(1);
+  });
 });

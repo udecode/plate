@@ -26,7 +26,7 @@ import mammoth from 'mammoth';
 
 import { preprocessMammothHtml } from '../preprocessMammothHtml';
 
-// biome-ignore lint/nursery/noUnusedExpressions: test
+// biome-ignore lint/suspicious/noUnusedExpressions: test
 jsx;
 
 const injectConfig = {

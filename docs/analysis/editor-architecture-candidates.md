@@ -11,6 +11,7 @@ It is intentionally not a prescription for exact features Plate should copy. The
 - [Tiptap](https://github.com/ueberdosis/tiptap)
 - [Pretext](https://github.com/chenglou/pretext)
 - [Premirror](https://github.com/samwillis/premirror)
+- [Portable Text](https://github.com/portabletext/portabletext)
 - [Slate](https://github.com/ianstormtaylor/slate)
 - [edix](https://github.com/inokawa/edix)
 - [use-editable](https://github.com/FormidableLabs/use-editable)
@@ -34,6 +35,7 @@ for repo in \
   ueberdosis/tiptap \
   chenglou/pretext \
   samwillis/premirror \
+  portabletext/portabletext \
   ianstormtaylor/slate \
   inokawa/edix \
   FormidableLabs/use-editable \
@@ -59,16 +61,17 @@ done
 2. Lexical
 3. Tiptap
 4. Pretext + Premirror
-5. Slate
-6. edix
-7. use-editable
-8. rich-textarea
-9. @react-libraries/markdown-editor
-10. urql
-11. TanStack DB
-12. VS Code + Language Server Protocol
-13. EditContext API
-14. Open UI Richer Text Fields
+5. Portable Text
+6. Slate
+7. edix
+8. use-editable
+9. rich-textarea
+10. @react-libraries/markdown-editor
+11. urql
+12. TanStack DB
+13. VS Code + Language Server Protocol
+14. EditContext API
+15. Open UI Richer Text Fields
 
 ## Tier 1: Direct Comparison Targets
 
@@ -131,6 +134,21 @@ Why Premirror matters:
 Take:
 
 This is not "another editor." It is the strongest path toward solving the unsolved page-layout problem on the web.
+
+### Portable Text
+
+Not the engine winner. The strongest spec, schema, and behavior-authoring benchmark in this set.
+
+Why it matters:
+
+- It treats structured block content as a portable JSON format with a real specification, not as an editor's private runtime shape.
+- Its editor is headless and schema-driven: styles, lists, decorators, annotations, block objects, inline objects, and nested editable containers all flow from declared schema.
+- Its Behavior API has a clear event/guard/action model with `execute`, `forward`, `raise`, and `effect`, which is a better vocabulary for input and paste customization than ad hoc handler chains.
+- Its official testing story uses real-browser behavior specs and compact Portable Text snapshots, which is the right level for editor regression proof.
+
+Take:
+
+Steal the spec discipline, schema-applicability selectors, behavior event/action vocabulary, and scenario-test posture. Do not steal the Portable Text value format as Slate core, the CMS-shaped schema categories as raw Slate law, or its XState actor engine as the runtime backbone.
 
 ## Tier 2: Important, But Not the Main Bet
 
@@ -282,6 +300,8 @@ For future architecture work, the real comparison set should be:
 - Lexical
 - Tiptap
 - Pretext + Premirror
+- Portable Text, when the question touches schema profiles, behavior authoring,
+  portability, or test standards
 
 That is the serious shortlist.
 
@@ -318,6 +338,8 @@ Tiptap is the best productization benchmark.
 
 Pretext, especially combined with the `../premirror` direction, is the most important future-facing bet because it attacks the layout and pagination problem that web editors still mostly fake.
 
+Portable Text is the strongest reminder that editor architecture is not only runtime mechanics. A serious editor needs a content specification, schema-derived applicability, behavior customization semantics, and replayable behavior tests. Slate v2 should steal those standards without becoming a Portable Text-only editor.
+
 The smartest non-editor inspirations are TanStack DB and the VS Code/LSP model.
 
 `edix`, `use-editable`, `rich-textarea`, and `@react-libraries/markdown-editor` matter because they show how to build lighter editing surfaces without dragging a whole cathedral into every text field.
@@ -328,6 +350,7 @@ The smartest non-editor inspirations are TanStack DB and the VS Code/LSP model.
 - [ProseMirror GitHub](https://github.com/ProseMirror/prosemirror)
 - [Lexical](https://lexical.dev/docs/intro)
 - [Tiptap](https://tiptap.dev/docs/editor/getting-started/overview)
+- [Portable Text](https://github.com/portabletext/portabletext)
 - [Slate](https://github.com/ianstormtaylor/slate)
 - [edix](https://github.com/inokawa/edix)
 - [use-editable](https://github.com/FormidableLabs/use-editable)

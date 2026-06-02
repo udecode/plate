@@ -30,7 +30,7 @@ export const pluginInjectNodeProps = (
 ): GetInjectNodePropsReturnType | undefined => {
   const {
     key,
-    inject: { nodeProps: injectNodeProps },
+    inject: { excludeBelowPlugins, maxLevel, nodeProps: injectNodeProps },
   } = plugin;
 
   const { element, text } = nodeProps;
@@ -54,9 +54,7 @@ export const pluginInjectNodeProps = (
   } = injectNodeProps;
 
   const injectMatch = getInjectMatch(editor, plugin);
-  const shouldResolvePathForMatch = !!(
-    plugin.inject.excludeBelowPlugins || plugin.inject.maxLevel
-  );
+  const shouldResolvePathForMatch = !!(excludeBelowPlugins || maxLevel);
 
   if (
     !injectMatch(

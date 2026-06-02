@@ -1,0 +1,95 @@
+{
+  "version": 1,
+  "generatedBy": "@shapeshift-labs/evidence-kit",
+  "note": "Target-owned corpus for editor benchmark evidence row normalization.",
+  "cases": [
+    {
+      "name": "slate-v2-large-document-ready-row",
+      "tags": ["slate-v2", "large-document", "benchmark-row"],
+      "input": {
+        "category": "large-document",
+        "fixture": "ready-5000-blocks",
+        "library": "slate-v2",
+        "status": "ok",
+        "medianUs": 31050,
+        "p95Us": 34000,
+        "ops": 5000,
+        "note": "ready time row from a large document benchmark family"
+      },
+      "expected": {
+        "category": "large-document",
+        "fixture": "ready-5000-blocks",
+        "library": "slate-v2",
+        "status": "ok",
+        "medianUs": 31050,
+        "p95Us": 34000,
+        "ops": 5000,
+        "note": "ready time row from a large document benchmark family"
+      }
+    },
+    {
+      "name": "slate-unsupported-table-row",
+      "tags": ["slate", "unsupported", "benchmark-row"],
+      "input": {
+        "category": "selection",
+        "fixture": "table-range",
+        "library": "slate",
+        "status": "unsupported",
+        "note": "unsupported rows stay visible instead of disappearing from the result"
+      },
+      "expected": {
+        "category": "selection",
+        "fixture": "table-range",
+        "library": "slate",
+        "status": "unsupported",
+        "note": "unsupported rows stay visible instead of disappearing from the result"
+      }
+    },
+    {
+      "name": "slate-v2-timeout-row",
+      "tags": ["slate-v2", "timeout", "benchmark-row"],
+      "input": {
+        "category": "clipboard",
+        "fixture": "paste-large-fragment",
+        "library": "slate-v2",
+        "status": "timeout",
+        "medianUs": 0,
+        "p95Us": 0,
+        "ops": 0
+      },
+      "expected": {
+        "category": "clipboard",
+        "fixture": "paste-large-fragment",
+        "library": "slate-v2",
+        "status": "timeout",
+        "medianUs": 0,
+        "p95Us": 0,
+        "ops": 0
+      }
+    },
+    {
+      "name": "slate-v2-legacy-compare-row",
+      "tags": ["slate-v2", "slate", "benchmark-row"],
+      "input": {
+        "category": "slate-react-huge-document-legacy-compare",
+        "fixture": "5000-blocks/split-selection/readyMs",
+        "library": "slate-v2:dom-present",
+        "status": "ok",
+        "medianUs": 23000,
+        "p95Us": 35000,
+        "ops": 5,
+        "note": "surface=v2DomPresent; source=compare artifact"
+      },
+      "expected": {
+        "category": "slate-react-huge-document-legacy-compare",
+        "fixture": "5000-blocks/split-selection/readyMs",
+        "library": "slate-v2:dom-present",
+        "status": "ok",
+        "medianUs": 23000,
+        "p95Us": 35000,
+        "ops": 5,
+        "note": "surface=v2DomPresent; source=compare artifact"
+      }
+    }
+  ]
+}

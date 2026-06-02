@@ -1,42 +1,70 @@
-/** @jsxRuntime classic */
-/** @jsx jsx */
-import type { Descendant, Value } from 'platejs';
+import { faker } from '@faker-js/faker';
+import type { Value } from 'platejs';
 
-import { jsx } from '@platejs/test-utils';
+type HugeDocumentBlock = {
+  text: string;
+  type: 'heading-one' | 'paragraph';
+};
 
-jsx;
+type HugeDocumentEngine = 'plate' | 'slate';
 
-const HEADINGS = 300;
-const PARAGRAPHS = 10;
+const DEFAULT_HUGE_DOCUMENT_BLOCKS = 10_000;
+const HEADING_INTERVAL = 100;
+const cachedHugeDocumentBlocks: HugeDocumentBlock[] = [];
 
-export const createHugeDocumentValue = () => {
-  const hugeDocument: Descendant[] = [];
+const buildHugeDocumentBlocks = (blocks: number): HugeDocumentBlock[] => {
+  faker.seed(1);
 
-  for (let h = 0; h < HEADINGS; h++) {
-    hugeDocument.push(
-      (
-        <hh1>Do voluptate enim commodo quis ad aliqua dolore enim eu nisi.</hh1>
-      ) as any
-    );
-
-    for (let p = 0; p < PARAGRAPHS; p++) {
-      hugeDocument.push(
-        (
-          <hp>
-            Ex est consequat anim ad deserunt sint. Ea excepteur consequat amet
-            amet excepteur culpa nulla. Voluptate exercitation pariatur enim.
-            Excepteur ea nulla nostrud est ex sunt anim. Sunt laborum et et ea
-            aliquip excepteur sint nulla amet. Sunt sit cillum amet. Anim esse
-            ut irure ipsum irure proident consectetur eu velit esse. Laborum
-            minim laborum laborum sunt eiusmod aliqua fugiat adipisicing. Cillum
-            aliqua exercitation ex aliquip aliquip amet aliquip est eiusmod
-            tempor pariatur veniam adipisicing ad. Officia sunt ipsum
-            adipisicing eu quis laborum do cupidatat officia dolor.
-          </hp>
-        ) as any
-      );
+  return Array.from({ length: blocks }, (_, index) => {
+    if (index % HEADING_INTERVAL === 0) {
+      return {
+        text: faker.lorem.sentence(),
+        type: 'heading-one',
+      };
     }
+
+    return {
+      text: faker.lorem.paragraph(),
+      type: 'paragraph',
+    };
+  });
+};
+
+const toPlateValue = (blocks: HugeDocumentBlock[]): Value =>
+  blocks.map(({ text, type }) => ({
+    children: [{ text }],
+    type: type === 'heading-one' ? 'h1' : 'p',
+  })) as Value;
+
+const toSlateValue = (blocks: HugeDocumentBlock[]): Value =>
+  blocks.map(({ text, type }) => ({
+    children: [{ text }],
+    type,
+  })) as Value;
+
+export const getHugeDocumentBlocks = (
+  blocks = DEFAULT_HUGE_DOCUMENT_BLOCKS
+): HugeDocumentBlock[] => {
+  if (cachedHugeDocumentBlocks.length >= blocks) {
+    return structuredClone(cachedHugeDocumentBlocks.slice(0, blocks));
   }
 
-  return hugeDocument as Value;
+  cachedHugeDocumentBlocks.length = 0;
+  cachedHugeDocumentBlocks.push(...buildHugeDocumentBlocks(blocks));
+
+  return structuredClone(cachedHugeDocumentBlocks.slice(0, blocks));
+};
+
+export const createHugeDocumentValue = ({
+  blocks = DEFAULT_HUGE_DOCUMENT_BLOCKS,
+  engine = 'plate',
+}: {
+  blocks?: number;
+  engine?: HugeDocumentEngine;
+} = {}): Value => {
+  const hugeDocumentBlocks = getHugeDocumentBlocks(blocks);
+
+  return engine === 'slate'
+    ? toSlateValue(hugeDocumentBlocks)
+    : toPlateValue(hugeDocumentBlocks);
 };

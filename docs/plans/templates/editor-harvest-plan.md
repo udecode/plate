@@ -1,8 +1,7 @@
 # {{TITLE}}
 
 Objective:
-TODO: Write the exact active editor-harvest-plan objective after creating this
-file.
+TODO: Write the short create_goal objective, under 240 characters. Put the full editor-harvest-plan contract in the sections below.
 
 Goal plan:
 {{PLAN_PATH}}
@@ -18,7 +17,7 @@ Completion threshold:
   row remains, every in-lane row has owner coverage/action/target/proof or defer
   evidence, downstream lane skill gates are applied, accepted-plan handoff is
   present, behavior-only rows use fresh invariant wording only, and
-  `node .agents/rules/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` passes.
+  `node .agents/skills/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` passes.
 
 Verification surface:
 - TODO: Name the harvest report, inventory/test-index files, owner-coverage
@@ -66,7 +65,7 @@ Completion rule:
   remains unchecked. If an item does not apply, check it and add `N/A: <reason>`.
 - Do not call `update_goal(status: complete)` until every completion threshold
   above is satisfied, final handoff is written, and
-  `node .agents/rules/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` passes.
+  `node .agents/skills/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` passes.
 - Do not create hook state for this goal. This file plus the active goal are the
   durable state.
 
@@ -78,8 +77,8 @@ Start Gates:
 | Source of truth read before edits | pending | pending |
 
 Work Checklist:
-- [ ] Objective includes lane outcome, completion threshold, verification
-      surface, constraints, boundaries, and blocked condition.
+- [ ] Short objective plus lane outcome, completion threshold, verification
+      surface, constraints, boundaries, and blocked condition are concrete.
 - [ ] Harvest report path, status, score, license mode, output mode, inventory
       counts, matrix rows, skips, next slice, and pass-state ledger recorded.
 - [ ] Inventory and test-index existence/missing reasons recorded.
@@ -106,7 +105,7 @@ Completion Gates:
 | Downstream lane gates applied | pending | Record the selected downstream skill gates or why no downstream lane applies | pending |
 | Issue or claim accounting changed | pending | Sync the relevant issue/claim accounting or record why no sync applies | pending |
 | Accepted-plan handoff | pending | Emit accepted-plan execution handoff or keep the plan pending with the next pass | pending |
-| Goal plan complete | yes | Run `node .agents/rules/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` | pending |
+| Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` | pending |
 
 Phase / pass table:
 | Phase | Status | Evidence | Next |

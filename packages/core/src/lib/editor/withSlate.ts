@@ -160,6 +160,7 @@ export type WithSlateOptions<
     | 'decorate'
     | 'extendEditor'
     | 'inject'
+    | 'transformInitialValue'
     | 'normalizeInitialValue'
     | 'options'
     | 'override'

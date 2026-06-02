@@ -1,0 +1,54 @@
+---
+description: Slate v2 Autoresearch recipe picker. Lists/recommends Codex Autoresearch recipes, produces read-only setup plans, and maps non-perf loops such as test runtime, typecheck, bundle size, memory, command latency, and quality-gap.
+argument-hint: '[recommend | list | show <recipe> | setup <recipe> | prompt]'
+disable-model-invocation: true
+---
+
+# Slate AR Recipe
+
+Handle $ARGUMENTS by loading `slate-ar` and using Codex Autoresearch recipes.
+
+Use this when the user asks what Autoresearch loop to run, or when a task is
+measured but not obviously performance-specific.
+
+## Contract
+
+- Default to read-only `recipes recommend`, `recipes list`, `recipes show`, and
+  `setup-plan`.
+- Target cwd is `.tmp/slate-v2`.
+- Do not start packets unless the user explicitly asks to run the loop.
+- Do not trust external recipe catalogs without inspecting them first.
+- In Slate v2, prefer explicit Bun/package commands over a generic npm recipe
+  when the recommender picks `node-test-runtime`.
+
+## Built-In Recipe Uses
+
+- `node-test-runtime` / `vitest-runtime`: test gate repeatability. Often route
+  to `slate-ar-gate`.
+- `typescript-compile-time`: typecheck/runtime graph pressure.
+- `bundle-size`: package or site bundle footprint.
+- `memory-usage`: workload memory smoke, after replacing the placeholder with
+  the real workload.
+- `command-latency`: custom command duration, after replacing the placeholder.
+- `quality-gap`: broad research checklist. Usually route to `slate-ar-quality`.
+- `custom`: last resort when no built-in recipe fits.
+
+## Commands
+
+Use direct CLI until a root shortcut exists:
+
+```bash
+node ../codex-autoresearch/plugins/codex-autoresearch/scripts/autoresearch.mjs recipes list --cwd .tmp/slate-v2
+node ../codex-autoresearch/plugins/codex-autoresearch/scripts/autoresearch.mjs recipes recommend --cwd .tmp/slate-v2
+node ../codex-autoresearch/plugins/codex-autoresearch/scripts/autoresearch.mjs recipes show <recipe-id> --cwd .tmp/slate-v2
+node ../codex-autoresearch/plugins/codex-autoresearch/scripts/autoresearch.mjs setup-plan --cwd .tmp/slate-v2 --recipe <recipe-id>
+node ../codex-autoresearch/plugins/codex-autoresearch/scripts/autoresearch.mjs doctor --cwd .tmp/slate-v2 --check-benchmark --explain
+```
+
+If the recipe output is customized, run `benchmark-lint` before any packet.
+
+## Handoff
+
+Report the selected recipe, metric, direction, benchmark command, checks
+command, caveats, and recommended owner: `slate-ar`, `slate-ar-quality`,
+`slate-ar-gate`, `slate-ar-perf`, `slate-patch`, or `slate-plan`.

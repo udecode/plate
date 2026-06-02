@@ -1,0 +1,109 @@
+{
+  "generatedAt": "2026-06-02T11:46:14.943Z",
+  "name": "benchmark-health",
+  "nextActions": [
+    {
+      "id": "refresh-core-node-transforms",
+      "priority": 4,
+      "reason": "Active artifact is 15.0 days old: ../../.tmp/slate-v2/tmp/slate-node-transform-benchmark.json",
+      "title": "Refresh core-node-transforms"
+    },
+    {
+      "id": "refresh-core-text-selection",
+      "priority": 4,
+      "reason": "Active artifact is 15.0 days old: ../../.tmp/slate-v2/tmp/slate-text-selection-benchmark.json",
+      "title": "Refresh core-text-selection"
+    },
+    {
+      "id": "optional-core-transaction-current",
+      "priority": 5,
+      "reason": "Optional active artifact is missing: ../../.tmp/slate-v2/tmp/slate-transaction-benchmark.json",
+      "title": "Decide whether core-transaction-current should stay optional"
+    },
+    {
+      "id": "optional-history-retained-memory",
+      "priority": 5,
+      "reason": "Optional active artifact is missing: ../../.tmp/slate-v2/tmp/slate-history-retained-memory-benchmark.json",
+      "title": "Decide whether history-retained-memory should stay optional"
+    },
+    {
+      "id": "discard-unregistered-artifacts",
+      "priority": 6,
+      "reason": "62 unregistered benchmark JSON files are ignored by the active Evidence Kit flow.",
+      "title": "Delete or ignore historical unregistered artifacts"
+    }
+  ],
+  "node": "v24.14.1",
+  "registry": {
+    "activeArtifacts": 23,
+    "discardedUnregisteredArtifacts": 62,
+    "ignoredUnregisteredArtifacts": [
+      "../../.tmp/slate-v2/packages/slate-react/tmp/slate-react-runtime-node-fanout-benchmark.json",
+      "../../.tmp/slate-v2/tmp/slate-pagination-virtualized-char-burst-benchmark.json",
+      "../../.tmp/slate-v2/tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-defaultAuto-blocks-20-iters-1-ops-3.json",
+      "../../.tmp/slate-v2/tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-defaultAuto-blocks-5000-iters-1-ops-10.json",
+      "../../.tmp/slate-v2/tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-defaultAuto-blocks-5000-iters-3-ops-10.json",
+      "../../.tmp/slate-v2/tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-defaultAuto-stagedDomPresent-blocks-20-iters-1-ops-3.json",
+      "../../.tmp/slate-v2/tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-defaultAuto-stagedDomPresent-blocks-5000-iters-1-ops-10.json",
+      "../../.tmp/slate-v2/tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-defaultAuto-stagedDomPresent-blocks-5000-iters-1-ops-3.json",
+      "../../.tmp/slate-v2/tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-defaultAuto-stagedDomPresent-blocks-5000-iters-5-ops-10.json",
+      "../../.tmp/slate-v2/tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-defaultAuto-stagedDomPresent-virtualized-blocks-5000-iters-3-ops-10.json",
+      "../../.tmp/slate-v2/tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-stagedDomPresent-blocks-20-iters-1-ops-3.json",
+      "../../.tmp/slate-v2/tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-stagedDomPresent-blocks-5000-iters-1-ops-10.json",
+      "../../.tmp/slate-v2/tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-stagedDomPresent-blocks-5000-iters-3-ops-10.json",
+      "../../.tmp/slate-v2/tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-virtualized-blocks-20-iters-1-ops-3.json",
+      "../../.tmp/slate-v2/tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-virtualized-blocks-20000-iters-1-ops-10.json",
+      "../../.tmp/slate-v2/tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-virtualized-blocks-5000-iters-0-ops-10.json",
+      "../../.tmp/slate-v2/tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-virtualized-blocks-5000-iters-1-ops-1.json",
+      "../../.tmp/slate-v2/tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-virtualized-blocks-5000-iters-1-ops-10.json",
+      "../../.tmp/slate-v2/tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-virtualized-blocks-5000-iters-1-ops-3.json",
+      "../../.tmp/slate-v2/tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-virtualized-blocks-5000-iters-3-ops-10.json"
+    ],
+    "missingOptionalArtifacts": [
+      {
+        "ageDays": null,
+        "command": "bun run bench:core:transaction:local",
+        "cwd": "../../.tmp/slate-v2",
+        "id": "core-transaction-current",
+        "path": "../../.tmp/slate-v2/tmp/slate-transaction-benchmark.json"
+      },
+      {
+        "ageDays": null,
+        "command": "bun run bench:core:history-retained-memory:local",
+        "cwd": "../../.tmp/slate-v2",
+        "id": "history-retained-memory",
+        "path": "../../.tmp/slate-v2/tmp/slate-history-retained-memory-benchmark.json"
+      }
+    ],
+    "missingRequiredArtifacts": [],
+    "optionalArtifacts": 2,
+    "registeredPath": "research/benchmark-registry.json",
+    "requiredArtifacts": 21,
+    "staleActiveArtifacts": [
+      {
+        "ageDays": 15,
+        "command": "bun run bench:core:node-transforms:local",
+        "cwd": "../../.tmp/slate-v2",
+        "id": "core-node-transforms",
+        "path": "../../.tmp/slate-v2/tmp/slate-node-transform-benchmark.json"
+      },
+      {
+        "ageDays": 15,
+        "command": "bun run bench:core:text-selection:local",
+        "cwd": "../../.tmp/slate-v2",
+        "id": "core-text-selection",
+        "path": "../../.tmp/slate-v2/tmp/slate-text-selection-benchmark.json"
+      }
+    ]
+  },
+  "result": {
+    "path": "benchmarks/results/rich-text-editors-latest.json",
+    "rowCount": 998,
+    "statusCounts": {
+      "coverage-gap": 130,
+      "ok": 860,
+      "optional-missing-artifact": 2,
+      "unsupported": 6
+    }
+  }
+}

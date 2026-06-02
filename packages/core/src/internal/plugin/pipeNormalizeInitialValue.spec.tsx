@@ -6,15 +6,17 @@ import { createSlateEditor } from '../../lib/editor';
 import { createSlatePlugin } from '../../lib/plugin';
 import { TestPlate as Plate } from '../../react/__tests__/TestPlate';
 import { createPlateEditor, useEditorValue } from '../../react';
-import { pipeNormalizeInitialValue } from './pipeNormalizeInitialValue';
+import { pipeTransformInitialValue } from './pipeTransformInitialValue';
 
-describe('pipeNormalizeInitialValue', () => {
+describe('pipeTransformInitialValue', () => {
   const createTestPlugin = (key: string) =>
     createSlatePlugin({
       key,
-      normalizeInitialValue: ({ value: initialValue }: any) => {
-        initialValue[0].count += 1;
-      },
+      transformInitialValue: ({ value: initialValue }: any) =>
+        initialValue.map((node: any) => ({
+          ...node,
+          count: node.count + 1,
+        })),
     });
 
   const plugins = [createTestPlugin('a'), createTestPlugin('b')];
@@ -166,15 +168,80 @@ describe('pipeNormalizeInitialValue', () => {
     });
   });
 
-  it('skips normalizeInitialValue for read-only editOnly plugins', () => {
+  it('supports legacy normalizeInitialValue hooks that return a value', () => {
+    const editor = createSlateEditor({
+      plugins: [
+        createSlatePlugin({
+          key: 'legacy',
+          normalizeInitialValue: ({ value: initialValue }: any) =>
+            initialValue.map((node: any) => ({
+              ...node,
+              count: node.count + 1,
+            })),
+        }),
+      ],
+    });
+    editor.children = [
+      { children: [{ text: '' }], count: 0, type: 'p' },
+    ] as any;
+
+    pipeTransformInitialValue(editor);
+
+    expect(editor.children).toEqual([
+      { children: [{ text: '' }], count: 1, type: 'p' },
+    ]);
+  });
+
+  it('supports legacy normalizeInitialValue hooks that mutate in place', () => {
+    const editor = createSlateEditor({
+      plugins: [
+        createSlatePlugin({
+          key: 'legacy-mutate',
+          normalizeInitialValue: ({ value: initialValue }: any) => {
+            initialValue[0].count += 1;
+          },
+        }),
+      ],
+    });
+    editor.children = [
+      { children: [{ text: '' }], count: 0, type: 'p' },
+    ] as any;
+
+    pipeTransformInitialValue(editor);
+
+    expect(editor.children).toEqual([
+      { children: [{ text: '' }], count: 1, type: 'p' },
+    ]);
+  });
+
+  it('throws when a transformInitialValue hook returns undefined', () => {
+    const editor = createSlateEditor({
+      plugins: [
+        createSlatePlugin({
+          key: 'bad',
+          transformInitialValue: (() => {}) as any,
+        }),
+      ],
+      skipInitialization: true,
+    });
+    editor.children = [{ children: [{ text: '' }], type: 'p' }] as any;
+
+    expect(() => pipeTransformInitialValue(editor)).toThrow(
+      'Plugin "bad" transformInitialValue must return the next value.'
+    );
+  });
+
+  it('skips transformInitialValue for read-only editOnly plugins', () => {
     const callCount = mock();
     const editor = createSlateEditor({
       plugins: [
         createSlatePlugin({
           key: 'skip',
-          editOnly: { normalizeInitialValue: true },
-          normalizeInitialValue: () => {
+          editOnly: { transformInitialValue: true },
+          transformInitialValue: ({ value }) => {
             callCount();
+
+            return value;
           },
         }),
       ],
@@ -184,7 +251,7 @@ describe('pipeNormalizeInitialValue', () => {
     editor.dom.readOnly = true;
     (callCount as any).mockClear();
 
-    pipeNormalizeInitialValue(editor);
+    pipeTransformInitialValue(editor);
 
     expect(callCount).not.toHaveBeenCalled();
   });

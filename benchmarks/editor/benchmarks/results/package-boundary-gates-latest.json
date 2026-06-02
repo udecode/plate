@@ -1,0 +1,32 @@
+{
+  "name": "package-boundary-gates",
+  "generatedAt": "2026-06-02T11:46:13.364Z",
+  "node": "v24.14.1",
+  "rows": [
+    {
+      "category": "package-boundary",
+      "fixture": "package-root",
+      "library": "project",
+      "status": "ok",
+      "target": "src/index.mjs",
+      "files": 1,
+      "bytes": 30308,
+      "budgetBytes": 200000,
+      "budgetFiles": 32,
+      "forbidden": [],
+      "problem": ""
+    },
+    {
+      "category": "package-boundary",
+      "fixture": "npm-pack",
+      "library": "project",
+      "status": "ok",
+      "files": 45,
+      "bytes": 1203269,
+      "budgetBytes": 1250000,
+      "budgetFiles": 96,
+      "tarballBytes": 90048,
+      "problem": ""
+    }
+  ]
+}

@@ -123,7 +123,6 @@ export const deserializeMd = (
 };
 
 declare module 'unified' {
-  // biome-ignore lint/style/useConsistentTypeDefinitions: module
   interface CompileResultMap {
     remarkToSlateNode: Descendant[];
   }

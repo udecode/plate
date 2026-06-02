@@ -12,6 +12,7 @@
         "https://platejs.org/r/editor-docs",
         "https://platejs.org/r/feature-kits-docs",
         "https://platejs.org/r/form-docs",
+        "https://platejs.org/r/performance-docs",
         "https://platejs.org/r/playwright-docs",
         "https://platejs.org/r/plugin-components-docs",
         "https://platejs.org/r/plugin-context-docs",
@@ -116,7 +117,7 @@
         "https://platejs.org/r/examples-collaboration-example-docs",
         "https://platejs.org/r/examples-editable-voids-docs",
         "https://platejs.org/r/examples-export-docs",
-        "https://platejs.org/r/examples-hundreds-blocks-docs",
+        "https://platejs.org/r/examples-huge-document-docs",
         "https://platejs.org/r/examples-hundreds-editors-docs",
         "https://platejs.org/r/examples-preview-markdown-docs",
         "https://platejs.org/r/examples-version-history-docs",
@@ -247,6 +248,19 @@
       ],
       "name": "form-docs",
       "title": "Form",
+      "type": "registry:file"
+    },
+    {
+      "description": "Plate vs Slate on real large-document workloads, with reproducible benchmarks and explicit caveats.",
+      "files": [
+        {
+          "path": "../../content/(guides)/performance.mdx",
+          "target": "content/docs/plate/(guides)/performance.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "performance-docs",
+      "title": "Performance",
       "type": "registry:file"
     },
     {
@@ -1602,16 +1616,16 @@
       "type": "registry:file"
     },
     {
-      "description": "Documentation for Hundreds Blocks",
+      "description": "Documentation for Huge Document",
       "files": [
         {
-          "path": "../../content/examples/hundreds-blocks.mdx",
-          "target": "content/docs/plate/examples/hundreds-blocks.mdx",
+          "path": "../../content/examples/huge-document.mdx",
+          "target": "content/docs/plate/examples/huge-document.mdx",
           "type": "registry:file"
         }
       ],
-      "name": "examples-hundreds-blocks-docs",
-      "title": "Hundreds Blocks",
+      "name": "examples-huge-document-docs",
+      "title": "Huge Document",
       "type": "registry:file"
     },
     {
