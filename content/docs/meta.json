@@ -193,7 +193,7 @@
     "[Server-Side](/docs/examples/server-side)",
     "[Version History](/docs/examples/version-history)",
     "[Editable Voids](/docs/examples/editable-voids)",
-    "[Hundreds Blocks](/docs/examples/hundreds-blocks)",
+    "[Huge Document](/docs/examples/huge-document)",
     "[Hundreds Editors](/docs/examples/hundreds-editors)",
     "[Markdown Streaming](/docs/examples/markdown-streaming)",
     "[Preview Markdown](/docs/examples/preview-markdown)",
@@ -1140,10 +1140,10 @@
               "titleCn": "可编辑的空节点"
             },
             {
-              "description": "Rendering hundreds of blocks.",
-              "href": "/docs/examples/hundreds-blocks",
-              "title": "Hundreds Blocks",
-              "titleCn": "数百个块"
+              "description": "Compare Plate and Slate on a large document.",
+              "href": "/docs/examples/huge-document",
+              "title": "Huge Document",
+              "titleCn": "大型文档"
             },
             {
               "description": "Render hundreds of editors.",
@@ -3024,10 +3024,10 @@
         "title": "Editable Voids Demo",
         "titleCn": "Editable Voids"
       },
-      "/docs/examples/hundreds-blocks": {
-        "description": "Rendering hundreds of blocks.",
-        "title": "Hundreds Blocks",
-        "titleCn": "数百个块"
+      "/docs/examples/huge-document": {
+        "description": "Compare Plate and Slate on a large document.",
+        "title": "Huge Document",
+        "titleCn": "大型文档"
       },
       "/docs/examples/hundreds-editors": {
         "description": "Render hundreds of editors.",

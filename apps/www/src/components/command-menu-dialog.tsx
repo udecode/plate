@@ -75,7 +75,7 @@ const commandMenuCopyableRegistryNames = new Set(
   controlled-demo copilot-demo cursor-overlay-demo date-demo discussion-demo
   dnd-demo editable-voids-demo emoji-demo equation-demo excalidraw-demo
   exit-break-demo find-replace-demo floating-toolbar-demo font-demo
-  footnote-demo hundreds-blocks-demo hundreds-editors-demo html-demo
+  footnote-demo huge-document-demo hundreds-editors-demo html-demo
   indent-demo link-demo line-height-demo list-classic-demo list-demo
   markdown-demo media-demo mention-demo plugin-rules-demo preview-markdown-demo
   select-editor-demo single-block-demo slash-command-demo tabbable-demo
