@@ -2,22 +2,56 @@ import { describe, expect, it } from 'bun:test';
 
 import {
   toLocalRegistryDependency,
+  toPlateRegistryDependencySpecifier,
+  toPublicRegistryDependencySpecifier,
   toRegistryDependencySpecifier,
 } from './registry-dependencies.mts';
 
 describe('registry dependency specifiers', () => {
-  it('uses standalone Plate registry URLs for Plate registry item names', () => {
-    expect(toRegistryDependencySpecifier('toolbar')).toBe(
-      'https://platejs.org/r/toolbar.json'
+  it('uses explicit Plate namespace specifiers for Plate registry item names', () => {
+    expect(toPlateRegistryDependencySpecifier('toolbar')).toBe(
+      '@plate/toolbar'
     );
-    expect(toRegistryDependencySpecifier('editor-base-kit')).toBe(
-      'https://platejs.org/r/editor-base-kit.json'
+    expect(toPlateRegistryDependencySpecifier('editor-base-kit')).toBe(
+      '@plate/editor-base-kit'
+    );
+    expect(toPlateRegistryDependencySpecifier('@plate/toolbar')).toBe(
+      '@plate/toolbar'
     );
   });
 
+  it('uses bare names for upstream shadcn registry items', () => {
+    expect(toRegistryDependencySpecifier('button')).toBe('button');
+    expect(toRegistryDependencySpecifier('@shadcn/button')).toBe('button');
+  });
+
+  it('uses same-base URLs for public Plate self-dependencies', () => {
+    expect(
+      toPublicRegistryDependencySpecifier(
+        '@plate/toolbar',
+        'https://platejs.org/r'
+      )
+    ).toBe('https://platejs.org/r/toolbar.json');
+    expect(
+      toPublicRegistryDependencySpecifier(
+        '@plate/editor-base-kit',
+        'http://localhost:3000/rd/'
+      )
+    ).toBe('http://localhost:3000/rd/editor-base-kit.json');
+  });
+
+  it('keeps public shadcn dependencies bare', () => {
+    expect(
+      toPublicRegistryDependencySpecifier('@shadcn/command', 'https://x.test/r')
+    ).toBe('command');
+    expect(
+      toPublicRegistryDependencySpecifier('button', 'https://x.test/r')
+    ).toBe('button');
+  });
+
   it('preserves external registry and direct file specifiers', () => {
-    expect(toRegistryDependencySpecifier('@shadcn/button')).toBe(
-      '@shadcn/button'
+    expect(toRegistryDependencySpecifier('@plate/toolbar')).toBe(
+      '@plate/toolbar'
     );
     expect(
       toRegistryDependencySpecifier('https://example.com/r/toolbar.json')
@@ -25,11 +59,18 @@ describe('registry dependency specifiers', () => {
     expect(toRegistryDependencySpecifier('./toolbar.json')).toBe(
       './toolbar.json'
     );
+    expect(
+      toPublicRegistryDependencySpecifier(
+        'https://example.com/r/toolbar.json',
+        'https://platejs.org/r'
+      )
+    ).toBe('https://example.com/r/toolbar.json');
   });
 
   it('rewrites Plate namespace dependencies for local-file template sync', () => {
     expect(toLocalRegistryDependency('@plate/toolbar')).toBe('toolbar.json');
-    expect(toLocalRegistryDependency('@shadcn/button')).toBe('@shadcn/button');
+    expect(toLocalRegistryDependency('@shadcn/button')).toBe('button');
+    expect(toLocalRegistryDependency('button')).toBe('button');
   });
 
   it('keeps local-file sync compatible with old localhost Plate URLs', () => {

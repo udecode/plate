@@ -39,11 +39,21 @@ describe('Plate init bootstrap', () => {
 
   it('documents the same namespace used by the registry base item', () => {
     const markdown = buildPlateInitInstructions();
+    const registryConfigIndex = markdown.indexOf(
+      '"@plate": "https://platejs.org/r/{name}.json"'
+    );
+    const addCommandIndex = markdown.indexOf(
+      'npx shadcn@latest add @plate/editor-basic'
+    );
 
     expect(markdown).toContain(
       'npx shadcn@latest init --preset https://platejs.org/init'
     );
-    expect(markdown).toContain('"@plate": "https://platejs.org/r/{name}.json"');
     expect(markdown).toContain('npx shadcn@latest add @plate/editor-basic');
+    expect(markdown).toContain('add the Plate registry to `components.json`');
+    expect(markdown).toContain('"@plate": "https://platejs.org/r/{name}.json"');
+    expect(registryConfigIndex).toBeGreaterThan(-1);
+    expect(addCommandIndex).toBeGreaterThan(-1);
+    expect(registryConfigIndex).toBeLessThan(addCommandIndex);
   });
 });

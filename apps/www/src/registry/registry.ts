@@ -36,19 +36,21 @@ export const registryInit: RegistryItem[] = [
     devDependencies: [],
     files: [],
     name: 'plate-ui',
-    registryDependencies: ['plate'],
+    registryDependencies: ['@plate/plate'],
     type: 'registry:style',
   },
 ];
 
-const registryBlockItems = registryBlocks.map((block) => ({
-  ...block,
-  registryDependencies: ['plate-ui', ...(block.registryDependencies ?? [])],
-}));
+export function createPlateRegistryItems(): Registry['items'] {
+  const registryBlockItems = registryBlocks.map((block) => ({
+    ...block,
+    registryDependencies: [
+      '@plate/plate-ui',
+      ...(block.registryDependencies ?? []),
+    ],
+  }));
 
-export const registry = {
-  homepage: url,
-  items: [
+  return [
     ...registryInit,
     ...registryUI,
     ...registryComponents,
@@ -57,6 +59,15 @@ export const registry = {
     ...registryStyles,
     ...registryHooks,
     ...registryExamples,
-  ],
-  name: 'plate',
-} satisfies Registry;
+  ];
+}
+
+export function createPlateRegistry(homepage = url): Registry {
+  return {
+    homepage,
+    items: createPlateRegistryItems(),
+    name: 'plate',
+  };
+}
+
+export const registry = createPlateRegistry();

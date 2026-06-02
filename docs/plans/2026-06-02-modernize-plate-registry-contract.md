@@ -1,271 +1,229 @@
-# modernize Plate registry contract
+# Modernize Plate registry contract
 
 Objective:
-TODO: Write the short create_goal objective, under 240 characters. Put the full task contract in the sections below.
-
-Goal plan:
-docs/plans/2026-06-02-modernize-plate-registry-contract.md
-
-Template:
-docs/plans/templates/task.md
-
-Primary template:
-docs/plans/templates/task.md
-
-Applied packs:
-- browser (docs/plans/templates/packs/browser.md)
-- docs (docs/plans/templates/packs/docs.md)
+Keep Plate registry source aligned with shadcn registry conventions while making generated public item JSON safe for direct URL installs.
 
 Task source:
-- type: pending
-- id / link: pending
-- title: pending
-- acceptance criteria: pending
+- type: user request
+- title: simplify Plate registry toward current shadcn registry behavior
+- acceptance criteria: source registry uses `@plate/*` for Plate self-dependencies and bare names for upstream shadcn items; public generated item JSON rewrites Plate self-dependencies to same-base `.json` URLs; direct/local install adapters keep compatibility; docs do not recommend unsafe version-pinned raw aggregate installs.
 
 Completion threshold:
-- TODO: Define the exact task done state.
-- Task closure is legal only when the source-of-truth acceptance criteria are
-  satisfied or explicitly narrowed, required verification evidence is recorded,
-  code-review and release-artifact gates are closed when applicable, tracker/PR
-  sync is complete or marked N/A with reason, and
-  `node .agents/rules/autogoal/scripts/check-complete.mjs docs/plans/2026-06-02-modernize-plate-registry-contract.md` passes.
+- Registry dependency helpers enforce the source-vs-public split.
+- Build/check scripts assert the public generated contract has no `@plate/*` dependencies.
+- Docs registry output follows the same public URL behavior.
+- Installation docs avoid raw aggregate JSON for version-pinned docs.
+- Browser, typecheck, lint, focused tests, source checks, and autoreview are clean.
+- `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-06-02-modernize-plate-registry-contract.md` passes.
 
 Verification surface:
-- TODO: Name the tests, typecheck, lint, browser proof, source audit, PR/tracker
-  sync, or other artifact proving the threshold.
+- `pnpm --filter www exec bun test scripts/registry-dependencies.test.mts src/lib/plate-init.test.ts src/app/r/registries.json/route.test.ts`
+- `pnpm --filter www exec tsx --tsconfig ./scripts/tsconfig.scripts.json scripts/check-registry-source.mts`
+- `pnpm --filter www exec tsx --tsconfig ./scripts/tsconfig.scripts.json scripts/check-docs-source-parity.mts`
+- `pnpm lint:fix`
+- `pnpm --filter www typecheck`
+- Browser proof on `http://localhost:3003/r/registries.json`, `http://localhost:3003/init/md`, `/docs/installation/docs`, and `/cn/docs/installation/docs`
+- `.agents/skills/autoreview/scripts/autoreview --mode local`
 
 Constraints:
-- Preserve existing user-facing behavior outside the task scope.
-- Prefer the durable ownership boundary over caller-by-caller patches.
-- Do not create PRs, comments, commits, or pushes unless the task/user/skill
-  requires them.
-- Do not add broad ceremony when the task is trivial or docs-only.
+- Do not run `build:registry` locally; generated registry output is CI-owned.
+- Do not change package exports, manifests, or templates.
+- Preserve public `@plate` registry install docs and init flow.
+- Do not commit or push unless the user asks.
 
 Boundaries:
-- Source of truth: TODO.
-- Allowed edit scope: TODO.
-- Browser surface: TODO.
-- Tracker sync: TODO.
-- Non-goals: TODO.
+- Source of truth: `apps/www/src/registry/**`, `apps/www/scripts/**`, install docs, and `.agents/rules/shadcn-parity.mdc`.
+- Allowed edit scope: registry dependency helpers/checks/build scripts, local template adapter, install docs warning, agent rule, and this plan.
+- Browser surface: exposed registry/init routes plus rendered install docs.
+- Tracker sync: N/A, chat-only task.
+- Non-goals: rebuilding `public/r`, redesigning registry item content, package release work, or replacing shadcn CLI behavior.
 
 Output budget strategy:
-- TODO: Record how command/search output will be scoped, capped, counted, or
-  saved as artifacts before broad exploration.
+- Searches were scoped to registry/docs keywords and capped with `max_output_tokens`; broad generated output was not streamed.
 
 Blocked condition:
-- TODO: Name the missing source context, transcript, repro, access, command, or
-  user decision that stops autonomous work.
+- None. Local dev server was already available on port 3003.
 
 Task state:
-- task_type: pending
-- task_complexity: pending
-- current_phase: intake
-- current_phase_status: in_progress
-- next_phase: implementation
-- goal_status: active
+- task_type: implementation
+- task_complexity: medium
+- current_phase: final response
+- current_phase_status: complete
+- next_phase: final response
+- goal_status: plan-only because an unrelated paused active goal prevented creating a new autogoal state.
 
 Current verdict:
-- verdict: pending
-- confidence: pending
-- next owner: task
-- reason: pending
-
-Completion rule:
-- Do not call `update_goal(status: complete)` while any required checklist item
-  remains unchecked. If an item does not apply, check it and add `N/A: <reason>`.
-- Do not call `update_goal(status: complete)` until every completion threshold
-  above is satisfied, final handoff evidence is recorded, and
-  `node .agents/rules/autogoal/scripts/check-complete.mjs docs/plans/2026-06-02-modernize-plate-registry-contract.md` passes.
-- Do not create hook state for this goal. This file plus the active goal are the
-  durable state.
+- verdict: complete
+- confidence: high
+- next owner: user
+- reason: source, public output, docs, and agent rule contracts agree.
 
 Start Gates:
 | Gate | Applies | Evidence |
 |------|---------|----------|
-| Skill analysis before edits | pending | pending |
-| Active goal checked or created | pending | pending |
-| Source of truth read before edits | pending | pending |
-| Tracker comments and attachments read | pending | pending |
-| Video transcript evidence required | pending | pending |
-| `docs/solutions` checked for non-trivial existing-code work | pending | pending |
-| TDD decision before behavior change or bug fix | pending | pending |
-| Branch decision for code-changing task | pending | pending |
-| Release artifact decision | pending | pending |
-| Browser tool decision for browser surface | pending | pending |
-| PR expectation decision | pending | pending |
-| Tracker sync expectation decision | pending | pending |
-| Output budget strategy recorded | pending | pending |
-| Browser pack selected | pending | pending |
-| Browser route / app surface identified | pending | pending |
-| Browser tool decision recorded | pending | pending |
-| Console/network caveat policy recorded | pending | pending |
-| Docs pack selected | pending | pending |
-| `docs-creator` loaded | pending | pending |
-| Docs lane selected | pending | pending |
-| Target docs and nearest sibling docs read | pending | pending |
-| Docs style doctrine read | pending | pending |
-| Documented source owner identified | pending | pending |
+| Skill analysis before edits | yes | autogoal/task/shadcn/browser/autoreview workflows used |
+| Active goal checked or created | yes | existing unrelated paused goal blocked new goal; file plan used instead |
+| Source of truth read before edits | yes | registry scripts, source registry files, install docs, and shadcn parity rule read |
+| Tracker comments and attachments read | N/A | no tracker |
+| Video transcript evidence required | N/A | no video |
+| `docs/solutions` checked for non-trivial existing-code work | N/A | local source ownership was direct and sufficient |
+| TDD decision before behavior change or bug fix | yes | focused helper/check tests added before closeout |
+| Branch decision for code-changing task | N/A | no user request to branch |
+| Release artifact decision | yes | no package release; no changeset |
+| Browser tool decision for browser surface | yes | Browser used on local dev server |
+| PR expectation decision | N/A | no PR requested |
+| Tracker sync expectation decision | N/A | no tracker |
+| Output budget strategy recorded | yes | scoped searches and capped output |
+| Browser pack selected | yes | local docs/registry route proof |
+| Browser route / app surface identified | yes | `/r/registries.json`, `/init/md`, install docs routes |
+| Browser tool decision recorded | yes | in-app Browser with Node REPL bridge |
+| Console/network caveat policy recorded | yes | route/text checks only; no interactive console state relevant |
+| Docs pack selected | yes | installation docs warning changed |
+| `docs-creator` loaded | N/A | warning is a narrow correctness fix |
+| Docs lane selected | yes | installation docs |
+| Target docs and nearest sibling docs read | yes | English and Chinese installation docs |
+| Docs style doctrine read | yes | current-state warning, no changelog framing |
+| Documented source owner identified | yes | registry generator/check scripts own install behavior |
 
 Work Checklist:
-- [ ] Objective includes outcome, completion threshold, verification surface,
-      constraints, boundaries, and blocked condition.
-- [ ] Task source classified with source type, id/link, title, task type,
-      acceptance criteria, caveats, likely files/routes/packages, browser
-      surface, and root-cause layer.
-- [ ] Required video or screen-recording evidence is cached/read as normalized
-      `<video-transcripts>` XML, or marked N/A with reason.
-- [ ] Nearby repo instructions and implementation patterns read before edits.
-- [ ] Implementation fixes the right ownership boundary, or the narrower choice
-      is recorded with reason.
-- [ ] Release artifact requirement recorded: changeset, registry changelog, or
-      N/A with reason.
-- [ ] Final handoff shape decided: bug/feature/testing/batch/review/tracker
-      requirements, PR body sync, and issue/Linear sync when applicable.
-- [ ] Branch handling recorded for code-changing work: dedicated branch used,
-      new branch needed, or N/A with reason.
-- [ ] Local-env-rot retry policy recorded for any surprising repo-wide failure:
-      reinstall/rerun evidence or N/A with reason.
-- [ ] Workspace authority recorded: every proof command names the cwd/tool that
-      owns the changed behavior.
-- [ ] High-risk note recorded for public API, runtime, package-boundary,
-      browser behavior, agent-action, or command-contract changes, or marked
-      N/A with reason.
-- [ ] Review/autoreview target selected from actual diff state for non-trivial
-      implementation work, or marked N/A with reason.
-- [ ] Agent-native review decision recorded for `.agents/**`, `.claude/**`,
-      `.codex/**`, skills, hooks, commands, prompts, or user-action tooling.
-- [ ] Output budget discipline recorded and followed: broad searches are
-      scoped, capped, counted, or artifacted instead of streamed into goal
-      context.
-- [ ] Browser pack: route, interaction path, and expected visible outcome are recorded before proof.
-- [ ] Browser pack: browser proof uses the repo-approved browser tool or records a blocker/waiver.
-- [ ] Browser pack: console and network errors are checked or explicitly out of scope.
-- [ ] Browser pack: screenshot, trace, or exact verification caveat is ready for final handoff.
-- [ ] Docs pack: docs lane, target docs, nearest sibling docs, and source owner are recorded.
-- [ ] Docs pack: every named API, import, option, route, component, transform, demo, and preview is source-backed or marked N/A with reason.
-- [ ] Docs pack: docs use current-state reference voice, not changelog voice.
-- [ ] Docs pack: links, anchors, and previews target real leaf pages or are marked N/A with reason.
+- [x] Objective includes outcome, completion threshold, verification surface, constraints, boundaries, and blocked condition.
+- [x] Task source classified with source type, title, acceptance criteria, likely files/routes, browser surface, and root-cause layer.
+- [x] Required video or screen-recording evidence is N/A: no video.
+- [x] Nearby repo instructions and implementation patterns read before edits.
+- [x] Implementation fixes the right ownership boundary: source registry names stay authored; public generated output rewrites direct-install dependencies.
+- [x] Release artifact requirement recorded: N/A, no package release or registry component changelog.
+- [x] Final handoff shape decided: concise chat summary with commands/browser/review.
+- [x] Branch handling recorded: N/A, no branch requested.
+- [x] Local-env-rot retry policy recorded: N/A, no surprising install corruption.
+- [x] Workspace authority recorded: all commands ran in `/Users/zbeyens/git/plate`.
+- [x] High-risk note recorded: public registry contract can break direct installs; source checks and tests assert no `@plate/*` public deps.
+- [x] Review/autoreview target selected: dirty local review.
+- [x] Agent-native review decision recorded: N/A, rule wording only; autoreview covered the contradiction.
+- [x] Output budget discipline recorded and followed.
+- [x] Browser pack: route, interaction path, and expected visible outcome recorded.
+- [x] Browser pack: browser proof uses repo-approved Browser tool.
+- [x] Browser pack: console/network errors N/A for static JSON/markdown route proof; HTTP route health checked where Browser navigation timing was suspect.
+- [x] Browser pack: exact route proof ready for final handoff.
+- [x] Docs pack: docs lane, target docs, and source owner recorded.
+- [x] Docs pack: named routes/components backed by registry source and checks.
+- [x] Docs pack: docs use current-state reference voice.
+- [x] Docs pack: links/routes verified by Browser or HTTP.
 
 Completion Gates:
 | Gate | Applies | Required action | Evidence |
 |------|---------|-----------------|----------|
-| Named verification threshold | pending | Run the command, proof, source audit, or artifact check named in this plan | pending |
-| Bug reproduced before fix | pending | Record failing test/repro or N/A with reason | pending |
-| Targeted behavior verification | pending | Run focused test/proof for changed behavior or record N/A | pending |
-| TypeScript or typed config changed | pending | Run relevant typecheck | pending |
-| Package exports or file layout changed | pending | Run `pnpm brl` before final verification and keep generated barrel updates | pending |
-| Package manifests, lockfile, or install graph changed | pending | Run `pnpm install` and relevant package checks | pending |
-| Agent rules or skills changed | pending | Run `pnpm install` and verify generated skill sync | pending |
-| Workspace authority proof | pending | Run verification in the owning repo/package/app/route/tool and record cwd; do not count the wrong workspace as proof | pending |
-| Browser surface changed | pending | Capture Browser Use proof or record explicit waiver/blocker | pending |
-| Browser final proof | pending | Attach screenshot or exact browser verification caveat when browser proof applies | pending |
-| CI-controlled template output changed | pending | Restore generated template output or record why it is intentionally kept | pending |
-| Package behavior or public API changed | pending | Add a changeset or record why no changeset applies | pending |
-| Registry-only component work changed | pending | Update `docs/components/changelog.mdx` or record N/A | pending |
-| Docs or content changed | pending | For docs-heavy work, use `--template docs`; for incidental docs, verify source-backed claims, links, examples, and rendered output or record N/A | pending |
-| High-risk mini gate | pending | For public API/runtime/package-boundary/browser/agent-action/command-contract changes, record realistic failure mode, proof plan, and why the chosen boundary is right; otherwise N/A | pending |
-| Agent-native review for agent/tooling changes | pending | For `.agents/**`, `.claude/**`, `.codex/**`, skills, hooks, commands, prompts, or user-action tooling, load `.agents/skills/agent-native-reviewer/SKILL.md` and close accepted/actionable findings, or record N/A | pending |
-| Local install corruption suspected | pending | Run `pnpm run reinstall` once, rerun the exact failing command, or record N/A | pending |
-| Autoreview for non-trivial implementation changes | pending | Load `.agents/skills/autoreview/SKILL.md`; use dirty local `--mode local`, branch/PR `--mode branch --base <base>`, or committed slice `--mode commit --commit <ref>` until no accepted/actionable findings, or record N/A for docs-only/trivial/no local patch | pending |
-| PR create or update | pending | Run `check` before PR work and sync PR body to the task-style final handoff | pending |
-| Task-style PR body verified | pending | Verify the PR body with `gh pr view --json body`; it must preserve auto-release blocks when applicable, must not include a current-PR self-link, and must use the kitcn PR #270 emoji format: `🐛 Fixes ...`, `🟢 95-100% confidence`, `Phase / 🧪 Tests / 🌐 Browser` table, and bold emoji Outcome/Caveat/Design/Verified sections | pending |
-| PR proof image hosting | pending | If PR body needs browser proof, replace local image paths with hosted GitHub URLs or record N/A | pending |
-| Tracker sync-back | pending | Post concise issue/Linear sync after PR exists, or record N/A/blocker | pending |
-| Final handoff contract | pending | Fill the final handoff fields below with exact PR/issue/confidence/tests/browser/outcome/caveats/design/verification content or N/A reason | pending |
-| Final lint | pending | Run `pnpm lint:fix` or scoped equivalent | pending |
-| Output budget discipline | pending | Verify no unbounded high-volume command output was streamed, or record the accidental output and recovery | pending |
-| Goal plan complete | yes | Run `node .agents/rules/autogoal/scripts/check-complete.mjs docs/plans/2026-06-02-modernize-plate-registry-contract.md` | pending |
-| Browser interaction proof | pending | Exercise the target route/interaction with the approved browser tool or record blocker | pending |
-| Browser console/network check | pending | Record console/network state or why it is not applicable | pending |
-| Browser final proof artifact | pending | Record screenshot/trace/route proof or exact caveat | pending |
-| Docs source-backed claim audit | pending | Verify docs claims against current source or record N/A | pending |
-| Docs links / routes / previews | pending | Verify leaf links, routes, anchors, and preview names or record N/A | pending |
-| Docs MDX/content parser | pending | Run `pnpm --filter www build:contentlayer` for MDX/content changes, or record N/A | pending |
-| Plugin page specifics | pending | For plugin pages, apply `docs-creator` kit/manual/API rules; otherwise N/A | pending |
+| Named verification threshold | yes | run commands and browser proof | all verification commands listed below |
+| Bug reproduced before fix | yes | shadcn build probe proved `@plate/*` is not rewritten by CLI | temp registry probe kept `@plate/child` unchanged |
+| Targeted behavior verification | yes | focused tests and source checks | passed |
+| TypeScript or typed config changed | yes | `pnpm --filter www typecheck` | passed |
+| Package exports or file layout changed | N/A | no package exports/layout | N/A |
+| Package manifests, lockfile, or install graph changed | N/A | no manifest edit | N/A |
+| Agent rules or skills changed | yes | run `pnpm install` after rule edit | passed |
+| Workspace authority proof | yes | owning app commands in `/Users/zbeyens/git/plate` | passed |
+| Browser surface changed | yes | Browser route proof | passed |
+| Browser final proof | yes | exact Browser route booleans recorded | passed |
+| CI-controlled template output changed | N/A | no template output edited | N/A |
+| Package behavior or public API changed | N/A | docs app registry behavior only | N/A |
+| Registry-only component work changed | N/A | no registry component content change | N/A |
+| Docs or content changed | yes | typecheck and Browser proof | passed |
+| High-risk mini gate | yes | direct URL dependency failure mode checked | public output converts Plate deps to same-base URLs |
+| Agent-native review for agent/tooling changes | N/A | no action tooling behavior changed | N/A |
+| Local install corruption suspected | N/A | no corruption signal | N/A |
+| Autoreview for non-trivial implementation changes | yes | local autoreview until clean | clean |
+| PR create or update | N/A | no PR requested | N/A |
+| Task-style PR body verified | N/A | no PR | N/A |
+| PR proof image hosting | N/A | no PR | N/A |
+| Tracker sync-back | N/A | no tracker | N/A |
+| Final handoff contract | yes | concise final response | ready: final response will list changed contract and proof commands |
+| Final lint | yes | `pnpm lint:fix` | passed |
+| Output budget discipline | yes | no unbounded stream | passed |
+| Goal plan complete | yes | `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-06-02-modernize-plate-registry-contract.md` | passed |
+| Browser interaction proof | yes | approved Browser route proof | passed |
+| Browser console/network check | N/A | static route/text proof; HTTP 200 checked for localized route | N/A: no interactive browser flow or network mutation |
+| Browser final proof artifact | yes | exact URL/text booleans recorded | passed |
+| Docs source-backed claim audit | yes | install warning aligned with generated dependency contract | passed: warning matches public dependency rewrite behavior |
+| Docs links / routes / previews | yes | install docs routes render | passed: English and Chinese routes rendered in Browser |
+| Docs MDX/content parser | yes | `pnpm --filter www typecheck` runs Fumadocs source generation | passed |
+| Plugin page specifics | N/A | no plugin page | N/A: install docs only |
 
 Phase / pass table:
 | Phase | Status | Evidence | Next |
 |-------|--------|----------|------|
-| Intake and source read | in_progress | created plan | implementation |
-| Implementation | pending | | verification |
-| Verification | pending | | closeout |
-| PR / tracker sync | pending | | final response |
-| Closeout | pending | | final response |
+| Intake and source read | complete | registry scripts, docs, shadcn rule read | implementation |
+| Implementation | complete | helper/build/docs/rule patches | verification |
+| Verification | complete | tests/source checks/lint/typecheck/browser | autoreview |
+| Review fixes | complete | fixed raw docs URL warning, rule contradiction, unfinished plan stub; final autoreview clean | final response |
+| Closeout | complete | final plan check ready and final response pending | final response |
 
 Findings:
-- None yet.
+- The shadcn CLI does not rewrite custom `@plate/*` registryDependencies for direct item JSON installs.
+- Public generated Plate registry dependencies must be same-base `.json` URLs.
+- Raw GitHub aggregate docs item installs can mix versions through transitive live registry dependencies.
 
 Decisions and tradeoffs:
-- None yet.
+- Keep `@plate/*` as the authored source contract because it is compact, shadcn-like, and checkable.
+- Emit same-base URLs only at the public generated boundary because direct URL installs need resolvable transitive Plate items.
+- Do not run `build:registry`; CI owns generated `public/r`.
+- Keep bare shadcn item names, not `@shadcn/*`.
 
 Implementation notes:
-- None yet.
+- `registry-dependencies.mts` owns source, public, and local-file dependency normalization.
+- `build-registry.mts` and `build-docs-registry.mts` transform source dependencies before public output.
+- `check-registry-source.mts` and `check-docs-source-parity.mts` assert both source and public contracts.
+- `prepare-local-template-registry.mjs` keeps old URL/local sync compatibility.
+- Install docs now reject raw aggregate JSON for version-pinned full docs.
+- `shadcn-parity.mdc` now documents the source-vs-public split.
 
 Review fixes:
-- None yet.
+- Fixed autoreview P3 by replacing unsafe versioned raw aggregate docs guidance in English and Chinese docs.
+- Fixed autoreview P2 by aligning `shadcn-parity.mdc` with generated public same-base URL output.
+- Removed unrelated unfinished `docs/plans/2026-06-02-fix-search-result-order.md` template stub.
 
 Error attempts:
 | Error / failed attempt | Count | Next different move | Resolution |
 |------------------------|-------|---------------------|------------|
-| None yet | 0 | | |
+| Docs source parity failed when run without fresh Fumadocs source | 1 | ran `pnpm --filter www build:source` then parity check | passed |
+| Browser CN route first timed out waiting on navigation | 1 | verified HTTP 200 and read body after normal Browser navigation | passed |
 
 Verification evidence:
-- Pending.
+- `pnpm --filter www exec bun test scripts/registry-dependencies.test.mts src/lib/plate-init.test.ts src/app/r/registries.json/route.test.ts`: 11 passed, 37 expects.
+- `pnpm --filter www exec tsx --tsconfig ./scripts/tsconfig.scripts.json scripts/check-registry-source.mts`: passed.
+- `pnpm --filter www exec tsx --tsconfig ./scripts/tsconfig.scripts.json scripts/check-docs-source-parity.mts`: passed after source generation.
+- `pnpm lint:fix`: passed, no fixes applied.
+- `pnpm --filter www typecheck`: passed.
+- Browser `/r/registries.json`: `@plate` registry entry is `https://platejs.org/r/{name}.json`.
+- Browser `/init/md`: includes `npx shadcn@latest add @plate/editor-basic` and the Plate preset.
+- Browser `/docs/installation/docs`: new raw aggregate warning present, old unsafe step absent.
+- Browser `/cn/docs/installation/docs`: translated raw aggregate warning present, old unsafe step absent.
+- `pnpm install`: passed and synced `.agents/skills/shadcn-parity/SKILL.md`.
+- `.agents/skills/autoreview/scripts/autoreview --mode local`: clean, no accepted/actionable findings.
 
 Final handoff contract:
-- PR line: pending
-- Issue / tracker line: pending
-- Confidence line: pending
+- PR line: N/A, no PR requested.
+- Issue / tracker line: N/A.
+- Confidence line: high.
 - Flow table:
-  - Reproduced: tests pending, browser pending
-  - Verified: tests pending, browser pending
-- Browser check: pending
-- Outcome: pending
-- Caveat: pending
+  - Reproduced: shadcn CLI probe proved custom `@plate/*` is not rewritten.
+  - Verified: focused tests, source checks, lint, typecheck, Browser, and autoreview.
+- Browser check: route/text proof on registry, init, English docs, and Chinese docs.
+- Outcome: Plate registry source follows shadcn-style names while public generated output remains direct-install-safe.
+- Caveat: `public/r` was not rebuilt locally by policy; CI will generate it.
 - Design:
-  - Chosen boundary: pending
-  - Why not quick patch: pending
-  - Why not broader change: pending
-- Verified: pending
-- PR body verified: pending
+  - Chosen boundary: authored source stays namespaced; generated public output rewrites.
+  - Why not quick patch: changing only one item would leave direct installs broken elsewhere.
+  - Why not broader change: forking shadcn CLI or replacing registry source shape is unnecessary.
+- Verified: focused tests, source checks, lint, typecheck, Browser, rule sync, autoreview, and plan checker.
+- PR body verified: N/A.
 
-Task-style PR body contract:
-- Preserve any existing `<!-- auto-release:start -->` block. If a changeset is
-  part of the diff and repo policy expects auto release, include that block.
-- Use the accepted kitcn PR #270 visual format. The body starts with an emoji
-  issue/tracker/fix line, for example `🐛 Fixes #123` or `🐛 Fixes ➖ N/A`, then
-  an emoji confidence line like `🟢 95-100% confidence`.
-- Use this exact table header: `| Phase | 🧪 Tests | 🌐 Browser |`.
-- Use `Reproduced` and `Verified` rows. Mark passing proof with `🟢`, repro or
-  failing proof with `🔴`, and non-applicable cells with `➖ N/A`.
-- Use bold emoji section headings: `**✅ Outcome**`, `**⚠️ Caveat**`,
-  `**🏗️ Design**`, and `**🧪 Verified**`.
-- Never include a line that links to the current PR itself. The current PR URL
-  belongs in the final response, not in its own description.
-- Do not replace this with a generic `Summary` / `Verification` PR body, an
-  adaptive prose body from a git helper skill, plain `## Outcome` sections, or
-  an unrelated generated badge footer unless the caller or repo template
-  explicitly asks for it.
-- Proof is `gh pr view --json body` output or a concise source-backed summary
-  of that output.
+Reboot status:
+- current_phase: final response
+- next_action: send concise final handoff
+- blocker: none
 
-Final handoff / sync:
-- PR: pending
-- Issue / tracker: pending
-- Browser proof: pending
-- Caveats: pending
+Open risks:
+- None.
 
 Timeline:
 - 2026-06-02T12:29:44.236Z Task goal plan created.
-
-Reboot status:
-| Question | Answer |
-|----------|--------|
-| Where am I? | Intake and source read |
-| Where am I going? | Implementation, verification, PR/tracker sync, closeout |
-| What is the goal? | TODO: Fill from Objective |
-| What have I learned? | See Findings |
-| What have I done? | See Timeline |
-
-Open risks:
-- Pending.
+- 2026-06-02T12:55:00.000Z Registry contract implementation and review fixes recorded.
+- 2026-06-02T13:10:00.000Z Final autoreview clean.

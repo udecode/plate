@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import * as React from 'react';
+import * as React from "react";
 
 import type {
   MainNavItem,
   NavItemWithChildren,
   SidebarNavItem,
-} from '@/types/nav';
-import type { DialogProps } from '@radix-ui/react-dialog';
-import { useDocsSearch as useFumadocsSearch } from 'fumadocs-core/search/client';
+} from "@/types/nav";
+import type { DialogProps } from "@radix-ui/react-dialog";
+import { useDocsSearch as useFumadocsSearch } from "fumadocs-core/search/client";
 import {
   ArrowRight,
   Circle,
@@ -16,11 +16,11 @@ import {
   Laptop,
   Moon,
   SunMedium,
-} from 'lucide-react';
-import { useTheme } from 'next-themes';
-import { useRouter } from 'next/navigation';
+} from "lucide-react";
+import { useTheme } from "next-themes";
+import { useRouter } from "next/navigation";
 
-import { copyToClipboardWithMeta } from '@/components/copy-button';
+import { copyToClipboardWithMeta } from "@/components/copy-button";
 import {
   Command,
   CommandEmpty,
@@ -28,29 +28,29 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from '@/components/ui/command';
+} from "@/components/ui/command";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Spinner } from '@/components/ui/spinner';
-import { useMutationObserver } from '@/hooks/use-mutation-observer';
-import { useLocale } from '@/hooks/useLocale';
-import { getCommandMenuSearchState } from '@/lib/command-menu-search';
+} from "@/components/ui/dialog";
+import { Spinner } from "@/components/ui/spinner";
+import { useMutationObserver } from "@/hooks/use-mutation-observer";
+import { useLocale } from "@/hooks/useLocale";
+import { getCommandMenuSearchState } from "@/lib/command-menu-search";
 import {
   getRegistryClipboardInstallCommand,
   getRegistryInstallCommand,
-} from '@/lib/registry-install';
+} from "@/lib/registry-install";
 import {
   getSearchResultGroup,
   getSearchResultKey,
   searchResultGroupOrder,
-} from '@/lib/search-result-groups';
-import { cn } from '@/lib/utils';
-import { hrefWithLocale } from '@/lib/withLocale';
+} from "@/lib/search-result-groups";
+import { cn } from "@/lib/utils";
+import { hrefWithLocale } from "@/lib/withLocale";
 
 const ABSOLUTE_HREF_REGEX = /^[a-z][a-z\d+\-.]*:/i;
 const CN_DOCS_PREFIX_REGEX = /^\/cn(?=\/docs)/;
@@ -91,84 +91,84 @@ const commandMenuCopyableRegistryNames = new Set(
     .split(/\s+/)
 );
 const commandMenuRegistryNameAliases: Record<string, string> = {
-  'collaboration-example': 'collaboration-demo',
-  'horizontal-rule': 'hr-node',
-  'preview-markdown': 'preview-markdown-demo',
-  'text-align': 'align-kit',
-  'slash-command': 'slash-kit',
+  "collaboration-example": "collaboration-demo",
+  "horizontal-rule": "hr-node",
+  "preview-markdown": "preview-markdown-demo",
+  "text-align": "align-kit",
+  "slash-command": "slash-kit",
 };
 const selectedMutationObserverOptions: MutationObserverInit = {
-  attributeFilter: ['aria-selected'],
+  attributeFilter: ["aria-selected"],
   attributes: true,
 };
 
-type Query = Awaited<ReturnType<typeof useFumadocsSearch>>['query'];
+type Query = Awaited<ReturnType<typeof useFumadocsSearch>>["query"];
 type HighlightCommand = (
   label: string,
   copyPayload?: string,
   copyLabel?: string
 ) => void;
-type Push = ReturnType<typeof useRouter>['push'];
+type Push = ReturnType<typeof useRouter>["push"];
 
 const i18n = {
   cn: {
-    apiReference: 'API 参考',
-    dark: '深色',
-    docsApiSections: '文档 API 区块',
-    documentation: '文档',
-    light: '浅色',
-    links: '链接',
-    pages: '页面',
-    goToPage: '打开页面',
-    noResults: '没有结果。',
-    runCommand: '运行命令',
-    search: '搜索',
-    searchDescription: '搜索文档。',
-    searchDocumentation: '搜索文档...',
-    searchResults: '搜索结果',
-    searchShort: '搜索...',
-    searching: '搜索中...',
-    system: '系统',
-    theme: '主题',
+    apiReference: "API 参考",
+    dark: "深色",
+    docsApiSections: "文档 API 区块",
+    documentation: "文档",
+    light: "浅色",
+    links: "链接",
+    pages: "页面",
+    goToPage: "打开页面",
+    noResults: "没有结果。",
+    runCommand: "运行命令",
+    search: "搜索",
+    searchDescription: "搜索文档。",
+    searchDocumentation: "搜索文档...",
+    searchResults: "搜索结果",
+    searchShort: "搜索...",
+    searching: "搜索中...",
+    system: "系统",
+    theme: "主题",
   },
   en: {
-    apiReference: 'API Reference',
-    dark: 'Dark',
-    docsApiSections: 'Docs API Sections',
-    documentation: 'Documentation',
-    light: 'Light',
-    links: 'Links',
-    pages: 'Pages',
-    goToPage: 'Go to Page',
-    noResults: 'No results found.',
-    runCommand: 'Run Command',
-    search: 'Search',
-    searchDescription: 'Search documentation.',
-    searchDocumentation: 'Search documentation...',
-    searchResults: 'Search Results',
-    searchShort: 'Search...',
-    searching: 'Searching...',
-    system: 'System',
-    theme: 'Theme',
+    apiReference: "API Reference",
+    dark: "Dark",
+    docsApiSections: "Docs API Sections",
+    documentation: "Documentation",
+    light: "Light",
+    links: "Links",
+    pages: "Pages",
+    goToPage: "Go to Page",
+    noResults: "No results found.",
+    runCommand: "Run Command",
+    search: "Search",
+    searchDescription: "Search documentation.",
+    searchDocumentation: "Search documentation...",
+    searchResults: "Search Results",
+    searchShort: "Search...",
+    searching: "Searching...",
+    system: "System",
+    theme: "Theme",
   },
 };
 
 function getNavTitle(item: NavItemWithChildren, locale: string) {
-  return locale === 'cn' ? item.titleCn || item.title : item.title;
+  return locale === "cn" ? item.titleCn || item.title : item.title;
 }
 
 function isString(value: string | undefined): value is string {
   return Boolean(value);
 }
 
-function getItemKeywords(item: NavItemWithChildren, parentTitle = '') {
+function getItemKeywords(item: NavItemWithChildren, parentTitle = "") {
   return [
     ...(item.keywords ?? []),
     ...(Array.isArray(item.label)
       ? item.label
       : item.label
-        ? [item.label]
-        : []),
+      ? [item.label]
+      : []),
     parentTitle,
     item.titleCn,
   ].filter(isString);
@@ -176,7 +176,7 @@ function getItemKeywords(item: NavItemWithChildren, parentTitle = '') {
 
 function navigateToHref(push: Push, href: string) {
   if (ABSOLUTE_HREF_REGEX.test(href)) {
-    window.open(href, '_blank', 'noopener,noreferrer');
+    window.open(href, "_blank", "noopener,noreferrer");
     return;
   }
 
@@ -185,10 +185,10 @@ function navigateToHref(push: Push, href: string) {
 
 function getCommandMenuRegistryName(href: string) {
   const normalizedPath = href
-    .split('#')[0]
-    .split('?')[0]
-    .replace(CN_DOCS_PREFIX_REGEX, '');
-  const slug = normalizedPath.split('/').filter(Boolean).at(-1);
+    .split("#")[0]
+    .split("?")[0]
+    .replace(CN_DOCS_PREFIX_REGEX, "");
+  const slug = normalizedPath.split("/").filter(Boolean).at(-1);
 
   if (!slug) return;
 
@@ -221,10 +221,10 @@ function CommandItems({
   item,
   locale,
   onHighlight,
-  parentTitle = '',
+  parentTitle = "",
   runCommand,
 }: {
-  content: (typeof i18n)['en'];
+  content: (typeof i18n)["en"];
   item: NavItemWithChildren;
   locale: string;
   onHighlight: HighlightCommand;
@@ -256,7 +256,7 @@ function CommandItems({
             );
           }}
           keywords={keywords}
-          value={`${parentTitle} ${title ?? ''} ${item.titleCn ?? ''} ${
+          value={`${parentTitle} ${title ?? ""} ${item.titleCn ?? ""} ${
             item.href
           }`}
         >
@@ -288,7 +288,7 @@ function CommandMenuGroup({
   runCommand,
   ...group
 }: {
-  content: (typeof i18n)['en'];
+  content: (typeof i18n)["en"];
   locale: string;
   onHighlight: HighlightCommand;
   runCommand: (command: () => unknown) => void;
@@ -323,7 +323,7 @@ function SearchResults({
   onHighlight,
   setOpen,
 }: {
-  content: (typeof i18n)['en'];
+  content: (typeof i18n)["en"];
   locale: string;
   query: Query;
   search: string;
@@ -342,7 +342,7 @@ function SearchResults({
 
     return query.data.filter((item) => {
       if (
-        item.type === 'text' &&
+        item.type === "text" &&
         item.content.trim().split(WHITESPACE_REGEX).length <= 1
       ) {
         return false;
@@ -373,7 +373,7 @@ function SearchResults({
     [uniqueResults]
   );
 
-  if (!showResults || !search.trim() || !query.data || query.data === 'empty') {
+  if (!showResults || !search.trim() || !query.data || query.data === "empty") {
     return null;
   }
 
@@ -422,7 +422,7 @@ function SearchResults({
 }
 
 const commandMenuGroupClassName =
-  'p-0! **:[[cmdk-group-heading]]:scroll-mt-16 **:[[cmdk-group-heading]]:p-3! **:[[cmdk-group-heading]]:pb-1!';
+  "p-0! **:[[cmdk-group-heading]]:scroll-mt-16 **:[[cmdk-group-heading]]:p-3! **:[[cmdk-group-heading]]:pb-1!";
 
 function CommandMenuItem({
   children,
@@ -437,8 +437,8 @@ function CommandMenuItem({
     (mutations: MutationRecord[]) => {
       for (const mutation of mutations) {
         if (
-          mutation.attributeName === 'aria-selected' &&
-          ref.current?.getAttribute('aria-selected') === 'true'
+          mutation.attributeName === "aria-selected" &&
+          ref.current?.getAttribute("aria-selected") === "true"
         ) {
           onHighlight?.();
           return;
@@ -458,7 +458,7 @@ function CommandMenuItem({
     <CommandItem
       ref={ref}
       className={cn(
-        'h-9 rounded-md border border-transparent px-3! font-medium data-[selected=true]:border-input data-[selected=true]:bg-input/50',
+        "h-9 rounded-md border border-transparent px-3! font-medium data-[selected=true]:border-input data-[selected=true]:bg-input/50",
         className
       )}
       {...props}
@@ -468,7 +468,7 @@ function CommandMenuItem({
   );
 }
 
-function CommandMenuKbd({ className, ...props }: React.ComponentProps<'kbd'>) {
+function CommandMenuKbd({ className, ...props }: React.ComponentProps<"kbd">) {
   return (
     <kbd
       className={cn(
@@ -483,11 +483,13 @@ function CommandMenuKbd({ className, ...props }: React.ComponentProps<'kbd'>) {
 export function CommandMenuDialog({
   navItems,
   onOpenChange,
+  onReady,
   open,
   sidebarNav,
 }: {
   navItems: MainNavItem[];
-  onOpenChange: NonNullable<DialogProps['onOpenChange']>;
+  onOpenChange: NonNullable<DialogProps["onOpenChange"]>;
+  onReady?: () => void;
   open: boolean;
   sidebarNav: SidebarNavItem[];
 }) {
@@ -495,10 +497,12 @@ export function CommandMenuDialog({
   const locale = useLocale();
   const content = i18n[locale as keyof typeof i18n];
   const [renderDelayedGroups, setRenderDelayedGroups] = React.useState(false);
-  const [copyLabel, setCopyLabel] = React.useState('');
-  const [copyPayload, setCopyPayload] = React.useState('');
-  const [commandSearch, setCommandSearch] = React.useState('');
+  const [copyLabel, setCopyLabel] = React.useState("");
+  const [copyPayload, setCopyPayload] = React.useState("");
+  const [commandSearch, setCommandSearch] = React.useState("");
+  const [selectedCommandValue, setSelectedCommandValue] = React.useState("");
   const [selectedAction, setSelectedAction] = React.useState(content.goToPage);
+  const commandListRef = React.useRef<HTMLDivElement>(null);
   const docsSearchTimeoutRef = React.useRef<NodeJS.Timeout | undefined>(
     undefined
   );
@@ -510,7 +514,7 @@ export function CommandMenuDialog({
   } = useFumadocsSearch({
     delayMs: 0,
     locale,
-    type: 'fetch',
+    type: "fetch",
   });
   const docsSearchState = getCommandMenuSearchState({
     docsSearch,
@@ -519,20 +523,26 @@ export function CommandMenuDialog({
     minSearchLength: MIN_DOC_SEARCH_LENGTH,
   });
 
+  React.useEffect(() => {
+    onReady?.();
+  }, [onReady]);
+
   const updateOpen = React.useCallback(
     (nextOpen: boolean) => {
       onOpenChange(nextOpen);
 
       if (nextOpen) {
+        setSelectedCommandValue("");
         setSelectedAction(content.goToPage);
-        setCopyLabel('');
-        setCopyPayload('');
+        setCopyLabel("");
+        setCopyPayload("");
       } else {
         setRenderDelayedGroups(false);
-        setCommandSearch('');
-        setDocsSearch('');
-        setCopyLabel('');
-        setCopyPayload('');
+        setCommandSearch("");
+        setSelectedCommandValue("");
+        setDocsSearch("");
+        setCopyLabel("");
+        setCopyPayload("");
 
         if (docsSearchTimeoutRef.current) {
           clearTimeout(docsSearchTimeoutRef.current);
@@ -543,8 +553,37 @@ export function CommandMenuDialog({
     [content.goToPage, onOpenChange, setDocsSearch]
   );
 
+  React.useLayoutEffect(() => {
+    if (!open) {
+      return;
+    }
+
+    const frame = requestAnimationFrame(() => {
+      const list = commandListRef.current;
+      const firstValue = list
+        ?.querySelector<HTMLElement>('[cmdk-item]:not([aria-disabled="true"])')
+        ?.getAttribute("data-value");
+
+      if (firstValue) {
+        setSelectedCommandValue(firstValue);
+      }
+
+      if (list) {
+        list.scrollTop = 0;
+      }
+    });
+
+    return () => cancelAnimationFrame(frame);
+  }, [
+    commandSearch,
+    docsSearchState.shouldShowSearchResults,
+    open,
+    query.data,
+    renderDelayedGroups,
+  ]);
+
   const setHighlightedCommand = React.useCallback<HighlightCommand>(
-    (label, payload = '', display = payload) => {
+    (label, payload = "", display = payload) => {
       setSelectedAction(label);
       setCopyLabel(display);
       setCopyPayload(payload);
@@ -574,11 +613,11 @@ export function CommandMenuDialog({
 
   React.useEffect(() => {
     const down = (e: KeyboardEvent) => {
-      if (e.key === 'c' && (e.metaKey || e.ctrlKey) && copyPayload) {
+      if (e.key === "c" && (e.metaKey || e.ctrlKey) && copyPayload) {
         e.preventDefault();
         runCommand(() => {
           void copyToClipboardWithMeta(copyPayload, {
-            name: 'copy_npm_command',
+            name: "copy_npm_command",
             properties: {
               command: copyPayload,
             },
@@ -587,9 +626,9 @@ export function CommandMenuDialog({
       }
     };
 
-    document.addEventListener('keydown', down);
+    document.addEventListener("keydown", down);
 
-    return () => document.removeEventListener('keydown', down);
+    return () => document.removeEventListener("keydown", down);
   }, [copyPayload, runCommand]);
 
   React.useEffect(
@@ -603,7 +642,7 @@ export function CommandMenuDialog({
 
   const commandFilter = React.useCallback(
     (value: string, searchValue: string, keywords?: string[]) => {
-      const searchableValue = `${value} ${keywords?.join(' ') ?? ''}`;
+      const searchableValue = `${value} ${keywords?.join(" ") ?? ""}`;
 
       return searchableValue.toLowerCase().includes(searchValue.toLowerCase())
         ? 1
@@ -615,9 +654,13 @@ export function CommandMenuDialog({
   const handleSearchChange = React.useCallback(
     (value: string) => {
       const nextDocsSearch =
-        value.trim().length >= MIN_DOC_SEARCH_LENGTH ? value : '';
+        value.trim().length >= MIN_DOC_SEARCH_LENGTH ? value : "";
 
       setCommandSearch(value);
+      setSelectedCommandValue("");
+      setSelectedAction(content.goToPage);
+      setCopyLabel("");
+      setCopyPayload("");
 
       if (docsSearchTimeoutRef.current) {
         clearTimeout(docsSearchTimeoutRef.current);
@@ -627,7 +670,7 @@ export function CommandMenuDialog({
         docsSearchTimeoutRef.current = undefined;
 
         React.startTransition(() => {
-          setDocsSearch('');
+          setDocsSearch("");
         });
         return;
       }
@@ -638,12 +681,15 @@ export function CommandMenuDialog({
         });
       }, DOC_SEARCH_DEBOUNCE_MS);
     },
-    [setDocsSearch]
+    [content.goToPage, setDocsSearch]
   );
 
   return (
     <Dialog open={open} onOpenChange={updateOpen}>
-      <DialogContent className="top-[15%]! max-w-[calc(100%-2rem)] translate-y-0! overflow-hidden rounded-xl border-none bg-clip-padding p-2 pb-11 shadow-2xl ring-4 ring-neutral-200/80 sm:max-w-lg dark:bg-neutral-900 dark:ring-neutral-800 [&>button]:hidden">
+      <DialogContent
+        className="top-[15%]! max-w-[calc(100%-2rem)] !duration-0 translate-y-0! overflow-hidden rounded-xl border-none bg-clip-padding p-2 pb-11 shadow-2xl ring-4 ring-neutral-200/80 data-[state=closed]:!animate-none data-[state=open]:!animate-none sm:max-w-lg dark:bg-neutral-900 dark:ring-neutral-800 [&>button]:hidden"
+        overlayClassName="data-[state=closed]:!animate-none data-[state=open]:!animate-none"
+      >
         <DialogHeader className="sr-only">
           <DialogTitle>{content.search}</DialogTitle>
           <DialogDescription>{content.searchDescription}</DialogDescription>
@@ -651,6 +697,8 @@ export function CommandMenuDialog({
         <Command
           className="rounded-none bg-transparent **:data-[slot=command-input-wrapper]:mb-0 **:data-[slot=command-input-wrapper]:h-9! **:data-[slot=command-input]:h-9! **:data-[slot=command-input-wrapper]:rounded-md **:data-[slot=command-input-wrapper]:border **:data-[slot=command-input-wrapper]:border-input **:data-[slot=command-input-wrapper]:bg-input/50 **:data-[slot=command-input]:py-0 [&_[cmdk-item]_svg]:size-5"
           filter={commandFilter}
+          value={selectedCommandValue}
+          onValueChange={setSelectedCommandValue}
         >
           <div className="relative">
             <CommandInput
@@ -666,17 +714,10 @@ export function CommandMenuDialog({
           <CommandEmpty className="py-12 text-center text-muted-foreground text-sm">
             {docsSearchState.isPending ? content.searching : content.noResults}
           </CommandEmpty>
-          <CommandList className="no-scrollbar min-h-80 scroll-pt-2 scroll-pb-1.5">
-            <SearchResults
-              content={content}
-              locale={locale}
-              query={query}
-              search={docsSearch}
-              showResults={docsSearchState.shouldShowSearchResults}
-              onHighlight={setHighlightedCommand}
-              setOpen={updateOpen}
-            />
-
+          <CommandList
+            ref={commandListRef}
+            className="no-scrollbar min-h-80 scroll-pt-2 scroll-pb-1.5"
+          >
             <CommandGroup
               heading={content.pages}
               className={commandMenuGroupClassName}
@@ -701,13 +742,13 @@ export function CommandMenuDialog({
                         );
                       }}
                       keywords={[
-                        'nav',
-                        'navigation',
-                        title ?? '',
-                        navItem.titleCn ?? '',
+                        "nav",
+                        "navigation",
+                        title ?? "",
+                        navItem.titleCn ?? "",
                       ]}
-                      value={`Page ${title ?? ''} ${navItem.titleCn ?? ''} ${
-                        navItem.href ?? ''
+                      value={`Page ${title ?? ""} ${navItem.titleCn ?? ""} ${
+                        navItem.href ?? ""
                       }`}
                     >
                       <ArrowRight />
@@ -720,7 +761,7 @@ export function CommandMenuDialog({
             {renderDelayedGroups ? (
               <>
                 {sidebarNav.map((group) =>
-                  group.title === 'API' ? null : (
+                  group.title === "API" ? null : (
                     <CommandMenuGroup
                       key={`${group.title}:sidebar`}
                       content={content}
@@ -740,7 +781,7 @@ export function CommandMenuDialog({
                     onHighlight={() =>
                       setHighlightedCommand(content.runCommand)
                     }
-                    onSelect={() => runCommand(() => setTheme('light'))}
+                    onSelect={() => runCommand(() => setTheme("light"))}
                   >
                     <SunMedium />
                     {content.light}
@@ -749,7 +790,7 @@ export function CommandMenuDialog({
                     onHighlight={() =>
                       setHighlightedCommand(content.runCommand)
                     }
-                    onSelect={() => runCommand(() => setTheme('dark'))}
+                    onSelect={() => runCommand(() => setTheme("dark"))}
                   >
                     <Moon />
                     {content.dark}
@@ -758,7 +799,7 @@ export function CommandMenuDialog({
                     onHighlight={() =>
                       setHighlightedCommand(content.runCommand)
                     }
-                    onSelect={() => runCommand(() => setTheme('system'))}
+                    onSelect={() => runCommand(() => setTheme("system"))}
                   >
                     <Laptop />
                     {content.system}
@@ -766,7 +807,7 @@ export function CommandMenuDialog({
                 </CommandGroup>
 
                 {sidebarNav.map((group) =>
-                  group.title !== 'API' ? null : (
+                  group.title !== "API" ? null : (
                     <CommandMenuGroup
                       key={group.title}
                       content={content}
@@ -779,6 +820,16 @@ export function CommandMenuDialog({
                 )}
               </>
             ) : null}
+
+            <SearchResults
+              content={content}
+              locale={locale}
+              query={query}
+              search={docsSearch}
+              showResults={docsSearchState.shouldShowSearchResults}
+              onHighlight={setHighlightedCommand}
+              setOpen={updateOpen}
+            />
           </CommandList>
         </Command>
         <div className="absolute inset-x-0 bottom-0 z-20 flex h-10 items-center gap-2 rounded-b-xl border-t border-t-neutral-100 bg-neutral-50 px-4 font-medium text-muted-foreground text-xs dark:border-t-neutral-700 dark:bg-neutral-800">

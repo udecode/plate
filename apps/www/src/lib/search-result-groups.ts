@@ -12,9 +12,9 @@ export type SearchResultGroup =
   | 'documentation';
 
 export const searchResultGroupOrder: SearchResultGroup[] = [
-  'apiReference',
-  'docsApiSections',
   'documentation',
+  'docsApiSections',
+  'apiReference',
 ];
 
 export function getSearchResultKey(item: SearchResult) {

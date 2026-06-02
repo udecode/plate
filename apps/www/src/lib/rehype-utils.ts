@@ -17,12 +17,45 @@ import { registry } from '../registry/registry';
 
 const registryShadcn = registryShadcnData as unknown as Registry;
 
-function isShadcnRegistryDependency(name: string) {
-  return name.startsWith('@shadcn/');
+const PLATE_REGISTRY_NAMESPACE = '@plate/';
+const SHADCN_REGISTRY_NAMESPACE = '@shadcn/';
+const plateRegistryNames = new Set(registry.items.map((item) => item.name));
+const shadcnRegistryNames = new Set(
+  registryShadcn.items.map((item) => item.name)
+);
+
+function resolveRegistryDependency(name: string, isShadcnContext?: boolean) {
+  if (name.startsWith(PLATE_REGISTRY_NAMESPACE)) {
+    return {
+      isShadcn: false,
+      name: name.slice(PLATE_REGISTRY_NAMESPACE.length),
+    };
+  }
+
+  if (name.startsWith(SHADCN_REGISTRY_NAMESPACE)) {
+    return {
+      isShadcn: true,
+      name: name.slice(SHADCN_REGISTRY_NAMESPACE.length),
+    };
+  }
+
+  if (isShadcnContext) {
+    return { isShadcn: true, name };
+  }
+
+  if (plateRegistryNames.has(name)) {
+    return { isShadcn: false, name };
+  }
+
+  if (shadcnRegistryNames.has(name)) {
+    return { isShadcn: true, name };
+  }
+
+  return { isShadcn: false, name };
 }
 
-function getShadcnRegistryItemName(name: string) {
-  return name.slice('@shadcn/'.length);
+function getSeenKey(name: string, isShadcn?: boolean) {
+  return `${isShadcn ? 'shadcn' : 'plate'}:${name}`;
 }
 
 export function fixImport(content: string) {
@@ -91,27 +124,33 @@ export function getAllFiles(
   seen = new Set<string>(),
   isShadcn?: boolean
 ) {
-  const registryTarget = isShadcn ? registryShadcn : registry;
+  const dependency = resolveRegistryDependency(name, isShadcn);
+  const registryTarget = dependency.isShadcn ? registryShadcn : registry;
+  const itemName = dependency.name;
+  const seenKey = getSeenKey(itemName, dependency.isShadcn);
 
-  if (seen.has(name)) return [];
+  if (seen.has(seenKey)) return [];
 
-  seen.add(name);
+  seen.add(seenKey);
 
-  const component: any = registryTarget.items.find((c) => c.name === name);
+  const component: any = registryTarget.items.find((c) => c.name === itemName);
 
   if (!component) {
-    throw new Error(`File ${name} not found`);
+    throw new Error(`File ${itemName} not found`);
   }
 
   const files: string[] = [
     ...(component.files ?? []),
     ...(component.registryDependencies ?? []).flatMap((dep: any) => {
-      const isDependencyShadcn = isShadcnRegistryDependency(dep);
+      const childDependency = resolveRegistryDependency(
+        dep,
+        dependency.isShadcn
+      );
 
       return getAllFiles(
-        isDependencyShadcn ? getShadcnRegistryItemName(dep) : dep,
+        childDependency.name,
         seen,
-        isShadcn || isDependencyShadcn
+        childDependency.isShadcn
       ).filter(Boolean);
     }),
   ];
@@ -167,27 +206,35 @@ export function getAllDependencies(
   seen = new Set<string>(),
   isShadcn?: boolean
 ): string[] {
-  const registryTarget = isShadcn ? registryShadcn : registry;
+  const dependency = resolveRegistryDependency(name, isShadcn);
+  const registryTarget = dependency.isShadcn ? registryShadcn : registry;
+  const itemName = dependency.name;
+  const seenKey = getSeenKey(itemName, dependency.isShadcn);
 
-  if (seen.has(name)) return [];
+  if (seen.has(seenKey)) return [];
 
-  seen.add(name);
+  seen.add(seenKey);
 
-  const component = registryTarget.items.find((c) => c.name === name);
+  const component = registryTarget.items.find((c) => c.name === itemName);
 
   if (!component) {
-    throw new Error(`Dependency ${name} not found from ${registryTarget.name}`);
+    throw new Error(
+      `Dependency ${itemName} not found from ${registryTarget.name}`
+    );
   }
 
   const deps = [
     ...(component.dependencies ?? []),
     ...(component.registryDependencies ?? []).flatMap((dep) => {
-      const isDependencyShadcn = isShadcnRegistryDependency(dep);
+      const childDependency = resolveRegistryDependency(
+        dep,
+        dependency.isShadcn
+      );
 
       return getAllDependencies(
-        isDependencyShadcn ? getShadcnRegistryItemName(dep) : dep,
+        childDependency.name,
         seen,
-        isShadcn || isDependencyShadcn
+        childDependency.isShadcn
       );
     }),
   ];
@@ -313,17 +360,21 @@ async function getAllItemFiles(
   seen = new Set<string>(),
   isShadcn?: boolean
 ): Promise<{ path: string; type?: string }[]> {
-  if (seen.has(name)) return [];
+  const dependency = resolveRegistryDependency(name, isShadcn);
+  const itemName = dependency.name;
+  const seenKey = getSeenKey(itemName, dependency.isShadcn);
 
-  seen.add(name);
+  if (seen.has(seenKey)) return [];
+
+  seen.add(seenKey);
 
   // Skip shadcn files unless explicitly requested
-  if (!isShadcn && isShadcnRegistryDependency(name)) {
+  if (!isShadcn && dependency.isShadcn) {
     return [];
   }
 
-  const registryTarget = isShadcn ? registryShadcn : registry;
-  const item = registryTarget.items.find((c) => c.name === name);
+  const registryTarget = dependency.isShadcn ? registryShadcn : registry;
+  const item = registryTarget.items.find((c) => c.name === itemName);
 
   if (!item) return [];
 
@@ -341,16 +392,19 @@ async function getAllItemFiles(
 
   // Recursively get files from dependencies
   for (const dep of item.registryDependencies ?? []) {
-    const isDependencyShadcn = isShadcnRegistryDependency(dep);
+    const childDependency = resolveRegistryDependency(dep, dependency.isShadcn);
+
     // Skip shadcn dependencies unless we're already in a shadcn context
-    if (!isShadcn && isDependencyShadcn) {
+    if (!dependency.isShadcn && childDependency.isShadcn) {
       continue;
     }
+
     const depFiles = await getAllItemFiles(
-      isDependencyShadcn ? getShadcnRegistryItemName(dep) : dep,
+      childDependency.name,
       seen,
-      isShadcn || isDependencyShadcn
+      childDependency.isShadcn
     );
+
     if (depFiles.length > 0) {
       allFiles = [...allFiles, ...depFiles];
     }

@@ -77,10 +77,12 @@ Registry dependency rules:
   shadcn registry item exists
 - prefer upstream namespace syntax over raw URLs for non-default registries when
   the namespace already covers the case
-- prefer explicit `@plate/*` for Plate self-dependencies in registry source and
-  public registry output;
-  keep absolute Plate item URLs only as accepted input compatibility for old
-  generated output, direct URL installs, and local-file sync adapters
+- prefer explicit `@plate/*` for Plate self-dependencies in registry source
+- public generated registry item JSON must rewrite Plate self-dependencies to
+  same-base item URLs such as `https://platejs.org/r/*.json`, so direct URL
+  installs resolve transitive Plate items from the same registry base
+- keep legacy localhost and absolute Plate item URLs as accepted input
+  compatibility for local-file sync adapters
 - treat `@shadcn/*` as compatibility input only; do not write it in Plate
   registry source or generated output
 - if upstream does not expose a small standalone item, use a small Plate

@@ -51,17 +51,9 @@ Plate 生态系统提供结构化信息，支持 MCP 的工具可以从统一注
 
 按照以下步骤使用 Plate 设置 MCP：
 
-### 步骤 1：从我们的基础模板开始
+### 步骤 1：安装 Plate
 
-运行此命令以使用基础编辑器模板初始化你的项目：
-
-```bash
-npx shadcn@latest init --preset https://platejs.org/init
-```
-
-### 步骤 2：添加 MCP 配置
-
-在 `components.json` 文件中配置你的注册表：
+对于已有的 shadcn 项目，先把 Plate 注册表添加到 `components.json`：
 
 ```json
 {
@@ -71,7 +63,19 @@ npx shadcn@latest init --preset https://platejs.org/init
 }
 ```
 
-### 步骤 3：配置你的 IDE
+然后从 `@plate` 注册表添加基础编辑器：
+
+```bash
+npx shadcn@latest add @plate/editor-basic
+```
+
+对于新项目，使用 Plate preset 初始化：
+
+```bash
+npx shadcn@latest init --preset https://platejs.org/init
+```
+
+### 步骤 2：配置你的 IDE
 
 选择适合你 IDE 的配置：
 

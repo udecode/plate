@@ -51,17 +51,9 @@ For teams working with Plate, integrating local documentation is key to maximizi
 
 Follow these steps to set up MCP with Plate:
 
-### Step 1: Start from our basic template
+### Step 1: Install Plate
 
-Run this command to initialize your project with the basic editor template:
-
-```bash
-npx shadcn@latest init --preset https://platejs.org/init
-```
-
-### Step 2: Add MCP config
-
-Configure your registry in your `components.json` file:
+For an existing shadcn project, add the Plate registry to `components.json`:
 
 ```json
 {
@@ -71,7 +63,19 @@ Configure your registry in your `components.json` file:
 }
 ```
 
-### Step 3: Configure your IDE
+Then add the basic editor from the `@plate` registry:
+
+```bash
+npx shadcn@latest add @plate/editor-basic
+```
+
+For a new project, initialize with the Plate preset:
+
+```bash
+npx shadcn@latest init --preset https://platejs.org/init
+```
+
+### Step 2: Configure your IDE
 
 Choose the configuration for your IDE:
 

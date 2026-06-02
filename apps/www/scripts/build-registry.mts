@@ -8,46 +8,31 @@ import {
   type Registry,
 } from 'shadcn/schema';
 
-import { registryBlocks } from '@/registry/registry-blocks';
-import { registryLib } from '@/registry/registry-lib';
-import { registryUI } from '@/registry/registry-ui';
-import { registryExamples } from '@/registry/registry-examples';
-import { registryHooks } from '@/registry/registry-hooks';
-import { registryComponents } from '@/registry/registry-components';
-import { registryInit } from '@/registry/registry';
-import { registryStyles } from '@/registry/registry-styles';
+import { createPlateRegistry } from '@/registry/registry';
 import { buildDocsRegistry } from './build-docs-registry.mts';
-import { toRegistryDependencySpecifier } from './registry-dependencies.mts';
+import { toPublicRegistryDependencySpecifier } from './registry-dependencies.mts';
 
 const HOMEPAGE = 'https://platejs.org';
-const NAME = 'plate';
 const BASE_URL = 'src/';
 
 const isDev = process.env.NODE_ENV === 'development';
 const MERGE_DOCS = true;
 const TARGET = isDev ? 'public/rd/registry.json' : 'public/r/registry.json';
+const REGISTRY_BASE_URL = isDev ? 'http://localhost:3000/rd' : `${HOMEPAGE}/r`;
 
-const registry: Registry = registrySchema.parse({
-  name: NAME,
-  homepage: HOMEPAGE,
-  items: [
-    ...registryInit,
-    ...registryUI,
-    ...registryComponents,
-    ...registryBlocks.map((block) => ({
-      ...block,
-      registryDependencies: ['plate-ui', ...(block.registryDependencies ?? [])],
-    })),
-    ...registryLib,
-    ...registryStyles,
-    ...registryHooks,
-    ...registryExamples,
-  ].map((item) => ({
+function withPublicRegistryDependencies(item: RegistryItem): RegistryItem {
+  return {
     ...item,
-    registryDependencies: item.registryDependencies?.map(
-      toRegistryDependencySpecifier
+    registryDependencies: item.registryDependencies?.map((dependency) =>
+      toPublicRegistryDependencySpecifier(dependency, REGISTRY_BASE_URL)
     ),
-  })),
+  };
+}
+
+const sourceRegistry = createPlateRegistry(HOMEPAGE);
+const registry: Registry = registrySchema.parse({
+  ...sourceRegistry,
+  items: sourceRegistry.items.map(withPublicRegistryDependencies),
 });
 
 async function buildRegistryIndex() {
@@ -138,7 +123,10 @@ async function buildRegistryJsonFile(items: RegistryItem[] = []) {
 
   registryJson = {
     ...fixedRegistry,
-    items: [...fixedRegistry.items, ...items],
+    items: [
+      ...fixedRegistry.items,
+      ...items.map(withPublicRegistryDependencies),
+    ],
   };
 
   // Create directories if they don't exist

@@ -11,7 +11,7 @@
       "source": "openclaw/agent-skills",
       "sourceType": "github",
       "skillPath": "skills/autoreview/SKILL.md",
-      "computedHash": "5ca6dcf5c2cc0f21735b66c28267bd1f15f01bbfdcf69ffd8a6c21039b8af381"
+      "computedHash": "c01ad85b2dc7e1e3bdcb91f3e8e21eb5fcfda0ddf7924fe47a62b37f00928b33"
     },
     "debug": {
       "source": "udecode/dotai",

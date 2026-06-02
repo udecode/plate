@@ -90,19 +90,19 @@ echo '{\n  "$schema": "https://ui.shadcn.com/schema.json",\n  "style": "new-york
 
 #### 添加 Plate 文档
 
-现在，获取 Plate 文档文件和必要的 MDX 组件。
+现在，从 `@plate` 注册表获取 Plate 文档文件和必要的 MDX 组件。
 
 ```bash
 npx shadcn@latest add @plate/fumadocs
 ```
 
 <Callout type="warning" title="特定版本文档">
-  上述命令安装的是**最新版本**的 Plate 文档。对于使用旧版 Plate（最低 `v48.0.0`）的项目，请指定您的版本：
+  上述命令会从实时注册表安装当前 Plate 文档。对于旧版 Plate，只有不声明
+  `registryDependencies` 的叶子注册表项目才适合使用 GitHub 原始 URL。
 
-  1.  前往 [GitHub 上的 Plate 公共注册表](https://github.com/udecode/plate/tree/main/apps/www/public/r)。
-  2.  使用标签切换器选择您的 Plate 版本。
-  3.  复制版本化 URL（例如，[v48](https://github.com/udecode/plate/tree/%40udecode/plate%4048.0.5/apps/www/public/r)）。
-  4.  将 `shadcn` 命令中的 `https://platejs.org/r/` 替换为此 URL。
+  不要从 GitHub 原始 tag 安装 `fumadocs.json` 或 `docs.json` 这类聚合项目：
+  它们的传递注册表依赖可能会解析到实时注册表。要安装完整的特定版本文档，
+  请从匹配的 Plate checkout 生成或提供注册表，确保每个传递项目都来自同一版本。
 </Callout>
 
 #### 运行 Fumadocs 应用

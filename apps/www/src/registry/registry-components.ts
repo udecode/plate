@@ -53,7 +53,10 @@ const registryApi: Registry['items'] = [
       },
     ],
     name: 'ai-api',
-    registryDependencies: ['copilot-api', 'markdown-joiner-transform'],
+    registryDependencies: [
+      '@plate/copilot-api',
+      '@plate/markdown-joiner-transform',
+    ],
     type: 'registry:file',
   },
   {
@@ -79,7 +82,7 @@ const registryApi: Registry['items'] = [
       },
     ],
     name: 'media-uploadthing-api',
-    registryDependencies: ['uploadthing'],
+    registryDependencies: ['@plate/uploadthing'],
     type: 'registry:file',
   },
 ];
@@ -97,12 +100,12 @@ export const registryComponents: Registry['items'] = [
     ],
     name: 'settings-dialog',
     registryDependencies: [
-      'ai-kit',
-      '@shadcn/button',
-      '@shadcn/command',
-      '@shadcn/dialog',
-      '@shadcn/input',
-      '@shadcn/popover',
+      '@plate/ai-kit',
+      'button',
+      'command',
+      'dialog',
+      'input',
+      'popover',
     ],
     type: 'registry:component',
   },
@@ -115,7 +118,7 @@ export const registryComponents: Registry['items'] = [
       },
     ],
     name: 'use-chat',
-    registryDependencies: ['ai-kit'],
+    registryDependencies: ['@plate/ai-kit'],
     type: 'registry:component',
   },
   {

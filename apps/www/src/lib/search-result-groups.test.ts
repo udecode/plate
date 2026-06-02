@@ -1,8 +1,19 @@
 import { describe, expect, it } from 'bun:test';
 
-import { getSearchResultGroup } from './search-result-groups';
+import {
+  getSearchResultGroup,
+  searchResultGroupOrder,
+} from './search-result-groups';
 
 describe('getSearchResultGroup', () => {
+  it('orders dynamic docs results before API reference results', () => {
+    expect(searchResultGroupOrder).toEqual([
+      'documentation',
+      'docsApiSections',
+      'apiReference',
+    ]);
+  });
+
   it('keeps first-party API reference pages separate from docs API sections', () => {
     expect(
       getSearchResultGroup({
