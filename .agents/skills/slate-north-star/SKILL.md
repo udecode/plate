@@ -1,0 +1,557 @@
+---
+description: Slate v2 north-star taste profile. Use when a Slate task mentions taste profile, north star, checkpoint zero, absolute best, long-term architecture, proof standards, skill routing, or automation supervisor doctrine.
+name: slate-north-star
+metadata:
+  skiller:
+    source: .agents/rules/slate-north-star.mdc
+---
+
+# Slate North Star
+
+## Use
+
+- Read as checkpoint zero for long Slate automation.
+- Read the active plan before this file when one exists.
+- Open owner docs for exact proof.
+- Keep checkpoint evidence in plans, not here.
+- Keep this file compact.
+
+## Checkpoint Zero
+
+- scope: long `slate-automation`, `slate-ar-perfect`, overnight, or "absolute
+  best" loop
+- order:
+
+1. Read the latest user request.
+2. Read the active goal and plan.
+3. Read this file.
+4. Read `docs/slate-v2/agent-start.md`.
+5. Read the relevant `slate-*` source rule under `.agents/rules`.
+6. Read the target route/package/test/benchmark owner.
+7. Write or update the checkpoint plan row before patching.
+
+- update this file before ship readiness when a loop rediscovers a reusable
+  decision
+- when `slate-automation` stops because this file lacks a needed taste rule,
+  capture the user's checkpoint answer here before resuming if the answer is
+  reusable
+
+## User Taste
+
+- Best long-term architecture beats the nearest symptom patch.
+- Package/runtime ownership beats example glue when the bug is systemic.
+- Examples should expose the real API and DX at the call site.
+- Do not invent helper ceremony when inline logic is clearer and used once.
+- Breaking changes are acceptable when they produce the better API, behavior,
+  or performance shape.
+- Slate stays unopinionated. Plate owns product opinion.
+- Preserve Slate's model and operations as truth; do not let React define the
+  core ontology.
+- Public API should teach `editor.read`, `editor.update`, `state`, `tx`,
+  extension groups, commit listeners, and projection sources.
+- Do not keep legacy APIs alive just because they are familiar.
+- Do not make child-count chunking foundational again.
+- Do not hide latency behind debounce, delayed repair, or benchmark tricks.
+- Do not call a lane green from one nearby proof row.
+- Do not call browser editing correct from model-only proof.
+- Do not call perf closed from rerender/locality evidence alone.
+- Do not call release-ready when only a scoped claim is green.
+- Do not trust chat history for memory. Write durable plan/doc rows.
+- Stay on the user's branch unless branch/PR work is explicitly requested.
+- For timed or batch automation, stack soft stopping checkpoints and ask at
+  final handoff so the user can unblock many decisions in one reply.
+- Be blunt. If the current tactic is weak, pivot instead of polishing it.
+
+## Compiled Rules
+
+- Current owner docs beat broad history. `docs/slate-v2/agent-start.md`,
+  release/proof ledgers, active plans, live source/tests, and benchmark targets
+  decide the present; old plans explain why.
+- Every artifact has a role. Specs are law, parity matrices are gates,
+  protocol matrices are exhaustive backlogs, benchmark registries own timed
+  targets, and slate-browser docs select proof lanes.
+- Use `slate-browser` to the maximum reasonable extent for browser-facing
+  editor proof. When a new browser testing pattern repeats, improve or extend
+  the `slate-browser` API instead of piling route-local Playwright helpers into
+  examples.
+- Preserve Slate's simple document model and operations while making
+  transaction execution, runtime identity, DOM selection, input/IME, clipboard,
+  history, and benchmark hardening explicit.
+- Behavior should be profile-driven. Plugins provide capabilities; behavior
+  profiles decide when a capability applies.
+- Research is a compiled agent layer, not a scrapbook: stable paths, one concept
+  per file, outward claims, durable promotion only.
+- Source weighting depends on claim type: executable tests are strongest for
+  behavior; docs are strongest for package/API ownership; live source is
+  strongest for current implementation truth.
+- External editors are pressure sources, not architecture to clone. Translate
+  their lessons into Slate's model, operations, ranges, commits, package owners,
+  and browser proof vocabulary.
+- Layering beats feature buckets. Document truth, DOM transport, React runtime,
+  browser proof, projections/services, layout, lightweight surfaces, and
+  productization need clear owners.
+- Page layout is not core editor truth. Pagination, deterministic measurement,
+  occlusion, and scroll stability live above document semantics; active caret,
+  selection, and composition stay on the native/browser editing path.
+- Perf work needs target-backed, benchmark-native metrics, a correctness
+  contract, p95/hot-lane visibility, bounded DOM/page budgets where relevant,
+  and plateau/blocked stop rules.
+- Benchmarks must answer the real decision. Use equivalent workloads, isolate
+  axes, publish route/runner knobs, label claim width, and reject one vanity
+  score.
+- Virtualized/paginated editing should be exact where authoritative: measured
+  layout snapshots, provider-owned units, shared hit testing, and no cold
+  estimate controlling user-visible truth.
+- Public hard cuts require source greps, examples/docs cleanup, type proof, and
+  browser proof. Package typecheck alone is not enough.
+- Long-running automation must repair tests, metrics, skills, and docs while it
+  works; a plan note without a future behavior change is archaeology.
+- External harvests classify pressure as refactor-existing, create-new, defer,
+  or product-owned. Do not copy foreign ontology when a Slate-native row proves
+  the same invariant.
+
+## How The User Corrects Agents
+
+- "This is still slow" usually means the measured lane missed the visible user
+  operation, not that the user needs a calmer explanation.
+- "WTF" on editor behavior means reproduce with real mouse/keyboard/browser
+  interactions before theory.
+- "Only uncommitted" means do not summarize older branch history.
+- "No debounce bullshit" means a faster-looking metric is rejected if the user
+  can still see delayed work.
+- "Long term most precise and performant" means choose architecture/API owner,
+  not another local example condition.
+- "Stay on v2" means do not create review branches or route through surprising
+  finalization branches.
+- "Bug report" means `slate-patch` unless the user explicitly asks for a plan.
+- "Make it perfect" means stabilize behavior first, then improve perf, then
+  clean API/DX, then prove ship readiness.
+- Repeated "go next" expects one best next owner, not a menu.
+- "Batch loop" means keep working through safe alternate owners and collect
+  unblock questions for the end, not stop at the first soft question.
+- When the user asks which skill to call, answer with the owner boundary and
+  why.
+
+## Self-Grill Red Flags
+
+Run this before answering, patching, closing a loop, or calling a lane green
+when the user asks for "absolute best", "replace me", "perfect", "harsh honest",
+"all next", "go next", or reports visible editor weirdness.
+
+- Exact repro: did I open the exact route, strategy, row count, browser, and
+  interaction the user named, or am I answering from stale memory?
+- Human behavior: did I test like a real editor user: click, double-click, drag,
+  margin click, selection, Enter burst, fast typing, undo/redo, scroll away/back,
+  copy/paste, and follow-up type where relevant?
+- Visible proof: if the bug is visual, did I capture screenshot/geometry or
+  `slate-browser` proof instead of trusting model state?
+- Regression class: did I add or improve a reusable oracle for the whole class,
+  not only patch the exact reported route?
+- Perf honesty: did I compare the right lane against legacy/staged/current,
+  p95/hot-path metrics, and correctness guardrails, with no debounce theater?
+- API/DX owner: is the fix at the package/runtime/public API owner, or am I
+  hiding a systemic issue in an example?
+- Slate-browser growth: if browser proof needed new repeated actions or
+  assertions, did I promote them into `slate-browser` or record why not?
+- Skill repair: if the loop missed because of workflow, routing, output budget,
+  metric, proof, or review shape, did I patch the owning `.agents/rules/**`
+  source so it does not happen again?
+- Scope surprise: did I avoid branch, finalizer, commit, PR, or cross-repo
+  ownership surprises unless the user explicitly asked?
+- Current-tree truth: when the user says "uncommitted", "current", or "only",
+  did I ignore older branch history and inspect the actual current surface?
+- All-next truth: when asked for "all next", did I include the big remaining
+  owners, not only the smallest next command?
+- Output budget: if the corpus is huge, did I split into autogoal checkpoints,
+  write artifacts, and avoid one giant compacted dump?
+
+If any answer is no, fix that before finalizing unless the plan records a real
+blocked reason.
+
+## Evidence Hierarchy
+
+1. Live `.tmp/slate-v2` source/tests/benchmarks for current Slate behavior.
+2. Real browser proof for local routes when the problem is visible.
+3. Replayable Playwright or package tests for the bug class.
+4. Benchmark targets with fair legacy/current comparison.
+5. Docs under `docs/slate-v2/**` for accepted claim width.
+6. `docs/research/decisions/**` for durable architecture choices.
+7. Old plans only as historical context unless they are the active plan.
+8. Chat memory last.
+
+Executable tests outrank prose docs for behavior claims. Prose docs outrank
+tests for package ownership, API intent, and public teaching surfaces.
+
+- `plate-2` commands prove docs, skills, benchmark registry, and planning
+  surfaces.
+- `plate-2` commands do not prove live Slate runtime behavior unless the
+  relevant owner is in this checkout.
+
+- A package-local suite being green does not automatically prove standalone
+  owners such as `snapshot-contract.ts`.
+- Chromium proof is not framework-grade browser proof unless claim width says
+  Chromium-only.
+- Playwright mobile viewport and semantic handles are not raw Android/iOS
+  keyboard, clipboard, or IME proof.
+- Profiler-on route packets are diagnostic. User-visible latency claims should
+  use profiler-off packets unless the profile overhead itself is the target.
+- DOM budgets must count the editor surface, not dev-server chrome, fixed app
+  shell nodes, or unrelated page controls.
+
+## Skill Topology
+
+- `slate-automation`: overnight supervisor and checkpoint cadence.
+- `slate-ar-perfect`: broad surface improvement when mixed correctness, perf,
+  API, DX, tests, and proof are in play.
+- `slate-ar-fast`: fastest-safe perf owner with correctness guardrails.
+- `slate-ar-stabilize`: behavior stability owner for existing proof surfaces.
+- `slate-ar-gate`: repeated proof runner when the oracle already exists.
+- `slate-ar-quality`: quality-gap research for API, DX, architecture, tests,
+  docs, and metric coverage.
+- `slate-ar-recipe`: read-only recipe picker/setup-plan helper.
+- `slate-ar-perf`: measured perf optimization against a target.
+- `slate-patch`: direct bug fix, reproduction, class-level behavior coverage,
+  proof, and autoreview.
+- `slate-plan`: architecture/API plan pressure and accepted plan execution.
+- `tdd`: missing oracle/test design when the proof itself does not exist.
+
+- Do not merge distinct owners into one vague mega-skill.
+- Repair confusing routing in source rules.
+- Create narrow owners only when evidence shows no clear owner exists.
+
+## Supervisor Freedom
+
+- The supervisor may change cadence, split checkpoints, update proof gates, and
+  repair `.agents/rules/**` when evidence shows the loop missed the user's
+  standard.
+- It may propose, create, merge, or delete `slate-*` skills only when repeated
+  evidence shows the owner topology is wrong. Do not create a skill because a
+  concept merely exists.
+- It may improve public or internal APIs when that is the real long-term fix.
+  Record the owner and proof before patching broad surfaces.
+- It may improve tests, metrics, benchmark targets, docs, and skills during an
+  optimization loop. A runtime-only patch is incomplete when the failure was
+  missing proof or bad automation.
+- It should answer its own self-grill from source evidence when possible. Ask
+  the user only when the choice changes product intent, risk tolerance, or
+  ownership outside the repo.
+
+## Core Slate v2 Decisions
+
+- Slate v2 uses `editor.read(fn)` and `editor.update(fn, options?)` as the
+  public lifecycle.
+- Preserve the simple Slate document model and operations as the external
+  primitive; move runtime, DOM, and input-method debt into explicit owners.
+- `state` is the normal read view; `tx` is the normal write view and can read
+  transaction-local state.
+- Extension namespaces add named groups to `editor`, `state`, and `tx`.
+- Primitive editor methods are power/runtime tools, not the final normal
+  authoring story.
+- `tx.*` is the current public API authority for normal writes. Primitive
+  `editor.*` writes may remain internal or advanced bridge tools, but do not
+  use them to justify old docs/examples as final DX.
+- `api` is too vague and `tf` is too Plate-shaped for raw Slate core naming.
+- Whole-document replacement should be a transaction write, not public
+  `Editor.replace`, `editor.replace`, or `editor.reset` as app-author API.
+- `EditorCommit` is the local runtime fact for history, collaboration, React,
+  DOM repair, proof, and subscribers.
+- Extension `onCommit` is committed editor state and should run before public
+  commit subscribers when UI state depends on it.
+- Browser editing claims require model, DOM, selection/caret where observable,
+  focus owner, commit metadata when mutating, legal trace, replayability, and
+  follow-up typing.
+- Overlay architecture is split into Decoration, Annotation, and Widget lanes.
+- `decorate` is not primary architecture; projection sources own the current
+  public overlay shape.
+- Durable anchors and live handles are separate nouns. Prefer bookmarks for
+  durable public anchor language; keep low-level refs as runtime machinery.
+- Huge-document truth is corridor-first, semantic islands, occlusion,
+  projection stores, and fair direct comparison against legacy where claimed.
+- DOM-present auto is the safe default direction for huge documents until
+  shell/occlusion modes prove browser find, screen reader, native selection,
+  copy/paste, IME, mobile, undo/history, and collaboration behavior.
+- Native mobile, semantic mobile, Playwright mobile viewport, and Appium raw
+  device proof are distinct claim classes.
+- Behavior profiles own editing decisions; plugins expose capabilities.
+- Lightweight text problems do not automatically deserve the full editor stack.
+- Product packaging matters, but it never gets to corrupt core/runtime layers.
+- Final readiness requires same-turn integration/build/type/lint/perf closure
+  for the active claim width.
+
+## Claim Width
+
+- scoped browser proof stays scoped
+- material package/runtime closure is not RC readiness
+- same-path examples do not close blanket parity
+- legacy parity does not close the v2 north-star lane
+- runtime proof ledgers do not become release readiness until final
+  integration, build, typecheck, lint, and perf gates run in the active closeout
+  slice
+- external-framework parity does not close a Slate claim until translated into
+  Slate-native model, operation, selection, DOM, and browser proof rows
+
+- If a lane is `pending / typing red`, say that. Name owner and next move.
+
+## Benchmark Target Authority
+
+- Control state: `benchmarks/targets/slate-v2.json`
+- Owner split:
+  - target registry owns benchmark questions, cohorts, metrics, thresholds,
+    correctness checks, artifacts, and supporting docs
+  - runtime/package benchmark scripts own the actual workload
+  - Autoresearch session files own active optimization loop state
+  - docs/research files are linked evidence, not benchmark control state
+- Perf-loop packet:
+  - one target id or a specific-enough missing target name
+  - one primary metric with direction and unit
+  - one correctness command or browser proof
+  - `METRIC` output from the benchmark when the target is being optimized
+  - a keep/discard/checks-failed decision per packet
+
+- If `worst_p95_ms` or a summary hides a hot lane, fix the metric before code.
+
+## Degraded Mode Contract
+
+- Degraded modes until native behavior is proved: virtualization, shell islands,
+  model-backed selection, staged mounting, hidden DOM.
+- Default: optimize the DOM-present native path first.
+- Degraded-mode rows:
+  - browser find
+  - screen-reader traversal
+  - native selection
+  - copy/paste
+  - IME/composition
+  - mobile touch selection
+  - undo/history
+  - collaboration/remote update
+  - follow-up typing after repair/materialization
+
+- Do not call shell/virtualized mode "same editor, just faster" unless all rows
+  are true.
+
+## Runtime Loop Policy
+
+- loop:
+
+```txt
+status -> gap scan -> behavior proof -> missing oracle repair -> visual proof
+-> benchmark -> patch one hot lane -> verify -> keep/revert -> log -> reassess
+```
+
+- Rules:
+  - Behavior before perf.
+  - Visual proof before green visible-UI claims.
+  - Keep perf packets only when correctness stays green.
+  - After two or three local fixes around one owner, escalate to deeper owner.
+  - Fix suspect metrics before code.
+  - Fix unfair benchmarks before gates.
+  - Reject packets that improve metrics but weaken selection, typing, copy,
+    paste, IME, focus, undo, follow-up input, native find, or scroll/caret
+    behavior.
+- Repeated-local-fix classes:
+  - selector fanout
+  - commit/listener ordering
+  - layout composition
+  - DOM selection import/export
+  - page/virtualization range ownership
+  - benchmark/oracle correctness
+
+- Escalate to `slate-plan` when the next useful win is API/runtime boundary.
+
+## Vision Proof
+
+- Real-user actions:
+  - click text, margin, page edges, table cells, and blank spaces between blocks
+  - double click words
+  - drag selection across lines/pages and into margins
+  - type bursts, Enter bursts, and mixed text/Enter bursts
+  - undo/redo after edits
+  - select all, copy, paste, and follow-up type
+  - scroll away and back before editing again
+  - change strategy/query controls when exposed
+
+- Require screenshots/geometry checks for text movement, blank windows,
+  overlap, wrong caret line, wrong margin click, or wrong scroll anchoring.
+- Prefer `slate-browser` helpers for reusable proof actions and assertions.
+  Promote new helper APIs when a pattern becomes reusable across routes,
+  packages, devices, transports, or browser engines.
+- Route-local Playwright is acceptable for first reproduction only. If the same
+  action/assertion appears twice, either move it into `slate-browser` or record
+  why the abstraction would be fake.
+- Selection/navigation slice:
+  - command family: arrow, shift-arrow, option-arrow, command-arrow, mouse drag,
+    delete, backspace, insert break, copy, undo, or redo
+  - direction: forward, backward, up, down, into boundary, out of boundary, or
+    across many boundaries
+  - topology: plain blocks, hidden DOM, DOM coverage boundary, multi-root,
+    content root, editable void, synced root, virtualized DOM, or mixed topology
+  - starting state: collapsed, expanded forward/backward, block edge,
+    multi-line, after focus handoff, or after history restore
+  - assertions: exact model selection/value plus DOM selection, focus, and chrome
+    sanity when browser-visible behavior is involved
+
+- Do not claim full selection/navigation coverage from one route row.
+
+## Recent Pagination Lessons
+
+- Stabilization before perf: behavior regressions invalidate perf wins.
+- Native projected text input is rejected until projected selection/caret repair
+  is correct enough. Keep Slate-owned projected DOM sync explicit.
+- Pure selection commits must not rebuild root snapshots just because snapshot
+  subscribers exist.
+- Normal node selectors keep model-truth routing; path selectors route only for
+  path-changing commits; mounted render selectors should skip synced text
+  commits at the selector bus.
+- Unit-owned layout blocks should skip text measurement. Their authoritative
+  size is the provider-owned unit list.
+- Layout refresh should read cheap commit metadata before falling back to a
+  full runtime snapshot.
+- Derived package stores need narrow read APIs such as root-level reads; full
+  serializable value reads are too expensive on hot layout paths.
+- Empty marks `{}` mean no active marks for plain collapsed input.
+- Pretext measured-block caches should be path-insensitive and remap current
+  paths on cache hit.
+- Estimated cold blocks should not compute measured-block cache keys before
+  estimation.
+- Cold estimates are skeleton hints only. They are not authoritative for
+  selected, composing, command-target, exported, collaboration, or measured
+  pagination truth.
+- Margin and blank-space hit testing belongs to the shared interaction owner,
+  not a table-tail or pagination-only workaround.
+- DOM-present model selections must export through direct text endpoints across
+  block paths. Editor-element endpoints are not a valid shortcut.
+- Pointer drag helpers must target from inside the requested glyph; adding
+  pixels past `rect.right` can select whitespace and create false failures.
+- The current serious pagination perf owner is scoped/incremental structural
+  layout and commit/listener fanout. More debounce or tiny input-path tweaks
+  will not make rows800 virtualized structural Enter feel native.
+- `PagedEditable` is the right composition surface, but huge examples should
+  split call-site, fixtures, controls, and proof so the public DX is not a
+  stress-harness wall.
+- Pretext/Premirror are layout direction signals, not permission to route active
+  editing through a measurement engine.
+
+## Decision Consolidation
+
+- Durable targets:
+  - active goal plan for run-specific findings
+  - this file for reusable user-taste and supervisor-routing decisions
+  - `docs/slate-v2/**` for accepted Slate v2 architecture/proof/release claim
+    width
+  - `docs/research/decisions/**` for durable architecture conclusions
+  - `docs/research/concepts/**` for one-concept reusable vocabulary
+  - benchmark target registry for metric/control-plane truth
+  - `.agents/rules/**` for reusable agent workflow policy
+- Rules:
+  - Write latest-state rules, accepted tradeoffs, rejected alternatives, proof
+    commands, and next owners.
+  - Do not write public changelog prose.
+  - Consolidate only reusable decisions.
+  - Keep packet logs and exploratory history in plans or AR artifacts.
+  - Promote `docs/solutions/**` into this file only when it changes future
+    supervisor behavior across tasks.
+  - Move source refs, options, and blast radius to `docs/research/decisions/**`
+    or the owning `docs/slate-v2/**` claim doc.
+
+## Repair Policy
+
+- Miss classes:
+  - runtime bug
+  - missing oracle
+  - missing metric
+  - lying metric
+  - weak visual proof
+  - stale docs/decision memory
+  - bad public/internal API shape
+  - wrong specialist owner
+  - missing skill
+  - overlapping/dead skill
+  - too-large prompt/output-budget miss
+- Owner repair:
+  - runtime bug: `slate-patch`
+  - missing oracle: `slate-patch` or `tdd`
+  - missing/lying metric: benchmark target/script repair
+  - weak visual proof: Browser, screenshot, Playwright geometry proof, or a
+    reusable `slate-browser` helper when the pattern should become first-class
+  - stale docs: update this file or the owning claim doc
+  - bad API: `slate-plan` or accepted implementation
+  - wrong/missing/overlapping skill: patch `.agents/rules/**`, sync, verify
+  - output-budget miss: split the goal into smaller autogoal checkpoints
+
+- Learning is only real when future loop behavior changes.
+
+## Taste Gap Capture
+
+Use this file as the durable target for reusable user taste discovered during
+automation stopping checkpoints.
+
+Capture a new taste rule when:
+
+- the automation loop stopped because the next safe move depended on user taste;
+- the user answered the checkpoint;
+- the answer changes future routing, proof, API, architecture, perf, docs, or
+  handoff behavior beyond the current run.
+
+Do not capture:
+
+- one-off project facts;
+- temporary route state;
+- exploratory packet history;
+- file lists or old branch summaries;
+- preferences already covered by an existing rule.
+
+Capture shape:
+
+- write one compact latest-state rule in the smallest matching section;
+- add an example trigger under `How The User Corrects Agents` when wording
+  matters;
+- keep evidence and raw answer text in the active goal plan;
+- run `pnpm install` and verify the generated skill mirror after editing the
+  source rule.
+
+## Anti-Patterns
+
+- A plan with pending gates called complete.
+- A local patch that avoids the package/runtime owner.
+- A route-only workaround for a systemic editor behavior bug.
+- A perf win that delays visible work.
+- A benchmark target with no correctness contract.
+- A visual bug "fixed" without screenshot or geometry proof.
+- A repeated browser assertion left as copy-pasted Playwright instead of a
+  `slate-browser` API.
+- A perf packet kept while a behavior oracle regressed.
+- A shell/virtualized win without a native-behavior classification table.
+- A giant prompt that should have been a checkpoint and file update.
+- Generated skill mirrors edited by hand.
+- Review branches created by default.
+- Public docs written as migration/changelog notes.
+- Asking the user to choose between obvious internal owners.
+- Broad process/output dumps that bury the actual signal.
+
+## First-Read Owner Docs
+
+- `docs/slate-v2/agent-start.md`
+- `docs/slate-v2/replacement-gates-scoreboard.md`
+- `docs/slate-v2/release-readiness-decision.md`
+- `docs/slate-v2/absolute-architecture-release-claim.md`
+- `docs/slate-v2/true-slate-rc-proof-ledger.md`
+- `docs/slate-v2/final-api-hard-cuts-status.md`
+- `docs/slate-v2/slate-react-perf-loop-context.md`
+- `docs/slate-v2/selection-navigation-coverage.md`
+- `docs/analysis/editor-architecture-candidates.md`
+- `docs/analysis/editor-global-systems-objective.md`
+- `docs/editor-behavior/README.md`
+- `docs/editor-benchmarks/2026-04-03-performance-doc-benchmark-plan.md`
+- `docs/slate-browser/overview.md`
+- `docs/slate-browser/framework-design.md`
+- `docs/slate-browser/api-design.md`
+- `docs/slate-browser/proof-lane-matrix.md`
+- `docs/slate-browser/next-system-move.md`
+- `docs/research/decisions/slate-v2-read-update-runtime-architecture.md`
+- `docs/research/decisions/slate-v2-state-tx-public-api-and-extension-namespaces.md`
+- `docs/research/decisions/slate-v2-data-model-first-react-perfect-runtime.md`
+- `docs/research/decisions/slate-v2-overlay-architecture-cuts.md`
+- `.agents/rules/slate-automation.mdc`
+- `.agents/rules/slate-patch.mdc`
+- `.agents/rules/slate-plan.mdc`
+- `.agents/rules/slate-ar.mdc`

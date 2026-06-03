@@ -1,0 +1,692 @@
+---
+description: Slate v2 overnight supervisor. Runs an autogoal-backed human-like loop across quality, behavior, visual proof, perf, API cleanup, benchmark/test repair, skill repair, docs consolidation, and ship readiness without user micro-routing.
+argument-hint: <surface/objective> [full-loop | timed 1h|2h|overnight | batch-loop]
+disable-model-invocation: true
+---
+
+# Slate Automation
+
+Handle $ARGUMENTS.
+
+Use this when the user wants Codex to work overnight or for many hours on a
+Slate v2 surface until it is actually good: correct, fast, visually stable,
+well-tested, architecturally clean, and ready for review.
+
+This is a supervisor skill. It does not replace `slate-patch`, `slate-plan`,
+`slate-ar-fast`, `slate-ar-stabilize`, `slate-ar-gate`, or `slate-ar-ship`
+unless evidence proves the skill topology itself is wrong. It routes them,
+repairs missing proof/metrics/skills, reshapes the Slate skill stack when
+needed, and keeps the loop honest.
+
+## Core Take
+
+The perfect loop is not "run perf until faster".
+
+The perfect loop is:
+
+```txt
+status -> gap scan -> behavior proof -> missing oracle repair -> visual proof
+-> benchmark -> patch one hot lane -> verify -> keep/revert -> log -> reassess
+```
+
+Repeat by checkpoint, not by giant prompt. One Codex prompt has limited output
+and compaction degrades judgment. The supervisor should abuse `autogoal` as the
+quality primitive: one focused checkpoint, one durable plan update, one proof
+packet, then continue from the checkpoint state instead of relying on chat
+scrollback.
+
+Repeat until the surface has no known P0/P1 regressions, meaningful perf is at
+target or plateau, visual/editor parity is proven, API/test gaps are closed or
+explicitly deferred, decisions are consolidated, and ship readiness is clean.
+
+## Use When
+
+- The user invokes `slate-automation`.
+- The user asks to run a long autonomous Slate v2 loop overnight.
+- The surface mixes bugs, perf, visual shifts, virtualization, editor behavior,
+  missing tests, API cleanup, and workflow repair.
+- The user wants "absolute best" implementation quality without picking every
+  sub-skill.
+- Repeated manual calls to `slate-ar-fast`, `slate-ar-stabilize`, or
+  `slate-patch` are producing reactive thrash.
+
+## Do Not Use When
+
+- The user asks one narrow bug fix: use `slate-patch`.
+- The user asks one architecture/API plan for review: use `slate-plan`.
+- The user asks one benchmark target: use `slate-ar-perf` or `slate-ar-fast`.
+- The user asks whether existing gates pass: use `slate-ar-gate`.
+- The target is not raw Slate v2 / `.tmp/slate-v2`.
+
+## Invocation Modes
+
+Parse the user's wording into one mode before starting. Record the mode,
+timebox, and stop-question policy in the active plan.
+
+- **Full-loop mode:** default when no duration is given. Run one complete
+  automation loop until a real stopping checkpoint, completion threshold, or
+  ship-readiness boundary. Stop immediately for stop questions.
+- **Timed mode:** when the user says `1 hour`, `2 hours`, `overnight`, or a
+  similar duration. Run as many safe checkpoint loops as fit the timebox.
+  Queue soft stopping checkpoints for final handoff instead of interrupting
+  the run, then ask the batch of unblock questions at the end.
+- **Batch-loop mode:** when the user says `batch`, `many loops`, `stack
+  questions`, or wants to unblock everything at the end. Behaves like timed
+  mode even without an explicit duration: keep working through safe alternate
+  owners and stack soft stopping checkpoints for final handoff.
+
+Natural prompts should work:
+
+- `slate-automation pagination rows800 virtualized`
+- `slate-automation pagination rows800 virtualized full loop`
+- `slate-automation pagination rows800 virtualized for 1 hour`
+- `slate-automation huge-document auto timed 2h`
+- `slate-automation editor behavior batch loop`
+
+For timed and batch-loop modes:
+
+- calculate or record the timebox before mutable work;
+- do not start a risky patch that cannot be verified inside the remaining time;
+- finish or quarantine the current packet before handoff;
+- keep queued stop questions concise and answerable in one pass;
+- after the user answers the batch, first apply reusable taste captures and
+  plan decisions, then resume queued packets.
+
+## Goal Contract
+
+Use `autogoal` aggressively. It is the supervisor's memory, checkpoint,
+anti-compaction strategy, and quality gate.
+
+Goal handle shape:
+
+```txt
+Automate <surface>; done when behavior, visual, perf, repair, docs, and ship-readiness gates pass; plan docs/plans/<path>.md.
+```
+
+The plan must record:
+
+- surface and target route/package;
+- invocation mode, timebox, and deadline when present;
+- completion threshold;
+- behavior families in scope;
+- visual proof surface;
+- primary perf metric and correctness contract;
+- API/DX cleanup authority;
+- benchmark/test/skill repair authority;
+- docs consolidation target;
+- north-star profile read/update state;
+- taste coverage gaps and capture state;
+- packet ledger location;
+- changed-list location;
+- review-attention list location;
+- queued stopping-checkpoint list location;
+- workflow-slowdown ledger location;
+- stop rules and blockers.
+
+Use `--template task --with browser --with package-api --with agent-native`
+when browser/package/skill surfaces are in play.
+
+## Autogoal Checkpoint Model
+
+Do not run an overnight task as one huge assistant turn.
+
+Split long work into checkpoints that fit one high-quality prompt:
+
+- **Taste checkpoint:** read
+  the `slate-north-star` skill as checkpoint zero, then read the active goal
+  plan and latest user request. If the north-star profile is missing or stale
+  for a reusable decision, consolidate it before patching.
+- **Taste-capture checkpoint:** stop implementation when the next safe move
+  depends on user taste that `slate-north-star` does not cover. Record the
+  taste gap in the plan, ask at most one terse checkpoint question only when
+  the answer is genuinely missing, then patch `slate-north-star` from the
+  answer before resuming. In timed or batch-loop mode, queue the question when
+  safe alternate work remains.
+- **Status checkpoint:** read current goal, plan, AR status, dirty evidence, and
+  latest user request.
+- **Proof checkpoint:** run one behavior/visual/package/browser gate family and
+  record pass/fail signatures.
+- **Patch checkpoint:** fix one correctness class or one missing oracle.
+- **Perf checkpoint:** optimize one measured hot lane with correctness green.
+- **Architecture checkpoint:** run `slate-plan` only when the next safe win is a
+  public/internal API or runtime boundary.
+- **Skill-repair checkpoint:** patch the owning skill/rule when the workflow
+  missed a recurring expectation.
+- **Workflow-slowdown checkpoint:** when a specialist command, gate, review,
+  finalizer, browser proof, or benchmark burns unexpected time, log the slow
+  step and repair the owning workflow if the slowdown is avoidable or repeated.
+- **Consolidation checkpoint:** move accepted reusable decisions into durable
+  docs/rules before ship readiness.
+- **Changed-list checkpoint:** update the concise list of all current-run
+  changes before final handoff so the user does not need to read every diff.
+- **Review-attention checkpoint:** rank the few things that most need user
+  attention before final handoff.
+- **Stopping-checkpoint queue:** in timed or batch-loop mode, collect soft
+  blockers and user-answer checkpoints for final handoff instead of stopping
+  immediately when safe alternate work remains.
+- **Ship checkpoint:** run `slate-ar-ship` readiness and pause only for
+  explicit commit/PR authority.
+
+Each checkpoint must end with:
+
+- plan state updated;
+- evidence recorded with cwd/tool;
+- packet ledger row for any code, test, benchmark, docs, or skill packet;
+- workflow-slowdown row when a checkpoint, command, or specialist step is
+  materially slower than expected;
+- changed-list row when files, commands, docs, tests, benchmarks, examples, or
+  skills changed;
+- review-attention row when a packet needs human review, taste confirmation,
+  risky API attention, or close visual inspection;
+- queued stopping-checkpoint row for any deferred question or user decision;
+- next checkpoint owner named;
+- `check-complete.mjs` run only when the whole goal is actually closable.
+
+If output starts getting large, stop expanding prose and write artifacts or plan
+rows. The next activation should resume from the goal plan, not from compacted
+chat.
+
+## Packet Ledger
+
+Every optimization, bug fix, oracle repair, benchmark repair, docs repair, or
+skill repair is a packet. The active goal plan must carry a compact ledger with
+one row per packet:
+
+- packet id and checkpoint owner;
+- hypothesis or failure signature;
+- files/commands changed or inspected;
+- baseline, latest, and best metric when a metric exists;
+- behavior proof and visual proof run;
+- decision: `keep`, `revert`, or `quarantine`;
+- reason for that decision;
+- next owner or follow-up.
+
+Use the decisions strictly:
+
+- `keep` only when correctness, native editor behavior, visual proof, and any
+  relevant metric are green enough for the packet's risk.
+- `revert` when the packet creates a known regression, hides latency behind
+  fake debounce, dirties API shape without architectural approval, or has no
+  credible proof.
+- `quarantine` when the packet contains useful evidence or partial code but is
+  not shippable. Quarantined packets do not count toward completion, ship
+  readiness, or benchmark wins until promoted to `keep`.
+
+No-code proof packets still get a ledger row with pass/fail evidence and the
+next owner. A final handoff without packet decisions is incomplete.
+
+## Workflow Slowdown Ledger
+
+Automation performance is part of product quality. Slow agent loops hide real
+work, waste timeboxes, and make overnight runs harder to trust.
+
+Log a workflow-slowdown row when:
+
+- a checkpoint takes materially longer than expected;
+- a specialist skill spends time on avoidable setup, broad scans, repeated
+  finalization, redundant gates, or noisy output;
+- a command has no narrow mode and blocks timed/batch progress;
+- `slate-ar-ship`, finalization, `autoreview`, browser proof, or benchmark
+  setup dominates the loop without producing proportional evidence;
+- compaction/output budget pressure is caused by command shape rather than the
+  real task.
+
+Each row must include:
+
+- step or command;
+- owner skill/script/package;
+- elapsed time or best available estimate;
+- expected timebox if known;
+- why it was slow;
+- evidence produced;
+- repair decision: keep as necessary, narrow command, cache/reuse evidence,
+  split checkpoint, patch skill, patch script, or defer with reason.
+
+Repair repeated or avoidable workflow slowdowns:
+
+- slow specialist routing -> patch the owning `.agents/rules/slate-*.mdc`;
+- slow finalization/readiness -> patch `slate-ar-ship` or
+  `slate-ar-finalize`;
+- slow proof gate -> add a focused gate or route through `slate-ar-gate`;
+- slow browser repetition -> promote reusable proof into `slate-browser`;
+- slow benchmark setup -> fix benchmark target/script ergonomics;
+- slow output -> narrow command output or write artifacts instead of streaming.
+
+Do not optimize away necessary proof. A slow step is acceptable when it is the
+only honest evidence for the claim, but the handoff must say so.
+
+## Taste Coverage Stop
+
+`slate-north-star` is the supervisor's taste profile. If the loop reaches a
+stopping checkpoint, user-answer checkpoint, or architecture decision and the
+needed preference is not covered there, stop implementation before more product
+or runtime work.
+
+Record a taste-gap row in the active plan:
+
+- prompt or stopping checkpoint that exposed the gap;
+- missing preference or decision pressure;
+- exact user answer when available;
+- reusable rule candidate;
+- owner: `slate-north-star`, another `.agents/rules/**` file, or non-reusable
+  run note;
+- capture decision: `recorded`, `not reusable`, or `needs one answer`.
+
+When the user answers a stopping checkpoint and the answer is reusable, first
+patch `.agents/rules/slate-north-star.mdc`, run `pnpm install`, verify the
+generated skill mirror with `rg`, and then resume the automation. If the answer
+is run-specific, record it in the active plan and mark the taste gap
+`not reusable`.
+
+Do not turn this into routine polling. Ask only when the answer changes product
+intent, risk tolerance, architecture ownership, or a taste rule that cannot be
+inferred from source evidence. Do not ship while reusable taste gaps remain
+uncaptured.
+
+## Stopping Checkpoint Queue
+
+Timed and batch-loop modes do not stop at the first soft question. They stack
+questions for the final handoff when another safe owner remains runnable.
+
+Queue soft checkpoints:
+
+- missing taste rule where work can continue on unrelated safe packets;
+- user-only product preference for one packet while other packets remain safe;
+- architecture/API fork that affects one lane but does not block proof, docs,
+  benchmark, skill, or oracle repair elsewhere;
+- scoped proof limitation that needs user claim-width confirmation;
+- accepted deferral that deserves final review.
+
+Never defer hard checkpoints:
+
+- commit, push, PR, branch creation, destructive cleanup, or external
+  credential;
+- unsafe API/runtime break where no safe alternate work remains;
+- same real blocker repeated with no autonomous move left;
+- tool/access failure that prevents all meaningful progress;
+- explicit user instruction to stop at the first checkpoint;
+- timebox expired with an unfinished risky packet.
+
+Each queued stopping checkpoint needs:
+
+- id;
+- type: taste, product, API/runtime, proof-width, deferral, authority, or other;
+- question or needed decision;
+- why the decision matters;
+- what work was paused or skipped;
+- what safe work continued;
+- current recommendation;
+- exact file, route, command, benchmark, screenshot, or plan row anchor.
+
+Final handoff must group queued questions so the user can answer them in one
+reply. After the user answers, update the plan, capture reusable taste in
+`slate-north-star`, and resume the highest-value queued owner first.
+
+## Changed List Checkpoint
+
+Autogoal-backed Slate automation must leave a readable list of what changed.
+The active plan and final handoff must include a concise current-run list,
+derived from the packet ledger and current file/source evidence, not old branch
+history.
+
+Group it like this:
+
+- code/runtime/API;
+- tests/oracles/browser proof;
+- benchmarks/metrics/targets;
+- examples/docs;
+- skills/workflow;
+- reverted/quarantined packets.
+
+Keep each row short and concrete. Include only things changed or intentionally
+reverted/quarantined during the current automation run. If a group has no
+changes, say `none`. No public changelog prose.
+
+## Review Attention Checkpoint
+
+The final handoff must include the items that most deserve the user's attention.
+This is not another changed-list. It is a ranked review guide.
+
+Include at most five items, ordered by review value:
+
+- risky architecture/API decision;
+- behavior that passed tests but still deserves human visual feel;
+- perf tradeoff or plateau that affects product judgment;
+- quarantined packet or accepted deferral;
+- changed skill/workflow rule that alters future automation behavior;
+- area where browser proof is scoped narrower than the user's likely claim.
+
+Each item must say:
+
+- what to inspect;
+- why it matters;
+- exact file, route, command, screenshot, benchmark, or plan row to inspect;
+- current agent recommendation: accept, inspect closely, defer, or reject.
+
+If there is nothing meaningful for the user to review, say `none`, but only
+after checking packet ledger decisions, scoped proof, residual risks, and
+changed workflow rules.
+
+## No Runtime Questions
+
+Do not pause for routine "grill me" questions during the loop.
+
+The supervisor self-grills:
+
+- What would the user complain about after watching the route for 30 seconds?
+- What native editor behavior could this patch break?
+- What visual shift or blank state would not show in metrics?
+- Is the benchmark measuring the real editor operation or hiding the hot lane?
+- Is this a package/runtime API smell rather than another route patch?
+- Did a skill miss a recurring expectation that should be repaired?
+- What decision should be consolidated so the next run does not rediscover it?
+
+Answer these from code, tests, docs, Browser, screenshots, Playwright, and
+benchmarks. Stop only for a true authority boundary:
+
+- commit, push, PR, branch creation, destructive cleanup, external credential,
+  or a user-only product decision;
+- an unsafe API break where the repo evidence leaves two viable futures and the
+  wrong choice would be expensive.
+
+Do not ask one question per packet. If a boundary question is unavoidable,
+record the blocked state once with the exact decision needed. In timed or
+batch-loop mode, queue soft questions and keep working on safe alternate owners.
+
+## Authority
+
+The supervisor may repair workflow sources when the loop proves they are wrong.
+It may also change the Slate skill topology when overlap, missing ownership, or
+stale routing is causing repeated misses.
+
+Allowed skill repair:
+
+1. identify the missed recurring expectation;
+2. patch the owning `.agents/rules/<owner>.mdc`;
+3. run `pnpm install` to sync generated `.agents/skills/**/SKILL.md`;
+4. verify source and generated mirror with `rg`;
+5. record the repair in the goal plan.
+
+Use `slate-patch repair <expectation>` for patch-lane misses.
+Use `autogoal repair <expectation>` for universal goal lifecycle misses.
+Patch `slate-automation` itself when the supervisor cadence, proof, or routing
+missed the expectation.
+
+Allowed topology changes:
+
+- update any `.agents/rules/slate-*.mdc` rule;
+- create a new `slate-*` skill when a repeated workflow has no clear owner;
+- merge skills when two wrappers overlap and confuse routing;
+- remove or deprecate a `slate-*` skill when it adds ceremony without distinct
+  ownership;
+- update `argument-hint`, description, routing, stop rules, and handoff shape;
+- update benchmark target policy and proof-gate ownership when needed.
+
+Topology changes need evidence:
+
+- repeated miss, routing confusion, or no-owner gap;
+- source-rule patch, not generated mirror edits;
+- `pnpm install`;
+- generated mirror audit with `rg`;
+- agent-native review;
+- plan row explaining what future mistake is now prevented.
+
+Do not hand-edit generated `.agents/skills/**/SKILL.md`.
+
+## Learning Loop
+
+Every failed attempt is classified before the next checkpoint:
+
+- runtime bug;
+- missing oracle;
+- missing metric;
+- lying metric;
+- weak visual proof;
+- stale docs/decision memory;
+- bad public/internal API shape;
+- missing taste coverage;
+- wrong specialist owner;
+- missing skill;
+- overlapping/dead skill;
+- workflow slowdown;
+- too-large prompt/output-budget miss.
+
+Then repair the owning layer:
+
+- runtime bug -> `slate-patch`;
+- missing oracle -> `slate-patch` or `tdd`;
+- missing/lying metric -> benchmark target/script repair;
+- visual proof gap -> Browser/screenshot/Playwright geometry proof;
+- stale docs -> decision consolidation;
+- bad API -> `slate-plan` or accepted implementation;
+- missing taste coverage -> stop, capture the answer, and patch
+  `slate-north-star` before resuming when the answer is reusable;
+- wrong/missing/overlapping skill -> `.agents/rules/**` repair;
+- workflow slowdown -> log the slow owner, then patch the skill, script, gate,
+  command shape, or checkpoint split when the slowdown is avoidable;
+- output-budget miss -> split into smaller autogoal checkpoint.
+
+Learning is only real when the future loop changes. A plan note without a rule,
+test, metric, doc, or owner update is just archaeology.
+
+## Cadence
+
+Each loop cycle has one primary owner and one packet-ledger decision.
+
+1. **Status:** run `slate-ar-status` or direct source/status reads.
+2. **Quality gap:** run `slate-ar-quality` when API, DX, test, docs, or metric
+   coverage is unclear.
+3. **Behavior:** run `slate-ar-stabilize` / `slate-ar-gate` before perf.
+4. **Oracle repair:** if proof is missing, use `slate-patch` or `tdd`.
+5. **Vision proof:** use Browser, screenshot, and/or Playwright geometry checks
+   for visual/editor parity.
+6. **Perf:** run `slate-ar-fast` / `slate-ar-perf` only with correctness green.
+7. **API cleanup:** use `slate-plan` when repeated bugs show bad public or
+   internal API shape.
+8. **Skill repair:** patch source rules when the loop itself missed policy.
+9. **Decision consolidation:** update durable docs before ship readiness.
+10. **Ship readiness:** use `slate-ar-ship` when the current tree is reviewable.
+
+After each cycle:
+
+- keep only if correctness and visual proof are green enough for the packet's
+  risk;
+- revert, rework, or quarantine if the packet weakens behavior, hides work
+  behind debounce, breaks native editor expectations, or makes API shape
+  dirtier;
+- switch bottleneck after two correctness-green no-gain packets;
+- route to `slate-plan` when the next win is architectural;
+- log evidence, rejected attempts, and the next owner in the plan.
+
+## Taste Profile
+
+Act like the user would after reading the code at 2am:
+
+- long-term architecture over local symptom patches;
+- package/runtime owner over example glue;
+- no hidden debounce wins unless explicitly accepted;
+- no fake stress fixtures pretending to be realistic docs;
+- examples should show the actual API/DX, not helper ceremony;
+- source of truth first, generated mirrors second;
+- no branch/review-branch surprises;
+- no public changelog prose in internal decision docs;
+- no "green" claim without behavior, visual, and metric truth matching the
+  surface;
+- delete, merge, or repair workflow tools when they confuse ownership.
+
+## Vision Proof
+
+Metrics are not enough. Browser-visible editor work needs a human-like proof.
+
+Use the in-app Browser for live local routes when a route is named or obvious.
+Use Playwright for replayable proof. Use screenshots or geometry assertions when
+the failure can be visual:
+
+- text shifts on selection/focus;
+- blank virtualized windows;
+- overlapped pages/content;
+- wrong scroll anchoring;
+- caret at the wrong visual line;
+- margin click placed on the wrong side;
+- table/page fragment drift;
+- native selection handles not matching model selection.
+
+For route-level editor proof, simulate real use:
+
+- click paragraph, table cell, margin, page corner;
+- type bursts and Enter bursts;
+- double click word;
+- drag selection across lines and pages;
+- undo/redo after edits;
+- copy/paste/select-all where relevant;
+- scroll away and back, then continue typing;
+- strategy/control changes when the example exposes them.
+
+Classify intentionally skipped families in the plan. Do not claim full editor
+parity when only one route and one gesture were checked.
+
+## Scenario Generator
+
+Before route-level proof, synthesize a scenario matrix from the named surface
+instead of checking random gestures.
+
+Build rows from these axes:
+
+- document topology: paragraphs, wrapped text, lists, tables, voids, pages,
+  blank space, hidden/materialized blocks, and huge-doc windows present on the
+  route;
+- viewport and strategy: staged, virtualized, auto, rows/count controls,
+  desktop/mobile where relevant, top/middle/end scroll positions;
+- editor gesture: click, double click, drag selection, margin click, arrow nav,
+  type burst, Enter burst, paste, select-all, undo/redo, scroll away/back;
+- assertion family: model selection, DOM selection, caret rect, scroll anchor,
+  visible text, DOM node budget, type-to-paint, console errors, and screenshot
+  or pixel/geometry stability;
+- native parity risk: browser behavior that should remain native unless Slate
+  deliberately owns it.
+
+Pick the smallest matrix that covers the surface risk, then expand when a bug
+appears. Add new rows when user reports, screenshots, or Browser observation
+show a missed human journey. Promote repeated rows into reusable Playwright or
+`slate-browser` helpers instead of retyping the same automation.
+
+## Repair Duties
+
+The supervisor repairs whatever layer is missing:
+
+- **Bug:** reproduce and fix with `slate-patch`.
+- **Missing oracle:** add Playwright/unit/Browser proof with `slate-patch` or
+  `tdd`.
+- **Missing metric:** update `benchmarks/targets/slate-v2.json`, benchmark
+  script, and `METRIC` output before optimizing.
+- **Lying metric:** fix summary/worst-lane math before using it as a gate.
+- **Weak example DX:** improve the example only when it is the API contract
+  surface; otherwise fix package/runtime ownership.
+- **API smell:** use `slate-plan` or implement the accepted shape when the plan
+  is already accepted.
+- **Missing taste coverage:** stop at the checkpoint, record the missing taste
+  in the plan, capture the user's answer, and patch `slate-north-star` when
+  reusable.
+- **Repeated browser proof pattern:** promote it into the `slate-browser` API,
+  helper commands, or proof contract so future agents can run it directly.
+- **Workflow slowdown:** log slow commands/checkpoints, classify the owner, and
+  repair avoidable slow paths in the owning skill, script, proof gate, or
+  benchmark command.
+- **Skill miss:** patch `.agents/rules/**`, sync, and verify generated mirrors.
+- **Docs memory gap:** consolidate accepted decisions into durable docs.
+
+## Decision Consolidation
+
+Before closeout, consolidate decisions so the next overnight run does not
+rediscover them.
+
+At the start of a long run, ingest decisions before acting:
+
+- read the `slate-north-star` skill first;
+- search active/recent goal plans under `docs/plans/**`;
+- search accepted architecture/proof docs under `docs/slate-v2/**`;
+- search compiled evidence under `docs/research/**`;
+- read benchmark target context from `benchmarks/targets/slate-v2.json`;
+- read source rules for any specialist skill before blaming the specialist.
+
+At every stop or handoff, compare the reason against `slate-north-star`. If the
+user's preference is missing and reusable, update `slate-north-star` before
+claiming the automation loop is ready to resume or ship.
+
+Use the smallest durable target:
+
+- active goal plan for run-specific findings;
+- `slate-north-star` for reusable user taste, correction patterns, and
+  supervisor routing decisions;
+- `docs/slate-v2/**` for accepted Slate v2 architecture, proof, issue, and
+  reviewer-facing decisions;
+- `docs/research/**` only for research/evidence layers;
+- `.agents/rules/**` only for reusable agent workflow policy.
+
+Do not write public changelog prose. Write latest-state decisions, proof
+commands, accepted tradeoffs, rejected alternatives, and next owner.
+
+For "think like me" work, create or update a compact north-star decision doc
+only after decisions are accepted and reusable. Do not dump raw chat history
+into the skill. The skill should know where to search and what to consolidate,
+not carry every decision in its own body.
+
+When the task is to improve the north-star profile itself, use numbered
+source-read passes over the owner docs instead of a vague docs review. Record
+the pass count, source families, reusable gaps found, and resulting profile
+changes in the active goal plan.
+
+If the user specifies a batch shape, obey it exactly. For example, "10
+iterations reading docs/ 10 files at a time" means ten concrete checkpoints,
+each with ten explicit `docs/**` file paths read and logged before synthesis.
+Do not substitute thematic source-family passes, directory summaries, or a
+single broad scan for a requested file-batched pass.
+
+## Stop Rules
+
+Stop when:
+
+- completion threshold passes;
+- ship/readiness path says `READY TO COMMIT` or asks for explicit commit/PR
+  approval;
+- `slate-north-star` does not cover a taste or risk-tolerance decision needed
+  for the next safe move and no safe alternate owner remains, or the invocation
+  mode is full-loop;
+- the next safe move is a `slate-plan` public API/runtime decision;
+- a same-signal behavior failure has already been routed through the right
+  specialist owner and still needs a user-only decision or unsafe architecture
+  choice;
+- the same real blocker repeats and no autonomous move remains.
+- the timed/batch timebox expires after the current packet is verified, reverted,
+  or quarantined.
+
+Do not stop just because one benchmark improved or one focused test passed.
+Do not stop just because a behavior lane needs `slate-patch`; switch owner
+inside the same automation loop and keep the packet ledger honest.
+When stopping for missing taste, record the gap and resume by updating
+`slate-north-star` from the user's answer before more implementation.
+In timed or batch-loop mode, prefer queuing soft stopping checkpoints over
+stopping early when safe, high-value work remains.
+
+## Final Handoff
+
+Report:
+
+- goal plan path;
+- surface and route/package;
+- invocation mode, elapsed time/timebox when relevant, and loop/checkpoint
+  count;
+- behavior gates and visual proof run;
+- primary metric baseline/latest/best and stop reason;
+- bugs fixed and oracles added;
+- benchmark/skill/docs repairs made;
+- workflow slowdown rows and repairs, including slow-but-necessary proof;
+- concise changed list grouped by code, tests/oracles, benchmarks, examples/docs,
+  skills/workflow, and reverted/quarantined packets;
+- `Needs your attention` section with the highest-review-value items, each with
+  file/route/command anchor and recommendation;
+- `Stopping checkpoints to unblock` section with queued questions, current
+  recommendation, and exact anchors;
+- accepted deferrals and residual risks;
+- next owner: continue automation, `slate-plan`, `slate-ar-ship`, or blocked
+  authority decision.

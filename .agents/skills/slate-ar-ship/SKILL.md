@@ -40,6 +40,10 @@ Default no-arg path:
 8. ask for commit approval in plain language. Do not ask the user to rerun the
    skill with parameters.
 
+Time the readiness steps while running them. If finalization preview,
+current-tree preview, focused gates, dirty-file classification, or `autoreview`
+is materially slow, log the slow step with the owner and reason before handoff.
+
 Plain `slate-ar-ship` is allowed to run non-mutating readiness work
 (`finalize-preview`, `finalize-current-tree` preview, focused gates,
 `autoreview`) because that is the point of ship readiness. It is not allowed to
@@ -72,6 +76,44 @@ For the default flow, "current-tree finalization" means
 `finalize-current-tree --exclude-session-artifacts` preview/readiness only. Do
 not run `finalize-autoresearch.mjs <plan>` unless the user explicitly asks to
 create review branches.
+
+## Readiness Timing
+
+Ship readiness is allowed to spend time on honest proof, but it must not hide
+workflow slowness.
+
+Record a timing row for each expensive readiness step:
+
+- finalization preview;
+- current-tree preview;
+- dirty-file/session-artifact classification;
+- focused `slate-ar-gate` proof;
+- `autoreview`;
+- accepted-finding repair and focused rerun;
+- post-commit current-tree preview.
+
+Each timing row should include:
+
+- step name;
+- command or owner skill/script;
+- elapsed time or best available estimate;
+- evidence produced;
+- why the cost was necessary or avoidable;
+- next repair when avoidable.
+
+Repair avoidable slow paths before calling the flow ready:
+
+- use the narrowest current-tree/finalization preview that proves the review
+  unit;
+- do not create review branches unless explicitly requested;
+- prefer focused gates over broad gates when claim width is scoped;
+- avoid rerunning unchanged expensive gates only to look busy;
+- move repeated slow proof patterns into `slate-ar-gate` or `slate-browser`;
+- patch `slate-ar-finalize`, `slate-ar-ship`, or the owning script when the
+  slow path comes from workflow shape rather than necessary evidence.
+
+If a slow step is necessary, keep it and report it as slow-but-required. Do not
+weaken proof for speed.
 
 ## Pre-Commit Current-Tree Review
 
@@ -121,6 +163,7 @@ Report:
 
 - recommended review unit;
 - finalization warnings;
+- readiness timing: slow steps, slow-but-required proof, and any workflow repair;
 - gates and autoreview status;
 - `READY TO COMMIT` when the next step is commit approval;
 - after commit/readiness preview, whether push/PR approval is still needed;
