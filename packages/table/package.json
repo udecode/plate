@@ -1,6 +1,6 @@
 {
   "name": "@platejs/table",
-  "version": "53.0.0",
+  "version": "53.0.7",
   "description": "Table plugin for Plate",
   "keywords": [
     "plate",
@@ -50,7 +50,7 @@
     "platejs": "workspace:^"
   },
   "peerDependencies": {
-    "platejs": ">=53.0.0",
+    "platejs": ">=53.0.7",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
   },

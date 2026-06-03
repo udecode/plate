@@ -1,5 +1,18 @@
 # @udecode/slate
 
+## 53.0.7
+
+### Patch Changes
+
+- [#4987](https://github.com/udecode/plate/pull/4987) by [@zbeyens](https://github.com/zbeyens) – Add experimental `editor.tf.setNodesBatch` for exact-path node prop updates on large documents
+
+  - Cut the large-document `set_node` hot path from `18.56 ms` to `2.63 ms` at `1k` blocks (`7.05x` faster)
+  - Cut the same path from `118.54 ms` to `4.92 ms` at `5k` blocks (`24.10x` faster)
+  - Let `@platejs/core` batch live `nodeId` normalization instead of paying one `setNodes` call per missing id
+  - Keep `editor.tf.setNodesBatch` explicitly temporary. It is experimental and will be removed in a future release
+
+- [`231b986`](https://github.com/udecode/plate/commit/231b9869825e38678621f55a4c4d1812704056e0) by [@github-actions[bot]](https://github.com/github-actions%5Bbot%5D) – Updated `slate-hyperscript`.
+
 ## 53.0.5
 
 ### Patch Changes

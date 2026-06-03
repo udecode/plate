@@ -1,5 +1,11 @@
 # @platejs/table
 
+## 53.0.7
+
+### Patch Changes
+
+- [#4987](https://github.com/udecode/plate/pull/4987) by [@zbeyens](https://github.com/zbeyens) – Speed up unmerged table range selection while preserving merged-cell handling
+
 ## 53.0.0
 
 ### Major Changes
