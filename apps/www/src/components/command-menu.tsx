@@ -1,27 +1,27 @@
-"use client";
+'use client';
 
-import * as React from "react";
+import * as React from 'react';
 
-import type { MainNavItem } from "@/types/nav";
-import type { DialogProps } from "@radix-ui/react-dialog";
+import type { MainNavItem } from '@/types/nav';
+import type { DialogProps } from '@radix-ui/react-dialog';
 
-import { CommandMenuDialog } from "@/components/command-menu-dialog";
-import { Button } from "@/components/ui/button";
+import { CommandMenuDialog } from '@/components/command-menu-dialog';
+import { Button } from '@/components/ui/button';
 import {
   preloadSidebarNav,
   useLazySidebarNav,
-} from "@/hooks/use-lazy-sidebar-nav";
-import { useLocale } from "@/hooks/useLocale";
-import { cn } from "@/lib/utils";
+} from '@/hooks/use-lazy-sidebar-nav';
+import { useLocale } from '@/hooks/useLocale';
+import { cn } from '@/lib/utils';
 
 const i18n = {
   cn: {
-    searchDocumentation: "搜索文档...",
-    searchShort: "搜索...",
+    searchDocumentation: '搜索文档...',
+    searchShort: '搜索...',
   },
   en: {
-    searchDocumentation: "Search documentation...",
-    searchShort: "Search...",
+    searchDocumentation: 'Search documentation...',
+    searchShort: 'Search...',
   },
 };
 
@@ -32,7 +32,7 @@ const subscribeHydration = () => () => {};
 export function CommandMenu({
   navItems,
   ...props
-}: Omit<DialogProps, "onOpenChange" | "open"> & {
+}: Omit<DialogProps, 'onOpenChange' | 'open'> & {
   navItems: MainNavItem[];
 }) {
   const locale = useLocale();
@@ -67,8 +67,8 @@ export function CommandMenu({
     const down = (event: KeyboardEvent) => {
       if (
         !(
-          (event.key === "k" && (event.metaKey || event.ctrlKey)) ||
-          event.key === "/"
+          (event.key === 'k' && (event.metaKey || event.ctrlKey)) ||
+          event.key === '/'
         )
       ) {
         return;
@@ -88,9 +88,9 @@ export function CommandMenu({
       updateOpen(!openRef.current);
     };
 
-    document.addEventListener("keydown", down);
+    document.addEventListener('keydown', down);
 
-    return () => document.removeEventListener("keydown", down);
+    return () => document.removeEventListener('keydown', down);
   }, [updateOpen]);
 
   return (
@@ -100,7 +100,7 @@ export function CommandMenu({
         disabled={!isHydrated}
         variant="outline"
         className={cn(
-          "relative h-8 w-full justify-start rounded-lg border-none bg-muted pl-3 text-foreground shadow-none transition-colors hover:bg-muted/50 md:w-48 lg:w-40 xl:w-64 dark:bg-card"
+          'relative h-8 w-full justify-start rounded-lg border-none bg-muted pl-3 text-foreground shadow-none transition-colors hover:bg-muted/50 md:w-48 lg:w-40 xl:w-64 dark:bg-card'
         )}
         onClick={() => updateOpen(true)}
         {...props}
