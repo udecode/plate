@@ -32,23 +32,26 @@ for the public claim.
 The current public runtime shape is:
 
 ```ts
-editor.read(() => {
-  editor.getSelection();
-  editor.getChildren();
+editor.read((state) => {
+  state.selection.get();
+  state.value.get();
 });
 
-editor.update(() => {
-  editor.unwrapNodes({ match: isList });
-  editor.setNodes({ type: "list-item" });
-  editor.wrapNodes({ type: "bulleted-list", children: [] });
+editor.update((tx) => {
+  tx.nodes.unwrap({ match: isList });
+  tx.nodes.set({ type: "list-item" });
+  tx.nodes.wrap({ type: "bulleted-list", children: [] });
 });
 ```
 
 The current rules:
 
-- `editor.read` is the coherent read boundary.
-- `editor.update` is the write boundary.
-- primitive editor methods are the flexible mutation API.
+- `editor.read((state) => ...)` is the coherent read boundary.
+- `editor.update((tx) => ...)` is the write boundary.
+- `state` groups are the normal read API.
+- `tx` groups are the normal write API.
+- primitive editor methods are advanced/runtime bridge tools, not primary
+  authoring DX.
 - extensions compose through named `editor`, `state`, and `tx` groups.
 - `Transforms.*` is not the primary public mutation story.
 - mutable editor fields are not primary read paths.
@@ -216,10 +219,10 @@ Public calls express intent. They do not mutate the committed tree directly.
 
 Examples:
 
-- `editor.insertNodes(...)`
-- `editor.setNodes(...)`
-- `editor.moveNodes(...)`
-- `editor.delete(...)`
+- `tx.nodes.insert(...)`
+- `tx.nodes.set(...)`
+- `tx.nodes.move(...)`
+- `tx.text.delete(...)`
 
 Those all append normalized intent into the active transaction.
 
@@ -460,26 +463,26 @@ One more hard rule:
 The public surface stays small:
 
 ```ts
-editor.read(() => {
-  editor.getSelection();
-  editor.getChildren();
+editor.read((state) => {
+  state.selection.get();
+  state.value.get();
 });
 
-editor.update(() => {
-  editor.insertNodes(node);
-  editor.setNodes({ color: "orange" }, { at: [0] });
-  editor.moveNodes({ at: [3], to: [1] });
+editor.update((tx) => {
+  tx.nodes.insert(node);
+  tx.nodes.set({ color: "orange" }, { at: [0] });
+  tx.nodes.move({ at: [3], to: [1] });
 });
 ```
 
 Rules:
 
-- `editor.update` creates the transaction boundary
-- `editor.read` reads coherent committed state
-- primitive editor methods target the active transaction
-- if a primitive omits `at`, the active transaction resolves the implicit
+- `editor.update((tx) => ...)` creates the transaction boundary
+- `editor.read((state) => ...)` reads coherent committed state
+- `tx` methods target the active transaction
+- if a tx method omits `at`, the active transaction resolves the implicit
   target once
-- if a primitive supplies `at`, DOM selection is not imported
+- if a tx method supplies `at`, DOM selection is not imported
 - direct single-op compatibility forwards into the same transaction runtime
 
 That means the native model is transactional even when the user writes single-op code.
@@ -531,21 +534,21 @@ App and demo instrumentation follows the same rule: observe commits through
 
 The committed editor state should be immutable and boring:
 
-- `editor.getChildren()` reads committed children
-- `editor.getSelection()` reads committed selection
-- `editor.getMarks()` reads committed marks
+- `state.value.get()` reads committed document value
+- `state.selection.get()` reads committed selection
+- `state.marks.get()` reads committed marks
 - mutable fields are internal or compatibility mirrors, not primary read paths
 - transaction draft state is private
 - reading committed state does not mutate anything
 - reading draft state happens through explicit transaction access, not by accident
 
-If a plugin needs to mutate selected content, it should use primitives inside
+If a plugin needs to mutate selected content, it should use tx groups inside
 `editor.update`:
 
 ```ts
-editor.update(() => {
-  editor.insertNodes(node);
-  editor.setNodes({ color: "orange" });
+editor.update((tx) => {
+  tx.nodes.insert(node);
+  tx.nodes.set({ color: "orange" });
 });
 ```
 
@@ -906,14 +909,15 @@ Phase 1 should expose the smallest honest surface:
 - `createEditor()`
 - `editor.read(fn)`
 - `editor.update(fn, options?)`
-- primitive editor methods
+- `state` and `tx` groups
+- primitive editor methods as advanced/runtime bridge tools
 - extension groups
 
 Recommended write path:
 
 ```ts
-editor.update(() => {
-  editor.setNodes({ type: "heading-one" });
+editor.update((tx) => {
+  tx.nodes.set({ type: "heading-one" });
 });
 ```
 

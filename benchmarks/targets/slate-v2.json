@@ -269,6 +269,38 @@
       }
     },
     {
+      "id": "react-pagination-virtualized-real-editor-ops",
+      "question": "Does virtualized pagination keep real editor interactions fast while preserving native selection, editing, undo/redo, and bounded page DOM?",
+      "owner": "slate-v2",
+      "family": "react-pagination",
+      "kind": "browser-trace",
+      "cwd": ".tmp/slate-v2",
+      "command": "SLATE_PAGINATION_REAL_OPS_PROFILER=0 SLATE_PAGINATION_REAL_OPS_COHORTS=current,rows800 SLATE_PAGINATION_REAL_OPS_ITERATIONS=5 bun run bench:react:pagination-virtualized-real-editor-ops:local",
+      "metrics": {
+        "primary": "pagination_virtualized_real_ops_worst_p95_ms",
+        "direction": "lower",
+        "unit": "ms",
+        "printsMetric": true,
+        "upgrade": "Primary metric is the worst p95 across real editor operations for the selected cohorts, with click, selection, typing, break, delete, undo/redo, scroll-click, DOM node, and page-surface guardrails in the same artifact. Run profiler-off for user-visible latency."
+      },
+      "correctness": {
+        "command": "PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright test playwright/integration/examples/pagination.test.ts --project=chromium -g \"moves the cursor between the first two virtualized pagination blocks on click|keeps virtualized pagination text aligned when a paragraph becomes selected|selects virtualized pagination text when dragging from the page line margin|places virtualized pagination selection at line start from the page margin|places virtualized pagination selection at wrapped line ends|selects projected pagination words on native double click\"",
+        "policy": "Promotion requires latency gains without native click, selection, margin, wrapped-line, or double-click regressions."
+      },
+      "artifacts": [
+        {
+          "path": ".tmp/slate-v2/tmp/slate-pagination-virtualized-real-editor-ops-benchmark.json",
+          "required": true
+        }
+      ],
+      "docs": {
+        "sources": [
+          "docs/plans/2026-05-31-pagination-virtualized-rows800-perf.md",
+          "docs/plans/2026-06-01-pagination-virtualization-char-burst-perf.md"
+        ]
+      }
+    },
+    {
       "id": "react-huge-document-browser-trace",
       "question": "What DOM count, heap, long-frame, and interaction traces does Slate v2 produce in Chromium?",
       "owner": "slate-v2",
