@@ -381,18 +381,13 @@ function wrapHtmlForDocx(bodyHtml: string, customStyles?: string): string {
     ? `${DOCX_EXPORT_STYLES}\n${customStyles}`
     : DOCX_EXPORT_STYLES;
 
-  return `<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <style>
-${styles}
-    </style>
-  </head>
-  <body>
-${bodyHtml}
-  </body>
-</html>`;
+  // No DOCTYPE and no inter-tag whitespace. html-to-docx parses the whole
+  // document with html-to-vdom, which keeps the DOCTYPE and the whitespace-only
+  // text nodes between <html>/<head>/<body> and turns each into a blank
+  // paragraph at the top of the generated document. Keeping the markup tight
+  // avoids those leading blank lines. The `\n` inside <style> is harmless since
+  // <head> is skipped by the converter.
+  return `<html lang="en"><head><meta charset="utf-8" /><style>${styles}</style></head><body>${bodyHtml}</body></html>`;
 }
 
 /**
