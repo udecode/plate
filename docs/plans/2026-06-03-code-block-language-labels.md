@@ -201,7 +201,7 @@ Completion Gates:
 | Browser interaction proof | yes | Exercise the target route/interaction with the approved browser tool or record blocker | Browser opened `/docs/examples/code-block`, selected `Viewing`, and verified labels are `SPAN` nodes, not combobox buttons. |
 | Browser console/network check | yes | Record console/network state or why it is not applicable | Browser API did not expose console logs. After reinstall, dev-server log showed `HEAD` and `GET /docs/examples/code-block` 200, no missing-module output, no Next error overlay, and changed UI rendered. |
 | Browser final proof artifact | yes | Record screenshot/trace/route proof or exact caveat | Post-reinstall screenshot saved to `/var/folders/md/2qpw448d4tx0dgncw_kqdpk80000gn/T/plate-code-block-readonly-labels-hydrated.png`. |
-| Public API / package boundary proof | yes | Source-audit public API, exports, and package boundary impact | No package exports/manifests changed; registry item includes new helper file. |
+| Public API / package boundary proof | yes | Source-audit public API, exports, and package boundary impact | No package exports/manifests changed; live/static registry renderers own their local language lookup data. |
 | Release artifact classification | yes | Record whether the change is published package behavior/API/types/config/runtime, registry-only, or no published user-visible delta | Registry-only component visible delta. |
 | Published package changeset | no | If published package users see a delta, load `changeset`, add/update one `.changeset/*.md` per package, and prove no forbidden `minor` on `@platejs/slate`, `@platejs/core`, or `platejs` | N/A: no package change. |
 | Registry changelog | yes | If the change is registry-only under `apps/www/src/registry/**`, update `docs/components/changelog.mdx` and do not add a package changeset | Updated `content/docs/components/changelog.mdx`. |
@@ -213,7 +213,7 @@ Phase / pass table:
 | Phase | Status | Evidence | Next |
 |-------|--------|----------|------|
 | Intake and source read | complete | Fetched discussion #4988 and empty comments with `gh api graphql`. | done |
-| Implementation | complete | Added shared language helper, read-only/static labels, registry metadata, tests, and changelog. | done |
+| Implementation | complete | Added local language lookup data in live/static renderers, read-only/static labels, registry metadata, tests, and changelog. | done |
 | Verification | complete | Reinstall, focused tests, `www` typecheck, lint, Browser proof, and autoreview passed. | done |
 | PR / tracker sync | complete | Follow-up requested PR/tracker sync; `pnpm check`, task-style PR body verification, and discussion comment happen in publish step. | done |
 | Closeout | complete | Plan checker rerun after closure update. | final response |
@@ -224,13 +224,14 @@ Findings:
 
 Decisions and tradeoffs:
 - Kept language visibility as a component prop (`showLanguageLabel`) instead of a persisted node field. That avoids schema churn for a display concern.
-- Moved the label list into a registry helper so editable, read-only, and static components share the same mapping.
+- Duplicated the language label lookup in the live and static registry renderers
+  to keep installed registry files self-contained.
 
 Implementation notes:
-- Added `apps/www/src/registry/ui/code-block-languages.ts`.
 - `CodeBlockCombobox` renders a plain label in read-only mode and the existing combobox in editable mode.
 - `CodeBlockElementStatic` renders the same label by default.
-- `registry-ui.ts` includes the new helper in the `code-block-node` registry item.
+- `registry-ui.ts` keeps the `code-block-node` registry item limited to the live
+  and static component files.
 
 Review fixes:
 - None required; autoreview was clean.
@@ -260,11 +261,11 @@ Final handoff contract:
 - Caveat: local screenshot path is not embedded in the PR body; the body records
   route/interaction proof instead.
 - Design:
-  - Chosen boundary: registry UI component and shared registry language helper.
-  - Why not quick patch: duplicating labels in static and live components would drift from the editable combobox list.
+  - Chosen boundary: registry UI components with local duplicated presentation lookup data.
+  - Why not shared helper: a third registry helper file makes copied live/static renderers less self-contained for label-only presentation data.
   - Why not broader change: persisted schema/API changes are unnecessary for a display toggle.
 - Verified: reinstall, focused tests, `www` typecheck, lint, Browser proof, autoreview.
-- PR body verified: N/A, no PR.
+- PR body verified: `gh pr view 4989 --json body` matched the task-style body.
 
 Task-style PR body contract:
 - Preserve any existing `<!-- auto-release:start -->` block. If a changeset is
@@ -287,14 +288,14 @@ Task-style PR body contract:
   of that output.
 
 Final handoff / sync:
-- PR: N/A, not requested.
-- Issue / tracker: Discussion #4988 source read; no public sync-back without PR.
+- PR: https://github.com/udecode/plate/pull/4989
+- Issue / tracker: Discussion #4988 synced with https://github.com/udecode/plate/discussions/4988#discussioncomment-17164600.
 - Browser proof: post-reinstall `/docs/examples/code-block` in Viewing mode shows plain JavaScript/Python/CSS labels; screenshot at `/var/folders/md/2qpw448d4tx0dgncw_kqdpk80000gn/T/plate-code-block-readonly-labels-hydrated.png`.
 - Caveats: Browser console logs unavailable through exposed Browser API; route 200 and no error overlay after reinstall.
 
 Timeline:
 - 2026-06-03T10:48:49.612Z Task goal plan created.
-- 2026-06-03 Implemented read-only/static language labels and registry helper.
+- 2026-06-03 Implemented read-only/static language labels with local renderer lookup data.
 - 2026-06-03 Focused tests, `www` typecheck, lint, Browser proof, and autoreview passed.
 - 2026-06-03 Ran `pnpm run reinstall` for unrelated dev-server package-resolution noise, then reran tests, typecheck, lint, and Browser route proof successfully.
 
