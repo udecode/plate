@@ -32,7 +32,7 @@
     "@platejs/date": "^53.0.0",
     "@platejs/dnd": "^53.0.0",
     "@platejs/docx": "^53.0.0",
-    "@platejs/docx-io": "^53.0.0",
+    "@platejs/docx-io": "^53.0.8",
     "@platejs/emoji": "^53.0.0",
     "@platejs/excalidraw": "^53.0.0",
     "@platejs/floating": "^53.0.0",
