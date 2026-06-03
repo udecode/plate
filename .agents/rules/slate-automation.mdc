@@ -67,9 +67,12 @@ timebox, and stop-question policy in the active plan.
   automation loop until a real stopping checkpoint, completion threshold, or
   ship-readiness boundary. Stop immediately for stop questions.
 - **Timed mode:** when the user says `1 hour`, `2 hours`, `overnight`, or a
-  similar duration. Run as many safe checkpoint loops as fit the timebox.
-  Queue soft stopping checkpoints for final handoff instead of interrupting
-  the run, then ask the batch of unblock questions at the end.
+  similar duration. Treat the timebox as a loop-start budget, not a hard wall:
+  keep starting or continuing safe packets while elapsed time is below the
+  requested budget, then finish, revert, or quarantine the active packet even
+  if that exceeds the wall-clock time. Queue soft stopping checkpoints for
+  final handoff instead of interrupting the run, then ask the batch of unblock
+  questions at the end.
 - **Batch-loop mode:** when the user says `batch`, `many loops`, `stack
   questions`, or wants to unblock everything at the end. Behaves like timed
   mode even without an explicit duration: keep working through safe alternate
@@ -86,8 +89,15 @@ Natural prompts should work:
 For timed and batch-loop modes:
 
 - calculate or record the timebox before mutable work;
-- do not start a risky patch that cannot be verified inside the remaining time;
-- finish or quarantine the current packet before handoff;
+- do not start a risky patch after the timebox has already expired unless it is
+  needed to close or quarantine the current packet;
+- do not hand off early just because the first packet closed;
+- if more than roughly 15 minutes or 25% of the requested timebox remains,
+  immediately pick the next safe owner from the remaining-backlog ladder below;
+- when the timebox expires mid-packet, continue only far enough to verify,
+  revert, or quarantine that packet, then hand off;
+- finish or quarantine the current packet before handoff even if it exceeds the
+  requested timebox;
 - keep queued stop questions concise and answerable in one pass;
 - after the user answers the batch, first apply reusable taste captures and
   plan decisions, then resume queued packets.
@@ -105,6 +115,7 @@ Automate <surface>; done when behavior, visual, perf, repair, docs, and ship-rea
 
 The plan must record:
 
+- first checkpoint requirement extraction before implementation;
 - surface and target route/package;
 - invocation mode, timebox, and deadline when present;
 - completion threshold;
@@ -125,6 +136,14 @@ The plan must record:
 
 Use `--template task --with browser --with package-api --with agent-native`
 when browser/package/skill surfaces are in play.
+
+Do not invent a custom non-template plan shape for automation. Create the
+generated autogoal plan with the helper, fill the generated gates, mark
+non-applicable rows `N/A: <reason>`, and keep that plan as the runtime truth.
+The first checkpoint must copy every explicit user requirement into checkable
+rows before implementation: scope, non-goals, timing, stop conditions,
+deliverables, final handoff sections, verification surfaces, and success
+criteria.
 
 ## Autogoal Checkpoint Model
 
@@ -185,6 +204,34 @@ Each checkpoint must end with:
 If output starts getting large, stop expanding prose and write artifacts or plan
 rows. The next activation should resume from the goal plan, not from compacted
 chat.
+
+## Remaining-Backlog Ladder
+
+When a timed or batch-loop run finishes a packet early, spend the remaining
+timebox on safe backlog. A 1h run that stops after 16 minutes failed the
+supervisor contract unless no safe owner remains.
+
+Default next-owner order for stable feature/API validation:
+
+1. rerun focused stable example failures in Firefox/WebKit first when recent
+   failures named those engines;
+2. generate more realistic stress families around paste, undo/redo, selection,
+   Enter bursts, and follow-up typing;
+3. run in-app Browser visual smoke on richtext, plaintext, editable-voids, and
+   hidden-content-blocks when those stable examples are in scope;
+4. patch missing oracles, command pitfalls, or skill workflow misses discovered
+   by the proof;
+5. rerun focused proof and record packet keep/revert/quarantine;
+6. run `check-complete.mjs` only when the whole goal is actually closable.
+
+For pagination/virtualization-specific prompts, replace the stable-example
+ladder with the route's scenario matrix, but keep the same rule: continue until
+the timebox expires, a risky packet cannot be closed safely, or no safe owner
+remains.
+
+Do not broaden into experimental architecture when the user scoped it out.
+Route that as a stopping checkpoint or `slate-plan` next owner in the final
+handoff.
 
 ## Packet Ledger
 
@@ -255,6 +302,64 @@ Repair repeated or avoidable workflow slowdowns:
 Do not optimize away necessary proof. A slow step is acceptable when it is the
 only honest evidence for the claim, but the handoff must say so.
 
+## Command Pitfalls
+
+Automation should use the repo's known focused commands, not improvised command
+shapes.
+
+## Private-Alpha Posture
+
+Slate v2 is continuous private alpha unless the user explicitly asks for
+ship/release/publish/PR. In ordinary automation loops:
+
+- do not raise release, publish, changeset, or PR readiness as a next step;
+- do not treat published-package artifact work as a blocker;
+- record package/runtime deltas as private-alpha runtime state;
+- keep closure on behavior proof, Browser proof, package checks, workflow
+  repairs, and the active plan ledger;
+- route release packaging only when the prompt names ship, release, publish,
+  PR, or a release-specific skill.
+
+For Slate v2 loops, ignore parent repo dirty state by default. Parent repo
+changes are not review attention unless the current work explicitly owns
+Slate-v2-related `docs/**` artifacts. Do not warn about unrelated parent
+`.agents`, templates, locks, generated mirrors, or older manual changes in the
+final handoff.
+
+In `.tmp/slate-v2`, prefer these focused forms:
+
+```bash
+PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/<suite>.test.ts --project=<chromium|firefox|webkit> --grep "<pattern>"
+bun test ./packages/<package>/test/<file>.ts --test-name-pattern "<pattern>"
+```
+
+Rules:
+
+- run commands from `.tmp/slate-v2` unless the command explicitly belongs to
+  the parent repo;
+- use `bun playwright ...` for Playwright specs; do not send Playwright specs
+  through `bun test`;
+- use `bun test ./path` only with repo-relative Bun test paths from
+  `.tmp/slate-v2`, or with package-local paths after recording the package cwd;
+- do not run `generic-*-contract.ts` or other type-contract files with
+  top-level compile examples through `bun test`; they may contain deliberate
+  runtime-invalid `@ts-expect-error` calls. Use the owning package `typecheck`
+  script or the relevant `tsc --project ...` command instead;
+- do not broad-scan every example/package test name into chat with
+  `rg "test\\(" ...` when the lane is already scoped; use a curated file list,
+  targeted `rg` filters, or write discovery output to an artifact;
+- when Playwright imports a package through public exports such as
+  `slate-browser/playwright`, verify whether the export resolves built `dist`;
+  after source changes to those packages, run the focused package build (for
+  example `bun --filter slate-browser build`) before claiming the rerun tested
+  the patch;
+- do not casually swap in `bun run playwright -- ...`, raw `playwright`, or a
+  custom wrapper unless the package script and argument forwarding are verified
+  in the plan;
+- if a command fails because of command shape, classify it as a workflow
+  slowdown, repair the owning skill/script when reusable, and rerun the focused
+  proof with the corrected command.
+
 ## Taste Coverage Stop
 
 `slate-north-star` is the supervisor's taste profile. If the loop reaches a
@@ -305,7 +410,7 @@ Never defer hard checkpoints:
 - same real blocker repeated with no autonomous move left;
 - tool/access failure that prevents all meaningful progress;
 - explicit user instruction to stop at the first checkpoint;
-- timebox expired with an unfinished risky packet.
+- timebox expired before starting the next safe packet.
 
 Each queued stopping checkpoint needs:
 
@@ -542,6 +647,24 @@ For route-level editor proof, simulate real use:
 - scroll away and back, then continue typing;
 - strategy/control changes when the example exposes them.
 
+When using the in-app Browser:
+
+- use Browser Playwright locators for keyboard shortcut proof such as
+  `ControlOrMeta+Z`, select-all, copy, paste, and arrow-key assertions;
+- do not count Browser CUA `keypress` shortcut attempts as undo/select-all/
+  clipboard proof unless the run verifies the expected editor state changed;
+- CUA click/type is acceptable for lightweight visual smoke, but replayable
+  behavior claims need Browser Playwright state checks or route Playwright
+  integration tests;
+- if Browser typing fails with a missing virtual clipboard, stop retrying
+  Browser typing in that packet; keep Browser for visual/console proof and use
+  route Playwright integration tests for interaction behavior;
+- if a tab is stuck on an error page or Browser prints a huge encoded failure
+  document, retry once from a fresh in-app Browser tab, catch per-route errors,
+  and truncate recorded error text before falling back to Playwright screenshots;
+- record a workflow-slowdown row if Browser command shape, not Slate runtime,
+  caused a weak or misleading proof packet.
+
 Classify intentionally skipped families in the plan. Do not claim full editor
 parity when only one route and one gesture were checked.
 
@@ -658,7 +781,8 @@ Stop when:
   choice;
 - the same real blocker repeats and no autonomous move remains.
 - the timed/batch timebox expires after the current packet is verified, reverted,
-  or quarantined.
+  or quarantined. If the timebox expires mid-packet, keep working only until
+  that packet has a keep/revert/quarantine decision.
 
 Do not stop just because one benchmark improved or one focused test passed.
 Do not stop just because a behavior lane needs `slate-patch`; switch owner

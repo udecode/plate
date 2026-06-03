@@ -43,7 +43,10 @@ Use those skills when relevant:
 
 - `autogoal` for any prompt with a verifiable and quantitative outcome. Always use
   the autogoal skill before durable work when the task has a measurable completion
-  threshold
+  threshold. Codex tends to compact output and miss requirements from the prompt,
+  so the first autogoal checkpoint must copy every explicit requirement, scope
+  boundary, timing constraint, stop condition, deliverable, and final-handoff
+  section into the goal plan as checkable checkpoints before work starts
 - `orchestrator` when the current thread should route per-branch work to child threads instead of executing locally
 - `task` for normal repo task execution
 - `major-task` for heavyweight architecture, framework comparison, migration, benchmark, or proposal work
