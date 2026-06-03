@@ -31,6 +31,7 @@ const config: Record<
 
 export const BlockList: RenderNodeWrapper = (props) => {
   if (!props.element.listStyleType) return;
+  if (!isOrderedList(props.element)) return;
 
   return (props) => <List {...props} />;
 };

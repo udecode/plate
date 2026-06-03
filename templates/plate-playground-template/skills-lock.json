@@ -1,70 +1,55 @@
 {
   "version": 1,
   "skills": {
-    "ce:brainstorm": {
-      "source": "EveryInc/compound-engineering-plugin",
+    "autogoal": {
+      "source": "udecode/dotai",
       "sourceType": "github",
-      "computedHash": "7a55a3d373dac09e1c93c6bb6292d732da1e03490965021673d06067849942df"
+      "computedHash": "bbc731f29326d72031f97c7376c2fbe48215434586c5ee44c7d07eb68988a0e0"
     },
-    "ce:compound": {
-      "source": "EveryInc/compound-engineering-plugin",
+    "autoreview": {
+      "source": "openclaw/agent-skills",
       "sourceType": "github",
-      "computedHash": "2a9b6bc18b31e8b7b59891c8d7c8a98a4b386a1aa90ab679f5a8d91553ccb108"
-    },
-    "ce:compound-refresh": {
-      "source": "EveryInc/compound-engineering-plugin",
-      "sourceType": "github",
-      "computedHash": "94b68b84e7adda68da13caed91bd21a95d5cfca7d87042ca0407fbcac8295cff"
-    },
-    "ce:ideate": {
-      "source": "EveryInc/compound-engineering-plugin",
-      "sourceType": "github",
-      "computedHash": "d2780682c4abf7255c76d1e7c9f8a398327cac1f22c15e4a7e2f5f749dc803db"
-    },
-    "ce:plan": {
-      "source": "EveryInc/compound-engineering-plugin",
-      "sourceType": "github",
-      "computedHash": "8727297c0cb216e6540c2d391430fa573be9546a729472caabbc6a6a2627b5dc"
-    },
-    "ce:work": {
-      "source": "EveryInc/compound-engineering-plugin",
-      "sourceType": "github",
-      "computedHash": "b1d795a6f3a4004ba9ac21ad10b3473df2917bdbe4f851894dbee66fd513afea"
-    },
-    "coding-tutor": {
-      "source": "EveryInc/compound-engineering-plugin",
-      "sourceType": "github",
-      "computedHash": "1a5018fafe7f8c3fe08ab90a32f0d5acc5ad83bbfa177799529007445b12884b"
+      "computedHash": "c01ad85b2dc7e1e3bdcb91f3e8e21eb5fcfda0ddf7924fe47a62b37f00928b33"
     },
     "debug": {
       "source": "udecode/dotai",
       "sourceType": "github",
       "computedHash": "0c74e2022d4b01170526cc5aabd386dd76f9a65e8b23df92a947bb52504e26b1"
     },
-    "dev-browser": {
-      "source": "sawyerhood/dev-browser",
+    "orchestrator": {
+      "source": "udecode/dotai",
       "sourceType": "github",
-      "computedHash": "d50d11bbefdc1599d78900828dcb69d48e5091769d3f5ce10e06a60efe2405bf"
+      "computedHash": "02a6d9c3931f0af4b6d0a04344082c90dd7d9cb9dbe1e4962bd98471591f02d8"
     },
-    "planning-with-files": {
-      "source": "othmanadi/planning-with-files",
+    "react-useeffect": {
+      "source": "softaworks/agent-toolkit",
       "sourceType": "github",
-      "computedHash": "93522d6989e542f4670d9d7a347b2e0013c46935845d599a15fafd77643b9d42"
+      "computedHash": "8c24990b50f431a570f3ad1f60632dee154431861547103047f6ce80092ca734"
     },
     "shadcn": {
       "source": "shadcn/ui",
       "sourceType": "github",
-      "computedHash": "80a6226e78f6d1fe464214ae0ef449d49d8ffaa3e7704f011e9b418c678ad4d1"
+      "computedHash": "8f8bcc9024aa068245fac646d654a18c80280e4b06112ccd3e691a8c96cd66bd"
     },
     "tdd": {
       "source": "udecode/dotai",
       "sourceType": "github",
       "computedHash": "117755128a6b66a3faf32d0bb9740837b1ab4471286dda6c4c5674d803fbbbe5"
     },
+    "typescript-advanced-types": {
+      "source": "wshobson/agents",
+      "sourceType": "github",
+      "computedHash": "8cbf2bf600f392d7260e476e3202932a876e2281cda3b15a8b6a5a43f383252d"
+    },
     "vercel-react-best-practices": {
       "source": "vercel-labs/agent-skills",
       "sourceType": "github",
       "computedHash": "3219a1944e404ffc14d1d9d6aef6dd2e3855b81387ee0a044ccbfe14d34c2357"
+    },
+    "video-transcripts": {
+      "source": "udecode/dotai",
+      "sourceType": "github",
+      "computedHash": "dfce0b8ea81350223ee9967acbad18eb589e17aebf91e87e94b07dfaa86db471"
     }
   }
 }

@@ -2,6 +2,7 @@
 
 import {
   BulletedListRules,
+  isOrderedList,
   OrderedListRules,
   TaskListRules,
 } from '@platejs/list';
@@ -23,6 +24,22 @@ export const ListKit = [
       TaskListRules.markdown({ checked: true }),
     ],
     inject: {
+      nodeProps: {
+        nodeKey: KEYS.listType,
+        query: ({ nodeProps }) => {
+          const element = nodeProps.element;
+
+          return !!element?.listStyleType && !isOrderedList(element);
+        },
+        transformProps: ({ props }) => ({
+          ...props,
+          role: 'listitem',
+          style: {
+            ...props.style,
+            display: 'list-item',
+          },
+        }),
+      },
       targetPlugins: [
         ...KEYS.heading,
         KEYS.p,
