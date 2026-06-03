@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "history-toolbar-button",
-  "type": "registry:ui",
   "title": "History Toolbar Button",
   "description": "Toolbar buttons for undo and redo operations.",
   "dependencies": [],
@@ -25,5 +24,6 @@
     "examples": [
       "basic-nodes-demo"
     ]
-  }
+  },
+  "type": "registry:ui"
 }

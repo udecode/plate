@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "tabbable-demo",
-  "type": "registry:example",
   "dependencies": [
     "@platejs/tabbable"
   ],
@@ -19,5 +18,6 @@
       "content": "/** @jsxRuntime classic */\n/** @jsx jsx */\nimport { jsx } from '@platejs/test-utils';\n\njsx;\n\nexport const tabbableValue: any = (\n  <fragment>\n    <hh2>Tabbable</hh2>\n    <hp>\n      Ensure a smooth tab navigation experience within your editor with the\n      Tabbable plugin.\n    </hp>\n    <hp>\n      Properly handle tab orders for void nodes, allowing for seamless\n      navigation and interaction. Without this plugin, DOM elements inside void\n      nodes come after the editor in the tab order.\n    </hp>\n    <element type=\"tabbable\">\n      <htext />\n    </element>\n    <element type=\"tabbable\">\n      <htext />\n    </element>\n    <hp>Place your cursor here and try pressing tab or shift+tab.</hp>\n    <hp indent={1} listStyleType=\"disc\">\n      List item 1\n    </hp>\n    <hp indent={1} listStyleType=\"disc\">\n      List item 2\n    </hp>\n    <hp indent={1} listStyleType=\"disc\">\n      List item 3\n    </hp>\n    <hcodeblock lang=\"javascript\">\n      <hcodeline>if (true) {'{'}</hcodeline>\n      <hcodeline>\n        {'// <-'} Place cursor at start of line and press tab\n      </hcodeline>\n      <hcodeline>{'}'}</hcodeline>\n    </hcodeblock>\n    <hp>\n      In this example, the plugin is disabled when the cursor is inside a list\n      or a code block. You can customise this using the{' '}\n      <htext code>query</htext> option.\n    </hp>\n    <element type=\"tabbable\">\n      <htext />\n    </element>\n    <hp>\n      When you press tab at the end of the editor, the focus should go to the\n      button below.\n    </hp>\n  </fragment>\n);\n",
       "type": "registry:example"
     }
-  ]
+  ],
+  "type": "registry:example"
 }

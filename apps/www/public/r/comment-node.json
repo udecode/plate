@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "comment-node",
-  "type": "registry:ui",
   "title": "Comment Leaf",
   "description": "A text component for displaying comments with visual indicators.",
   "dependencies": [
@@ -35,5 +34,6 @@
       "discussion-demo",
       "discussion-pro"
     ]
-  }
+  },
+  "type": "registry:ui"
 }

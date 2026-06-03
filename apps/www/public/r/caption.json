@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "caption",
-  "type": "registry:ui",
   "title": "Caption",
   "description": "A text field for adding captions to media elements.",
   "dependencies": [
@@ -9,7 +8,7 @@
     "@platejs/caption"
   ],
   "registryDependencies": [
-    "@shadcn/button"
+    "button"
   ],
   "files": [
     {
@@ -30,5 +29,6 @@
     "examples": [
       "media-demo"
     ]
-  }
+  },
+  "type": "registry:ui"
 }

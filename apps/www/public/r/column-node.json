@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "column-node",
-  "type": "registry:ui",
   "title": "Column Nodes",
   "description": "Resizable column components for layout.",
   "dependencies": [
@@ -35,5 +34,6 @@
     "examples": [
       "column-demo"
     ]
-  }
+  },
+  "type": "registry:ui"
 }

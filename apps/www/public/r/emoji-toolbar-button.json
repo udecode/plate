@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "emoji-toolbar-button",
-  "type": "registry:ui",
   "title": "Emoji Toolbar Button",
   "description": "An emoji picker toolbar button.",
   "dependencies": [
@@ -32,5 +31,6 @@
       "emoji-demo",
       "emoji-pro"
     ]
-  }
+  },
+  "type": "registry:ui"
 }

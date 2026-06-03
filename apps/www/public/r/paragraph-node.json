@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "paragraph-node",
-  "type": "registry:ui",
   "title": "Paragraph Element",
   "description": "A paragraph block with background color support.",
   "dependencies": [],
@@ -31,5 +30,6 @@
       "basic-blocks-demo",
       "basic-nodes-pro"
     ]
-  }
+  },
+  "type": "registry:ui"
 }

@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "heading-node",
-  "type": "registry:ui",
   "title": "Heading Element",
   "description": "A heading with multiple level support.",
   "dependencies": [],
@@ -33,5 +32,6 @@
       "basic-blocks-demo",
       "basic-nodes-pro"
     ]
-  }
+  },
+  "type": "registry:ui"
 }

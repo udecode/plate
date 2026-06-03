@@ -1,15 +1,15 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "examples-preview-markdown-docs",
-  "type": "registry:file",
   "title": "Preview Markdown",
-  "description": "Documentation for Preview Markdown",
+  "description": "Decorate text ranges so Markdown syntax previews inline.",
   "files": [
     {
-      "path": "../../content/examples/preview-markdown.mdx",
-      "content": "---\ntitle: Preview Markdown\n---\n\n<ComponentPreview name=\"preview-markdown-demo\" />\n",
+      "path": "../../content/docs/examples/preview-markdown.mdx",
+      "content": "---\ntitle: Preview Markdown\ndescription: Decorate text ranges so Markdown syntax previews inline.\n---\n\nThis example previews Markdown syntax with Slate decorations. It does not\ndeserialize Markdown into Plate nodes; it keeps the text as text and styles\nmatching ranges with a custom leaf renderer.\n\n## Demo\n\n<ComponentPreview name=\"preview-markdown-demo\" />\n\n## Source\n\nThe demo tokenizes each text node with Prism's Markdown grammar and returns\ndecoration ranges for token types such as title, bold, italic, blockquote, list,\nhorizontal rule, and code.\n\n<ComponentSource name=\"preview-markdown-demo\" />\n\n## Initial Value\n\nThe value is plain Plate content whose paragraph text includes Markdown\ncharacters.\n\n<ComponentSource src=\"examples/values/preview-md-value.tsx\" />\n\n## Runtime Shape\n\n| Surface | Owner | Notes |\n| --- | --- | --- |\n| `decoratePreview` | Registry example | Reads text nodes, tokenizes `node.text`, and returns Slate ranges with token-type flags. |\n| `PreviewLeaf` | Registry example | Applies CSS classes when a decorated leaf has `bold`, `italic`, `title`, `list`, `hr`, `blockquote`, or `code`. |\n| `preview-markdown` plugin | Registry example | Local `createSlatePlugin({ decorate })` plugin. |\n| `BasicNodesKit` | Registry kit | Supplies the editor's normal paragraph and heading plugins. |\n| `prismjs` | Dependency | Supplies the Markdown tokenizer used by the decoration function. |\n\nUse this pattern when the editor should keep raw Markdown characters visible.\nUse [Markdown](/docs/markdown) when the editor should convert Markdown text into\nPlate nodes.\n\n## Related\n\n- [Markdown](/docs/markdown) covers Markdown deserialization and serialization.\n- [Plate Plugin](/docs/api/core/plate-plugin) covers `decorate`.\n- [Text](/docs/api/slate/text) covers text decorations and decorated leaves.\n",
       "type": "registry:file",
       "target": "content/docs/plate/examples/preview-markdown.mdx"
     }
-  ]
+  ],
+  "type": "registry:file"
 }

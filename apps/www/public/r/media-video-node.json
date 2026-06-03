@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "media-video-node",
-  "type": "registry:ui",
   "title": "Media Video Element",
   "description": "A video player component with YouTube and file upload support.",
   "dependencies": [
@@ -43,5 +42,6 @@
       "media-demo",
       "media-pro"
     ]
-  }
+  },
+  "type": "registry:ui"
 }

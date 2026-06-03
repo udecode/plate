@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "block-selection",
-  "type": "registry:ui",
   "title": "Block Selection",
   "description": "A visual overlay for selected blocks.",
   "dependencies": [
@@ -28,5 +27,6 @@
       "block-selection-demo",
       "block-selection-pro"
     ]
-  }
+  },
+  "type": "registry:ui"
 }

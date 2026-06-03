@@ -1,14 +1,13 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "list-classic-node",
-  "type": "registry:ui",
   "title": "List Nodes",
   "description": "List (classic) nodes for ordered and unordered items.",
   "dependencies": [
     "@platejs/list-classic"
   ],
   "registryDependencies": [
-    "@shadcn/checkbox"
+    "checkbox"
   ],
   "files": [
     {
@@ -26,5 +25,6 @@
     "examples": [
       "list-classic-demo"
     ]
-  }
+  },
+  "type": "registry:ui"
 }

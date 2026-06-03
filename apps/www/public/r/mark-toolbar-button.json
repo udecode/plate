@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "mark-toolbar-button",
-  "type": "registry:ui",
   "title": "Mark Toolbar Button",
   "description": "A toolbar control for basic text formatting.",
   "dependencies": [
@@ -27,5 +26,6 @@
       "basic-marks-demo",
       "basic-nodes-pro"
     ]
-  }
+  },
+  "type": "registry:ui"
 }

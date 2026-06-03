@@ -1,0 +1,9 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "block-suggestion",
+  "title": "Block Suggestion",
+  "dependencies": [
+    "@platejs/suggestion"
+  ],
+  "type": "registry:ui"
+}

@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "media-placeholder-node",
-  "type": "registry:ui",
   "title": "Media Placeholder Element",
   "description": "A placeholder for media upload progress indication.",
   "dependencies": [
@@ -31,5 +30,6 @@
       "media-demo",
       "media-pro"
     ]
-  }
+  },
+  "type": "registry:ui"
 }

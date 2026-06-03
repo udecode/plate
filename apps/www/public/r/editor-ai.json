@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "editor-ai",
-  "type": "registry:block",
   "description": "An AI editor",
   "dependencies": [
     "sonner"
@@ -66,5 +65,6 @@
   ],
   "categories": [
     "Editors"
-  ]
+  ],
+  "type": "registry:block"
 }

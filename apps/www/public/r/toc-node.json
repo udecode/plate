@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "toc-node",
-  "type": "registry:ui",
   "title": "TOC Element",
   "description": "A table of contents component with links to document headings.",
   "dependencies": [
@@ -33,5 +32,6 @@
       "toc-demo",
       "toc-pro"
     ]
-  }
+  },
+  "type": "registry:ui"
 }

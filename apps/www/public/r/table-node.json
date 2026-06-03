@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "table-node",
-  "type": "registry:ui",
   "title": "Table Element",
   "description": "A table component with floating toolbar and border customization.",
   "dependencies": [
@@ -9,8 +8,8 @@
     "@radix-ui/react-popover"
   ],
   "registryDependencies": [
-    "@shadcn/dropdown-menu",
-    "@shadcn/popover",
+    "dropdown-menu",
+    "popover",
     "https://platejs.org/r/resize-handle.json",
     "https://platejs.org/r/block-selection.json",
     "https://platejs.org/r/toolbar.json",
@@ -46,5 +45,6 @@
     "examples": [
       "table-demo"
     ]
-  }
+  },
+  "type": "registry:ui"
 }

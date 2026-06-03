@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "font-color-toolbar-button",
-  "type": "registry:ui",
   "title": "Font Color Toolbar Button",
   "description": "A color picker toolbar button with text and background color controls.",
   "dependencies": [
@@ -10,10 +9,10 @@
     "lodash"
   ],
   "registryDependencies": [
-    "@shadcn/dropdown-menu",
-    "@shadcn/separator",
-    "@shadcn/button",
-    "@shadcn/tooltip",
+    "dropdown-menu",
+    "separator",
+    "button",
+    "tooltip",
     "https://platejs.org/r/toolbar.json"
   ],
   "files": [
@@ -35,5 +34,6 @@
     "examples": [
       "font-demo"
     ]
-  }
+  },
+  "type": "registry:ui"
 }

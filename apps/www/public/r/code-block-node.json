@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "code-block-node",
-  "type": "registry:ui",
   "title": "Code Block Nodes",
   "description": "A code block with syntax highlighting and language selection.",
   "dependencies": [
@@ -9,9 +8,9 @@
     "lowlight"
   ],
   "registryDependencies": [
-    "@shadcn/command",
-    "@shadcn/popover",
-    "@shadcn/button"
+    "command",
+    "popover",
+    "button"
   ],
   "files": [
     {
@@ -37,5 +36,6 @@
     "examples": [
       "code-block-demo"
     ]
-  }
+  },
+  "type": "registry:ui"
 }

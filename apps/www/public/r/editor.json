@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "editor",
-  "type": "registry:ui",
   "title": "Editor",
   "description": "A container for the editor content and styling.",
   "dependencies": [],
@@ -29,5 +28,6 @@
       "editor-disabled",
       "editor-full-width"
     ]
-  }
+  },
+  "type": "registry:ui"
 }

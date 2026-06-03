@@ -1,14 +1,13 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "date-node",
-  "type": "registry:ui",
   "title": "Date Element",
   "description": "A date field component with calendar picker.",
   "dependencies": [
     "@platejs/date"
   ],
   "registryDependencies": [
-    "@shadcn/calendar",
+    "calendar",
     "https://platejs.org/r/suggestion.json"
   ],
   "files": [
@@ -35,5 +34,6 @@
     "examples": [
       "date-demo"
     ]
-  }
+  },
+  "type": "registry:ui"
 }

@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "mention-node",
-  "type": "registry:ui",
   "title": "Mention Nodes",
   "description": "A mention element with customizable prefix and label, powered by a combobox.",
   "dependencies": [
@@ -36,5 +35,6 @@
     "examples": [
       "mention-demo"
     ]
-  }
+  },
+  "type": "registry:ui"
 }

@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "footnote-kit",
-  "type": "registry:component",
   "dependencies": [
     "@platejs/footnote"
   ],
@@ -14,5 +13,6 @@
       "content": "'use client';\n\nimport {\n  FootnoteDefinitionPlugin,\n  FootnoteInputPlugin,\n  FootnoteReferencePlugin,\n} from '@platejs/footnote/react';\n\nimport {\n  FootnoteDefinitionElement,\n  FootnoteInputElement,\n  FootnoteReferenceElement,\n} from '@/registry/ui/footnote-node';\n\nexport const FootnoteKit = [\n  FootnoteInputPlugin.withComponent(FootnoteInputElement),\n  FootnoteReferencePlugin.withComponent(FootnoteReferenceElement),\n  FootnoteDefinitionPlugin.withComponent(FootnoteDefinitionElement),\n];\n",
       "type": "registry:component"
     }
-  ]
+  ],
+  "type": "registry:component"
 }

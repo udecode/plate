@@ -1,14 +1,13 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "slate-to-html",
-  "type": "registry:block",
   "dependencies": [
     "next-themes"
   ],
   "registryDependencies": [
     "https://platejs.org/r/plate-ui.json",
     "https://platejs.org/r/editor-base-kit.json",
-    "@shadcn/button"
+    "button"
   ],
   "files": [
     {
@@ -113,5 +112,6 @@
   },
   "categories": [
     "Serializers"
-  ]
+  ],
+  "type": "registry:block"
 }

@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "highlight-node",
-  "type": "registry:ui",
   "title": "Highlight Leaf",
   "description": "A text highlighter with customizable colors.",
   "dependencies": [],
@@ -29,5 +28,6 @@
     "examples": [
       "basic-marks-demo"
     ]
-  }
+  },
+  "type": "registry:ui"
 }

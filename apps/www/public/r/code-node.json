@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "code-node",
-  "type": "registry:ui",
   "title": "Code Leaf",
   "description": "An inline component for code snippets.",
   "dependencies": [],
@@ -30,5 +29,6 @@
     "examples": [
       "basic-marks-demo"
     ]
-  }
+  },
+  "type": "registry:ui"
 }

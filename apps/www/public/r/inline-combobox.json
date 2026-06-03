@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "inline-combobox",
-  "type": "registry:ui",
   "title": "Inline Combobox",
   "description": "A combobox for inline suggestions.",
   "dependencies": [
@@ -30,5 +29,6 @@
       "slash-command-demo",
       "emoji-demo"
     ]
-  }
+  },
+  "type": "registry:ui"
 }

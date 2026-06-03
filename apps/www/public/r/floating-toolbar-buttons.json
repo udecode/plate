@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "floating-toolbar-buttons",
-  "type": "registry:ui",
   "title": "Floating Toolbar Buttons",
   "description": "A set of formatting buttons for the floating toolbar.",
   "dependencies": [],
@@ -36,5 +35,6 @@
       "floating-toolbar-demo",
       "floating-toolbar-pro"
     ]
-  }
+  },
+  "type": "registry:ui"
 }

@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "floating-toolbar",
-  "type": "registry:ui",
   "title": "Floating Toolbar",
   "description": "A contextual toolbar that appears over selected text.",
   "dependencies": [
@@ -32,5 +31,6 @@
       "floating-toolbar-demo",
       "floating-toolbar-pro"
     ]
-  }
+  },
+  "type": "registry:ui"
 }

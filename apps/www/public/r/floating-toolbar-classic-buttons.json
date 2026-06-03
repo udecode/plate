@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "floating-toolbar-classic-buttons",
-  "type": "registry:ui",
   "title": "Floating Toolbar Classic Buttons",
   "description": "A set of commonly used formatting buttons for the floating toolbar with classic list support.",
   "dependencies": [],
@@ -27,5 +26,6 @@
     "examples": [
       "list-classic-demo"
     ]
-  }
+  },
+  "type": "registry:ui"
 }

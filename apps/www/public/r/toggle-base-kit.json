@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "toggle-base-kit",
-  "type": "registry:component",
   "dependencies": [
     "@platejs/toggle"
   ],
@@ -14,5 +13,6 @@
       "content": "import { BaseTogglePlugin } from '@platejs/toggle';\n\nimport { ToggleElementStatic } from '@/registry/ui/toggle-node-static';\n\nexport const BaseToggleKit = [\n  BaseTogglePlugin.withComponent(ToggleElementStatic),\n];\n",
       "type": "registry:component"
     }
-  ]
+  ],
+  "type": "registry:component"
 }

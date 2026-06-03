@@ -1,14 +1,13 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "font-size-toolbar-button",
-  "type": "registry:ui",
   "title": "Font Size Toolbar Button",
   "description": "A toolbar control for adjusting font size.",
   "dependencies": [
     "@platejs/basic-styles"
   ],
   "registryDependencies": [
-    "@shadcn/popover",
+    "popover",
     "https://platejs.org/r/toolbar.json"
   ],
   "files": [
@@ -27,5 +26,6 @@
     "examples": [
       "font-demo"
     ]
-  }
+  },
+  "type": "registry:ui"
 }

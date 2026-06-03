@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "toggle-kit",
-  "type": "registry:component",
   "dependencies": [
     "@platejs/toggle"
   ],
@@ -17,5 +16,6 @@
       "content": "'use client';\n\nimport { TogglePlugin } from '@platejs/toggle/react';\n\nimport { IndentKit } from '@/registry/components/editor/plugins/indent-kit';\nimport { ToggleElement } from '@/registry/ui/toggle-node';\n\nexport const ToggleKit = [\n  ...IndentKit,\n  TogglePlugin.withComponent(ToggleElement),\n];\n",
       "type": "registry:component"
     }
-  ]
+  ],
+  "type": "registry:component"
 }

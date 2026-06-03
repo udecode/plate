@@ -1,14 +1,13 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "table-toolbar-button",
-  "type": "registry:ui",
   "title": "Table Toolbar Button",
   "description": "A menu for table manipulation and formatting.",
   "dependencies": [
     "@platejs/table"
   ],
   "registryDependencies": [
-    "@shadcn/dropdown-menu",
+    "dropdown-menu",
     "https://platejs.org/r/toolbar.json"
   ],
   "files": [
@@ -32,5 +31,6 @@
     "examples": [
       "table-demo"
     ]
-  }
+  },
+  "type": "registry:ui"
 }

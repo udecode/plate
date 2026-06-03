@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "excalidraw-node",
-  "type": "registry:ui",
   "title": "Excalidraw Element",
   "description": "A drawing component powered by Excalidraw.",
   "dependencies": [
@@ -20,6 +19,10 @@
       {
         "route": "/docs/excalidraw"
       }
+    ],
+    "examples": [
+      "excalidraw-demo"
     ]
-  }
+  },
+  "type": "registry:ui"
 }

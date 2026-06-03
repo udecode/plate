@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "docx-kit",
-  "type": "registry:component",
   "dependencies": [
     "@platejs/docx",
     "@platejs/juice"
@@ -12,5 +11,6 @@
       "content": "'use client';\n\nimport { DocxPlugin } from '@platejs/docx';\nimport { JuicePlugin } from '@platejs/juice';\n\nexport const DocxKit = [DocxPlugin, JuicePlugin];\n",
       "type": "registry:component"
     }
-  ]
+  ],
+  "type": "registry:component"
 }

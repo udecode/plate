@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "resize-handle",
-  "type": "registry:ui",
   "title": "Resize Handle",
   "description": "A resizable wrapper with resize handles.",
   "dependencies": [
@@ -28,5 +27,6 @@
       "media-demo",
       "media-pro"
     ]
-  }
+  },
+  "type": "registry:ui"
 }

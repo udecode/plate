@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "fixed-toolbar",
-  "type": "registry:ui",
   "title": "Fixed Toolbar",
   "description": "A fixed toolbar that stays at the top of the editor.",
   "dependencies": [],
@@ -20,5 +19,6 @@
     "examples": [
       "basic-nodes-demo"
     ]
-  }
+  },
+  "type": "registry:ui"
 }

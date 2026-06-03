@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "copilot-demo",
-  "type": "registry:example",
   "description": "Renders AI ghost text suggestions at the cursor position.",
   "dependencies": [
     "@platejs/ai",
@@ -30,5 +29,6 @@
         "title": "Copilot"
       }
     ]
-  }
+  },
+  "type": "registry:example"
 }

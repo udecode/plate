@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "block-draggable",
-  "type": "registry:ui",
   "title": "Block Draggable",
   "description": "A block wrapper with a drag handle for moving editor blocks.",
   "dependencies": [
@@ -9,7 +8,7 @@
     "@platejs/selection"
   ],
   "registryDependencies": [
-    "@shadcn/tooltip",
+    "tooltip",
     "https://platejs.org/r/use-mounted.json"
   ],
   "files": [
@@ -36,5 +35,6 @@
     "usage": [
       "DndPlugin.configure({\n  render: {\n    aboveNodes: BlockDraggable,\n  },\n})"
     ]
-  }
+  },
+  "type": "registry:ui"
 }

@@ -1,12 +1,11 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "insert-toolbar-button",
-  "type": "registry:ui",
   "title": "Insert Toolbar Button",
   "description": "A menu for inserting different types of blocks.",
   "dependencies": [],
   "registryDependencies": [
-    "@shadcn/dropdown-menu",
+    "dropdown-menu",
     "https://platejs.org/r/toolbar.json",
     "https://platejs.org/r/transforms.json"
   ],
@@ -21,5 +20,6 @@
     "examples": [
       "basic-nodes-demo"
     ]
-  }
+  },
+  "type": "registry:ui"
 }
