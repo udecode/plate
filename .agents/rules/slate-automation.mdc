@@ -636,6 +636,21 @@ the failure can be visual:
 - table/page fragment drift;
 - native selection handles not matching model selection.
 
+Selection/editing regressions need both layers. Do not call a packet fixed when
+only Slate's model selection is green. Assert native selected text through
+`window.getSelection()` / `slate-browser` `selectedText`, and assert exact DOM
+selection endpoints when the route has stable text-node structure. If expected
+native behavior is disputed, compare against the matching upstream
+`https://www.slatejs.org/examples` route or captured upstream behavior before
+weakening the oracle.
+
+Do not let a single-DOM-text-node selection row stand in for rich editor
+coverage. When the selected text can cross marks, links, inline boundaries, or
+multiple leaves, add a multi-path row with real keyboard typing, one undo,
+model value/selection, native selected text, and DOM endpoint assertions.
+`dragTextRange`-style substring helpers are not enough for that row because
+they cannot express many-leaf DOM selection.
+
 For route-level editor proof, simulate real use:
 
 - click paragraph, table cell, margin, page corner;
@@ -676,8 +691,8 @@ instead of checking random gestures.
 Build rows from these axes:
 
 - document topology: paragraphs, wrapped text, lists, tables, voids, pages,
-  blank space, hidden/materialized blocks, and huge-doc windows present on the
-  route;
+  blank space, hidden/materialized blocks, inline boundaries with marks/links,
+  multi-leaf text, and huge-doc windows present on the route;
 - viewport and strategy: staged, virtualized, auto, rows/count controls,
   desktop/mobile where relevant, top/middle/end scroll positions;
 - editor gesture: click, double click, drag selection, margin click, arrow nav,
@@ -687,6 +702,11 @@ Build rows from these axes:
   or pixel/geometry stability;
 - native parity risk: browser behavior that should remain native unless Slate
   deliberately owns it.
+
+For any row involving selection plus editing, include the post-action selection
+state after undo/redo, not just the text delta. The minimum oracle is: model
+selection, native selected text, and visible text. Add DOM endpoints or caret
+rects when the bug is about the exact selection location.
 
 Pick the smallest matrix that covers the surface risk, then expand when a bug
 appears. Add new rows when user reports, screenshots, or Browser observation

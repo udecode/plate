@@ -193,6 +193,14 @@ Add or update the smallest behavior test that fails for the current bug:
 The test should assert the user-visible invariant and the model invariant when
 both matter.
 
+For selection replacement, history, or undo/redo bugs, never stop at a
+single-DOM-text-node case. If the selected phrase can cross marks, links,
+inline boundaries, or multiple Slate leaves, include a multi-path row with real
+keyboard typing, one undo, exact model value/selection, native selected text,
+and DOM selection endpoints. Helpers like `dragTextRange` that search one text
+node are insufficient for that row; use explicit Slate path endpoints or
+promote a reusable multi-leaf helper.
+
 #### Editor Selection Navigation Coverage
 
 When the bug class touches selection, keyboard navigation, mouse selection,
@@ -209,7 +217,8 @@ The red test must name:
 - direction: forward, backward, up, down, into boundary, out of boundary, or
   across many boundaries;
 - topology: plain blocks, hidden DOM, DOM coverage boundary, multi-root,
-  content root, editable void, synced root, virtualized DOM, or mixed topology;
+  content root, editable void, synced root, virtualized DOM, inline boundaries
+  with marks/links, or mixed topology;
 - starting state: collapsed, expanded forward, expanded backward, edge of
   block, multi-line, after focus handoff, or after history restore;
 - assertions: exact model selection/value plus DOM selection/focus/chrome

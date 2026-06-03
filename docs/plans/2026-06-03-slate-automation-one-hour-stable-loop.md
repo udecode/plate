@@ -81,7 +81,7 @@ Blocked condition:
 Task state:
 - task_type: slate-automation timed stable-feature loop
 - task_complexity: major
-- current_phase: intake
+- current_phase: implementation
 - current_phase_status: in_progress
 - next_phase: implementation
 - goal_status: active
@@ -89,7 +89,7 @@ Task state:
 Current verdict:
 - verdict: proceed
 - confidence: high
-- next owner: stable behavior proof packet
+- next owner: remaining automation closure / quarantined IME stress owner
 - reason: user requested timed `slate-automation` with no surface, so default stable Slate v2 proof/repair ladder applies.
 
 Completion rule:
@@ -109,7 +109,7 @@ Start Gates:
 | Active goal checked or created | yes | `get_goal` returned null; `create_goal` started this timed loop objective. |
 | Source of truth read before edits | yes | `slate-north-star`, `docs/slate-v2/agent-start.md`, and prior loop plan read; target source/tests will be read before any patch. |
 | Tracker comments and attachments read | N/A: no tracker | Prompt is `slate-automation 1h`. |
-| Video transcript evidence required | N/A: no media | No media attached. |
+| Video transcript evidence required | yes | 2026-06-03 selection follow-up videos transcribed: v2 restores text but loses native selected text after undo; upstream Slate restores the selected word after undo. |
 | `docs/solutions` checked for non-trivial existing-code work | deferred | Use live proof first; search solutions only when a concrete failure/root cause appears. |
 | TDD decision before behavior change or bug fix | yes | Add/repair the smallest honest oracle before or with any runtime fix. |
 | Branch decision for code-changing task | N/A: stay current checkout | No branch/PR request. |
@@ -145,7 +145,7 @@ Work Checklist:
 - [x] Required video or screen-recording evidence is cached/read as normalized
       `<video-transcripts>` XML, or marked N/A with reason.
 - [x] Nearby repo instructions and implementation patterns read before edits.
-- [ ] Implementation fixes the right ownership boundary, or the narrower choice
+- [x] Implementation fixes the right ownership boundary, or the narrower choice
       is recorded with reason.
 - [x] Release artifact requirement recorded: changeset, registry changelog, or
       N/A with reason.
@@ -153,16 +153,16 @@ Work Checklist:
       requirements, PR body sync, and issue/Linear sync when applicable.
 - [x] Branch handling recorded for code-changing work: dedicated branch used,
       new branch needed, or N/A with reason.
-- [ ] Local-env-rot retry policy recorded for any surprising repo-wide failure:
+- [x] Local-env-rot retry policy recorded for any surprising repo-wide failure:
       reinstall/rerun evidence or N/A with reason.
 - [x] Workspace authority recorded: every proof command names the cwd/tool that
       owns the changed behavior.
-- [ ] High-risk note recorded for public API, runtime, package-boundary,
+- [x] High-risk note recorded for public API, runtime, package-boundary,
       browser behavior, agent-action, or command-contract changes, or marked
       N/A with reason.
-- [ ] Review/autoreview target selected from actual diff state for non-trivial
+- [x] Review/autoreview target selected from actual diff state for non-trivial
       implementation work, or marked N/A with reason.
-- [ ] Agent-native review decision recorded for `.agents/**`, `.claude/**`,
+- [x] Agent-native review decision recorded for `.agents/**`, `.claude/**`,
       `.codex/**`, skills, hooks, commands, prompts, or user-action tooling.
 - [x] Output budget discipline recorded and followed: broad searches are
       scoped, capped, counted, or artifacted instead of streamed into goal
@@ -177,7 +177,7 @@ Work Checklist:
 - [ ] Package/API pack: registry-only work updates `docs/components/changelog.mdx` instead of adding a package changeset.
 - [x] Package/API pack: no-artifact decisions state why the diff has no published package user-visible delta from `main`.
 - [ ] Package/API pack: compatibility, migration, or hard-cut decision is explicit when public shape changes.
-- [ ] Package/API pack: package-owned typecheck/build/test proof is recorded or marked N/A with reason.
+- [x] Package/API pack: package-owned typecheck/build/test proof is recorded or marked N/A with reason.
 - [ ] Package/API pack: generated barrels or release notes are updated when required.
 - [x] Agent-native pack: source-of-truth rule files are edited instead of generated skill mirrors.
 - [x] Agent-native pack: the changed agent action is discoverable from the skill/rule text.
@@ -230,9 +230,9 @@ Completion Gates:
 Phase / pass table:
 | Phase | Status | Evidence | Next |
 |-------|--------|----------|------|
-| Intake and source read | in_progress | created plan | implementation |
-| Implementation | pending | | verification |
-| Verification | pending | | closeout |
+| Intake and source read | done | created plan; read `slate-automation`, `slate-north-star`, video evidence, and selection-runtime owner | implementation |
+| Implementation | paused | issue #12 undo fix plus DOM selection export follow-up packet kept; broad automation paused by user | resume from remaining automation closure rows when requested |
+| Verification | in_progress | focused package/browser gates and `bun check` passed for kept packet; selection-oracle skill repair synced | closeout/update remaining gates |
 | PR / tracker sync | pending | | final response |
 | Closeout | pending | | final response |
 
@@ -241,11 +241,31 @@ Findings:
   were false positives because they used one synthetic `insertText(...)` event.
   The manual Chrome path types multiple real keys after selecting text, and
   current v2 reproduced `This is editable stext...` after undo.
+- 2026-06-03 selection follow-up video evidence:
+  - v2 video: after selecting `plain `, typing `simple`, and undoing, text
+    returns to `This is editable plain text, just like a <textarea>!`, but
+    native selected text is gone while the OS Translate selection affordance
+    remains.
+  - upstream Slate video: after the same replacement/undo class, the restored
+    word `plain` remains visibly selected.
+- Repro probe after the issue #12 text fix: model text restored correctly,
+  model selection restored to `[0,0] 17..23`, native selected text was `""`,
+  and DOM selection collapsed at `[0,0] offset 0`.
+- Root cause: `selection-runtime` skipped DOM export for synced text-only
+  commits. That is correct for native typing/caret repair but wrong for
+  command-owned history undo commits that restore an expanded selection.
 
 Decisions and tradeoffs:
 - Pause the generic automation loop until issue #12 is fixed and synced.
 - Fix the durable `slate-history` merge rule instead of adding example-local
   workarounds.
+- For the follow-up selection issue, fix `slate-react` selection export rather
+  than history or example glue. History already restored the model selection;
+  the broken layer was native DOM selection export after command-owned undo.
+- The oracle now checks user-visible native selected text with
+  `slate-browser` helpers. Exact DOM node assertions stay on plaintext, where
+  the route is single text-node stable; rich/inline routes assert selected text
+  to avoid brittle node-split coupling.
 
 Implementation notes:
 - In `.tmp/slate-v2`, selected-text replacement typing now stays in one undo
@@ -253,6 +273,17 @@ Implementation notes:
   in an inserted character.
 - Issue-named Playwright rows now type replacement text with real keyboard
   events instead of `page.keyboard.insertText(...)`.
+- `selection-runtime` now treats command-owned text-only commits as DOM export
+  candidates, so history undo/redo can restore an expanded model selection to
+  the browser selection.
+- Added a `slate-react` unit contract for command-owned text-only selection
+  export.
+- Added native selected-text assertions to the issue-backed Playwright rows in
+  plaintext, inlines, styling, and code-highlighting.
+- Patched `slate-automation` so future selection/editing packets require both
+  model selection and native selected-text / DOM-selection proof; upstream Slate
+  examples are an allowed parity reference when expected native behavior is
+  disputed.
 
 Review fixes:
 - None yet.
@@ -260,7 +291,8 @@ Review fixes:
 Error attempts:
 | Error / failed attempt | Count | Next different move | Resolution |
 |------------------------|-------|---------------------|------------|
-| None yet | 0 | | |
+| Bun direct path filter did not match `selection-runtime-contract.test.ts` | 2 | Use owning package Vitest command | `bun --filter slate-react test:vitest -- selection-runtime-contract.test.ts` passed. |
+| Generated stress `ime-composition-undo` failed in WebKit while closing unrelated stress packet | 1 | Quarantine as separate IME/synthetic transport owner, not part of selection fix | Pending remaining automation handoff; do not mix with issue #12/selection packet. |
 
 Verification evidence:
 - `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2 && bun test ./packages/slate-history/test/history-contract.ts --test-name-pattern "merges typing after selected text replacement"`: pass.
@@ -268,6 +300,61 @@ Verification evidence:
 - `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2 && bun --filter slate-history typecheck`: pass.
 - `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2 && bun test ./packages/slate-history/test`: 14 passed, 1 skipped.
 - `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2 && bun check`: pass; known pagination hook warning remains.
+- Red proof after adding the native-selection oracle:
+  `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2 && PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/plaintext.test.ts --project=chromium --grep "mouse drag undo restores manual typed replacement"` failed with expected selected text `plain ` and received `""`.
+- `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2 && bun --filter slate-react test:vitest -- selection-runtime-contract.test.ts`: 13 passed.
+- `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2 && PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/plaintext.test.ts playwright/integration/examples/inlines.test.ts playwright/integration/examples/styling.test.ts playwright/integration/examples/code-highlighting.test.ts --project=chromium --grep "mouse drag undo restores"`: 5 passed.
+- `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2 && bun --filter slate-react typecheck`: pass.
+- `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2 && bun check`: pass; known pagination hook warning remains.
+- `cd /Users/zbeyens/git/plate-2 && pnpm install`: pass; synced generated `slate-automation` skill mirror.
+
+Packet ledger:
+| Packet | Status | Files | Evidence | Next |
+|--------|--------|-------|----------|------|
+| Issue #12 text undo false-positive repair | kept | `packages/slate-history/src/history-extension.ts`; `packages/slate-history/test/history-contract.ts`; issue-backed Playwright rows | history unit, focused Chromium rows, `slate-history` typecheck, `bun check` | done |
+| Selection undo native export repair | kept | `packages/slate-react/src/editable/selection-runtime.ts`; `packages/slate-react/test/selection-runtime-contract.test.ts`; issue-backed Playwright rows | red native-selection Playwright proof, package Vitest, focused Chromium rows, `slate-react` typecheck, `bun check` | broaden only if a new route reproduces |
+| Automation selection-oracle rule repair | kept | `.agents/rules/slate-automation.mdc`; `.agents/skills/slate-automation/SKILL.md` | `pnpm install` synced the generated mirror; rule now requires native selected-text / DOM-selection proof for selection-editing packets | done |
+| Generated stress hovering-toolbar budget alignment | kept | `playwright/stress/generated-editing.test.ts` | toolbar stress passed in Chromium/WebKit after aligning to route budget | pending broader stress rerun due separate IME row |
+| Generated stress WebKit IME composition undo | quarantined | no runtime change | failed after toolbar packet with model text missing `すし` before undo | next owner: synthetic IME transport/runtime, not issue #12 |
+
+Changed list for this run:
+- Fixed `slate-history` selected-text replacement typing merge so real key typing after a selected replacement undoes as one batch.
+- Repaired issue-backed Playwright tests to use real keyboard typing instead of synthetic `insertText`.
+- Fixed `slate-react` DOM selection export after command-owned history undo.
+- Added package and browser oracles for native selected text restoration after undo.
+- Patched `slate-automation` so future selection tests cannot stop at model-only
+  proof.
+- Aligned generated hovering-toolbar stress budget with the dedicated route budget.
+- Updated this plan with video transcripts, red/green evidence, packet ledger, workflow slowdowns, and review-attention notes.
+
+Workflow slowdowns:
+- The original issue #12 test was a false positive because it did not use real
+  key events and did not assert native/browser selection after undo.
+- The automation skill had selection proof language, but it was too vague; it
+  now explicitly requires native selected-text / DOM-selection proof.
+- Direct `bun test <path>` was noisy for the Vitest-owned `slate-react`
+  contract; use `bun --filter slate-react test:vitest -- <file>` for this
+  package.
+- The generated stress row had an over-tight `total: 0` toolbar render budget
+  that contradicted the dedicated route budget.
+
+Needs review / attention:
+- Selection export fix is small but central: review
+  `packages/slate-react/src/editable/selection-runtime.ts` for whether all
+  command-owned text-only commits should export DOM selection, or whether this
+  should be narrowed to `history_undo` / `history_redo`.
+- WebKit synthetic IME composition undo stress remains quarantined as a
+  separate packet.
+- No release/publish/changeset decision needed during continuous private alpha.
+- Broad `slate-automation` is intentionally paused by user request; do not
+  resume IME or pagination work until a new owner is requested.
+
+Stopping checkpoints queued:
+- Should command-owned text-only DOM export stay broad, or narrow to history
+  commands only? Current take: broad is correct because command-owned means the
+  model owns the post-commit selection.
+- Should the WebKit synthetic IME stress be fixed in `slate-browser` transport
+  first or in runtime composition handling? Current take: prove transport first.
 
 Final handoff contract:
 - PR line: pending
@@ -316,15 +403,22 @@ Timeline:
 - 2026-06-03T18:11:02.709Z Task goal plan created.
 - 2026-06-03T20:13:02 User interrupted with issue #12 false-positive report and video evidence; automation loop paused.
 - 2026-06-03T20:21 Issue #12 reproduced with repaired real-key Playwright row, fixed in `slate-history`, and verified with focused browser/package gates plus `bun check`.
+- 2026-06-03T18:35:37Z Selection follow-up from videos reproduced as DOM/native selection export loss after undo, fixed in `slate-react`, and verified with focused browser/package gates plus `bun check`.
+- 2026-06-03T20:44Z User paused the broader loop and called out the testing miss. Quarantined unrelated IME work, synced `slate-automation` with explicit native selection-oracle requirements, and reran focused selection gates plus `bun check`.
 
 Reboot status:
 | Question | Answer |
 |----------|--------|
-| Where am I? | Intake and source read |
-| Where am I going? | Implementation, verification, PR/tracker sync, closeout |
-| What is the goal? | TODO: Fill from Objective |
-| What have I learned? | See Findings |
-| What have I done? | See Timeline |
+| Where am I? | Paused after keeping issue #12 and selection-export packets, plus selection-oracle skill repair |
+| Where am I going? | Wait for next owner; remaining automation closure rows, quarantined IME owner, and optional browser visual smoke stay queued |
+| What is the goal? | Timed stable Slate v2 automation loop with safe proof/repair packets and durable handoff |
+| What have I learned? | See Findings and packet ledger |
+| What have I done? | See Timeline and changed list |
 
 Open risks:
-- Pending.
+- Overall automation closeout is not complete; many generic completion rows
+  still need final N/A/evidence cleanup before `check-complete.mjs`.
+- Generated WebKit IME stress row remains quarantined.
+- Browser visual smoke across richtext/plaintext/editable-voids/hidden routes
+  is still a remaining automation owner if the loop resumes beyond this
+  selection packet.
