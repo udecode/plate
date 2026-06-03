@@ -1003,6 +1003,7 @@ export const uiNodes: Registry['items'] = [
     description:
       'A code block with syntax highlighting and language selection.',
     files: [
+      { path: 'ui/code-block-languages.ts', type: 'registry:ui' },
       { path: 'ui/code-block-node.tsx', type: 'registry:ui' },
       {
         path: 'ui/code-block-node-static.tsx',
