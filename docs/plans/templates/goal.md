@@ -6,6 +6,14 @@ TODO: Write the short create_goal objective, under 240 characters. Put the full 
 Goal plan:
 {{PLAN_PATH}}
 
+First checkpoint:
+- Before implementation or broad exploration, copy every explicit prompt
+  requirement into this plan as checkable checkpoints: scope, non-goals,
+  timing/duration, stop conditions, deliverables, final handoff sections,
+  verification surface, and success criteria.
+- Do not continue into implementation until this extraction is complete or
+  explicitly marked N/A with reason.
+
 Completion threshold:
 - TODO: Define the exact measurable or auditable done state.
 
@@ -38,6 +46,7 @@ Completion rule:
 Start Gates:
 | Gate | Applies | Evidence |
 |------|---------|----------|
+| Prompt requirements captured before work | pending | pending |
 | Skill analysis before edits | pending | pending |
 | Active goal checked or created | pending | pending |
 | Source of truth read before edits | pending | pending |
@@ -47,6 +56,10 @@ Start Gates:
 | Output budget strategy recorded | pending | pending |
 
 Work Checklist:
+- [ ] First checkpoint complete: every explicit prompt requirement, scope
+      boundary, timing constraint, stop condition, deliverable, final handoff
+      section, verification surface, and success criterion is copied into this
+      plan as checkable checkpoints before implementation.
 - [ ] Short objective plus threshold, verification surface, constraints,
       boundaries, and blocked condition are concrete.
 - [ ] Work phases/pass rows below are updated with evidence.

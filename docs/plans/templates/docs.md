@@ -22,6 +22,14 @@ Docs lane:
 - nearest sibling docs: pending
 - plugin page: pending
 
+First checkpoint:
+- Before implementation or broad exploration, copy every explicit prompt
+  requirement into this plan as checkable checkpoints: scope, non-goals,
+  timing/duration, stop conditions, deliverables, final handoff sections,
+  verification surface, and success criteria.
+- Do not continue into implementation until this extraction is complete or
+  explicitly marked N/A with reason.
+
 Completion threshold:
 - TODO: Define the exact docs done state.
 - Docs closure is legal only when the page teaches the fastest correct path,
@@ -79,6 +87,7 @@ Completion rule:
 Start Gates:
 | Gate | Applies | Evidence |
 |------|---------|----------|
+| Prompt requirements captured before work | pending | pending |
 | `docs-creator` loaded | pending | pending |
 | Active goal checked or created | pending | pending |
 | Docs lane selected | pending | pending |
@@ -92,6 +101,10 @@ Start Gates:
 | PR/tracker expectation decision | pending | pending |
 
 Work Checklist:
+- [ ] First checkpoint complete: every explicit prompt requirement, scope
+      boundary, timing constraint, stop condition, deliverable, final handoff
+      section, verification surface, and success criterion is copied into this
+      plan as checkable checkpoints before implementation.
 - [ ] Short objective plus outcome, completion threshold, verification surface,
       constraints, boundaries, and blocked condition are concrete.
 - [ ] Docs lane is classified as install, guide/system, plugin/feature,

@@ -29,10 +29,12 @@ can carry the evidence.
 2. Create or continue the active Codex goal with a short objective handle.
 3. Create a plan from a built-in or project template and put the full contract
    there.
-4. Work in slices and record evidence as you go.
-5. Run autoreview, then fix or record accepted findings.
-6. Run the completion check.
-7. Mark the goal complete only when the outcome is true and the plan passes.
+4. First checkpoint: copy every explicit prompt requirement into the plan as
+   checkable rows before implementation.
+5. Work in slices and record evidence as you go.
+6. Run autoreview, then fix or record accepted findings.
+7. Run the completion check.
+8. Mark the goal complete only when the outcome is true and the plan passes.
 
 ## Helpers
 
