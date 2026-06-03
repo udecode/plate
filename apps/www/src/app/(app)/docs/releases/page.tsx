@@ -1,13 +1,24 @@
 import type { Metadata } from 'next';
 
+import { createHash } from 'node:crypto';
 import Link from 'next/link';
 
+import type {
+  PlateUiReleaseChange,
+  PlateUiReleaseChangesByTag,
+} from '@/components/release-index';
 import releaseIndexData from '@/generated/release-index.json';
+import {
+  getRegistryChangelogEvent,
+  getRegistryChangelogIndex,
+  type RegistryChangelogEntry,
+  type RegistryChangelogEvent,
+  type RegistryChangelogTarget,
+} from '@/lib/registry-changelog';
 import {
   formatReleaseDate,
   getCurrentReleaseMajorGroups,
   getOlderReleaseMajorGroups,
-  getReleaseAnchor,
   getReleaseMajorPath,
   type ReleaseMajorGroup,
   type ReleaseIndexRelease,
@@ -23,6 +34,13 @@ const releases = releaseIndexData as ReleaseIndexRelease[];
 const currentMajorGroups = getCurrentReleaseMajorGroups(releases);
 const olderMajorGroups = getOlderReleaseMajorGroups(releases);
 const currentReleases = currentMajorGroups.flatMap((group) => group.releases);
+const plateUiChangelogIndex = getRegistryChangelogIndex();
+const plateUiChangelogEvents = plateUiChangelogIndex.events
+  .map((event) => getRegistryChangelogEvent(event.id))
+  .filter((event): event is RegistryChangelogEvent => Boolean(event));
+const plateUiChangesByTag = getPlateUiChangesByReleaseTag(
+  plateUiChangelogEvents
+);
 
 export const metadata: Metadata = {
   description,
@@ -52,20 +70,83 @@ export default function ReleasesPage() {
     <ReleasePageContent
       after={<OlderReleases groups={olderMajorGroups} />}
       description={description}
+      plateUiChangesByTag={plateUiChangesByTag}
       releases={currentReleases}
-      sidebarLinks={[
-        ...currentMajorGroups.map((group) => ({
-          href: `#${getReleaseAnchor(group.releases[0])}`,
-          label: `v${group.major}`,
-        })),
-        ...olderMajorGroups.map((group) => ({
-          href: getReleaseMajorPath(group.major),
-          label: `v${group.major}`,
-        })),
-      ]}
       title={title}
     />
   );
+}
+
+function getPlateUiChangesByReleaseTag(events: RegistryChangelogEvent[]) {
+  const changesByTag: PlateUiReleaseChangesByTag = {};
+
+  for (const event of events) {
+    const tag = event.release.tag;
+
+    if (!tag) continue;
+
+    changesByTag[tag] ??= [];
+    changesByTag[tag].push(toPlateUiReleaseChange(event));
+  }
+
+  return changesByTag;
+}
+
+function toPlateUiReleaseChange(
+  event: RegistryChangelogEvent
+): PlateUiReleaseChange {
+  return {
+    date: event.change.date,
+    href: `/registry/changelog/${event.id}.json`,
+    id: event.id,
+    kind: event.kind,
+    pullRequest: event.change.pullRequest
+      ? {
+          number: event.change.pullRequest.number,
+          url: event.change.pullRequest.url,
+        }
+      : undefined,
+    summary: event.summary,
+    targets: event.targets.map((target) => ({
+      href: getTargetDiffHref(event, target),
+      name: target.name,
+    })),
+    entries: event.entries.map((entry) => ({
+      id: entry.id,
+      kind: entry.kind,
+      migrationNotes: getVisibleMigrationNotes(entry),
+      summary: entry.summary,
+      targets: entry.targets,
+    })),
+  };
+}
+
+function getTargetDiffHref(
+  event: RegistryChangelogEvent,
+  target: RegistryChangelogTarget
+) {
+  const pullRequestUrl = event.change.pullRequest?.url;
+  const file = target.files[0];
+
+  if (!pullRequestUrl || !file) return;
+
+  return `${pullRequestUrl}/files#diff-${hashGitHubDiffPath(file)}`;
+}
+
+function getVisibleMigrationNotes(entry: RegistryChangelogEntry) {
+  const summary = normalizeDuplicateText(entry.summary);
+
+  return entry.migrationNotes.filter(
+    (note) => !summary.includes(normalizeDuplicateText(note))
+  );
+}
+
+function hashGitHubDiffPath(filePath: string) {
+  return createHash('sha256').update(filePath).digest('hex');
+}
+
+function normalizeDuplicateText(value: string) {
+  return value.replaceAll('`', '').replace(/\s+/g, ' ').trim().toLowerCase();
 }
 
 function OlderReleases({

@@ -1,0 +1,29 @@
+# Plate UI changelog source
+
+Internal source for generated Plate UI changelog JSON. The public docs page
+renders generated artifacts from `apps/www/src/registry/changelog`.
+
+## June 2026 #32
+
+### June 3 #32.1
+<!-- changelog: commit=a471d051d2b32c494a94e8218ce1a8462aa26463 -->
+- **`code-block-node`**, **`code-block-node-static`**: Show the selected language label in read-only and static rendering. Set `showLanguageLabel={false}` on the component to hide it.
+
+## May 2026 #31
+
+### May 31 #31.1
+<!-- changelog: commit=68560ccc9e1d525f29e8a49b0c673723837639d8 -->
+- **`huge-document-demo`** (new): Add a 10k-block Plate and Slate comparison demo with performance controls and benchmark links.
+- **`hundreds-blocks-demo`**: Rename to `huge-document-demo`.
+
+## April 2026 #30
+
+### April 8 #30.2
+<!-- changelog: commit=700286bf84ac987b9cc2296f9f69746f0f095936 -->
+- **`footnote-kit`** (new): Add GFM footnotes with reference, definition, and input plugins plus UI — hover preview, navigation flash, multi-reference picker, and duplicate-definition recovery.
+- **`footnote-base-kit`** (new): Add static footnote rendering for SSR and markdown pipelines.
+- **`editor-kit`**, **`editor-base-kit`**: Register the new footnote kits.
+- **`markdown-kit`**: Register the base footnote plugins and add `remark-emoji` so GFM footnotes and emoji shortcodes round-trip.
+- **`insert-toolbar-button`**, **`insert-toolbar-classic-button`**, **`slash-node`**: Add a Footnote insert entry wired to `action_footnote`.
+- **`transforms`**, **`transforms-classic`**: Map `action_footnote` to `insertFootnote(editor, { select: true })`.
+- **`autoformat-kit`**: Reduce to symbol substitutions (arrows, fractions, legal, punctuation, smart quotes, sub/superscript). Markdown shortcuts move to the feature kits below. Add link automd so `[text](url)` closing on `)` resolves to a structured link.

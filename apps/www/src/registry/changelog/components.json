@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "components": {
+    "code-block-node": [
+      "2026-06-03-show-code-block-language-labels-read-only-mode"
+    ],
+    "code-block-node-static": [
+      "2026-06-03-show-code-block-language-labels-read-only-mode"
+    ],
+    "huge-document-demo": ["2026-06-02-improve-large-document-editing"],
+    "hundreds-blocks-demo": ["2026-06-02-improve-large-document-editing"],
+    "footnote-kit": ["2026-04-23-redesign-blockquotes-container-blocks"],
+    "footnote-base-kit": ["2026-04-23-redesign-blockquotes-container-blocks"],
+    "editor-kit": ["2026-04-23-redesign-blockquotes-container-blocks"],
+    "editor-base-kit": ["2026-04-23-redesign-blockquotes-container-blocks"],
+    "markdown-kit": ["2026-04-23-redesign-blockquotes-container-blocks"],
+    "insert-toolbar-button": [
+      "2026-04-23-redesign-blockquotes-container-blocks"
+    ],
+    "insert-toolbar-classic-button": [
+      "2026-04-23-redesign-blockquotes-container-blocks"
+    ],
+    "slash-node": ["2026-04-23-redesign-blockquotes-container-blocks"],
+    "transforms": ["2026-04-23-redesign-blockquotes-container-blocks"],
+    "transforms-classic": ["2026-04-23-redesign-blockquotes-container-blocks"],
+    "autoformat-kit": ["2026-04-23-redesign-blockquotes-container-blocks"]
+  }
+}

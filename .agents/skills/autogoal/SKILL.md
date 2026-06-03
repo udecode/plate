@@ -100,6 +100,13 @@ wrong and no substantive work has started, regenerate once with the right
 template and record why. If work has already started, keep the generated plan
 and close it honestly.
 
+The first plan checkpoint is requirement extraction. Codex output can compact
+and lose prompt constraints, so before implementation or broad exploration,
+copy every explicit user requirement into the plan as checkable rows: scope,
+non-goals, timing/duration, stop conditions, deliverables, final handoff
+sections, verification surface, and success criteria. Do not continue into
+implementation until this is complete or explicitly marked N/A with reason.
+
 Use packs like this:
 
 ```bash

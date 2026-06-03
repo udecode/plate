@@ -1,30 +1,27 @@
 import type { ReactNode } from 'react';
 
 import { IconRss } from '@tabler/icons-react';
-import Link from 'next/link';
 
-import { ReleaseIndex } from '@/components/release-index';
+import {
+  ReleaseIndex,
+  type PlateUiReleaseChangesByTag,
+} from '@/components/release-index';
 import { Button } from '@/components/ui/button';
 import type { ReleaseIndexRelease } from '@/lib/releases';
-
-export type ReleasePageSidebarLink = {
-  href: string;
-  label: string;
-};
 
 export function ReleasePageContent({
   after,
   description,
+  plateUiChangesByTag,
   releases,
   showMajorHeadings = false,
-  sidebarLinks,
   title,
 }: {
   after?: ReactNode;
   description?: string;
+  plateUiChangesByTag?: PlateUiReleaseChangesByTag;
   releases: ReleaseIndexRelease[];
   showMajorHeadings?: boolean;
-  sidebarLinks: ReleasePageSidebarLink[];
   title: string;
 }) {
   return (
@@ -60,29 +57,11 @@ export function ReleasePageContent({
           </div>
           <div className="w-full flex-1 pb-16 sm:pb-0">
             <ReleaseIndex
+              plateUiChangesByTag={plateUiChangesByTag}
               releases={releases}
               showMajorHeadings={showMajorHeadings}
             />
             {after}
-          </div>
-        </div>
-      </div>
-      <div className="sticky top-[calc(var(--header-height)+1px)] z-30 ml-auto hidden h-[90svh] w-(--sidebar-width) flex-col gap-4 overflow-hidden overscroll-none pb-8 xl:flex">
-        <div className="h-(--top-spacing) shrink-0" />
-        <div className="no-scrollbar flex flex-col gap-8 overflow-y-auto px-8">
-          <div className="flex flex-col gap-2 p-4 pt-0 text-sm">
-            <p className="sticky top-0 h-6 bg-background font-medium text-muted-foreground text-xs">
-              On This Page
-            </p>
-            {sidebarLinks.map((link) => (
-              <Link
-                key={link.href}
-                className="text-[0.8rem] text-muted-foreground no-underline transition-colors hover:text-foreground"
-                href={link.href}
-              >
-                {link.label}
-              </Link>
-            ))}
           </div>
         </div>
       </div>

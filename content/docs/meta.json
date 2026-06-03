@@ -98,7 +98,6 @@
     "[DOCX](/docs/docx)",
     "[DOCX Import/Export](/docs/docx-io)",
     "---Components---",
-    "[Changelog](/docs/components/changelog)",
     "[Components](/docs/components)",
     "[AI Menu](/docs/components/ai-menu)",
     "[AI Toolbar Button](/docs/components/ai-toolbar-button)",
@@ -577,11 +576,6 @@
         }
       ],
       "component": [
-        {
-          "href": "/docs/components/changelog",
-          "title": "Changelog",
-          "titleCn": "更新日志"
-        },
         {
           "href": "/docs/components",
           "items": [
@@ -2559,10 +2553,6 @@
         "description": "Import DOCX files and export to Word.",
         "title": "DOCX Import/Export",
         "titleCn": "DOCX 导入/导出"
-      },
-      "/docs/components/changelog": {
-        "title": "Changelog",
-        "titleCn": "更新日志"
       },
       "/docs/components": {
         "title": "Components",

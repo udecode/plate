@@ -1,0 +1,81 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-06-03-show-code-block-language-labels-read-only-mode",
+  "status": "draft",
+  "source": {
+    "kind": "legacy-mdx",
+    "path": "tooling/data/plate-ui-changelog.mdx"
+  },
+  "change": {
+    "type": "pull_request",
+    "date": "2026-06-03",
+    "commits": [
+      {
+        "sha": "a471d051d2b32c494a94e8218ce1a8462aa26463",
+        "shortSha": "a471d051d2",
+        "url": "https://github.com/udecode/plate/commit/a471d051d2b32c494a94e8218ce1a8462aa26463",
+        "date": "2026-06-03",
+        "committedAt": "2026-06-03T13:20:44+02:00",
+        "subject": "fix code block language labels"
+      }
+    ],
+    "pullRequest": {
+      "number": 4989,
+      "url": "https://github.com/udecode/plate/pull/4989",
+      "state": "OPEN",
+      "title": "Show code block language labels in read-only mode"
+    }
+  },
+  "release": {
+    "status": "unreleased"
+  },
+  "kind": "behavior",
+  "summary": "Show code block language labels in read-only mode",
+  "targets": [
+    {
+      "name": "code-block-node",
+      "files": ["apps/www/src/registry/ui/code-block-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "code-block-node-static",
+      "files": ["apps/www/src/registry/ui/code-block-node-static.tsx"],
+      "definitionFiles": [],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-06-03-32-1-001",
+      "kind": "behavior",
+      "summary": "Show the selected language label in read-only and static rendering. Set `showLanguageLabel={false}` on the component to hide it.",
+      "details": [],
+      "migrationNotes": [
+        "Set `showLanguageLabel={false}` on the component to hide it."
+      ],
+      "targets": ["code-block-node", "code-block-node-static"],
+      "source": {
+        "line": 10,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-06-03",
+          "entry": "32.1",
+          "section": "June 2026 #32"
+        }
+      }
+    }
+  ],
+  "diagnostics": [
+    {
+      "severity": "warning",
+      "code": "release-missing",
+      "message": "No generated release-index entry found for PR 4989."
+    },
+    {
+      "severity": "warning",
+      "code": "pull-request-not-merged",
+      "message": "Matched PR 4989, but it is OPEN."
+    }
+  ]
+}

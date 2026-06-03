@@ -5,7 +5,6 @@ import { notFound } from 'next/navigation';
 import releaseIndexData from '@/generated/release-index.json';
 import {
   getOlderReleaseMajorGroups,
-  getReleaseAnchor,
   type ReleaseIndexRelease,
 } from '@/lib/releases';
 import { ReleasePageContent } from '../release-page-content';
@@ -75,10 +74,6 @@ export default async function ReleaseMajorPage({
   return (
     <ReleasePageContent
       releases={group.releases}
-      sidebarLinks={group.releases.map((release) => ({
-        href: `#${getReleaseAnchor(release)}`,
-        label: release.title,
-      }))}
       title={`v${group.major} Releases`}
     />
   );

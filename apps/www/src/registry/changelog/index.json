@@ -1,0 +1,147 @@
+{
+  "schemaVersion": 1,
+  "events": [
+    {
+      "id": "2026-06-03-show-code-block-language-labels-read-only-mode",
+      "href": "/registry/changelog/2026-06-03-show-code-block-language-labels-read-only-mode.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Show code block language labels in read-only mode",
+      "change": {
+        "type": "pull_request",
+        "date": "2026-06-03",
+        "commits": [
+          {
+            "sha": "a471d051d2b32c494a94e8218ce1a8462aa26463",
+            "shortSha": "a471d051d2",
+            "url": "https://github.com/udecode/plate/commit/a471d051d2b32c494a94e8218ce1a8462aa26463",
+            "date": "2026-06-03",
+            "committedAt": "2026-06-03T13:20:44+02:00",
+            "subject": "fix code block language labels"
+          }
+        ],
+        "pullRequest": {
+          "number": 4989,
+          "url": "https://github.com/udecode/plate/pull/4989",
+          "state": "OPEN",
+          "title": "Show code block language labels in read-only mode"
+        }
+      },
+      "release": {
+        "status": "unreleased"
+      },
+      "targets": ["code-block-node", "code-block-node-static"],
+      "entries": 1,
+      "diagnostics": [
+        {
+          "code": "release-missing",
+          "severity": "warning"
+        },
+        {
+          "code": "pull-request-not-merged",
+          "severity": "warning"
+        }
+      ]
+    },
+    {
+      "id": "2026-06-02-improve-large-document-editing",
+      "href": "/registry/changelog/2026-06-02-improve-large-document-editing.json",
+      "status": "draft",
+      "kind": "mixed",
+      "summary": "perf: improve large document editing",
+      "change": {
+        "type": "pull_request",
+        "date": "2026-06-02",
+        "commits": [
+          {
+            "sha": "68560ccc9e1d525f29e8a49b0c673723837639d8",
+            "shortSha": "68560ccc9e",
+            "url": "https://github.com/udecode/plate/commit/68560ccc9e1d525f29e8a49b0c673723837639d8",
+            "date": "2026-06-02",
+            "committedAt": "2026-06-02T21:26:43+02:00",
+            "subject": "perf: improve large document editing"
+          }
+        ],
+        "pullRequest": {
+          "number": 4987,
+          "url": "https://github.com/udecode/plate/pull/4987",
+          "state": "MERGED",
+          "title": "perf: improve large document editing",
+          "mergedAt": "2026-06-02T19:26:44Z"
+        }
+      },
+      "release": {
+        "status": "released",
+        "tag": "v53.0.7",
+        "source": "release-index-pr-match",
+        "packageTag": "platejs@53.0.7",
+        "requiresPlate": ">=53.0.7",
+        "changelogUrl": "https://github.com/udecode/plate/blob/main/packages/plate/CHANGELOG.md",
+        "url": "https://github.com/udecode/plate/pull/4986",
+        "versionPackagePullRequest": {
+          "number": 4986,
+          "url": "https://github.com/udecode/plate/pull/4986"
+        }
+      },
+      "targets": ["huge-document-demo", "hundreds-blocks-demo"],
+      "entries": 2,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-04-23-redesign-blockquotes-container-blocks",
+      "href": "/registry/changelog/2026-04-23-redesign-blockquotes-container-blocks.json",
+      "status": "draft",
+      "kind": "mixed",
+      "summary": "fix: redesign blockquotes as container blocks",
+      "change": {
+        "type": "pull_request",
+        "date": "2026-04-23",
+        "commits": [
+          {
+            "sha": "700286bf84ac987b9cc2296f9f69746f0f095936",
+            "shortSha": "700286bf84",
+            "url": "https://github.com/udecode/plate/commit/700286bf84ac987b9cc2296f9f69746f0f095936",
+            "date": "2026-04-23",
+            "committedAt": "2026-04-23T10:06:04+02:00",
+            "subject": "docs"
+          }
+        ],
+        "pullRequest": {
+          "number": 4941,
+          "url": "https://github.com/udecode/plate/pull/4941",
+          "state": "MERGED",
+          "title": "fix: redesign blockquotes as container blocks",
+          "mergedAt": "2026-04-23T11:41:41Z"
+        }
+      },
+      "release": {
+        "status": "released",
+        "tag": "v53.0.0",
+        "source": "release-index-pr-match",
+        "packageTag": "platejs@53.0.0",
+        "requiresPlate": ">=53.0.0",
+        "changelogUrl": "https://github.com/udecode/plate/blob/7b9b204e1e38a20b1f8bec5a900d67c64afbc525/packages/plate/CHANGELOG.md",
+        "url": "https://github.com/udecode/plate/pull/4948",
+        "versionPackagePullRequest": {
+          "number": 4948,
+          "url": "https://github.com/udecode/plate/pull/4948"
+        }
+      },
+      "targets": [
+        "footnote-kit",
+        "footnote-base-kit",
+        "editor-kit",
+        "editor-base-kit",
+        "markdown-kit",
+        "insert-toolbar-button",
+        "insert-toolbar-classic-button",
+        "slash-node",
+        "transforms",
+        "transforms-classic",
+        "autoformat-kit"
+      ],
+      "entries": 7,
+      "diagnostics": []
+    }
+  ]
+}
