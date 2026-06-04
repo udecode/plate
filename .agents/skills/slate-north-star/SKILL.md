@@ -109,6 +109,14 @@ metadata:
 - External harvests classify pressure as refactor-existing, create-new, defer,
   or product-owned. Do not copy foreign ontology when a Slate-native row proves
   the same invariant.
+- "All issues" means issue-by-issue closure for every relevant issue. Clusters
+  and matrices are routing checkpoints, not completion. Each relevant issue
+  needs a checkmark: existing local test linked and verified, new test written
+  and verified, Plate-owned proof linked, or explicit defer owner recorded.
+  Keep looping one issue at a time until the relevant ledger is closed.
+- When a harvest loop is scoped to Slate v2 only, Plate-owned rows are not
+  patched. Check them as `deferred-with-owner` with a concrete Plate owner and
+  move on to the next Slate-v2 row.
 
 ## How The User Corrects Agents
 
