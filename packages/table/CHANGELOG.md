@@ -1,5 +1,11 @@
 # @platejs/table
 
+## 53.0.9
+
+### Patch Changes
+
+- [#4994](https://github.com/udecode/plate/pull/4994) by [@puneetdixit200](https://github.com/puneetdixit200) – Remove the table when deleting its final column.
+
 ## 53.0.7
 
 ### Patch Changes
