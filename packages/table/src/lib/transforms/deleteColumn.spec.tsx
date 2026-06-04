@@ -11,6 +11,49 @@ import { deleteColumn } from './deleteColumn';
 jsxt;
 
 describe('deleteColumn', () => {
+  it.each([
+    { disableMerge: true },
+    { disableMerge: false },
+  ])('removes the table when deleting its last column (disableMerge: $disableMerge)', ({
+    disableMerge,
+  }) => {
+    const input = (
+      <editor>
+        <hp>before</hp>
+        <htable>
+          <htr>
+            <htd>
+              <hp>
+                11
+                <cursor />
+              </hp>
+            </htd>
+          </htr>
+          <htr>
+            <htd>
+              <hp>21</hp>
+            </htd>
+          </htr>
+        </htable>
+        <hp>after</hp>
+      </editor>
+    ) as any as SlateEditor;
+
+    const editor = createSlateEditor({
+      nodeId: true,
+      plugins: getTestTablePlugins({ disableMerge }),
+      selection: input.selection,
+      value: input.children,
+    });
+
+    deleteColumn(editor);
+
+    expect(editor.children).toMatchObject([
+      { children: [{ text: 'before' }], type: 'p' },
+      { children: [{ text: 'after' }], type: 'p' },
+    ]);
+  });
+
   describe('when 2x2', () => {
     it.each([
       { disableMerge: true },
