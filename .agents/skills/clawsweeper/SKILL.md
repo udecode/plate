@@ -1,6 +1,6 @@
 ---
-description: 'Triage and process the Slate v2 issue ledger with OpenClaw-style sweep discipline: archive-first discovery, duplicate proof, small-fix gates, exact claim rules, maintainer-safe issue output, and gitcrawl API refreshes.'
-argument-hint: '[<update> | issue refs | cluster name | ledger batch | sweep goal]'
+description: 'Triage and process the Slate v2 issue ledger, and provide ClawSweeper-style provenance for external editor issue harvests: archive-first discovery, duplicate proof, small-fix gates, exact claim rules, maintainer-safe issue output, and gitcrawl API refreshes.'
+argument-hint: '[<update> | issue refs | cluster name | ledger batch | sweep goal | external <owner/repo> issues]'
 disable-model-invocation: true
 name: clawsweeper
 metadata:
@@ -13,6 +13,12 @@ metadata:
 Use this skill for Slate issue-ledger triage and processing: issue clusters,
 duplicate/stale/invalid decisions, small high-confidence repro/fix candidates,
 PR-body issue claim sync, and execution prompts for the active Slate v2 rewrite.
+
+Also use its discipline as a subordinate provenance layer for external editor
+issue harvests, such as Lexical open and closed issues. In that mode, do not
+mutate Slate ledgers or write issue claims. Generate candidate clusters and
+evidence bars for `editor-test-harvester --issues`; let the harvester own the
+portable behavior matrix and Slate/Plate coverage mapping.
 
 This is adapted from `../openclaw/.agents` and the current
 `../clawsweeper` checkout: ClawSweeper, duplicate-tagging,
@@ -218,6 +224,9 @@ prove the release exists locally.
 
 - Do not process 630 live issues one by one. Cluster first, then route by architecture
   owner.
+- For external editor issue harvests, do not process all issues one by one.
+  Search and cluster across open and closed issues first, then read
+  representatives from high-value clusters.
 - Do not use `Fixes #...` unless the exact original repro is proven end to end.
 - `cluster-synced` means architecture pressure is absorbed. It is not a closure
   claim.
@@ -243,6 +252,11 @@ prove the release exists locally.
   `cluster-synced` states are routing aids, not proof that an issue is fixed.
 - Avoid sweep storms. If an exact issue surface was already swept and the claim
   set did not change, cite the prior sweep instead of rerunning broad discovery.
+- In external editor mode, issue state defaults to `all`. Closed issues are
+  regression/provenance pressure, not proof that Slate fixed anything.
+- In external editor mode, skip framework-specific API, node-class, command
+  registry, product, docs, release, and support issues unless they expose a raw
+  portable editor primitive.
 
 ## Action Buckets
 
@@ -272,6 +286,11 @@ same turn.
 When `gitcrawl` is available and has Slate data, use it first for candidate
 discovery, duplicate attempts, related closed issues, and cluster neighbors.
 Treat it as candidate generation only.
+
+For external editor issue harvests, use the same archive-first shape but replace
+the repository argument with the target repo and default issue state to `all`.
+The output is scratch provenance for `editor-test-harvester`, not a Slate issue
+ledger update.
 
 Start with local readiness and freshness:
 
@@ -304,6 +323,22 @@ gitcrawl gh pr status <pr-ref> -R ianstormtaylor/slate --compact
 gitcrawl gh pr view <pr-ref> -R ianstormtaylor/slate --json number,title,state,url,isDraft,author,headRef,baseRef,files,commits,checks,statusCheckRollup
 gitcrawl gh pr checks <pr-ref> -R ianstormtaylor/slate --json name,state,conclusion,detailsUrl
 ```
+
+External editor issue-harvest shapes:
+
+```bash
+gitcrawl status --json
+gitcrawl doctor --json
+gitcrawl search issues "" -R facebook/lexical --state all --json number,title,state,url,labels,updatedAt --limit 1000
+gitcrawl search issues "<portable behavior phrase>" -R facebook/lexical --state all --json number,title,state,url,labels,updatedAt --limit 50
+gitcrawl sync facebook/lexical --numbers <issue-or-pr-ref> --include-comments --with pr-details --json
+gitcrawl threads facebook/lexical --numbers <issue-or-pr-ref> --include-closed --json
+gitcrawl neighbors facebook/lexical --number <issue-or-pr-ref> --limit 20 --json
+```
+
+If the target repo is not Lexical, substitute the requested `<owner/repo>`. If
+empty-query issue search is unsupported or capped, record the fallback and do
+not call the issue corpus comprehensive.
 
 Use `sync --numbers` for exact row hydration before a duplicate, stale, or
 closure decision that depends on comments, PR detail, or fresh state. Use
@@ -423,6 +458,10 @@ Do not pad a batch with low-confidence fixes. If no issue qualifies, say so.
 Adapt upstream `queue_fix_pr` discipline to Slate v2 issue sweeps. This is a
 classification aid, not permission to mutate GitHub.
 
+For external editor issue harvests, "work candidate" means "candidate local
+Slate/Plate invariant or test gap" until the harvester matrix proves a current
+Slate bug. Do not route external issues directly to implementation.
+
 Use `focused fix path` only when all are true:
 
 - the issue is valid and not already covered by a merged/current fix
@@ -442,6 +481,19 @@ open fix PR.
 For automatic-looking bug fixes, keep the bar stricter: exact current repro,
 high confidence, no new feature/config option, no product decision, narrow code
 owner, and focused regression proof.
+
+External issue harvest routing:
+
+- `portable-invariant`: issue cluster exposes raw editor behavior worth mapping
+  to Slate v2 tests.
+- `portable-mixed`: issue contains a useful raw invariant mixed with product or
+  framework details; split before action.
+- `plate-owned`: issue pressure belongs to Plate plugin/product/API/DX.
+- `framework-specific`: Lexical/editor internals only; skip with reason.
+- `support-docs-release`: not robustness input; skip with reason.
+- `security-quarantine`: security-shaped report; keep out of normal harvest.
+- `needs-source-proof`: issue looks interesting but no test/source/current
+  Slate evidence supports a behavior invariant yet.
 
 ## Verification Discipline
 
@@ -483,6 +535,15 @@ and `triage-closed` classifications:
 
 If you cannot point to concrete code/docs/history/related-item evidence, keep
 the row open as `needs-repro`, `issue-reviewed`, or `needs-human`.
+
+For external editor issue harvests:
+
+- preserve open and closed state separately in the scratch issue index;
+- record whether a representative was read from issue title only, body,
+  comments, linked PR, source/test, or current Slate coverage;
+- never treat an external closed issue as stale noise automatically;
+- never treat an external fixed issue as a Slate closure claim;
+- use external issue refs only as provenance for fresh local invariants.
 
 ## Fork Issue Dossier Mode
 

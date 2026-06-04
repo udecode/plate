@@ -1,6 +1,6 @@
 ---
-description: Slate v2 overnight supervisor. Runs an autogoal-backed human-like loop across quality, behavior, visual proof, perf, API cleanup, benchmark/test repair, skill repair, docs consolidation, and ship readiness without user micro-routing.
-argument-hint: <surface/objective> [full-loop | timed 1h|2h|overnight | batch-loop]
+description: Slate v2 overnight supervisor. Runs an autogoal-backed human-like loop across quality, behavior, visual proof, perf, API cleanup, benchmark/test repair, external issue/test harvests, skill repair, docs consolidation, and ship readiness without user micro-routing.
+argument-hint: <surface/objective> [full-loop | timed 1h|2h|overnight | batch-loop | issue-harvest]
 disable-model-invocation: true
 name: slate-automation
 metadata:
@@ -53,6 +53,9 @@ explicitly deferred, decisions are consolidated, and ship readiness is clean.
   sub-skill.
 - Repeated manual calls to `slate-ar-fast`, `slate-ar-stabilize`, or
   `slate-patch` are producing reactive thrash.
+- The user wants external editor issue/test corpora, such as Lexical open and
+  closed issues, mined for Slate v2 robustness gaps without hand-routing every
+  cluster.
 
 ## Do Not Use When
 
@@ -60,7 +63,9 @@ explicitly deferred, decisions are consolidated, and ship readiness is clean.
 - The user asks one architecture/API plan for review: use `slate-plan`.
 - The user asks one benchmark target: use `slate-ar-perf` or `slate-ar-fast`.
 - The user asks whether existing gates pass: use `slate-ar-gate`.
-- The target is not raw Slate v2 / `.tmp/slate-v2`.
+- The target is not raw Slate v2 / `.tmp/slate-v2`, unless the prompt is an
+  external editor issue/test harvest whose output is explicitly for improving
+  Slate v2 behavior, tests, or API robustness.
 
 ## Invocation Modes
 
@@ -89,6 +94,8 @@ Natural prompts should work:
 - `slate-automation pagination rows800 virtualized for 1 hour`
 - `slate-automation huge-document auto timed 2h`
 - `slate-automation editor behavior batch loop`
+- `slate-automation lexical all issues robustness harvest`
+- `slate-automation facebook/lexical --issues --state all batch-loop`
 
 For timed and batch-loop modes:
 
@@ -136,6 +143,8 @@ The plan must record:
 - review-attention list location;
 - queued stopping-checkpoint list location;
 - workflow-slowdown ledger location;
+- external issue-harvest target repo, issue states, output artifacts, and
+  open/closed coverage when in issue-harvest mode;
 - stop rules and blockers.
 
 Use `--template task --with browser --with package-api --with agent-native`
@@ -175,6 +184,22 @@ Split long work into checkpoints that fit one high-quality prompt:
   public/internal API or runtime boundary.
 - **Skill-repair checkpoint:** patch the owning skill/rule when the workflow
   missed a recurring expectation.
+- **External issue-harvest checkpoint:** for prompts that name another editor's
+  issues, route through `editor-test-harvester --issues --state all` under
+  ClawSweeper provenance discipline. Cluster open and closed issues first,
+  skip framework/product/support noise, extract portable editor invariants,
+  map coverage to `.tmp/slate-v2` and Plate owners, then create the
+  issue-by-issue closure ledger. The cluster/matrix is only a routing
+  checkpoint. For every relevant issue, mark one of:
+  `covered-by-existing-test`, `test-written`, `plate-owned-covered`,
+  `deferred-with-owner`, or `invalid-skip`. A harvest is not done while any
+  relevant issue lacks a checkmark. After the ledger names owner/proof/command,
+  keep looping issue-by-issue: if the test exists, link it and verify it; if it
+  does not exist, write the local Slate/Plate test, run it, and mark the issue
+  checked only after proof passes or a real defer owner is recorded.
+  If the prompt or later user correction scopes the run to Slate v2 only,
+  Plate-owned rows are checked as `deferred-with-owner` with a concrete Plate
+  owner and reason; do not patch Plate packages/tests in that run.
 - **Workflow-slowdown checkpoint:** when a specialist command, gate, review,
   finalizer, browser proof, or benchmark burns unexpected time, log the slow
   step and repair the owning workflow if the slowdown is avoidable or repeated.
@@ -232,6 +257,38 @@ For pagination/virtualization-specific prompts, replace the stable-example
 ladder with the route's scenario matrix, but keep the same rule: continue until
 the timebox expires, a risky packet cannot be closed safely, or no safe owner
 remains.
+
+For external editor issue-harvest prompts, replace the stable-example ladder
+with the issue-harvest ladder:
+
+1. resolve the target repo locally, cloning to `../<repo>` only if missing;
+2. run the license/output gate from `editor-test-harvester`;
+3. inventory issues across `open` and `closed` by default, using `state=all`
+   unless the user explicitly narrows the state;
+4. cluster issues before reading them one by one;
+5. skip Lexical/editor-specific API, node-class, command-system, product, docs,
+   support, release, and framework-only issues with explicit reasons;
+6. keep only portable editor robustness clusters: selection, IME, beforeinput,
+   clipboard, history, decorations, void/inline, tables, collaboration,
+   browser/mobile, and large-document performance;
+7. search target tests/source/PRs for kept clusters;
+8. map each invariant to current `.tmp/slate-v2` and Plate coverage;
+9. create an issue-by-issue closure ledger for every relevant issue, with one
+   row per issue and a checkmark state: `covered-by-existing-test`,
+   `test-written`, `plate-owned-covered`, `deferred-with-owner`, or
+   `invalid-skip`;
+10. patch or create local tests only after the issue row names owner, proof
+   kind, and verification command;
+11. keep looping over relevant unchecked issues one by one. A cluster-level
+   matrix is a checkpoint, not a stop condition. If a matching test exists,
+   link the exact file/line/test name and rerun the focused command. If it does
+   not, write the test in the owner surface, verify it, then check off that
+   issue;
+   If the user scopes the harvest to Slate v2 only, do not write Plate tests;
+   mark Plate-owned rows `deferred-with-owner` with the concrete Plate owner
+   and continue to the next Slate-v2-owned row.
+12. record all external issue artifacts in scratch by default and promote only
+    fresh local invariants into versioned Slate/Plate outputs.
 
 Do not broaden into experimental architecture when the user scoped it out.
 Route that as a stopping checkpoint or `slate-plan` next owner in the final
@@ -736,6 +793,10 @@ The supervisor repairs whatever layer is missing:
   reusable.
 - **Repeated browser proof pattern:** promote it into the `slate-browser` API,
   helper commands, or proof contract so future agents can run it directly.
+- **External issue/test corpus gap:** route to `editor-test-harvester --issues`
+  with ClawSweeper provenance. Do not patch Slate from external issue titles
+  alone; require a portable invariant, current Slate coverage mapping, and a
+  local proof target.
 - **Workflow slowdown:** log slow commands/checkpoints, classify the owner, and
   repair avoidable slow paths in the owning skill, script, proof gate, or
   benchmark command.
@@ -768,6 +829,8 @@ Use the smallest durable target:
 - `docs/slate-v2/**` for accepted Slate v2 architecture, proof, issue, and
   reviewer-facing decisions;
 - `docs/research/**` only for research/evidence layers;
+- `.tmp/editor-issue-harvester/**` for unversioned external issue-corpus
+  scratch, especially open/closed GitHub issue bodies and cluster notes;
 - `.agents/rules/**` only for reusable agent workflow policy.
 
 Do not write public changelog prose. Write latest-state decisions, proof
@@ -827,6 +890,8 @@ Report:
 - behavior gates and visual proof run;
 - primary metric baseline/latest/best and stop reason;
 - bugs fixed and oracles added;
+- external issue-harvest artifacts, issue states covered, cluster counts, and
+  resulting coverage/test actions when an external issue corpus was in scope;
 - benchmark/skill/docs repairs made;
 - workflow slowdown rows and repairs, including slow-but-necessary proof;
 - concise changed list grouped by code, tests/oracles, benchmarks, examples/docs,

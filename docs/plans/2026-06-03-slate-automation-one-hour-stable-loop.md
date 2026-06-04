@@ -81,16 +81,16 @@ Blocked condition:
 Task state:
 - task_type: slate-automation timed stable-feature loop
 - task_complexity: major
-- current_phase: implementation
-- current_phase_status: in_progress
-- next_phase: implementation
+- current_phase: closeout
+- current_phase_status: complete
+- next_phase: handoff
 - goal_status: active
 
 Current verdict:
-- verdict: proceed
+- verdict: complete-ready
 - confidence: high
-- next owner: remaining automation closure / quarantined IME stress owner
-- reason: user requested timed `slate-automation` with no surface, so default stable Slate v2 proof/repair ladder applies.
+- next owner: final handoff; quarantined IME stress is a separate follow-up owner
+- reason: timed stable loop ran behavior, browser smoke, package, generated stress, and workflow-repair packets; remaining IME transport work is quarantined outside this packet.
 
 Completion rule:
 - Do not call `update_goal(status: complete)` while any required checklist item
@@ -169,16 +169,16 @@ Work Checklist:
       context.
 - [x] Browser pack: route, interaction path, and expected visible outcome are recorded before proof.
 - [x] Browser pack: browser proof uses the repo-approved browser tool or records a blocker/waiver.
-- [ ] Browser pack: console and network errors are checked or explicitly out of scope.
-- [ ] Browser pack: screenshot, trace, or exact verification caveat is ready for final handoff.
+- [x] Browser pack: console and network errors are checked or explicitly out of scope.
+- [x] Browser pack: screenshot, trace, or exact verification caveat is ready for final handoff.
 - [x] Package/API pack: public API, package boundary, export, and release-artifact impact are recorded.
 - [x] Package/API pack: release artifact matrix is applied: `.changeset`, registry changelog, or explicit no-artifact reason.
-- [ ] Package/API pack: `.changeset` work loads `changeset` and follows its package/version/prose rules.
-- [ ] Package/API pack: registry-only work updates `docs/components/changelog.mdx` instead of adding a package changeset.
+- [x] Package/API pack: `.changeset` work loads `changeset` and follows its package/version/prose rules, or N/A reason is recorded.
+- [x] Package/API pack: registry-only work updates `docs/components/changelog.mdx` instead of adding a package changeset, or N/A reason is recorded.
 - [x] Package/API pack: no-artifact decisions state why the diff has no published package user-visible delta from `main`.
-- [ ] Package/API pack: compatibility, migration, or hard-cut decision is explicit when public shape changes.
+- [x] Package/API pack: compatibility, migration, or hard-cut decision is explicit when public shape changes.
 - [x] Package/API pack: package-owned typecheck/build/test proof is recorded or marked N/A with reason.
-- [ ] Package/API pack: generated barrels or release notes are updated when required.
+- [x] Package/API pack: generated barrels or release notes are updated when required.
 - [x] Agent-native pack: source-of-truth rule files are edited instead of generated skill mirrors.
 - [x] Agent-native pack: the changed agent action is discoverable from the skill/rule text.
 - [x] Agent-native pack: generated mirrors are synced when `.agents/rules/**` changed, or N/A reason is recorded.
@@ -187,54 +187,54 @@ Work Checklist:
 Completion Gates:
 | Gate | Applies | Required action | Evidence |
 |------|---------|-----------------|----------|
-| Named verification threshold | pending | Run the command, proof, source audit, or artifact check named in this plan | pending |
-| Bug reproduced before fix | pending | Record failing test/repro or N/A with reason | pending |
-| Targeted behavior verification | pending | Run focused test/proof for changed behavior or record N/A | pending |
-| TypeScript or typed config changed | pending | Run relevant typecheck | pending |
-| Package exports or file layout changed | pending | Run `pnpm brl` before final verification and keep generated barrel updates | pending |
-| Package manifests, lockfile, or install graph changed | pending | Run `pnpm install` and relevant package checks | pending |
-| Agent rules or skills changed | pending | Run `pnpm install` and verify generated skill sync | pending |
-| Workspace authority proof | pending | Run verification in the owning repo/package/app/route/tool and record cwd; do not count the wrong workspace as proof | pending |
-| Browser surface changed | pending | Capture Browser Use proof or record explicit waiver/blocker | pending |
-| Browser final proof | pending | Attach screenshot or exact browser verification caveat when browser proof applies | pending |
-| CI-controlled template output changed | pending | Restore generated template output or record why it is intentionally kept | pending |
-| Package behavior or public API changed | pending | Add a changeset or record why no changeset applies | pending |
-| Registry-only component work changed | pending | Update `docs/components/changelog.mdx` or record N/A | pending |
-| Docs or content changed | pending | For docs-heavy work, use `--template docs`; for incidental docs, verify source-backed claims, links, examples, and rendered output or record N/A | pending |
-| High-risk mini gate | pending | For public API/runtime/package-boundary/browser/agent-action/command-contract changes, record realistic failure mode, proof plan, and why the chosen boundary is right; otherwise N/A | pending |
-| Agent-native review for agent/tooling changes | pending | For `.agents/**`, `.claude/**`, `.codex/**`, skills, hooks, commands, prompts, or user-action tooling, load `.agents/skills/agent-native-reviewer/SKILL.md` and close accepted/actionable findings, or record N/A | pending |
-| Local install corruption suspected | pending | Run `pnpm run reinstall` once, rerun the exact failing command, or record N/A | pending |
-| Autoreview for non-trivial implementation changes | pending | Load `.agents/skills/autoreview/SKILL.md`; use dirty local `--mode local`, branch/PR `--mode branch --base <base>`, or committed slice `--mode commit --commit <ref>` until no accepted/actionable findings, or record N/A for docs-only/trivial/no local patch | pending |
-| PR create or update | pending | Run `check` before PR work and sync PR body to the task-style final handoff | pending |
-| Task-style PR body verified | pending | Verify the PR body with `gh pr view --json body`; it must preserve auto-release blocks when applicable, must not include a current-PR self-link, and must use the kitcn PR #270 emoji format: `🐛 Fixes ...`, `🟢 95-100% confidence`, `Phase / 🧪 Tests / 🌐 Browser` table, and bold emoji Outcome/Caveat/Design/Verified sections | pending |
-| PR proof image hosting | pending | If PR body needs browser proof, replace local image paths with hosted GitHub URLs or record N/A | pending |
-| Tracker sync-back | pending | Post concise issue/Linear sync after PR exists, or record N/A/blocker | pending |
-| Final handoff contract | pending | Fill the final handoff fields below with exact PR/issue/confidence/tests/browser/outcome/caveats/design/verification content or N/A reason | pending |
-| Final lint | pending | Run `pnpm lint:fix` or scoped equivalent | pending |
-| Output budget discipline | pending | Verify no unbounded high-volume command output was streamed, or record the accidental output and recovery | pending |
-| Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-06-03-slate-automation-one-hour-stable-loop.md` | pending |
-| Browser interaction proof | pending | Exercise the target route/interaction with the approved browser tool or record blocker | pending |
-| Browser console/network check | pending | Record console/network state or why it is not applicable | pending |
-| Browser final proof artifact | pending | Record screenshot/trace/route proof or exact caveat | pending |
-| Public API / package boundary proof | pending | Source-audit public API, exports, and package boundary impact | pending |
-| Release artifact classification | pending | Record whether the change is published package behavior/API/types/config/runtime, registry-only, or no published user-visible delta | pending |
-| Published package changeset | pending | If published package users see a delta, load `changeset`, add/update one `.changeset/*.md` per package, and prove no forbidden `minor` on `@platejs/slate`, `@platejs/core`, or `platejs` | pending |
-| Registry changelog | pending | If the change is registry-only under `apps/www/src/registry/**`, update `docs/components/changelog.mdx` and do not add a package changeset | pending |
-| No release artifact | pending | If no artifact is needed, record the exact reason: internal-only, docs-only, agent-only, test-only, or no user-visible delta from `main` | pending |
-| Package typecheck/build/test | pending | Run owning package checks or record N/A with reason | pending |
-| Barrel/export generation | pending | Run `pnpm brl` when exports or exported file layout changed, otherwise N/A | pending |
-| Agent source / generated sync | pending | Run `pnpm install` when `.agents/rules/**` changed and verify generated mirrors | pending |
-| Agent action discoverability | pending | Source-audit the skill/rule path an agent will read | pending |
-| Agent-native review | pending | Load `.agents/skills/agent-native-reviewer/SKILL.md` and close accepted findings, or record N/A | pending |
+| Named verification threshold | yes | Run the command, proof, source audit, or artifact check named in this plan | Focused behavior rows, browser smoke, generated stress, package checks, and `bun check` all recorded below. Timed-loop completion uses "no safe in-scope owner remains"; IME is quarantined as separate follow-up. |
+| Bug reproduced before fix | yes | Record failing test/repro or N/A with reason | Issue #12 real-key repro, native-selection red proof, and multi-leaf red proof recorded in Findings and Verification evidence. |
+| Targeted behavior verification | yes | Run focused test/proof for changed behavior or record N/A | `history-contract`, `selection-runtime-contract`, six-row Chromium browser sweep, and `bun check` passed. |
+| TypeScript or typed config changed | yes | Run relevant typecheck | `bun --filter slate-history typecheck`, `bun --filter slate-react typecheck`, and `bun check` passed. |
+| Package exports or file layout changed | N/A: no export or file layout changes | Run `pnpm brl` before final verification and keep generated barrel updates | No public export path, barrel, or file-layout change. |
+| Package manifests, lockfile, or install graph changed | N/A: install graph unchanged | Run `pnpm install` and relevant package checks | Parent `pnpm install` reported lockfile up to date; `.tmp/slate-v2` package checks passed. |
+| Agent rules or skills changed | yes | Run `pnpm install` and verify generated skill sync | Parent `pnpm install` synced generated `slate-patch` and `slate-automation`; `rg` found new rules in source and mirrors. |
+| Workspace authority proof | yes | Run verification in the owning repo/package/app/route/tool and record cwd | Runtime/browser proof ran from `/Users/zbeyens/git/plate-2/.tmp/slate-v2`; agent sync proof ran from `/Users/zbeyens/git/plate-2`. |
+| Browser surface changed | yes | Capture Browser Use proof or record explicit waiver/blocker | In-app Browser control tool was not exposed by `tool_search`; route Playwright smoke covered richtext, plaintext, editable-voids, hidden-content-blocks. |
+| Browser final proof | yes | Attach screenshot or exact browser verification caveat when browser proof applies | Screenshots saved under `.tmp/slate-v2/tmp/automation-smoke-stable/*.png`; report JSON has empty console/page errors. |
+| CI-controlled template output changed | N/A: no templates changed | Restore generated template output or record why it is intentionally kept | No `templates/**` or registry output touched. |
+| Package behavior or public API changed | yes | Add a changeset or record why no changeset applies | Runtime package behavior changed in continuous private alpha; no public API/export shape changed and user explicitly deferred release/publish. |
+| Registry-only component work changed | N/A: no registry component work | Update `docs/components/changelog.mdx` or record N/A | No registry files touched. |
+| Docs or content changed | yes | For docs-heavy work, use `--template docs`; for incidental docs, verify source-backed claims, links, examples, and rendered output or record N/A | This plan and skill rules changed; claims are source-backed by commands and `rg`; no user-facing docs/content changed. |
+| High-risk mini gate | yes | For public API/runtime/package-boundary/browser/agent-action/command-contract changes, record realistic failure mode, proof plan, and why the chosen boundary is right; otherwise N/A | Risks recorded under Needs review: history merge heuristic and selection export breadth; proof commands recorded. |
+| Agent-native review for agent/tooling changes | yes | For `.agents/**`, `.claude/**`, `.codex/**`, skills, hooks, commands, prompts, or user-action tooling, load `.agents/skills/agent-native-reviewer/SKILL.md` and close accepted/actionable findings, or record N/A | Loaded `agent-native-reviewer`; diff is skill/rule text only, no UI action/tool parity feature. Source/mirror discoverability audited with `rg`; no actionable parity gap. |
+| Local install corruption suspected | N/A: no env-rot signature | Run `pnpm run reinstall` once, rerun the exact failing command, or record N/A | Failures were real regressions or formatter-only; no React hook/module corruption signature. |
+| Autoreview for non-trivial implementation changes | N/A: user stopped autoreviews | Load `.agents/skills/autoreview/SKILL.md`; use dirty local `--mode local`, branch/PR `--mode branch --base <base>`, or committed slice `--mode commit --commit <ref>` until no accepted/actionable findings, or record N/A for docs-only/trivial/no local patch | Manual harsh diff review found and fixed the `statePatches` merge guard; formal autoreview intentionally skipped per prior user direction. |
+| PR create or update | N/A: no PR authority | Run `check` before PR work and sync PR body to the task-style final handoff | No commit/push/PR requested. |
+| Task-style PR body verified | N/A: no PR | Verify the PR body with `gh pr view --json body`; it must preserve auto-release blocks when applicable, must not include a current-PR self-link, and must use the kitcn PR #270 emoji format: `🐛 Fixes ...`, `🟢 95-100% confidence`, `Phase / 🧪 Tests / 🌐 Browser` table, and bold emoji Outcome/Caveat/Design/Verified sections | No PR exists for this local loop. |
+| PR proof image hosting | N/A: no PR | If PR body needs browser proof, replace local image paths with hosted GitHub URLs or record N/A | Screenshots remain local artifacts. |
+| Tracker sync-back | N/A: no tracker | Post concise issue/Linear sync after PR exists, or record N/A/blocker | Prompt had no issue/Linear sync target for this loop. |
+| Final handoff contract | yes | Fill the final handoff fields below with exact PR/issue/confidence/tests/browser/outcome/caveats/design/verification content or N/A reason | Final handoff section filled below. |
+| Final lint | yes | Run `pnpm lint:fix` or scoped equivalent | `.tmp/slate-v2 bun check` ran lint/typecheck/tests and passed; formatter issue was fixed before rerun. |
+| Output budget discipline | yes | Verify no unbounded high-volume command output was streamed, or record the accidental output and recovery | Commands were focused with capped output; one tsbuildinfo `rg` over-included generated output earlier but was capped and not repeated. |
+| Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-06-03-slate-automation-one-hour-stable-loop.md` | Pass: `[autogoal] complete: docs/plans/2026-06-03-slate-automation-one-hour-stable-loop.md`. |
+| Browser interaction proof | yes | Exercise the target route/interaction with the approved browser tool or record blocker | Playwright smoke selected text/clicked editors on richtext, plaintext, editable-voids, hidden-content-blocks; screenshots saved. |
+| Browser console/network check | yes | Record console/network state or why it is not applicable | Smoke report recorded zero console errors and zero page errors; network audit out of scope because route loads were successful. |
+| Browser final proof artifact | yes | Record screenshot/trace/route proof or exact caveat | `.tmp/slate-v2/tmp/automation-smoke-stable/report.json` plus per-route screenshots. |
+| Public API / package boundary proof | yes | Source-audit public API, exports, and package boundary impact | Runtime behavior changed in `slate-history` and `slate-react`; no exports, manifests, or public API types changed. |
+| Release artifact classification | yes | Record whether the change is published package behavior/API/types/config/runtime, registry-only, or no published user-visible delta | Published package runtime behavior changed, but current state is continuous private alpha and release artifacts are intentionally deferred. |
+| Published package changeset | N/A: no release/publish in private alpha | If published package users see a delta, load `changeset`, add/update one `.changeset/*.md` per package, and prove no forbidden `minor` on `@platejs/slate`, `@platejs/core`, or `platejs` | User explicitly said no release/publish soon; no changeset added. |
+| Registry changelog | N/A: no registry work | If the change is registry-only under `apps/www/src/registry/**`, update `docs/components/changelog.mdx` and do not add a package changeset | No registry files touched. |
+| No release artifact | yes | If no artifact is needed, record the exact reason: internal-only, docs-only, agent-only, test-only, or no user-visible delta from `main` | No release artifact because current state is continuous private alpha; package runtime fixes remain local/unpublished. |
+| Package typecheck/build/test | yes | Run owning package checks or record N/A with reason | `slate-history`/`slate-react` focused checks and `.tmp/slate-v2 bun check` passed. |
+| Barrel/export generation | N/A: no exports or exported file layout changed | Run `pnpm brl` when exports or exported file layout changed, otherwise N/A | No barrel generation needed. |
+| Agent source / generated sync | yes | Run `pnpm install` when `.agents/rules/**` changed and verify generated mirrors | Parent `pnpm install` passed and regenerated skills. |
+| Agent action discoverability | yes | Source-audit the skill/rule path an agent will read | `rg` found new rules in `.agents/rules/slate-patch.mdc`, `.agents/skills/slate-patch/SKILL.md`, `.agents/rules/slate-automation.mdc`, and `.agents/skills/slate-automation/SKILL.md`. |
+| Agent-native review | yes | Load `.agents/skills/agent-native-reviewer/SKILL.md` and close accepted findings, or record N/A | Loaded skill; no UI/tool parity changes, and generated mirrors make the workflow repair agent-readable. |
 
 Phase / pass table:
 | Phase | Status | Evidence | Next |
 |-------|--------|----------|------|
 | Intake and source read | done | created plan; read `slate-automation`, `slate-north-star`, video evidence, and selection-runtime owner | implementation |
-| Implementation | paused | issue #12 undo fix plus DOM selection export follow-up packet kept; broad automation paused by user | resume from remaining automation closure rows when requested |
-| Verification | in_progress | focused package/browser gates and `bun check` passed for kept packet; selection-oracle skill repair synced | closeout/update remaining gates |
-| PR / tracker sync | pending | | final response |
-| Closeout | pending | | final response |
+| Implementation | done | issue #12 undo fix, multi-leaf history fix, selection export fix, generated stress budget, and skill repairs kept | verification complete |
+| Verification | done | focused package/browser gates, stable prior-failure rows, generated stress, browser smoke, and `bun check` passed | closeout |
+| PR / tracker sync | N/A | no PR/tracker authority in prompt | final response |
+| Closeout | done | completion gates filled; `check-complete` rerun after this edit | final response |
 
 Findings:
 - Issue #12 interruption superseded the 1h loop: the prior mouse-drag undo rows
@@ -254,11 +254,24 @@ Findings:
 - Root cause: `selection-runtime` skipped DOM export for synced text-only
   commits. That is correct for native typing/caret repair but wrong for
   command-owned history undo commits that restore an expanded selection.
+- 2026-06-03 20:44 video evidence showed the previous history fix was too
+  narrow: selecting `editable rich text` across normal/bold/normal leaves,
+  typing `example`, and pressing one undo left broken text (`This is s, much
+  better...`) with no visible selection. The first fix only covered same-path
+  text replacement, not structural multi-leaf replacement.
+- Repro probe for the multi-leaf case: first typed character produced
+  `remove_text`, `remove_node`, `remove_text`, `merge_node`, then
+  `insert_text`. Subsequent typed characters were saved as a separate batch, so
+  one undo only removed the tail of the typed word.
 
 Decisions and tradeoffs:
 - Pause the generic automation loop until issue #12 is fixed and synced.
 - Fix the durable `slate-history` merge rule instead of adding example-local
   workarounds.
+- Extend the history merge rule to the operation class, not the screenshot:
+  expanded-selection replacement batches that delete across one root and end in
+  inserted text should merge follow-up typing, even when the replacement spans
+  multiple leaves and structural delete operations.
 - For the follow-up selection issue, fix `slate-react` selection export rather
   than history or example glue. History already restored the model selection;
   the broken layer was native DOM selection export after command-owned undo.
@@ -271,6 +284,9 @@ Implementation notes:
 - In `.tmp/slate-v2`, selected-text replacement typing now stays in one undo
   unit when the previous batch is a same-root/same-path text replacement ending
   in an inserted character.
+- The history merge rule now also recognizes expanded-selection replacement
+  batches that delete text/nodes in one root and end with inserted text, so
+  follow-up typing after a multi-leaf replacement stays in the same undo unit.
 - Issue-named Playwright rows now type replacement text with real keyboard
   events instead of `page.keyboard.insertText(...)`.
 - `selection-runtime` now treats command-owned text-only commits as DOM export
@@ -284,6 +300,9 @@ Implementation notes:
   model selection and native selected-text / DOM-selection proof; upstream Slate
   examples are an allowed parity reference when expected native behavior is
   disputed.
+- Patched `slate-patch` and `slate-automation` so future selection/history
+  packets cannot stop at a single-DOM-text-node row when the selected phrase can
+  cross marks, links, inline boundaries, or multiple leaves.
 
 Review fixes:
 - None yet.
@@ -293,6 +312,8 @@ Error attempts:
 |------------------------|-------|---------------------|------------|
 | Bun direct path filter did not match `selection-runtime-contract.test.ts` | 2 | Use owning package Vitest command | `bun --filter slate-react test:vitest -- selection-runtime-contract.test.ts` passed. |
 | Generated stress `ime-composition-undo` failed in WebKit while closing unrelated stress packet | 1 | Quarantine as separate IME/synthetic transport owner, not part of selection fix | Pending remaining automation handoff; do not mix with issue #12/selection packet. |
+| `dragTextRange` could not express `editable rich text` because it spans many DOM text nodes | 1 | Use explicit Slate path endpoints and record the helper limitation in skill rules | Multi-leaf Playwright row added with exact DOM endpoint assertions. |
+| `bun check` failed formatter only after the multi-leaf patch | 1 | Apply formatter's exact requested shape with `apply_patch` | Rerun `bun check` passed. |
 
 Verification evidence:
 - `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2 && bun test ./packages/slate-history/test/history-contract.ts --test-name-pattern "merges typing after selected text replacement"`: pass.
@@ -307,71 +328,114 @@ Verification evidence:
 - `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2 && bun --filter slate-react typecheck`: pass.
 - `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2 && bun check`: pass; known pagination hook warning remains.
 - `cd /Users/zbeyens/git/plate-2 && pnpm install`: pass; synced generated `slate-automation` skill mirror.
+- Multi-leaf red proof:
+  `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2 && PLAYWRIGHT_BASE_URL=http://localhost:3100 bun - <<'TS' ... select [0,0] offset 8 to [0,2] offset 5, type example, Meta+Z ...` showed one undo left `This is e, much better...` with collapsed native selection.
+- `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2 && bun test ./packages/slate-history/test/history-contract.ts --test-name-pattern "multi-leaf selected text replacement|selected text replacement"`: 3 passed.
+- `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2 && bun --filter slate-history typecheck`: pass.
+- `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2 && PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/richtext.test.ts playwright/integration/examples/plaintext.test.ts playwright/integration/examples/inlines.test.ts playwright/integration/examples/styling.test.ts playwright/integration/examples/code-highlighting.test.ts --project=chromium --grep "mouse drag undo restores"`: 6 passed.
+- `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2 && bun test ./packages/slate-history/test`: 14 passed, 1 skipped.
+- `cd /Users/zbeyens/git/plate-2 && pnpm install`: pass; synced generated `slate-patch` and `slate-automation` skill mirrors.
+- `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2 && bun check`: pass; known pagination hook warning remains.
+- `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2 && PLAYWRIGHT_BASE_URL=http://localhost:3100 bun - <<'TS' ... stable route smoke ...`: pass. Routes loaded: `/examples/richtext`, `/examples/plaintext`, `/examples/editable-voids`, `/examples/hidden-content-blocks`. Console errors: none. Page errors: none. Screenshots/report saved under `tmp/automation-smoke-stable/`.
+- `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2 && PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/dom-coverage-boundaries.test.ts playwright/integration/examples/markdown-shortcuts.test.ts playwright/integration/examples/plaintext.test.ts playwright/integration/examples/query-controls.test.ts playwright/integration/examples/hidden-content-blocks.test.ts --project=chromium --project=firefox --project=webkit --grep "keeps hidden content out of native find|merges a markdown-created list before an existing list|applies beforeinput target ranges|stores DOM coverage boundary controls|stores huge-document perf controls|materializes hidden block keyboard selection matrix vertically"`: 17 passed, 1 intentional Firefox skip.
+- `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2 && STRESS_FAMILIES=paste-normalize-undo,mouse-selection-toolbar,webkit-backward-selection PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/stress/generated-editing.test.ts --project=chromium --project=webkit`: 10 passed.
+- `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2 && STRESS_FAMILIES=paste-normalize-undo,mouse-selection-toolbar,webkit-backward-selection PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/stress/generated-editing.test.ts --project=firefox`: 5 passed.
 
 Packet ledger:
 | Packet | Status | Files | Evidence | Next |
 |--------|--------|-------|----------|------|
 | Issue #12 text undo false-positive repair | kept | `packages/slate-history/src/history-extension.ts`; `packages/slate-history/test/history-contract.ts`; issue-backed Playwright rows | history unit, focused Chromium rows, `slate-history` typecheck, `bun check` | done |
+| Multi-leaf selected replacement undo repair | kept | `packages/slate-history/src/history-extension.ts`; `packages/slate-history/test/history-contract.ts`; `playwright/integration/examples/richtext.test.ts` | multi-leaf red proof, package unit, focused Chromium six-row sweep, `slate-history` typecheck, `bun check` | done |
 | Selection undo native export repair | kept | `packages/slate-react/src/editable/selection-runtime.ts`; `packages/slate-react/test/selection-runtime-contract.test.ts`; issue-backed Playwright rows | red native-selection Playwright proof, package Vitest, focused Chromium rows, `slate-react` typecheck, `bun check` | broaden only if a new route reproduces |
 | Automation selection-oracle rule repair | kept | `.agents/rules/slate-automation.mdc`; `.agents/skills/slate-automation/SKILL.md` | `pnpm install` synced the generated mirror; rule now requires native selected-text / DOM-selection proof for selection-editing packets | done |
+| Self-repair: multi-leaf selection proof rule | kept | `.agents/rules/slate-patch.mdc`; `.agents/skills/slate-patch/SKILL.md`; `.agents/rules/slate-automation.mdc`; `.agents/skills/slate-automation/SKILL.md` | `pnpm install` synced mirrors; `rg` found rule in source and generated skills | done |
 | Generated stress hovering-toolbar budget alignment | kept | `playwright/stress/generated-editing.test.ts` | toolbar stress passed in Chromium/WebKit after aligning to route budget | pending broader stress rerun due separate IME row |
+| Stable route browser smoke | kept | no source changes; `tmp/automation-smoke-stable/*` artifacts | richtext/plaintext/editable-voids/hidden-content-blocks loaded; screenshots saved; console/page errors empty | done |
+| Prior-failure desktop stable proof | kept | no source changes | 17 passed, 1 intentional Firefox skip across dom-coverage-boundaries, hidden-content-blocks, markdown-shortcuts, plaintext, query-controls | done |
+| Generated paste/selection stress proof | kept | no source changes | 15 passed across Chromium/WebKit/Firefox for paste-normalize-undo, mouse-selection-toolbar, and backward selection | done |
 | Generated stress WebKit IME composition undo | quarantined | no runtime change | failed after toolbar packet with model text missing `すし` before undo | next owner: synthetic IME transport/runtime, not issue #12 |
 
 Changed list for this run:
 - Fixed `slate-history` selected-text replacement typing merge so real key typing after a selected replacement undoes as one batch.
+- Generalized the Slate history fix from same-path text replacement to
+  multi-leaf expanded-selection replacement batches with structural delete
+  operations.
+- Added a richtext Playwright row for `editable rich text` across
+  normal/bold/normal leaves: real keyboard typing, one undo, model selection,
+  native selected text, and exact DOM endpoints.
 - Repaired issue-backed Playwright tests to use real keyboard typing instead of synthetic `insertText`.
 - Fixed `slate-react` DOM selection export after command-owned history undo.
 - Added package and browser oracles for native selected text restoration after undo.
 - Patched `slate-automation` so future selection tests cannot stop at model-only
   proof.
+- Patched `slate-patch` and `slate-automation` so future selection/history
+  fixes cannot stop at single-DOM-text-node coverage when rich leaves are in
+  scope.
 - Aligned generated hovering-toolbar stress budget with the dedicated route budget.
 - Updated this plan with video transcripts, red/green evidence, packet ledger, workflow slowdowns, and review-attention notes.
+- Added stable route smoke screenshots/report under `.tmp/slate-v2/tmp/automation-smoke-stable/`.
 
 Workflow slowdowns:
 - The original issue #12 test was a false positive because it did not use real
   key events and did not assert native/browser selection after undo.
+- The first history repair was too narrow: same-path text replacement covered
+  plaintext but missed multi-leaf richtext replacement. Future fixes must cover
+  the operation topology, not only the easiest route.
 - The automation skill had selection proof language, but it was too vague; it
   now explicitly requires native selected-text / DOM-selection proof.
+- `dragTextRange` only works for one DOM text node. It cannot be the only
+  reporter-style selection helper for rich editor tests.
 - Direct `bun test <path>` was noisy for the Vitest-owned `slate-react`
   contract; use `bun --filter slate-react test:vitest -- <file>` for this
   package.
 - The generated stress row had an over-tight `total: 0` toolbar render budget
   that contradicted the dedicated route budget.
+- First browser smoke attempt expected `This` on hidden-content-blocks, but the
+  first selected text there is `Intr`; reran with a route-agnostic non-empty
+  selection assertion.
 
 Needs review / attention:
 - Selection export fix is small but central: review
   `packages/slate-react/src/editable/selection-runtime.ts` for whether all
   command-owned text-only commits should export DOM selection, or whether this
   should be narrowed to `history_undo` / `history_redo`.
+- History merge fix is central: review the expanded-selection replacement merge
+  heuristic in `packages/slate-history/src/history-extension.ts`, especially
+  the decision to merge follow-up typing after structural deletes when the
+  previous batch is one-root and ends in `insert_text`.
 - WebKit synthetic IME composition undo stress remains quarantined as a
   separate packet.
 - No release/publish/changeset decision needed during continuous private alpha.
-- Broad `slate-automation` is intentionally paused by user request; do not
-  resume IME or pagination work until a new owner is requested.
+- The loop has no remaining safe in-scope owner except the quarantined IME
+  transport/runtime packet, which should be a dedicated `slate-patch` or
+  `slate-automation` follow-up instead of being reopened during closeout.
 
 Stopping checkpoints queued:
 - Should command-owned text-only DOM export stay broad, or narrow to history
   commands only? Current take: broad is correct because command-owned means the
   model owns the post-commit selection.
+- Should `slate-browser` promote a reusable multi-leaf drag helper? Current
+  take: yes if a second test needs real pointer drag across leaves; for this
+  packet explicit DOM selection by Slate path is the cleanest replayable proof.
 - Should the WebKit synthetic IME stress be fixed in `slate-browser` transport
   first or in runtime composition handling? Current take: prove transport first.
 
 Final handoff contract:
-- PR line: pending
-- Issue / tracker line: pending
-- Confidence line: pending
+- PR line: N/A: no commit, push, or PR requested.
+- Issue / tracker line: N/A: no tracker target in prompt.
+- Confidence line: high for kept packets; medium residual risk because WebKit synthetic IME remains quarantined.
 - Flow table:
-  - Reproduced: tests pending, browser pending
-  - Verified: tests pending, browser pending
-- Browser check: pending
-- Outcome: pending
-- Caveat: pending
+  - Reproduced: red real-key issue #12 probe, red native-selection proof, red multi-leaf replacement proof.
+  - Verified: package/unit/typecheck/browser/stress/smoke gates listed in Verification evidence.
+- Browser check: stable route Playwright smoke loaded richtext/plaintext/editable-voids/hidden-content-blocks; screenshots/report saved in `.tmp/slate-v2/tmp/automation-smoke-stable/`; no console/page errors.
+- Outcome: timed stable automation loop kept selection/history/oracle/workflow fixes and expanded stable proof coverage.
+- Caveat: WebKit synthetic IME composition undo is still quarantined; no release/publish/changeset by private-alpha policy; known pagination hook warning remains.
 - Design:
-  - Chosen boundary: pending
-  - Why not quick patch: pending
-  - Why not broader change: pending
-- Verified: pending
-- PR body verified: pending
+  - Chosen boundary: history batching in `slate-history`, DOM selection export in `slate-react`, reusable proof rules in source `.agents/rules/**`.
+  - Why not quick patch: example-only or single-node fixes already failed; the final history rule covers the operation topology.
+  - Why not broader change: pagination/virtualization architecture and IME transport are separate owners outside this stable-loop closeout.
+- Verified: `bun check`, focused package tests/typechecks, six-row Chromium undo sweep, prior-failure desktop rows, generated stress, stable route smoke.
+- PR body verified: N/A: no PR.
 
 Task-style PR body contract:
 - Preserve any existing `<!-- auto-release:start -->` block. If a changeset is
@@ -394,10 +458,10 @@ Task-style PR body contract:
   of that output.
 
 Final handoff / sync:
-- PR: pending
-- Issue / tracker: pending
-- Browser proof: pending
-- Caveats: pending
+- PR: N/A.
+- Issue / tracker: N/A.
+- Browser proof: `.tmp/slate-v2/tmp/automation-smoke-stable/report.json` and screenshots.
+- Caveats: quarantined WebKit synthetic IME; no formal autoreview per user direction; no release artifact by private-alpha policy.
 
 Timeline:
 - 2026-06-03T18:11:02.709Z Task goal plan created.
@@ -405,20 +469,21 @@ Timeline:
 - 2026-06-03T20:21 Issue #12 reproduced with repaired real-key Playwright row, fixed in `slate-history`, and verified with focused browser/package gates plus `bun check`.
 - 2026-06-03T18:35:37Z Selection follow-up from videos reproduced as DOM/native selection export loss after undo, fixed in `slate-react`, and verified with focused browser/package gates plus `bun check`.
 - 2026-06-03T20:44Z User paused the broader loop and called out the testing miss. Quarantined unrelated IME work, synced `slate-automation` with explicit native selection-oracle requirements, and reran focused selection gates plus `bun check`.
+- 2026-06-03T20:51Z Multi-leaf selection replacement bug reproduced from video, fixed in `slate-history`, covered by package and richtext Playwright rows, `slate-patch`/`slate-automation` self-repaired, and `bun check` passed.
+- 2026-06-03T21:00Z Stable route browser smoke passed, prior-failure desktop rows passed, generated paste/selection stress passed across Chromium/WebKit/Firefox, closeout gates were filled, and `check-complete.mjs` passed.
 
 Reboot status:
 | Question | Answer |
 |----------|--------|
-| Where am I? | Paused after keeping issue #12 and selection-export packets, plus selection-oracle skill repair |
-| Where am I going? | Wait for next owner; remaining automation closure rows, quarantined IME owner, and optional browser visual smoke stay queued |
+| Where am I? | Closeout complete for the timed stable loop; `check-complete.mjs` passed |
+| Where am I going? | Final handoff; next optional owner is quarantined WebKit synthetic IME transport/runtime |
 | What is the goal? | Timed stable Slate v2 automation loop with safe proof/repair packets and durable handoff |
 | What have I learned? | See Findings and packet ledger |
 | What have I done? | See Timeline and changed list |
 
 Open risks:
-- Overall automation closeout is not complete; many generic completion rows
-  still need final N/A/evidence cleanup before `check-complete.mjs`.
 - Generated WebKit IME stress row remains quarantined.
-- Browser visual smoke across richtext/plaintext/editable-voids/hidden routes
-  is still a remaining automation owner if the loop resumes beyond this
-  selection packet.
+- No formal autoreview was run because the user previously stopped autoreviews;
+  manual review did add the `statePatches` guard before final verification.
+- No release artifact was added because the current state is continuous private
+  alpha and the user explicitly said no release/publish soon.

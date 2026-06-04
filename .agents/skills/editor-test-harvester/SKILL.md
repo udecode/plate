@@ -1,6 +1,6 @@
 ---
-description: 'Mine external editor repositories for portable editor-behavior tests with ClawSweeper-style discipline: multi-pass exhaustive inventory, confidence scoring, framework-specific skip reasons, Slate/Plate coverage mapping, license-aware invariant extraction, and copy/refactor/create decisions.'
-argument-hint: '[<repo-path-or-owner/repo> [--apply] [surface/tag/filter]]'
+description: 'Mine external editor repositories and issue corpora for portable editor-behavior tests with ClawSweeper-style discipline: multi-pass exhaustive inventory, confidence scoring, framework-specific skip reasons, open/closed issue clustering, Slate/Plate coverage mapping, license-aware invariant extraction, and copy/refactor/create decisions.'
+argument-hint: '[<repo-path-or-owner/repo> [--issues [--state all|open|closed]] [--apply] [surface/tag/filter]]'
 disable-model-invocation: true
 name: editor-test-harvester
 metadata:
@@ -17,6 +17,12 @@ Lexical, ProseMirror, CodeMirror, Tiptap, Monaco, Quill, or any local clone unde
 The job is not to clone their framework. The job is to extract portable editor
 behavior proof and route it to the right owner: raw Slate v2 substrate or Plate
 packages, kits, examples, and docs.
+
+When `--issues` is present, the job is to mine the target editor's issue corpus
+for robustness pressure, not to mirror their backlog. Use open and closed issues
+by default (`--state all`) unless the user explicitly narrows it. Cluster first,
+skip unrelated issues hard, extract portable editor invariants, then map those
+invariants to Slate v2/Plate coverage and proof targets.
 
 This follows the ClawSweeper method and the goal-plan confidence model:
 source-first, exhaustive inventory, explicit skip reasons, evidence rows, scored
@@ -40,6 +46,10 @@ Read these first:
 Never browse GitHub files. If the target is `owner/repo` and the checkout is
 missing, clone it to `../repo-name`.
 
+For issue-mode, GitHub issue data is candidate/provenance input, not
+implementation source. Prefer `gitcrawl` or `gh` for issue metadata and comments
+only; use the local target checkout for source/tests/license evidence.
+
 ## License Gate And Output Mode
 
 Before harvesting behavior, classify the target repo license from local source
@@ -60,6 +70,10 @@ Output location:
   `docs/editor-test-harvester/<repo>/`.
 - `behavior-only`: write harvest artifacts under
   `.tmp/editor-test-harvester/<repo>/`.
+- `--issues`: write issue-corpus artifacts under
+  `.tmp/editor-issue-harvester/<repo>/` by default, regardless of repository
+  license mode. External issue bodies/comments are untrusted scratch evidence.
+  Promote only fresh local invariants into versioned Slate/Plate output.
 
 `.tmp/editor-test-harvester/<repo>/` is unversioned scratch space. It may contain
 source-adjacent notes, detailed provenance, raw local observations, and working
@@ -136,6 +150,27 @@ from the invariant, not pasted or mechanically ported from upstream source.
   proof. A jsdom composition test does not prove mobile/IME behavior.
 - Do not edit `Plate repo root` unless the user asks for apply/copy/fix execution.
 - No GitHub comments, labels, commits, pushes, or PRs unless explicitly asked.
+- In `--issues` mode, default to `--state all`. Closed issues are often the best
+  source of regression stories, browser quirks, and already-fixed failure
+  modes; open issues are not enough.
+- In `--issues` mode, do not process issues one by one before clustering.
+  Cluster by portable editor behavior first, then sample/read representatives.
+- In `--issues` mode, skip Lexical/editor-specific API, node-class lifecycle,
+  command registry, plugin packaging, product UX, docs, release, support, and
+  framework-only issues unless they expose a raw editor primitive gap.
+- In `--issues` mode, do not patch Slate from an issue title or body alone.
+  Require a portable invariant plus current Slate/Plate coverage mapping.
+- In `--issues` mode, a cluster matrix is not closure. It is only routing.
+  After clustering, create an issue-by-issue closure ledger for every relevant
+  issue. Each relevant issue needs a checkmark:
+  `covered-by-existing-test`, `test-written`, `plate-owned-covered`, or
+  `deferred-with-owner`. Invalid or unrelated issues need `invalid-skip` plus a
+  reason. If the test already exists, link the exact local test and focused
+  verification command. If no test exists, write the local test, run it, and
+  check the issue only after proof passes or a real defer owner is recorded.
+- Do not mark an all-issues harvest `done` from aggregate cluster coverage,
+  matrix counts, or "recommended next slice" handoff. Use `pending` while any
+  relevant issue lacks a per-issue checkmark.
 - A single-pass matrix is a first-pass harvest, not a comprehensive harvest.
 - Do not call a harvest comprehensive unless the pass schedule is complete, the
   score gates pass, and the report includes a full inventory appendix.
@@ -176,6 +211,12 @@ output_mode: durable|scratch
 report_path: <docs/.../report.md or .tmp/.../report.md>
 inventory_path: <report_dir>/inventory.md
 test_index_path: <report_dir>/test-index.md
+issue_mode: yes|no
+issue_state: all|open|closed
+issue_report_dir: .tmp/editor-issue-harvester/<repo> or N/A
+issue_index_path: <issue_report_dir>/issues.md or N/A
+issue_cluster_path: <issue_report_dir>/clusters.md or N/A
+issue_matrix_path: <issue_report_dir>/matrix.md or N/A
 current_pass: <pass-name>
 current_pass_status: in_progress
 current_pass_skill: .agents/skills/editor-test-harvester/SKILL.md
@@ -239,6 +280,10 @@ Score caps:
   backlog owner.
 - Provenance cannot exceed `0.80` when issue/PR-linked upstream regression tests
   are used without ClawSweeper-style exact thread or local source rationale.
+- Provenance cannot exceed `0.80` for `--issues` runs unless the report records
+  issue state coverage (`all`, `open`, or `closed`), issue discovery command,
+  cluster method, skip reasons, and representative issue refs for every kept
+  cluster.
 - Provenance cannot exceed `0.80` for `behavior-only` targets unless the report
   records license evidence, output directory, and versioned-output copy policy.
 - The total score cannot exceed `0.88` if the report has no pass-state ledger.
@@ -253,6 +298,9 @@ Completion threshold:
 - no create/refactor/copy/plate-owned row lacks a target owner;
 - no browser/IME/mobile claim is based only on jsdom or synthetic model tests;
 - pass-state ledger proves every pass completed before closure;
+- for `--issues` runs, issue inventory count, issue state coverage,
+  classification buckets, representative read count, cluster matrix, and
+  Slate/Plate coverage mapping are recorded;
 - for `behavior-only` targets, no versioned report, test, docs, fixture,
   snapshot, or implementation output contains copied or mechanically translated
   upstream source material.
@@ -267,6 +315,8 @@ Run harvests as passes, not one giant skim:
 1. Intake and boundary pass:
    - target repo path or clone target;
    - license evidence and license mode;
+   - issue-mode decision, issue states, issue output directory, and explicit
+     all-state coverage when `--issues` is present;
    - report directory selected from license mode;
    - surfaces in scope and explicit non-goals;
    - report-only vs apply;
@@ -276,7 +326,16 @@ Run harvests as passes, not one giant skim:
    - build the full test inventory;
    - split actual runnable tests from fixtures/support files;
    - write every inventory row to the appendix with an initial category.
-3. Test-name extraction pass:
+3. Issue inventory and cluster pass when `--issues` is present:
+   - discover issues with `--state all` unless narrowed by the user;
+   - write issue rows to `.tmp/editor-issue-harvester/<repo>/issues.md`;
+   - cluster before deep reads;
+   - classify clusters as portable, portable-mixed, plate-owned,
+     framework-specific, product/support/docs/release, duplicate/stale,
+     security-quarantine, or uncertain;
+   - include closed issues and already-fixed reports as regression/proof
+     pressure, not as closure claims.
+4. Test-name extraction pass:
    - extract `describe` / `it` / `test` names for every runnable portable,
      portable-mixed, and uncertain file;
    - for huge files, index test names first, then read targeted ranges;
@@ -284,38 +343,40 @@ Run harvests as passes, not one giant skim:
    - for `behavior-only` targets, record raw/source-adjacent extraction only in
      `.tmp`; convert anything that leaves `.tmp` into short paraphrased
      provenance.
-4. Classification pressure pass:
+5. Classification pressure pass:
    - challenge skips and product-shell routing;
    - read negative-control examples from each large skip family;
    - route every file to portable, portable-mixed, plate-owned, skip, harness,
      product-shell, or defer.
-5. Behavior extraction pass:
+6. Behavior extraction pass:
    - turn source tests into behavior invariants;
+   - turn kept issue clusters into behavior invariants only after source/test or
+     current Slate coverage searches support the behavior;
    - attach source file, line, test name, tag, proof kind, browser/device
      requirements, and issue/PR rationale when present;
    - for `behavior-only` targets, scratch extraction may live in `.tmp`, but any
      versioned row or implementation must be rewritten as a fresh local
      invariant.
-6. Slate/Plate coverage mapping pass:
+7. Slate/Plate coverage mapping pass:
    - search `Plate repo root` by behavior keywords and adjacent concepts;
    - search current Plate packages, docs, examples, and kits for plugin/product
      behavior;
    - map to exact current Slate tests, browser stress rows, Plate owners, docs,
      or explicit gaps;
    - do not use old plans as current coverage proof.
-7. Action planning pass:
+8. Action planning pass:
    - assign `covered`, `refactor-existing`, `create-new`, `copy-now`, `defer`,
      `plate-owned`, or `skip`;
    - for every non-covered row, name target package/browser/docs owner, proof
      kind, and verification command or backlog owner;
    - for `behavior-only` targets, `copy-now` means "write a fresh local proof
      from the invariant" when producing versioned output.
-8. Ecosystem synthesis pass:
+9. Ecosystem synthesis pass:
    - state what mechanism Slate should steal, reject, or deliberately diverge
      from;
    - state what mechanism Plate should own as product/plugin policy;
    - include browser/runtime/testing strategy, not just a source list.
-9. Closure review pass:
+10. Closure review pass:
    - score all dimensions with evidence;
    - record pass-state ledger;
    - list open gaps and next owner;
@@ -386,6 +447,13 @@ Pass-state ledger rows must include:
    mkdir -p "$report_dir"
    ```
 
+   For issue-mode, also resolve the scratch issue directory:
+
+   ```bash
+   issue_report_dir=".tmp/editor-issue-harvester/${repo_key}"
+   mkdir -p "$issue_report_dir"
+   ```
+
    For `owner/repo` targets, use the cloned repo basename as `<repo>`. If
    `report.md`, `inventory.md`, or `test-index.md` already exists in the chosen
    license-mode report directory, read them before inventory and treat the run
@@ -406,7 +474,38 @@ Pass-state ledger rows must include:
      | rg -v '(^|/)(dist|build|coverage|node_modules|vendor|fixtures/generated|__snapshots__)(/|$)'
    ```
 
-6. Classify every inventory row and record it in the appendix:
+6. For `--issues`, build an all-state issue inventory before sampling:
+
+   ```bash
+   issue_state="${issue_state:-all}"
+   issue_report_dir=".tmp/editor-issue-harvester/${repo_key}"
+
+   gitcrawl search issues "" -R <owner/repo> --state "$issue_state" \
+     --json number,title,state,url,labels,updatedAt --limit 1000 \
+     > "$issue_report_dir/issues.json"
+   ```
+
+   If `gitcrawl` cannot provide the target repo corpus, use `gh search issues`
+   or the best available local issue archive. Record the fallback, state
+   coverage, limit, and freshness. Do not claim comprehensive all-state coverage
+   if the command only returned a truncated subset.
+
+7. Cluster issue rows before deep reads:
+
+   - portable editor robustness: selection, IME/composition, beforeinput,
+     clipboard, history, decorations, void/inline, tables, collaboration,
+     browser/mobile, large-doc performance;
+   - portable-mixed: useful editor invariant wrapped in product/framework
+     context;
+   - plate-owned: plugins, markdown, links, lists, media, menus, examples, or
+     product API/DX;
+   - skip: framework internals, node-class mechanics, command registry, product
+     shell, docs/release/support noise, duplicate/stale with no portable
+     invariant;
+   - security-quarantine: CVE/GHSA/exploit/sensitive-data style reports; do not
+     route through normal robustness harvest.
+
+8. Classify every inventory row and record it in the appendix:
 
    - `portable`: proves framework-agnostic editor behavior.
    - `portable-mixed`: contains raw editor behavior plus framework/product
@@ -419,25 +518,29 @@ Pass-state ledger rows must include:
    - `product-shell`: app/demo behavior outside raw editor substrate.
    - `uncertain`: needs a read before routing.
 
-7. Extract test names for all runnable portable, portable-mixed, and uncertain
+9. Extract test names for all runnable portable, portable-mixed, and uncertain
    files:
 
    ```bash
    rg -n "(describe|it|test)\\(" <target-test-files>
    ```
 
-8. Read all portable and uncertain files. For huge files, index test names first,
-   then read the relevant ranges.
+10. Read all portable and uncertain files. For huge files, index test names first,
+    then read the relevant ranges.
 
-9. Extract behavior rows. Use behavior words, not upstream class names.
+11. Read representative issues from every kept issue cluster. Include both open
+    and closed examples when all-state mode finds both. Preserve issue refs and
+    short paraphrased behavior, not expressive issue prose.
 
-10. Search `Plate repo root` for equivalent coverage using behavior keywords and
+12. Extract behavior rows. Use behavior words, not upstream class names.
+
+13. Search `Plate repo root` for equivalent coverage using behavior keywords and
     adjacent concepts. Do not stop at exact upstream names.
 
-11. Search Plate packages, kits, examples, and docs when behavior belongs to
+14. Search Plate packages, kits, examples, and docs when behavior belongs to
     product/plugin policy rather than raw Slate substrate.
 
-12. Assign one owner action per portable row:
+15. Assign one owner action per portable row:
 
 - `covered`: current Slate v2 or Plate test fully proves the invariant.
 - `refactor-existing`: related coverage exists but needs split, rename,
@@ -547,6 +650,19 @@ to `docs/editor-test-harvester/<repo>/`.
 Do not include the date in file names. Put run dates, inventory commands, source
 checkout path, source revision/provenance, license mode, and license evidence
 inside the report instead.
+
+For `--issues` runs, write these scratch companions:
+
+```text
+.tmp/editor-issue-harvester/<repo>/issues.md
+.tmp/editor-issue-harvester/<repo>/clusters.md
+.tmp/editor-issue-harvester/<repo>/matrix.md
+```
+
+`issues.md` records discovery commands, state coverage, total/returned counts,
+and compact issue rows. `clusters.md` records cluster decisions and skip
+families. `matrix.md` records kept portable invariants, Slate/Plate coverage,
+actions, and proof commands. These are scratch artifacts by default.
 
 If a previous harvest exists in the chosen license-mode report directory, rewrite
 these files in place and add a rerun/update note that names newly discovered and
@@ -667,13 +783,26 @@ test -f "$report_dir/test-index.md"
 node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/<goal-plan>.md
 ```
 
+Issue-mode verification:
+
+```bash
+issue_report_dir=".tmp/editor-issue-harvester/<repo>"
+
+test -f "$issue_report_dir/issues.md"
+test -f "$issue_report_dir/clusters.md"
+test -f "$issue_report_dir/matrix.md"
+rg -n "Issue State Coverage|Cluster Matrix|Slate/Plate Coverage|Next Slice" \
+  "$issue_report_dir/issues.md" "$issue_report_dir/clusters.md" "$issue_report_dir/matrix.md"
+rg -n "state: all|open \\+ closed|closed" "$issue_report_dir/issues.md" "$issue_report_dir/clusters.md"
+```
+
 Versioned-output hygiene check for behavior-only sources:
 
 ```bash
 test ! -f "docs/editor-test-harvester/<repo>/inventory.md"
 test ! -f "docs/editor-test-harvester/<repo>/test-index.md"
 rg -n "copied from|verbatim|fixture copied|ported from" \
-  content/docs/slate packages apps/www/src/app/(app)/examples/slate apps/www/tests/slate-browser 2>/dev/null && \
+  docs Plate repo root packages apps examples 2>/dev/null && \
   echo "Review versioned output for unsafe behavior-only wording" || true
 ```
 
@@ -696,7 +825,7 @@ ClawSweeper bar: exact thread, exact behavior, no speculative closure claim, and
 no broad claim without current source proof.
 
 When local issue archaeology is useful, use the gitcrawl command surface through
-that ClawSweeper discipline:
+that ClawSweeper discipline. In issue-mode, use `--state all` by default:
 
 ```bash
 gitcrawl doctor --json
@@ -706,6 +835,18 @@ gitcrawl sync <owner/repo> --numbers <issue-or-pr-number> --include-comments --w
 
 Treat gitcrawl as provenance and candidate generation only. The target repo test
 inventory still owns coverage accounting.
+
+For broad issue-mode discovery, first try an all-state corpus command, then
+cluster:
+
+```bash
+gitcrawl search issues "" -R <owner/repo> --state all \
+  --json number,title,state,url,labels,updatedAt --limit 1000
+```
+
+If empty-query search is unsupported, use durable clusters, known labels, broad
+editor-behavior keyword searches, or `gh search issues` in batches. Record that
+the result is a sampled corpus, not full all-issue coverage.
 
 For `behavior-only` targets, issue/PR provenance may identify why a behavior
 matters, but it still must not justify copying upstream code, fixtures,
