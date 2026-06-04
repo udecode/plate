@@ -15,6 +15,14 @@ Expected behavior:
 Observed miss:
 - TODO: State what actually happened.
 
+First checkpoint:
+- Before implementation or broad exploration, copy every explicit prompt
+  requirement into this plan as checkable checkpoints: scope, non-goals,
+  timing/duration, stop conditions, deliverables, final handoff sections,
+  verification surface, and success criteria.
+- Do not continue into implementation until this extraction is complete or
+  explicitly marked N/A with reason.
+
 Completion threshold:
 - TODO: Define what proves the repair is complete.
 
@@ -36,7 +44,16 @@ Boundaries:
 Blocked condition:
 - TODO: Name the missing plan path, skill owner, expected behavior, or user decision that stops autonomous repair.
 
+Start Gates:
+| Gate | Applies | Evidence |
+|------|---------|----------|
+| Prompt requirements captured before work | pending | pending |
+
 Work Checklist:
+- [ ] First checkpoint complete: every explicit prompt requirement, scope
+      boundary, timing constraint, stop condition, deliverable, final handoff
+      section, verification surface, and success criterion is copied into this
+      plan as checkable checkpoints before implementation.
 - [ ] Expected behavior and observed miss are concrete.
 - [ ] Source of truth for the missed rule is identified.
 - [ ] Root cause is recorded before repair.

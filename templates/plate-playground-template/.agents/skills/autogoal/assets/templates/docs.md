@@ -15,6 +15,14 @@ Docs source:
 - title: pending
 - acceptance criteria: pending
 
+First checkpoint:
+- Before implementation or broad exploration, copy every explicit prompt
+  requirement into this plan as checkable checkpoints: scope, non-goals,
+  timing/duration, stop conditions, deliverables, final handoff sections,
+  verification surface, and success criteria.
+- Do not continue into implementation until this extraction is complete or
+  explicitly marked N/A with reason.
+
 Completion threshold:
 - TODO: Define the exact docs done state.
 
@@ -42,12 +50,17 @@ Completion rule:
 Start Gates:
 | Gate | Applies | Evidence |
 |------|---------|----------|
+| Prompt requirements captured before work | pending | pending |
 | Active goal checked or created | pending | pending |
 | Target docs read | pending | pending |
 | Nearest sibling docs read | pending | pending |
 | Documented source code read | pending | pending |
 
 Work Checklist:
+- [ ] First checkpoint complete: every explicit prompt requirement, scope
+      boundary, timing constraint, stop condition, deliverable, final handoff
+      section, verification surface, and success criterion is copied into this
+      plan as checkable checkpoints before implementation.
 - [ ] Target docs and nearest sibling docs were read before writing.
 - [ ] Documented behavior or API was verified against current source.
 - [ ] Fastest success path appears before deeper mechanics or API reference.
