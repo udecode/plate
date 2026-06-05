@@ -176,12 +176,12 @@ export type DocxExportOperationOptions = {
   customStyles?: string;
 
   /**
-   * Font family for the document body.
-   * This overrides the default Calibri font.
+   * Font family for the document body. Sets the document default font; when
+   * omitted the document falls back to the docx default (Times New Roman).
    *
    * @example
    * ```typescript
-   * fontFamily: 'Times New Roman'
+   * fontFamily: 'Calibri'
    * ```
    */
   fontFamily?: string;
@@ -454,6 +454,7 @@ async function exportToDocxInternal(
 
   // Convert to DOCX using browser-compatible implementation
   const blob = await htmlToDocxBlob(inlinedHtml, {
+    font: fontFamily,
     margins: {
       ...DEFAULT_DOCX_MARGINS,
       ...margins,
