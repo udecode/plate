@@ -1,6 +1,6 @@
 ---
 description: Slate v2 overnight supervisor. Runs an autogoal-backed human-like loop across quality, behavior, visual proof, perf, API cleanup, benchmark/test repair, external issue/test harvests, skill repair, docs consolidation, and ship readiness without user micro-routing.
-argument-hint: <surface/objective> [full-loop | timed 1h|2h|overnight | batch-loop | issue-harvest]
+argument-hint: <surface/objective> [full-loop | timed 1h|2h|overnight | batch-loop]
 disable-model-invocation: true
 name: slate-automation
 metadata:
@@ -56,6 +56,8 @@ explicitly deferred, decisions are consolidated, and ship readiness is clean.
 - The user wants external editor issue/test corpora, such as Lexical open and
   closed issues, mined for Slate v2 robustness gaps without hand-routing every
   cluster.
+- The user invokes `issue-harvester` and expects exhaustive issue-by-issue
+  test coverage from Slate, Plate, or external editor issue history.
 
 ## Do Not Use When
 
@@ -86,6 +88,12 @@ timebox, and stop-question policy in the active plan.
   questions`, or wants to unblock everything at the end. Behaves like timed
   mode even without an explicit duration: keep working through safe alternate
   owners and stack soft stopping checkpoints for final handoff.
+- **Issue-harvester mode:** when the user says `issue-harvester`,
+  `all-issues closure ledger`, or asks to process every relevant issue for test
+  coverage. Delegate the ledger autodiscovery, latest issue refresh,
+  closed-issue PR/test provenance scan, and unchecked issue-by-issue loop to
+  `issue-harvester`. `slate-automation` owns the autogoal, timebox, packet
+  ledger, workflow repairs, and final handoff.
 
 Natural prompts should work:
 
@@ -96,6 +104,8 @@ Natural prompts should work:
 - `slate-automation editor behavior batch loop`
 - `slate-automation lexical all issues robustness harvest`
 - `slate-automation facebook/lexical --issues --state all batch-loop`
+- `slate-automation issue-harvester prosemirror`
+- `slate-automation issue-harvester facebook/lexical --state all`
 
 For timed and batch-loop modes:
 
@@ -147,16 +157,34 @@ The plan must record:
   open/closed coverage when in issue-harvest mode;
 - stop rules and blockers.
 
-Use `--template task --with browser --with package-api --with agent-native`
-when browser/package/skill surfaces are in play.
+Use the dedicated Slate automation template:
+
+```bash
+node .agents/skills/autogoal/scripts/create-goal-scratchpad.mjs \
+  --template slate-automation \
+  --title "<surface>"
+```
+
+Do not use `--template task` for ordinary Slate automation. `task` is for
+normal one-shot work and drags in PR, tracker, release, and branch gates that
+make the supervisor noisy and weak. Add packs only for unusual extra surfaces
+that the `slate-automation` template does not already cover.
 
 Do not invent a custom non-template plan shape for automation. Create the
-generated autogoal plan with the helper, fill the generated gates, mark
-non-applicable rows `N/A: <reason>`, and keep that plan as the runtime truth.
-The first checkpoint must copy every explicit user requirement into checkable
-rows before implementation: scope, non-goals, timing, stop conditions,
-deliverables, final handoff sections, verification surfaces, and success
-criteria.
+generated `slate-automation` autogoal plan with the helper, fill the generated
+gates, mark non-applicable rows `N/A: <reason>`, and keep that plan as the
+runtime truth. The first checkpoint must copy every explicit user requirement
+into checkable rows before implementation: scope, non-goals, timing, stop
+conditions, deliverables, final handoff sections, verification surfaces, and
+success criteria.
+
+The generated plan is a living supervisor ledger, not a frozen task checklist.
+At the end of every loop, reconcile the checkpoint table against current
+evidence. The supervisor has full authority to add, update, split, merge,
+retire, remove, reprioritize, or reopen checkpoints. Do not keep stale rows
+alive because they were in the initial prompt or template. Do not stay stuck on
+the original plan when a new higher-value owner is proven by code, tests,
+Browser proof, benchmark evidence, or `slate-north-star`.
 
 ## Autogoal Checkpoint Model
 
@@ -176,6 +204,12 @@ Split long work into checkpoints that fit one high-quality prompt:
   safe alternate work remains.
 - **Status checkpoint:** read current goal, plan, AR status, dirty evidence, and
   latest user request.
+- **Checkpoint-supervision checkpoint:** before choosing the next owner, update
+  the active plan's checkpoint table from current evidence. Add missing
+  checkpoints, update stale owners/proof commands, split broad rows, merge
+  duplicates, retire or remove irrelevant rows, reprioritize the next owner, and
+  reopen any row whose proof was invalidated. Record the mutation before more
+  implementation.
 - **Proof checkpoint:** run one behavior/visual/package/browser gate family and
   record pass/fail signatures.
 - **Patch checkpoint:** fix one correctness class or one missing oracle.
@@ -185,12 +219,15 @@ Split long work into checkpoints that fit one high-quality prompt:
 - **Skill-repair checkpoint:** patch the owning skill/rule when the workflow
   missed a recurring expectation.
 - **External issue-harvest checkpoint:** for prompts that name another editor's
-  issues, route through `editor-test-harvester --issues --state all` under
-  ClawSweeper provenance discipline. Cluster open and closed issues first,
-  skip framework/product/support noise, extract portable editor invariants,
-  map coverage to `.tmp/slate-v2` and Plate owners, then create the
-  issue-by-issue closure ledger. The cluster/matrix is only a routing
-  checkpoint. For every relevant issue, mark one of:
+  issues, route first-pass inventory and clustering through
+  `editor-test-harvester --issues --state all` under ClawSweeper provenance
+  discipline. For `issue-harvester` or all-issues closure prompts, delegate
+  ledger detection/resume, latest issue refresh, closed-issue PR/test
+  provenance, and the unchecked row loop to `issue-harvester`. Cluster open and
+  closed issues first, skip framework/product/support noise, extract portable
+  editor invariants, map coverage to `.tmp/slate-v2` and Plate owners, then
+  create or refresh the issue-by-issue closure ledger. The cluster/matrix is
+  only a routing checkpoint. For every relevant issue, mark one of:
   `covered-by-existing-test`, `test-written`, `plate-owned-covered`,
   `deferred-with-owner`, or `invalid-skip`. A harvest is not done while any
   relevant issue lacks a checkmark. After the ledger names owner/proof/command,
@@ -218,6 +255,8 @@ Split long work into checkpoints that fit one high-quality prompt:
 Each checkpoint must end with:
 
 - plan state updated;
+- checkpoint mutation recorded: add, update, split, merge, retire, remove,
+  reprioritize, reopen, or no-change with reason;
 - evidence recorded with cwd/tool;
 - packet ledger row for any code, test, benchmark, docs, or skill packet;
 - workflow-slowdown row when a checkpoint, command, or specialist step is
@@ -259,27 +298,37 @@ the timebox expires, a risky packet cannot be closed safely, or no safe owner
 remains.
 
 For external editor issue-harvest prompts, replace the stable-example ladder
-with the issue-harvest ladder:
+with the issue-harvest ladder. If the prompt is `issue-harvester`, invoke
+`issue-harvester` as the primary owner and use this ladder as its supervisor
+checklist:
 
 1. resolve the target repo locally, cloning to `../<repo>` only if missing;
 2. run the license/output gate from `editor-test-harvester`;
-3. inventory issues across `open` and `closed` by default, using `state=all`
+3. detect an existing closure ledger under
+   `docs/editor-issue-harvester/<repo>/full/`; if it exists, refresh it to
+   latest issue inventory and resume only unchecked rows. If only a legacy
+   `.tmp/editor-issue-harvester/<repo>/full/` ledger exists, import or
+   regenerate its compact state into the docs path first, then continue from
+   docs;
+4. inventory issues across `open` and `closed` by default, using `state=all`
    unless the user explicitly narrows the state;
-4. cluster issues before reading them one by one;
-5. skip Lexical/editor-specific API, node-class, command-system, product, docs,
+5. cluster issues before reading them one by one;
+6. skip Lexical/editor-specific API, node-class, command-system, product, docs,
    support, release, and framework-only issues with explicit reasons;
-6. keep only portable editor robustness clusters: selection, IME, beforeinput,
+7. keep only portable editor robustness clusters: selection, IME, beforeinput,
    clipboard, history, decorations, void/inline, tables, collaboration,
    browser/mobile, and large-document performance;
-7. search target tests/source/PRs for kept clusters;
-8. map each invariant to current `.tmp/slate-v2` and Plate coverage;
-9. create an issue-by-issue closure ledger for every relevant issue, with one
-   row per issue and a checkmark state: `covered-by-existing-test`,
-   `test-written`, `plate-owned-covered`, `deferred-with-owner`, or
-   `invalid-skip`;
-10. patch or create local tests only after the issue row names owner, proof
+8. for every relevant closed issue, scan linked PRs and test diffs before
+   deciding local coverage;
+9. search target tests/source/PRs for kept clusters;
+10. map each invariant to current `.tmp/slate-v2` and Plate coverage;
+11. create or refresh an issue-by-issue closure ledger for every relevant issue,
+   with one row per issue and a checkmark state:
+   `covered-by-existing-test`, `test-written`, `plate-owned-covered`,
+   `deferred-with-owner`, or `invalid-skip`;
+12. patch or create local tests only after the issue row names owner, proof
    kind, and verification command;
-11. keep looping over relevant unchecked issues one by one. A cluster-level
+13. keep looping over relevant unchecked issues one by one. A cluster-level
    matrix is a checkpoint, not a stop condition. If a matching test exists,
    link the exact file/line/test name and rerun the focused command. If it does
    not, write the test in the owner surface, verify it, then check off that
@@ -287,8 +336,10 @@ with the issue-harvest ladder:
    If the user scopes the harvest to Slate v2 only, do not write Plate tests;
    mark Plate-owned rows `deferred-with-owner` with the concrete Plate owner
    and continue to the next Slate-v2-owned row.
-12. record all external issue artifacts in scratch by default and promote only
-    fresh local invariants into versioned Slate/Plate outputs.
+14. record compact external issue ledgers, matrices, owner decisions, proof
+    commands, and checkmarks under `docs/editor-issue-harvester/<repo>/`;
+    keep raw issue bodies/comments and hydrated JSON only under
+    `.tmp/editor-issue-harvester/<repo>/raw/`.
 
 Do not broaden into experimental architecture when the user scoped it out.
 Route that as a stopping checkpoint or `slate-plan` next owner in the final
@@ -398,10 +449,19 @@ Rules:
 
 - run commands from `.tmp/slate-v2` unless the command explicitly belongs to
   the parent repo;
+- for Bun workspace package commands, prefer path filters such as
+  `bun --filter ./packages/slate-history typecheck`. Package-name filters can
+  miss in this workspace and waste the loop;
 - use `bun playwright ...` for Playwright specs; do not send Playwright specs
   through `bun test`;
 - use `bun test ./path` only with repo-relative Bun test paths from
   `.tmp/slate-v2`, or with package-local paths after recording the package cwd;
+- for package Vitest contracts, target the actual `*.test.*` entrypoint. Some
+  contract bodies live in imported siblings such as `surface-contract.tsx`;
+  running the sibling path directly fails the Vitest include filter and proves
+  only a command-shape miss. Before running Vitest against any target path that
+  does not already match `*.test.*`, locate the wrapper with
+  `rg -n "<imported-file-basename>" <package>/test --glob "*.test.*"`;
 - do not run `generic-*-contract.ts` or other type-contract files with
   top-level compile examples through `bun test`; they may contain deliberate
   runtime-invalid `@ts-expect-error` calls. Use the owning package `typecheck`
@@ -409,11 +469,18 @@ Rules:
 - do not broad-scan every example/package test name into chat with
   `rg "test\\(" ...` when the lane is already scoped; use a curated file list,
   targeted `rg` filters, or write discovery output to an artifact;
+- do not broad-search `docs/editor-issue-harvester/**` or raw issue JSON just
+  to learn ledger status. Parse `issue-closure-ledger.md` / `.tsv` directly
+  for `status`, `unchecked relevant`, total rows, and next unchecked issue;
 - when Playwright imports a package through public exports such as
   `slate-browser/playwright`, verify whether the export resolves built `dist`;
   after source changes to those packages, run the focused package build (for
   example `bun --filter slate-browser build`) before claiming the rerun tested
   the patch;
+- use `*_SKIP_BUILD=1` benchmark env vars only after a successful fresh build
+  from the current runtime source. If runtime, example, package export, or
+  benchmark-injected browser-handle code changed since the last build, rerun
+  the benchmark without `SKIP_BUILD` once before trusting any pass;
 - do not casually swap in `bun run playwright -- ...`, raw `playwright`, or a
   custom wrapper unless the package script and argument forwarding are verified
   in the plan;
@@ -793,10 +860,12 @@ The supervisor repairs whatever layer is missing:
   reusable.
 - **Repeated browser proof pattern:** promote it into the `slate-browser` API,
   helper commands, or proof contract so future agents can run it directly.
-- **External issue/test corpus gap:** route to `editor-test-harvester --issues`
-  with ClawSweeper provenance. Do not patch Slate from external issue titles
-  alone; require a portable invariant, current Slate coverage mapping, and a
-  local proof target.
+- **External issue/test corpus gap:** route first-pass corpus discovery to
+  `editor-test-harvester --issues` with ClawSweeper provenance. Route
+  exhaustive all-issues coverage, existing ledger refresh, closed-issue PR/test
+  provenance, and unchecked row processing to `issue-harvester`. Do not patch
+  Slate from external issue titles alone; require a portable invariant, current
+  Slate/Plate coverage mapping, and a local proof target.
 - **Workflow slowdown:** log slow commands/checkpoints, classify the owner, and
   repair avoidable slow paths in the owning skill, script, proof gate, or
   benchmark command.
@@ -829,8 +898,10 @@ Use the smallest durable target:
 - `docs/slate-v2/**` for accepted Slate v2 architecture, proof, issue, and
   reviewer-facing decisions;
 - `docs/research/**` only for research/evidence layers;
-- `.tmp/editor-issue-harvester/**` for unversioned external issue-corpus
-  scratch, especially open/closed GitHub issue bodies and cluster notes;
+- `docs/editor-issue-harvester/**` for durable external issue closure ledgers,
+  compact matrices, owner decisions, proof commands, and checkmarks;
+- `.tmp/editor-issue-harvester/**/raw/**` for unversioned external issue-corpus
+  scratch, especially open/closed GitHub issue bodies and hydrated JSON;
 - `.agents/rules/**` only for reusable agent workflow policy.
 
 Do not write public changelog prose. Write latest-state decisions, proof
