@@ -57,17 +57,17 @@
       "family": "react-large-document",
       "kind": "benchmark-suite",
       "cwd": ".tmp/slate-v2",
-      "command": "HUGE_DOC_FULL_LEGACY_REPO=../../../slate HUGE_DOC_FULL_BLOCKS=5000 HUGE_DOC_FULL_ITERATIONS=5 HUGE_DOC_FULL_TRACE_ITERATIONS=5 HUGE_DOC_FULL_TYPE_OPS=10 bun run bench:react:huge-document:full:local",
+      "command": "HUGE_DOC_FULL_STRICT_BUDGET=1 HUGE_DOC_FULL_LEGACY_REPO=../../../slate HUGE_DOC_FULL_BLOCKS=5000 HUGE_DOC_FULL_ITERATIONS=5 HUGE_DOC_FULL_TRACE_ITERATIONS=5 HUGE_DOC_FULL_TYPE_OPS=10 bun run bench:react:huge-document:full:local",
       "metrics": {
         "primary": "react_huge_doc_full_max_budget_ratio",
         "direction": "lower",
         "unit": "ratio",
         "printsMetric": true,
-        "upgrade": "Primary metric is the worst normalized budget ratio across core huge-doc ops, React legacy compare, browser type-to-paint, long-task, and overlay locality lanes. Supporting METRIC lines expose the raw p95 values."
+        "upgrade": "Primary metric is the worst normalized budget ratio across core huge-doc ops, React legacy compare, browser type-to-paint, click latency, cold and materialized selection, model-backed typing, DOM budget, long-task, listener, selector, and overlay locality lanes. Strict budget mode must be enabled so over-budget rows fail instead of only printing metrics."
       },
       "correctness": {
         "command": "bun check",
-        "policy": "Promotion requires the aggregate suite metric, zero react_huge_doc_full_failure_count, and the fast Slate v2 check suite."
+        "policy": "Promotion requires the aggregate suite metric at or below budget, zero react_huge_doc_full_budget_failure_count, zero react_huge_doc_full_failure_count, and the fast Slate v2 check suite."
       },
       "artifacts": [
         {
@@ -309,15 +309,15 @@
       "cwd": ".tmp/slate-v2",
       "command": "bun run bench:react:huge-document:browser-trace:local",
       "metrics": {
-        "primary": "browser_trace_seconds",
+        "primary": "react_huge_doc_type_to_paint_p95_ms",
         "direction": "lower",
-        "unit": "s",
-        "printsMetric": false,
-        "upgrade": "Prefer benchmark-native METRIC lines when this target is touched."
+        "unit": "ms",
+        "printsMetric": true,
+        "upgrade": "Primary metric is browser p95 type-to-paint for the default auto and staged DOM-present surfaces. Supporting METRIC lines cover click-to-paint, click-to-selection-ready, cold select-to-paint, materialized select-to-paint, model-backed typing, DOM nodes, heap, long tasks, listener counts, and selector counts."
       },
       "correctness": {
         "command": "bun check",
-        "policy": "Use the target-specific correctness command when one exists; bun check is the fallback before promotion."
+        "policy": "Use this trace for diagnosis only. Promotion is owned by react-huge-document-full strict budget mode or a target-specific correctness command."
       },
       "artifacts": [
         {
@@ -351,7 +351,7 @@
         "direction": "lower",
         "unit": "ms",
         "printsMetric": true,
-        "upgrade": "Primary metric is browser p95 type-to-paint for the virtualized surface; DOM, heap, and long-task metrics remain supporting guardrails."
+        "upgrade": "Primary metric is browser p95 type-to-paint for the virtualized surface; click latency, cold select-to-paint, materialized select-to-paint, model-backed typing, DOM, heap, listener, selector, and long-task metrics remain supporting guardrails."
       },
       "correctness": {
         "command": "PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright test playwright/integration/examples/huge-document.test.ts --project=chromium -g \"exposes virtualized DOM strategy controls and metrics|keeps virtualized backward scroll stable over dynamic block heights\"",

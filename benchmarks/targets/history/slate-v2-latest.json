@@ -8,14 +8,14 @@
     "docs": "Docs and research files are linked evidence, not benchmark control state."
   },
   "counts": {
-    "targets": 27,
-    "artifacts": 27,
-    "existingArtifacts": 25,
+    "targets": 28,
+    "artifacts": 28,
+    "existingArtifacts": 26,
     "missingOptionalArtifacts": 2,
     "missingRequiredArtifacts": 0,
-    "requiredArtifacts": 25,
+    "requiredArtifacts": 26,
     "statusCounts": {
-      "ok": 25,
+      "ok": 26,
       "missing-optional-artifact": 2
     }
   },
@@ -514,9 +514,9 @@
       "question": "What DOM count, heap, long-frame, and interaction traces does Slate v2 produce in Chromium?",
       "command": "bun run bench:react:huge-document:browser-trace:local",
       "cwd": ".tmp/slate-v2",
-      "metric": "browser_trace_seconds",
+      "metric": "react_huge_doc_type_to_paint_p95_ms",
       "direction": "lower",
-      "printsMetric": false,
+      "printsMetric": true,
       "correctnessCommand": "bun check",
       "artifacts": [
         {
@@ -539,7 +539,7 @@
       "kind": "benchmark-suite",
       "owner": "slate-v2",
       "question": "Does Slate v2 stay fast and local across the full huge-document benchmark suite?",
-      "command": "HUGE_DOC_FULL_LEGACY_REPO=../../../slate HUGE_DOC_FULL_BLOCKS=5000 HUGE_DOC_FULL_ITERATIONS=5 HUGE_DOC_FULL_TRACE_ITERATIONS=5 HUGE_DOC_FULL_TYPE_OPS=10 bun run bench:react:huge-document:full:local",
+      "command": "HUGE_DOC_FULL_STRICT_BUDGET=1 HUGE_DOC_FULL_LEGACY_REPO=../../../slate HUGE_DOC_FULL_BLOCKS=5000 HUGE_DOC_FULL_ITERATIONS=5 HUGE_DOC_FULL_TRACE_ITERATIONS=5 HUGE_DOC_FULL_TYPE_OPS=10 bun run bench:react:huge-document:full:local",
       "cwd": ".tmp/slate-v2",
       "metric": "react_huge_doc_full_max_budget_ratio",
       "direction": "lower",
@@ -673,6 +673,28 @@
       "artifacts": [
         {
           "path": ".tmp/slate-v2/tmp/slate-pagination-virtualized-char-burst-benchmark.json",
+          "required": true,
+          "exists": true
+        }
+      ],
+      "status": "ok",
+      "migration": null
+    },
+    {
+      "id": "react-pagination-virtualized-real-editor-ops",
+      "family": "react-pagination",
+      "kind": "browser-trace",
+      "owner": "slate-v2",
+      "question": "Does virtualized pagination keep real editor interactions fast while preserving native selection, editing, undo/redo, and bounded page DOM?",
+      "command": "SLATE_PAGINATION_REAL_OPS_PROFILER=0 SLATE_PAGINATION_REAL_OPS_COHORTS=current,rows800 SLATE_PAGINATION_REAL_OPS_ITERATIONS=5 bun run bench:react:pagination-virtualized-real-editor-ops:local",
+      "cwd": ".tmp/slate-v2",
+      "metric": "pagination_virtualized_real_ops_worst_p95_ms",
+      "direction": "lower",
+      "printsMetric": true,
+      "correctnessCommand": "PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright test playwright/integration/examples/pagination.test.ts --project=chromium -g \"moves the cursor between the first two virtualized pagination blocks on click|keeps virtualized pagination text aligned when a paragraph becomes selected|selects virtualized pagination text when dragging from the page line margin|places virtualized pagination selection at line start from the page margin|places virtualized pagination selection at wrapped line ends|selects projected pagination words on native double click\"",
+      "artifacts": [
+        {
+          "path": ".tmp/slate-v2/tmp/slate-pagination-virtualized-real-editor-ops-benchmark.json",
           "required": true,
           "exists": true
         }
