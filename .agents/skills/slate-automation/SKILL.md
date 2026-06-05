@@ -83,7 +83,9 @@ timebox, and stop-question policy in the active plan.
   requested budget, then finish, revert, or quarantine the active packet even
   if that exceeds the wall-clock time. Queue soft stopping checkpoints for
   final handoff instead of interrupting the run, then ask the batch of unblock
-  questions at the end.
+  questions at the end. A duration is real work time. `1h` means spend about
+  one hour starting useful packets unless no safe owner remains; it does not
+  mean stop after a proof-only packet because the next lane looks risky.
 - **Batch-loop mode:** when the user says `batch`, `many loops`, `stack
   questions`, or wants to unblock everything at the end. Behaves like timed
   mode even without an explicit duration: keep working through safe alternate
@@ -113,6 +115,20 @@ For timed and batch-loop modes:
 - do not start a risky patch after the timebox has already expired unless it is
   needed to close or quarantine the current packet;
 - do not hand off early just because the first packet closed;
+- do not turn `Needs your attention`, `deferred-with-owner`, or "route to
+  slate-plan/slate-ar-perf" into a pause while the timebox is still open and a
+  reversible experiment, research packet, benchmark packet, or architecture
+  spike can be run safely;
+- if a lane is risky but important, use the supervisor's freedom: start a
+  controlled scratchpad experiment, preferably through `slate-ar`,
+  `slate-ar-perf`, `slate-ar-quality`, or `slate-plan` as the owner demands,
+  record the hypothesis and proof gate before changing code, then keep, revert,
+  or quarantine the packet from evidence;
+- risky architecture/perf packets must be reversible. If code changes are made,
+  do not leave dirty speculative work behind at handoff: either keep with
+  behavior/visual/package proof, revert, or quarantine as an explicit scratch
+  artifact outside the runtime path with a plan row explaining why it is not
+  active code;
 - if more than roughly 15 minutes or 25% of the requested timebox remains,
   immediately pick the next safe owner from the remaining-backlog ladder below;
 - when the timebox expires mid-packet, continue only far enough to verify,
@@ -296,6 +312,23 @@ For pagination/virtualization-specific prompts, replace the stable-example
 ladder with the route's scenario matrix, but keep the same rule: continue until
 the timebox expires, a risky packet cannot be closed safely, or no safe owner
 remains.
+
+For risky performance or architecture lanes inside a timed run:
+
+1. do not stop at "needs attention" if the issue is measurable and reversible;
+2. run a creative but bounded experiment packet: alternate strategy, owner
+   split, benchmark-instrumentation repair, scratch runtime variant, proof
+   harness, or quality-gap research;
+3. use `slate-ar` for measured loop state when the work needs packet history,
+   ASI logging, dashboard/status, or quality-gap research;
+4. use `slate-ar-perf` for target-backed performance experiments and
+   `slate-plan` only when an API/runtime decision must be made explicit before
+   implementation;
+5. compare baseline/latest/best and record why the packet is `keep`, `revert`,
+   or `quarantine`;
+6. if the timebox expires during the lane, fully close the active packet even
+   when that exceeds the nominal duration. No dirty half-experiment is a valid
+   timed-mode handoff.
 
 For external editor issue-harvest prompts, replace the stable-example ladder
 with the issue-harvest ladder. If the prompt is `issue-harvester`, invoke
