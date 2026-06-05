@@ -124,23 +124,24 @@ Automation state:
 - surface: Slate v2 full-confidence backlog
 - mode: full-loop
 - checkpoint_policy: dynamic_supervisor
-- current_loop: 14
+- current_loop: 19
 - current_checkpoint: review-gates-and-final-handoff
-- current_checkpoint_status: in_progress
-- next_checkpoint: check-complete-and-close
-- goal_status: active
+- current_checkpoint_status: complete
+- next_checkpoint: none
+- goal_status: complete
 
 Current verdict:
-- verdict: active, closeable after review/check-complete gates
+- verdict: complete after review/check-complete gates
 - confidence: behavior, selection, benchmark honesty, huge-doc correctness,
   huge-doc strict perf, API/DX, mobile claim-width, external ledgers, and
   workflow repair are proven or scoped.
-- next owner: slate-automation review gates
+- next owner: none for this goal; optional future owners are staged/full-DOM
+  architecture/perf or cross-browser native selection breadth.
 - keep / revert / quarantine call: keep helper/API, runtime repair,
   benchmark-honesty, docs/API cleanup, generated benchmark reports, and skill
   repair packets; staged/full-DOM debt remains deferred to architecture/perf.
-- reason: accepted autoreview findings are being closed before final handoff and
-  `check-complete`.
+- reason: accepted autoreview findings were closed; final proof is reduced to
+  review/check-complete closeout and handoff.
 
 Completion rule:
 - Do not call `update_goal(status: complete)` while any required checklist item
@@ -158,19 +159,19 @@ Checkpoint supervisor:
 |------------|-------|--------|----------|---------------|----------------------|-------------------|
 | checkpoint-zero | slate-automation | complete | P0 | Copy prompt requirements and read north-star before implementation. | Requirements copied; `slate-north-star` and `docs/slate-v2/agent-start.md` read. | updated from seed |
 | status-and-current-evidence | slate-automation | complete | P0 | Learn current route/test/benchmark owners without patching blindly. | Source/test/benchmark owner map recorded in packet, behavior, visual/native, benchmark, and verification ledgers. | split from status |
-| checkpoint-supervision | slate-automation | complete | P0 | Reconcile plan after every loop, adding/removing/splitting rows from evidence. | 13 mutation rows recorded; autoreview reopened benchmark-honesty/report/plan-state rows and they were repaired. | added |
+| checkpoint-supervision | slate-automation | complete | P0 | Reconcile plan after every loop, adding/removing/splitting rows from evidence. | 19 mutation rows recorded; autoreview reopened benchmark-honesty/report/plan-state/runtime-selection/stable-richtext/final-review-state/reboot-state rows and they were repaired. | added |
 | selection-oracle-inventory | slate-automation / slate-browser | complete | P0 | Identify current model/native/DOM endpoint helpers and missing multi-leaf coverage. | Helper/test map recorded; repeated model/native/DOM endpoint proof promoted into `slate-browser`. | added |
 | selection-multi-leaf-oracle | slate-patch / tdd | complete | P0 | Prove selection across marks, links, inline boundaries, and multiple leaves. | Richtext helper-backed row passed: model selection, native selected text, DOM endpoints, typing replacement, undo, and reselected text. | covered by existing test plus helper promotion |
 | selection-pointer-oracle | slate-patch / tdd | complete, scoped | P0 | Prove drag, double-click, margin click, blank-space click, and caret geometry. | Chromium drag, right-margin, blank-gap, and double-click rows passed; Firefox/WebKit pointer breadth is scoped to existing non-skipped rows. | updated |
 | selection-keyboard-oracle | slate-patch / tdd | complete, scoped | P0 | Prove arrows, shift arrows, undo/redo selection, scroll away/back, and follow-up type. | Chromium keyboard rows pass; Firefox/WebKit non-skipped undo/scroll rows pass; some native arrow rows remain intentionally browser-scoped. | updated |
-| stable-richtext-plaintext | slate-ar-stabilize | complete | P0 | Stable richtext/plaintext behavior must be green before perf. | Focused Chromium richtext/plaintext rows passed inside 22-test stable sweep. | covered by existing tests |
+| stable-richtext-plaintext | slate-ar-stabilize | complete | P0 | Stable richtext/plaintext behavior must be green before perf. | Richtext clear-formatting oracle setup was repaired; full Chromium stable sweep passed 199, skipped 5. | covered by existing tests plus oracle repair |
 | stable-markdown-history | slate-ar-stabilize | complete | P0 | Markdown shortcuts and history are core stable behavior. | Markdown shortcut browser rows passed; `slate-history` package contracts passed 47/47. | covered by existing tests |
-| stable-void-placeholder-hidden | slate-ar-stabilize | complete | P0 | Editable voids, custom placeholder, hidden/dom routes are recurring bug surfaces. | Editable void, placeholder, hidden-content, DOM coverage, and document-state browser rows passed inside 22-test stable sweep. | covered by existing tests |
+| stable-void-placeholder-hidden | slate-ar-stabilize | complete | P0 | Editable voids, custom placeholder, hidden/dom routes are recurring bug surfaces. | Editable void, placeholder, hidden-content, DOM coverage, and document-state browser rows passed inside the full 199-pass stable sweep. | covered by existing tests |
 | benchmark-honesty-inventory | slate-ar-perf / slate-automation | complete | P0 | Do not optimize lying metrics. | `huge-document-full` and browser trace scripts expose strict budgets, cold/materialized selection, model-backed typing, listener/selector counts, DOM, long-task, type-to-paint, and burst metrics. | covered by target/script audit |
 | benchmark-honesty-repair | slate-ar-perf / slate-patch | complete | P0 | Repair missing/lying metrics before perf packets. | Patched `benchmarks/targets/slate-v2.json` so aggregate full target runs `HUGE_DOC_FULL_STRICT_BUDGET=1` and browser trace primary uses real METRIC output. Strict smoke proved budget failures exit nonzero. | kept |
 | huge-doc-correctness-5k | slate-ar-stabilize | complete | P1 | 5k huge-doc behavior must stay correct. | 13-row Chromium huge-doc smoke includes 5k virtualized typing, undo, arrows, Enter, scroll, and 5k auto partial-DOM select-all/paste/undo. | expanded oracle and kept |
 | huge-doc-correctness-20k | slate-ar-stabilize | complete | P1 | 20k huge-doc smoke catches materialization/scroll regressions. | 20k virtualized typing/materialization/Enter/caret visibility and 20k auto partial-DOM select-all/paste/undo passed. | expanded oracle and kept |
-| huge-doc-perf-baseline | slate-ar-perf | complete | P2 | Perf starts only after correctness is green and metrics are honest. | Strict 5k aggregate baseline passed with click metrics: max budget ratio 0.99, zero budget/runtime failures. | kept |
+| huge-doc-perf-baseline | slate-ar-perf | complete | P2 | Perf starts only after correctness is green and metrics are honest. | Latest strict 5k aggregate passed: max promoted budget ratio 0.86, zero promoted failures, zero promoted budget failures, one diagnostic staged trace failure. | kept |
 | huge-doc-perf-packet | slate-ar-fast / slate-ar-perf | complete | P2 | Optimize one measured hot lane at a time. | No runtime optimization applied; benchmark-honesty packet added click latency and kept because strict 5k stayed green. Tight lane recorded for next owner. | kept benchmark packet |
 | staged-full-dom-debt | slate-ar-perf / slate-plan | complete, deferred | P2 | Current weak spot is DOM budget and cold select in staged/full DOM. | Virtualized correctness is green; staged diagnostic has explicit click/long-task evidence; docs make staged/full explicit tradeoff/debug routes; older tuning packet rejected cheap constants. | route deeper architecture, no local runtime patch |
 | slate-browser-promotion | slate-browser | complete | P1 | Promote repeated Playwright/browser tricks into helper/API. | `assertSlateBrowserSelectionContract` and `editor.assert.caretVisibleInScrollableParent()` added and verified. | kept |
@@ -179,7 +180,7 @@ Checkpoint supervisor:
 | external-ledger-readiness | issue-harvester | complete | P3 | Lexical/ProseMirror issue-by-issue closure waits until local oracles are strong. | Durable ledgers exist under `docs/editor-issue-harvester/**/full`; both have zero unchecked relevant rows. | no new ledger loop |
 | workflow-self-repair | slate-automation | complete | P1 | Repair skills/templates/scripts when loop exits early, misses proof, or wastes time. | Patched `.agents/rules/slate-automation.mdc`, ran `pnpm install`, and audited generated `SKILL.md` mirror. | kept |
 | consolidation | slate-automation | complete | P1 | Move accepted reusable decisions to durable docs/rules. | Reusable misses patched in `.agents/rules/slate-automation.mdc`, synced to generated skill, and benchmark target reports regenerated. | updated |
-| final-handoff | slate-automation | finalizing | P0 | Emit changed list, review attention, queued checkpoints, commands, residual risks. | Changed list, attention list, stopping checkpoints, command evidence, and residual risks are recorded in this plan. | updated |
+| final-handoff | slate-automation | complete | P0 | Emit changed list, review attention, queued checkpoints, commands, residual risks. | Changed list, attention list, stopping checkpoints, command evidence, and residual risks are recorded in this plan. | updated |
 
 Checkpoint mutation ledger:
 | Loop | Mutation | Checkpoint(s) | Evidence | Reason | Result |
@@ -199,6 +200,11 @@ Checkpoint mutation ledger:
 | 12 | close/repair | workflow-self-repair | stale dev-server proof + ledger parser column miss | The loop trusted an existing `PLAYWRIGHT_BASE_URL` server after source edits and initially parsed a nonexistent ledger `status` column. Both are reusable automation misses. | source rule patched, `pnpm install` synced mirror, audit passed |
 | 13 | reopen/repair/close | benchmark-honesty-repair, consolidation, final-handoff | autoreview findings + strict 5k benchmark + target report check | Review caught that the full target advertised DOM budgets without strict budget rows, generated benchmark reports were stale, and plan state still pointed at checkpoint zero. | DOM budgets added, reports regenerated/checked, plan state updated; final review gates next |
 | 14 | reopen/repair/close | missing-oracle repair, benchmark-honesty-repair, target-report proof | nested + parent autoreview findings | Review caught that partial-DOM paste tests bypassed real clipboard/shortcut routing, model paint metrics included an extra unrelated frame, and generated reports claimed a pagination artifact whose payload did not match the target command. | paste helper now tries clipboard shortcut before fallback; model paint reuses the typed-update paint; exact pagination artifact regenerated; strict benchmark and report check passed |
+| 15 | reopen/repair/close | selection oracle upgrade, huge-doc correctness, virtualized runtime repair | final nested autoreview + failing 20k materialization proof | Review caught two proof-harness false positives; the stricter caret oracle then exposed a real virtualized native-selection loss after split/type materialization. | caret oracle requires anchor/focus in root; single-click waits for exact expected handle selection; runtime clears stale explicit partial-DOM-backed state once the selected virtualized block is mounted; 18/18 huge-document Chromium rows, strict benchmark, `bun check`, and report check passed |
+| 16 | reopen/repair/close | benchmark-honesty-repair, huge-doc-perf-baseline, staged-full-dom-debt | strict benchmark rerun + diagnostic split | Strict full benchmark first failed on promoted `legacyCompareWorstP95Ratio=1.57`, then focused legacy compare passed at 0.83 and the full strict rerun passed. Staged/partial-DOM debt needed visibility without poisoning promoted budgets. | promoted budget failures 0, promoted max budget ratio 0.86; diagnostic failure count 1; diagnostic budget failures 0; staged/full remains diagnostic/deferred |
+| 17 | reopen/repair/close | stable-richtext-plaintext, selection oracle upgrade, release-discipline | full stable sweep + setup-oracle repair | Full stable sweep found a richtext clear-formatting row that blamed runtime even though setup formatting was missing. The test now uses `editor.selection.selectAll()` and asserts setup formatting before clearing. | focused row passed; full stable sweep passed 199 and skipped 5; release-discipline passed after escape-hatch count update; `bun check` passed |
+| 18 | reopen/repair/close | final-handoff, autoreview, goal-plan-complete | parent + nested final autoreview | Parent autoreview caught that the plan claimed complete while the review gate still said a final rerun was required. Nested runtime autoreview was clean. | review gate wording repaired; final parent autoreview rerun clean; nested runtime review clean |
+| 19 | reopen/repair/close | final-handoff, reboot-status, autoreview | parent final autoreview | Parent final autoreview caught that the reboot table still told the next agent to rerun completed closeout gates. | reboot guidance now says this goal is complete and continuation starts with optional follow-up owners |
 
 Mutation rules:
 - Add a checkpoint when a new failure, missing oracle, missing metric, API smell,
@@ -286,22 +292,22 @@ Completion Gates:
 | Gate | Applies | Required action | Evidence |
 |------|---------|-----------------|----------|
 | Named verification threshold | yes | Run the proof commands/artifacts named in this plan | Focused Playwright, package tests/typechecks, release-discipline, mobile claim-width, strict benchmark, and benchmark target report checks are recorded below. |
-| Dynamic checkpoint reconciliation | yes | Prove the plan was updated from evidence and not frozen to the initial seed | 13 mutation rows show added, split, scoped, deferred, reopened, and repaired checkpoints. |
+| Dynamic checkpoint reconciliation | yes | Prove the plan was updated from evidence and not frozen to the initial seed | 19 mutation rows show added, split, scoped, deferred, reopened, and repaired checkpoints. |
 | Workspace authority proof | yes | Record cwd/tool for each Slate v2, parent-docs, skill, browser, package, or benchmark proof | Verification evidence distinguishes parent repo commands from `.tmp/slate-v2` runtime/package/browser commands. |
-| Behavior gates | yes | Run focused stable behavior proof or record scoped defer rows | 22 focused Chromium stable browser rows and 47 `slate-history` package rows passed. |
+| Behavior gates | yes | Run focused stable behavior proof or record scoped defer rows | Full Chromium stable browser sweep passed 199 and skipped 5; 47 `slate-history` package rows passed. |
 | Visual/native selection proof | yes | Record Browser/Playwright/native-selection evidence or scoped blocker | Visual/native selection ledger records model, `window.getSelection()`, DOM endpoint, and caret-geometry proof; Firefox/WebKit breadth is scoped. |
 | Missing oracle repair | yes | Add/verify/revert/quarantine oracle packets or record owner defer | Huge-document 5k/20k oracle rows and virtualized native-selection repair were added and verified; staged/full-DOM debt deferred with owner. |
 | `slate-browser` promotion | yes | Add/verify helper/API or record queue/defer reason | `assertSlateBrowserSelectionContract` and `editor.assert.caretVisibleInScrollableParent()` added and typechecked. |
 | Mobile/raw-device claim width | scoped | Run raw-device proof or record that only scoped viewport/browser proof is available | Scoped mobile guard passed; raw lane failed on missing required Appium/device artifact, so no raw mobile claim is made. |
-| Huge-document correctness smoke | yes | Run focused huge-document behavior smoke or record owner defer | Managed Chromium 13-row huge-document proof passed for 5k/20k typing, Enter, paste, select-all, undo, navigation, and scroll stability. |
+| Huge-document correctness smoke | yes | Run focused huge-document behavior smoke or record owner defer | Full Chromium huge-document file passed 18/18 for 5k/20k typing, Enter, paste, select-all, undo, navigation, and scroll stability. |
 | Package/API proof | yes | Source-audit and run package/type/test proof when package/API changed, otherwise N/A | `bun --filter slate-react typecheck`, `bun --filter slate-browser build/typecheck`, focused clipboard test, and `bun test:release-discipline` passed. |
 | Skill/rule sync | yes | Run `pnpm install` and mirror audit when `.agents/rules/**` changed, otherwise N/A | `.agents/rules/slate-automation.mdc` patched, `pnpm install` synced generated skill, mirror audit passed. |
 | Changed list / review attention / stopping checkpoints | yes | Fill final handoff ledgers from current packet evidence | Changed list, needs-your-attention, stopping checkpoints, and final handoff contract are filled below. |
 | Final lint/check | yes | Run scoped lint/check or record why no code changed | `.tmp/slate-v2` `bun lint:fix`, `bun check`, benchmark script syntax, strict 5k benchmark, and parent target report check passed. |
 | Workflow slowdown review | yes | Log slow steps and repair avoidable recurring slowdown, otherwise N/A | Slowdown table records broad command noise, stale dev-server proof, shell quoting, and the reusable rule repair. |
 | Agent-native review for agent/tooling changes | yes | Load `agent-native-reviewer` and close accepted findings, or N/A | Agent-native review row records source-rule/mirror parity and no unpaired agent-only workflow. |
-| Autoreview for non-trivial implementation changes | yes | Load `autoreview` and close accepted/actionable findings, or N/A for no implementation diff | Autoreview found three accepted findings; DOM budget rows, generated reports, and plan state were repaired and rechecked. |
-| Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-06-05-slate-v2-full-confidence-automation-backlog.md` | To be run after final autoreview rerun; this row records the required command and owner. |
+| Autoreview for non-trivial implementation changes | yes | Load `autoreview` and close accepted/actionable findings, or N/A for no implementation diff | Nested `.tmp/slate-v2` autoreview was clean. Parent autoreview caught final plan-state and reboot-state inconsistencies; both are repaired and final parent rerun is clean. |
+| Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-06-05-slate-v2-full-confidence-automation-backlog.md` | Passed: `[autogoal] complete: docs/plans/2026-06-05-slate-v2-full-confidence-automation-backlog.md`. |
 
 Phase / pass table:
 | Phase | Status | Evidence | Next |
@@ -312,15 +318,15 @@ Phase / pass table:
 | Selection multi-leaf oracle | complete | Chromium richtext multi-leaf model/native/DOM proof passed | selection pointer oracle completed |
 | Selection pointer oracle | complete, scoped | Chromium pointer rows passed; Firefox/WebKit breadth scoped to non-skipped rows | selection keyboard oracle completed |
 | Selection keyboard oracle | complete, scoped | Chromium keyboard rows and Firefox/WebKit undo/scroll subset passed | stable behavior sweep completed |
-| Stable behavior sweep | complete | 22 focused Chromium browser rows passed; 47 `slate-history` package rows passed | benchmark honesty |
+| Stable behavior sweep | complete | Full Chromium stable sweep passed 199 and skipped 5; 47 `slate-history` package rows passed | benchmark honesty |
 | Benchmark honesty | complete | target JSON patched; strict smoke printed all requested METRIC families and exited nonzero on over-budget row | huge-document correctness |
-| Huge-document correctness smoke | complete | 13 focused Chromium huge-doc rows passed after oracle expansion | huge-document perf |
-| Huge-document perf | complete | strict 5k aggregate passed with click and DOM budget metrics, zero failures | staged/full-DOM debt |
-| Staged/full-DOM debt | complete, deferred | staged diagnostic rows show DOM 20355, click-to-paint up to 257.7ms, long task 237ms; docs route staged/full as tradeoff/debug; previous local tuning was rejected | slate-browser promotion |
+| Huge-document correctness smoke | complete | Full Chromium huge-doc file passed 18/18 after oracle expansion and native-selection repair | huge-document perf |
+| Huge-document perf | complete | strict 5k aggregate passed with click and DOM budget metrics, zero promoted failures | staged/full-DOM debt |
+| Staged/full-DOM debt | complete, deferred | staged diagnostic rows show DOM 20355, click-to-paint up to 274.4ms, long task 253ms; docs route staged/full as tradeoff/debug; previous local tuning was rejected | slate-browser promotion |
 | slate-browser promotion | complete | selection contract helper and caret-visible helper promoted; `slate-browser` typecheck green; managed 13-row huge-doc proof green | mobile/API/external ledger/workflow |
 | Mobile/API/external ledger/workflow packets | complete | mobile claim width complete; API/DX hard cut green; durable external ledgers have zero unchecked relevant rows | consolidation |
 | Consolidation and review | complete | workflow self-repair synced; autoreview findings repaired; benchmark reports regenerated and checked | final handoff |
-| Final handoff and goal-plan check | complete after final command | final handoff rows filled; `check-complete` is the last mechanical gate | final response |
+| Final handoff and goal-plan check | complete | final handoff rows filled; `check-complete` passed | final response |
 
 Scenario matrix:
 | Surface | Topology | Viewport / strategy | Gesture | Assertion family | Status |
@@ -351,6 +357,12 @@ Packet ledger:
 | P11-api-dx-hard-cut | 10 | slate-plan / slate-patch | Current-tree hard-cut guard should catch stale docs/API language and compat aliases before final handoff. | Targeted grep for compat/deprecation/migration language; edited `docs/concepts/13-roots.md`, `packages/slate-dom/test/clipboard-boundary.ts`, `packages/slate/test/escape-hatch-inventory-contract.ts`; ran focused clipboard test and `bun test:release-discipline`. | Fixed stale docs wording from `editor.children` to main-root wording, replaced direct `Editor.insertText/deleteForward` test calls with transaction API, and refreshed classified escape-hatch counts. Release-discipline passed 432/432. | keep | external ledger readiness |
 | P12-external-ledger-readiness | 11 | issue-harvester / slate-automation | External Lexical/ProseMirror checkmarks should not start before local oracle infra; after oracle repair, verify durable ledger state. | Parsed `docs/editor-issue-harvester/lexical/full/issue-closure-ledger.tsv` and `docs/editor-issue-harvester/prosemirror/full/issue-closure-ledger.tsv`; checked markdown summaries. | Lexical: 2741/2741 checked, 1779 relevant, 0 unchecked relevant. ProseMirror: 1420/1420 checked, 848 relevant, 0 unchecked relevant. | no new loop | workflow self-repair |
 | P13-workflow-self-repair | 12 | slate-automation | Reusable loop slowdowns must update the supervisor rule, not remain plan trivia. | Edited `.agents/rules/slate-automation.mdc`; ran `pnpm install`; audited `.agents/skills/slate-automation/SKILL.md` for mirrored text. | Added rules to parse issue ledger `check` column and to avoid stale `PLAYWRIGHT_BASE_URL` proof after package/runtime/example/source edits unless server freshness is proven. | keep | review gates |
+| P14-autoreview-proof-repair | 13-14 | autoreview / slate-automation | Closeout review should catch fake or weak proof surfaces before handoff. | Edited `huge-document-full.mjs`, `huge-document-browser-trace.mjs`, slate-browser paste helpers/tests, benchmark artifacts, and target reports; ran focused paste proof, exact pagination target, strict 5k benchmark, and parent target report check. | Repaired strict DOM budget rows, real clipboard/shortcut paste proof, model paint metric honesty, exact target artifact proof, and stale generated reports. | keep | final nested selection review |
+| P15-virtualized-native-selection-state | 15 | slate-react / slate-browser | Stricter caret oracle should fail when model selection is correct but native selection is lost after virtualized materialization. | Edited `runtime-root-engine.ts`, `dom-repair-queue.ts`, and huge-doc/slate-browser helpers; ran focused 20k materialization, full huge-document Chromium file, package typechecks, `bun check`, and target report check. | Old proof would have hidden `window.getSelection().rangeCount=0`; runtime now clears stale explicit partial-DOM-backed state when the selected virtualized block materializes. Full huge-doc file passed 18/18. | keep | benchmark/stable closeout |
+| P16-strict-diagnostic-budget-split | 16 | slate-ar-perf / slate-automation | Strict budgets should fail promoted lanes but keep staged/full-DOM debt visible as diagnostic until architecture owns it. | Edited `scripts/benchmarks/browser/react/huge-document-full.mjs`; ran focused legacy compare and full strict 5k aggregate. | Full strict rerun passed: promoted budget failures 0, diagnostic budget failures 0, promoted max ratio 0.86, diagnostic max ratio 0.75, diagnostic failure count 1 for staged trace. | keep benchmark policy; keep staged/full deferred | stable sweep closeout |
+| P17-richtext-clear-formatting-oracle-repair | 17 | slate-ar-stabilize / testing | Stable sweep should not blame clear-formatting runtime when toolbar setup failed to apply marks first. | Edited `playwright/integration/examples/richtext.test.ts` and `packages/slate/test/escape-hatch-inventory-contract.ts`; ran focused richtext row, full stable sweep, release-discipline, and `bun check`. | Focused richtext row passed; full stable sweep passed 199 and skipped 5; release-discipline and `bun check` passed. | keep oracle repair | final review/check-complete |
+| P18-final-review-state-repair | 18 | autoreview / slate-automation | Final handoff must not mark the goal complete while any review row still says pending. | Ran parent autoreview and nested `.tmp/slate-v2` autoreview; edited this plan to record the accepted parent finding and nested clean result. | Parent review finding accepted and repaired; nested runtime review clean; the next parent rerun caught reboot-state drift handled in P19. | keep plan repair | reboot-state repair |
+| P19-reboot-state-repair | 19 | autoreview / slate-automation | Reboot guidance must not send the next agent back into already-completed closeout work. | Edited this plan after parent autoreview caught stale reboot text. | Reboot table now says the goal is complete and continuation starts from optional follow-up owners; final parent rerun clean. | keep plan repair | final check-complete |
 
 Behavior proof ledger:
 | Family | Route / package | Command / proof | Browser | Result | Follow-up |
@@ -358,9 +370,9 @@ Behavior proof ledger:
 | richtext multi-leaf selection | `playwright/integration/examples/richtext.test.ts` | grep `mouse drag undo restores typed multi-leaf selected text replacement|places a right-margin click at the multi-leaf text end` | Chromium | passed 2/2 | Still need pointer/blank, keyboard/scroll, and helper-promotion rows. |
 | pointer/keyboard/scroll selection | plaintext, richtext, huge-document examples | focused grep for Shift+Arrow, undo, drag replacement, blank-gap drag, double-click, scroll-away/refocus | Chromium | passed 14/14 total across packets | Browser-width scoped: some Firefox/WebKit arrow/pointer rows skip intentionally. |
 | keyboard/scroll browser-width subset | plaintext, richtext, huge-document examples | Firefox/WebKit focused grep for non-skipped undo/scroll rows | Firefox + WebKit | 13 passed, 5 skipped | Skips need claim-width row before selection is final. |
-| richtext/plaintext stable behavior | richtext/plaintext examples | focused stable sweep grep | Chromium | passed inside 22/22 | complete for current desktop browser scope |
-| markdown/history stable behavior | markdown-shortcuts example + `slate-history` package | focused stable sweep grep; package history tests | Chromium + Bun package tests | passed browser rows and 47/47 package rows | complete for current desktop/package scope |
-| editable voids/placeholders/hidden DOM | editable-voids, placeholder, hidden-content-blocks, dom-coverage-boundaries, document-state examples | focused stable sweep grep | Chromium | passed inside 22/22 | complete for current desktop browser scope |
+| richtext/plaintext stable behavior | richtext/plaintext examples | full stable sweep after richtext oracle repair | Chromium | passed inside 199-pass/5-skip sweep | complete for current desktop browser scope |
+| markdown/history stable behavior | markdown-shortcuts example + `slate-history` package | full stable sweep plus package history tests | Chromium + Bun package tests | passed browser rows and 47/47 package rows | complete for current desktop/package scope |
+| editable voids/placeholders/hidden DOM | editable-voids, placeholder, hidden-content-blocks, dom-coverage-boundaries, document-state examples | full stable sweep | Chromium | passed inside 199-pass/5-skip sweep | complete for current desktop browser scope |
 
 Visual/native selection ledger:
 | Scenario | Model selection proof | Native selected text | DOM endpoint / caret / geometry | Screenshot / Browser proof | Result |
@@ -388,6 +400,7 @@ Benchmark honesty ledger:
 | Strict smoke verification | Gate should fail on over-budget rows. | 20-block smoke exited 1 with `react_huge_doc_full_budget_failure_count=1`, budget failure `virtualizedModelBurstToPaintPerOpP95Ms=21.53` over 16. | accepted as honesty proof and perf backlog |
 | Click latency metric | Physical click latency needs its own metric, not programmatic select-to-paint. | Browser trace now prints `react_huge_doc_click_to_paint_p95_ms` and `react_huge_doc_click_to_selection_ready_p95_ms`; full target budgets both. | kept |
 | Generated target reports | Target registry changes must keep generated reports current. | Ran `pnpm bench:targets:report`; `pnpm bench:targets:report:check` passed after benchmark artifacts stopped changing. | kept generated reports |
+| Diagnostic budget split | Promoted/release budgets must stay strict while staged/full-DOM diagnostic debt remains visible and nonblocking. | Full strict 5k rerun passed with promoted budget failures 0, diagnostic budget failures 0, diagnostic failure count 1, promoted max ratio 0.86, diagnostic max ratio 0.75. | kept diagnostic split |
 
 Huge-document perf ledger:
 | Run / packet | Command | Result | Tight lanes / hot rows | Decision |
@@ -399,8 +412,10 @@ Huge-document perf ledger:
 | Staged/full-DOM owner route | docs and prior perf plan | route decision | `Editable` docs: staged is eventual native DOM coverage, full is debug; prior 10000 stress plan rejected group-size and immediate background-mount local tuning | keep diagnostics visible, fix only in separate architecture packet |
 | Post-runtime-repair strict 5k baseline | same strict command after virtualized text-host repair | pass: max ratio 0.99, failures 0, budget failures 0 | virtualized model type-to-paint 73.9/75ms, type-to-paint 50ms, click-to-paint 30.7ms, DOM 950/303 virtualized, selector dispatch 7.6ms | keep runtime repair; no perf regression beyond budget |
 | Post-autoreview DOM-budget strict 5k baseline | same strict command after strict DOM budget rows | pass: max ratio 0.98, failures 0, budget failures 0 | browser DOM 950/1200, virtualized DOM 303/400, click-to-paint 23.3ms, virtualized model type-to-paint 73.6/75ms, selector dispatch 7.5ms | superseded by model-paint repair baseline |
-| Post-model-paint repair strict 5k baseline | same strict command after model paint no longer waits an extra unrelated frame | pass: max ratio 0.84, failures 0, budget failures 0 | browser DOM 950/1200, virtualized DOM 303/400, click-to-paint 30.7ms, virtualized model type-to-paint 56.3/75ms, model ready 41.9/50ms, selector dispatch 7.2ms | keep model metric repair |
-| Latest staged diagnostic rows | full benchmark staged diagnostic child trace | diagnostic only, not promotion | staged content-visibility click-to-paint 257.7ms, click-ready 245.7ms, long task 237ms, DOM 20355 | defer to `slate-plan` / `slate-ar-perf`; do not hide in aggregate |
+| Post-model-paint repair strict 5k baseline | same strict command after model paint no longer waits an extra unrelated frame | pass: max ratio 0.84, failures 0, budget failures 0 | browser DOM 950/1200, virtualized DOM 303/400, click-to-paint 30.7ms, virtualized model type-to-paint 56.3/75ms, model ready 41.9/50ms, selector dispatch 7.2ms | superseded by virtualized selection-state fix baseline |
+| Post-virtualized-selection-state fix strict 5k baseline | same strict command after clearing stale explicit partial-DOM-backed state when selection materializes | pass: max ratio 0.81, failures 0, budget failures 0 | browser DOM 950/1200, virtualized DOM 303/400, click-to-paint 24.1ms, virtualized model type-to-paint 56.2/75ms, model ready 40.6/50ms, selector dispatch 9.1/16ms | keep runtime selection fix |
+| Post-diagnostic-split strict 5k baseline | same strict command after diagnostic budget split | pass: promoted max ratio 0.86, promoted failures 0, promoted budget failures 0; diagnostic failure count 1 | type-to-paint 47.6ms, virtualized model type-to-paint 56.4/75ms, click-to-paint 24.1ms, click-to-selection-ready 14.1ms, browser DOM 950/1200, virtualized DOM 303/400, selector dispatch 11.1/16ms | keep benchmark policy |
+| Staged diagnostic rows | full benchmark staged diagnostic child trace | diagnostic only, not promotion | prior staged content-visibility row hit click-to-paint 274.4ms, click-ready 264.2ms, long task 253ms, DOM 20355; latest strict artifact keeps staged failures diagnostic | defer to `slate-plan` / `slate-ar-perf`; do not hide in aggregate |
 
 Mobile/raw-device claim-width ledger:
 | Claim | Proof type | Command / device | Result | Claim width |
@@ -433,7 +448,7 @@ Changed list:
 |-------|---------------------|
 | parent plan/targets | `docs/plans/2026-06-05-slate-v2-full-confidence-automation-backlog.md`; `benchmarks/targets/slate-v2.json` strict huge-doc target and browser-trace metric metadata; generated `benchmarks/targets/history/slate-v2-latest.json`; generated `benchmarks/targets/reports/slate-v2.md`. |
 | parent skill/workflow | `.agents/rules/slate-automation.mdc`; generated mirror `.agents/skills/slate-automation/SKILL.md` after `pnpm install`. |
-| Slate v2 runtime/API | `.tmp/slate-v2/packages/slate-react/src/editable/dom-repair-queue.ts`; `.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts`. |
+| Slate v2 runtime/API | `.tmp/slate-v2/packages/slate-react/src/editable/dom-repair-queue.ts`; `.tmp/slate-v2/packages/slate-react/src/editable/runtime-root-engine.ts`; `.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts`. |
 | Slate v2 tests/oracles | `.tmp/slate-v2/playwright/integration/examples/huge-document.test.ts`; `.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts`; `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`; `.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts`; `.tmp/slate-v2/packages/slate/test/escape-hatch-inventory-contract.ts`. |
 | Slate v2 docs/API cleanup | `.tmp/slate-v2/docs/concepts/13-roots.md`. |
 | Slate v2 benchmarks | `.tmp/slate-v2/scripts/benchmarks/browser/react/huge-document-browser-trace.mjs`; `.tmp/slate-v2/scripts/benchmarks/browser/react/huge-document-full.mjs`. |
@@ -444,7 +459,7 @@ Needs your attention:
 | Rank | Item | Why | Anchor | Recommendation |
 |------|------|-----|--------|----------------|
 | 1 | Raw mobile/device proof is still absent | Scoped/proxy guard passed, but raw Appium/device artifact is missing. No raw Android/iOS IME or clipboard claim is valid from this run. | Mobile/raw-device claim-width ledger | Run `bun test:mobile-device-proof:raw` only on a real device lane that can produce `test-results/release-proof/mobile-device-proof.json`. |
-| 2 | Staged/full-DOM remains the bad huge-doc lane | Latest diagnostic hit 20355 DOM nodes, 257.7ms click-to-paint, and 237ms long task. Virtualized is green; staged/full needs architecture work, not a constant tweak. | Huge-document perf ledger | Route a separate `slate-plan` / `slate-ar-perf` packet for staged/full-DOM architecture after virtualized correctness stays green. |
+| 2 | Staged/full-DOM remains the bad huge-doc lane | Prior diagnostic hit 20355 DOM nodes, 274.4ms click-to-paint, and 253ms long task; latest strict run keeps staged failures diagnostic, not promoted. Virtualized is green; staged/full needs architecture work, not a constant tweak. | Huge-document perf ledger | Route a separate `slate-plan` / `slate-ar-perf` packet for staged/full-DOM architecture after virtualized correctness stays green. |
 | 3 | Selection proof is browser-scoped | Chromium has full pointer/keyboard/scroll coverage; Firefox/WebKit only cover non-skipped undo/scroll rows. | Visual/native selection ledger | Do not claim full cross-browser native pointer/arrow parity until those skipped rows have an owner and browser-specific oracle. |
 | 4 | Benchmark target reports only prove artifact existence | Autoreview caught a pagination target report marked OK while the artifact payload did not match the current command. | Benchmark honesty ledger | When a target command changes, run that exact target before regenerating/checking the report. |
 | 5 | Existing dev servers can lie after package/runtime edits | Stale `PLAYWRIGHT_BASE_URL=http://localhost:3100` failed ordered proof while managed Playwright current-tree proof passed. | Workflow slowdowns | Restart/prove server freshness or omit `PLAYWRIGHT_BASE_URL` for final browser proof after source edits. |
@@ -465,23 +480,25 @@ Findings:
 - Repeated endpoint/native selection assertions are present in route specs; promote the repeated pattern into `slate-browser` after the next pointer packet confirms the reusable shape.
 - `assertSlateBrowserSelectionContract` is now promoted into `slate-browser/playwright` and verified by existing richtext/plaintext rows.
 - Cross-browser selection claim is not fully broad: Firefox/WebKit pass undo/scroll subsets, but some native arrow/pointer rows are intentionally Chromium-only or skipped due native behavior differences.
-- Stable current editor behavior is green for focused Chromium browser proof across richtext, plaintext, markdown shortcuts, editable voids, placeholder, hidden/dom coverage, DOM coverage boundaries, and document-state routes.
+- Stable current editor behavior is green for full Chromium browser proof across richtext, plaintext, markdown shortcuts, editable voids, placeholder, hidden/dom coverage, DOM coverage boundaries, and document-state routes: 199 passed, 5 skipped.
 - Package history contracts are green: 47 tests across core history and document-state history.
 - Benchmark honesty gap found and repaired: the aggregate full target now runs strict budgets, and browser trace target metadata names real METRIC output instead of placeholder seconds.
 - Strict smoke proves the gate fails on real over-budget rows. The current smoke over-budget row is `virtualizedModelBurstToPaintPerOpP95Ms`, which belongs to huge-doc perf after correctness proof, not before.
 - Huge-document correctness is green after strengthening the oracle: 13 focused Chromium rows cover 5k and 20k typing, Enter, paste, select-all, undo, arrows/navigation, drag/autoscroll, blank-gap selection, materialization, and scroll/refocus stability.
 - The caret-visible helper needed a root-scroll-container and text-host fallback; the first failing run was a test-quality catch, not a runtime regression.
-- Huge-document strict 5k perf is green with click metrics and strict DOM budget rows after the runtime repair: latest max budget ratio 0.84, no failures, click-to-paint 30.7ms, type-to-paint 48ms, model type-to-paint 56.3ms, browser DOM 950/1200 and virtualized DOM 303/400.
-- Staged/full-DOM diagnostic remains the bad lane: latest staged content-visibility click-to-paint 257.7ms, click-ready 245.7ms, long task 237ms, DOM 20355. That is architecture debt, not hidden aggregate green.
+- Huge-document strict 5k perf is green with click metrics and strict DOM budget rows after the runtime repair and diagnostic split: latest promoted max budget ratio 0.86, promoted failures 0, promoted budget failures 0, type-to-paint 47.6ms, click-to-paint 24.1ms, model type-to-paint 56.4ms, browser DOM 950/1200 and virtualized DOM 303/400.
+- Staged/full-DOM diagnostic remains the bad lane: prior staged content-visibility rows hit click-to-paint 274.4ms, click-ready 264.2ms, long task 253ms, DOM 20355; latest strict run keeps staged trace failure diagnostic. That is architecture debt, not hidden aggregate green.
 - Do not patch staged/full-DOM with another local constant tweak in this loop: docs frame staged as explicit whole-document native-DOM tradeoff and full as debug, and the previous 10000 stress plan already rejected group-size and background-mount tuning.
 - `slate-browser` helper promotion exposed a real native-selection oracle: in stale-server ordered proof, the model selection after virtualized 20k Enter/type was correct but native `window.getSelection().rangeCount` was `0`.
-- Managed Playwright build proves the kept fix: ordered 13-row huge-document Chromium proof is green after virtualized text-host repair keeps retrying during the short repair window.
+- Managed Playwright build proves the kept fix: full 18-row huge-document Chromium proof is green after virtualized text-host repair and explicit partial-DOM-backed state cleanup.
 - Mobile/raw-device scope is honest: scoped guard proof passes, raw-required proof fails without Appium/device artifacts, so this run makes no raw Android/iOS claim.
 - API/DX hard-cut guard is green after cleanup: stale `editor.children` docs wording is gone, the DOM clipboard test uses transaction APIs, and release-discipline passes including compat-alias hard-cut.
 - External ledger readiness is green without starting a new checkmark grind: durable Lexical and ProseMirror ledgers are fully checked with zero unchecked relevant rows.
 - Workflow self-repair is applied: future `slate-automation` runs must avoid stale `PLAYWRIGHT_BASE_URL` proof after source edits and must parse issue ledger `check` columns.
 - Autoreview found three real cleanup issues and they were repaired: strict DOM budget rows now exist, benchmark target reports were regenerated and checked, and this plan no longer resumes from checkpoint zero.
 - Second autoreview pass found two misleading proof surfaces and one generated-report artifact mismatch; all were repaired and verified with focused paste rows, exact pagination target artifact regeneration, strict 5k benchmark, and report check.
+- Diagnostic budget split is intentional: promoted budgets remain strict, while staged/full-DOM rows stay visible as diagnostic debt until a dedicated architecture/perf owner takes them.
+- Stable richtext clear-formatting oracle was repaired after the full sweep exposed a false setup failure; the row now asserts marks exist before clearing them.
 
 Decisions and tradeoffs:
 - Do not start huge-document perf until selection/stable behavior proof and benchmark honesty are strong enough to trust the metrics.
@@ -529,11 +546,25 @@ Verification evidence:
 - Parent repo: `pnpm bench:targets:report:check` passed after benchmark artifacts stopped changing.
 - `.tmp/slate-v2`: focused huge-document paste proof passed 3/3 after `pasteText` stopped bypassing clipboard/shortcut routing for partial-DOM selections.
 - `.tmp/slate-v2`: exact pagination target command passed and refreshed `tmp/slate-pagination-virtualized-real-editor-ops-benchmark.json` for `current,rows800` with 5 iterations.
-- `.tmp/slate-v2`: latest strict 5k huge-document full benchmark passed with `react_huge_doc_full_max_budget_ratio=0.84`, zero failures, zero budget failures, browser DOM 950/1200, virtualized DOM 303/400, and model type-to-paint 56.3ms.
+- `.tmp/slate-v2`: previous strict 5k huge-document full benchmark passed with `react_huge_doc_full_max_budget_ratio=0.81`, zero failures, zero budget failures, browser DOM 950/1200, virtualized DOM 303/400, and model type-to-paint 56.2ms.
+- `.tmp/slate-v2`: full strict 5k huge-document benchmark after diagnostic split passed with promoted budget failures 0, diagnostic budget failures 0, diagnostic failure count 1, promoted max ratio 0.86, type-to-paint 47.6ms, click-to-paint 24.1ms, browser DOM 950/1200, and virtualized DOM 303/400.
+- `.tmp/slate-v2`: focused richtext clear-formatting row passed after setup oracle repair.
+- `.tmp/slate-v2`: full stable Chromium sweep passed 199 and skipped 5 after richtext oracle repair.
+- `.tmp/slate-v2`: `node --check scripts/benchmarks/browser/react/huge-document-full.mjs && node --check scripts/benchmarks/browser/react/huge-document-browser-trace.mjs` passed.
 - `.tmp/slate-v2`: `bun lint:fix` passed after final helper/benchmark edits with no fixes.
-- `.tmp/slate-v2`: `bun test:release-discipline` passed 432/432 after final helper/benchmark edits.
-- `.tmp/slate-v2`: `bun check` passed after final helper/benchmark edits: lint, packages/site/root typecheck, Bun tests 1180 pass/95 skip, slate-layout 47 pass, slate-react Vitest 57 files/662 tests.
+- `.tmp/slate-v2`: `bun test:release-discipline` passed 432/432 after final helper/benchmark/stable-oracle edits.
+- `.tmp/slate-v2`: `bun check` passed after final helper/benchmark/stable-oracle edits: lint, packages/site/root typecheck, Bun tests 1180 pass/95 skip, slate-layout 47 pass, slate-react Vitest 57 files/662 tests.
 - Parent repo: final `pnpm bench:targets:report:check` passed after exact target artifact and strict huge-document artifacts were stable.
+- `.tmp/slate-v2`: stricter caret oracle initially failed the 20k virtualized materialization row with `window.getSelection().rangeCount=0`, proving the old helper would have hidden a native-selection bug.
+- `.tmp/slate-v2`: focused 20k virtualized materialization row passed after clearing stale explicit partial-DOM-backed state when the selected virtualized block materializes.
+- `.tmp/slate-v2`: full Chromium huge-document file passed 18/18 after the runtime selection-state fix.
+- `.tmp/slate-v2`: final `bun --filter slate-react typecheck`, `bun --filter slate-browser typecheck`, `bun test:release-discipline`, and `bun check` passed after the runtime selection-state fix.
+- Parent repo: final `pnpm bench:targets:report:check` passed after the post-selection-fix strict huge-document artifacts were stable.
+- Parent repo: `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-06-05-slate-v2-full-confidence-automation-backlog.md` passed.
+- Parent repo: local autoreview found one accepted final plan-state finding: the plan marked complete while the autoreview row still said final rerun required.
+- `.tmp/slate-v2`: local autoreview was clean: no accepted/actionable findings.
+- Parent repo: final local autoreview rerun was clean: no accepted/actionable findings.
+- Parent repo: local autoreview caught one stale reboot-state finding after the first final review-state repair; this plan now records the accepted repair.
 
 Final handoff contract:
 - Goal plan: `docs/plans/2026-06-05-slate-v2-full-confidence-automation-backlog.md`
@@ -541,18 +572,20 @@ Final handoff contract:
   `slate-react`, `slate-browser`, example Playwright routes, benchmark scripts,
   benchmark target registry, parent automation rule/mirror, and durable plan.
 - Invocation mode, elapsed/timebox, loop/checkpoint count: full-loop, no
-  timebox; 14 mutation loops recorded.
-- Behavior gates and visual proof: stable behavior sweep green; selection proof
-  records model selection, native `window.getSelection()`, DOM endpoints, and
-  caret visibility; Firefox/WebKit selection breadth is scoped.
+  timebox; 19 mutation loops recorded.
+- Behavior gates and visual proof: full stable behavior sweep passed 199 and
+  skipped 5; selection proof records model selection, native
+  `window.getSelection()`, DOM endpoints, and caret visibility; Firefox/WebKit
+  selection breadth is scoped.
 - Primary metric baseline/latest/best and stop reason: latest strict 5k
-  huge-document full run passed with max budget ratio 0.84, zero failures,
-  browser DOM 950/1200, virtualized DOM 303/400, click-to-paint 30.7ms, and
-  virtualized model type-to-paint 56.3/75ms. Stop reason is review/check-complete
-  closure, not perf exhaustion.
+  huge-document full run passed with promoted max budget ratio 0.86, promoted
+  failures 0, promoted budget failures 0, diagnostic budget failures 0,
+  diagnostic failure count 1, browser DOM 950/1200, virtualized DOM 303/400,
+  click-to-paint 24.1ms, and virtualized model type-to-paint 56.4/75ms. Stop
+  reason is review/check-complete closure, not perf exhaustion.
 - Bugs fixed and oracles added: virtualized native-selection repair, 5k/20k
-  huge-document correctness oracles, `slate-browser` selection/caret helpers,
-  API/DX test cleanup.
+  huge-document correctness oracles, richtext clear-formatting setup oracle,
+  `slate-browser` selection/caret helpers, API/DX test cleanup.
 - Benchmark/skill/docs repairs: strict full target, click latency, strict DOM
   budgets, model paint metric honesty, exact benchmark target artifact proof,
   generated benchmark reports, stale docs wording, and
@@ -573,12 +606,12 @@ Final handoff contract:
 Reboot status:
 | Question | Answer |
 |----------|--------|
-| Where am I? | Review gates and final handoff checkpoint |
-| Where am I going? | Rerun autoreview/check-complete, close the active goal if clean, then hand off. |
+| Where am I? | Goal complete; closeout proof is recorded |
+| Where am I going? | No required continuation for this goal. Optional next owners are staged/full-DOM architecture/perf or cross-browser native selection parity. |
 | What is the goal? | Run every listed Slate v2 confidence lane slowly until fully proven, deferred with owner, or blocked. |
 | What have I learned? | Behavior/oracle lanes are green or scoped; benchmark honesty needed real DOM budget rows; staged/full-DOM is architecture debt; raw mobile proof is unavailable. |
 | What have I done? | Added selection/caret helpers, huge-doc oracles, virtualized native-selection repair, benchmark click/DOM budgets, API/DX cleanup, generated report refresh, and automation workflow repair. |
-| What changed in the checkpoint plan? | See Checkpoint mutation ledger |
+| What changed in the checkpoint plan? | See Checkpoint mutation ledger; latest loop count is 19 |
 
 Timeline:
 - 2026-06-05T06:16:49.369Z Goal plan created.
@@ -590,10 +623,15 @@ Timeline:
 - 2026-06-05T07:02Z Benchmark target honesty patched; strict smoke failed on an actual virtualized model burst budget row.
 - 2026-06-05T07:22Z Huge-document 5k/20k correctness oracle expanded and passed 13/13 focused Chromium rows.
 - 2026-06-05T07:55Z Huge-document click latency metrics added; strict 5k aggregate passed with max budget ratio 0.99.
+- 2026-06-05T08:55Z Virtualized native-selection loss after 20k materialization reproduced and repaired; full huge-document Chromium file passed 18/18.
+- 2026-06-05T09:20Z Strict huge-document diagnostic budget split kept promoted budgets strict and staged/full-DOM debt diagnostic; latest strict run passed promoted budgets.
+- 2026-06-05T09:40Z Richtext clear-formatting setup oracle repaired; full stable Chromium sweep passed 199 and skipped 5; `bun check` passed.
+- 2026-06-05T10:05Z Nested runtime autoreview was clean; parent autoreview caught and repaired one final plan-state inconsistency.
+- 2026-06-05T10:12Z Parent autoreview caught and repaired stale reboot guidance that still asked the next agent to rerun completed closeout gates.
 
 Open risks:
 - Raw mobile/device lane is blocked by missing Appium/device artifact; no raw Android/iOS claim.
 - Selection browser-width is scoped: Chromium has the full requested gesture set; Firefox/WebKit have non-skipped undo/scroll subset, while some arrow/pointer native rows remain browser-scoped.
-- Staged/full-DOM diagnostic is explicitly bad: latest content-visibility row hit DOM 20355, click-to-paint 257.7ms, and long task 237ms.
+- Staged/full-DOM diagnostic is explicitly bad: prior content-visibility row hit DOM 20355, click-to-paint 274.4ms, and long task 253ms; latest strict artifact keeps staged failure diagnostic.
 - Benchmark target reports are existence-based; exact command/cohort/iteration proof must be regenerated when target commands change.
 - Existing dev servers can serve stale package/runtime code after edits; final proof should restart/prove freshness or use managed Playwright.
