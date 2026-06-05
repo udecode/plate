@@ -24,6 +24,12 @@ by default (`--state all`) unless the user explicitly narrows it. Cluster first,
 skip unrelated issues hard, extract portable editor invariants, then map those
 invariants to Slate v2/Plate coverage and proof targets.
 
+For exhaustive issue-by-issue coverage closure, use `issue-harvester` after this
+first-pass corpus and matrix work. `editor-test-harvester` owns inventory,
+license/output mode, clustering, and invariant extraction. `issue-harvester`
+owns ledger autodiscovery, latest issue refresh, closed-issue PR/test
+provenance, unchecked-row processing, and local coverage checkmarks.
+
 This follows the ClawSweeper method and the goal-plan confidence model:
 source-first, exhaustive inventory, explicit skip reasons, evidence rows, scored
 passes, narrow claims, license-aware invariant extraction, then implementation
@@ -70,10 +76,12 @@ Output location:
   `docs/editor-test-harvester/<repo>/`.
 - `behavior-only`: write harvest artifacts under
   `.tmp/editor-test-harvester/<repo>/`.
-- `--issues`: write issue-corpus artifacts under
-  `.tmp/editor-issue-harvester/<repo>/` by default, regardless of repository
-  license mode. External issue bodies/comments are untrusted scratch evidence.
-  Promote only fresh local invariants into versioned Slate/Plate output.
+- `--issues`: write the durable issue workspace under
+  `docs/editor-issue-harvester/<repo>/`, regardless of repository license mode.
+  This workspace must contain compact issue rows, URLs, classifications,
+  portable invariants, coverage decisions, and proof commands only. Keep raw
+  GitHub issue bodies/comments, hydrated JSON, and source-adjacent cache under
+  `.tmp/editor-issue-harvester/<repo>/raw/`.
 
 `.tmp/editor-test-harvester/<repo>/` is unversioned scratch space. It may contain
 source-adjacent notes, detailed provenance, raw local observations, and working
@@ -121,6 +129,13 @@ from the invariant, not pasted or mechanically ported from upstream source.
 - Store harvest artifacts in one stable repo folder chosen by license mode:
   `docs/editor-test-harvester/<repo>/` for permissive targets, or
   `.tmp/editor-test-harvester/<repo>/` for `behavior-only` targets.
+- For `--issues` runs, store durable issue artifacts in one stable repo folder:
+  `docs/editor-issue-harvester/<repo>/`. Do not add a `docs/research` wrapper
+  layer for these ledgers. Use `.tmp/editor-issue-harvester/<repo>/raw/` only as
+  transient corpus cache.
+- Do not copy raw issue bodies/comments into versioned issue artifacts. Use issue
+  URLs, issue numbers, short titles, classifications, fresh invariant wording,
+  owner/proof decisions, and verification commands.
 - For `behavior-only` targets, `inventory.md` and `test-index.md` also stay
   under `.tmp/editor-test-harvester/<repo>/`. Never create or refresh
   `docs/editor-test-harvester/<repo>/inventory.md`.
@@ -213,7 +228,8 @@ inventory_path: <report_dir>/inventory.md
 test_index_path: <report_dir>/test-index.md
 issue_mode: yes|no
 issue_state: all|open|closed
-issue_report_dir: .tmp/editor-issue-harvester/<repo> or N/A
+issue_report_dir: docs/editor-issue-harvester/<repo> or N/A
+issue_raw_cache_dir: .tmp/editor-issue-harvester/<repo>/raw or N/A
 issue_index_path: <issue_report_dir>/issues.md or N/A
 issue_cluster_path: <issue_report_dir>/clusters.md or N/A
 issue_matrix_path: <issue_report_dir>/matrix.md or N/A
@@ -328,7 +344,10 @@ Run harvests as passes, not one giant skim:
    - write every inventory row to the appendix with an initial category.
 3. Issue inventory and cluster pass when `--issues` is present:
    - discover issues with `--state all` unless narrowed by the user;
-   - write issue rows to `.tmp/editor-issue-harvester/<repo>/issues.md`;
+   - write compact issue rows to
+     `docs/editor-issue-harvester/<repo>/issues.md`;
+   - write raw issue JSON, hydrated bodies, comments, and source-adjacent cache
+     only to `.tmp/editor-issue-harvester/<repo>/raw/`;
    - cluster before deep reads;
    - classify clusters as portable, portable-mixed, plate-owned,
      framework-specific, product/support/docs/release, duplicate/stale,
@@ -447,11 +466,13 @@ Pass-state ledger rows must include:
    mkdir -p "$report_dir"
    ```
 
-   For issue-mode, also resolve the scratch issue directory:
+   For issue-mode, also resolve the durable issue directory and raw cache:
 
    ```bash
-   issue_report_dir=".tmp/editor-issue-harvester/${repo_key}"
+   issue_report_dir="docs/editor-issue-harvester/${repo_key}"
+   issue_raw_cache_dir=".tmp/editor-issue-harvester/${repo_key}/raw"
    mkdir -p "$issue_report_dir"
+   mkdir -p "$issue_raw_cache_dir"
    ```
 
    For `owner/repo` targets, use the cloned repo basename as `<repo>`. If
@@ -478,11 +499,12 @@ Pass-state ledger rows must include:
 
    ```bash
    issue_state="${issue_state:-all}"
-   issue_report_dir=".tmp/editor-issue-harvester/${repo_key}"
+   issue_report_dir="docs/editor-issue-harvester/${repo_key}"
+   issue_raw_cache_dir=".tmp/editor-issue-harvester/${repo_key}/raw"
 
    gitcrawl search issues "" -R <owner/repo> --state "$issue_state" \
      --json number,title,state,url,labels,updatedAt --limit 1000 \
-     > "$issue_report_dir/issues.json"
+     > "$issue_raw_cache_dir/issues.json"
    ```
 
    If `gitcrawl` cannot provide the target repo corpus, use `gh search issues`
@@ -651,18 +673,26 @@ Do not include the date in file names. Put run dates, inventory commands, source
 checkout path, source revision/provenance, license mode, and license evidence
 inside the report instead.
 
-For `--issues` runs, write these scratch companions:
+For `--issues` runs, write these durable companions:
 
 ```text
-.tmp/editor-issue-harvester/<repo>/issues.md
-.tmp/editor-issue-harvester/<repo>/clusters.md
-.tmp/editor-issue-harvester/<repo>/matrix.md
+docs/editor-issue-harvester/<repo>/issues.md
+docs/editor-issue-harvester/<repo>/clusters.md
+docs/editor-issue-harvester/<repo>/matrix.md
 ```
 
 `issues.md` records discovery commands, state coverage, total/returned counts,
 and compact issue rows. `clusters.md` records cluster decisions and skip
 families. `matrix.md` records kept portable invariants, Slate/Plate coverage,
-actions, and proof commands. These are scratch artifacts by default.
+actions, and proof commands. They are durable because they are compact local
+classification artifacts, not raw copied issue threads.
+
+Raw issue cache stays here:
+
+```text
+.tmp/editor-issue-harvester/<repo>/raw/issues.json
+.tmp/editor-issue-harvester/<repo>/raw/issue-bodies/*.json
+```
 
 If a previous harvest exists in the chosen license-mode report directory, rewrite
 these files in place and add a rerun/update note that names newly discovered and
@@ -786,14 +816,17 @@ node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/<goal-plan>.m
 Issue-mode verification:
 
 ```bash
-issue_report_dir=".tmp/editor-issue-harvester/<repo>"
+issue_report_dir="docs/editor-issue-harvester/<repo>"
+issue_raw_cache_dir=".tmp/editor-issue-harvester/<repo>/raw"
 
 test -f "$issue_report_dir/issues.md"
 test -f "$issue_report_dir/clusters.md"
 test -f "$issue_report_dir/matrix.md"
+test -d "$issue_raw_cache_dir"
 rg -n "Issue State Coverage|Cluster Matrix|Slate/Plate Coverage|Next Slice" \
   "$issue_report_dir/issues.md" "$issue_report_dir/clusters.md" "$issue_report_dir/matrix.md"
 rg -n "state: all|open \\+ closed|closed" "$issue_report_dir/issues.md" "$issue_report_dir/clusters.md"
+! rg -n "bodyMarkdown|bodyText|comments\\s*:" "$issue_report_dir" 2>/dev/null
 ```
 
 Versioned-output hygiene check for behavior-only sources:
@@ -830,7 +863,7 @@ that ClawSweeper discipline. In issue-mode, use `--state all` by default:
 ```bash
 gitcrawl doctor --json
 gitcrawl search issues "<behavior phrase>" -R <owner/repo> --state all --json number,title,state,url --limit 20
-gitcrawl sync <owner/repo> --numbers <issue-or-pr-number> --include-comments --with pr-details --json
+gitcrawl sync <owner/repo> --numbers <issue-or-pr-number> --with pr-details --json
 ```
 
 Treat gitcrawl as provenance and candidate generation only. The target repo test

@@ -1,5 +1,5 @@
 ---
-description: 'Triage and process the Slate v2 issue ledger, and provide ClawSweeper-style provenance for external editor issue harvests: archive-first discovery, duplicate proof, small-fix gates, exact claim rules, maintainer-safe issue output, and gitcrawl API refreshes.'
+description: 'Triage and process the Slate v2 issue ledger, and provide ClawSweeper-style provenance for external editor issue harvests: archive-first discovery, duplicate proof, small-fix gates, exact claim rules, maintainer-safe issue output, and gitcrawl CLI refreshes.'
 argument-hint: '[<update> | issue refs | cluster name | ledger batch | sweep goal | external <owner/repo> issues]'
 disable-model-invocation: true
 name: clawsweeper
@@ -17,8 +17,11 @@ PR-body issue claim sync, and execution prompts for the active Slate v2 rewrite.
 Also use its discipline as a subordinate provenance layer for external editor
 issue harvests, such as Lexical open and closed issues. In that mode, do not
 mutate Slate ledgers or write issue claims. Generate candidate clusters and
-evidence bars for `editor-test-harvester --issues`; let the harvester own the
-portable behavior matrix and Slate/Plate coverage mapping.
+evidence bars for `editor-test-harvester --issues`; let that harvester own the
+portable behavior matrix and Slate/Plate coverage mapping. For exhaustive
+issue-by-issue coverage closure, let `issue-harvester` own ledger resume,
+latest-issue refresh, closed-issue PR/test provenance, and per-issue checkmarks
+under `docs/editor-issue-harvester/<repo>/`.
 
 This is adapted from `../openclaw/.agents` and the current
 `../clawsweeper` checkout: ClawSweeper, duplicate-tagging,
@@ -127,7 +130,7 @@ PATH entry or call the brewed binary directly. The normal brewed path is:
 /opt/homebrew/bin/gitcrawl
 ```
 
-Current stable release baseline: `0.4.3`. Stable control probes:
+Current stable release baseline: `0.5.0`. Stable control probes:
 
 ```bash
 gitcrawl check-update --json
@@ -140,18 +143,22 @@ Use `status --json` for fast archive inventory and `doctor --json` when token,
 config, DB health, model, or sync freshness matter. `metadata --json` is the
 crawlkit control manifest for launchers/automation.
 
-The `gh` shim is optional. Prefer the explicit subcommand or side-by-side
-`gitcrawl-gh` if a workflow needs cached `gh` reads:
+`gitcrawl` is the local archive/search/cluster tool. It does not own live PR
+readiness anymore. In `0.5.0`, `gitcrawl gh ...` prints an Octopool migration
+note instead of serving cached `gh` reads. Use local `gitcrawl search`,
+`threads`, `sync`, `neighbors`, `clusters`, `clusters-report`, and
+`cluster-detail` for archive work; use Octopool or the real GitHub CLI for
+live GitHub reads:
 
 ```bash
-gitcrawl gh issue view <number-or-url> -R ianstormtaylor/slate --json number,title,state,url,body,labels,author
-gitcrawl gh pr status <number-or-url> -R ianstormtaylor/slate --compact
-ln -sf "$(command -v gitcrawl)" "$HOME/bin/gitcrawl-gh"
-gitcrawl-gh issue view <number-or-url> -R ianstormtaylor/slate --json number,title,state,url,body,labels,author
+octopool login
+octopool gh api repos/ianstormtaylor/slate/issues/<number>
+gh issue view <number> --repo ianstormtaylor/slate --comments --json number,title,state,url,body,comments,labels,author,closedAt
 ```
 
-Only replace global `gh` when the user asks. If `gh` is shadowed by the shim,
-set `GITCRAWL_GH_PATH` to the real GitHub CLI path to avoid recursion.
+Only replace global `gh` with Octopool when the user asks. Never document
+`gitcrawl-gh` as a current workflow unless the installed binary proves that shim
+exists again.
 
 ## `<update>` Mode
 
@@ -180,9 +187,15 @@ Update flow:
 
    ```bash
    gitcrawl --help
+   gitcrawl help sync
+   gitcrawl help search
+   gitcrawl help clusters-report
+   gitcrawl help remote
+   gitcrawl help cloud
    gitcrawl metadata --json
    gitcrawl status --json
    gitcrawl doctor --json
+   gitcrawl gh issue view 1 -R ianstormtaylor/slate --json number
    gitcrawl search issues "composition" -R ianstormtaylor/slate --state open --json number,title,state,url --limit 2
    ```
 
@@ -199,8 +212,9 @@ Update flow:
    ```
 
 5. Update `.agents/rules/clawsweeper.mdc` for new or changed gitcrawl install,
-   command, JSON, sync, search, cluster, TUI, or gh-shim APIs. Also update the
-   stable baseline version above when the brewed version changes.
+   command, JSON, sync, search, cluster, remote/cloud, TUI, or gh-migration
+   behavior. Also update the stable baseline version above when the brewed
+   version changes.
 6. Regenerate generated agent files from the source rule:
 
    ```bash
@@ -210,13 +224,13 @@ Update flow:
 7. Verify the source rule and generated skill are in sync:
 
    ```bash
-   rg -n "Current stable release baseline|check-update|metadata --json|status --json|sync --numbers|sync-if-stale|gitcrawl gh pr status|durable-clusters|gitcrawl-gh" .agents/rules/clawsweeper.mdc .agents/skills/clawsweeper/SKILL.md
+   rg -n "Current stable release baseline|check-update|metadata --json|status --json|sync --numbers|sync-if-stale|clusters-report|durable-clusters|gitcrawl gh moved|Octopool|gitcrawl-gh" .agents/rules/clawsweeper.mdc .agents/skills/clawsweeper/SKILL.md
    pnpm lint:fix
    ```
 
 If a new gitcrawl release documents commands that are only on `main` and not in
 the brewed binary, record them as optional future probes instead of making the
-ClawSweeper workflow depend on them. The unreleased `0.4.4` changelog is not a
+ClawSweeper workflow depend on them. An unreleased changelog entry is not a
 workflow contract until `gitcrawl check-update --json` and `gitcrawl --version`
 prove the release exists locally.
 
@@ -224,9 +238,10 @@ prove the release exists locally.
 
 - Do not process 630 live issues one by one. Cluster first, then route by architecture
   owner.
-- For external editor issue harvests, do not process all issues one by one.
-  Search and cluster across open and closed issues first, then read
-  representatives from high-value clusters.
+- For external editor issue harvests, do not process all issues one by one
+  before a coverage ledger exists. Search and cluster across open and closed
+  issues first. Then `issue-harvester` may process relevant unchecked ledger
+  rows one by one.
 - Do not use `Fixes #...` unless the exact original repro is proven end to end.
 - `cluster-synced` means architecture pressure is absorbed. It is not a closure
   claim.
@@ -289,8 +304,9 @@ Treat it as candidate generation only.
 
 For external editor issue harvests, use the same archive-first shape but replace
 the repository argument with the target repo and default issue state to `all`.
-The output is scratch provenance for `editor-test-harvester`, not a Slate issue
-ledger update.
+Raw archive output is scratch provenance for `editor-test-harvester` and
+`issue-harvester`; compact closure ledgers and checkmarks live under
+`docs/editor-issue-harvester/<repo>/`, not Slate issue ledgers.
 
 Start with local readiness and freshness:
 
@@ -315,13 +331,12 @@ gitcrawl search ianstormtaylor/slate --query "<title, scope, or failure phrase>"
 gitcrawl search issues "<title, scope, or failure phrase>" -R ianstormtaylor/slate --state open --sync-if-stale 5m --json number,title,state,url,updatedAt,labels --limit 20
 gitcrawl cluster-detail ianstormtaylor/slate --id <cluster-id> --member-limit 20 --body-chars 280 --json
 gitcrawl cluster-detail ianstormtaylor/slate --id <cluster-id> --source run --member-limit 20 --body-chars 280 --json
+gitcrawl clusters-report ianstormtaylor/slate --sort size --min-size 3 --limit 20 --member-limit 12 --body-chars 280
 gitcrawl durable-clusters ianstormtaylor/slate --include-closed --json
-gitcrawl runs ianstormtaylor/slate --kind sync --limit 5 --json
-gitcrawl sync ianstormtaylor/slate --numbers <issue-or-pr-ref> --include-comments --with pr-details --json
-gitcrawl gh issue view <issue-or-pr-ref> -R ianstormtaylor/slate --json number,title,state,url,body,comments,labels,author,closedAt
-gitcrawl gh pr status <pr-ref> -R ianstormtaylor/slate --compact
-gitcrawl gh pr view <pr-ref> -R ianstormtaylor/slate --json number,title,state,url,isDraft,author,headRef,baseRef,files,commits,checks,statusCheckRollup
-gitcrawl gh pr checks <pr-ref> -R ianstormtaylor/slate --json name,state,conclusion,detailsUrl
+gitcrawl sync ianstormtaylor/slate --numbers <issue-or-pr-ref> --with pr-details --json
+gh issue view <issue-number> --repo ianstormtaylor/slate --comments --json number,title,state,url,body,comments,labels,author,closedAt
+gh pr view <pr-number> --repo ianstormtaylor/slate --json number,title,state,url,isDraft,author,headRefName,baseRefName,files,commits,statusCheckRollup
+gh pr checks <pr-number> --repo ianstormtaylor/slate --json name,state,conclusion,detailsUrl
 ```
 
 External editor issue-harvest shapes:
@@ -331,7 +346,8 @@ gitcrawl status --json
 gitcrawl doctor --json
 gitcrawl search issues "" -R facebook/lexical --state all --json number,title,state,url,labels,updatedAt --limit 1000
 gitcrawl search issues "<portable behavior phrase>" -R facebook/lexical --state all --json number,title,state,url,labels,updatedAt --limit 50
-gitcrawl sync facebook/lexical --numbers <issue-or-pr-ref> --include-comments --with pr-details --json
+gitcrawl clusters-report facebook/lexical --sort size --min-size 3 --limit 50 --member-limit 12 --body-chars 280
+gitcrawl sync facebook/lexical --numbers <issue-or-pr-ref> --with pr-details --json
 gitcrawl threads facebook/lexical --numbers <issue-or-pr-ref> --include-closed --json
 gitcrawl neighbors facebook/lexical --number <issue-or-pr-ref> --limit 20 --json
 ```
@@ -349,10 +365,10 @@ Thread references can be bare numbers, `#123`, `issues/123`, `pull/123`,
 `owner/repo#123`, or full GitHub issue/PR URLs. Prefer full URLs when moving
 evidence between repos or docs because they carry their own scope.
 
-`gitcrawl gh pr status` is the default PR triage first read. Exit `0` means
-clean, `1` means action needed, `2` means cache/command error, and `3` means
-checks pending. Use `--live` before final merge/comment decisions when liveness
-matters; use `--cached` when measuring local cache coverage.
+`gitcrawl gh` is not the PR triage path in the `0.5.0` workflow. It moved to
+Octopool and prints a migration note. Use local `gitcrawl` for archive
+provenance and real `gh` or `octopool gh` for PR readiness, current comments,
+checks, and final live-state decisions.
 
 Local governance commands (`close-thread`, `close-cluster`,
 `exclude-cluster-member`, `include-cluster-member`, `set-cluster-canonical`) are
@@ -366,24 +382,22 @@ data as blocking only when the decision depends on it. Note the fallback; do not
 block normal triage.
 
 Live GitHub is final truth for current state, comments, duplicate links, and
-whether a thread is still open. Use the shim first when it is installed and
-fresh enough; otherwise use real `gh`:
+whether a thread is still open. Use real `gh` unless the user has explicitly
+asked for Octopool:
 
 ```bash
-gitcrawl gh issue view <number-or-url> -R ianstormtaylor/slate --json number,title,state,body,comments,labels,url,closedAt
-gitcrawl gh search issues "<key phrase>" -R ianstormtaylor/slate --match title,body --limit 50 --json number,title,state,url
-gitcrawl-gh issue view <number> -R ianstormtaylor/slate --json number,title,state,body,comments,labels,url,closedAt
-gitcrawl-gh search issues "<key phrase>" -R ianstormtaylor/slate --match title,body --limit 50 --json number,title,state,url
 gh issue view <number> --repo ianstormtaylor/slate --comments --json number,title,state,body,comments,labels,url,closedAt
 gh search issues --repo ianstormtaylor/slate --match title,body --limit 50 -- "<key phrase>"
 gh search issues --repo ianstormtaylor/slate --match comments --limit 50 -- "<error or maintainer phrase>"
+octopool gh api repos/ianstormtaylor/slate/issues/<number>
 ```
 
 Search broadly before deciding. Do not stop at the first related thread when a
 claim depends on duplicate chains, stale closures, or already-landed fixes.
 
 Do not assume `gitcrawl` has an API server. The current tool is a local CLI,
-SQLite archive, TUI, and optional `gh` shim.
+SQLite archive, TUI, and optional remote/cloud archive surface. Its old `gh`
+shim moved to Octopool.
 
 ## Duplicate Decision Bar
 

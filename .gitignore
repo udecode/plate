@@ -21,6 +21,7 @@ apps/www/next-env.d.ts
 node_modules/
 report.*
 *.tsv
+!docs/editor-issue-harvester/**/*.tsv
 
 # Dependency directories
 jspm_packages/
@@ -120,6 +121,7 @@ connect.lock
 storybook-static/
 
 # Local
+.tmp/
 packages/plate/docs/
 # Local Netlify folder
 .netlify
