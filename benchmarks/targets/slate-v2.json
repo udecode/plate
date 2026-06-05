@@ -57,17 +57,17 @@
       "family": "react-large-document",
       "kind": "benchmark-suite",
       "cwd": ".",
-      "command": "HUGE_DOC_FULL_LEGACY_REPO=../slate HUGE_DOC_FULL_BLOCKS=5000 HUGE_DOC_FULL_ITERATIONS=5 HUGE_DOC_FULL_TRACE_ITERATIONS=5 HUGE_DOC_FULL_TYPE_OPS=10 bun benchmarks/slate-v2/donor/browser/react/huge-document-full.mjs",
+      "command": "HUGE_DOC_FULL_STRICT_BUDGET=1 HUGE_DOC_FULL_LEGACY_REPO=../slate HUGE_DOC_FULL_BLOCKS=5000 HUGE_DOC_FULL_ITERATIONS=5 HUGE_DOC_FULL_TRACE_ITERATIONS=5 HUGE_DOC_FULL_TYPE_OPS=10 bun benchmarks/slate-v2/donor/browser/react/huge-document-full.mjs",
       "metrics": {
         "primary": "react_huge_doc_full_max_budget_ratio",
         "direction": "lower",
         "unit": "ratio",
         "printsMetric": true,
-        "upgrade": "Primary metric is the worst normalized budget ratio across core huge-doc ops, React legacy compare, browser type-to-paint, long-task, and overlay locality lanes. Supporting METRIC lines expose the raw p95 values."
+        "upgrade": "Primary metric is the worst normalized budget ratio across core huge-doc ops, React legacy compare, browser type-to-paint, click latency, cold and materialized selection, model-backed typing, DOM budget, long-task, listener, selector, and overlay locality lanes. Strict budget mode must be enabled so over-budget rows fail instead of only printing metrics."
       },
       "correctness": {
         "command": "pnpm slate:packages:typecheck && pnpm slate:packages:test",
-        "policy": "Promotion requires the aggregate suite metric, zero react_huge_doc_full_failure_count, and the fast Slate v2 check suite."
+        "policy": "Promotion requires the aggregate suite metric at or below budget, zero react_huge_doc_full_budget_failure_count, zero react_huge_doc_full_failure_count, and the fast Slate v2 check suite."
       },
       "artifacts": [
         {
@@ -274,8 +274,8 @@
       "owner": "slate-v2",
       "family": "react-pagination",
       "kind": "browser-trace",
-      "cwd": ".tmp/slate-v2",
-      "command": "SLATE_PAGINATION_REAL_OPS_PROFILER=0 SLATE_PAGINATION_REAL_OPS_COHORTS=current,rows800 SLATE_PAGINATION_REAL_OPS_ITERATIONS=5 bun run bench:react:pagination-virtualized-real-editor-ops:local",
+      "cwd": ".",
+      "command": "SLATE_PAGINATION_REAL_OPS_PROFILER=0 SLATE_PAGINATION_REAL_OPS_COHORTS=current,rows800 SLATE_PAGINATION_REAL_OPS_ITERATIONS=5 bun benchmarks/slate-v2/donor/browser/react/pagination-virtualized-real-editor-ops.mjs",
       "metrics": {
         "primary": "pagination_virtualized_real_ops_worst_p95_ms",
         "direction": "lower",
@@ -284,12 +284,12 @@
         "upgrade": "Primary metric is the worst p95 across real editor operations for the selected cohorts, with click, selection, typing, break, delete, undo/redo, scroll-click, DOM node, and page-surface guardrails in the same artifact. Run profiler-off for user-visible latency."
       },
       "correctness": {
-        "command": "PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright test playwright/integration/examples/pagination.test.ts --project=chromium -g \"moves the cursor between the first two virtualized pagination blocks on click|keeps virtualized pagination text aligned when a paragraph becomes selected|selects virtualized pagination text when dragging from the page line margin|places virtualized pagination selection at line start from the page margin|places virtualized pagination selection at wrapped line ends|selects projected pagination words on native double click\"",
+        "command": "PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 pnpm --filter www exec playwright test --config playwright.slate.config.ts --project=chromium tests/slate-browser/donor/examples/pagination.test.ts -g \"moves the cursor between the first two virtualized pagination blocks on click|keeps virtualized pagination text aligned when a paragraph becomes selected|selects virtualized pagination text when dragging from the page line margin|places virtualized pagination selection at line start from the page margin|places virtualized pagination selection at wrapped line ends|selects projected pagination words on native double click\"",
         "policy": "Promotion requires latency gains without native click, selection, margin, wrapped-line, or double-click regressions."
       },
       "artifacts": [
         {
-          "path": ".tmp/slate-v2/tmp/slate-pagination-virtualized-real-editor-ops-benchmark.json",
+          "path": "tmp/slate-pagination-virtualized-real-editor-ops-benchmark.json",
           "required": true
         }
       ],
@@ -309,15 +309,15 @@
       "cwd": ".",
       "command": "bun benchmarks/slate-v2/donor/browser/react/huge-document-browser-trace.mjs",
       "metrics": {
-        "primary": "browser_trace_seconds",
+        "primary": "react_huge_doc_type_to_paint_p95_ms",
         "direction": "lower",
-        "unit": "s",
-        "printsMetric": false,
-        "upgrade": "Prefer benchmark-native METRIC lines when this target is touched."
+        "unit": "ms",
+        "printsMetric": true,
+        "upgrade": "Primary metric is browser p95 type-to-paint for the default auto and staged DOM-present surfaces. Supporting METRIC lines cover click-to-paint, click-to-selection-ready, cold select-to-paint, materialized select-to-paint, model-backed typing, DOM nodes, heap, long tasks, listener counts, and selector counts."
       },
       "correctness": {
         "command": "pnpm slate:packages:typecheck && pnpm slate:packages:test",
-        "policy": "Use the target-specific correctness command when one exists; bun check is the fallback before promotion."
+        "policy": "Use this trace for diagnosis only. Promotion is owned by react-huge-document-full strict budget mode or a target-specific correctness command."
       },
       "artifacts": [
         {

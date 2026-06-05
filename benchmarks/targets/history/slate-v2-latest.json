@@ -514,9 +514,9 @@
       "question": "What DOM count, heap, long-frame, and interaction traces does Slate v2 produce in Chromium?",
       "command": "bun run bench:react:huge-document:browser-trace:local",
       "cwd": ".",
-      "metric": "browser_trace_seconds",
+      "metric": "react_huge_doc_type_to_paint_p95_ms",
       "direction": "lower",
-      "printsMetric": false,
+      "printsMetric": true,
       "correctnessCommand": "bun check",
       "artifacts": [
         {
@@ -539,7 +539,7 @@
       "kind": "benchmark-suite",
       "owner": "slate-v2",
       "question": "Does Slate v2 stay fast and local across the full huge-document benchmark suite?",
-      "command": "HUGE_DOC_FULL_LEGACY_REPO=../../../slate HUGE_DOC_FULL_BLOCKS=5000 HUGE_DOC_FULL_ITERATIONS=5 HUGE_DOC_FULL_TRACE_ITERATIONS=5 HUGE_DOC_FULL_TYPE_OPS=10 bun run bench:react:huge-document:full:local",
+      "command": "HUGE_DOC_FULL_STRICT_BUDGET=1 HUGE_DOC_FULL_LEGACY_REPO=../../../slate HUGE_DOC_FULL_BLOCKS=5000 HUGE_DOC_FULL_ITERATIONS=5 HUGE_DOC_FULL_TRACE_ITERATIONS=5 HUGE_DOC_FULL_TYPE_OPS=10 bun run bench:react:huge-document:full:local",
       "cwd": ".",
       "metric": "react_huge_doc_full_max_budget_ratio",
       "direction": "lower",

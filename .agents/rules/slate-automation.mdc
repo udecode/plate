@@ -467,12 +467,19 @@ Rules:
   targeted `rg` filters, or write discovery output to an artifact;
 - do not broad-search `docs/editor-issue-harvester/**` or raw issue JSON just
   to learn ledger status. Parse `issue-closure-ledger.md` / `.tsv` directly
-  for `status`, `unchecked relevant`, total rows, and next unchecked issue;
+  for the `check` column, `unchecked relevant`, total rows, and next unchecked
+  issue;
 - when Playwright imports a package through public exports such as
   `slate-browser/playwright`, verify whether the export resolves built `dist`;
   after source changes to those packages, run the focused package build (for
   example `bun --filter slate-browser build`) before claiming the rerun tested
   the patch;
+- after package, runtime, example, or generated-site source edits, do not use an
+  already-running `PLAYWRIGHT_BASE_URL` dev server for final proof until you
+  have restarted it or proven it rebuilt the current tree. If freshness is
+  uncertain, omit `PLAYWRIGHT_BASE_URL` once and let Playwright run its managed
+  build/server path, then record the extra time as proof cost instead of trusting
+  stale green or stale red results;
 - use `*_SKIP_BUILD=1` benchmark env vars only after a successful fresh build
   from the current runtime source. If runtime, example, package export, or
   benchmark-injected browser-handle code changed since the last build, rerun
