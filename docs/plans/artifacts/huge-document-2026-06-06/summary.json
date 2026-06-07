@@ -1,0 +1,453 @@
+{
+  "generatedAt": "2026-06-06T11:28:15.007Z",
+  "summaries": [
+    {
+      "target": {
+        "name": "current-staged-5k",
+        "url": "http://localhost:3100/examples/huge-document?blocks=5000&strategy=staged&threshold=1&editor_height=600&content_visibility=none"
+      },
+      "state": "loaded",
+      "summary": {
+        "activeTag": "DIV",
+        "activeRole": "textbox",
+        "label": "current-staged-5k:loaded",
+        "modelSelection": null,
+        "nativeSelection": {
+          "collapsed": true,
+          "rangeCount": 0,
+          "textLength": 0
+        },
+        "rootRect": {
+          "height": 1078,
+          "width": 632,
+          "x": 324,
+          "y": 574
+        },
+        "textSample": "Suppellex a cognatus arca aliquam audentia.Crux fugit curatio stillicidium bardus. Acsi spargo cur laboriosam aqua avaritia thesaurus volo combibo stultus. Vari",
+        "viewSelection": null,
+        "viewSelectionMarkerCount": 0,
+        "viewSelectionMarkerTextLength": 0
+      }
+    },
+    {
+      "target": {
+        "name": "current-staged-5k",
+        "url": "http://localhost:3100/examples/huge-document?blocks=5000&strategy=staged&threshold=1&editor_height=600&content_visibility=none"
+      },
+      "state": "shift-down-up",
+      "summary": {
+        "activeTag": "DIV",
+        "activeRole": "textbox",
+        "label": "current-staged-5k:shift-down-up",
+        "modelSelection": {
+          "anchor": {
+            "offset": 0,
+            "path": [
+              0,
+              0
+            ]
+          },
+          "focus": {
+            "offset": 0,
+            "path": [
+              0,
+              0
+            ]
+          }
+        },
+        "nativeSelection": {
+          "collapsed": true,
+          "rangeCount": 1,
+          "textLength": 0
+        },
+        "rootRect": {
+          "height": 1078,
+          "width": 632,
+          "x": 324,
+          "y": 574
+        },
+        "textSample": "Suppellex a cognatus arca aliquam audentia.Crux fugit curatio stillicidium bardus. Acsi spargo cur laboriosam aqua avaritia thesaurus volo combibo stultus. Vari",
+        "viewSelection": null,
+        "viewSelectionMarkerCount": 0,
+        "viewSelectionMarkerTextLength": 0
+      }
+    },
+    {
+      "target": {
+        "name": "current-staged-5k",
+        "url": "http://localhost:3100/examples/huge-document?blocks=5000&strategy=staged&threshold=1&editor_height=600&content_visibility=none"
+      },
+      "state": "select-all",
+      "summary": {
+        "activeTag": "DIV",
+        "activeRole": "textbox",
+        "label": "current-staged-5k:select-all",
+        "modelSelection": {
+          "anchor": {
+            "offset": 0,
+            "path": [
+              0,
+              0
+            ]
+          },
+          "focus": {
+            "offset": 102,
+            "path": [
+              4999,
+              0
+            ]
+          }
+        },
+        "nativeSelection": {
+          "collapsed": true,
+          "rangeCount": 1,
+          "textLength": 0
+        },
+        "rootRect": {
+          "height": 1587,
+          "width": 632,
+          "x": 324,
+          "y": 574
+        },
+        "textSample": "Suppellex a cognatus arca aliquam audentia.Crux fugit curatio stillicidium bardus. Acsi spargo cur laboriosam aqua avaritia thesaurus volo combibo stultus. Vari",
+        "viewSelection": null,
+        "viewSelectionMarkerCount": 24,
+        "viewSelectionMarkerTextLength": 3441
+      }
+    },
+    {
+      "target": {
+        "name": "current-virtualized-5k",
+        "url": "http://localhost:3100/examples/huge-document?blocks=5000&strategy=virtualized&threshold=1&editor_height=600&estimated_block_size=48&overscan=0&content_visibility=none"
+      },
+      "state": "loaded",
+      "summary": {
+        "activeTag": "DIV",
+        "activeRole": "textbox",
+        "label": "current-virtualized-5k:loaded",
+        "modelSelection": null,
+        "nativeSelection": {
+          "collapsed": true,
+          "rangeCount": 0,
+          "textLength": 0
+        },
+        "rootRect": {
+          "height": 600,
+          "width": 632,
+          "x": 324,
+          "y": 574
+        },
+        "textSample": "Suppellex a cognatus arca aliquam audentia.Crux fugit curatio stillicidium bardus. Acsi spargo cur laboriosam aqua avaritia thesaurus volo combibo stultus. Vari",
+        "viewSelection": null,
+        "viewSelectionMarkerCount": 0,
+        "viewSelectionMarkerTextLength": 0
+      }
+    },
+    {
+      "target": {
+        "name": "current-virtualized-5k",
+        "url": "http://localhost:3100/examples/huge-document?blocks=5000&strategy=virtualized&threshold=1&editor_height=600&estimated_block_size=48&overscan=0&content_visibility=none"
+      },
+      "state": "shift-down-up",
+      "summary": {
+        "activeTag": "DIV",
+        "activeRole": "textbox",
+        "label": "current-virtualized-5k:shift-down-up",
+        "modelSelection": {
+          "anchor": {
+            "offset": 0,
+            "path": [
+              0,
+              0
+            ]
+          },
+          "focus": {
+            "offset": 0,
+            "path": [
+              0,
+              0
+            ]
+          }
+        },
+        "nativeSelection": {
+          "collapsed": true,
+          "rangeCount": 1,
+          "textLength": 0
+        },
+        "rootRect": {
+          "height": 600,
+          "width": 632,
+          "x": 324,
+          "y": 574
+        },
+        "textSample": "Suppellex a cognatus arca aliquam audentia.Crux fugit curatio stillicidium bardus. Acsi spargo cur laboriosam aqua avaritia thesaurus volo combibo stultus. Vari",
+        "viewSelection": null,
+        "viewSelectionMarkerCount": 0,
+        "viewSelectionMarkerTextLength": 0
+      }
+    },
+    {
+      "target": {
+        "name": "current-virtualized-5k",
+        "url": "http://localhost:3100/examples/huge-document?blocks=5000&strategy=virtualized&threshold=1&editor_height=600&estimated_block_size=48&overscan=0&content_visibility=none"
+      },
+      "state": "select-all",
+      "summary": {
+        "activeTag": "DIV",
+        "activeRole": "textbox",
+        "label": "current-virtualized-5k:select-all",
+        "modelSelection": {
+          "anchor": {
+            "offset": 0,
+            "path": [
+              0,
+              0
+            ]
+          },
+          "focus": {
+            "offset": 102,
+            "path": [
+              4999,
+              0
+            ]
+          }
+        },
+        "nativeSelection": {
+          "collapsed": true,
+          "rangeCount": 1,
+          "textLength": 0
+        },
+        "rootRect": {
+          "height": 600,
+          "width": 632,
+          "x": 324,
+          "y": 574
+        },
+        "textSample": "Suppellex a cognatus arca aliquam audentia.Crux fugit curatio stillicidium bardus. Acsi spargo cur laboriosam aqua avaritia thesaurus volo combibo stultus. Vari",
+        "viewSelection": null,
+        "viewSelectionMarkerCount": 12,
+        "viewSelectionMarkerTextLength": 1652
+      }
+    },
+    {
+      "target": {
+        "name": "legacy-slate-5k",
+        "url": "http://localhost:3000/examples/huge-document?blocks=5000&chunking=true&chunk_size=1000&chunk_divs=true&content_visibility=chunk"
+      },
+      "state": "loaded",
+      "summary": {
+        "activeTag": "DIV",
+        "activeRole": "textbox",
+        "label": "legacy-slate-5k:loaded",
+        "modelSelection": null,
+        "nativeSelection": {
+          "collapsed": true,
+          "rangeCount": 1,
+          "textLength": 0
+        },
+        "rootRect": {
+          "height": 319280,
+          "width": 672,
+          "x": 304,
+          "y": 449
+        },
+        "textSample": "Suppellex a cognatus arca aliquam audentia.Crux fugit curatio stillicidium bardus. Acsi spargo cur laboriosam aqua avaritia thesaurus volo combibo stultus. Vari",
+        "viewSelection": null,
+        "viewSelectionMarkerCount": 0,
+        "viewSelectionMarkerTextLength": 0
+      }
+    },
+    {
+      "target": {
+        "name": "legacy-slate-5k",
+        "url": "http://localhost:3000/examples/huge-document?blocks=5000&chunking=true&chunk_size=1000&chunk_divs=true&content_visibility=chunk"
+      },
+      "state": "shift-down-up",
+      "summary": {
+        "activeTag": "DIV",
+        "activeRole": "textbox",
+        "label": "legacy-slate-5k:shift-down-up",
+        "modelSelection": null,
+        "nativeSelection": {
+          "collapsed": false,
+          "rangeCount": 1,
+          "textLength": 44
+        },
+        "rootRect": {
+          "height": 319280,
+          "width": 672,
+          "x": 304,
+          "y": 449
+        },
+        "textSample": "Suppellex a cognatus arca aliquam audentia.Crux fugit curatio stillicidium bardus. Acsi spargo cur laboriosam aqua avaritia thesaurus volo combibo stultus. Vari",
+        "viewSelection": null,
+        "viewSelectionMarkerCount": 0,
+        "viewSelectionMarkerTextLength": 0
+      }
+    },
+    {
+      "target": {
+        "name": "legacy-slate-5k",
+        "url": "http://localhost:3000/examples/huge-document?blocks=5000&chunking=true&chunk_size=1000&chunk_divs=true&content_visibility=chunk"
+      },
+      "state": "select-all",
+      "summary": {
+        "activeTag": "DIV",
+        "activeRole": "textbox",
+        "label": "legacy-slate-5k:select-all",
+        "modelSelection": null,
+        "nativeSelection": {
+          "collapsed": false,
+          "rangeCount": 1,
+          "textLength": 745141
+        },
+        "rootRect": {
+          "height": 319280,
+          "width": 672,
+          "x": 304,
+          "y": 449
+        },
+        "textSample": "Suppellex a cognatus arca aliquam audentia.Crux fugit curatio stillicidium bardus. Acsi spargo cur laboriosam aqua avaritia thesaurus volo combibo stultus. Vari",
+        "viewSelection": null,
+        "viewSelectionMarkerCount": 0,
+        "viewSelectionMarkerTextLength": 0
+      }
+    },
+    {
+      "target": {
+        "name": "current-staged-5k",
+        "url": "http://localhost:3100/examples/huge-document?blocks=5000&strategy=staged&threshold=1&editor_height=600&content_visibility=none"
+      },
+      "state": "shift-down-from-handle",
+      "summary": {
+        "label": "current-staged-5k:shift-down-from-handle",
+        "modelSelection": {
+          "anchor": {
+            "offset": 8,
+            "path": [
+              0,
+              0
+            ]
+          },
+          "focus": {
+            "offset": 42,
+            "path": [
+              0,
+              0
+            ]
+          }
+        },
+        "nativeSelection": {
+          "collapsed": true,
+          "rangeCount": 1,
+          "textLength": 0
+        },
+        "viewSelection": null,
+        "viewSelectionMarkerCount": 1,
+        "viewSelectionMarkerTextLength": 34
+      }
+    },
+    {
+      "target": {
+        "name": "current-staged-5k",
+        "url": "http://localhost:3100/examples/huge-document?blocks=5000&strategy=staged&threshold=1&editor_height=600&content_visibility=none"
+      },
+      "state": "shift-up-after-down-from-handle",
+      "summary": {
+        "label": "current-staged-5k:shift-up-after-down-from-handle",
+        "modelSelection": {
+          "anchor": {
+            "offset": 8,
+            "path": [
+              0,
+              0
+            ]
+          },
+          "focus": {
+            "offset": 8,
+            "path": [
+              0,
+              0
+            ]
+          }
+        },
+        "nativeSelection": {
+          "collapsed": true,
+          "rangeCount": 1,
+          "textLength": 0
+        },
+        "viewSelection": null,
+        "viewSelectionMarkerCount": 0,
+        "viewSelectionMarkerTextLength": 0
+      }
+    },
+    {
+      "target": {
+        "name": "current-virtualized-5k",
+        "url": "http://localhost:3100/examples/huge-document?blocks=5000&strategy=virtualized&threshold=1&editor_height=600&estimated_block_size=48&overscan=0&content_visibility=none"
+      },
+      "state": "shift-down-from-handle",
+      "summary": {
+        "label": "current-virtualized-5k:shift-down-from-handle",
+        "modelSelection": {
+          "anchor": {
+            "offset": 8,
+            "path": [
+              0,
+              0
+            ]
+          },
+          "focus": {
+            "offset": 42,
+            "path": [
+              0,
+              0
+            ]
+          }
+        },
+        "nativeSelection": {
+          "collapsed": true,
+          "rangeCount": 1,
+          "textLength": 0
+        },
+        "viewSelection": null,
+        "viewSelectionMarkerCount": 1,
+        "viewSelectionMarkerTextLength": 34
+      }
+    },
+    {
+      "target": {
+        "name": "current-virtualized-5k",
+        "url": "http://localhost:3100/examples/huge-document?blocks=5000&strategy=virtualized&threshold=1&editor_height=600&estimated_block_size=48&overscan=0&content_visibility=none"
+      },
+      "state": "shift-up-after-down-from-handle",
+      "summary": {
+        "label": "current-virtualized-5k:shift-up-after-down-from-handle",
+        "modelSelection": {
+          "anchor": {
+            "offset": 8,
+            "path": [
+              0,
+              0
+            ]
+          },
+          "focus": {
+            "offset": 8,
+            "path": [
+              0,
+              0
+            ]
+          }
+        },
+        "nativeSelection": {
+          "collapsed": true,
+          "rangeCount": 1,
+          "textLength": 0
+        },
+        "viewSelection": null,
+        "viewSelectionMarkerCount": 0,
+        "viewSelectionMarkerTextLength": 0
+      }
+    }
+  ]
+}

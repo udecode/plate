@@ -73,15 +73,16 @@ timebox, and stop-question policy in the active plan.
 - **Full-loop mode:** default when no duration is given. Run one complete
   automation loop until a real stopping checkpoint, completion threshold, or
   ship-readiness boundary. Stop immediately for stop questions.
-- **Timed mode:** when the user says `1 hour`, `2 hours`, `overnight`, or a
-  similar duration. Treat the timebox as a loop-start budget, not a hard wall:
-  keep starting or continuing safe packets while elapsed time is below the
-  requested budget, then finish, revert, or quarantine the active packet even
-  if that exceeds the wall-clock time. Queue soft stopping checkpoints for
-  final handoff instead of interrupting the run, then ask the batch of unblock
-  questions at the end. A duration is real work time. `1h` means spend about
-  one hour starting useful packets unless no safe owner remains; it does not
-  mean stop after a proof-only packet because the next lane looks risky.
+- **Timed mode:** when the user says `1 hour`, `2 hours`, `8h`, `overnight`,
+  or a similar duration. Treat the duration as the minimum active automation
+  runtime, not an estimate, not a proof budget, and not a permission to stop
+  early. Keep starting or continuing packets until the requested duration has
+  elapsed, then finish, revert, or quarantine the active packet even if that
+  exceeds the wall-clock time. Queue soft stopping checkpoints for final
+  handoff instead of interrupting the run, then ask the batch of unblock
+  questions at the end. `8h` means at least eight hours of active Slate
+  automation unless the user interrupts or a hard external blocker makes
+  autonomous work impossible.
 - **Batch-loop mode:** when the user says `batch`, `many loops`, `stack
   questions`, or wants to unblock everything at the end. Behaves like timed
   mode even without an explicit duration: keep working through safe alternate
@@ -107,9 +108,15 @@ Natural prompts should work:
 
 For timed and batch-loop modes:
 
-- calculate or record the timebox before mutable work;
+- calculate and record the minimum runtime, start time, and target deadline
+  before mutable work;
 - do not start a risky patch after the timebox has already expired unless it is
   needed to close or quarantine the current packet;
+- do not hand off before the minimum runtime has elapsed because the obvious
+  backlog looks empty. Enter supervision mode and create the next checkpoint
+  from `slate-north-star`, the active plan, current repo evidence, Browser
+  proof gaps, benchmark gaps, issue/test harvest gaps, docs/API mismatches, and
+  workflow slowdowns;
 - do not hand off early just because the first packet closed;
 - do not turn `Needs your attention`, `deferred-with-owner`, or "route to
   slate-plan/slate-ar-perf" into a pause while the timebox is still open and a
@@ -127,7 +134,7 @@ For timed and batch-loop modes:
   active code;
 - if more than roughly 15 minutes or 25% of the requested timebox remains,
   immediately pick the next safe owner from the remaining-backlog ladder below;
-- when the timebox expires mid-packet, continue only far enough to verify,
+- when the minimum runtime expires mid-packet, continue only far enough to verify,
   revert, or quarantine that packet, then hand off;
 - finish or quarantine the current packet before handoff even if it exceeds the
   requested timebox;
@@ -289,7 +296,7 @@ chat.
 
 When a timed or batch-loop run finishes a packet early, spend the remaining
 timebox on safe backlog. A 1h run that stops after 16 minutes failed the
-supervisor contract unless no safe owner remains.
+supervisor contract. An 8h run that stops after about 1h failed harder.
 
 Default next-owner order for stable feature/API validation:
 
@@ -306,8 +313,35 @@ Default next-owner order for stable feature/API validation:
 
 For pagination/virtualization-specific prompts, replace the stable-example
 ladder with the route's scenario matrix, but keep the same rule: continue until
-the timebox expires, a risky packet cannot be closed safely, or no safe owner
-remains.
+the minimum runtime has elapsed and the active packet is closed. Before that,
+empty obvious backlog is not a stop condition.
+
+## Supervision Mode
+
+Enter supervision mode when a timed or batch run has remaining minimum runtime
+but no obvious next packet. This is not a pause. The supervisor predicts the
+next useful work from the user's taste profile and evidence already gathered.
+
+Supervision mode loop:
+
+1. reread `slate-north-star`, the active goal plan, and the latest handoff rows;
+2. scan for stale claims, weak proofs, missing browser/selection oracles,
+   benchmark honesty gaps, API/docs mismatch, command pitfalls, skill drift,
+   issue-harvest gaps, sibling-editor comparison opportunities, and slow loop
+   steps;
+3. add, split, or reprioritize checkpoints from that scan;
+4. run the highest-value reversible checkpoint that does not require new user
+   authority;
+5. record keep/revert/quarantine, changed list, metrics, review-attention, and
+   the next supervision hypothesis;
+6. repeat until the minimum runtime expires, then close the active packet and
+   hand off.
+
+If supervision mode truly finds no useful runtime patch, it must still spend
+the remaining time on proof hardening, oracle audits, benchmark hygiene,
+scratch experiments, external issue/sample mining, docs/API consistency, and
+workflow repair. "No idea what to do next" is a skill bug; patch the owning
+rule instead of asking the user to route the next loop.
 
 For risky performance or architecture lanes inside a timed run:
 
@@ -491,6 +525,10 @@ Rules:
   only a command-shape miss. Before running Vitest against any target path that
   does not already match `*.test.*`, locate the wrapper with
   `rg -n "<imported-file-basename>" <package>/test --glob "*.test.*"`;
+- `packages/slate-react` contracts are Vitest-owned. Run them from
+  `.tmp/slate-v2/packages/slate-react` as
+  `bun test:vitest test/<file>.test.tsx`; do not run them through root
+  `bun test ./packages/slate-react/...`;
 - do not run `generic-*-contract.ts` or other type-contract files with
   top-level compile examples through `bun test`; they may contain deliberate
   runtime-invalid `@ts-expect-error` calls. Use the owning package `typecheck`
@@ -808,6 +846,30 @@ native behavior is disputed, compare against the matching upstream
 `https://www.slatejs.org/examples` route or captured upstream behavior before
 weakening the oracle.
 
+If the user reports a screenshot-visible selection/caret artifact, the proof
+must include a fresh screenshot or pixel/geometry artifact from the real route
+after the real interaction. Inspect the image before claiming fixed. Pair the
+image with model selection, native `window.getSelection()` state, and visible
+view-selection marker or caret-rect assertions so a projected selection cannot
+hide a second native paint.
+
+For vertical selection/navigation, prove reverse movement. A Shift+Down row is
+not complete until Shift+Up is run from the resulting state and its focus
+sequence equals the reverse of the Shift+Down prefix. Staged-vs-virtualized
+parity is useful, but never sufficient by itself: both modes can be wrong in
+the same way. Add an independent oracle such as reverse-path equality, native
+or upstream Slate behavior, exact visual-line geometry, or screenshot proof.
+
+Do not trust Playwright rows that use browser/project-gated `return` statements
+to avoid unsupported engines or mobile lanes. That is fake green: Playwright
+reports a pass while no behavior ran. Convert those gates to `test.skip(...)`
+with a concrete reason, or remove the gate and run the row on the broader
+browser set. When widening a row exposes browser-specific DOM leaf shape, keep
+the behavior assertion strict on model text, collapsed model selection, native
+caret/selected text, and visual caret, but do not overfit a Chromium-only leaf
+path when another browser preserves the same user-visible contract with a split
+text node.
+
 Do not let a single-DOM-text-node selection row stand in for rich editor
 coverage. When the selected text can cross marks, links, inline boundaries, or
 multiple leaves, add a multi-path row with real keyboard typing, one undo,
@@ -871,6 +933,12 @@ For any row involving selection plus editing, include the post-action selection
 state after undo/redo, not just the text delta. The minimum oracle is: model
 selection, native selected text, and visible text. Add DOM endpoints or caret
 rects when the bug is about the exact selection location.
+
+For any row involving vertical Shift+Arrow selection, include the reverse leg:
+drive several steps in the reported direction, then drive back and verify the
+focus path reverses the prior sequence. Include staged and virtualized when the
+surface has both, but keep a non-parity oracle so two broken strategies do not
+produce fake confidence.
 
 Pick the smallest matrix that covers the surface risk, then expand when a bug
 appears. Add new rows when user reports, screenshots, or Browser observation
@@ -974,13 +1042,16 @@ Stop when:
   specialist owner and still needs a user-only decision or unsafe architecture
   choice;
 - the same real blocker repeats and no autonomous move remains.
-- the timed/batch timebox expires after the current packet is verified, reverted,
-  or quarantined. If the timebox expires mid-packet, keep working only until
-  that packet has a keep/revert/quarantine decision.
+- the timed/batch minimum runtime has elapsed and the current packet is
+  verified, reverted, or quarantined. If the minimum runtime expires
+  mid-packet, keep working only until that packet has a
+  keep/revert/quarantine decision.
 
 Do not stop just because one benchmark improved or one focused test passed.
 Do not stop just because a behavior lane needs `slate-patch`; switch owner
 inside the same automation loop and keep the packet ledger honest.
+Do not stop a timed or batch run before its minimum runtime because no obvious
+owner remains; enter supervision mode and create the next checkpoint.
 When stopping for missing taste, record the gap and resume by updating
 `slate-north-star` from the user's answer before more implementation.
 In timed or batch-loop mode, prefer queuing soft stopping checkpoints over
