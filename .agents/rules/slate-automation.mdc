@@ -517,8 +517,18 @@ Rules:
   miss in this workspace and waste the loop;
 - use `bun playwright ...` for Playwright specs; do not send Playwright specs
   through `bun test`;
+- after changing `packages/slate-browser/src/playwright/**` helpers or browser
+  handle APIs consumed through `slate-browser/playwright`, run
+  `bun --filter ./packages/slate-browser build` before browser proofs that import the
+  package. The specs can otherwise load stale generated package output and fail
+  on missing helper methods instead of product behavior;
 - use `bun test ./path` only with repo-relative Bun test paths from
   `.tmp/slate-v2`, or with package-local paths after recording the package cwd;
+- do not use package test directories as focused Bun filters in Slate v2. The
+  repo `bunfig.toml` ignores `*.test.*`, and several contract owners use plain
+  `.ts` file names. Prefer the package script or exact contract files, for
+  example `bun test ./packages/slate-dom/test/bridge.ts
+  ./packages/slate-dom/test/dom-coverage.ts`;
 - for package Vitest contracts, target the actual `*.test.*` entrypoint. Some
   contract bodies live in imported siblings such as `surface-contract.tsx`;
   running the sibling path directly fails the Vitest include filter and proves
@@ -543,7 +553,7 @@ Rules:
 - when Playwright imports a package through public exports such as
   `slate-browser/playwright`, verify whether the export resolves built `dist`;
   after source changes to those packages, run the focused package build (for
-  example `bun --filter slate-browser build`) before claiming the rerun tested
+  example `bun --filter ./packages/slate-browser build`) before claiming the rerun tested
   the patch;
 - after package, runtime, example, or generated-site source edits, do not use an
   already-running `PLAYWRIGHT_BASE_URL` dev server for final proof until you
