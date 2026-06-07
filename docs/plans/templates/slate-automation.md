@@ -15,7 +15,7 @@ Automation source:
 - prompt / link: pending
 - surface / route / package: pending
 - invocation mode: pending
-- timebox / deadline: pending
+- minimum runtime / deadline: pending
 - completion threshold summary: pending
 
 First checkpoint:
@@ -68,11 +68,18 @@ Blocked condition:
   source, repeated blocker, or taste gap that stops autonomous work.
 - Do not block while a safe alternate checkpoint remains runnable. In timed or
   batch mode, queue soft questions for final handoff.
+- Do not hand off before a timed minimum runtime has elapsed because the obvious
+  backlog looks empty. Enter supervision mode and infer the next checkpoint from
+  `slate-north-star`, current evidence, weak proofs, benchmark gaps, API/docs
+  mismatch, issue/test harvest gaps, and workflow slowdowns.
 
 Automation state:
 - surface: pending
 - mode: pending
+- minimum_runtime: pending
+- target_deadline: pending
 - checkpoint_policy: dynamic_supervisor
+- supervision_mode: available_when_timed_backlog_is_empty
 - current_loop: 0
 - current_checkpoint: checkpoint-zero
 - current_checkpoint_status: in_progress
@@ -110,6 +117,7 @@ Checkpoint supervisor:
 | mobile-claim-width | slate-automation | pending | P1 | Separate raw-device proof from viewport proof. | Raw proof command passes or scoped blocker recorded. | seed |
 | huge-document-smoke | slate-ar-stabilize | pending | P1 | Smoke huge-doc correctness without broad architecture work. | Typing/Enter/paste/select-all/undo/nav/scroll proof recorded. | seed |
 | perf-packet | slate-ar-fast / slate-ar-perf | pending | P2 | Optimize only after correctness is green. | Metric target or plateau recorded. | seed |
+| supervision-mode | slate-automation | pending | P0 when timed runtime remains | If backlog looks empty before minimum runtime, predict next useful checkpoint from north-star and evidence. | New checkpoint added/run, or hard blocker recorded. | seed |
 | consolidation | slate-automation | pending | P1 | Move accepted reusable decisions to durable docs/rules. | Durable owner updated or N/A. | seed |
 | final-handoff | slate-automation | pending | P0 | Emit changed list, review attention, queued checkpoints, commands, residual risks. | Handoff rows complete. | seed |
 
@@ -161,8 +169,8 @@ Work Checklist:
       plan as checkable checkpoints before implementation.
 - [ ] Short objective, completion threshold, verification surface, constraints,
       boundaries, and blocked condition are concrete.
-- [ ] Invocation mode, timebox/deadline, stop-question policy, and remaining
-      backlog ladder are recorded.
+- [ ] Invocation mode, minimum runtime/deadline, stop-question policy, remaining
+      backlog ladder, and supervision-mode fallback are recorded.
 - [ ] Checkpoint supervisor table has been reconciled at least once after the
       initial seed.
 - [ ] Each loop ends with a checkpoint mutation decision: add, update, split,
@@ -313,7 +321,7 @@ Verification evidence:
 Final handoff contract:
 - Goal plan: pending
 - Surface and route/package: pending
-- Invocation mode, elapsed/timebox, loop/checkpoint count: pending
+- Invocation mode, elapsed/minimum runtime, loop/checkpoint count: pending
 - Behavior gates and visual proof: pending
 - Primary metric baseline/latest/best and stop reason: pending
 - Bugs fixed and oracles added: pending

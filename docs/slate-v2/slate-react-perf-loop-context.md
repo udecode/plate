@@ -13,6 +13,8 @@ context.
 
 - Control/docs repo: `/Users/zbeyens/git/plate-2`
 - Code repo: `/Users/zbeyens/git/slate-v2`
+- Active private-alpha checkout for current `plate-2` loops:
+  `/Users/zbeyens/git/plate-2/.tmp/slate-v2`
 - Legacy comparison repo: `/Users/zbeyens/git/slate`
 - Draft evidence:
   - `/Users/zbeyens/git/slate-v2-draft`
@@ -186,13 +188,22 @@ REACT_HUGE_COMPARE_BLOCKS=5000 REACT_HUGE_COMPARE_ITERATIONS=5 REACT_HUGE_COMPAR
 - Current implementation should start in:
   - `/Users/zbeyens/git/slate-v2/packages/slate-react/**` for node/text read
     model changes
+  - `/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/**` when
+    the active loop is running from the `plate-2` private-alpha checkout
   - `/Users/zbeyens/git/slate-v2/packages/slate/**` only if a focused probe
     proves the blocker is core read/index ownership
 - Current closure:
+  - `auto` remains bounded partial-DOM, not a hidden alias for `staged`
   - perf lane is not closed for current shell islands
   - direct model-only typing into an unpromoted middle shell remains red
   - promoted middle-block typing is also not a closed superiority claim under
     the latest 5000/10000-block runs
+  - bounded partial-DOM promotion uses coarse 32-block groups and a smaller
+    active mounted window; the accepted 2026-06-06 packet keeps an 8-block
+    window because it cut mounted text hosts from 32 to 8 and selector
+    subscriptions from 44 to 21 without breaking browser proof
+  - the 4-block window probe is cut: promotion p95 stayed about flat and
+    promote+type regressed because the target block could stay unmounted
   - browser editing proof uses generated gauntlets for model state, visible DOM,
     DOM selection/caret where observable, focus owner, commit metadata, trace
     legality, replayability, and follow-up typing

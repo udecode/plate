@@ -231,6 +231,22 @@ Do not claim "fully tested selection/navigation" unless the proof covers the
 relevant command x direction x topology x starting-state rows. If the bug only
 needs a narrower slice, record the intentionally skipped rows and why.
 
+For screenshot-visible selection bugs, inspect a fresh screenshot after the
+real keyboard/mouse path before handoff. Model state alone is not proof. The
+row must assert:
+
+- model selection path/offset;
+- native selection state through `window.getSelection()` or `slate-browser`;
+- visible view-selection markers or caret rects for the painted layer;
+- no second native paint when Slate owns a projected selection.
+
+For vertical Shift+Arrow bugs, cover both directions in the same row. Capture
+the repeated Shift+Down focus path, then assert repeated Shift+Up equals the
+reverse of that path prefix. Staged-vs-virtualized parity is not enough because
+both modes can share the same wrong target. Add an independent oracle: reverse
+path, native/upstream behavior, exact visual line target, or screenshot/geometry
+proof.
+
 For `selectionPolicy: 'materialize'` bugs, include the materialize-specific
 coverage rows from `docs/slate-v2/selection-navigation-coverage.md`: first
 vertical Shift+Arrow entry must open hidden DOM, and the next plain vertical

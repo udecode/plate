@@ -133,6 +133,12 @@ description: Slate v2 north-star taste profile. Use when a Slate task mentions t
 - Repeated "go next" expects one best next owner, not a menu.
 - "Batch loop" means keep working through safe alternate owners and collect
   unblock questions for the end, not stop at the first soft question.
+- Timed automation durations are minimum active runtime. `8h` means at least
+  eight hours unless the user interrupts or a hard external blocker makes
+  autonomous work impossible. If the obvious backlog dries up, enter
+  supervision mode: infer the next checkpoint from this taste profile, current
+  evidence, weak proofs, benchmark gaps, API/docs mismatch, issue/test harvest
+  gaps, and workflow slowdowns instead of asking the user what to do next.
 - When the user asks which skill to call, answer with the owner boundary and
   why.
 
