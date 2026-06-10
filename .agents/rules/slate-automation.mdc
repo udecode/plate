@@ -512,6 +512,20 @@ Rules:
 
 - run commands from `.tmp/slate-v2` unless the command explicitly belongs to
   the parent repo;
+- before running a focused test, resolve the actual runnable entrypoint from
+  the owning surface, not memory: from `.tmp/slate-v2`, use targeted searches
+  such as `rg --files packages/<pkg>/test playwright scripts | rg
+  "<basename>|<suite>"`, or run the same search from the package cwd for
+  package-local Vitest. Do this first, not after one failed command. Many owner
+  files are imported by a `*.test.*` wrapper, while some root Bun contract files
+  intentionally do not use `.test.*`;
+- match the runner to the resolved entrypoint: Playwright specs under
+  `playwright/**` use `bun playwright`; root Bun contracts under
+  `packages/*/test/*.ts` use `bun test ./...`; package-local Vitest wrappers
+  use the package cwd and package script;
+- if Bun or Vitest says "No test files found" or "filters did not match", stop
+  guessing command variants. Locate the exact file or wrapper with `rg --files`
+  / `rg -n`, then rerun once with the correct runner;
 - for Bun workspace package commands, prefer path filters such as
   `bun --filter ./packages/slate-history typecheck`. Package-name filters can
   miss in this workspace and waste the loop;

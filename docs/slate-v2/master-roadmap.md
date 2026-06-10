@@ -247,10 +247,14 @@ Current tranche-7 read:
 - mobile proof is scoped by transport claim metadata and direct-device
   descriptor classification
 - final integration/build/type/lint/perf closure is the active owner
-- stronger slate-react perf-superiority is command-owned and open for typing:
-  - `REACT_HUGE_COMPARE_BLOCKS=5000 REACT_HUGE_COMPARE_ITERATIONS=5 REACT_HUGE_COMPARE_TYPE_OPS=10 bun run bench:react:huge-document:legacy-compare:local`
-  - the 5000-block proof gate is red for current shell-island typing/select
-    lanes against legacy chunking-on
+- stronger slate-react perf-superiority is command-scoped:
+  - private-alpha product gate:
+    `HUGE_DOC_FULL_STRICT_BUDGET=1 bun run bench:react:huge-document:full:local`
+  - universal all-surface diagnostic:
+    `REACT_HUGE_COMPARE_BLOCKS=5000 REACT_HUGE_COMPARE_ITERATIONS=5 REACT_HUGE_COMPARE_TYPE_OPS=10 bun run bench:react:huge-document:legacy-compare:local`
+  - the strict product gate is green; the universal diagnostic is open for
+    `v2DefaultRenderAuto middleBlockSelectThenTypeMs` against legacy
+    chunking-on
   - 1000-block runs are smoke/debug only and do not close the lane
   - current shell islands still win ready and full-document operations
   - direct model-only typing into an unpromoted middle shell is not an accepted
