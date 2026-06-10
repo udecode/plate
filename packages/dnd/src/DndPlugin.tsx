@@ -94,10 +94,30 @@ export const DndPlugin = createTPlatePlugin<DndConfig>({
         if (e.target instanceof Node) {
           const editorDOMNode = editor.api.toDOMNode(editor);
 
-          if (
-            editorDOMNode &&
-            !(e.target === editorDOMNode || editorDOMNode.contains(e.target))
-          ) {
+          if (!editorDOMNode) return;
+
+          const targetElement =
+            e.target instanceof HTMLElement ? e.target : e.target.parentElement;
+          const relatedTarget = e.relatedTarget;
+          const relatedElement =
+            relatedTarget instanceof HTMLElement
+              ? relatedTarget
+              : relatedTarget instanceof Node
+                ? relatedTarget.parentElement
+                : null;
+          const targetBlock = targetElement?.closest('[data-block-id]');
+          const relatedBlock = relatedElement?.closest('[data-block-id]');
+          const isLeavingEditor = !(
+            e.target === editorDOMNode || editorDOMNode.contains(e.target)
+          );
+          const isLeavingBlockForEditorWhitespace =
+            !!targetBlock &&
+            !relatedBlock &&
+            (!relatedTarget ||
+              (relatedTarget instanceof Node &&
+                editorDOMNode.contains(relatedTarget)));
+
+          if (isLeavingEditor || isLeavingBlockForEditorWhitespace) {
             setOption('dropTarget', undefined);
           }
         }
