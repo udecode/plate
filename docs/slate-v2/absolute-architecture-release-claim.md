@@ -183,20 +183,30 @@ React 19.2 runtime proof is based on:
 - direct DOM text sync as a capability with React fallback
 - hidden/background UI posture compatible with React Activity
 
-The 5000-block huge-document comparison is the release perf gate:
+The 5000-block huge-document product gate is:
+
+```sh
+HUGE_DOC_FULL_STRICT_BUDGET=1 bun run bench:react:huge-document:full:local
+```
+
+That wrapper owns the private-alpha product claim: core compare, product-shaped
+legacy compare, browser traces, staged/virtualized diagnostics, overlay budget,
+and strict budget accounting.
+
+The universal all-surface legacy diagnostic is separate:
 
 ```sh
 REACT_HUGE_COMPARE_BLOCKS=5000 REACT_HUGE_COMPARE_ITERATIONS=5 REACT_HUGE_COMPARE_TYPE_OPS=10 bun run bench:react:huge-document:legacy-compare:local
 ```
 
-The current release claim does not close universal huge-document superiority.
-Fresh 5000-block comparisons show shell mode winning ready, typing, select,
-and full-document lanes, while DOM-present no-shell wins direct typing/select
-lanes but still loses startup, full-document replacement, promote, and
-event-input lanes. The accepted direction is two-layer `auto`: DOM-present is
-the safe default baseline, and shell/occlusion escalation remains explicit or
-proof-disabled until browser find, screen reader, native selection, copy/paste,
-IME, mobile, undo/history, and collaboration proof passes.
+The current claim does not close universal huge-document superiority. The
+strict product wrapper is green with zero failures and zero budget failures.
+The broad all-surface diagnostic remains open when it reports slower product
+typing/select rows against legacy chunking-on. The accepted direction is
+two-layer `auto`: DOM-present is the safe default baseline, and shell/occlusion
+escalation remains explicit or proof-disabled until browser find, screen
+reader, native selection, copy/paste, IME, mobile, undo/history, and
+collaboration proof passes.
 
 ## Release Limits
 
