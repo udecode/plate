@@ -51,7 +51,7 @@ export const ColumnElement = withHOC(
       'isSelectionAreaVisible'
     );
 
-    const { isDragging, previewRef, handleRef } = useDraggable({
+    const { isDragging, nodeRef, previewRef, handleRef } = useDraggable({
       element: props.element,
       orientation: 'horizontal',
       type: 'column',
@@ -79,7 +79,7 @@ export const ColumnElement = withHOC(
 
         <PlateElement
           {...props}
-          ref={useComposedRef(props.ref, previewRef)}
+          ref={useComposedRef(props.ref, previewRef, nodeRef)}
           className="h-full px-2 pt-2 group-first/column:pl-0 group-last/column:pr-0"
         >
           <div
