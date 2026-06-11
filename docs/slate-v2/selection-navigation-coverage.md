@@ -120,7 +120,7 @@ Browser-visible slices also assert:
 | class slice | exact repro plus one sibling direction or topology sharing the owner |
 | route coverage | all relevant command families for one example route |
 | engine coverage | same command families across plain, hidden DOM, root, void, synced, and virtualized topologies |
-| release claim | engine coverage plus focused browser proof, package tests, and full-gate decision |
+| private-alpha claim | engine coverage plus focused browser proof, package tests, and full-gate decision |
 
 ## Default Slice For Selection Bugs
 

@@ -504,7 +504,7 @@ final handoff.
 In `.tmp/slate-v2`, prefer these focused forms:
 
 ```bash
-PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/<suite>.test.ts --project=<chromium|firefox|webkit> --grep "<pattern>"
+PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun run playwright playwright/integration/examples/<suite>.test.ts --project=<chromium|firefox|webkit> --grep "<pattern>"
 bun test ./packages/<package>/test/<file>.ts --test-name-pattern "<pattern>"
 ```
 
@@ -512,6 +512,10 @@ Rules:
 
 - run commands from `.tmp/slate-v2` unless the command explicitly belongs to
   the parent repo;
+- keep parent-doc and skill scans in `/Users/zbeyens/git/plate-2`; keep runtime,
+  package, benchmark, and Playwright scans in `.tmp/slate-v2`. Do not ask `rg`
+  for parent `docs/slate-v2/**` from the `.tmp/slate-v2` cwd or for runtime
+  package paths from the parent cwd unless the path is explicitly rooted;
 - before running a focused test, resolve the actual runnable entrypoint from
   the owning surface, not memory: from `.tmp/slate-v2`, use targeted searches
   such as `rg --files packages/<pkg>/test playwright scripts | rg
@@ -520,7 +524,7 @@ Rules:
   files are imported by a `*.test.*` wrapper, while some root Bun contract files
   intentionally do not use `.test.*`;
 - match the runner to the resolved entrypoint: Playwright specs under
-  `playwright/**` use `bun playwright`; root Bun contracts under
+  `playwright/**` use `bun run playwright`; root Bun contracts under
   `packages/*/test/*.ts` use `bun test ./...`; package-local Vitest wrappers
   use the package cwd and package script;
 - if Bun or Vitest says "No test files found" or "filters did not match", stop
@@ -529,8 +533,17 @@ Rules:
 - for Bun workspace package commands, prefer path filters such as
   `bun --filter ./packages/slate-history typecheck`. Package-name filters can
   miss in this workspace and waste the loop;
-- use `bun playwright ...` for Playwright specs; do not send Playwright specs
+- use `bun run playwright ...` for Playwright specs; do not send Playwright specs
   through `bun test`;
+- every integration entrypoint that imports public package exports during
+  Playwright, including async/local wrappers, must route through the same
+  rebuild path as `bun run playwright`; raw `playwright test` is a stale-dist
+  footgun when `slate-browser/playwright` changes;
+- if an integration wrapper captures `--reporter=json` from Playwright stdout,
+  do not run the full `bun run playwright` package script as that child command.
+  Run the required package build, such as `bun --filter slate-browser build`,
+  as a separate preflight, then run raw Playwright with JSON stdout so
+  `report.json` stays parseable;
 - after changing `packages/slate-browser/src/playwright/**` helpers or browser
   handle APIs consumed through `slate-browser/playwright`, run
   `bun --filter ./packages/slate-browser build` before browser proofs that import the
@@ -564,11 +577,22 @@ Rules:
   to learn ledger status. Parse `issue-closure-ledger.md` / `.tsv` directly
   for the `check` column, `unchecked relevant`, total rows, and next unchecked
   issue;
+- before writing one-off reducers over generated benchmark, ledger, or proof
+  artifacts, inspect the artifact schema first: print the TSV header or JSON
+  top-level keys, then parse the real field names. Do not guess columns such as
+  `checked` when the ledger uses `check`, and do not guess benchmark summary
+  keys before reading the artifact shape;
+- when durable Slate v2 docs contain absolute checkout paths, verify the path
+  exists before reusing the command. In this repo the live Slate v2 runtime cwd
+  is `/Users/zbeyens/git/plate-2/.tmp/slate-v2`; stale
+  `/Users/zbeyens/git/slate-v2` command snippets should be repaired unless the
+  doc explicitly names a historical draft/source checkout such as
+  `slate-v2-draft`;
 - when Playwright imports a package through public exports such as
   `slate-browser/playwright`, verify whether the export resolves built `dist`;
   after source changes to those packages, run the focused package build (for
   example `bun --filter ./packages/slate-browser build`) before claiming the rerun tested
-  the patch;
+  the patch, and patch any wrapper script that bypasses that build path;
 - after package, runtime, example, or generated-site source edits, do not use an
   already-running `PLAYWRIGHT_BASE_URL` dev server for final proof until you
   have restarted it or proven it rebuilt the current tree. If freshness is
@@ -875,7 +899,9 @@ must include a fresh screenshot or pixel/geometry artifact from the real route
 after the real interaction. Inspect the image before claiming fixed. Pair the
 image with model selection, native `window.getSelection()` state, and visible
 view-selection marker or caret-rect assertions so a projected selection cannot
-hide a second native paint.
+hide a second native paint. When a route uses projected/view selection, include
+the `slate-browser` `noDoubleSelectionHighlight` assertion or an equivalent
+pixel/geometry proof.
 
 For vertical selection/navigation, prove reverse movement. A Shift+Down row is
 not complete until Shift+Up is run from the resulting state and its focus
@@ -962,7 +988,9 @@ For any row involving vertical Shift+Arrow selection, include the reverse leg:
 drive several steps in the reported direction, then drive back and verify the
 focus path reverses the prior sequence. Include staged and virtualized when the
 surface has both, but keep a non-parity oracle so two broken strategies do not
-produce fake confidence.
+produce fake confidence. If the row uses projected/view selection, assert
+`noDoubleSelectionHighlight` so the test fails on mixed native and projected
+blue highlights.
 
 Pick the smallest matrix that covers the surface risk, then expand when a bug
 appears. Add new rows when user reports, screenshots, or Browser observation

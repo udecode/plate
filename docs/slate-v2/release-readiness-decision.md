@@ -1,21 +1,23 @@
 ---
 date: 2026-04-18
-topic: slate-v2-release-readiness
+topic: slate-v2-private-alpha-readiness
 status: active
 ---
 
-# Slate v2 Release Readiness Decision
+# Slate v2 Private-Alpha Readiness Decision
 
 ## Current Verdict
 
-Not release-ready.
+Continuous private alpha. No release, publish, PR, or changeset readiness claim
+is live unless a prompt explicitly asks for that lane.
 
 The repo has moved past the package-runtime blocker phase. The active owner is
 final claim-width closure for the absolute architecture plan.
 
 ## Readiness Gates
 
-The migration cannot claim RC readiness until all of these are true:
+Release or publish readiness stays out of scope until all of these are true and
+a prompt explicitly asks for that lane:
 
 1. tranche 1 root/tooling/docs lane is stable
 2. tranche 2 React 19.2 + Next + TypeScript 6 compatibility lane is stable
@@ -25,20 +27,19 @@ The migration cannot claim RC readiness until all of these are true:
 5. surviving drift is either:
    - engine-forced, or
    - clear current value
-6. all other drift is named `post RC`
+6. all other drift is named deferred claim-width work
 
-## Current Blockers
+## Current Claim-Width Boundaries
 
-- final integration, build, typecheck, lint, and perf gates need a same-turn
-  closeout run for the active plan
-- the editing epoch destructive proof is green for focused generated and
-  persistent-profile rows, but the full `bun test:integration-local` closure
-  sweep still needs to run in the final slice
-- release docs must keep the exact claim width from
+- no current private-alpha blocker remains from final integration, build,
+  typecheck, lint, perf, or `bun test:integration-local` closure; those gates
+  are release-only same-turn proof if a prompt explicitly asks for release,
+  publish, PR, or changeset readiness
+- private-alpha claim docs must keep the exact claim width from
   [absolute-architecture-release-claim.md](/Users/zbeyens/git/plate-2/docs/slate-v2/absolute-architecture-release-claim.md)
 - native mobile proof stays scoped to the current automated claim
 - the huge-document middle-shell caveat stays explicit
-- RC ledger closure and completion-check closure are pending
+- proof-ledger closure and completion-check closure are pending
 
 ## Current Claim Width
 
@@ -87,8 +88,8 @@ The live claim is only this:
     `integrity-contract.ts`
   - the live history compare owner exists again:
     `bench:history:compare:local`
-  - current history perf still trails legacy, but in a bounded class rather
-    than a blocker-shaped regression
+  - current history compare is green for measured p95 lanes; keep the claim
+    command-scoped instead of calling it exhaustive helper coverage
 - `packages/slate-hyperscript` is now materially farther along too:
   - package-local test/build/typecheck/lint are green
   - fixture parsing and cursor/selection construction are still owned by
@@ -143,7 +144,8 @@ The live claim is only this:
 
 Tranches 3 through 6 are now settled enough to stop being the main blocker.
 
-No blanket RC claim beyond that narrower package/runtime truth is live yet.
+No blanket release or publish claim beyond that narrower package/runtime truth
+is live.
 
 Parity alone is not enough.
 
@@ -155,11 +157,12 @@ The live program must also preserve the v2 reason to exist:
 - better large-document posture than legacy
 - generated browser gauntlets for cursor/caret claims
 
-The next mainline blocker is:
+The next release-only gate is:
 
-- final same-turn integration/build/type/lint/perf closure on top of the
+- a fresh same-turn integration/build/type/lint/perf closeout on top of the
   verified public API, kernel, generated gauntlet, mobile-scope, and perf
-  owners
+  owners, but only when a prompt explicitly asks for release, publish, PR, or
+  changeset readiness
 
 not:
 

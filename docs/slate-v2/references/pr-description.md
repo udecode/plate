@@ -664,7 +664,7 @@ Proof references:
 - `.tmp/slate-v2/playwright/integration/examples/placeholder.test.ts`
 - `.tmp/slate-v2/playwright/integration/examples/inlines.test.ts`
 - `.tmp/slate-v2/playwright/integration/examples/mentions.test.ts`
-- `.tmp/slate-v2/playwright/integration/examples/highlighted-text.test.ts`
+- `.tmp/slate-v2/playwright/integration/examples/decorations-async.test.ts`
 - `.tmp/slate-v2/playwright/integration/examples/markdown-shortcuts.test.ts`
 - `.tmp/slate-v2/scripts/benchmarks/browser/react/rerender-breadth.tsx`
 - `.tmp/slate-v2/scripts/benchmarks/browser/react/huge-document-overlays.tsx`
@@ -854,8 +854,8 @@ Proof references:
 - `.tmp/slate-v2/site/examples/ts/markdown-shortcuts.tsx`
 - `.tmp/slate-v2/site/examples/ts/inlines.tsx`
 - `bun check` in `.tmp/slate-v2`
-- `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun x playwright test playwright/integration/examples/forced-layout.test.ts --project=chromium`
-- `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun x playwright test playwright/integration/examples/check-lists.test.ts playwright/integration/examples/markdown-shortcuts.test.ts playwright/integration/examples/inlines.test.ts --project=chromium`
+- `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun run playwright playwright/integration/examples/forced-layout.test.ts --project=chromium`
+- `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun run playwright playwright/integration/examples/check-lists.test.ts playwright/integration/examples/markdown-shortcuts.test.ts playwright/integration/examples/inlines.test.ts --project=chromium`
 - `docs/plans/2026-05-13-slate-v2-editable-input-rule-ownership-ralplan.md`
 
 ## 6.2.1 React Editable Native Input Boundary
@@ -979,8 +979,7 @@ Affected:
 - `.tmp/slate-v2/site/examples/ts/code-highlighting.tsx`
 - `.tmp/slate-v2/site/examples/ts/search-highlighting.tsx`
 - `.tmp/slate-v2/site/examples/ts/markdown-preview.tsx`
-- `.tmp/slate-v2/site/examples/ts/highlighted-text.tsx`
-- `.tmp/slate-v2/site/examples/ts/external-decoration-sources.tsx`
+- `.tmp/slate-v2/site/examples/ts/decorations-async.tsx`
 - `.tmp/slate-v2/site/examples/ts/rendering-strategy-runtime.tsx`
 - `docs/plans/2026-05-04-slate-v2-legacy-example-dx-ralplan.md`
 - `docs/plans/2026-05-18-slate-v2-search-highlighting-dx-ralplan.md`
@@ -1053,8 +1052,7 @@ Proof references:
 - `.tmp/slate-v2/site/examples/ts/code-highlighting.tsx`
 - `.tmp/slate-v2/site/examples/ts/search-highlighting.tsx`
 - `.tmp/slate-v2/site/examples/ts/markdown-preview.tsx`
-- `.tmp/slate-v2/site/examples/ts/highlighted-text.tsx`
-- `.tmp/slate-v2/site/examples/ts/external-decoration-sources.tsx`
+- `.tmp/slate-v2/site/examples/ts/decorations-async.tsx`
 - `.tmp/slate-v2/site/examples/ts/rendering-strategy-runtime.tsx`
 - `docs/plans/2026-05-04-slate-v2-legacy-example-dx-ralplan.md`
 - `docs/plans/2026-05-18-slate-v2-search-highlighting-dx-ralplan.md`
@@ -1073,7 +1071,7 @@ Affected:
 - `.tmp/slate-v2/docs/libraries/slate-react/annotations.md`
 - `.tmp/slate-v2/docs/libraries/slate-react/hooks.md`
 - `.tmp/slate-v2/site/examples/ts/collaborative-comments.tsx`
-- `.tmp/slate-v2/site/examples/ts/review-comments.tsx`
+- `.tmp/slate-v2/site/examples/ts/comment-mode.tsx`
 - `.tmp/slate-v2/site/examples/ts/persistent-annotation-anchors.tsx`
 - `docs/plans/2026-05-04-slate-v2-legacy-example-dx-ralplan.md`
 
@@ -1105,7 +1103,7 @@ Proof references:
 - `.tmp/slate-v2/packages/slate-react/test/annotation-store-contract.tsx`
 - `.tmp/slate-v2/packages/slate-react/test/widget-layer-contract.tsx`
 - `.tmp/slate-v2/site/examples/ts/collaborative-comments.tsx`
-- `.tmp/slate-v2/site/examples/ts/review-comments.tsx`
+- `.tmp/slate-v2/site/examples/ts/comment-mode.tsx`
 - `.tmp/slate-v2/site/examples/ts/persistent-annotation-anchors.tsx`
 - `docs/plans/2026-05-04-slate-v2-legacy-example-dx-ralplan.md`
 

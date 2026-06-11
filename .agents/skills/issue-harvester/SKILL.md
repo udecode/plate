@@ -308,7 +308,7 @@ Prefer focused commands from the owner repo:
 ```bash
 cd .tmp/slate-v2
 bun test ./packages/<package>/test/<file>.ts --test-name-pattern "<test>"
-PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/<suite>.test.ts --project=chromium --grep "<test>"
+PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun run playwright playwright/integration/examples/<suite>.test.ts --project=chromium --grep "<test>"
 ```
 
 For Plate-owned rows, use the relevant Plate package/example command. If the

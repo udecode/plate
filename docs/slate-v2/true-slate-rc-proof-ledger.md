@@ -8,11 +8,13 @@ status: active
 
 ## Current Read
 
-The fresh-branch program now has package-runtime proof for `slate-dom`,
+The current private-alpha program has package-runtime proof for `slate-dom`,
 `slate-react`, and the public read/update runtime spine.
 
-The next mainline blocker is final same-turn gate closure, not missing DOM,
-React, public API, kernel, gauntlet, mobile-scope, or huge-doc perf owners.
+Same-turn private-alpha gate closure is green for the current tree after the
+latest `slate-browser/playwright` helper and Playwright wrapper-script edits.
+The open boundary is claim width: release, publish, PR readiness, and raw-device
+mobile proof remain unclaimed unless a run explicitly owns them.
 
 Not:
 
@@ -26,8 +28,9 @@ Latest read:
 
 - the broad write-path regression story is no longer the main blocker
 - explicit normalization is no longer the blocker
-- observation and huge-document core typing are still slower than legacy, but
-  now in a bounded class instead of a catastrophic one
+- observation and huge-document proof are claim-scoped instead of broadly red:
+  the latest broad direct legacy diagnostic is current-green, while narrower
+  caveats remain tracked explicitly
 
 Tranche 1 proof is only:
 
@@ -60,8 +63,9 @@ These are the current reads:
   cursor/caret claims
 - mobile/IME transport proof is scoped by explicit claim metadata and
   descriptor classification
-- final benchmark/root-proof claim width is classified; final same-turn gate
-  closure is still open
+- final benchmark/root-proof claim width is classified; same-turn
+  private-alpha closure is green for the current tree after the latest
+  `slate-browser/playwright` helper and Playwright wrapper-script edits
 
 ## V2 North-Star Proof Lanes
 
@@ -73,19 +77,24 @@ These are the current reads:
 - React rerender locality under overlay churn has a command-backed owner
 - huge-document overlay cost and corridor-first posture have a command-backed
   owner
-- direct v2-vs-legacy huge-document perf superiority is open for typing:
-  - `bench:react:huge-document:legacy-compare:local` directly compares legacy
-    chunking-on, legacy chunking-off, and v2
-  - the 5000-block direct comparison is the release proof gate
-  - 1000-block runs are smoke/debug only and do not close the lane
-  - current shell islands win startup and full-document operations
-  - current shell islands lose steady typing/select lanes and select-all against
-    legacy chunking-on
-  - direct model-only typing into an unpromoted middle shell is not an accepted
-    superiority caveat anymore
-  - promoted middle-block typing is not a closed superiority claim
-  - the next accepted direction is DOM-present auto first, with shell mode
-    explicit until browser/native proof passes
+- direct v2-vs-legacy huge-document perf is claim-scoped:
+  - `HUGE_DOC_FULL_STRICT_BUDGET=1 bun run bench:react:huge-document:full:local`
+    is the private-alpha product gate
+  - `bench:react:huge-document:legacy-compare:local` is the universal diagnostic
+    that directly compares legacy chunking-on, legacy chunking-off, and v2
+  - strict 5000-block product proof is green with zero failures and zero budget
+    failures
+  - the latest broad diagnostic worst p95 ratio is `0.77`
+  - `v2DefaultRenderAuto middleBlockSelectThenTypeMs` is `69.78ms` vs legacy
+    `90.42ms`
+  - explicit `v2DomPresent` is `44.56ms` on that same lane
+  - default `auto` remains bounded partial-DOM, not a hidden alias for staged or
+    a reason to replace behavior proof with a forced strategy switch
+  - repeated Shift+Down is behavior-green with no long tasks but remains slower
+    than ProseMirror/Lexical by about `7ms` p95
+  - select-all-delete undo on 10k staged surfaces is a residual p95 /
+    bulk-restore caveat with long-task p95 `0ms`; benchmark artifacts include
+    kernel/profiler summaries for that lane
 - read/update public lifecycle proof is live:
   - public hard-cut contracts guard examples and public teaching paths
   - primitive method runtime contracts cover implicit target behavior
@@ -112,19 +121,20 @@ These are the current reads:
   - the same-path example remains the legacy chunking playground
   - v2 huge-doc runtime behavior is owned by `large-document-runtime` browser
     rows and the 5000-block legacy compare gate
-- required v2-only example/proof rows are real in Chromium:
-  - `highlighted-text`
+- required current v2-only example/proof owners are real in Chromium:
+  - `search-highlighting`
+  - `code-highlighting`
+  - `decorations-async`
   - `persistent-annotation-anchors`
-  - `external-decoration-sources`
-  - `review-comments`
+  - `comment-mode`
 - same-path `custom-placeholder`, `paste-html`, `richtext`, `editable-voids`,
   and `images` are recovered rows with current Chromium proof.
 
 ## Rule
 
-Do not upgrade this ledger from runtime proof to RC readiness until the final
-integration, build, typecheck, lint, and perf gates run in the active closeout
-slice.
+Do not upgrade this ledger from private-alpha runtime proof to RC, release,
+publish, PR, or raw-device readiness without an explicit run that owns that
+claim width.
 
 Green harness rows, narrow browser proof, source closeness, or same-path
 examples do not close blanket claim-width or parity by themselves.
@@ -141,11 +151,12 @@ Legacy parity does not close the north-star lane by itself either.
     `packages/slate-history/test/integrity-contract.ts`
   - the live compare owner exists again:
     `bun run bench:history:compare:local`
-  - current compare read is still slower than legacy, but in a bounded class:
-    - typing undo: `+29.35ms`
-    - typing redo: `+20.04ms`
-    - fragment undo: `+25.29ms`
-    - fragment redo: `+31.77ms`
+  - latest compare read is faster than legacy across the measured p95 lanes:
+    - typing undo: `0.41ms` vs legacy `0.46ms`
+    - typing redo: `0.11ms` vs legacy `1.73ms`
+    - fragment undo: `0.55ms` vs legacy `3.86ms`
+    - fragment redo: `0.73ms` vs legacy `5.94ms`
+    - worst p95 ratio: `0.89`
 - `slate-hyperscript` is now materially closed enough on top of settled core
   `slate` and settled support-package `slate-history`:
   - package-local test/build/typecheck/lint are green
@@ -159,4 +170,4 @@ Legacy parity does not close the north-star lane by itself either.
     - `createText`
     - `jsx`
 - support-package closure is no longer the main blocker; the remaining work is
-  broader claim-width and RC-ledger truth
+  broader claim-width and private-alpha proof-ledger truth

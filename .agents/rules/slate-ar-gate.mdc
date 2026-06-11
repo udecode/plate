@@ -58,7 +58,7 @@ For full editor behavior proof, prefer one focused command first, then broaden:
 cd .tmp/slate-v2
 bun check
 bun check:full
-PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/<suite>.test.ts --project=chromium
+PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun run playwright playwright/integration/examples/<suite>.test.ts --project=chromium
 ```
 
 Record intentionally skipped behavior families when a full suite is too broad

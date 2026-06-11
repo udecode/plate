@@ -129,7 +129,7 @@ Common Slate v2 gates:
 cd .tmp/slate-v2
 bun --filter slate-react typecheck
 bun check
-PLAYWRIGHT_BASE_URL=http://localhost:3100 bun playwright <test-file> --project=chromium --grep "<issue row>"
+PLAYWRIGHT_BASE_URL=http://localhost:3100 bun run playwright <test-file> --project=chromium --grep "<issue row>"
 ```
 
 Use only the commands that fit the touched surface. If `bun check` fails for an

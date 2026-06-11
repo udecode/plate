@@ -18,7 +18,7 @@ const owners = {
   ime: {
     action: 'refactor-existing/create-new',
     command:
-      'PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/richtext.test.ts --project=chromium --grep "IME|composition|beforeinput"',
+      'PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun run playwright playwright/integration/examples/richtext.test.ts --project=chromium --grep "IME|composition|beforeinput"',
     owner:
       '.tmp/slate-v2/playwright/integration/examples/richtext.test.ts; .tmp/slate-v2/packages/slate-browser/src/playwright/ime.ts',
     proof: 'browser IME/beforeinput plus package history when applicable',
@@ -32,14 +32,14 @@ const owners = {
   selection: {
     action: 'refactor-existing/create-new',
     command:
-      'PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/stress/generated-editing.test.ts --project=chromium --grep "selection|range|cursor|caret"',
+      'PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun run playwright playwright/stress/generated-editing.test.ts --project=chromium --grep "selection|range|cursor|caret"',
     owner: '.tmp/slate-v2/playwright/stress/generated-editing.test.ts',
     proof: 'browser model/native selection proof',
   },
   clipboard: {
     action: 'refactor-existing/create-new',
     command:
-      'PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/paste-html.test.ts --project=chromium --grep "paste|clipboard|copy|cut"',
+      'PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun run playwright playwright/integration/examples/paste-html.test.ts --project=chromium --grep "paste|clipboard|copy|cut"',
     owner:
       '.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts; .tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts',
     proof: 'browser clipboard plus slate-dom package proof',
@@ -54,7 +54,7 @@ const owners = {
   table: {
     action: 'refactor-existing/create-new/defer-model',
     command:
-      'PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/tables.test.ts --project=chromium --grep "table|cell|selection|paste|drag"',
+      'PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun run playwright playwright/integration/examples/tables.test.ts --project=chromium --grep "table|cell|selection|paste|drag"',
     owner:
       '.tmp/slate-v2/playwright/integration/examples/tables.test.ts; future table model owner for whole-table/nested-table semantics',
     proof: 'browser table containment/navigation plus package insert-fragment proof',
@@ -62,7 +62,7 @@ const owners = {
   voidAtom: {
     action: 'refactor-existing/create-new',
     command:
-      'PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/editable-voids.test.ts --project=chromium --grep "void|decorator|image|mention|Enter|Arrow"',
+      'PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun run playwright playwright/integration/examples/editable-voids.test.ts --project=chromium --grep "void|decorator|image|mention|Enter|Arrow"',
     owner:
       '.tmp/slate-v2/playwright/integration/examples/editable-voids.test.ts; .tmp/slate-v2/playwright/integration/examples/mentions.test.ts',
     proof: 'browser atom/void keyboard, paste, and IME proof',
@@ -84,7 +84,7 @@ const owners = {
   shadowDom: {
     action: 'covered/refactor-existing',
     command:
-      'PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/shadow-dom.test.ts --project=chromium',
+      'PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun run playwright playwright/integration/examples/shadow-dom.test.ts --project=chromium',
     owner: '.tmp/slate-v2/playwright/integration/examples/shadow-dom.test.ts',
     proof: 'browser shadow-root input and selection proof',
   },

@@ -48,7 +48,7 @@ clone. It is not the old rewrite archive.
   - `slate-dom`
   - `slate-react`
 - the live stack again has explicit north-star docs for:
-  - absolute architecture release claim
+  - absolute architecture private-alpha claim
   - post-closure proof hardening plan
   - architecture contract
   - overlay roadmap

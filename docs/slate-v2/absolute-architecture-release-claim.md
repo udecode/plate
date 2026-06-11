@@ -1,10 +1,10 @@
 ---
 date: 2026-04-24
-topic: slate-v2-absolute-architecture-release-claim
+topic: slate-v2-absolute-architecture-private-alpha-claim
 status: active
 ---
 
-# Slate v2 Absolute Architecture Release Claim
+# Slate v2 Absolute Architecture Private-Alpha Claim
 
 ## Current Claim
 
@@ -208,7 +208,7 @@ escalation remains explicit or proof-disabled until browser find, screen
 reader, native selection, copy/paste, IME, mobile, undo/history, and
 collaboration proof passes.
 
-## Release Limits
+## Claim Limits
 
 The architecture does not claim:
 

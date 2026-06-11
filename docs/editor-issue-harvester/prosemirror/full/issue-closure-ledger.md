@@ -14,8 +14,8 @@ are defer-only and must not trigger Plate edits.
 | Bucket | Count |
 | --- | ---: |
 | skip | 572 |
-| defer | 538 |
-| keep-portable | 285 |
+| defer | 502 |
+| keep-portable | 321 |
 | plate-owned | 25 |
 | unchecked relevant | 0 |
 
@@ -24,9 +24,9 @@ are defer-only and must not trigger Plate edits.
 | Closure | Count |
 | --- | ---: |
 | irrelevant:invalid-skip | 572 |
-| relevant:deferred-with-owner | 563 |
-| relevant:covered-by-existing-test | 186 |
-| relevant:test-written | 99 |
+| relevant:deferred-with-owner | 527 |
+| relevant:covered-by-existing-test | 194 |
+| relevant:test-written | 127 |
 
 ## Next Unchecked Relevant Issues
 

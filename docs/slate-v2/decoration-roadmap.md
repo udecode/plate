@@ -82,14 +82,14 @@ Only reopen the architecture if:
 
 Current local proof seams:
 
-- [range-ref-contract.ts](/Users/zbeyens/git/slate-v2/packages/slate/test/range-ref-contract.ts)
-- [projections-and-selection-contract.tsx](/Users/zbeyens/git/slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx)
-- [annotation-store-contract.tsx](/Users/zbeyens/git/slate-v2/packages/slate-react/test/annotation-store-contract.tsx)
-- [widget-layer-contract.tsx](/Users/zbeyens/git/slate-v2/packages/slate-react/test/widget-layer-contract.tsx)
-- [bridge.ts](/Users/zbeyens/git/slate-v2/packages/slate-dom/test/bridge.ts)
-- [search-highlighting.test.ts](/Users/zbeyens/git/slate-v2/playwright/integration/examples/search-highlighting.test.ts)
-- [code-highlighting.test.ts](/Users/zbeyens/git/slate-v2/playwright/integration/examples/code-highlighting.test.ts)
-- [persistent-annotation-anchors.test.ts](/Users/zbeyens/git/slate-v2/playwright/integration/examples/persistent-annotation-anchors.test.ts)
+- [range-ref-contract.ts](/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate/test/range-ref-contract.ts)
+- [projections-and-selection-contract.tsx](/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx)
+- [annotation-store-contract.tsx](/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/annotation-store-contract.tsx)
+- [widget-layer-contract.tsx](/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/widget-layer-contract.tsx)
+- [bridge.ts](/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/bridge.ts)
+- [search-highlighting.test.ts](/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/search-highlighting.test.ts)
+- [code-highlighting.test.ts](/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/code-highlighting.test.ts)
+- [persistent-annotation-anchors.test.ts](/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/persistent-annotation-anchors.test.ts)
 
 ## Execution checkpoint
 
@@ -323,15 +323,15 @@ remained in Waves 2 and 4.
 
 What is already true now:
 
-1. [`search-highlighting.tsx`](/Users/zbeyens/git/slate-v2/site/examples/ts/search-highlighting.tsx),
-   [`code-highlighting.tsx`](/Users/zbeyens/git/slate-v2/site/examples/ts/code-highlighting.tsx),
+1. [`search-highlighting.tsx`](/Users/zbeyens/git/plate-2/.tmp/slate-v2/site/examples/ts/search-highlighting.tsx),
+   [`code-highlighting.tsx`](/Users/zbeyens/git/plate-2/.tmp/slate-v2/site/examples/ts/code-highlighting.tsx),
    and
-   [`highlighted-text.tsx`](/Users/zbeyens/git/slate-v2/site/examples/ts/highlighted-text.tsx)
+   [`decorations-async.tsx`](/Users/zbeyens/git/plate-2/.tmp/slate-v2/site/examples/ts/decorations-async.tsx)
    are running on the explicit decoration-source model.
-2. [`persistent-annotation-anchors.tsx`](/Users/zbeyens/git/slate-v2/site/examples/ts/persistent-annotation-anchors.tsx),
-   [`mentions.tsx`](/Users/zbeyens/git/slate-v2/site/examples/ts/mentions.tsx),
+2. [`persistent-annotation-anchors.tsx`](/Users/zbeyens/git/plate-2/.tmp/slate-v2/site/examples/ts/persistent-annotation-anchors.tsx),
+   [`mentions.tsx`](/Users/zbeyens/git/plate-2/.tmp/slate-v2/site/examples/ts/mentions.tsx),
    and
-   [`hovering-toolbar.tsx`](/Users/zbeyens/git/slate-v2/site/examples/ts/hovering-toolbar.tsx)
+   [`hovering-toolbar.tsx`](/Users/zbeyens/git/plate-2/.tmp/slate-v2/site/examples/ts/hovering-toolbar.tsx)
    already have package/browser proof against the explicit annotation/widget
    lane.
 3. `slate-react` already ships explicit:
@@ -507,7 +507,7 @@ Freeze this order:
 
 1. `search-highlighting`
 2. `code-highlighting`
-3. `highlighted-text`
+3. `decorations-async`
 4. `persistent-annotation-anchors`
 5. `hovering-toolbar`
 6. `mentions`
@@ -657,7 +657,7 @@ Every wave needs all three proof classes when relevant:
 - browser:
   - `search-highlighting.test.ts`
   - `code-highlighting.test.ts`
-  - `highlighted-text.test.ts`
+  - `decorations-async.test.ts`
 - benchmark:
   - deferred to Wave 6 perf closure
 
@@ -787,25 +787,25 @@ public story:
 ### Canonical examples
 
 1. `search-highlighting`
-   - [/Users/zbeyens/git/slate-v2/site/examples/ts/search-highlighting.tsx](/Users/zbeyens/git/slate-v2/site/examples/ts/search-highlighting.tsx)
+   - [/Users/zbeyens/git/plate-2/.tmp/slate-v2/site/examples/ts/search-highlighting.tsx](/Users/zbeyens/git/plate-2/.tmp/slate-v2/site/examples/ts/search-highlighting.tsx)
    - proves transient explicit-refresh decoration sources
 2. `code-highlighting`
-   - [/Users/zbeyens/git/slate-v2/site/examples/ts/code-highlighting.tsx](/Users/zbeyens/git/slate-v2/site/examples/ts/code-highlighting.tsx)
+   - [/Users/zbeyens/git/plate-2/.tmp/slate-v2/site/examples/ts/code-highlighting.tsx](/Users/zbeyens/git/plate-2/.tmp/slate-v2/site/examples/ts/code-highlighting.tsx)
    - proves structural decoration derivation plus local invalidation
-3. `highlighted-text`
-   - [/Users/zbeyens/git/slate-v2/site/examples/ts/highlighted-text.tsx](/Users/zbeyens/git/slate-v2/site/examples/ts/highlighted-text.tsx)
-   - proves overlap-friendly text projection and split-leaf rendering
+3. `decorations-async`
+   - [/Users/zbeyens/git/plate-2/.tmp/slate-v2/site/examples/ts/decorations-async.tsx](/Users/zbeyens/git/plate-2/.tmp/slate-v2/site/examples/ts/decorations-async.tsx)
+   - proves delayed prop/hook decoration updates keep caret ownership stable
 4. `persistent-annotation-anchors`
-   - [/Users/zbeyens/git/slate-v2/site/examples/ts/persistent-annotation-anchors.tsx](/Users/zbeyens/git/slate-v2/site/examples/ts/persistent-annotation-anchors.tsx)
+   - [/Users/zbeyens/git/plate-2/.tmp/slate-v2/site/examples/ts/persistent-annotation-anchors.tsx](/Users/zbeyens/git/plate-2/.tmp/slate-v2/site/examples/ts/persistent-annotation-anchors.tsx)
    - proves durable anchors
 5. `hovering-toolbar`
-   - [/Users/zbeyens/git/slate-v2/site/examples/ts/hovering-toolbar.tsx](/Users/zbeyens/git/slate-v2/site/examples/ts/hovering-toolbar.tsx)
+   - [/Users/zbeyens/git/plate-2/.tmp/slate-v2/site/examples/ts/hovering-toolbar.tsx](/Users/zbeyens/git/plate-2/.tmp/slate-v2/site/examples/ts/hovering-toolbar.tsx)
    - proves selection-driven widget behavior
 6. `mentions`
-   - [/Users/zbeyens/git/slate-v2/site/examples/ts/mentions.tsx](/Users/zbeyens/git/slate-v2/site/examples/ts/mentions.tsx)
+   - [/Users/zbeyens/git/plate-2/.tmp/slate-v2/site/examples/ts/mentions.tsx](/Users/zbeyens/git/plate-2/.tmp/slate-v2/site/examples/ts/mentions.tsx)
    - proves anchored widget behavior without text-lane abuse
 7. `huge-document`
-   - [/Users/zbeyens/git/slate-v2/site/examples/ts/huge-document.tsx](/Users/zbeyens/git/slate-v2/site/examples/ts/huge-document.tsx)
+   - [/Users/zbeyens/git/plate-2/.tmp/slate-v2/site/examples/ts/huge-document.tsx](/Users/zbeyens/git/plate-2/.tmp/slate-v2/site/examples/ts/huge-document.tsx)
    - proves corridor-first scale behavior
 
 ### Example hard rules
@@ -823,9 +823,9 @@ public story:
 - `code-highlighting`
   - no `Editor.replace(...)` cheat for language-change invalidation
   - language and structural changes must drive the final refresh semantics
-- `highlighted-text`
-  - overlap payloads stay multiplicity-safe
-  - no flatten-to-one-style shortcut
+- `decorations-async`
+  - delayed prop/hook decorations keep the caret at the typed end
+  - no stale async decoration rewrite that moves selection
 - `persistent-annotation-anchors`
   - one durable annotation entity drives the shown inline projection
   - no fake proof-only local array outside the final store shape
@@ -873,16 +873,16 @@ scaling and invalidation, so benchmark truth is part of the contract.
 ### Benchmark ownership files
 
 - existing:
-  - [/Users/zbeyens/git/slate-v2/scripts/benchmarks/browser/react/rerender-breadth.tsx](/Users/zbeyens/git/slate-v2/scripts/benchmarks/browser/react/rerender-breadth.tsx)
-  - [/Users/zbeyens/git/slate-v2/scripts/benchmarks/browser/react/huge-document-overlays.tsx](/Users/zbeyens/git/slate-v2/scripts/benchmarks/browser/react/huge-document-overlays.tsx)
-  - [/Users/zbeyens/git/slate-v2/scripts/benchmarks/shared/react-benchmark.tsx](/Users/zbeyens/git/slate-v2/scripts/benchmarks/shared/react-benchmark.tsx)
+  - [/Users/zbeyens/git/plate-2/.tmp/slate-v2/scripts/benchmarks/browser/react/rerender-breadth.tsx](/Users/zbeyens/git/plate-2/.tmp/slate-v2/scripts/benchmarks/browser/react/rerender-breadth.tsx)
+  - [/Users/zbeyens/git/plate-2/.tmp/slate-v2/scripts/benchmarks/browser/react/huge-document-overlays.tsx](/Users/zbeyens/git/plate-2/.tmp/slate-v2/scripts/benchmarks/browser/react/huge-document-overlays.tsx)
+  - [/Users/zbeyens/git/plate-2/.tmp/slate-v2/scripts/benchmarks/shared/react-benchmark.tsx](/Users/zbeyens/git/plate-2/.tmp/slate-v2/scripts/benchmarks/shared/react-benchmark.tsx)
 - proposed new:
-  - `/Users/zbeyens/git/slate-v2/scripts/benchmarks/browser/replacement/search-highlighting.mjs`
-  - `/Users/zbeyens/git/slate-v2/scripts/benchmarks/browser/replacement/code-highlighting.mjs`
-  - `/Users/zbeyens/git/slate-v2/scripts/benchmarks/browser/replacement/annotations.mjs`
-  - `/Users/zbeyens/git/slate-v2/scripts/benchmarks/browser/react/overlay-subscriptions.tsx`
+  - `scripts/benchmarks/browser/replacement/search-highlighting.mjs`
+  - `scripts/benchmarks/browser/replacement/code-highlighting.mjs`
+  - `scripts/benchmarks/browser/replacement/annotations.mjs`
+  - `scripts/benchmarks/browser/react/overlay-subscriptions.tsx`
 - conditional widening:
-  - `/Users/zbeyens/git/slate-v2/scripts/benchmarks/browser/replacement/review-suggestions.mjs`
+  - `scripts/benchmarks/browser/replacement/review-suggestions.mjs`
 
 ### Benchmark hard rules
 
@@ -958,7 +958,7 @@ Files:
 
 - [architecture-contract.md](/Users/zbeyens/git/plate-2/docs/slate-v2/references/architecture-contract.md)
 - [decorations-annotations-cluster.md](/Users/zbeyens/git/plate-2/docs/slate-v2/decorations-annotations-cluster.md)
-- `/Users/zbeyens/git/slate-v2/packages/slate-react/src/index.ts`
+- `/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/index.ts`
 
 Required decisions:
 
@@ -996,20 +996,18 @@ Goal:
 
 Primary files:
 
-- `/Users/zbeyens/git/slate-v2/packages/slate/src/interfaces/range-ref.ts`
-- `/Users/zbeyens/git/slate-v2/packages/slate/src/core/range-ref.ts`
-- `/Users/zbeyens/git/slate-v2/packages/slate/src/range-ref-transform.ts`
-- `/Users/zbeyens/git/slate-v2/packages/slate/src/range-projection.ts`
-- `/Users/zbeyens/git/slate-v2/packages/slate/src/editor/range-ref.ts`
-- `/Users/zbeyens/git/slate-v2/packages/slate/src/editor/range-refs.ts`
+- `/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate/src/interfaces/range-ref.ts`
+- `/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate/src/editor/range-ref.ts`
+- `/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate/src/range-projection.ts`
+- `/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate/src/editor/range-refs.ts`
 - landed files:
-  - `/Users/zbeyens/git/slate-v2/packages/slate/src/interfaces/bookmark.ts`
-  - `/Users/zbeyens/git/slate-v2/packages/slate/src/editor/bookmark.ts`
+  - `/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate/src/interfaces/bookmark.ts`
+  - `/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate/src/editor/bookmark.ts`
 
 Tests:
 
-- [range-ref-contract.ts](/Users/zbeyens/git/slate-v2/packages/slate/test/range-ref-contract.ts)
-- `/Users/zbeyens/git/slate-v2/packages/slate/test/bookmark-contract.ts`
+- [range-ref-contract.ts](/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate/test/range-ref-contract.ts)
+- `/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate/test/bookmark-contract.ts`
 
 Required scenarios:
 
@@ -1043,21 +1041,20 @@ Goal:
 
 Primary files:
 
-- `/Users/zbeyens/git/slate-v2/packages/slate-react/src/projection-store.ts`
-- `/Users/zbeyens/git/slate-v2/packages/slate-react/src/projection-context.tsx`
-- `/Users/zbeyens/git/slate-v2/packages/slate-react/src/hooks/use-slate-projections.tsx`
-- `/Users/zbeyens/git/slate-v2/packages/slate-react/src/hooks/use-slate-range-ref-projection-store.tsx`
+- `/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/projection-store.ts`
+- `/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/projection-context.tsx`
+- `/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-projections.tsx`
 - related files that were already stronger than initially assumed:
-  - `/Users/zbeyens/git/slate-v2/packages/slate-react/src/annotation-store.ts`
-  - `/Users/zbeyens/git/slate-v2/packages/slate-react/src/widget-store.ts`
-  - `/Users/zbeyens/git/slate-v2/packages/slate-react/src/hooks/use-slate-annotations.tsx`
-  - `/Users/zbeyens/git/slate-v2/packages/slate-react/src/hooks/use-slate-widgets.tsx`
+  - `/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/annotation-store.ts`
+  - `/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/widget-store.ts`
+  - `/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-annotations.tsx`
+  - `/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-widgets.tsx`
 
 Tests:
 
-- [projections-and-selection-contract.tsx](/Users/zbeyens/git/slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx)
-- `/Users/zbeyens/git/slate-v2/packages/slate-react/test/annotation-store-contract.tsx`
-- `/Users/zbeyens/git/slate-v2/packages/slate-react/test/widget-layer-contract.tsx`
+- [projections-and-selection-contract.tsx](/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx)
+- `/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/annotation-store-contract.tsx`
+- `/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/widget-layer-contract.tsx`
 
 Required scenarios:
 
@@ -1088,21 +1085,21 @@ Goal:
 
 Primary files:
 
-- `/Users/zbeyens/git/slate-v2/packages/slate-react/src/projection-store.ts`
-- `/Users/zbeyens/git/slate-v2/packages/slate-react/src/decoration-sources.ts`
-- `/Users/zbeyens/git/slate-v2/packages/slate-react/src/hooks/use-slate-decoration-sources.tsx`
+- `/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/projection-store.ts`
+- `/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/decoration-source.ts`
+- `/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-decoration-source.ts`
 
 Example owners:
 
-- `/Users/zbeyens/git/slate-v2/site/examples/ts/search-highlighting.tsx`
-- `/Users/zbeyens/git/slate-v2/site/examples/ts/code-highlighting.tsx`
-- `/Users/zbeyens/git/slate-v2/site/examples/ts/highlighted-text.tsx`
+- `/Users/zbeyens/git/plate-2/.tmp/slate-v2/site/examples/ts/search-highlighting.tsx`
+- `/Users/zbeyens/git/plate-2/.tmp/slate-v2/site/examples/ts/code-highlighting.tsx`
+- `/Users/zbeyens/git/plate-2/.tmp/slate-v2/site/examples/ts/decorations-async.tsx`
 
 Tests:
 
-- [search-highlighting.test.ts](/Users/zbeyens/git/slate-v2/playwright/integration/examples/search-highlighting.test.ts)
-- [code-highlighting.test.ts](/Users/zbeyens/git/slate-v2/playwright/integration/examples/code-highlighting.test.ts)
-- [highlighted-text.test.ts](/Users/zbeyens/git/slate-v2/playwright/integration/examples/highlighted-text.test.ts)
+- [search-highlighting.test.ts](/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/search-highlighting.test.ts)
+- [code-highlighting.test.ts](/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/code-highlighting.test.ts)
+- [decorations-async.test.ts](/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/decorations-async.test.ts)
 - existing local logic tests already tied to redecorate semantics:
   - [2026-03-26-code-block-language-change-must-trigger-redecorate.md](/Users/zbeyens/git/plate-2/docs/solutions/logic-errors/2026-03-26-code-block-language-change-must-trigger-redecorate.md)
   - [2026-03-27-code-block-format-must-rebuild-code-lines.md](/Users/zbeyens/git/plate-2/docs/solutions/logic-errors/2026-03-27-code-block-format-must-rebuild-code-lines.md)
@@ -1119,7 +1116,7 @@ Exit:
 
 - decoration derivation is explicit and overlap-safe
 - legacy `decorate` is no longer the preferred mental model
-- `search-highlighting`, `code-highlighting`, and `highlighted-text` are all
+- `search-highlighting`, `code-highlighting`, and `decorations-async` are all
   running on the final source model
 
 ## Wave 4. Annotation store and widget layer
@@ -1137,22 +1134,22 @@ Goal:
 
 Primary files:
 
-- `/Users/zbeyens/git/slate-v2/packages/slate-react/src/annotation-store.ts`
-- `/Users/zbeyens/git/slate-v2/packages/slate-react/src/widget-store.ts`
-- `/Users/zbeyens/git/slate-v2/packages/slate-react/src/components/slate-widget-layer.tsx`
-- `/Users/zbeyens/git/slate-v2/packages/slate-react/src/components/slate-annotation-layer.tsx`
-- `/Users/zbeyens/git/slate-v2/packages/slate-react/test/annotation-store-contract.tsx`
-- `/Users/zbeyens/git/slate-v2/packages/slate-react/test/widget-layer-contract.tsx`
+- `/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/annotation-store.ts`
+- `/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/widget-store.ts`
+- `/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-widget-store.tsx`
+- `/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-annotation-store.tsx`
+- `/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/annotation-store-contract.tsx`
+- `/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/test/widget-layer-contract.tsx`
 
 Browser/example proof:
 
-- [persistent-annotation-anchors.test.ts](/Users/zbeyens/git/slate-v2/playwright/integration/examples/persistent-annotation-anchors.test.ts)
-- [mentions.test.ts](/Users/zbeyens/git/slate-v2/playwright/integration/examples/mentions.test.ts)
-- [hovering-toolbar.test.ts](/Users/zbeyens/git/slate-v2/playwright/integration/examples/hovering-toolbar.test.ts)
+- [persistent-annotation-anchors.test.ts](/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/persistent-annotation-anchors.test.ts)
+- [mentions.test.ts](/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/mentions.test.ts)
+- [hovering-toolbar.test.ts](/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/hovering-toolbar.test.ts)
 - remaining optional follow-up browser lanes if the program widens beyond the
   current batch:
-  - `/Users/zbeyens/git/slate-v2/playwright/integration/examples/comment-thread-anchors.test.ts`
-  - `/Users/zbeyens/git/slate-v2/playwright/integration/examples/review-suggestions.test.ts`
+  - `comment-thread-anchors.test.ts` (proposed)
+  - `review-suggestions.test.ts` (proposed)
 
 Required scenarios:
 
@@ -1188,15 +1185,14 @@ Goal:
 
 Primary files:
 
-- `/Users/zbeyens/git/slate-v2/packages/slate-dom/src/bridge.ts`
-- `/Users/zbeyens/git/slate-v2/packages/slate-dom/src/clipboard.ts`
-- `/Users/zbeyens/git/slate-v2/packages/slate-dom/test/bridge.ts`
+- `/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts`
+- `/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/src/plugin/dom-clipboard-runtime.ts`
+- `/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/bridge.ts`
 
 Tests:
 
-- [bridge.ts](/Users/zbeyens/git/slate-v2/packages/slate-dom/test/bridge.ts)
-- [mark-placeholder.test.ts](/Users/zbeyens/git/slate-v2/playwright/integration/examples/mark-placeholder.test.ts)
-- [placeholder-ime.test.ts](/Users/zbeyens/git/slate-v2/playwright/integration/examples/placeholder-ime.test.ts)
+- [bridge.ts](/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/test/bridge.ts)
+- [placeholder.test.ts](/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/placeholder.test.ts)
 
 Required scenarios:
 
@@ -1218,10 +1214,10 @@ Goal:
 
 Primary files:
 
-- `/Users/zbeyens/git/slate-v2/scripts/benchmarks/browser/react/rerender-breadth.tsx`
-- `/Users/zbeyens/git/slate-v2/scripts/benchmarks/browser/react/huge-document-overlays.tsx`
-- `/Users/zbeyens/git/slate-v2/scripts/benchmarks/shared/react-benchmark.tsx`
-- `/Users/zbeyens/git/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
+- `/Users/zbeyens/git/plate-2/.tmp/slate-v2/scripts/benchmarks/browser/react/rerender-breadth.tsx`
+- `/Users/zbeyens/git/plate-2/.tmp/slate-v2/scripts/benchmarks/browser/react/huge-document-overlays.tsx`
+- `/Users/zbeyens/git/plate-2/.tmp/slate-v2/scripts/benchmarks/shared/react-benchmark.tsx`
+- `/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
 
 React runtime rules to enforce:
 
@@ -1257,9 +1253,8 @@ Goal:
 Primary files:
 
 - likely touched:
-  - `/Users/zbeyens/git/slate-v2/docs/libraries/slate-react/editable.md`
-  - `/Users/zbeyens/git/slate-v2/docs/libraries/slate-react/slate.md`
-  - `/Users/zbeyens/git/slate-v2/docs/general/replacement-candidate.md`
+  - `/Users/zbeyens/git/plate-2/.tmp/slate-v2/docs/libraries/slate-react/editable.md`
+  - `/Users/zbeyens/git/plate-2/.tmp/slate-v2/docs/libraries/slate-react/slate.md`
   - `/Users/zbeyens/git/plate-2/docs/slate-v2/references/pr-description.md`
 
 Required scenarios:
@@ -1333,11 +1328,11 @@ Goal:
 
 Primary files:
 
-- `/Users/zbeyens/git/slate-v2/packages/slate/src/interfaces/editor.ts`
-- `/Users/zbeyens/git/slate-v2/packages/slate/src/core/apply.ts`
-- `/Users/zbeyens/git/slate-v2/packages/slate/src/core/transaction-helpers.ts`
-- `/Users/zbeyens/git/slate-v2/packages/slate/src/core/get-dirty-paths.ts`
-- `/Users/zbeyens/git/slate-v2/packages/slate/src/range-projection.ts`
+- `/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`
+- `/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate/src/core/apply.ts`
+- `/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate/src/core/update-dirty-paths.ts`
+- `/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate/src/core/get-dirty-paths.ts`
+- `/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate/src/range-projection.ts`
 
 Required model:
 
@@ -1388,11 +1383,11 @@ Goal:
 
 Primary files:
 
-- `/Users/zbeyens/git/slate-v2/packages/slate-react/src/decoration-sources.ts`
-- `/Users/zbeyens/git/slate-v2/packages/slate-react/src/annotation-store.ts`
-- `/Users/zbeyens/git/slate-v2/packages/slate-react/src/widget-store.ts`
-- `/Users/zbeyens/git/slate-v2/packages/slate-react/src/projection-store.ts`
-- `/Users/zbeyens/git/slate-v2/packages/slate-react/src/hooks/use-slate-decoration-sources.tsx`
+- `/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/decoration-source.ts`
+- `/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/annotation-store.ts`
+- `/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/widget-store.ts`
+- `/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/projection-store.ts`
+- `/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-decoration-source.ts`
 
 Required source classes:
 
@@ -1451,11 +1446,11 @@ Goal:
 
 Primary files:
 
-- `/Users/zbeyens/git/slate-v2/packages/slate/src/range-projection.ts`
-- `/Users/zbeyens/git/slate-v2/packages/slate-react/src/projection-store.ts`
-- `/Users/zbeyens/git/slate-v2/packages/slate-react/src/decoration-sources.ts`
-- `/Users/zbeyens/git/slate-v2/scripts/benchmarks/browser/react/rerender-breadth.tsx`
-- `/Users/zbeyens/git/slate-v2/scripts/benchmarks/browser/react/huge-document-overlays.tsx`
+- `/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate/src/range-projection.ts`
+- `/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/projection-store.ts`
+- `/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/decoration-source.ts`
+- `/Users/zbeyens/git/plate-2/.tmp/slate-v2/scripts/benchmarks/browser/react/rerender-breadth.tsx`
+- `/Users/zbeyens/git/plate-2/.tmp/slate-v2/scripts/benchmarks/browser/react/huge-document-overlays.tsx`
 
 Research pressure:
 
