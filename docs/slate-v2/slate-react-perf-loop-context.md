@@ -12,7 +12,7 @@ context.
 ## Workspace
 
 - Control/docs repo: `/Users/zbeyens/git/plate-2`
-- Code repo: `/Users/zbeyens/git/slate-v2`
+- Code repo: `/Users/zbeyens/git/plate-2/.tmp/slate-v2`
 - Active private-alpha checkout for current `plate-2` loops:
   `/Users/zbeyens/git/plate-2/.tmp/slate-v2`
 - Legacy comparison repo: `/Users/zbeyens/git/slate`
@@ -30,31 +30,31 @@ Planning/docs writes are allowed in:
 
 Code reads are allowed across:
 
-- `/Users/zbeyens/git/slate-v2/packages/slate/**`
-- `/Users/zbeyens/git/slate-v2/packages/slate-dom/**`
-- `/Users/zbeyens/git/slate-v2/packages/slate-react/**`
-- `/Users/zbeyens/git/slate-v2/packages/slate-browser/**`
-- `/Users/zbeyens/git/slate-v2/site/examples/ts/**`
-- `/Users/zbeyens/git/slate-v2/playwright/integration/examples/**`
-- `/Users/zbeyens/git/slate-v2/scripts/benchmarks/**`
-- `/Users/zbeyens/git/slate-v2/package.json`
+- `/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate/**`
+- `/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/**`
+- `/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/**`
+- `/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/**`
+- `/Users/zbeyens/git/plate-2/.tmp/slate-v2/site/examples/ts/**`
+- `/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/**`
+- `/Users/zbeyens/git/plate-2/.tmp/slate-v2/scripts/benchmarks/**`
+- `/Users/zbeyens/git/plate-2/.tmp/slate-v2/package.json`
 - `/Users/zbeyens/git/slate/**`
 
 Code edits are allowed when measurement proves ownership:
 
 - benchmark/package command work:
-  - `/Users/zbeyens/git/slate-v2/scripts/benchmarks/**`
-  - `/Users/zbeyens/git/slate-v2/package.json`
+  - `/Users/zbeyens/git/plate-2/.tmp/slate-v2/scripts/benchmarks/**`
+  - `/Users/zbeyens/git/plate-2/.tmp/slate-v2/package.json`
 - React runtime work:
-  - `/Users/zbeyens/git/slate-v2/packages/slate-react/**`
+  - `/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/**`
 - core work:
-  - `/Users/zbeyens/git/slate-v2/packages/slate/**` only when measured evidence
+  - `/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate/**` only when measured evidence
     proves core ownership
 
 Do not work on:
 
-- `/Users/zbeyens/git/slate-v2/packages/slate-history`
-- `/Users/zbeyens/git/slate-v2/packages/slate-hyperscript`
+- `/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-history`
+- `/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-hyperscript`
 
 ## Source Docs
 
@@ -80,28 +80,32 @@ Read these before deciding or claiming closure:
 - `bench:react:rerender-breadth:local` exists and proves useful locality facts.
 - `bench:react:huge-document-overlays:local` exists and proves corridor/overlay
   locality facts.
-- `bench:react:huge-document:legacy-compare:local` exists, but the fresh
-  5000/10000-block runs reopen the stronger perf-superiority claim. Current v2
-  shell islands win startup and full-document operations, then lose steady
-  typing/select lanes hard against legacy chunking-on.
+- `bench:react:huge-document:legacy-compare:local` exists and stays the direct
+  legacy diagnostic. The current private-alpha product gate is stricter:
+  `HUGE_DOC_FULL_STRICT_BUDGET=1 bun run bench:react:huge-document:full:local`.
+- Latest strict product proof is green with zero failures and zero budget
+  failures. The latest broad direct legacy diagnostic is also current-green:
+  worst p95 ratio `0.77`, default `auto` `middleBlockSelectThenTypeMs`
+  `69.78ms` vs legacy `90.42ms`; explicit `v2DomPresent` is `44.56ms` on the
+  same lane.
+- Latest cross-editor huge-doc smoke shows the current Slate auto lane winning
+  middle typing and DOM budget against ProseMirror and Lexical:
+  `24.4ms` vs `57.3ms` / `77.8ms`, DOM p95 `753` vs `5001` / `10001`.
+  Repeated vertical Shift+Down remains a narrower caveat at `22.8ms` vs
+  ProseMirror `15.9ms` and Lexical `15.9ms`.
+- Latest 10k staged keyboard proof is behavior-green with full-DOM parity:
+  repeated Shift+Down p95 is `21.4ms` / `21.7ms` with no long tasks. The
+  remaining hot lane is undo after select-all delete: fresh one-surface
+  undo-delete paint p95 is `58.3ms`; two-surface p95 is `67.5ms` /
+  `64.3ms`, with long-task p95 `0ms` after the history normalize and
+  view-selection restore repairs.
 - `1000` blocks is smoke/debug only. It is not a closure or superiority proof
   gate for this lane.
-- Latest 5000-block proof gate:
-  - v2 shell wins ready hard
-  - v2 shell wins full-document text replacement and full-document fragment
-    insertion
-  - v2 shell loses steady typing/select-type lanes against legacy chunking-on by
-    roughly 150-180 ms
-  - v2 shell loses select-all against legacy chunking-on
-  - promoted middle-block typing is not closed as a superiority lane
-  - paste is split into text replacement and fragment insertion; neither row is
-    native clipboard/browser paste transport
-- Latest 10000-block proof gate is harsher:
-  - v2 shell wins ready and full-document operations
-  - legacy chunking-on wins typing/select lanes by roughly 291-365 ms
-- Therefore the current perf lane is red for typing. The next architecture owner
-  is two-tier large-document default behavior: DOM-present grouping first,
-  shell mode explicit until browser/native proof passes.
+- Therefore the current perf lane is not a generic red lane. It is
+  green/private-alpha with narrower caveats: tiny select-all deltas, repeated
+  vertical Shift+Down, and select-all-delete undo residual p95 / bulk-restore
+  cost. Do not restart broad architecture from old 5000/10000 shell-island
+  notes unless a fresh benchmark reproduces that loss.
 
 ## Constraint Hierarchy
 
@@ -145,9 +149,13 @@ Read these before deciding or claiming closure:
 
 ## Current Driver Gates
 
-Run from `/Users/zbeyens/git/slate-v2`:
+Run from the active private-alpha checkout, normally
+`/Users/zbeyens/git/plate-2/.tmp/slate-v2`. Use
+`/Users/zbeyens/git/plate-2/.tmp/slate-v2` only when that checkout is intentionally the
+active code repo for the loop.
 
 ```sh
+HUGE_DOC_FULL_STRICT_BUDGET=1 bun run bench:react:huge-document:full:local
 REACT_HUGE_COMPARE_BLOCKS=5000 REACT_HUGE_COMPARE_ITERATIONS=5 REACT_HUGE_COMPARE_TYPE_OPS=10 bun run bench:react:huge-document:legacy-compare:local
 bun run bench:react:rerender-breadth:local
 bun run bench:react:huge-document-overlays:local
@@ -178,26 +186,35 @@ REACT_HUGE_COMPARE_BLOCKS=5000 REACT_HUGE_COMPARE_ITERATIONS=5 REACT_HUGE_COMPAR
 
 - Do not restart with generic selector dirtiness; that experiment did not move
   the 5000 lane and regressed locality.
-- Next useful work is hard-cut hot reads:
-  - urgent text/node rendering must not rediscover data through full immutable
-    `Editor.getSnapshot()`
-  - collapse descendant/text selector fanout
-  - avoid child subscriptions when parent already resolved text/marks/runtime id
-  - introduce direct live path/runtime-id reads or an incremental index if
-    measurement proves core ownership
+- Next useful work is narrow and evidence-triggered:
+  - keep behavior/native-selection proof green before perf work;
+  - investigate default `auto` middle select-then-type again only if a fresh
+    run regresses it below legacy;
+  - investigate repeated vertical Shift+Down against ProseMirror/Lexical only
+    if the browser behavior oracle stays native-equivalent;
+  - investigate select-all-delete undo only from the saved kernel/profiler
+    evidence; do not optimize a 10k-block history restore blindly;
+  - reopen hard-cut hot reads only if a fresh focused probe proves urgent
+    text/node rendering is still rediscovering data through full immutable
+    `Editor.getSnapshot()`, descendant/text selector fanout, child
+    subscriptions, or missing live path/runtime-id reads.
 - Current implementation should start in:
-  - `/Users/zbeyens/git/slate-v2/packages/slate-react/**` for node/text read
+  - `/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/**` for node/text read
     model changes
   - `/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/**` when
     the active loop is running from the `plate-2` private-alpha checkout
-  - `/Users/zbeyens/git/slate-v2/packages/slate/**` only if a focused probe
+  - `/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate/**` only if a focused probe
     proves the blocker is core read/index ownership
 - Current closure:
   - `auto` remains bounded partial-DOM, not a hidden alias for `staged`
-  - perf lane is not closed for current shell islands
-  - direct model-only typing into an unpromoted middle shell remains red
-  - promoted middle-block typing is also not a closed superiority claim under
-    the latest 5000/10000-block runs
+  - private-alpha product proof is green
+  - direct legacy superiority is current-green in the latest diagnostic but
+    remains claim-scoped, not release-scoped
+  - cross-editor huge-doc smoke currently favors Slate auto for middle typing
+    and DOM budget, with repeated vertical Shift+Down still tracked as a
+    narrower caveat
+  - select-all-delete undo has a saved profiler owner and is not closed as a
+    long-task lane
   - bounded partial-DOM promotion uses coarse 32-block groups and a smaller
     active mounted window; the accepted 2026-06-06 packet keeps an 8-block
     window because it cut mounted text hosts from 32 to 8 and selector

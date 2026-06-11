@@ -134,7 +134,6 @@ For current truth, start with:
 
 - [release-readiness-decision.md](/Users/zbeyens/git/plate-2/docs/slate-v2/release-readiness-decision.md)
 - [replacement-family-ledger.md](/Users/zbeyens/git/plate-2/docs/slate-v2/replacement-family-ledger.md)
-- [replacement-candidate.md](/Users/zbeyens/git/slate-v2/docs/general/replacement-candidate.md)
 
 The target is a native transaction engine where batching is the default execution model instead of a compatibility layer welded onto per-op mutation.
 
@@ -1434,8 +1433,8 @@ The target is:
 
 Current repo baseline:
 
-- `/Users/zbeyens/git/slate-v2` already runs this package surface on
-  React `19.2` and Next `16.2.2`
+- `/Users/zbeyens/git/plate-2/.tmp/slate-v2` already runs this package surface on
+  React `19.2` and Next `16.2.4`
 
 ## Inputs
 

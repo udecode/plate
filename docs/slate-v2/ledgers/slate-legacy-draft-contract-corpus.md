@@ -58,8 +58,8 @@ Current live owners:
 - [slate-editor-api.md](/Users/zbeyens/git/plate-2/docs/slate-v2/ledgers/slate-editor-api.md)
 - [slate-interfaces-api.md](/Users/zbeyens/git/plate-2/docs/slate-v2/ledgers/slate-interfaces-api.md)
 - [slate-transforms-api.md](/Users/zbeyens/git/plate-2/docs/slate-v2/ledgers/slate-transforms-api.md)
-- `/Users/zbeyens/git/slate-v2/packages/slate/src/**`
-- `/Users/zbeyens/git/slate-v2/packages/slate/test/**`
+- `/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate/src/**`
+- `/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate/test/**`
 
 ## Row Classes
 
@@ -235,7 +235,7 @@ Immediate current proof owners to restore or keep alive:
 - legacy ordinary-op adjacent-text/spacer canonicalization rows that conflict
   with the live explicit-only normalization contract
   - owner:
-    `/Users/zbeyens/git/slate-v2/packages/slate/test/fixture-claim-overrides.ts`
+    `/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate/test/fixture-claim-overrides.ts`
   - read:
     these rows expected ordinary transforms like `moveNodes`, `insertNodes`,
     `insertFragment`, `mergeNodes`, `wrapNodes`, and related delete/split

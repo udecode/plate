@@ -15,7 +15,7 @@ Use this first. It is the small control plane for Slate v2 work after the long
   `content/docs/slate/**`, and examples under
   `apps/www/src/app/(app)/examples/slate/**`.
 - Control docs: `docs/slate-v2/**`
-- Active release claim:
+- Active private-alpha architecture claim:
   [absolute-architecture-release-claim.md](/Users/zbeyens/git/plate-2/docs/slate-v2/absolute-architecture-release-claim.md)
 - Active roadmap:
   [master-roadmap.md](/Users/zbeyens/git/plate-2/docs/slate-v2/master-roadmap.md)
@@ -28,13 +28,20 @@ For reads, teach `editor.read((state) => ...)`. For writes, teach
 
 ## Current Blockers
 
-- Not release-ready.
-- Final same-turn integration/build/type/lint/perf closure remains open.
+- Continuous private alpha: no release, publish, PR, or changeset readiness
+  claim unless a prompt explicitly asks for that lane.
+- Current-tree private-alpha integration/build/type/lint/perf closure is green
+  from the latest same-turn proof after the `slate-browser/playwright` helper
+  and Playwright wrapper-script edits.
 - Full `bun test:integration-local` is a closure gate, not the default
   iteration gate.
 - Native mobile proof remains scoped unless a raw-device lane runs.
-- Huge-document superiority remains claim-scoped; do not broaden it from nearby
-  green rows.
+- Huge-document superiority remains claim-scoped, not release-scoped. The
+  strict product gate is green, and the latest broad direct legacy diagnostic is
+  current-green: worst p95 ratio `0.77`, default `auto`
+  `middleBlockSelectThenTypeMs` `69.78ms` vs legacy `90.42ms`. Keep tracking
+  tiny select-all deltas, repeated vertical Shift+Down, and select-all-delete
+  undo residual p95 / bulk-restore cost separately.
 
 ## Normal Agent Path
 

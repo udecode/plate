@@ -57,7 +57,8 @@ packages/slate-history/test/undo/insert_text/non-contiguous.tsx	explicit-skip	no
 - the live history compare owner is now wired again:
   - `bun run bench:history:compare:local`
 - latest compare read:
-  - typing undo: `+29.35ms`
-  - typing redo: `+20.04ms`
-  - fragment undo: `+25.29ms`
-  - fragment redo: `+31.77ms`
+  - typing undo p95: `0.41ms` vs legacy `0.46ms`
+  - typing redo p95: `0.11ms` vs legacy `1.73ms`
+  - fragment undo p95: `0.55ms` vs legacy `3.86ms`
+  - fragment redo p95: `0.73ms` vs legacy `5.94ms`
+  - worst p95 ratio: `0.89`

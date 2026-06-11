@@ -8,9 +8,9 @@ status: active
 
 ## Current Reality
 
-The kept tranche-5 / tranche-6 north-star perf command set is now real.
+The kept tranche-5 / tranche-6 north-star perf command set is real.
 
-This command now has one job:
+This command has one job:
 
 1. run the live packaged/runtime gates that protect the kept perf claim
 
@@ -26,8 +26,9 @@ pnpm bench:targets:run -- react-huge-document-overlays
 pnpm bench:targets:run -- react-huge-document-legacy-compare
 ```
 
-The legacy compare owner is currently red for the stronger v2 perf-superiority
-claim.
+The strict product gate and broad direct legacy diagnostic are green for the
+current private-alpha claim. Use the legacy-compare gate as the direct
+diagnostic for claim drift, not as proof that the lane is broadly red.
 
 ## Current North-Star Perf Owners
 
@@ -42,8 +43,9 @@ runtime claims:
 
 ## Remaining Work
 
-The remaining perf work is not command naming. It is making the direct
-legacy-compare result acceptable or explicitly deferring the losing lanes.
+The remaining perf work is caveat-specific: repeated vertical Shift+Down and
+select-all-delete undo residual p95 / bulk-restore cost. Do not restart a broad
+perf architecture pass unless a fresh gate reproduces a broader loss.
 
 ## Refresh Afterward
 

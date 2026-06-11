@@ -33,7 +33,7 @@ status: active
   - legacy ordinary-op adjacent-text/spacer canonicalization rows are no longer
     kept by default
   - owner:
-    `/Users/zbeyens/git/slate-v2/packages/slate/test/fixture-claim-overrides.ts`
+    `/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate/test/fixture-claim-overrides.ts`
   - live rule:
     heavier adjacent-text/spacer cleanup stays explicit, not automatic on every
     ordinary structural op

@@ -130,7 +130,7 @@ Tranche-3 closeout read:
   - owner: `packages/slate/test/fixture-claim-overrides.ts`
 - standalone `snapshot-contract.ts` is green again and included in the same-turn
   proof stack
-- remaining hard-cut debate is post-RC, not a tranche-3 blocker
+- remaining hard-cut debate is deferred claim-width work, not a tranche-3 blocker
 
 Tranche-3 progress also landed:
 
@@ -147,7 +147,7 @@ Current tranche-3 doctrine:
   - [2026-04-19-slate-absolute-api-replan.md](/Users/zbeyens/git/plate-2/docs/plans/2026-04-19-slate-absolute-api-replan.md)
 - explicit-cut family now exists for legacy ordinary-op adjacent-text/spacer
   canonicalization rows:
-  - owner: `/Users/zbeyens/git/slate-v2/packages/slate/test/fixture-claim-overrides.ts`
+  - owner: `/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate/test/fixture-claim-overrides.ts`
 - the perfect redesign is now the live direction, not a deferred later lane
 - the `slate` core API direction is the live claim
 - remaining work is final gate closure and claim-width sync, not a new public
@@ -168,7 +168,8 @@ Current tranche-4 read:
     `integrity-contract.ts`
   - the live compare owner exists again:
     `bench:history:compare:local`
-  - current perf is slower than legacy but bounded, not blocker-shaped
+  - latest compare perf is faster than legacy across the measured p95 lanes;
+    worst p95 ratio is `0.89`, so history perf is not blocker-shaped
 - `slate-hyperscript` is now also settled enough to stop being the blocker:
   - fixture parsing and cursor/selection construction stay owned by
     `index.spec.ts`
@@ -215,11 +216,12 @@ Current tranche-6 read:
   - app-owned customization
   - large-document runtime
   - with-react
-- required v2-only example/browser rows are real in Chromium:
-  - `highlighted-text`
-  - `external-decoration-sources`
+- required current v2-only example/browser owners are real in Chromium:
+  - `search-highlighting`
+  - `code-highlighting`
+  - `decorations-async`
   - `persistent-annotation-anchors`
-  - `review-comments`
+  - `comment-mode`
 - kept north-star perf owners are now command-backed:
   - `bench:react:rerender-breadth:local`
   - `bench:react:huge-document-overlays:local`
@@ -230,11 +232,12 @@ Current tranche-6 read:
 - contributor-facing example parity from the same merged-corpus doctrine
 - benchmark/root-proof ownership cleanup
 - non-conflicting draft value adoption
-- required v2-only north-star proof rows are already landed:
-  - `highlighted-text`
+- required current v2-only north-star proof rows are already landed:
+  - `search-highlighting`
+  - `code-highlighting`
+  - `decorations-async`
   - `persistent-annotation-anchors`
-  - `external-decoration-sources`
-  - `review-comments`
+  - `comment-mode`
 
 Current tranche-7 read:
 
@@ -242,32 +245,35 @@ Current tranche-7 read:
 - the kept tranche-5 / tranche-6 perf owners are real
 - what remains is broader contributor-facing parity and claim-width cleanup,
   not missing DOM/React runtime owners
-- generated cursor/caret gauntlets are the release proof lane for rich editing
-  regressions
+- generated cursor/caret gauntlets are the private-alpha proof lane for rich
+  editing regressions
 - mobile proof is scoped by transport claim metadata and direct-device
   descriptor classification
-- final integration/build/type/lint/perf closure is the active owner
+- final integration/build/type/lint/perf closure is green for current-tree
+  private alpha; release, PR, publish, and raw-device claim width remain open
+  unless an explicit run owns them
 - stronger slate-react perf-superiority is command-scoped:
   - private-alpha product gate:
     `HUGE_DOC_FULL_STRICT_BUDGET=1 bun run bench:react:huge-document:full:local`
   - universal all-surface diagnostic:
     `REACT_HUGE_COMPARE_BLOCKS=5000 REACT_HUGE_COMPARE_ITERATIONS=5 REACT_HUGE_COMPARE_TYPE_OPS=10 bun run bench:react:huge-document:legacy-compare:local`
-  - the strict product gate is green; the universal diagnostic is open for
-    `v2DefaultRenderAuto middleBlockSelectThenTypeMs` against legacy
-    chunking-on
+  - the strict product gate is green; the latest universal diagnostic is also
+    current-green with worst p95 ratio `0.77`
   - 1000-block runs are smoke/debug only and do not close the lane
   - current shell islands still win ready and full-document operations
   - direct model-only typing into an unpromoted middle shell is not an accepted
     superiority caveat anymore
-  - promoted middle-block typing is not a closed superiority claim
-  - the accepted next owner is two-layer auto: DOM-present as the safe
-    baseline, with shell/occlusion escalation explicit or proof-disabled until
-    browser/native/a11y/collab gates pass
+  - keep tracking tiny select-all deltas, repeated vertical Shift+Down, and
+    select-all-delete undo residual p95 / bulk-restore cost as narrow
+    follow-up lanes, not broad architecture blockers
+  - the accepted next owner is evidence-triggered: preserve behavior/native
+    selection proof first, then reopen DOM-present/shell/occlusion only when a
+    fresh benchmark or browser oracle proves that owner is needed
 
-### [ ] Tranche 8: RC Ledger Closure
+### [ ] Tranche 8: Private-Alpha Proof Ledger Closure
 
-- final readiness statement
-- final `post RC` register
+- final private-alpha readiness statement
+- final deferred claim-width register
 
 ## Package Order
 

@@ -22,10 +22,10 @@ defer-only and must not trigger Plate edits.
 
 | Closure | Count |
 | --- | ---: |
-| relevant:deferred-with-owner | 1468 |
+| relevant:deferred-with-owner | 1462 |
 | irrelevant:invalid-skip | 962 |
 | relevant:covered-by-existing-test | 211 |
-| relevant:test-written | 100 |
+| relevant:test-written | 106 |
 
 ## Next Unchecked Relevant Issues
 

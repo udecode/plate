@@ -407,7 +407,7 @@ Evidence:
   `docs/plans/2026-05-04-slate-v2-full-issue-ledger-architecture-ralplan.md`;
   `docs/plans/2026-05-04-slate-v2-full-issue-ledger-architecture-ralplan-issue-matrix.md`.
 - proof command:
-  `PLAYWRIGHT_RETRIES=0 bunx playwright test playwright/integration/examples/tables.test.ts --project=chromium --grep "ArrowDown at the table end"`.
+  `PLAYWRIGHT_RETRIES=0 bun run playwright playwright/integration/examples/tables.test.ts --project=chromium --grep "ArrowDown at the table end"`.
 
 Decision:
 Claim `Fixes #6034`. The exact table-edge browser reproduction is covered:
@@ -2230,7 +2230,7 @@ Evidence:
   `packages/slate-react/src/editable/selection-reconciler.ts`, and
   `packages/browser/src/playwright/index.ts`.
 - proof command:
-  `PLAYWRIGHT_RETRIES=0 bunx playwright test playwright/integration/examples/richtext.test.ts --project=chromium --grep "selects the current block on browser triple click|removes the current block after browser triple click and Backspace"`.
+  `PLAYWRIGHT_RETRIES=0 bun run playwright playwright/integration/examples/richtext.test.ts --project=chromium --grep "selects the current block on browser triple click|removes the current block after browser triple click and Backspace"`.
 
 Decision:
 Claim `Fixes #3871`. The richtext browser row triple-clicks the first paragraph
@@ -2265,7 +2265,7 @@ Evidence:
   `packages/slate-react/src/editable/editing-kernel.ts`, and
   `packages/browser/src/playwright/index.ts`.
 - proof command:
-  `PLAYWRIGHT_RETRIES=0 bunx playwright test playwright/integration/examples/richtext.test.ts --project=chromium --grep "removes the current block after browser triple click and Backspace"`.
+  `PLAYWRIGHT_RETRIES=0 bun run playwright playwright/integration/examples/richtext.test.ts --project=chromium --grep "removes the current block after browser triple click and Backspace"`.
 
 Decision:
 Claim `Fixes #5847`. The browser proof reproduces triple-click plus Backspace
@@ -2365,7 +2365,7 @@ Evidence:
   `apps/www/tests/slate-browser/donor/examples/images.test.ts` and
   `packages/slate-react/src/editable/mutation-controller.ts`.
 - focused proof command:
-  `PLAYWRIGHT_RETRIES=0 bunx playwright test playwright/integration/examples/images.test.ts --project=chromium --grep "removes an empty paragraph after an image before deleting the image|inserts a paragraph after a clicked selected image on Enter"`.
+  `PLAYWRIGHT_RETRIES=0 bun run playwright playwright/integration/examples/images.test.ts --project=chromium --grep "removes an empty paragraph after an image before deleting the image|inserts a paragraph after a clicked selected image on Enter"`.
 
 Decision:
 Claim `Fixes #3991`. The exact browser row proves Backspace from an empty
@@ -2398,7 +2398,7 @@ Evidence:
   `apps/www/tests/slate-browser/donor/examples/images.test.ts` and
   `packages/slate-react/src/editable/mutation-controller.ts`.
 - focused proof command:
-  `PLAYWRIGHT_RETRIES=0 bunx playwright test playwright/integration/examples/images.test.ts --project=chromium --grep "removes an empty paragraph after an image before deleting the image|inserts a paragraph after a clicked selected image on Enter"`.
+  `PLAYWRIGHT_RETRIES=0 bun run playwright playwright/integration/examples/images.test.ts --project=chromium --grep "removes an empty paragraph after an image before deleting the image|inserts a paragraph after a clicked selected image on Enter"`.
 
 Decision:
 Claim `Fixes #4301`. The exact browser row proves a clicked selected block void
@@ -2564,7 +2564,7 @@ Evidence:
 - current v2 proof:
   `apps/www/tests/slate-browser/donor/examples/inlines.test.ts`.
 - focused proof command:
-  `PLAYWRIGHT_RETRIES=0 bunx playwright test playwright/integration/examples/inlines.test.ts --project=chromium --grep "types inside an editable inline at its end|keeps the start of following text distinct from the end of an inline|places the caret outside a padded inline before typing"`.
+  `PLAYWRIGHT_RETRIES=0 bun run playwright playwright/integration/examples/inlines.test.ts --project=chromium --grep "types inside an editable inline at its end|keeps the start of following text distinct from the end of an inline|places the caret outside a padded inline before typing"`.
 
 Decision:
 Claim `Fixes #3148`. The browser rows prove both sides of the inline boundary:
@@ -2750,7 +2750,7 @@ Evidence:
   `docs/plans/2026-05-06-slate-v2-dom-selection-boundary-proof-ralplan.md`,
   and `docs/slate-v2/ledgers/issue-coverage-matrix.md`.
 - focused proof command:
-  `PLAYWRIGHT_RETRIES=0 bunx playwright test playwright/integration/examples/richtext.test.ts --project=chromium --grep "ignores a native selection that starts outside the editor and ends inside it"`.
+  `PLAYWRIGHT_RETRIES=0 bun run playwright playwright/integration/examples/richtext.test.ts --project=chromium --grep "ignores a native selection that starts outside the editor and ends inside it"`.
 
 Decision:
 Claim `Fixes #4789`. The browser row creates a native selection that starts
@@ -2861,7 +2861,7 @@ Evidence:
   `docs/plans/2026-05-06-slate-v2-dom-selection-boundary-proof-ralplan.md`,
   and `docs/slate-v2/ledgers/issue-coverage-matrix.md`.
 - focused proof command:
-  `PLAYWRIGHT_RETRIES=0 bunx playwright test playwright/integration/examples/editable-voids.test.ts --project=chromium --grep "ignores a parent selection that crosses into a nested editor"`.
+  `PLAYWRIGHT_RETRIES=0 bun run playwright playwright/integration/examples/editable-voids.test.ts --project=chromium --grep "ignores a parent selection that crosses into a nested editor"`.
 
 Decision:
 Claim `Fixes #4984`. The browser row creates a parent-editor native selection
@@ -2894,7 +2894,7 @@ Evidence:
 - current v2 proof:
   `apps/www/tests/slate-browser/donor/examples/inlines.test.ts`.
 - focused proof command:
-  `PLAYWRIGHT_RETRIES=0 bunx playwright test playwright/integration/examples/inlines.test.ts --project=chromium --grep "types inside an editable inline at its end|keeps the start of following text distinct from the end of an inline|places the caret outside a padded inline before typing"`.
+  `PLAYWRIGHT_RETRIES=0 bun run playwright playwright/integration/examples/inlines.test.ts --project=chromium --grep "types inside an editable inline at its end|keeps the start of following text distinct from the end of an inline|places the caret outside a padded inline before typing"`.
 
 Decision:
 Claim `Fixes #4074`. The Chromium browser row proves text can be inserted at an
@@ -2953,7 +2953,7 @@ Evidence:
 - current v2 proof:
   `apps/www/tests/slate-browser/donor/examples/inlines.test.ts`.
 - focused proof command:
-  `PLAYWRIGHT_RETRIES=0 bunx playwright test playwright/integration/examples/inlines.test.ts --project=chromium --grep "types inside an editable inline at its end|keeps the start of following text distinct from the end of an inline|places the caret outside a padded inline before typing"`.
+  `PLAYWRIGHT_RETRIES=0 bun run playwright playwright/integration/examples/inlines.test.ts --project=chromium --grep "types inside an editable inline at its end|keeps the start of following text distinct from the end of an inline|places the caret outside a padded inline before typing"`.
 
 Decision:
 Claim `Fixes #3429`. The browser row proves the caret target before the padded
@@ -6672,10 +6672,10 @@ Evidence:
   includes three-peer replay convergence for text, mark, range-delete, and move
   commits, with remote collaboration metadata skipping local undo history.
 - verification:
-  `cd /Users/zbeyens/git/slate-v2 && bun test ./packages/slate/test/collab-history-runtime-contract.ts`.
+  `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2 && bun test ./packages/slate/test/collab-history-runtime-contract.ts`.
 - type/lint proof:
-  `cd /Users/zbeyens/git/slate-v2 && bun turbo typecheck --filter=./packages/slate`;
-  `cd /Users/zbeyens/git/slate-v2 && bunx biome check packages/slate/test/collab-history-runtime-contract.ts --fix`.
+  `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2 && bun turbo typecheck --filter=./packages/slate`;
+  `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2 && bunx biome check packages/slate/test/collab-history-runtime-contract.ts --fix`.
 
 | Issue | Status after PM-08  | Decision                                                                                                                                                                                                |
 | ----- | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -6913,10 +6913,10 @@ Evidence:
 - browser proof:
   `apps/www/tests/slate-browser/donor/examples/rendering-strategy-runtime.test.ts`
 - verification:
-  `cd /Users/zbeyens/git/slate-v2 && PLAYWRIGHT_BASE_URL=http://localhost:3100 bun playwright test playwright/integration/examples/rendering-strategy-runtime.test.ts --project=chromium --grep "keeps canceled IME caret anchored for the next typed character"`;
-  `cd /Users/zbeyens/git/slate-v2 && PLAYWRIGHT_BASE_URL=http://localhost:3100 bun playwright test playwright/integration/examples/rendering-strategy-runtime.test.ts --project=chromium --grep "does not push canceled IME composition onto history|keeps text stable after type-delete-cancel IME composition|keeps canceled IME caret anchored for the next typed character"`;
-  `cd /Users/zbeyens/git/slate-v2 && bun lint:fix`;
-  `cd /Users/zbeyens/git/slate-v2 && bun check`.
+  `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2 && PLAYWRIGHT_BASE_URL=http://localhost:3100 bun run playwright playwright/integration/examples/rendering-strategy-runtime.test.ts --project=chromium --grep "keeps canceled IME caret anchored for the next typed character"`;
+  `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2 && PLAYWRIGHT_BASE_URL=http://localhost:3100 bun run playwright playwright/integration/examples/rendering-strategy-runtime.test.ts --project=chromium --grep "does not push canceled IME composition onto history|keeps text stable after type-delete-cancel IME composition|keeps canceled IME caret anchored for the next typed character"`;
+  `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2 && bun lint:fix`;
+  `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2 && bun check`.
 
 | Issue             | Status after Phase 3 | Decision                                                                                                                                                                                                                                           |
 | ----------------- | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -6958,11 +6958,11 @@ Evidence:
   `apps/www/tests/slate-browser/donor/examples/mentions.test.ts`;
   `apps/www/tests/slate-browser/donor/examples/paste-html.test.ts`
 - verification:
-  `cd /Users/zbeyens/git/slate-v2 && bun test ./packages/slate-dom/test/clipboard-boundary.ts`;
-  `cd /Users/zbeyens/git/slate-v2 && PLAYWRIGHT_BASE_URL=http://localhost:3100 bun playwright test playwright/integration/examples/images.test.ts playwright/integration/examples/mentions.test.ts playwright/integration/examples/paste-html.test.ts --project=chromium --grep "copies selected image with visible external HTML payload|copies and pastes a selected mention without crashing|cuts a selected mention without crashing|pastes copied rendered Slate content as an internal fragment before HTML import"`;
-  `cd /Users/zbeyens/git/slate-v2 && bun --filter slate-dom typecheck`;
-  `cd /Users/zbeyens/git/slate-v2 && bun --filter slate-browser typecheck`;
-  `cd /Users/zbeyens/git/slate-v2 && bun lint:fix`
+  `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2 && bun test ./packages/slate-dom/test/clipboard-boundary.ts`;
+  `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2 && PLAYWRIGHT_BASE_URL=http://localhost:3100 bun run playwright playwright/integration/examples/images.test.ts playwright/integration/examples/mentions.test.ts playwright/integration/examples/paste-html.test.ts --project=chromium --grep "copies selected image with visible external HTML payload|copies and pastes a selected mention without crashing|cuts a selected mention without crashing|pastes copied rendered Slate content as an internal fragment before HTML import"`;
+  `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2 && bun --filter slate-dom typecheck`;
+  `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2 && bun --filter slate-browser typecheck`;
+  `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2 && bun lint:fix`
 
 | Issue              | Status after Phase 2 | Decision                                                                                                                                                                                                                    |
 | ------------------ | -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -7001,11 +7001,11 @@ Evidence:
   `apps/www/tests/slate-browser/donor/examples/mentions.test.ts`,
   `apps/www/tests/slate-browser/donor/examples/hovering-toolbar.test.ts`.
 - verification:
-  `cd /Users/zbeyens/git/slate-v2 && bun --filter slate typecheck`;
-  `cd /Users/zbeyens/git/slate-v2 && bun --filter slate-history typecheck`;
-  `cd /Users/zbeyens/git/slate-v2 && bun lint:fix`;
-  `cd /Users/zbeyens/git/slate-v2 && bun test ./packages/slate-history/test/history-contract.ts`;
-  `cd /Users/zbeyens/git/slate-v2 && PLAYWRIGHT_BASE_URL=http://localhost:3100 bun playwright test playwright/integration/examples/plaintext.test.ts playwright/integration/examples/mentions.test.ts playwright/integration/examples/hovering-toolbar.test.ts --project=chromium --grep "keyboard undo restores caret after middle-line typing|keyboard undo restores partial selected text replacement|keyboard undo restores select-all replacement content|typing English over selected formatted text does not crash"`.
+  `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2 && bun --filter slate typecheck`;
+  `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2 && bun --filter slate-history typecheck`;
+  `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2 && bun lint:fix`;
+  `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2 && bun test ./packages/slate-history/test/history-contract.ts`;
+  `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2 && PLAYWRIGHT_BASE_URL=http://localhost:3100 bun run playwright playwright/integration/examples/plaintext.test.ts playwright/integration/examples/mentions.test.ts playwright/integration/examples/hovering-toolbar.test.ts --project=chromium --grep "keyboard undo restores caret after middle-line typing|keyboard undo restores partial selected text replacement|keyboard undo restores select-all replacement content|typing English over selected formatted text does not crash"`.
 
 | Issue              | Phase 1 status     | Decision                                                                                                                                                                                                                                                             |
 | ------------------ | ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -7049,13 +7049,13 @@ Evidence:
 
 Fresh verification:
 
-- `cd /Users/zbeyens/git/slate-v2 && bun test ./packages/slate-react/test/model-input-strategy-contract.test.ts ./packages/slate-react/test/selection-reconciler-contract.ts ./packages/slate-react/test/editing-kernel-contract.ts`
+- `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2 && bun test ./packages/slate-react/test/model-input-strategy-contract.test.ts ./packages/slate-react/test/selection-reconciler-contract.ts ./packages/slate-react/test/editing-kernel-contract.ts`
   passed: 20 tests.
-- `cd /Users/zbeyens/git/slate-v2 && bun test ./packages/slate/test/collab-history-runtime-contract.ts`
+- `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2 && bun test ./packages/slate/test/collab-history-runtime-contract.ts`
   passed: 9 tests.
-- `cd /Users/zbeyens/git/slate-v2/packages/slate-react && bun test:vitest -- projections-and-selection-contract annotation-store-contract widget-layer-contract`
+- `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react && bun test:vitest -- projections-and-selection-contract annotation-store-contract widget-layer-contract`
   passed: 3 files, 28 tests.
-- `cd /Users/zbeyens/git/slate-v2 && bun --filter slate-browser test:selection`
+- `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2 && bun --filter slate-browser test:selection`
   passed: 1 file, 4 tests.
 
 | Row                     | Revalidation decision                                                                    | Issue policy                                                                                                 |
@@ -7088,10 +7088,10 @@ Evidence:
   now includes browser rows for RTL DOM selection offset mapping, RTL visual
   geometry direction, and wrapped-line selection rectangles.
 - verification:
-  `cd /Users/zbeyens/git/slate-v2 && bun --filter slate-browser test:selection`.
+  `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2 && bun --filter slate-browser test:selection`.
 - type/lint proof:
-  `cd /Users/zbeyens/git/slate-v2 && bun turbo typecheck --filter=./packages/slate-browser`;
-  `cd /Users/zbeyens/git/slate-v2 && bunx biome check packages/slate-browser/test/browser/selection.browser.test.ts --fix`.
+  `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2 && bun turbo typecheck --filter=./packages/slate-browser`;
+  `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2 && bunx biome check packages/slate-browser/test/browser/selection.browser.test.ts --fix`.
 
 | Issue | Status after PM-13 | Decision                                                                                                                                                                   |
 | ----- | ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -7123,10 +7123,10 @@ Evidence:
   `packages/slate-react/test/widget-layer-contract.tsx` now
   includes runtime-id node-widget move/remove mapping.
 - verification:
-  `cd /Users/zbeyens/git/slate-v2/packages/slate-react && bun test:vitest -- projections-and-selection-contract annotation-store-contract widget-layer-contract`.
+  `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react && bun test:vitest -- projections-and-selection-contract annotation-store-contract widget-layer-contract`.
 - type/lint proof:
-  `cd /Users/zbeyens/git/slate-v2 && bun turbo typecheck --filter=./packages/slate-react`;
-  `cd /Users/zbeyens/git/slate-v2 && bunx biome check packages/slate-react/test/projections-and-selection-contract.tsx packages/slate-react/test/widget-layer-contract.tsx --fix`.
+  `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2 && bun turbo typecheck --filter=./packages/slate-react`;
+  `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2 && bunx biome check packages/slate-react/test/projections-and-selection-contract.tsx packages/slate-react/test/widget-layer-contract.tsx --fix`.
 
 | Issue | Status after PM-12  | Decision                                                                                                                                              |
 | ----- | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -7160,7 +7160,7 @@ Evidence:
 1000 --json number,title,body,labels,url,updatedAt,createdAt,author`
 - current count: `11` open issues
 - current local examples target from issue bodies:
-  `http://localhost:3100`, served by `cd /Users/zbeyens/git/slate-v2 && bun
+  `http://localhost:3100`, served by `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2 && bun
 serve`
 - current plan:
   `docs/plans/2026-05-10-slate-v2-udecode-open-issues-reproduction-ralplan.md`

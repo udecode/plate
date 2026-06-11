@@ -175,19 +175,27 @@ Broader draft-only names that do not currently map to live files in
 the repo.
 
 - already classified current-only v2 north-star rows:
-  - `external-decoration-sources`: `extended`
-    current-only explicit external overlay-source example; Chromium proof is
-    green and the surface is a deliberate v2 addition rather than same-path
-    parity debt
-  - `highlighted-text`: `extended`
-    current-only overlap-safe highlight example; Chromium proof is green and
-    the surface is a deliberate v2 overlay owner, not a missing legacy port
+  - `search-highlighting`: `extended`
+    current explicit decoration-source owner; Chromium proof is green and the
+    surface is deliberate v2 overlay value rather than same-path parity debt
+  - `code-highlighting`: `extended`
+    current code-token decoration owner; Chromium proof is green and the surface
+    owns code-line edit/navigation behavior on the kept model
+  - `decorations-async`: `extended`
+    current async decoration owner; Chromium proof is green for delayed prop and
+    hook decoration updates preserving the typed-end caret
   - `persistent-annotation-anchors`: `extended`
-    current-only durable-annotation anchor example; Chromium proof is green and
-    the surface is deliberate v2 value beyond the legacy example set
-  - `review-comments`: `extended`
-    current-only review UI example; Chromium proof is green and the surface is
-    deliberate v2 annotation/widget value beyond the legacy example set
+    current durable-annotation anchor example; Chromium proof is green and the
+    surface is deliberate v2 value beyond the legacy example set
+  - `comment-mode`: `extended`
+    current comment/review UI owner; Chromium proof is green for pointer
+    selection, sidebar state, inline review slices, and annotation-backed widget
+    visibility
+- deleted draft-only rows:
+  - `highlighted-text`, `external-decoration-sources`, and `review-comments`
+    were deleted from `.tmp/slate-v2` and are not current file/proof owners.
+    Keep historical claims in draft history only; do not cite them as live
+    runnable rows.
 - broader browser/input parity rows that do not currently map to live example
   or Playwright files stay tracked in
   `true-slate-rc-proof-ledger.md`, not here
