@@ -12,7 +12,7 @@ Continuous private alpha. No release, publish, PR, or changeset readiness claim
 is live unless a prompt explicitly asks for that lane.
 
 The repo has moved past the package-runtime blocker phase. The active owner is
-final claim-width closure for the absolute architecture plan.
+keeping the claim width exact while private-alpha proof continues.
 
 ## Readiness Gates
 
@@ -32,20 +32,32 @@ a prompt explicitly asks for that lane:
 ## Current Claim-Width Boundaries
 
 - no current private-alpha blocker remains from final integration, build,
-  typecheck, lint, perf, or `bun test:integration-local` closure; those gates
-  are release-only same-turn proof if a prompt explicitly asks for release,
-  publish, PR, or changeset readiness
+  typecheck, lint, perf, `bun check:full`, or `bun test:integration-local`
+  closure; those gates are release-only same-turn proof if a prompt explicitly
+  asks for release, publish, PR, or changeset readiness
 - private-alpha claim docs must keep the exact claim width from
   [absolute-architecture-release-claim.md](/Users/zbeyens/git/plate-2/docs/slate-v2/absolute-architecture-release-claim.md)
 - native mobile proof stays scoped to the current automated claim
 - the huge-document middle-shell caveat stays explicit
-- proof-ledger closure and completion-check closure are pending
+- proof-ledger closure is current for private alpha; per-run completion-check
+  closure remains owned by the active automation plan
+- deferred claim-width work is explicit below and must not be widened silently
+
+## Deferred Claim-Width Register
+
+| Claim | Current status | Proof owner | Do not claim until |
+|-------|----------------|-------------|--------------------|
+| Raw Android/iOS device input | unclaimed | `bun test:mobile-device-proof:raw` and `test-results/release-proof/mobile-device-proof.json` | a real Appium/device lane writes the raw proof artifact |
+| Table-fragment merge semantics | deferred policy debt | `.tmp/slate-v2/packages/slate/test/transforms/insertFragment/of-tables/**` plus `slate-plan` | a table-fragment spec decides source-cell, target-cell, and merge preservation rules |
+| Universal huge-document superiority | scoped diagnostic, not product blocker | `bench:react:huge-document:legacy-compare:local` | browser/native/editor behavior proof supports widening beyond the current product gate |
+| Residual huge-document micro-lanes | tracked follow-up | staged keyboard, browser trace, and cross-editor huge-document benchmarks | a fresh benchmark or browser oracle proves a real owner beyond measured frame/projection variance |
+| Release, publish, PR, changeset readiness | out of scope | explicit ship/release/PR prompt | the user asks for that lane and the same-turn ship gate passes |
 
 ## Current Claim Width
 
 The live claim is only this:
 
-- the migration program is active
+- the private-alpha program is active
 - tranche order is locked
 - drift discipline is locked
 - absolute architecture doctrine is live:
@@ -57,7 +69,7 @@ The live claim is only this:
   - extensions compose through named `editor`, `state`, and `tx` groups
   - rewrite is allowed when retrofit shape blocks the better API or proof
 - tranche 1 Bun/tooling/docs ownership is green
-- tranche 2 React 19.2.5 + Next 16.2.4 + TypeScript 6.0.3 compatibility is
+- tranche 2 React 19.2.5 + Next 16.2.4 + TypeScript 6.0.3 runtime baseline is
   green
 - `packages/slate` is materially farther along:
   - package-local tests/build/typecheck/lint are green
@@ -159,10 +171,9 @@ The live program must also preserve the v2 reason to exist:
 
 The next release-only gate is:
 
-- a fresh same-turn integration/build/type/lint/perf closeout on top of the
-  verified public API, kernel, generated gauntlet, mobile-scope, and perf
-  owners, but only when a prompt explicitly asks for release, publish, PR, or
-  changeset readiness
+- a fresh same-turn ship/release closeout on top of the verified public API,
+  kernel, generated gauntlet, mobile-scope, and perf owners, but only when a
+  prompt explicitly asks for release, publish, PR, or changeset readiness
 
 not:
 

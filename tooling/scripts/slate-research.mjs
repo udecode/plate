@@ -22,7 +22,7 @@ const [command, ...rawArgs] = process.argv.slice(2);
 
 if (!command) {
   console.error(
-    'Usage: node tooling/scripts/slate-autoresearch.mjs <command> [...args]'
+    'Usage: node tooling/scripts/slate-research.mjs <command> [...args]'
   );
   process.exit(1);
 }
@@ -389,7 +389,7 @@ function priorityRank(priority) {
 
 function renderLoopMarkdown(payload) {
   const lines = [
-    '# Slate Autoresearch Loop Suggestions',
+    '# Slate Research Loop Suggestions',
     '',
     `Generated: ${payload.generatedAt}`,
     `Source: ${payload.source}`,
@@ -529,7 +529,7 @@ if (compactFinalizePreview) {
           }
         : null,
       fullOutput:
-        'Run `node tooling/scripts/slate-autoresearch.mjs finalize-preview --full` for raw JSON.',
+        'Run `node tooling/scripts/slate-research.mjs finalize-preview --full` for raw JSON.',
     };
     console.log(JSON.stringify(compact, null, 2));
   } catch {

@@ -257,23 +257,49 @@ Current tranche-7 read:
     `HUGE_DOC_FULL_STRICT_BUDGET=1 bun run bench:react:huge-document:full:local`
   - universal all-surface diagnostic:
     `REACT_HUGE_COMPARE_BLOCKS=5000 REACT_HUGE_COMPARE_ITERATIONS=5 REACT_HUGE_COMPARE_TYPE_OPS=10 bun run bench:react:huge-document:legacy-compare:local`
-  - the strict product gate is green; the latest universal diagnostic is also
-    current-green with worst p95 ratio `0.77`
+  - the strict product gate is green; the universal diagnostic is a scoped
+    comparison lane, not a blanket superiority claim. The latest 5000-block
+    product gate reported worst legacy-compare p95 ratio `1.24` on
+    `middleBlockSelectThenTypeMs` while keeping strict budget failures at `0`;
+    a focused profiled rerun of `v2DefaultRenderAuto` measured the same lane at
+    ratio `0.91`, so treat it as distribution-sensitive diagnostic evidence,
+    not a confirmed product regression.
+  - the latest 5000-block cross-editor diagnostic keeps the v2 value clear:
+    Slate `auto` / virtualized type-to-paint p95 is `24.5ms` / `25.3ms`
+    versus ProseMirror `60.4ms` and Lexical `76.6ms`; DOM p95 is `753` /
+    `155` versus ProseMirror `5001` and Lexical `10001`.
+  - cross-editor vertical selection is scoped: a higher-sample 50-step
+    diagnostic put Slate middle-block repeated Shift+Down at `15.6ms` auto and
+    `15.3ms` virtualized, close to ProseMirror `15.6ms` and Lexical `16.4ms`.
+    Slate start-block repeated Shift+Down stays the narrow residual at
+    `21.9ms` auto and `22.5ms` virtualized, with no long tasks and median /
+    p75 still around `15ms`.
   - 1000-block runs are smoke/debug only and do not close the lane
   - current shell islands still win ready and full-document operations
   - direct model-only typing into an unpromoted middle shell is not an accepted
     superiority caveat anymore
-  - keep tracking tiny select-all deltas, repeated vertical Shift+Down, and
-    select-all-delete undo residual p95 / bulk-restore cost as narrow
-    follow-up lanes, not broad architecture blockers
+  - keep tracking select-then-type diagnostic deltas, repeated vertical
+    Shift+Down, and select-all-delete undo residual p95 / bulk-restore cost as
+    narrow follow-up lanes, not broad architecture blockers
   - the accepted next owner is evidence-triggered: preserve behavior/native
     selection proof first, then reopen DOM-present/shell/occlusion only when a
     fresh benchmark or browser oracle proves that owner is needed
 
-### [ ] Tranche 8: Private-Alpha Proof Ledger Closure
+### [x] Tranche 8: Private-Alpha Proof Ledger Closure
 
-- final private-alpha readiness statement
-- final deferred claim-width register
+- final private-alpha readiness statement:
+  [release-readiness-decision.md](/Users/zbeyens/git/plate-2/docs/slate-v2/release-readiness-decision.md)
+- final deferred claim-width register:
+  [release-readiness-decision.md](/Users/zbeyens/git/plate-2/docs/slate-v2/release-readiness-decision.md#deferred-claim-width-register)
+- current read:
+  - continuous private alpha is the live status
+  - release, publish, PR, and changeset readiness stay out of scope unless a
+    prompt explicitly asks for that lane
+  - raw Android/iOS proof, table-fragment merge semantics, universal huge-doc
+    superiority, and residual huge-doc micro-lanes are named claim-width
+    boundaries, not hidden blockers
+  - per-run automation plans still own same-turn verification and completion
+    checks
 
 ## Package Order
 

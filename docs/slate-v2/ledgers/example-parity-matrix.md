@@ -56,7 +56,7 @@ It cannot rescue a source-drifted row.
 | --------------------- | ------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------- |
 | `android-tests`       | `site/examples/ts/android-tests.tsx`       | current + legacy rows present; current row is explicitly extended with the legacy manual case picker plus the new IME hub links                                                                                                                                                                                                           | `extended parity row` |
 | `check-lists`         | `site/examples/ts/check-lists.tsx`         | source now reads close to legacy after the actual port (`0.861` similarity); the earlier `as CustomEditor` and test-only `id` drift are gone; remaining source drift is limited to current type/module syntax around imports and props; standalone current checkbox proof is still red and explicitly deferred to the later test-fix pass | `recovered`           |
-| `code-highlighting`   | `site/examples/ts/code-highlighting.tsx`   | current shell/proof exists, but the file is still full drift in source (`0.062` similarity, `674` diff lines)                                                                                                                                                                                                                             | `open`                |
+| `code-highlighting`   | `site/examples/ts/code-highlighting.tsx`   | extended parity row: source intentionally owns a v2 code-line model, decoration-source runtime scoping, current API toolbar conversion, and Prism token rendering; desktop proof covers token projections, language retokening after edits, conversion, code-line editing, selection/navigation, paste, undo, and boundary deletion.          | `extended`            |
 | `custom-placeholder`  | `site/examples/ts/custom-placeholder.tsx`  | source is now equivalent to the legacy example aside from current type-only import syntax, and Chromium proof covers custom placeholder rendering plus editor height                                                                                                                                                                      | `recovered`           |
 | `editable-voids`      | `site/examples/ts/editable-voids.tsx`      | source is much closer than before (`0.568` similarity, `194` diff lines), and Chromium proof now covers shell elements, insertion/duplication, plain input editing, and nested editor editing inside the void                                                                                                                             | `recovered`           |
 | `embeds`              | `site/examples/ts/embeds.tsx`              | source now reads close to legacy (`0.763` similarity, `122` diff lines); current proof closes the restored embed shell                                                                                                                                                                                                                    | `recovered`           |
@@ -66,18 +66,18 @@ It cannot rescue a source-drifted row.
 | `iframe`              | `site/examples/ts/iframe.tsx`              | source now reads very close to legacy (`0.917` similarity, `117` diff lines); current iframe editing proof is green                                                                                                                                                                                                                       | `recovered`           |
 | `images`              | `site/examples/ts/images.tsx`              | source now reads fairly close to legacy (`0.699` similarity, `192` diff lines), and Chromium proof covers the restored shell plus invalid prompt handling and selected-image deletion                                                                                                                                                     | `recovered`           |
 | `inlines`             | `site/examples/ts/inlines.tsx`             | source now reads close to legacy (`0.850` similarity, `334` diff lines); current browser proof for the seeded inline link is green                                                                                                                                                                                                        | `recovered`           |
-| `markdown-preview`    | `site/examples/ts/markdown-preview.tsx`    | current + legacy rows exist, but the source diff still reads like a rewrite (`0.082` similarity, `286` diff lines)                                                                                                                                                                                                                        | `open`                |
-| `markdown-shortcuts`  | `site/examples/ts/markdown-shortcuts.tsx`  | current + legacy rows exist, but the source diff still reads like a rewrite (`0.086` similarity, `440` diff lines)                                                                                                                                                                                                                        | `open`                |
+| `markdown-preview`    | `site/examples/ts/markdown-preview.tsx`    | recovered: source is an intentional v2 decoration-source rewrite of the legacy Prism markdown preview, using `useSlateRangeDecorationSource` and `renderSegment`; desktop proof now checks rendered preview classes before and after editing instead of only text containment.                                                              | `recovered`           |
+| `markdown-shortcuts`  | `site/examples/ts/markdown-shortcuts.tsx`  | extended parity row: source intentionally ports the legacy shortcut behavior into a v2 editor extension and adds ordered-list starts, NBSP whitespace, adjacent list merge, undo/redo, and caret contracts; desktop proof passed after fake mobile returns became explicit skips.                                                             | `extended`            |
 | `mentions`            | `site/examples/ts/mentions.tsx`            | source now reads very close to legacy (`0.970` similarity, `233` diff lines); current browser proof for chips, portal, and insertion is green                                                                                                                                                                                             | `recovered`           |
 | `paste-html`          | `site/examples/ts/paste-html.tsx`          | source now reads close to legacy (`0.820` similarity, `233` diff lines), and Chromium proof for the supported explicit formatting subset is green for bold and code                                                                                                                                                                       | `recovered`           |
 | `plaintext`           | `site/examples/ts/plaintext.tsx`           | source now reads close to legacy again after dropping the extra type-only drift and restoring the minimal example shell; current browser proof for typing is green                                                                                                                                                                        | `recovered`           |
 | `read-only`           | `site/examples/ts/read-only.tsx`           | source now reads close to legacy again after dropping the extra type-only drift and preserving the minimal readOnly shell; current browser proof for non-editability is green                                                                                                                                                             | `recovered`           |
 | `richtext`            | `site/examples/ts/richtext.tsx`            | source now reads close to legacy (`0.874` similarity, `225` diff lines), and Chromium proof is green for render, browser text insertion, and undo restoring deleted selected rich text                                                                                                                                                    | `recovered`           |
-| `scroll-into-view`    | `site/examples/ts/scroll-into-view.tsx`    | current dedicated row exists in `scroll-into-view.test.ts`; source is still not close (`0.232` similarity, `194` diff lines) and the mirrored legacy/current action is still red                                                                                                                                                          | `open`                |
+| `scroll-into-view`    | deleted in v2                             | explicit cut: the legacy example was a temporary scroll helper surface and was deleted with its Playwright file in `f6dfd994`; current behavior is owned by `slate-react` scroll/selection side-effect contracts, not a same-path example. Focused package proof is green for default scroll measurement, shadow-root outer scrolling, app-owned `scrollSelectionIntoView`, and remote skip-scroll metadata. | `explicit cut`        |
 | `search-highlighting` | `site/examples/ts/search-highlighting.tsx` | source now reads close to legacy again after restoring the legacy search/decorate flow, `Slate` wrapper, and contributor-facing input shell; remaining forced drift is the current `projectionStore` + `renderSegment` wiring instead of legacy `decorate` + `renderLeaf`; current browser proof for two highlighted matches is green     | `recovered`           |
-| `shadow-dom`          | `site/examples/ts/shadow-dom.tsx`          | current + legacy rows exist, but the source diff still reads materially rewritten (`0.120` similarity, `86` diff lines)                                                                                                                                                                                                                   | `open`                |
-| `styling`             | `site/examples/ts/styling.tsx`             | current + legacy rows exist, but the source diff still reads materially rewritten (`0.384` similarity, `103` diff lines)                                                                                                                                                                                                                  | `open`                |
-| `tables`              | `site/examples/ts/tables.tsx`              | current + legacy rows exist, but the source diff still reads like a rewrite (`0.036` similarity, `270` diff lines)                                                                                                                                                                                                                        | `open`                |
+| `shadow-dom`          | `site/examples/ts/shadow-dom.tsx`          | recovered: source keeps the legacy nested-shadow structure and text while using the current `useSlateEditor` API instead of legacy `createEditor` / `withReact` / `withHistory`; cross-browser proof covers render, editing, generated typing gauntlet, native caret helper, ArrowLeft movement, RTL deletion where supported, and Enter/follow-up typing. | `recovered`           |
+| `styling`             | `site/examples/ts/styling.tsx`             | recovered: source keeps the legacy two-editor styling shape and copy while using `useSlateEditor`; browser proof covers `style` prop defaults, `className` plus `disableDefaultStyles`, and Chromium drag/undo selected-text behavior. | `recovered`           |
+| `tables`              | `site/examples/ts/tables.tsx`              | extended parity row: source intentionally keeps the legacy rendering example while adding conservative v2 cell-boundary editing, Tab navigation, native/model selection, drag, paste, RTL direction, and render-count proof; table-fragment merge semantics remain a separate package policy checkpoint.                                    | `extended`            |
 
 ## 2026-04-15 Git-Diff Rebaseline
 
@@ -86,17 +86,17 @@ from browser feel.
 
 | Example               | Source-diff read                                                                                                       | Ledger result                |
 | --------------------- | ---------------------------------------------------------------------------------------------------------------------- | ---------------------------- |
-| `code-highlighting`   | still full rewrite in diff                                                                                             | stays `open`                 |
+| `code-highlighting`   | intentional v2 code-line/decorations-source rewrite with desktop token/editing proof                                    | upgraded to `extended`       |
 | `check-lists`         | now source-close after the actual port; remaining source drift is limited to current type/module syntax                | upgraded back to `recovered` |
 | `custom-placeholder`  | source now reads as the legacy example with current import syntax, and custom placeholder proof is green               | upgraded to `recovered`      |
 | `forced-layout`       | rebaseline invalidated it as `open`, but the continuation batch restored the legacy source flow and green delete proof | upgraded to `recovered`      |
-| `markdown-preview`    | still full rewrite in diff                                                                                             | invalidated back to `open`   |
-| `markdown-shortcuts`  | still full rewrite in diff                                                                                             | invalidated back to `open`   |
+| `markdown-preview`    | current decoration-source rewrite over the legacy Prism markdown preview; desktop proof checks rendered preview classes | upgraded to `recovered`      |
+| `markdown-shortcuts`  | intentional v2 editor-extension rewrite with desktop shortcut, history, list, paste, and caret proof                   | upgraded to `extended`       |
 | `plaintext`           | source-close again after the minimal same-path cleanup                                                                 | upgraded to `recovered`      |
 | `read-only`           | source-close again after the minimal same-path cleanup                                                                 | upgraded to `recovered`      |
-| `shadow-dom`          | still materially rewritten in diff                                                                                     | invalidated back to `open`   |
-| `styling`             | still materially rewritten in diff                                                                                     | invalidated back to `open`   |
-| `tables`              | still full rewrite in diff                                                                                             | invalidated back to `open`   |
+| `shadow-dom`          | current API wrapper over the legacy nested-shadow example shape; cross-browser proof is green                           | upgraded to `recovered`      |
+| `styling`             | current API wrapper over the legacy two-editor styling shape; desktop proof is green                                    | upgraded to `recovered`      |
+| `tables`              | intentional conservative table-editing extension with desktop rendering, selection, paste, navigation proof            | upgraded to `extended`       |
 | `embeds`              | now source-close after the actual port                                                                                 | upgraded to `recovered`      |
 | `hovering-toolbar`    | now source-close after the actual port                                                                                 | upgraded to `recovered`      |
 | `iframe`              | now source-close after the actual port                                                                                 | upgraded to `recovered`      |
@@ -133,7 +133,7 @@ Exact paired same-path source stats from the 2026-04-15 rebaseline:
 | `plaintext`           | `0.322`    | `24`         | `34`          | `42`       |
 | `read-only`           | `0.301`    | `25`         | `35`          | `42`       |
 | `richtext`            | `0.874`    | `328`        | `349`         | `225`      |
-| `scroll-into-view`    | `0.232`    | `136`        | `116`         | `194`      |
+| `scroll-into-view`    | `N/A`      | legacy temp example | deleted in v2 | explicit cut |
 | `search-highlighting` | `0.170`    | `141`        | `197`         | `278`      |
 | `shadow-dom`          | `0.120`    | `48`         | `58`          | `86`       |
 | `styling`             | `0.384`    | `47`         | `68`          | `103`      |
@@ -152,11 +152,20 @@ Exact paired same-path source stats from the 2026-04-15 rebaseline:
 - `hovering-toolbar`: source-close recovered row
 - `iframe`: source-close recovered row
 - `inlines`: source-close recovered row
+- `markdown-preview`: recovered; current source owns the same Prism markdown
+  preview behavior through v2 decoration sources and `renderSegment`, and
+  desktop proof checks rendered preview classes before and after editing.
 - `mentions`: source-close recovered row
 - `plaintext`: source-close recovered row
 - `read-only`: source-close recovered row
 - `search-highlighting`: source-close recovered row
-- `scroll-into-view`: still open, and now explicitly open on source diff too
+- `scroll-into-view`: explicit cut; the same-path example/test are no longer
+  live current owners. Keep scroll behavior proof in package contracts.
+- `shadow-dom`: recovered; current source uses `useSlateEditor` but keeps the
+  legacy nested-shadow shape and text, and desktop cross-browser proof is green.
+- `styling`: recovered; current source uses `useSlateEditor` but keeps the
+  legacy two-editor `style`/`className` demonstration and desktop proof is
+  green.
 
 ## Legacy Playwright Drift
 
@@ -205,23 +214,12 @@ the repo.
 Highest-signal immediate recoveries after the git-diff invalidation:
 
 1. recover the still-full-rewrite rows first:
-   - `code-highlighting`
-   - `markdown-preview`
-   - `markdown-shortcuts`
-   - `tables`
+   - none
 2. recover the remaining materially rewritten same-path rows:
-   - `shadow-dom`
-   - `styling`
+   - none
 3. finish the remaining open rows:
-   - `code-highlighting`
-   - `custom-placeholder`
-   - `markdown-preview`
-   - `markdown-shortcuts`
-   - `scroll-into-view`
-   - `shadow-dom`
-   - `styling`
-   - `tables`
-4. finish the already-open parity row:
-   - `scroll-into-view`
+   - none
+4. keep `scroll-into-view` out of the live parity backlog unless a current
+   example is intentionally reintroduced.
 5. classify current-only rewrite unlocks as `extended`, `mixed`, `explicit cut`,
    or `open`

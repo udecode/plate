@@ -53,6 +53,8 @@ Use those skills when relevant:
 - `clawpatch` for Clawpatch init/map/review/report/fix/revalidate workflows
 - `editor-test-harvester` for mining external editor repositories for portable editor-behavior tests, Slate v2 coverage gaps, and copy/refactor/create decisions
 - `editor-harvest-plan` for turning an `editor-test-harvester` result into a lane-specific Slate v2 or Plate execution plan
+- `slate-research` for Slate v2 web/GitHub/OSS discovery, scalable repo scans, research ledgers, dedupe, source synthesis, evidence grading, scoring, and promotion into `slate-ar-*`, `slate-patch`, `slate-plan`, `issue-harvester`, or docs packets. It does not run Codex Autoresearch packets
+- `slate-auto` for Slate v2 long autonomous supervisor loops: quality, behavior, visual proof, perf, API cleanup, benchmark/test repair, external issue/test harvests, skill repair, docs consolidation, and private-alpha readiness without user micro-routing
 - `tdd`
 - @.agents/rules/changeset.mdc when updating packages to write a changeset before completing
 - @.agents/rules/plate-plan.mdc when defining or updating editor-behavior law, authority maps, protocol rows, or parity coverage

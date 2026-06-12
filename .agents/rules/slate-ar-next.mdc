@@ -42,7 +42,9 @@ instead of stopping at a menu of expert skills.
 - Existing behavior proof needs repeatability: `slate-ar-gate`.
 - Missing behavior oracle: `slate-patch` or `tdd`.
 - Clear perf target: `slate-ar-perf`.
-- Broad API/DX/architecture/test gap: `slate-ar-quality`.
+- Broad API/DX/architecture/test gap with unknown prior art or owner:
+  `slate-research`.
+- Accepted quality-gap checklist: `slate-ar-quality`.
 - Broad surface improvement, mixed bugs/perf/testing/API, or "absolute best":
   `slate-ar-perfect <surface>`.
 - Ambiguous loop shape: `slate-ar-recipe`.

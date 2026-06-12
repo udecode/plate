@@ -347,7 +347,7 @@ Workflow:
 1. From `plate-2`, inspect `benchmarks/targets/slate-v2.json` and run
    `pnpm bench:targets:check`.
 2. Use `pnpm bench:targets:list` or
-   `node tooling/scripts/slate-autoresearch.mjs suggest-loops --with-checks`
+   `node tooling/scripts/slate-research.mjs suggest-loops --with-checks`
    to find the matching target.
 3. If a target exists, run `pnpm bench:targets:dry-run -- <target-id>` and
    record whether `slate-ar-perf` should own further optimization.

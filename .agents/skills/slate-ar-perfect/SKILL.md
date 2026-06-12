@@ -38,13 +38,15 @@ Keep the goal short. Put the real checklist in the goal plan.
 
 Start with `slate-ar-status`, then choose owners in this order:
 
-1. `slate-ar-quality` for current-state gaps across API, DX, architecture,
-   examples, tests, and perf surfaces;
-2. `slate-plan` only when the remaining issue needs public API/runtime design;
-3. `slate-patch` for known bugs or missing behavior oracles;
-4. `slate-ar-gate` for existing editor behavior proof;
-5. `slate-ar-perf` for benchmark-backed perf targets;
-6. `slate-ar-gate` again for final broad no-regression proof.
+1. `slate-research` for unknown current-state gaps, external prior art, OSS
+   evidence, or source synthesis across API, DX, architecture, examples, tests,
+   and perf surfaces;
+2. `slate-ar-quality` for accepted quality-gap checklist execution;
+3. `slate-plan` only when the remaining issue needs public API/runtime design;
+4. `slate-patch` for known bugs or missing behavior oracles;
+5. `slate-ar-gate` for existing editor behavior proof;
+6. `slate-ar-perf` for benchmark-backed perf targets;
+7. `slate-ar-gate` again for final broad no-regression proof.
 
 Do not accept a perf win while native behavior regresses. Faster broken editor
 behavior is not progress.

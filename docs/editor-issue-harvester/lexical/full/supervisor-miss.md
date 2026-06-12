@@ -25,7 +25,7 @@ Correct closure:
 
 Current repair:
 
-- `slate-automation`, `editor-test-harvester`, and `slate-north-star` now state
+- `slate-auto`, `editor-test-harvester`, and `slate-north-star` now state
   that "all issues" means issue-by-issue closure, not cluster-level summary.
 - `issue-closure-ledger.tsv` is the closure queue.
 - `issue-closure-overrides.json` records durable issue-level closures.

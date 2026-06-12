@@ -200,13 +200,14 @@ REACT_HUGE_COMPARE_BLOCKS=5000 REACT_HUGE_COMPARE_ITERATIONS=5 REACT_HUGE_COMPAR
 ```
 
 The current claim does not close universal huge-document superiority. The
-strict product wrapper is green with zero failures and zero budget failures.
-The broad all-surface diagnostic remains open when it reports slower product
-typing/select rows against legacy chunking-on. The accepted direction is
-two-layer `auto`: DOM-present is the safe default baseline, and shell/occlusion
-escalation remains explicit or proof-disabled until browser find, screen
-reader, native selection, copy/paste, IME, mobile, undo/history, and
-collaboration proof passes.
+strict product wrapper is the private-alpha product gate and is current-green
+when run by the active automation plan. The broad all-surface diagnostic is a
+comparison lane; when it finds slower product typing/select rows against legacy
+chunking-on, it opens a scoped owner instead of widening the claim. The accepted
+direction is two-layer `auto`: DOM-present is the safe default baseline, and
+shell/occlusion escalation remains explicit or proof-disabled until browser
+find, screen reader, native selection, copy/paste, IME, mobile, undo/history,
+and collaboration proof passes.
 
 ## Claim Limits
 
@@ -222,7 +223,7 @@ The architecture does not claim:
 
 ## Required Closure Gates
 
-Final closure requires:
+Private-alpha closure requires these gates at the claim width being made:
 
 - public hard-cut contracts
 - read/update and primitive method runtime contracts
@@ -234,3 +235,6 @@ Final closure requires:
 - persistent-profile destructive editing soak
 - `bun test:integration-local`
 - relevant package build, typecheck, and lint gates
+
+Release, publish, PR, and raw-device closure are separate lanes. They are not
+live unless the prompt explicitly asks for them.
