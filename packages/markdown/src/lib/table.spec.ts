@@ -80,6 +80,48 @@ describe('markdown tables', () => {
     expect(deserializeMd(editor, markdown)).toMatchObject(value);
   });
 
+  it('keeps unescaped less-than text inside table cells when MDX fallback is used', () => {
+    const editor = createTableEditor();
+    const input =
+      '| Dimension | Basis |\n| --- | --- |\n| Volume trend | a<b |\n';
+
+    const value = deserializeMd(editor, input);
+
+    expect(value).toMatchObject([
+      {
+        children: [
+          {
+            children: [
+              {
+                children: [{ type: 'p', children: [{ text: 'Dimension' }] }],
+                type: 'th',
+              },
+              {
+                children: [{ type: 'p', children: [{ text: 'Basis' }] }],
+                type: 'th',
+              },
+            ],
+            type: 'tr',
+          },
+          {
+            children: [
+              {
+                children: [{ type: 'p', children: [{ text: 'Volume trend' }] }],
+                type: 'td',
+              },
+              {
+                children: [{ type: 'p', children: [{ text: 'a<b' }] }],
+                type: 'td',
+              },
+            ],
+            type: 'tr',
+          },
+        ],
+        type: 'table',
+      },
+    ]);
+  });
+
   it('serializes multi-paragraph table cells as html breaks inside one paragraph', () => {
     const editor = createTableEditor();
     const input = [
