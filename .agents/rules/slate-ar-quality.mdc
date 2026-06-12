@@ -1,5 +1,5 @@
 ---
-description: Slate v2 quality-gap Autoresearch shortcut. Runs deep-research and quality-gap loops for API/DX/architecture/test coverage gaps, then routes accepted findings to slate-patch, slate-plan, slate-ar-gate, or slate-ar-perf.
+description: Slate v2 quality-gap Autoresearch executor. Runs accepted quality-gap checklists through slate-ar/codex-autoresearch, then routes accepted findings to slate-patch, slate-plan, slate-ar-gate, or slate-ar-perf. Use slate-research first for broad web/GitHub/OSS discovery, repo scans, external prior art, source synthesis, and durable research ledgers.
 argument-hint: '[slug/topic | quality gap target]'
 disable-model-invocation: true
 ---
@@ -8,16 +8,20 @@ disable-model-invocation: true
 
 Handle $ARGUMENTS by loading `slate-ar` and running its quality-gap mode.
 
-Use this when the user wants to perfect a Slate v2 surface beyond a single bug:
-API/DX gaps, architecture gaps, missing behavior coverage, docs/reference
-holes, example quality, or broad "make this better" research.
+Use this when Slate already has an accepted quality-gap checklist, slug, or
+concrete gap set to execute through Codex Autoresearch.
+
+For broad discovery, web/GitHub/OSS scans, external prior art, source synthesis,
+and durable research ledgers, use `slate-research` first. This skill consumes
+promoted research; it does not own the open-ended research search.
 
 ## Contract
 
 - Target cwd is `Plate repo root`.
-- Use generic Codex Autoresearch research and quality-gap mechanics through
-  `slate-ar`.
-- Keep durable state under `.tmp/slate-autoresearch/research/<slug>/`.
+- Use generic Codex Autoresearch quality-gap mechanics through `slate-ar`.
+- Keep AR session scratch under `.tmp/slate-autoresearch/research/<slug>/`.
+- Keep durable external research under `docs/slate-v2/research/**` through
+  `slate-research`.
 - `quality_gap=0` closes the current accepted checklist only. It does not mean
   discovery is permanently complete.
 

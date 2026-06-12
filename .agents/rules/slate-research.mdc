@@ -1,0 +1,317 @@
+---
+description: Slate v2 research intelligence. Use for web/GitHub/OSS discovery, scalable repo scans, external prior art, source synthesis, research ledgers, dedupe, evidence grading, scoring, and promotion into Slate-native owners. Does not run Codex Autoresearch packets; routes accepted work to slate-ar-quality, slate-ar-gate, slate-ar-perf, slate-patch, slate-plan, issue-harvester, or docs.
+argument-hint: <research question/topic> [setup | doctor | next | log | state | promote-preview | shard | audit]
+disable-model-invocation: true
+---
+
+# Slate Research
+
+Handle $ARGUMENTS.
+
+Use this when Slate v2 needs external prior art, better testing strategy,
+browser/native-selection/IME/paste proof ideas, pagination/virtualization
+research, huge-document behavior/perf research, TypeScript/API/DX discovery, or
+large OSS repo scans before patching.
+
+This is not `slate-ar` and does not run Codex Autoresearch packets. It discovers
+and synthesizes research, then promotes accepted leads to the right execution
+owner. `slate-ar` and `slate-ar-*` run measured loops; `slate-research` decides
+what evidence-backed loops, oracles, plans, docs, and fixes should exist.
+
+## Core Take
+
+Research is not chat browsing, and it is not AR execution.
+
+Research is a resumable evidence system:
+
+```txt
+question -> registry -> queries -> leads -> read log -> score -> promote
+```
+
+If the search could touch many repos, issues, PRs, examples, or papers, create
+the ledgers first. Future agents must resume from files, not from compressed
+chat.
+
+Research has higher default weight after major internal proof already went
+green. Internal knowledge is not the ceiling. GitHub OSS usually has useful
+answers if the search is managed like engineering work.
+
+## Boundary
+
+- `slate-auto`: supervisor. Decides when a research checkpoint is needed
+  and which promoted owner runs next.
+- `slate-research`: discovery and synthesis. Owns web/GitHub/OSS search,
+  ledgers, source reading, dedupe, evidence grades, scoring, and promotion.
+- `slate-ar`: execution wrapper. Owns Slate defaults for measured
+  `codex-autoresearch` packet loops in `.tmp/slate-v2`.
+- `slate-ar-quality`: executes an accepted quality-gap checklist through
+  Codex Autoresearch. It does not own broad OSS discovery.
+- `slate-ar-gate`: repeats existing proof gates once a command/oracle exists.
+- `slate-ar-perf`: optimizes benchmark-backed performance targets.
+- `slate-patch`: fixes concrete bugs or missing oracles.
+- `slate-plan`: decides architecture/API shape.
+- `issue-harvester`: owns exhaustive issue-by-issue external corpus closure.
+
+Flow:
+
+```txt
+slate-auto
+  -> slate-research        # discover, dedupe, synthesize, promote
+      -> slate-ar-quality  # execute accepted quality_gap checklist
+      -> slate-ar-gate     # repeat existing proof
+      -> slate-ar-perf     # optimize benchmark target
+      -> slate-patch       # bug/oracle fix
+      -> slate-plan        # architecture/API decision
+      -> issue-harvester   # exhaustive issue closure
+```
+
+Do not route `research`, `web/GitHub discovery`, or `OSS scan` directly to
+`slate-ar-quality` unless a quality-gap checklist already exists. Discovery
+first belongs here; execution after promotion belongs to the target owner.
+
+## Use When
+
+- A Slate v2 problem repeats after local fixes and local tests still miss it.
+- Architecture/perf lanes plateau without a concrete owner.
+- The route needs better browser/native-selection/IME/paste/mobile proof.
+- Pagination, virtualization, huge-document, table, selection, or clipboard
+  behavior needs prior art.
+- TypeScript/API/DX shape feels uncertain.
+- A benchmark or oracle is weak and other projects may have better harnesses.
+- A timed run has remaining budget and the next best move is discovery, not
+  another blind patch.
+- The user asks to search hundreds of repos, scale research, avoid duplicates,
+  or turn external examples into Slate-native proof.
+
+## Do Not Use When
+
+- The user named one external issue corpus and wants exhaustive issue-by-issue
+  closure. Use `issue-harvester` for ledger detection/resume, latest refresh,
+  and unchecked-row processing.
+- The user wants one narrow local bug fix with a live repro. Use `slate-patch`.
+- The next safe move is an accepted runtime/API decision. Use `slate-plan`.
+- The work is a measured packet loop with known target/checklist/command. Use
+  `slate-ar` or a `slate-ar-*` shortcut.
+- The only work left is measured perf packet execution. Use `slate-ar-perf`.
+
+External issue-harvest is the exhaustive version of discovery. Ordinary
+autoresearch samples the strongest repos, issues, PRs, tests, and examples
+until a concrete Slate v2 invariant or owner appears.
+
+## Command Contract
+
+Use a small TheGreenCedar-style state shape for research, but keep it
+source-controlled and Slate-native:
+
+```txt
+setup -> doctor -> next -> log -> state -> promote-preview
+```
+
+- `setup`: create or resume the research artifact and ledgers.
+- `doctor`: verify artifact freshness, dedupe health, source cleanliness,
+  stale claims, raw-path policy, and whether a promoted owner is already named.
+- `next`: choose the next query, repo batch, issue/PR sample, source slice, or
+  promotion target.
+- `log`: record source reads, leads, rejections, duplicates, and promotions
+  before opening another shard.
+- `state`: summarize counts, current verdict, strongest leads, blockers, and
+  next owner.
+- `promote-preview`: list candidate owner packets without patching runtime.
+
+This command contract is conceptual until helper scripts exist. If prose keeps
+failing, add Slate-native helpers before adding more paragraphs.
+
+## Operating Contract
+
+Start every research loop by recording:
+
+- question and scope;
+- stop rule;
+- artifact path;
+- expected promotion owner;
+- current local evidence gap;
+- explicit exclusions.
+
+Search both web and GitHub when the topic is broad or current. Useful GitHub
+surfaces include code search, issues, PRs, discussions, examples, benchmark
+harnesses, browser test fixtures, and commit history.
+
+Include OSS projects beyond the usual three when relevant: ProseMirror, Lexical,
+Tiptap, CodeMirror, Milkdown, Remirror, Monaco, Quill, CKEditor, TinyMCE, TipTap
+extensions, document editors, browser editor test suites, pagination/
+virtualization libraries, and TypeScript-heavy UI/runtime projects.
+
+For code-level claims, treat web/GitHub hits as leads only. Clone or inspect the
+real source locally before patching Slate. Never patch runtime from snippets,
+issue titles, README claims, or vague discussions.
+
+Do not copy incompatible code. Extract invariants, test cases, API shape,
+benchmark technique, architecture pressure, and browser proof strategy. Write
+Slate-native code/tests.
+
+## Artifact Layout
+
+Default durable layout:
+
+```txt
+docs/slate-v2/research/<date>-<topic>/
+  README.md                  # question, scope, stop rule, current verdict
+  repo-registry.tsv          # one row per repo/source
+  query-ledger.tsv           # one row per query/search surface
+  lead-ledger.tsv            # one row per candidate invariant/idea
+  read-log.tsv               # exact files/issues/PRs read
+  rejected-ledger.tsv        # deduped rejected leads with reason
+  promoted-ledger.tsv        # leads converted to Slate proof packets
+  shards/
+    001-<theme>.md           # bounded batch summary
+    002-<theme>.md
+  sources/                   # tiny excerpts/metadata, not raw dumps
+```
+
+Use `docs/slate-v2/research/**` as the default Slate v2 research working set.
+Keep raw cloned repos, huge issue JSON, large scraped pages, binary artifacts,
+and throwaway downloads out of that tree. Store raw bulk under
+`docs/research/raw/<date>-<topic>/` or an external clone path, and link it from
+the docs ledger only when needed.
+
+## Ledgers
+
+Required ledgers:
+
+- `repo-registry.tsv`: `repo_key`, `url`, `host`, `license`, `stars_or_signal`,
+  `last_activity`, `topic_tags`, `local_path`, `status`, `score`, `notes`.
+- `query-ledger.tsv`: `query_key`, `surface`, `query`, `filters`,
+  `result_count`, `sampled_count`, `new_repo_keys`, `new_lead_keys`,
+  `next_query`.
+- `lead-ledger.tsv`: `lead_key`, `repo_key`, `source_ref`, `topic`, `claim`,
+  `evidence_grade`, `novelty`, `applicability`, `proof_owner`, `next_action`,
+  `status`.
+- `read-log.tsv`: `source_ref`, `repo_key`, `kind`, `path_or_url`,
+  `lines_or_id`, `read_reason`, `takeaway`, `lead_key`.
+- `rejected-ledger.tsv`: `dedupe_key`, `repo_key`, `lead_key`, `reason`,
+  `reopen_condition`.
+- `promoted-ledger.tsv`: `lead_key`, `packet_id`, `slate_owner`,
+  `test_or_benchmark`, `verification_command`, `decision`.
+
+Deduplication keys:
+
+- `repo_key`: normalized `host/owner/repo`, lowercased, without `.git`.
+- `query_key`: stable slug from search surface plus normalized query.
+- `lead_key`: `<topic>:<normalized invariant>:<proof family>`, independent of
+  repo. Multiple repos can support the same lead.
+- `dedupe_key`: normalized problem signature, not source title. Example:
+  `selection:projected-native-double-highlight:visual-oracle`.
+
+Before reading a repo deeply:
+
+1. check `repo-registry.tsv` for an existing `repo_key`;
+2. check `lead-ledger.tsv` for the same `dedupe_key` or `lead_key`;
+3. if duplicated, append support to the existing lead instead of creating a new
+   research branch;
+4. if the lead was rejected, read its `reopen_condition` before spending more
+   time;
+5. if the repo is already cloned, reuse `local_path` and update `last_activity`
+   and `status`.
+
+## Shards
+
+Work in batches of roughly 10-20 repos, 20-40 issues/PRs, or one focused theme,
+whichever is smaller.
+
+Each shard gets one `shards/NNN-<theme>.md` summary with:
+
+- scope;
+- sources sampled;
+- top leads;
+- rejected leads;
+- duplicate leads;
+- score changes;
+- next query.
+
+After every shard, update the ledgers before opening another batch. Stop a
+shard early if it produces a concrete Slate-native proof packet; move to
+promotion instead of collecting decorative links.
+
+## Evidence And Scoring
+
+Evidence grades:
+
+- `A`: local source inspected plus runnable test/benchmark idea or exact source
+  behavior.
+- `B`: upstream issue/PR/test discussion with enough detail to map a Slate
+  invariant.
+- `C`: docs/blog/example that suggests a pattern but needs local validation.
+- `D`: search result, README claim, or vague discussion. Use only to choose the
+  next source, never to patch.
+
+Score leads, not repos. Use `impact`, `novelty`, `applicability`,
+`proofability`, and `risk`, each `0-3`.
+
+Promote leads with:
+
+```txt
+impact + novelty + applicability + proofability - risk >= 7
+```
+
+Lower-score leads may be promoted only when they match a current user-reported
+bug. Downgrade duplicates unless they add a new proof family, browser, edge
+case, or benchmark method. Prefer testing/oracle and benchmark-method leads over
+runtime architecture rewrites unless the runtime owner is already proven.
+
+## Promotion Gate
+
+Do not patch Slate directly from research. A lead must first become one of:
+
+- `test-packet`: a Slate-native unit/Playwright/Browser oracle with focused
+  verification command;
+- `benchmark-packet`: a metric or harness repair with target and before/after
+  command;
+- `plan-packet`: a `slate-plan` decision row when runtime/API ownership is
+  unclear;
+- `docs-packet`: accepted durable research note or current-state decision;
+- `no-code-decision`: rejected/quarantined with reason and reopen condition.
+
+If a research packet finds a likely fix, convert it into a normal patch, perf,
+oracle, or plan packet with baseline, proof gate, and keep/revert/quarantine
+decision.
+
+If research finds no usable lead, keep the artifact with rejected leads and the
+next search angle. A clean negative result prevents repeated wandering.
+
+## Context Budget
+
+Never stream hundreds of search results, issue bodies, or repo file matches into
+chat. Save compact ledgers and shard summaries under
+`docs/slate-v2/research/**`; save raw bulk under `docs/research/raw/**` and
+inspect slices.
+
+Prefer `gh search`, GitHub search URLs, repo metadata, `rg --files`, and short
+source slices over full dumps. Clone only repos that have a scored lead or
+likely unique source. For broad scans, use shallow clones where possible and
+record the commit/ref.
+
+If a search needs more than one context window, the ledgers are the state.
+Resume from `query-ledger.tsv` and `lead-ledger.tsv`, not from memory.
+
+## Closeout
+
+Final handoff must include:
+
+- repos searched;
+- repos deeply read;
+- issues/PRs read;
+- leads kept;
+- duplicates merged;
+- rejected leads;
+- promoted packets;
+- top promoted leads with `lead_key`, evidence grade, owner, and proof command;
+- top rejected leads when the rejection prevents repeated work;
+- next search shard, or `none` with reason;
+- changed list;
+- workflow slowdowns;
+- needs-user-attention;
+- stopping checkpoints.
+
+If autoresearch itself becomes slow or duplicate-heavy, log a workflow-slowdown
+row and repair this skill or the helper script. The research system must get
+sharper after every large search.

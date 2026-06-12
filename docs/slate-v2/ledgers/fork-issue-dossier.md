@@ -6864,11 +6864,12 @@ Implemented finding:
   trims those leading precondition operations from `batch.operations`.
 - Selection operations after the first saveable operation remain in the batch;
   redo keeps explicit post-edit selection.
-- The scroll-into-view browser row now covers the user-visible follow-up:
-  type at the final block, manually scroll away, type again, undo, wait for the
-  delayed native selection update, scroll away again, and type a third time.
-  The third insertion stays at the restored final-block edit point instead of
-  jumping to offset `0`.
+- The historical scroll-into-view browser row covered the user-visible
+  follow-up: type at the final block, manually scroll away, type again, undo,
+  wait for the delayed native selection update, scroll away again, and type a
+  third time. That same-path example/test was a temporary helper surface and is
+  deleted in current v2 (`f6dfd994`). Current scroll behavior ownership is in
+  `slate-react` package contracts.
 
 Decision:
 
@@ -6886,9 +6887,11 @@ Proof:
   `14 pass`.
 - `bun --filter slate-history typecheck`, `bun --filter slate typecheck`, and
   `bun --filter slate-react typecheck`: all exited `0`.
-- Chromium scroll-into-view rows with rebuilt static output: `2 passed`.
-- Chromium scroll-into-view strict row against `http://localhost:3100`:
-  `1 passed`.
+- Historical Chromium scroll-into-view browser rows: deleted with the temporary
+  example in current v2; do not use them as live proof owners.
+- Current focused package proof:
+  `bun test:vitest test/editable-behavior.test.tsx test/app-owned-customization.test.tsx test/selection-side-effect-policy-contract.test.ts -t "default scroll restores leaf measurement after scrolling a collapsed range|default scroll crosses a shadow root to reach an outer scroll container|Editable forwards scrollSelectionIntoView to app-owned code|Editable skips scrollSelectionIntoView for remote collaboration selection updates|remote collaboration selection metadata skips scroll and focus side effects"`:
+  `5 passed`.
 - Chromium plaintext and richtext undo rows with retries disabled: `4 passed`,
   including the Mac keyboard undo repair row.
 - `bun --filter slate-react build`: exited `0`.

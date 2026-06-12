@@ -8,7 +8,7 @@ status: active
 
 ## Purpose
 
-Front door to the live `slate-v2` migration program.
+Front door to the live `slate-v2` private-alpha program.
 
 This stack now describes the final-state program for the fresh `Plate repo root`
 clone. It is not the old rewrite archive.
@@ -29,15 +29,15 @@ clone. It is not the old rewrite archive.
   - Next 16.2.4 for the site/runtime lane
   - TypeScript 6.0.3 baseline
   - package-src HMR without package rebuilds
-  - low-risk compatibility fallout only
+  - compatibility fallout is scoped evidence, not product shape
 - tranche 3 is the live redesign lane:
   - `packages/slate` is being redesigned toward the native transaction engine
     and snapshot/store-first API described in
     [architecture-contract.md](/Users/zbeyens/git/plate-2/docs/slate-v2/references/architecture-contract.md)
   - support-package work stays blocked until the `slate` core API is honestly
     settled
-  - backward compatibility is no longer the default value; compatibility keeps
-    only what still earns its weight
+  - current API quality is the default value; any escape hatch must be named,
+    narrow, and proved
   - hard cuts are allowed when retrofit baggage blocks the better API
   - current `packages/slate` proof and perf floors stay active guardrails while
     the redesign lands
@@ -92,5 +92,5 @@ clone. It is not the old rewrite archive.
 
 ## Archive Rule
 
-If a doc belongs to the old rewrite program and is not live migration truth, it
-belongs in `docs/slate-v2-draft/**`.
+If a doc belongs to the old rewrite program and is not live private-alpha truth,
+it belongs in `docs/slate-v2-draft/**`.

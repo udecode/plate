@@ -30,7 +30,9 @@ measured but not obviously performance-specific.
 - `memory-usage`: workload memory smoke, after replacing the placeholder with
   the real workload.
 - `command-latency`: custom command duration, after replacing the placeholder.
-- `quality-gap`: broad research checklist. Usually route to `slate-ar-quality`.
+- `quality-gap`: accepted research checklist execution. Route to
+  `slate-ar-quality`; use `slate-research` first when the checklist does not
+  exist yet.
 - `custom`: last resort when no built-in recipe fits.
 
 ## Commands

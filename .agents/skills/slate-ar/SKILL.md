@@ -35,7 +35,7 @@ Performance optimization lives in `slate-ar-perf`.
 - A correctness repair or architecture plan is looping and needs measured
   hypothesis tracking after the direct owner has provided proof surfaces.
 - The user asks for Slate v2 Autoresearch status, continuation, dashboard,
-  finalization preview, deep research, or quality-gap handling.
+  finalization preview, or execution of an accepted quality-gap checklist.
 
 ## Do Not Use When
 
@@ -65,8 +65,10 @@ Performance optimization lives in `slate-ar-perf`.
   behavior surface.
 - `slate-ar-ship`: finalization, review, and commit/PR readiness path backed by
   `slate-ar-finalize` and `autoreview`.
-- `slate-ar-quality`: runs deep-research / quality-gap loops for Slate v2
-  API/DX/architecture/test coverage gaps.
+- `slate-research`: discovers and synthesizes external prior art, OSS/GitHub
+  evidence, and source-backed leads under `docs/slate-v2/research/**`.
+- `slate-ar-quality`: executes accepted quality-gap checklists for Slate v2
+  API/DX/architecture/test coverage gaps through Codex Autoresearch.
 - `slate-ar-gate`: repeats and logs existing test/typecheck/browser/editor
   behavior gates.
 - `slate-ar-recipe`: chooses or previews Codex Autoresearch recipes.
@@ -107,8 +109,11 @@ Interpret short user text before picking commands:
 - `review branches`, `create review branches`, `run finalizer branches`: explicit
   review-branch mode. Use `slate-ar-finalize` and require the user to clearly
   approve branch creation in the same turn.
-- `research`, `quality gap`, `improve quality`, `find gaps`: use generic Codex
-  Autoresearch deep-research / quality-gap flow through `slate-ar-quality`.
+- `research`, `web/GitHub`, `OSS`, `external prior art`, `scan repos`, `find
+  gaps`: route to `slate-research` first unless a concrete quality-gap
+  checklist already exists.
+- `quality gap`, `accepted checklist`, `gap-candidates`: use generic Codex
+  Autoresearch quality-gap flow through `slate-ar-quality`.
 - `gate`, `proof`, `repeat`, `full editor behavior`, `navigation`, `typing`:
   route to `slate-ar-gate`.
 - `recipe`, `recipes`, `what loop`, `setup recipe`: route to
@@ -147,7 +152,8 @@ node tooling/scripts/bench-targets.mjs autoresearch-init <target-id>
 2. Route before editing:
    - correctness failure or missing oracle: `slate-patch`;
    - existing proof/gate repeatability: `slate-ar-gate`;
-   - broad quality-gap research: `slate-ar-quality`;
+   - broad external discovery or source synthesis: `slate-research`;
+   - accepted quality-gap checklist execution: `slate-ar-quality`;
    - recipe selection/setup-plan: `slate-ar-recipe`;
    - performance optimization: `slate-ar-perf`;
    - public API/runtime redesign: `slate-plan`;
@@ -163,12 +169,14 @@ node tooling/scripts/bench-targets.mjs autoresearch-init <target-id>
    - `slate-patch` when correctness fails without an existing oracle;
    - `slate-plan` when the remaining win needs API/runtime redesign.
 
-## Quality-Gap Research
+## Quality-Gap Execution
 
-Use generic Codex Autoresearch deep-research and quality-gap workflow. Slate
-additions:
+Use generic Codex Autoresearch quality-gap workflow for accepted checklists.
+Slate additions:
 
-- keep sources under `.tmp/slate-autoresearch/research/**`;
+- keep AR session scratch under `.tmp/slate-autoresearch/research/**`;
+- keep durable external research, ledgers, and source synthesis under
+  `docs/slate-v2/research/**` via `slate-research`;
 - turn accepted implementation gaps into Slate proof rows or target rows;
 - route test/behavior suite gaps with an existing oracle to `slate-ar-gate`;
 - route perf-specific gaps to `slate-ar-perf`;

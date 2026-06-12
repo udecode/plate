@@ -14,7 +14,7 @@ description: Slate v2 north-star taste profile. Use when a Slate task mentions t
 
 ## Checkpoint Zero
 
-- scope: long `slate-automation`, `slate-ar-perfect`, overnight, or "absolute
+- scope: long `slate-auto`, `slate-ar-perfect`, overnight, or "absolute
   best" loop
 - order:
 
@@ -28,7 +28,7 @@ description: Slate v2 north-star taste profile. Use when a Slate task mentions t
 
 - update this file before ship readiness when a loop rediscovers a reusable
   decision
-- when `slate-automation` stops because this file lacks a needed taste rule,
+- when `slate-auto` stops because this file lacks a needed taste rule,
   capture the user's checkpoint answer here before resuming if the answer is
   reusable
 
@@ -210,14 +210,16 @@ tests for package ownership, API intent, and public teaching surfaces.
 
 ## Skill Topology
 
-- `slate-automation`: overnight supervisor and checkpoint cadence.
+- `slate-auto`: overnight supervisor and checkpoint cadence.
 - `slate-ar-perfect`: broad surface improvement when mixed correctness, perf,
   API, DX, tests, and proof are in play.
 - `slate-ar-fast`: fastest-safe perf owner with correctness guardrails.
 - `slate-ar-stabilize`: behavior stability owner for existing proof surfaces.
 - `slate-ar-gate`: repeated proof runner when the oracle already exists.
-- `slate-ar-quality`: quality-gap research for API, DX, architecture, tests,
-  docs, and metric coverage.
+- `slate-research`: external discovery, OSS/GitHub source synthesis, durable
+  research ledgers, and promotion into owners.
+- `slate-ar-quality`: execution of accepted quality-gap checklists for API, DX,
+  architecture, tests, docs, and metric coverage.
 - `slate-ar-recipe`: read-only recipe picker/setup-plan helper.
 - `slate-ar-perf`: measured perf optimization against a target.
 - `slate-patch`: direct bug fix, reproduction, class-level behavior coverage,
@@ -561,7 +563,7 @@ Capture shape:
 - `docs/research/decisions/slate-v2-state-tx-public-api-and-extension-namespaces.md`
 - `docs/research/decisions/slate-v2-data-model-first-react-perfect-runtime.md`
 - `docs/research/decisions/slate-v2-overlay-architecture-cuts.md`
-- `.agents/rules/slate-automation.mdc`
+- `.agents/rules/slate-auto.mdc`
 - `.agents/rules/slate-patch.mdc`
 - `.agents/rules/slate-plan.mdc`
 - `.agents/rules/slate-ar.mdc`
