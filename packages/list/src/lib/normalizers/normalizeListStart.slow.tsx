@@ -5,6 +5,8 @@ import {
   type Value,
   BaseParagraphPlugin,
   createSlateEditor,
+  createTSlatePlugin,
+  KEYS,
 } from 'platejs';
 
 import { BaseIndentPlugin } from '@platejs/indent';
@@ -16,20 +18,50 @@ import { BaseListPlugin } from '../BaseListPlugin';
 
 jsxt;
 
+const CUSTOM_H1 = 'heading-one';
+
+const H1Plugin = createTSlatePlugin({
+  key: KEYS.h1,
+});
+
+const CustomH1Plugin = H1Plugin.extend({
+  node: { type: CUSTOM_H1 },
+});
+
+const BlockquotePlugin = createTSlatePlugin({
+  key: KEYS.blockquote,
+});
+
 const createEditor = ({
+  headingPlugin = H1Plugin,
   normalizeInitial = false,
   pages = false,
+  targetPlugins = [KEYS.p],
   value,
 }: {
   value: Value;
+  headingPlugin?: any;
   normalizeInitial?: boolean;
   pages?: boolean;
+  targetPlugins?: string[];
 }) =>
   createSlateEditor({
     plugins: [
       BaseParagraphPlugin,
-      BaseIndentPlugin,
-      pages ? listPluginPage : BaseListPlugin,
+      headingPlugin,
+      BlockquotePlugin,
+      BaseIndentPlugin.configure({
+        inject: {
+          targetPlugins,
+        },
+      }),
+      pages
+        ? listPluginPage
+        : BaseListPlugin.configure({
+            inject: {
+              targetPlugins,
+            },
+          }),
     ],
     shouldNormalizeEditor: normalizeInitial,
     value,
@@ -60,6 +92,52 @@ const createItem = (
   >
     {text}
   </hp>
+);
+
+const createHeadingItem = (
+  text: string,
+  options: {
+    indent?: number;
+    listStart?: number;
+    listStyleType?: string;
+    type?: string;
+  } = {}
+) => {
+  const { indent = 1, listStart, type = KEYS.h1 } = options;
+  const listStyleType =
+    'listStyleType' in options ? options.listStyleType : 'decimal';
+
+  return (
+    <element
+      indent={indent}
+      listStart={listStart}
+      listStyleType={listStyleType}
+      type={type}
+    >
+      {text}
+    </element>
+  );
+};
+
+const createBlockquoteItem = (
+  text: string,
+  {
+    indent = 1,
+    listStart,
+    listStyleType = 'decimal',
+  }: {
+    indent?: number;
+    listStart?: number;
+    listStyleType?: string;
+  } = {}
+) => (
+  <hblockquote
+    indent={indent}
+    listStart={listStart}
+    listStyleType={listStyleType}
+  >
+    {text}
+  </hblockquote>
 );
 
 const expectAlreadyNormalized = (editor: SlateEditor) => {
@@ -163,6 +241,143 @@ describe('normalizeListStart', () => {
 
       const editor = createEditor({
         normalizeInitial: true,
+        value: input,
+      });
+
+      expect(editor.children).toEqual(output);
+    });
+
+    it('starts paragraph numbering independently after numbered headings', () => {
+      const input = [
+        createHeadingItem('heading one'),
+        createHeadingItem('heading two'),
+        createItem('paragraph one'),
+        createItem('paragraph two'),
+      ];
+
+      const output = [
+        createHeadingItem('heading one'),
+        createHeadingItem('heading two', { listStart: 2 }),
+        createItem('paragraph one'),
+        createItem('paragraph two', { listStart: 2 }),
+      ];
+
+      const editor = createEditor({
+        normalizeInitial: true,
+        targetPlugins: [KEYS.h1, KEYS.p],
+        value: input,
+      });
+
+      expect(editor.children).toEqual(output);
+    });
+
+    it('does not resume paragraph numbering across numbered headings', () => {
+      const input = [
+        createItem('paragraph before'),
+        createHeadingItem('heading one'),
+        createItem('paragraph after'),
+      ];
+
+      const output = [
+        createItem('paragraph before'),
+        createHeadingItem('heading one'),
+        createItem('paragraph after'),
+      ];
+
+      const editor = createEditor({
+        normalizeInitial: true,
+        targetPlugins: [KEYS.h1, KEYS.p],
+        value: input,
+      });
+
+      expect(editor.children).toEqual(output);
+    });
+
+    it('continues paragraph numbering across nested numbered headings', () => {
+      const input = [
+        createItem('paragraph one'),
+        createHeadingItem('nested heading', { indent: 2 }),
+        createItem('paragraph two'),
+      ];
+
+      const output = [
+        createItem('paragraph one'),
+        createHeadingItem('nested heading', { indent: 2 }),
+        createItem('paragraph two', { listStart: 2 }),
+      ];
+
+      const editor = createEditor({
+        normalizeInitial: true,
+        targetPlugins: [KEYS.h1, KEYS.p],
+        value: input,
+      });
+
+      expect(editor.children).toEqual(output);
+    });
+
+    it('continues paragraph numbering across non-numbered headings', () => {
+      const input = [
+        createItem('paragraph one'),
+        createHeadingItem('plain heading', { listStyleType: undefined }),
+        createHeadingItem('bullet heading', { listStyleType: 'disc' }),
+        createItem('paragraph two'),
+      ];
+
+      const output = [
+        createItem('paragraph one'),
+        createHeadingItem('plain heading', { listStyleType: undefined }),
+        createHeadingItem('bullet heading', { listStyleType: 'disc' }),
+        createItem('paragraph two', { listStart: 2 }),
+      ];
+
+      const editor = createEditor({
+        normalizeInitial: true,
+        targetPlugins: [KEYS.h1, KEYS.p],
+        value: input,
+      });
+
+      expect(editor.children).toEqual(output);
+    });
+
+    it('uses configured heading node types for heading sequence boundaries', () => {
+      const input = [
+        createHeadingItem('heading one', { type: CUSTOM_H1 }),
+        createHeadingItem('heading two', { type: CUSTOM_H1 }),
+        createItem('paragraph one'),
+      ];
+
+      const output = [
+        createHeadingItem('heading one', { type: CUSTOM_H1 }),
+        createHeadingItem('heading two', { listStart: 2, type: CUSTOM_H1 }),
+        createItem('paragraph one'),
+      ];
+
+      const editor = createEditor({
+        headingPlugin: CustomH1Plugin,
+        normalizeInitial: true,
+        targetPlugins: [KEYS.h1, KEYS.p],
+        value: input,
+      });
+
+      expect(editor.children).toEqual(output);
+    });
+
+    it('continues paragraph numbering across non-heading list blocks', () => {
+      const input = [
+        createItem('one'),
+        createBlockquoteItem('two'),
+        createItem('three'),
+      ];
+
+      const output = [
+        createItem('one'),
+        createBlockquoteItem('two', { listStart: 2 }),
+        createItem('three', { listStart: 3 }),
+      ];
+
+      const editor = createEditor({
+        normalizeInitial: true,
+        targetPlugins: [KEYS.blockquote, KEYS.p],
         value: input,
       });
 

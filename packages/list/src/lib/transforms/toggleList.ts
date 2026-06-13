@@ -10,6 +10,7 @@ import {
   getListAbove,
   getPreviousList,
 } from '../queries';
+import { getListSequenceSiblingOptions } from '../internal/isSameListSequence';
 import { areEqListStyleType } from '../queries/areEqListStyleType';
 import { setListNodes } from './setListNodes';
 import { setListSiblingNodes } from './setListSiblingNodes';
@@ -26,6 +27,12 @@ export const toggleList = <
   getSiblingListOptions?: GetSiblingListOptions<N, E>
 ) => {
   const { listRestart, listRestartPolite, listStyleType } = options;
+  const { getSiblingListOptions: pluginGetSiblingListOptions } =
+    editor.getOptions(BaseListPlugin);
+  const mergedGetSiblingListOptions = {
+    ...pluginGetSiblingListOptions,
+    ...getSiblingListOptions,
+  } as GetSiblingListOptions<ElementOf<E>, E>;
 
   /**
    * True - One or more blocks were converted to lists or changed such that they
@@ -36,9 +43,6 @@ export const toggleList = <
    * Null - No action was taken.
    */
   const setList = ((): boolean | null => {
-    const { getSiblingListOptions: _getSiblingListOptions } =
-      editor.getOptions(BaseListPlugin);
-
     if (editor.api.isCollapsed()) {
       const entry = editor.api.block<TElement>();
 
@@ -51,10 +55,7 @@ export const toggleList = <
       }
 
       setListSiblingNodes(editor, entry as ElementEntryOf<E>, {
-        getSiblingListOptions: {
-          ..._getSiblingListOptions,
-          ...getSiblingListOptions,
-        } as GetSiblingListOptions<ElementOf<E>, E>,
+        getSiblingListOptions: mergedGetSiblingListOptions,
         listStyleType,
       });
 
@@ -115,7 +116,14 @@ export const toggleList = <
     const entry = getListAbove(editor, { at: atStart });
     if (!entry) return;
 
-    const isFirst = !getPreviousList(editor, entry);
+    const isFirst = !getPreviousList(
+      editor,
+      entry,
+      getListSequenceSiblingOptions(editor, {
+        breakOnEqIndentNeqListStyleType: false,
+        ...mergedGetSiblingListOptions,
+      })
+    );
 
     /**
      * Only apply listRestartPolite if this is the first item and restartValue >

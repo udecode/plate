@@ -9,6 +9,7 @@ import {
 
 import type { GetSiblingListOptions } from '../queries/getSiblingList';
 
+import { getListSequenceSiblingOptions } from '../internal/isSameListSequence';
 import { getPreviousList } from '../queries/getPreviousList';
 import { ULIST_STYLE_TYPES } from '../types';
 
@@ -63,12 +64,14 @@ export const normalizeListStart = <
       return;
     }
 
-    const prevEntry = getPreviousList(editor, entry, {
-      breakOnEqIndentNeqListStyleType: false,
-      query: (nextNode, curNode) =>
-        (nextNode as any)[KEYS.listType] === (curNode as any)[KEYS.listType],
-      ...options,
-    });
+    const prevEntry = getPreviousList(
+      editor,
+      entry,
+      getListSequenceSiblingOptions(editor, {
+        breakOnEqIndentNeqListStyleType: false,
+        ...options,
+      })
+    );
     const expectedListStart = getListExpectedListStart(entry, prevEntry);
 
     if (isDefined(listStart) && expectedListStart === 1) {
