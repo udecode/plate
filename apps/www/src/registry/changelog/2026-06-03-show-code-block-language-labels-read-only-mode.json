@@ -47,7 +47,7 @@
   ],
   "entries": [
     {
-      "id": "2026-06-03-32-1-001",
+      "id": "2026-06-03-32-1-002",
       "kind": "behavior",
       "summary": "Show the selected language label in read-only and static rendering. Set `showLanguageLabel={false}` on the component to hide it.",
       "details": [],
@@ -56,8 +56,8 @@
       ],
       "targets": ["code-block-node", "code-block-node-static"],
       "source": {
-        "line": 10,
-        "row": 1,
+        "line": 14,
+        "row": 2,
         "legacyRelease": {
           "date": "2026-06-03",
           "entry": "32.1",

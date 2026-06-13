@@ -1,0 +1,165 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-01-28-add-code-drawing-node",
+  "status": "draft",
+  "source": {
+    "kind": "legacy-mdx",
+    "path": "tooling/data/plate-ui-changelog.mdx"
+  },
+  "change": {
+    "type": "pull_request",
+    "date": "2026-01-28",
+    "commits": [
+      {
+        "sha": "7dca8db36b855deec5d4f0986421da012f33c93e",
+        "shortSha": "7dca8db36b",
+        "url": "https://github.com/udecode/plate/commit/7dca8db36b855deec5d4f0986421da012f33c93e",
+        "date": "2026-01-28",
+        "committedAt": "2026-01-28T20:15:53+08:00",
+        "subject": "update shadcn"
+      }
+    ],
+    "pullRequest": {
+      "number": 4811,
+      "url": "https://github.com/udecode/plate/pull/4811",
+      "state": "MERGED",
+      "title": "feat: add code-drawing node",
+      "mergedAt": "2026-01-28T13:00:20Z"
+    }
+  },
+  "release": {
+    "status": "released",
+    "tag": "v52.3.0",
+    "source": "release-index-pr-match",
+    "packageTag": "@platejs/code-drawing@52.3.0",
+    "requiresPlate": ">=52.3.0",
+    "changelogUrl": "https://github.com/udecode/plate/blob/d99adbfb4514b8aee45b6378caf48ed3a7e7d053/packages/code-drawing/CHANGELOG.md",
+    "url": "https://github.com/udecode/plate/pull/4829",
+    "versionPackagePullRequest": {
+      "number": 4829,
+      "url": "https://github.com/udecode/plate/pull/4829"
+    }
+  },
+  "kind": "mixed",
+  "summary": "feat: add code-drawing node",
+  "targets": [
+    {
+      "name": "code-drawing-kit",
+      "files": [
+        "apps/www/src/registry/components/editor/plugins/code-drawing-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "code-drawing-base-kit",
+      "files": [
+        "apps/www/src/registry/components/editor/plugins/code-drawing-base-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "code-drawing-node",
+      "files": ["apps/www/src/registry/ui/code-drawing-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "code-drawing-demo",
+      "files": ["apps/www/src/registry/examples/code-drawing-demo.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "editor-kit",
+      "files": [
+        "apps/www/src/registry/blocks/editor-ai/components/editor/editor-kit.tsx",
+        "apps/www/src/registry/components/editor/editor-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "block-context-menu",
+      "files": ["apps/www/src/registry/ui/block-context-menu.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "insert-toolbar-button",
+      "files": ["apps/www/src/registry/ui/insert-toolbar-button.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "slash-node",
+      "files": ["apps/www/src/registry/ui/slash-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "turn-into-toolbar-button",
+      "files": ["apps/www/src/registry/ui/turn-into-toolbar-button.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "transforms",
+      "files": ["apps/www/src/registry/components/editor/transforms.ts"],
+      "definitionFiles": ["apps/www/src/registry/registry-components.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-01-28-28-3-024",
+      "kind": "new",
+      "summary": "Add inline code drawing for Mermaid, PlantUML, Graphviz, and Flowchart diagrams.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": [
+        "code-drawing-kit",
+        "code-drawing-base-kit",
+        "code-drawing-node",
+        "code-drawing-demo"
+      ],
+      "source": {
+        "line": 74,
+        "row": 24,
+        "legacyRelease": {
+          "date": "2026-01-28",
+          "entry": "28.3",
+          "section": "January 2026 #28"
+        }
+      }
+    },
+    {
+      "id": "2026-01-28-28-3-025",
+      "kind": "wiring",
+      "summary": "Register code drawing in editor kits, insert actions, slash actions, block menu actions, and transforms.",
+      "details": [],
+      "migrationNotes": [
+        "Register code drawing in editor kits, insert actions, slash actions, block menu actions, and transforms."
+      ],
+      "targets": [
+        "editor-kit",
+        "block-context-menu",
+        "insert-toolbar-button",
+        "slash-node",
+        "turn-into-toolbar-button",
+        "transforms"
+      ],
+      "source": {
+        "line": 75,
+        "row": 25,
+        "legacyRelease": {
+          "date": "2026-01-28",
+          "entry": "28.3",
+          "section": "January 2026 #28"
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

@@ -862,7 +862,7 @@ export function getGitProvenanceBySourceId(
     const warnings = [];
     const blameCommitOid = getBlameCommitForLine(sourcePath, row.line);
     const sourceHintCommitOid = row.provenanceCommit ?? null;
-    const commitOid = blameCommitOid ?? sourceHintCommitOid;
+    const commitOid = sourceHintCommitOid ?? blameCommitOid;
 
     if (!commitOid) {
       provenanceBySourceId.set(row.sourceId, {
@@ -902,13 +902,13 @@ export function getGitProvenanceBySourceId(
     provenanceBySourceId.set(row.sourceId, {
       commit,
       pr,
-      source: blameCommitOid
+      source: sourceHintCommitOid
         ? pr
-          ? 'git-blame+github-pr-search'
-          : 'git-blame'
-        : pr
           ? 'source-hint+github-pr-search'
-          : 'source-hint',
+          : 'source-hint'
+        : pr
+          ? 'git-blame+github-pr-search'
+          : 'git-blame',
       warnings,
     });
   }

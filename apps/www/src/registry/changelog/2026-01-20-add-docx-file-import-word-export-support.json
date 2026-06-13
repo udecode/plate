@@ -1,0 +1,186 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-01-20-add-docx-file-import-word-export-support",
+  "status": "draft",
+  "source": {
+    "kind": "legacy-mdx",
+    "path": "tooling/data/plate-ui-changelog.mdx"
+  },
+  "change": {
+    "type": "pull_request",
+    "date": "2026-01-20",
+    "commits": [
+      {
+        "sha": "295317cf60318a48a859dfbf16220320605415c2",
+        "shortSha": "295317cf60",
+        "url": "https://github.com/udecode/plate/commit/295317cf60318a48a859dfbf16220320605415c2",
+        "date": "2026-01-20",
+        "committedAt": "2026-01-20T15:54:19+08:00",
+        "subject": "fix"
+      }
+    ],
+    "pullRequest": {
+      "number": 4814,
+      "url": "https://github.com/udecode/plate/pull/4814",
+      "state": "MERGED",
+      "title": "Add DOCX file import and Word export support",
+      "mergedAt": "2026-01-20T08:05:56Z"
+    }
+  },
+  "release": {
+    "status": "released",
+    "tag": "v52.2.0",
+    "source": "release-index-pr-match",
+    "packageTag": "@platejs/docx-io@52.2.0",
+    "requiresPlate": ">=52.2.0",
+    "changelogUrl": "https://github.com/udecode/plate/blob/e23cf0bdaecc7b606e2be7fc5c60ef33649943c7/packages/docx-io/CHANGELOG.md",
+    "url": "https://github.com/udecode/plate/pull/4820",
+    "versionPackagePullRequest": {
+      "number": 4820,
+      "url": "https://github.com/udecode/plate/pull/4820"
+    }
+  },
+  "kind": "mixed",
+  "summary": "Add DOCX file import and Word export support",
+  "targets": [
+    {
+      "name": "docx-export-kit",
+      "files": [
+        "apps/www/src/registry/components/editor/plugins/docx-export-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "import-toolbar-button",
+      "files": ["apps/www/src/registry/ui/import-toolbar-button.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "export-toolbar-button",
+      "files": ["apps/www/src/registry/ui/export-toolbar-button.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "block-list",
+      "files": ["apps/www/src/registry/ui/block-list.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "callout-node",
+      "files": ["apps/www/src/registry/ui/callout-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "code-block-node",
+      "files": ["apps/www/src/registry/ui/code-block-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "column-node",
+      "files": ["apps/www/src/registry/ui/column-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "date-node",
+      "files": ["apps/www/src/registry/ui/date-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "equation-node",
+      "files": ["apps/www/src/registry/ui/equation-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "heading-node",
+      "files": ["apps/www/src/registry/ui/heading-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "media-image-node",
+      "files": ["apps/www/src/registry/ui/media-image-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "mention-node",
+      "files": ["apps/www/src/registry/ui/mention-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "table-node",
+      "files": ["apps/www/src/registry/ui/table-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "toc-node",
+      "files": ["apps/www/src/registry/ui/toc-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-01-20-28-2-026",
+      "kind": "new",
+      "summary": "Add DOCX import and export registry wiring.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": [
+        "docx-export-kit",
+        "import-toolbar-button",
+        "export-toolbar-button"
+      ],
+      "source": {
+        "line": 79,
+        "row": 26,
+        "legacyRelease": {
+          "date": "2026-01-20",
+          "entry": "28.2",
+          "section": "January 2026 #28"
+        }
+      }
+    },
+    {
+      "id": "2026-01-20-28-2-027",
+      "kind": "behavior",
+      "summary": "Add DOCX-friendly static rendering updates.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": [
+        "block-list",
+        "callout-node",
+        "code-block-node",
+        "column-node",
+        "date-node",
+        "equation-node",
+        "heading-node",
+        "media-image-node",
+        "mention-node",
+        "table-node",
+        "toc-node"
+      ],
+      "source": {
+        "line": 80,
+        "row": 27,
+        "legacyRelease": {
+          "date": "2026-01-20",
+          "entry": "28.2",
+          "section": "January 2026 #28"
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

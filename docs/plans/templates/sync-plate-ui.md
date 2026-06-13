@@ -26,9 +26,9 @@ Applied packs:
 Sync source:
 - Plate repo: `/Users/zbeyens/git/plate`
 - Plate registry source: `apps/www/src/registry/**`
-- Component changelog source:
-  `content/docs/components/changelog/<component>/<pr>.json` when present,
-  otherwise `content/docs/components/changelog.mdx` as weak fallback evidence
+- Component changelog source: generated public JSON from
+  `apps/www/src/registry/changelog/{index,components,<event-id>}.json`
+  or `/registry/changelog/{index,components,<event-id>}.json`
 - Target repo: pending
 - Target sync state: `<target>/.plate-ui-sync/status.json`
 - Target run artifacts: `<target>/.plate-ui-sync/runs/<date>-<scope>/`
@@ -61,6 +61,8 @@ Constraints:
 - Do not overwrite whole target files unless every local hunk still matches
   base after transforms and an accepted apply row names that component/file.
 - Do not treat prose-only changelog evidence as enough to apply.
+- Do not create upstream Plate changelog entries; `sync-plate-ui` is
+  downstream-consumer tooling only.
 - Do not run Plate `build:registry`.
 - Do not write `.patch` files into target sync artifacts.
 - Do not create PRs, comments, commits, or pushes unless the user explicitly

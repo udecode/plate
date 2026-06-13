@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 1,
+  "id": "2025-12-14-fix-combobox-opening-popover-all-users-collaboration",
+  "status": "draft",
+  "source": {
+    "kind": "legacy-mdx",
+    "path": "tooling/data/plate-ui-changelog.mdx"
+  },
+  "change": {
+    "type": "pull_request",
+    "date": "2025-12-14",
+    "commits": [
+      {
+        "sha": "413fa9d49e55d59a8acb40c275aaa7a06896cf08",
+        "shortSha": "413fa9d49e",
+        "url": "https://github.com/udecode/plate/commit/413fa9d49e55d59a8acb40c275aaa7a06896cf08",
+        "date": "2025-11-30",
+        "committedAt": "2025-11-30T09:54:27Z",
+        "subject": "docs: update changelog for inline-combobox Yjs collaboration support"
+      }
+    ],
+    "pullRequest": {
+      "number": 4762,
+      "url": "https://github.com/udecode/plate/pull/4762",
+      "state": "MERGED",
+      "title": "Fix combobox opening popover for all users in collaboration",
+      "mergedAt": "2025-12-14T02:46:31Z"
+    }
+  },
+  "release": {
+    "status": "released",
+    "tag": "v52.0.13",
+    "source": "release-index-pr-match",
+    "packageTag": "@platejs/combobox@52.0.13",
+    "requiresPlate": ">=52.0.13",
+    "changelogUrl": "https://github.com/udecode/plate/blob/5b222c183b57b63a1df9fab4b88b96581379ba5a/packages/combobox/CHANGELOG.md",
+    "url": "https://github.com/udecode/plate/pull/4789",
+    "versionPackagePullRequest": {
+      "number": 4789,
+      "url": "https://github.com/udecode/plate/pull/4789"
+    }
+  },
+  "kind": "behavior",
+  "summary": "Fix combobox opening popover for all users in collaboration",
+  "targets": [
+    {
+      "name": "inline-combobox",
+      "files": ["apps/www/src/registry/ui/inline-combobox.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2025-12-14-27-1-031",
+      "kind": "behavior",
+      "summary": "Scope Yjs combobox popovers to the user who typed the trigger.",
+      "details": [
+        "Set trigger combobox `getUserId` when using collaborative editors."
+      ],
+      "migrationNotes": [
+        "Set trigger combobox `getUserId` when using collaborative editors."
+      ],
+      "targets": ["inline-combobox"],
+      "source": {
+        "line": 96,
+        "row": 31,
+        "legacyRelease": {
+          "date": "2025-12-14",
+          "entry": "27.1",
+          "section": "December 2025 #27"
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

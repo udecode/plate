@@ -1,5 +1,8 @@
+'use client';
+
 import type { ReactNode } from 'react';
 
+import { useState } from 'react';
 import { IconRss } from '@tabler/icons-react';
 
 import {
@@ -15,6 +18,7 @@ export function ReleasePageContent({
   plateUiChangesByTag,
   releases,
   showMajorHeadings = false,
+  showUnreleasedPlateUiChanges = true,
   title,
 }: {
   after?: ReactNode;
@@ -22,8 +26,12 @@ export function ReleasePageContent({
   plateUiChangesByTag?: PlateUiReleaseChangesByTag;
   releases: ReleaseIndexRelease[];
   showMajorHeadings?: boolean;
+  showUnreleasedPlateUiChanges?: boolean;
   title: string;
 }) {
+  const [showPackageChanges, setShowPackageChanges] = useState(true);
+  const [showPlateUiChanges, setShowPlateUiChanges] = useState(true);
+
   return (
     <div
       className="flex scroll-mt-24 items-stretch pb-8 text-[1.05rem] sm:text-[15px] xl:w-full"
@@ -33,21 +41,43 @@ export function ReleasePageContent({
         <div className="h-(--top-spacing) shrink-0" />
         <div className="mx-auto flex w-full min-w-0 max-w-[56rem] flex-1 flex-col gap-6 px-4 py-6 text-foreground md:px-0 lg:py-8 dark:text-foreground">
           <div className="flex flex-col gap-2">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-center justify-between gap-3">
               <h1 className="scroll-m-24 font-semibold text-3xl tracking-tight">
                 {title}
               </h1>
-              <Button
-                asChild
-                className="shadow-none"
-                size="sm"
-                variant="secondary"
-              >
-                <a href="/rss.xml" rel="noopener noreferrer" target="_blank">
-                  <IconRss />
-                  RSS
-                </a>
-              </Button>
+              <div className="flex flex-wrap items-center justify-end gap-2">
+                <Button
+                  aria-pressed={showPackageChanges}
+                  className="shadow-none"
+                  onClick={() => setShowPackageChanges((value) => !value)}
+                  size="sm"
+                  type="button"
+                  variant={showPackageChanges ? 'secondary' : 'ghost'}
+                >
+                  Package changes
+                </Button>
+                <Button
+                  aria-pressed={showPlateUiChanges}
+                  className="shadow-none"
+                  onClick={() => setShowPlateUiChanges((value) => !value)}
+                  size="sm"
+                  type="button"
+                  variant={showPlateUiChanges ? 'secondary' : 'ghost'}
+                >
+                  Plate UI
+                </Button>
+                <Button
+                  asChild
+                  className="shadow-none"
+                  size="sm"
+                  variant="secondary"
+                >
+                  <a href="/rss.xml" rel="noopener noreferrer" target="_blank">
+                    <IconRss />
+                    RSS
+                  </a>
+                </Button>
+              </div>
             </div>
             {description ? (
               <p className="text-[1.05rem] text-muted-foreground sm:text-balance sm:text-base md:max-w-[80%]">
@@ -59,7 +89,10 @@ export function ReleasePageContent({
             <ReleaseIndex
               plateUiChangesByTag={plateUiChangesByTag}
               releases={releases}
+              showPackageChanges={showPackageChanges}
               showMajorHeadings={showMajorHeadings}
+              showPlateUiChanges={showPlateUiChanges}
+              showUnreleasedPlateUiChanges={showUnreleasedPlateUiChanges}
             />
             {after}
           </div>

@@ -33,12 +33,13 @@ describe('/registry/changelog/[event].json', () => {
   });
 
   it('generates static params for event JSON paths', () => {
-    expect(generateStaticParams()).toEqual([
-      {
-        event: '2026-06-03-show-code-block-language-labels-read-only-mode.json',
-      },
-      { event: '2026-06-02-improve-large-document-editing.json' },
-      { event: '2026-04-23-redesign-blockquotes-container-blocks.json' },
-    ]);
+    const events = generateStaticParams().map((param) => param.event);
+
+    expect(events.length).toBeGreaterThanOrEqual(19);
+    expect(events).toContain('2026-06-10-attach-column-drop-target-ref.json');
+    expect(events).toContain(
+      '2026-06-03-show-code-block-language-labels-read-only-mode.json'
+    );
+    expect(events).toContain('2025-11-20-biome-ultracite.json');
   });
 });

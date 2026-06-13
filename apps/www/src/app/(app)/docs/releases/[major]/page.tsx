@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
 import releaseIndexData from '@/generated/release-index.json';
+import { getPlateUiReleaseChangesByTag } from '@/lib/plate-ui-release-changes';
 import {
   getOlderReleaseMajorGroups,
   type ReleaseIndexRelease,
@@ -21,6 +22,7 @@ export const revalidate = false;
 
 const releases = releaseIndexData as ReleaseIndexRelease[];
 const olderMajorGroups = getOlderReleaseMajorGroups(releases);
+const plateUiChangesByTag = getPlateUiReleaseChangesByTag();
 
 export function generateStaticParams() {
   return olderMajorGroups.map((group) => ({
@@ -73,7 +75,9 @@ export default async function ReleaseMajorPage({
 
   return (
     <ReleasePageContent
+      plateUiChangesByTag={plateUiChangesByTag}
       releases={group.releases}
+      showUnreleasedPlateUiChanges={false}
       title={`v${group.major} Releases`}
     />
   );

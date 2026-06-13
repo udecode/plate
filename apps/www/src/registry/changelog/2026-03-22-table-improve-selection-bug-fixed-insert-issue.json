@@ -1,0 +1,98 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-03-22-table-improve-selection-bug-fixed-insert-issue",
+  "status": "draft",
+  "source": {
+    "kind": "legacy-mdx",
+    "path": "tooling/data/plate-ui-changelog.mdx"
+  },
+  "change": {
+    "type": "pull_request",
+    "date": "2026-03-22",
+    "commits": [
+      {
+        "sha": "37da9804440c6a9546210f76a4f03e6117e06da8",
+        "shortSha": "37da980444",
+        "url": "https://github.com/udecode/plate/commit/37da9804440c6a9546210f76a4f03e6117e06da8",
+        "date": "2026-03-21",
+        "committedAt": "2026-03-21T11:40:14+08:00",
+        "subject": "remove debug table button"
+      }
+    ],
+    "pullRequest": {
+      "number": 4872,
+      "url": "https://github.com/udecode/plate/pull/4872",
+      "state": "MERGED",
+      "title": "table: improve selection bug and fixed insert issue",
+      "mergedAt": "2026-03-22T06:56:34Z"
+    }
+  },
+  "release": {
+    "status": "released",
+    "tag": "v52.3.6",
+    "source": "release-index-pr-match",
+    "packageTag": "@platejs/docx-io@52.3.6",
+    "requiresPlate": ">=52.3.6",
+    "changelogUrl": "https://github.com/udecode/plate/blob/fad953d8ee230a3b6e9342cd470482bc7f28310f/packages/docx-io/CHANGELOG.md",
+    "url": "https://github.com/udecode/plate/pull/4879",
+    "versionPackagePullRequest": {
+      "number": 4879,
+      "url": "https://github.com/udecode/plate/pull/4879"
+    }
+  },
+  "kind": "behavior",
+  "summary": "table: improve selection bug and fixed insert issue",
+  "targets": [
+    {
+      "name": "table-node",
+      "files": ["apps/www/src/registry/ui/table-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "font-color-toolbar-button",
+      "files": ["apps/www/src/registry/ui/font-color-toolbar-button.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-03-22-29-2-021",
+      "kind": "behavior",
+      "summary": "Move large-table selection state to root-level DOM sync and editor selectors to reduce selection latency.",
+      "details": [],
+      "migrationNotes": [
+        "Move large-table selection state to root-level DOM sync and editor selectors to reduce selection latency."
+      ],
+      "targets": ["table-node"],
+      "source": {
+        "line": 63,
+        "row": 21,
+        "legacyRelease": {
+          "date": "2026-03-22",
+          "entry": "29.2",
+          "section": "March 2026 #29"
+        }
+      }
+    },
+    {
+      "id": "2026-03-22-29-2-022",
+      "kind": "behavior",
+      "summary": "Sync toolbar typing with the table-selection update.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["font-color-toolbar-button"],
+      "source": {
+        "line": 64,
+        "row": 22,
+        "legacyRelease": {
+          "date": "2026-03-22",
+          "entry": "29.2",
+          "section": "March 2026 #29"
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

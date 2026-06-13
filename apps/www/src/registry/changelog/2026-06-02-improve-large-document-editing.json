@@ -33,8 +33,8 @@
     "source": "release-index-pr-match",
     "packageTag": "platejs@53.0.7",
     "requiresPlate": ">=53.0.7",
-    "changelogUrl": "https://github.com/udecode/plate/blob/main/packages/plate/CHANGELOG.md",
-    "url": "https://github.com/udecode/plate/pull/4986",
+    "changelogUrl": "https://github.com/udecode/plate/blob/c081a4fbc6d16e1907160d02aca70bed886de9b1/packages/plate/CHANGELOG.md",
+    "url": "https://github.com/udecode/plate/releases/tag/v53.0.7",
     "versionPackagePullRequest": {
       "number": 4986,
       "url": "https://github.com/udecode/plate/pull/4986"
@@ -64,15 +64,15 @@
   ],
   "entries": [
     {
-      "id": "2026-05-31-31-1-002",
+      "id": "2026-05-31-31-1-003",
       "kind": "new",
       "summary": "Add a 10k-block Plate and Slate comparison demo with performance controls and benchmark links.",
       "details": [],
       "migrationNotes": [],
       "targets": ["huge-document-demo"],
       "source": {
-        "line": 16,
-        "row": 2,
+        "line": 20,
+        "row": 3,
         "legacyRelease": {
           "date": "2026-05-31",
           "entry": "31.1",
@@ -81,15 +81,15 @@
       }
     },
     {
-      "id": "2026-05-31-31-1-003",
+      "id": "2026-05-31-31-1-004",
       "kind": "rename",
       "summary": "Rename to `huge-document-demo`.",
       "details": [],
       "migrationNotes": ["Rename to `huge-document-demo`."],
       "targets": ["hundreds-blocks-demo"],
       "source": {
-        "line": 17,
-        "row": 3,
+        "line": 21,
+        "row": 4,
         "legacyRelease": {
           "date": "2026-05-31",
           "entry": "31.1",

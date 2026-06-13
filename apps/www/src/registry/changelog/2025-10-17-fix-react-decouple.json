@@ -1,0 +1,275 @@
+{
+  "schemaVersion": 1,
+  "id": "2025-10-17-fix-react-decouple",
+  "status": "draft",
+  "source": {
+    "kind": "legacy-mdx",
+    "path": "tooling/data/plate-ui-changelog.mdx"
+  },
+  "change": {
+    "type": "pull_request",
+    "date": "2025-10-17",
+    "commits": [
+      {
+        "sha": "466cf8a4f6cecadbea4b5a6a2c2af5adc5ee65d6",
+        "shortSha": "466cf8a4f6",
+        "url": "https://github.com/udecode/plate/commit/466cf8a4f6cecadbea4b5a6a2c2af5adc5ee65d6",
+        "date": "2025-10-17",
+        "committedAt": "2025-10-17T17:20:02+08:00",
+        "subject": "fix"
+      }
+    ],
+    "pullRequest": {
+      "number": 4695,
+      "url": "https://github.com/udecode/plate/pull/4695",
+      "state": "MERGED",
+      "title": "Fix react decouple",
+      "mergedAt": "2025-10-17T14:17:29Z"
+    }
+  },
+  "release": {
+    "status": "released",
+    "tag": "v51.0.0",
+    "source": "release-index-pr-match",
+    "packageTag": "platejs@51.0.0",
+    "requiresPlate": ">=51.0.0",
+    "changelogUrl": "https://github.com/udecode/plate/blob/9f29fb77587a0d250749e9bc2d4e3f25b6c7cb6d/packages/plate/CHANGELOG.md",
+    "url": "https://github.com/udecode/plate/pull/4696",
+    "versionPackagePullRequest": {
+      "number": 4696,
+      "url": "https://github.com/udecode/plate/pull/4696"
+    }
+  },
+  "kind": "wiring",
+  "summary": "Fix react decouple",
+  "targets": [
+    {
+      "name": "block-list",
+      "files": ["apps/www/src/registry/ui/block-list.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "blockquote-node",
+      "files": ["apps/www/src/registry/ui/blockquote-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "callout-node",
+      "files": ["apps/www/src/registry/ui/callout-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "code-block-node",
+      "files": ["apps/www/src/registry/ui/code-block-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "code-node",
+      "files": ["apps/www/src/registry/ui/code-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "column-node",
+      "files": ["apps/www/src/registry/ui/column-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "comment-node",
+      "files": ["apps/www/src/registry/ui/comment-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "date-node",
+      "files": ["apps/www/src/registry/ui/date-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "editor",
+      "files": ["apps/www/src/registry/ui/editor.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "equation-node",
+      "files": ["apps/www/src/registry/ui/equation-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "export-toolbar-button",
+      "files": ["apps/www/src/registry/ui/export-toolbar-button.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "heading-node",
+      "files": ["apps/www/src/registry/ui/heading-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "highlight-node",
+      "files": ["apps/www/src/registry/ui/highlight-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "hr-node",
+      "files": ["apps/www/src/registry/ui/hr-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "import-toolbar-button",
+      "files": ["apps/www/src/registry/ui/import-toolbar-button.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "kbd-node",
+      "files": ["apps/www/src/registry/ui/kbd-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "link-node",
+      "files": ["apps/www/src/registry/ui/link-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "media-audio-node",
+      "files": ["apps/www/src/registry/ui/media-audio-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "media-file-node",
+      "files": ["apps/www/src/registry/ui/media-file-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "media-image-node",
+      "files": ["apps/www/src/registry/ui/media-image-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "media-video-node",
+      "files": ["apps/www/src/registry/ui/media-video-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "mention-node",
+      "files": ["apps/www/src/registry/ui/mention-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "paragraph-node",
+      "files": ["apps/www/src/registry/ui/paragraph-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "slate-to-html",
+      "files": ["apps/www/src/registry/components/editor/slate-to-html.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-blocks.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "suggestion-kit",
+      "files": [
+        "apps/www/src/registry/components/editor/plugins/suggestion-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "suggestion-node",
+      "files": ["apps/www/src/registry/ui/suggestion-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "table-node",
+      "files": ["apps/www/src/registry/ui/table-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "toc-node-static",
+      "files": ["apps/www/src/registry/ui/toc-node-static.tsx"],
+      "definitionFiles": [],
+      "diagnostics": []
+    },
+    {
+      "name": "toggle-node-static",
+      "files": ["apps/www/src/registry/ui/toggle-node-static.tsx"],
+      "definitionFiles": [],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2025-10-17-26-9-038",
+      "kind": "wiring",
+      "summary": "Use the `platejs/static` import path in copied static rendering components.",
+      "details": [],
+      "migrationNotes": [
+        "Use the `platejs/static` import path in copied static rendering components."
+      ],
+      "targets": [
+        "block-list",
+        "blockquote-node",
+        "callout-node",
+        "code-block-node",
+        "code-node",
+        "column-node",
+        "comment-node",
+        "date-node",
+        "editor",
+        "equation-node",
+        "export-toolbar-button",
+        "heading-node",
+        "highlight-node",
+        "hr-node",
+        "import-toolbar-button",
+        "kbd-node",
+        "link-node",
+        "media-audio-node",
+        "media-file-node",
+        "media-image-node",
+        "media-video-node",
+        "mention-node",
+        "paragraph-node",
+        "slate-to-html",
+        "suggestion-kit",
+        "suggestion-node",
+        "table-node",
+        "toc-node-static",
+        "toggle-node-static"
+      ],
+      "source": {
+        "line": 117,
+        "row": 38,
+        "legacyRelease": {
+          "date": "2025-10-17",
+          "entry": "26.9",
+          "section": "October 2025 #26"
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

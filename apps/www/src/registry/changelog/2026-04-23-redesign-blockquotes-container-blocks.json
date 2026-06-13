@@ -125,88 +125,14 @@
   ],
   "entries": [
     {
-      "id": "2026-04-08-30-2-004",
+      "id": "2026-04-08-30-2-008",
       "kind": "new",
       "summary": "Add GFM footnotes with reference, definition, and input plugins plus UI — hover preview, navigation flash, multi-reference picker, and duplicate-definition recovery.",
       "details": [],
       "migrationNotes": [],
       "targets": ["footnote-kit"],
       "source": {
-        "line": 23,
-        "row": 4,
-        "legacyRelease": {
-          "date": "2026-04-08",
-          "entry": "30.2",
-          "section": "April 2026 #30"
-        }
-      }
-    },
-    {
-      "id": "2026-04-08-30-2-005",
-      "kind": "new",
-      "summary": "Add static footnote rendering for SSR and markdown pipelines.",
-      "details": [],
-      "migrationNotes": [],
-      "targets": ["footnote-base-kit"],
-      "source": {
-        "line": 24,
-        "row": 5,
-        "legacyRelease": {
-          "date": "2026-04-08",
-          "entry": "30.2",
-          "section": "April 2026 #30"
-        }
-      }
-    },
-    {
-      "id": "2026-04-08-30-2-006",
-      "kind": "new",
-      "summary": "Register the new footnote kits.",
-      "details": [],
-      "migrationNotes": ["Register the new footnote kits."],
-      "targets": ["editor-kit", "editor-base-kit"],
-      "source": {
-        "line": 25,
-        "row": 6,
-        "legacyRelease": {
-          "date": "2026-04-08",
-          "entry": "30.2",
-          "section": "April 2026 #30"
-        }
-      }
-    },
-    {
-      "id": "2026-04-08-30-2-007",
-      "kind": "wiring",
-      "summary": "Register the base footnote plugins and add `remark-emoji` so GFM footnotes and emoji shortcodes round-trip.",
-      "details": [],
-      "migrationNotes": [
-        "Register the base footnote plugins and add `remark-emoji` so GFM footnotes and emoji shortcodes round-trip."
-      ],
-      "targets": ["markdown-kit"],
-      "source": {
-        "line": 26,
-        "row": 7,
-        "legacyRelease": {
-          "date": "2026-04-08",
-          "entry": "30.2",
-          "section": "April 2026 #30"
-        }
-      }
-    },
-    {
-      "id": "2026-04-08-30-2-008",
-      "kind": "behavior",
-      "summary": "Add a Footnote insert entry wired to `action_footnote`.",
-      "details": [],
-      "migrationNotes": [],
-      "targets": [
-        "insert-toolbar-button",
-        "insert-toolbar-classic-button",
-        "slash-node"
-      ],
-      "source": {
-        "line": 27,
+        "line": 33,
         "row": 8,
         "legacyRelease": {
           "date": "2026-04-08",
@@ -217,15 +143,13 @@
     },
     {
       "id": "2026-04-08-30-2-009",
-      "kind": "wiring",
-      "summary": "Map `action_footnote` to `insertFootnote(editor, { select: true })`.",
+      "kind": "new",
+      "summary": "Add static footnote rendering for SSR and markdown pipelines.",
       "details": [],
-      "migrationNotes": [
-        "Map `action_footnote` to `insertFootnote(editor, { select: true })`."
-      ],
-      "targets": ["transforms", "transforms-classic"],
+      "migrationNotes": [],
+      "targets": ["footnote-base-kit"],
       "source": {
-        "line": 28,
+        "line": 34,
         "row": 9,
         "legacyRelease": {
           "date": "2026-04-08",
@@ -236,14 +160,90 @@
     },
     {
       "id": "2026-04-08-30-2-010",
+      "kind": "new",
+      "summary": "Register the new footnote kits.",
+      "details": [],
+      "migrationNotes": ["Register the new footnote kits."],
+      "targets": ["editor-kit", "editor-base-kit"],
+      "source": {
+        "line": 35,
+        "row": 10,
+        "legacyRelease": {
+          "date": "2026-04-08",
+          "entry": "30.2",
+          "section": "April 2026 #30"
+        }
+      }
+    },
+    {
+      "id": "2026-04-08-30-2-011",
+      "kind": "wiring",
+      "summary": "Register the base footnote plugins and add `remark-emoji` so GFM footnotes and emoji shortcodes round-trip.",
+      "details": [],
+      "migrationNotes": [
+        "Register the base footnote plugins and add `remark-emoji` so GFM footnotes and emoji shortcodes round-trip."
+      ],
+      "targets": ["markdown-kit"],
+      "source": {
+        "line": 36,
+        "row": 11,
+        "legacyRelease": {
+          "date": "2026-04-08",
+          "entry": "30.2",
+          "section": "April 2026 #30"
+        }
+      }
+    },
+    {
+      "id": "2026-04-08-30-2-012",
+      "kind": "behavior",
+      "summary": "Add a Footnote insert entry wired to `action_footnote`.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": [
+        "insert-toolbar-button",
+        "insert-toolbar-classic-button",
+        "slash-node"
+      ],
+      "source": {
+        "line": 37,
+        "row": 12,
+        "legacyRelease": {
+          "date": "2026-04-08",
+          "entry": "30.2",
+          "section": "April 2026 #30"
+        }
+      }
+    },
+    {
+      "id": "2026-04-08-30-2-013",
+      "kind": "wiring",
+      "summary": "Map `action_footnote` to `insertFootnote(editor, { select: true })`.",
+      "details": [],
+      "migrationNotes": [
+        "Map `action_footnote` to `insertFootnote(editor, { select: true })`."
+      ],
+      "targets": ["transforms", "transforms-classic"],
+      "source": {
+        "line": 38,
+        "row": 13,
+        "legacyRelease": {
+          "date": "2026-04-08",
+          "entry": "30.2",
+          "section": "April 2026 #30"
+        }
+      }
+    },
+    {
+      "id": "2026-04-08-30-2-014",
       "kind": "behavior",
       "summary": "Reduce to symbol substitutions (arrows, fractions, legal, punctuation, smart quotes, sub/superscript). Markdown shortcuts move to the feature kits below. Add link automd so `[text](url)` closing on `)` resolves to a structured link.",
       "details": [],
       "migrationNotes": [],
       "targets": ["autoformat-kit"],
       "source": {
-        "line": 29,
-        "row": 10,
+        "line": 39,
+        "row": 14,
         "legacyRelease": {
           "date": "2026-04-08",
           "entry": "30.2",

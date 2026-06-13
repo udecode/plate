@@ -9,11 +9,14 @@ describe('/registry/changelog/components.json', () => {
 
     expect(response.status).toBe(200);
     expect(data.schemaVersion).toBe(1);
-    expect(data.components['code-block-node']).toEqual([
-      '2026-06-03-show-code-block-language-labels-read-only-mode',
-    ]);
+    expect(data.components['code-block-node']).toContain(
+      '2026-06-03-show-code-block-language-labels-read-only-mode'
+    );
     expect(data.components['huge-document-demo']).toEqual([
       '2026-06-02-improve-large-document-editing',
     ]);
+    expect(data.components['suggestion-kit']).toContain(
+      '2025-10-21-add-rejectaisuggestions'
+    );
   });
 });

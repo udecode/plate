@@ -283,12 +283,17 @@ test('does not guess release dependencies for ambiguous dates', () => {
   assert.match(result.warnings[0], /Multiple generated release-index entries/);
 });
 
-test('current latest 10 source rows collapse to 3 change-unit events', () => {
+test('current latest 14 source rows collapse to 5 change-unit events', () => {
   const content = fs.readFileSync(
     'tooling/data/plate-ui-changelog.mdx',
     'utf8'
   );
-  const rows = parseComponentChangelog(content).slice(0, 10);
+  const rows = parseComponentChangelog(content).slice(0, 14);
+  const columnCommit = commit(
+    '224b0d13083c199a8f4525b063ad04de2dcf2dbb',
+    '2026-06-10',
+    'fix(dnd): attach column drop target ref'
+  );
   const codeCommit = commit(
     'a471d051d2b32c494a94e8218ce1a8462aa26463',
     '2026-06-03',
@@ -299,6 +304,11 @@ test('current latest 10 source rows collapse to 3 change-unit events', () => {
     '2026-06-02',
     'perf: improve large document editing'
   );
+  const discussionCommit = commit(
+    '59e088318686e94c74f89390d9ab307b469767af',
+    '2026-04-29',
+    '[codex] Fix discussion and suggestion regressions'
+  );
   const footnoteCommit = commit(
     '700286bf84ac987b9cc2296f9f69746f0f095936',
     '2026-04-23',
@@ -306,7 +316,20 @@ test('current latest 10 source rows collapse to 3 change-unit events', () => {
   );
   const provenanceBySourceId = new Map(
     rows.map((row) => {
-      if (row.sourceId === '2026-06-03-32-1-001') {
+      if (row.sourceId === '2026-06-10-32-2-001') {
+        return [
+          row.sourceId,
+          provenance(
+            columnCommit,
+            pr(5003, 'fix(dnd): attach column drop target ref', {
+              mergedAt: '2026-06-10T10:46:04Z',
+            }),
+            ['No generated release-index entry found for PR 5003.']
+          ),
+        ];
+      }
+
+      if (row.sourceId?.startsWith('2026-06-03')) {
         return [
           row.sourceId,
           provenance(
@@ -326,6 +349,18 @@ test('current latest 10 source rows collapse to 3 change-unit events', () => {
             perfCommit,
             pr(4987, 'perf: improve large document editing', {
               mergedAt: '2026-06-02T19:26:44Z',
+            })
+          ),
+        ];
+      }
+
+      if (row.sourceId?.startsWith('2026-04-29')) {
+        return [
+          row.sourceId,
+          provenance(
+            discussionCommit,
+            pr(4945, '[codex] Fix discussion and suggestion regressions', {
+              mergedAt: '2026-04-29T09:59:13Z',
             })
           ),
         ];
@@ -353,6 +388,14 @@ test('current latest 10 source rows collapse to 3 change-unit events', () => {
     },
     {
       content:
+        'Fix discussion and suggestion regressions ([#4945](https://github.com/udecode/plate/pull/4945))',
+      date: '2026-04-29',
+      packageTag: 'platejs@53.0.3',
+      tag: 'v53.0.3',
+      versionPackagePrUrl: 'https://github.com/udecode/plate/pull/4954',
+    },
+    {
+      content:
         'Add footnotes ([#4941](https://github.com/udecode/plate/pull/4941))',
       date: '2026-04-23',
       packageTag: 'platejs@53.0.0',
@@ -365,26 +408,35 @@ test('current latest 10 source rows collapse to 3 change-unit events', () => {
     releases,
   });
 
-  assert.equal(rows.length, 10);
-  assert.equal(outputs.length, 3);
+  assert.equal(rows.length, 14);
+  assert.equal(outputs.length, 5);
   assert.deepEqual(
     outputs.map((output) => path.basename(output.targetPath)),
     [
+      '2026-06-10-attach-column-drop-target-ref.json',
       '2026-06-03-show-code-block-language-labels-read-only-mode.json',
       '2026-06-02-improve-large-document-editing.json',
+      '2026-04-29-codex-fix-discussion-suggestion-regressions.json',
       '2026-04-23-redesign-blockquotes-container-blocks.json',
     ]
   );
   assert.equal(outputs[0].entry.entries.length, 1);
-  assert.equal(outputs[0].entry.release.status, 'unreleased');
-  assert.equal(outputs[0].entry.change.pullRequest.number, 4989);
-  assert.equal(outputs[0].entry.change.pullRequest.state, 'OPEN');
-  assert.equal(outputs[1].entry.entries.length, 2);
-  assert.equal(outputs[1].entry.release.tag, 'v53.0.7');
-  assert.equal(outputs[1].entry.change.pullRequest.number, 4987);
-  assert.equal(outputs[2].entry.entries.length, 7);
-  assert.equal(outputs[2].entry.release.tag, 'v53.0.0');
-  assert.equal(outputs[2].entry.change.pullRequest.number, 4941);
+  assert.equal(outputs[0].entry.release.status, 'unresolved');
+  assert.equal(outputs[0].entry.change.pullRequest.number, 5003);
+  assert.equal(outputs[0].entry.change.pullRequest.state, 'MERGED');
+  assert.equal(outputs[1].entry.entries.length, 1);
+  assert.equal(outputs[1].entry.release.status, 'unreleased');
+  assert.equal(outputs[1].entry.change.pullRequest.number, 4989);
+  assert.equal(outputs[1].entry.change.pullRequest.state, 'OPEN');
+  assert.equal(outputs[2].entry.entries.length, 2);
+  assert.equal(outputs[2].entry.release.tag, 'v53.0.7');
+  assert.equal(outputs[2].entry.change.pullRequest.number, 4987);
+  assert.equal(outputs[3].entry.entries.length, 3);
+  assert.equal(outputs[3].entry.release.tag, 'v53.0.3');
+  assert.equal(outputs[3].entry.change.pullRequest.number, 4945);
+  assert.equal(outputs[4].entry.entries.length, 7);
+  assert.equal(outputs[4].entry.release.tag, 'v53.0.0');
+  assert.equal(outputs[4].entry.change.pullRequest.number, 4941);
   for (const output of outputs) {
     assert.equal('pr' in output.entry, false);
     assert.equal('commit' in output.entry, false);
@@ -397,24 +449,34 @@ test('current latest 10 source rows collapse to 3 change-unit events', () => {
   assert.deepEqual(
     index.events.map((event) => event.id),
     [
+      '2026-06-10-attach-column-drop-target-ref',
       '2026-06-03-show-code-block-language-labels-read-only-mode',
       '2026-06-02-improve-large-document-editing',
+      '2026-04-29-codex-fix-discussion-suggestion-regressions',
       '2026-04-23-redesign-blockquotes-container-blocks',
     ]
   );
   assert.deepEqual(
     index.events.map((event) => event.href),
     [
+      '/registry/changelog/2026-06-10-attach-column-drop-target-ref.json',
       '/registry/changelog/2026-06-03-show-code-block-language-labels-read-only-mode.json',
       '/registry/changelog/2026-06-02-improve-large-document-editing.json',
+      '/registry/changelog/2026-04-29-codex-fix-discussion-suggestion-regressions.json',
       '/registry/changelog/2026-04-23-redesign-blockquotes-container-blocks.json',
     ]
   );
+  assert.deepEqual(components.components['column-node'], [
+    '2026-06-10-attach-column-drop-target-ref',
+  ]);
   assert.deepEqual(components.components['code-block-node'], [
     '2026-06-03-show-code-block-language-labels-read-only-mode',
   ]);
   assert.deepEqual(components.components['huge-document-demo'], [
     '2026-06-02-improve-large-document-editing',
+  ]);
+  assert.deepEqual(components.components['block-discussion'], [
+    '2026-04-29-codex-fix-discussion-suggestion-regressions',
   ]);
   assert.deepEqual(components.components['footnote-kit'], [
     '2026-04-23-redesign-blockquotes-container-blocks',
