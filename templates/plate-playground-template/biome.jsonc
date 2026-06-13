@@ -66,10 +66,6 @@
           }
         }
       },
-      "nursery": {
-        "noShadow": "off", // chill
-        "noIncrementDecrement": "off" // chill
-      },
       "complexity": {
         "useSimplifiedLogicExpression": "off", // false +
         "noExcessiveCognitiveComplexity": "off", // chill

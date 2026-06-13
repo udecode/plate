@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /** biome-ignore-all lint/suspicious/noConsole: CLI scripts write command output. */
 import { existsSync } from 'node:fs';
-import { access, mkdir, readFile, writeFile } from 'node:fs/promises';
+import { access, mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { initProjectTemplates } from './init-templates.mjs';
@@ -55,9 +55,11 @@ if (args.title) {
   const scratchpadPath = args.path
     ? path.resolve(root, args.path)
     : path.join(root, 'docs', 'plans', fileName);
+  const taskSourceLink = await resolveTaskSourceLink(root, args.ticket);
   let content = await renderTemplate(templatePath, {
     createdAt: new Date().toISOString(),
     planPath: path.relative(root, scratchpadPath),
+    taskSourceLink,
     title: args.title,
     templatePath: path.relative(root, templatePath),
   });
@@ -68,6 +70,7 @@ if (args.title) {
         createdAt: new Date().toISOString(),
         packName: pack.name,
         planPath: path.relative(root, scratchpadPath),
+        taskSourceLink,
         templatePath: path.relative(root, templatePath),
         title: args.title,
       }),
@@ -159,8 +162,98 @@ async function renderTemplate(templatePath, values) {
     .replaceAll('{{TITLE}}', values.title)
     .replaceAll('{{PLAN_PATH}}', values.planPath)
     .replaceAll('{{PACK_NAME}}', values.packName ?? '')
+    .replaceAll('{{TASK_SOURCE_LINK}}', values.taskSourceLink ?? 'pending')
     .replaceAll('{{CREATED_AT}}', values.createdAt)
     .replaceAll('{{TEMPLATE_PATH}}', values.templatePath);
+}
+
+async function resolveTaskSourceLink(root, ticket) {
+  if (!ticket) {
+    return 'pending';
+  }
+
+  if (/^https?:\/\//i.test(ticket)) {
+    return ticket;
+  }
+
+  const linearWorkspaceSlug = await findLinearWorkspaceSlug(root);
+
+  if (linearWorkspaceSlug) {
+    return `[${ticket}](https://linear.app/${linearWorkspaceSlug}/issue/${ticket})`;
+  }
+
+  return ticket;
+}
+
+async function findLinearWorkspaceSlug(root) {
+  for (const relativePath of [
+    'docs/plans/templates/task.md',
+    '.agents/AGENTS.md',
+    'README.md',
+  ]) {
+    const slug = await readLinearWorkspaceSlug(path.join(root, relativePath));
+
+    if (slug) {
+      return slug;
+    }
+  }
+
+  return findLinearWorkspaceSlugInDocs(path.join(root, 'docs', 'plans'));
+}
+
+async function findLinearWorkspaceSlugInDocs(dir, state = { readCount: 0 }) {
+  if (state.readCount >= 200) {
+    return '';
+  }
+
+  let entries;
+
+  try {
+    entries = await readdir(dir, { withFileTypes: true });
+  } catch {
+    return '';
+  }
+
+  for (const entry of entries) {
+    if (state.readCount >= 200) {
+      return '';
+    }
+
+    const entryPath = path.join(dir, entry.name);
+
+    if (entry.isDirectory()) {
+      const slug = await findLinearWorkspaceSlugInDocs(entryPath, state);
+
+      if (slug) {
+        return slug;
+      }
+
+      continue;
+    }
+
+    if (!entry.name.endsWith('.md')) {
+      continue;
+    }
+
+    state.readCount += 1;
+    const slug = await readLinearWorkspaceSlug(entryPath);
+
+    if (slug) {
+      return slug;
+    }
+  }
+
+  return '';
+}
+
+async function readLinearWorkspaceSlug(filePath) {
+  try {
+    const content = await readFile(filePath, 'utf8');
+    const match = content.match(/https:\/\/linear\.app\/([^/\s)]+)\/issue\//);
+    return match?.[1] ?? '';
+  } catch {
+    return '';
+  }
 }
 
 function findRepoRoot(start) {

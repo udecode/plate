@@ -1,0 +1,102 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-06-02-improve-large-document-editing",
+  "status": "draft",
+  "source": {
+    "kind": "legacy-mdx",
+    "path": "tooling/data/plate-ui-changelog.mdx"
+  },
+  "change": {
+    "type": "pull_request",
+    "date": "2026-06-02",
+    "commits": [
+      {
+        "sha": "68560ccc9e1d525f29e8a49b0c673723837639d8",
+        "shortSha": "68560ccc9e",
+        "url": "https://github.com/udecode/plate/commit/68560ccc9e1d525f29e8a49b0c673723837639d8",
+        "date": "2026-06-02",
+        "committedAt": "2026-06-02T21:26:43+02:00",
+        "subject": "perf: improve large document editing"
+      }
+    ],
+    "pullRequest": {
+      "number": 4987,
+      "url": "https://github.com/udecode/plate/pull/4987",
+      "state": "MERGED",
+      "title": "perf: improve large document editing",
+      "mergedAt": "2026-06-02T19:26:44Z"
+    }
+  },
+  "release": {
+    "status": "released",
+    "tag": "v53.0.7",
+    "source": "release-index-pr-match",
+    "packageTag": "platejs@53.0.7",
+    "requiresPlate": ">=53.0.7",
+    "changelogUrl": "https://github.com/udecode/plate/blob/c081a4fbc6d16e1907160d02aca70bed886de9b1/packages/plate/CHANGELOG.md",
+    "url": "https://github.com/udecode/plate/releases/tag/v53.0.7",
+    "versionPackagePullRequest": {
+      "number": 4986,
+      "url": "https://github.com/udecode/plate/pull/4986"
+    }
+  },
+  "kind": "mixed",
+  "summary": "perf: improve large document editing",
+  "targets": [
+    {
+      "name": "huge-document-demo",
+      "files": ["apps/www/src/registry/examples/huge-document-demo.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "hundreds-blocks-demo",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for hundreds-blocks-demo."
+        }
+      ]
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-05-31-31-1-003",
+      "kind": "new",
+      "summary": "Add a 10k-block Plate and Slate comparison demo with performance controls and benchmark links.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["huge-document-demo"],
+      "source": {
+        "line": 20,
+        "row": 3,
+        "legacyRelease": {
+          "date": "2026-05-31",
+          "entry": "31.1",
+          "section": "May 2026 #31"
+        }
+      }
+    },
+    {
+      "id": "2026-05-31-31-1-004",
+      "kind": "rename",
+      "summary": "Rename to `huge-document-demo`.",
+      "details": [],
+      "migrationNotes": ["Rename to `huge-document-demo`."],
+      "targets": ["hundreds-blocks-demo"],
+      "source": {
+        "line": 21,
+        "row": 4,
+        "legacyRelease": {
+          "date": "2026-05-31",
+          "entry": "31.1",
+          "section": "May 2026 #31"
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

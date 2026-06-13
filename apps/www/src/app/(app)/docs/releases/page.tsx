@@ -3,11 +3,11 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 import releaseIndexData from '@/generated/release-index.json';
+import { getPlateUiReleaseChangesByTag } from '@/lib/plate-ui-release-changes';
 import {
   formatReleaseDate,
   getCurrentReleaseMajorGroups,
   getOlderReleaseMajorGroups,
-  getReleaseAnchor,
   getReleaseMajorPath,
   type ReleaseMajorGroup,
   type ReleaseIndexRelease,
@@ -23,6 +23,7 @@ const releases = releaseIndexData as ReleaseIndexRelease[];
 const currentMajorGroups = getCurrentReleaseMajorGroups(releases);
 const olderMajorGroups = getOlderReleaseMajorGroups(releases);
 const currentReleases = currentMajorGroups.flatMap((group) => group.releases);
+const plateUiChangesByTag = getPlateUiReleaseChangesByTag();
 
 export const metadata: Metadata = {
   description,
@@ -52,17 +53,8 @@ export default function ReleasesPage() {
     <ReleasePageContent
       after={<OlderReleases groups={olderMajorGroups} />}
       description={description}
+      plateUiChangesByTag={plateUiChangesByTag}
       releases={currentReleases}
-      sidebarLinks={[
-        ...currentMajorGroups.map((group) => ({
-          href: `#${getReleaseAnchor(group.releases[0])}`,
-          label: `v${group.major}`,
-        })),
-        ...olderMajorGroups.map((group) => ({
-          href: getReleaseMajorPath(group.major),
-          label: `v${group.major}`,
-        })),
-      ]}
       title={title}
     />
   );

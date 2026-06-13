@@ -143,6 +143,9 @@ lock.
 - `agent-browser-issue`: browser automation is blocked by a reusable tool-side
   issue.
 - `changeset`: published package work under `packages/` needs release notes.
+- `plate-ui`: authoring or refactoring Plate registry UI/components, static/live
+  renderers, kits, registry wiring, or ownership/extraction decisions under
+  `apps/www/src/registry/**`.
 - `docs-creator`: non-trivial docs/content work, new or rewritten pages,
   plugin/API/spec/serialization docs, route moves, example changes, or docs with
   source-backed ownership/API claims. Use `--template docs` when docs dominate;

@@ -1,0 +1,118 @@
+{
+  "schemaVersion": 1,
+  "id": "2025-10-21-add-rejectaisuggestions",
+  "status": "draft",
+  "source": {
+    "kind": "legacy-mdx",
+    "path": "tooling/data/plate-ui-changelog.mdx"
+  },
+  "change": {
+    "type": "pull_request",
+    "date": "2025-10-21",
+    "commits": [
+      {
+        "sha": "6cba6670cfee1a5dfd23b9b0a9225d769802d95e",
+        "shortSha": "6cba6670cf",
+        "url": "https://github.com/udecode/plate/commit/6cba6670cfee1a5dfd23b9b0a9225d769802d95e",
+        "date": "2025-10-21",
+        "committedAt": "2025-10-21T15:05:10+08:00",
+        "subject": "suggestion"
+      }
+    ],
+    "pullRequest": {
+      "number": 4697,
+      "url": "https://github.com/udecode/plate/pull/4697",
+      "state": "MERGED",
+      "title": "Add rejectAISuggestions",
+      "mergedAt": "2025-10-21T08:06:37Z"
+    }
+  },
+  "release": {
+    "status": "released",
+    "tag": "v51.0.1",
+    "source": "release-index-pr-match",
+    "packageTag": "@platejs/ai@51.0.1",
+    "requiresPlate": ">=51.0.1",
+    "changelogUrl": "https://github.com/udecode/plate/blob/aae0067a8c97fb96041b447ba8fcd353b983e8de/packages/ai/CHANGELOG.md",
+    "url": "https://github.com/udecode/plate/pull/4699",
+    "versionPackagePullRequest": {
+      "number": 4699,
+      "url": "https://github.com/udecode/plate/pull/4699"
+    }
+  },
+  "kind": "behavior",
+  "summary": "Add rejectAISuggestions",
+  "targets": [
+    {
+      "name": "suggestion-kit",
+      "files": [
+        "apps/www/src/registry/components/editor/plugins/suggestion-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "suggestion-node",
+      "files": ["apps/www/src/registry/ui/suggestion-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "block-discussion",
+      "files": ["apps/www/src/registry/ui/block-discussion.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "ai-api",
+      "files": [],
+      "definitionFiles": ["apps/www/src/registry/registry-components.ts"],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for ai-api."
+        }
+      ]
+    }
+  ],
+  "entries": [
+    {
+      "id": "2025-10-21-26-10-036",
+      "kind": "behavior",
+      "summary": "Use `SuggestionLineBreak` instead of `BlockSuggestion` for suggestion styling.",
+      "details": [],
+      "migrationNotes": [
+        "Use `SuggestionLineBreak` instead of `BlockSuggestion` for suggestion styling."
+      ],
+      "targets": ["suggestion-kit", "suggestion-node", "block-discussion"],
+      "source": {
+        "line": 112,
+        "row": 36,
+        "legacyRelease": {
+          "date": "2025-10-21",
+          "entry": "26.10",
+          "section": "October 2025 #26"
+        }
+      }
+    },
+    {
+      "id": "2025-10-21-26-10-037",
+      "kind": "behavior",
+      "summary": "Keep AI comments visible after the stream finishes.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["ai-api"],
+      "source": {
+        "line": 113,
+        "row": 37,
+        "legacyRelease": {
+          "date": "2025-10-21",
+          "entry": "26.10",
+          "section": "October 2025 #26"
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

@@ -3,12 +3,15 @@
 import type { HTMLAttributes, ReactElement, ReactNode } from 'react';
 
 import { useRef, useState } from 'react';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, FileJsonIcon, GitPullRequestIcon } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
-import { CodeBlock } from '@/components/ui/codeblock';
+import * as Typography from '@/components/typography';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import releaseIndexData from '@/generated/release-index.json';
+import { LATEST_PLATE_UI_RELEASE_TAG } from '@/lib/plate-ui-release-tags';
 import {
   formatReleaseDate,
   getCurrentReleaseMajorGroups,
@@ -20,12 +23,43 @@ import {
 } from '@/lib/releases';
 import { cn } from '@/lib/utils';
 
+export type PlateUiReleaseChange = {
+  date: string;
+  entries: {
+    id: string;
+    kind: string;
+    migrationNotes: string[];
+    summary: string;
+    targets: string[];
+  }[];
+  href: string;
+  id: string;
+  kind: string;
+  pullRequest?: {
+    number: number;
+    url: string;
+  };
+  release: {
+    status: 'latest' | 'released' | 'unresolved';
+    tag?: string;
+  };
+  summary: string;
+  targets: {
+    href?: string;
+    name: string;
+  }[];
+};
+
+export type PlateUiReleaseChangesByTag = Record<string, PlateUiReleaseChange[]>;
+
 export type ReleaseIndexMessage = ReleaseIndexRelease & {
   expandable: boolean;
+  plateUiChanges: PlateUiReleaseChange[];
 };
 
 const githubReleasesUrl = 'https://github.com/udecode/plate/releases';
 const expandableLineThreshold = 15;
+const plateUiChangeExpandableLineThreshold = 10;
 const languageClassNamePattern = /language-(\w+)/;
 const trailingNewlinePattern = /\n$/;
 const releaseHeadingLabels: Record<string, string> = {
@@ -36,22 +70,45 @@ const releaseHeadingLabels: Record<string, string> = {
 
 export function ReleaseIndex({
   className,
+  plateUiChangesByTag,
   releases,
   showMajorHeadings = false,
+  showPackageChanges = true,
+  showPlateUiChanges = true,
+  showLatestPlateUiChanges = true,
 }: HTMLAttributes<HTMLDivElement> & {
+  plateUiChangesByTag?: PlateUiReleaseChangesByTag;
   releases?: ReleaseIndexRelease[];
   showMajorHeadings?: boolean;
+  showLatestPlateUiChanges?: boolean;
+  showPackageChanges?: boolean;
+  showPlateUiChanges?: boolean;
 }) {
-  const releaseList =
+  const baseReleaseList =
     releases ??
     getCurrentReleaseMajorGroups(
       releaseIndexData as ReleaseIndexRelease[]
     ).flatMap((group) => group.releases);
-  const messages = releaseList.map((release) => ({
-    ...release,
-    date: formatReleaseDate(release.date),
-    expandable: getContentLineCount(release.content) > expandableLineThreshold,
-  }));
+  const latestPlateUiChanges = showLatestPlateUiChanges
+    ? (plateUiChangesByTag?.[LATEST_PLATE_UI_RELEASE_TAG] ?? [])
+    : [];
+  const messages = baseReleaseList.map((release, index) => {
+    const plateUiChanges = [
+      ...(index === 0 ? latestPlateUiChanges : []),
+      ...(plateUiChangesByTag?.[release.tag] ?? []),
+    ];
+
+    return {
+      ...release,
+      date: formatReleaseDate(release.date),
+      expandable:
+        getContentLineCount(release.content) > expandableLineThreshold,
+      plateUiChanges,
+    };
+  });
+  const latestPlateUiReleaseTag = messages.find(
+    (release) => release.plateUiChanges.length > 0
+  )?.tag;
   const messageGroups: ReleaseMajorGroup<ReleaseIndexMessage>[] =
     showMajorHeadings
       ? getReleaseMajorGroups(messages)
@@ -92,7 +149,10 @@ export function ReleaseIndex({
         <ReleaseMajorSection
           key={group.major || 'releases'}
           group={group}
+          latestPlateUiReleaseTag={latestPlateUiReleaseTag}
           showHeading={showMajorHeadings}
+          showPackageChanges={showPackageChanges}
+          showPlateUiChanges={showPlateUiChanges}
         />
       ))}
     </section>
@@ -103,12 +163,25 @@ function getContentLineCount(content: string) {
   return content.split('\n').filter((line) => line.trim().length > 0).length;
 }
 
+function getPlateUiChangeLineCount(change: PlateUiReleaseChange) {
+  return change.entries.reduce(
+    (count, entry) => count + 2 + entry.migrationNotes.length,
+    2
+  );
+}
+
 function ReleaseMajorSection({
   group,
+  latestPlateUiReleaseTag,
   showHeading,
+  showPackageChanges,
+  showPlateUiChanges,
 }: {
   group: ReleaseMajorGroup<ReleaseIndexMessage>;
+  latestPlateUiReleaseTag?: string;
   showHeading: boolean;
+  showPackageChanges: boolean;
+  showPlateUiChanges: boolean;
 }) {
   return (
     <div>
@@ -132,6 +205,9 @@ function ReleaseMajorSection({
           key={release.tag}
           release={release}
           isFirst={!showHeading && index === 0}
+          showPackageChanges={showPackageChanges}
+          showPlateUiSyncGuide={release.tag === latestPlateUiReleaseTag}
+          showPlateUiChanges={showPlateUiChanges}
         />
       ))}
     </div>
@@ -141,10 +217,20 @@ function ReleaseMajorSection({
 function ReleaseRow({
   isFirst = false,
   release,
+  showPackageChanges,
+  showPlateUiSyncGuide,
+  showPlateUiChanges,
 }: {
   isFirst?: boolean;
   release: ReleaseIndexMessage;
+  showPackageChanges: boolean;
+  showPlateUiSyncGuide: boolean;
+  showPlateUiChanges: boolean;
 }) {
+  const hasPlateUiChanges = release.plateUiChanges.length > 0;
+  const articleRef = useRef<HTMLElement>(null);
+  const [isReleaseExpanded, setIsReleaseExpanded] = useState(false);
+
   return (
     <article
       className={cn(
@@ -152,6 +238,7 @@ function ReleaseRow({
         isFirst && 'pt-6'
       )}
       id={getReleaseAnchor(release)}
+      ref={articleRef}
     >
       <header className="mb-4 flex flex-wrap items-baseline gap-x-4 gap-y-2">
         <a
@@ -174,10 +261,241 @@ function ReleaseRow({
         ) : null}
       </header>
 
-      <ReleaseBody content={release.content} expandable={release.expandable} />
+      {showPackageChanges ? (
+        <ReleaseBody
+          content={release.content}
+          expandable={release.expandable}
+          isExpanded={isReleaseExpanded}
+        />
+      ) : null}
+
+      {showPackageChanges && release.expandable ? (
+        <ReleaseExpandButton
+          isExpanded={isReleaseExpanded}
+          label="release"
+          onClick={() => {
+            if (isReleaseExpanded) {
+              setIsReleaseExpanded(false);
+              articleRef.current?.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start',
+              });
+            } else {
+              setIsReleaseExpanded(true);
+            }
+          }}
+        />
+      ) : null}
+
+      {showPlateUiChanges && hasPlateUiChanges ? (
+        <PlateUiReleaseSection
+          changes={release.plateUiChanges}
+          showSyncGuide={showPlateUiSyncGuide}
+        />
+      ) : null}
 
       <ReleaseSeparator className="bottom-0" />
     </article>
+  );
+}
+
+function ReleaseExpandButton({
+  isExpanded,
+  label,
+  onClick,
+}: {
+  isExpanded: boolean;
+  label?: string;
+  onClick: () => void;
+}) {
+  const action = isExpanded ? 'Collapse' : 'Expand';
+
+  return (
+    <button
+      className="mt-4 inline-flex items-center gap-1.5 font-mono text-muted-foreground text-xs transition-colors hover:text-foreground"
+      onClick={onClick}
+      type="button"
+    >
+      <ChevronDown
+        aria-hidden
+        className={cn(
+          'size-3.5 transition-transform duration-200',
+          isExpanded && 'rotate-180'
+        )}
+      />
+      {label ? `${action} ${label}` : action}
+    </button>
+  );
+}
+
+function PlateUiReleaseSection({
+  changes,
+  showSyncGuide,
+}: {
+  changes: PlateUiReleaseChange[];
+  showSyncGuide: boolean;
+}) {
+  return (
+    <section className="mt-8">
+      <div className="space-y-4">
+        {changes.map((change, index) => (
+          <PlateUiReleaseChangeItem
+            change={change}
+            key={change.id}
+            showSyncGuide={showSyncGuide && index === 0}
+          />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function PlateUiReleaseChangeItem({
+  change,
+  showSyncGuide,
+}: {
+  change: PlateUiReleaseChange;
+  showSyncGuide: boolean;
+}) {
+  const titleHref = change.pullRequest?.url ?? change.href;
+  const articleRef = useRef<HTMLElement>(null);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const expandable =
+    getPlateUiChangeLineCount(change) > plateUiChangeExpandableLineThreshold;
+
+  return (
+    <article className="rounded-md border bg-surface/40 p-4" ref={articleRef}>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <h3 className="font-heading font-semibold text-base tracking-tight">
+            Plate UI
+            {change.release.status === 'latest' ? (
+              <Badge className="ml-2 align-middle" variant="outline">
+                Latest
+              </Badge>
+            ) : null}
+          </h3>
+          <Button
+            asChild
+            className="mt-2 h-auto max-w-full justify-start whitespace-normal px-2.5 py-1.5 text-left text-sm leading-5"
+            size="sm"
+            variant="secondary"
+          >
+            <a href={titleHref} rel="noreferrer" target="_blank">
+              {change.pullRequest ? <GitPullRequestIcon /> : <FileJsonIcon />}
+              <span>
+                {change.pullRequest ? (
+                  <>
+                    <span className="font-mono text-xs">
+                      PR {change.pullRequest.number}
+                    </span>
+                    <span className="text-muted-foreground"> · </span>
+                  </>
+                ) : null}
+                {change.summary}
+              </span>
+            </a>
+          </Button>
+        </div>
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          {showSyncGuide ? (
+            <Button asChild size="sm" variant="secondary">
+              <a href="/docs/installation/plate-ui#sync-copied-files">
+                Sync guide
+              </a>
+            </Button>
+          ) : null}
+          <Button asChild size="sm" variant="ghost">
+            <a href={change.href} rel="noreferrer" target="_blank">
+              <FileJsonIcon />
+              JSON
+            </a>
+          </Button>
+        </div>
+      </div>
+
+      <div className="relative mt-4">
+        <div
+          className={cn(
+            'space-y-3',
+            expandable && !isExpanded && 'max-h-[220px] overflow-hidden'
+          )}
+        >
+          {change.entries.map((entry) => (
+            <div key={entry.id}>
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge variant="outline">{entry.kind}</Badge>
+                <div className="flex flex-wrap gap-x-1.5 gap-y-1 font-mono text-muted-foreground text-xs">
+                  {entry.targets.map((target) => (
+                    <PlateUiEntryTarget
+                      change={change}
+                      key={target}
+                      name={target}
+                    />
+                  ))}
+                </div>
+              </div>
+              <p className="mt-1 text-muted-foreground text-sm leading-6">
+                {entry.summary}
+              </p>
+              {entry.migrationNotes.length > 0 ? (
+                <ul className="mt-2 list-disc space-y-1 pl-5 text-muted-foreground text-xs leading-5">
+                  {entry.migrationNotes.map((note) => (
+                    <li key={note}>{note}</li>
+                  ))}
+                </ul>
+              ) : null}
+            </div>
+          ))}
+        </div>
+
+        {expandable && !isExpanded ? (
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-background via-background/90 to-transparent" />
+        ) : null}
+      </div>
+
+      {expandable ? (
+        <ReleaseExpandButton
+          isExpanded={isExpanded}
+          onClick={() => {
+            if (isExpanded) {
+              setIsExpanded(false);
+              articleRef.current?.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start',
+              });
+            } else {
+              setIsExpanded(true);
+            }
+          }}
+        />
+      ) : null}
+    </article>
+  );
+}
+
+function PlateUiEntryTarget({
+  change,
+  name,
+}: {
+  change: PlateUiReleaseChange;
+  name: string;
+}) {
+  const target = change.targets.find((item) => item.name === name);
+
+  if (!target?.href) {
+    return <span>{name}</span>;
+  }
+
+  return (
+    <a
+      className="underline decoration-dashed underline-offset-4 transition-colors hover:text-foreground"
+      href={target.href}
+      rel="noreferrer"
+      target="_blank"
+    >
+      {name}
+    </a>
   );
 }
 
@@ -196,15 +514,14 @@ function ReleaseSeparator({ className }: { className?: string }) {
 function ReleaseBody({
   content,
   expandable,
+  isExpanded,
 }: {
   content: string;
   expandable: boolean;
+  isExpanded: boolean;
 }) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [isExpanded, setIsExpanded] = useState(false);
-
   return (
-    <div ref={containerRef}>
+    <div>
       <div className="relative">
         <div
           className={cn(
@@ -218,32 +535,6 @@ function ReleaseBody({
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-background via-background/90 to-transparent" />
         ) : null}
       </div>
-
-      {expandable ? (
-        <button
-          className="mt-4 inline-flex items-center gap-1.5 font-mono text-muted-foreground text-xs transition-colors hover:text-foreground"
-          onClick={() => {
-            if (isExpanded) {
-              setIsExpanded(false);
-              containerRef.current
-                ?.closest('article')
-                ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            } else {
-              setIsExpanded(true);
-            }
-          }}
-          type="button"
-        >
-          <ChevronDown
-            aria-hidden
-            className={cn(
-              'size-3.5 transition-transform duration-200',
-              isExpanded && 'rotate-180'
-            )}
-          />
-          {isExpanded ? 'Collapse release' : 'Expand release'}
-        </button>
-      ) : null}
     </div>
   );
 }
@@ -351,11 +642,28 @@ function MarkdownContent({ content }: { content: string }) {
             typeof codeElement.props.children === 'string'
               ? codeElement.props.children.replace(trailingNewlinePattern, '')
               : '';
+          const showLineNumbers = value.includes('\n');
+          const lines = value.split('\n');
 
           return (
-            <div className="my-4">
-              <CodeBlock language={language} value={value} />
-            </div>
+            <Typography.Pre
+              __rawString__={value}
+              __showLineNumbers__={showLineNumbers}
+              className="my-4"
+              data-language={language}
+            >
+              <code
+                className={`language-${language}`}
+                {...(showLineNumbers ? { 'data-line-numbers': '' } : {})}
+              >
+                {lines.map((line, index) => (
+                  <span data-line="" key={`${index}:${line}`}>
+                    {line || ' '}
+                    {index < lines.length - 1 ? '\n' : null}
+                  </span>
+                ))}
+              </code>
+            </Typography.Pre>
           );
         },
         strong: ({ className, ...props }) => (

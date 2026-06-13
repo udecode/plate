@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-03-31-resolve-merged-border-neighbors",
+  "status": "draft",
+  "source": {
+    "kind": "legacy-mdx",
+    "path": "tooling/data/plate-ui-changelog.mdx"
+  },
+  "change": {
+    "type": "pull_request",
+    "date": "2026-03-31",
+    "commits": [
+      {
+        "sha": "a5f456143bb3fa6b7d5d32b19e55df4daeb14d2b",
+        "shortSha": "a5f456143b",
+        "url": "https://github.com/udecode/plate/commit/a5f456143bb3fa6b7d5d32b19e55df4daeb14d2b",
+        "date": "2026-03-31",
+        "committedAt": "2026-03-31T12:29:30+02:00",
+        "subject": "ci"
+      }
+    ],
+    "pullRequest": {
+      "number": 4930,
+      "url": "https://github.com/udecode/plate/pull/4930",
+      "state": "MERGED",
+      "title": "fix(table): resolve merged border neighbors",
+      "mergedAt": "2026-03-31T10:38:33Z"
+    }
+  },
+  "release": {
+    "status": "released",
+    "tag": "v52.3.20",
+    "source": "release-index-pr-match",
+    "packageTag": "@platejs/ai@52.3.20",
+    "requiresPlate": ">=52.3.20",
+    "changelogUrl": "https://github.com/udecode/plate/blob/2e2dfd71f6dfe425aa7c609d772a362f7124d0b0/packages/ai/CHANGELOG.md",
+    "url": "https://github.com/udecode/plate/pull/4932",
+    "versionPackagePullRequest": {
+      "number": 4932,
+      "url": "https://github.com/udecode/plate/pull/4932"
+    }
+  },
+  "kind": "behavior",
+  "summary": "fix(table): resolve merged border neighbors",
+  "targets": [
+    {
+      "name": "table-demo",
+      "files": [],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for table-demo."
+        }
+      ]
+    },
+    {
+      "name": "table-nomerge-demo",
+      "files": ["apps/www/src/registry/examples/table-nomerge-demo.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-03-31-29-6-015",
+      "kind": "behavior",
+      "summary": "Update table border demos for merged-cell neighbor resolution so border toggles target the visual adjacent cell.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["table-demo", "table-nomerge-demo"],
+      "source": {
+        "line": 45,
+        "row": 15,
+        "legacyRelease": {
+          "date": "2026-03-31",
+          "entry": "29.6",
+          "section": "March 2026 #29"
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

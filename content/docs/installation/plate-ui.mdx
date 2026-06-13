@@ -1,12 +1,10 @@
 ---
-title: Plate UI Installation
-description: How to set up Plate UI in your project.
+title: Plate UI
+description: Install, customize, and sync copied Plate UI components.
 ---
 
-This guide details how to install Plate UI, the component layer for Plate. Choose the method that suits your project:
-
-*   **CLI Installation (Recommended):** Quick setup using the shadcn CLI.
-*   **Manual Installation:** For more control over the setup process.
+Plate UI is the copied component layer for Plate. Use the shadcn CLI for the
+fastest setup, or install components manually when you need more control.
 
 ## CLI Installation (Recommended)
 
@@ -105,6 +103,48 @@ With Plate UI's core installed, proceed to the guide specific to your framework:
 
 </Steps>
 
+## Sync copied files
+
+Plate UI components live in your app after installation. Use this workflow when
+an agent needs to merge upstream registry file changes into local copies while
+keeping app-specific edits.
+
+For release review, use [Releases](/docs/releases). For scoped sync data, use
+the raw registry JSON.
+
+<Steps>
+
+### Install the skill
+
+```bash
+npx skills add sync-plate-ui
+```
+
+### Pick the JSON source
+
+Use the index for ordered update events. Use the component map when you need the
+events for one copied registry item.
+
+- [Index JSON](/registry/changelog/index.json)
+- [Components JSON](/registry/changelog/components.json)
+
+### Prompt your agent
+
+```text
+Use sync-plate-ui to sync code-block-node from:
+https://platejs.org/registry/changelog/index.json
+```
+
+</Steps>
+
+### Agent contract
+
+- Use `/registry/changelog/index.json` for ordered Plate UI update events.
+- Use `/registry/changelog/components.json` to find events by registry item.
+- Open event JSON for the PR, release dependency, target files, and migration
+  notes.
+- Merge upstream file changes into the app copy; keep intentional local changes.
+
 ## Component Types
 
 When installing Plate UI components, you'll encounter different types of components with consistent naming patterns. Here's what they mean:
@@ -194,7 +234,7 @@ npx shadcn@latest add @plate/media-uploadthing-api
 
 ### Documentation
 
-Documentation files for various Plate features, guides, and API references can also be added to your local project. This is especially useful for keeping version-specific documentation alongside your code and for providing context to AI tools through MCP. Learn more about [setting up local documentation](/installation/docs).
+Documentation files for various Plate features, guides, and API references can also be added to your local project. This is especially useful for keeping version-specific documentation alongside your code and for providing context to AI tools through MCP. Learn more about [setting up local documentation](/docs/installation/docs).
 
 ```bash
 # Add AI documentation

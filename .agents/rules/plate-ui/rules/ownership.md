@@ -34,6 +34,7 @@ Keep it in `apps/www/src/registry/ui` when it is mostly:
 - popover open state
 - hover content
 - labels and copy
+- presentation lookup tables duplicated across live/static renderer siblings
 - one-off styling
 - JSX composition
 - local recovery affordances
@@ -56,6 +57,11 @@ Do **not** extract when most of the return value is:
 
 If the hook name effectively means "the private state for this one renderer",
 keep it local.
+
+For registry siblings like `*-node.tsx` and `*-node-static.tsx`, do not extract
+a third registry helper just to share labels, menu items, or display names.
+Duplicating that local presentation data keeps each installed registry file
+easier to read and copy.
 
 ---
 

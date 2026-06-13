@@ -1,0 +1,256 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-04-23-redesign-blockquotes-container-blocks",
+  "status": "draft",
+  "source": {
+    "kind": "legacy-mdx",
+    "path": "tooling/data/plate-ui-changelog.mdx"
+  },
+  "change": {
+    "type": "pull_request",
+    "date": "2026-04-23",
+    "commits": [
+      {
+        "sha": "700286bf84ac987b9cc2296f9f69746f0f095936",
+        "shortSha": "700286bf84",
+        "url": "https://github.com/udecode/plate/commit/700286bf84ac987b9cc2296f9f69746f0f095936",
+        "date": "2026-04-23",
+        "committedAt": "2026-04-23T10:06:04+02:00",
+        "subject": "docs"
+      }
+    ],
+    "pullRequest": {
+      "number": 4941,
+      "url": "https://github.com/udecode/plate/pull/4941",
+      "state": "MERGED",
+      "title": "fix: redesign blockquotes as container blocks",
+      "mergedAt": "2026-04-23T11:41:41Z"
+    }
+  },
+  "release": {
+    "status": "released",
+    "tag": "v53.0.0",
+    "source": "release-index-pr-match",
+    "packageTag": "platejs@53.0.0",
+    "requiresPlate": ">=53.0.0",
+    "changelogUrl": "https://github.com/udecode/plate/blob/7b9b204e1e38a20b1f8bec5a900d67c64afbc525/packages/plate/CHANGELOG.md",
+    "url": "https://github.com/udecode/plate/pull/4948",
+    "versionPackagePullRequest": {
+      "number": 4948,
+      "url": "https://github.com/udecode/plate/pull/4948"
+    }
+  },
+  "kind": "mixed",
+  "summary": "fix: redesign blockquotes as container blocks",
+  "targets": [
+    {
+      "name": "footnote-kit",
+      "files": [
+        "apps/www/src/registry/components/editor/plugins/footnote-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "footnote-base-kit",
+      "files": [
+        "apps/www/src/registry/components/editor/plugins/footnote-base-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "editor-kit",
+      "files": [
+        "apps/www/src/registry/blocks/editor-ai/components/editor/editor-kit.tsx",
+        "apps/www/src/registry/components/editor/editor-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "editor-base-kit",
+      "files": ["apps/www/src/registry/components/editor/editor-base-kit.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "markdown-kit",
+      "files": [
+        "apps/www/src/registry/components/editor/plugins/markdown-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "insert-toolbar-button",
+      "files": ["apps/www/src/registry/ui/insert-toolbar-button.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "insert-toolbar-classic-button",
+      "files": ["apps/www/src/registry/ui/insert-toolbar-classic-button.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "slash-node",
+      "files": ["apps/www/src/registry/ui/slash-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "transforms",
+      "files": ["apps/www/src/registry/components/editor/transforms.ts"],
+      "definitionFiles": ["apps/www/src/registry/registry-components.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "transforms-classic",
+      "files": [
+        "apps/www/src/registry/components/editor/transforms-classic.ts"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-components.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "autoformat-kit",
+      "files": [
+        "apps/www/src/registry/components/editor/plugins/autoformat-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-04-08-30-2-008",
+      "kind": "new",
+      "summary": "Add GFM footnotes with reference, definition, and input plugins plus UI — hover preview, navigation flash, multi-reference picker, and duplicate-definition recovery.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["footnote-kit"],
+      "source": {
+        "line": 33,
+        "row": 8,
+        "legacyRelease": {
+          "date": "2026-04-08",
+          "entry": "30.2",
+          "section": "April 2026 #30"
+        }
+      }
+    },
+    {
+      "id": "2026-04-08-30-2-009",
+      "kind": "new",
+      "summary": "Add static footnote rendering for SSR and markdown pipelines.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["footnote-base-kit"],
+      "source": {
+        "line": 34,
+        "row": 9,
+        "legacyRelease": {
+          "date": "2026-04-08",
+          "entry": "30.2",
+          "section": "April 2026 #30"
+        }
+      }
+    },
+    {
+      "id": "2026-04-08-30-2-010",
+      "kind": "new",
+      "summary": "Register the new footnote kits.",
+      "details": [],
+      "migrationNotes": ["Register the new footnote kits."],
+      "targets": ["editor-kit", "editor-base-kit"],
+      "source": {
+        "line": 35,
+        "row": 10,
+        "legacyRelease": {
+          "date": "2026-04-08",
+          "entry": "30.2",
+          "section": "April 2026 #30"
+        }
+      }
+    },
+    {
+      "id": "2026-04-08-30-2-011",
+      "kind": "wiring",
+      "summary": "Register the base footnote plugins and add `remark-emoji` so GFM footnotes and emoji shortcodes round-trip.",
+      "details": [],
+      "migrationNotes": [
+        "Register the base footnote plugins and add `remark-emoji` so GFM footnotes and emoji shortcodes round-trip."
+      ],
+      "targets": ["markdown-kit"],
+      "source": {
+        "line": 36,
+        "row": 11,
+        "legacyRelease": {
+          "date": "2026-04-08",
+          "entry": "30.2",
+          "section": "April 2026 #30"
+        }
+      }
+    },
+    {
+      "id": "2026-04-08-30-2-012",
+      "kind": "behavior",
+      "summary": "Add a Footnote insert entry wired to `action_footnote`.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": [
+        "insert-toolbar-button",
+        "insert-toolbar-classic-button",
+        "slash-node"
+      ],
+      "source": {
+        "line": 37,
+        "row": 12,
+        "legacyRelease": {
+          "date": "2026-04-08",
+          "entry": "30.2",
+          "section": "April 2026 #30"
+        }
+      }
+    },
+    {
+      "id": "2026-04-08-30-2-013",
+      "kind": "wiring",
+      "summary": "Map `action_footnote` to `insertFootnote(editor, { select: true })`.",
+      "details": [],
+      "migrationNotes": [
+        "Map `action_footnote` to `insertFootnote(editor, { select: true })`."
+      ],
+      "targets": ["transforms", "transforms-classic"],
+      "source": {
+        "line": 38,
+        "row": 13,
+        "legacyRelease": {
+          "date": "2026-04-08",
+          "entry": "30.2",
+          "section": "April 2026 #30"
+        }
+      }
+    },
+    {
+      "id": "2026-04-08-30-2-014",
+      "kind": "behavior",
+      "summary": "Reduce to symbol substitutions (arrows, fractions, legal, punctuation, smart quotes, sub/superscript). Markdown shortcuts move to the feature kits below. Add link automd so `[text](url)` closing on `)` resolves to a structured link.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["autoformat-kit"],
+      "source": {
+        "line": 39,
+        "row": 14,
+        "legacyRelease": {
+          "date": "2026-04-08",
+          "entry": "30.2",
+          "section": "April 2026 #30"
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

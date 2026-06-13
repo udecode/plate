@@ -1,0 +1,273 @@
+{
+  "schemaVersion": 1,
+  "components": {
+    "column-node": [
+      "2026-06-10-attach-column-drop-target-ref",
+      "2026-01-20-add-docx-file-import-word-export-support",
+      "2025-11-20-biome-ultracite",
+      "2025-10-17-fix-react-decouple"
+    ],
+    "code-block-node": [
+      "2026-06-03-show-code-block-language-labels-read-only-mode",
+      "2026-01-20-add-docx-file-import-word-export-support",
+      "2025-11-20-biome-ultracite",
+      "2025-10-17-fix-react-decouple"
+    ],
+    "code-block-node-static": [
+      "2026-06-03-show-code-block-language-labels-read-only-mode"
+    ],
+    "huge-document-demo": ["2026-06-02-improve-large-document-editing"],
+    "hundreds-blocks-demo": [
+      "2026-06-02-improve-large-document-editing",
+      "2025-11-20-biome-ultracite"
+    ],
+    "block-discussion": [
+      "2026-04-29-codex-fix-discussion-suggestion-regressions",
+      "2025-11-20-biome-ultracite",
+      "2025-10-21-add-rejectaisuggestions"
+    ],
+    "discussion-kit": [
+      "2026-04-29-codex-fix-discussion-suggestion-regressions",
+      "2025-11-20-biome-ultracite"
+    ],
+    "comment-kit": ["2026-04-29-codex-fix-discussion-suggestion-regressions"],
+    "suggestion": ["2026-04-29-codex-fix-discussion-suggestion-regressions"],
+    "suggestion-base-kit": [
+      "2026-04-29-codex-fix-discussion-suggestion-regressions"
+    ],
+    "suggestion-kit": [
+      "2026-04-29-codex-fix-discussion-suggestion-regressions",
+      "2025-10-21-add-rejectaisuggestions",
+      "2025-10-17-fix-react-decouple"
+    ],
+    "suggestion-node": [
+      "2026-04-29-codex-fix-discussion-suggestion-regressions",
+      "2025-11-20-biome-ultracite",
+      "2025-10-21-add-rejectaisuggestions",
+      "2025-10-17-fix-react-decouple"
+    ],
+    "block-list": [
+      "2026-04-29-codex-fix-discussion-suggestion-regressions",
+      "2026-01-20-add-docx-file-import-word-export-support",
+      "2025-11-20-biome-ultracite",
+      "2025-10-17-fix-react-decouple"
+    ],
+    "code-drawing-node": [
+      "2026-04-29-codex-fix-discussion-suggestion-regressions",
+      "2026-03-25-upgrade-typescript-6",
+      "2026-01-28-add-code-drawing-node"
+    ],
+    "date-node": [
+      "2026-04-29-codex-fix-discussion-suggestion-regressions",
+      "2026-01-20-add-docx-file-import-word-export-support",
+      "2025-10-17-fix-react-decouple"
+    ],
+    "equation-node": [
+      "2026-04-29-codex-fix-discussion-suggestion-regressions",
+      "2026-01-20-add-docx-file-import-word-export-support",
+      "2025-11-20-biome-ultracite",
+      "2025-10-17-fix-react-decouple"
+    ],
+    "excalidraw-node": [
+      "2026-04-29-codex-fix-discussion-suggestion-regressions"
+    ],
+    "media-audio-node": [
+      "2026-04-29-codex-fix-discussion-suggestion-regressions",
+      "2025-10-17-fix-react-decouple"
+    ],
+    "media-embed-node": [
+      "2026-04-29-codex-fix-discussion-suggestion-regressions",
+      "2025-11-20-biome-ultracite"
+    ],
+    "media-file-node": [
+      "2026-04-29-codex-fix-discussion-suggestion-regressions",
+      "2025-10-17-fix-react-decouple"
+    ],
+    "media-image-node": [
+      "2026-04-29-codex-fix-discussion-suggestion-regressions",
+      "2026-01-20-add-docx-file-import-word-export-support",
+      "2025-11-20-biome-ultracite",
+      "2025-10-17-fix-react-decouple"
+    ],
+    "media-video-node": [
+      "2026-04-29-codex-fix-discussion-suggestion-regressions",
+      "2026-03-28-render-url-videos-media-node",
+      "2025-11-20-biome-ultracite",
+      "2025-10-17-fix-react-decouple"
+    ],
+    "mention-node": [
+      "2026-04-29-codex-fix-discussion-suggestion-regressions",
+      "2026-01-20-add-docx-file-import-word-export-support",
+      "2025-11-20-biome-ultracite",
+      "2025-10-17-fix-react-decouple"
+    ],
+    "link-node": [
+      "2026-04-29-codex-fix-discussion-suggestion-regressions",
+      "2025-10-17-fix-react-decouple"
+    ],
+    "footnote-kit": ["2026-04-23-redesign-blockquotes-container-blocks"],
+    "footnote-base-kit": ["2026-04-23-redesign-blockquotes-container-blocks"],
+    "editor-kit": [
+      "2026-04-23-redesign-blockquotes-container-blocks",
+      "2026-01-28-add-code-drawing-node"
+    ],
+    "editor-base-kit": ["2026-04-23-redesign-blockquotes-container-blocks"],
+    "markdown-kit": ["2026-04-23-redesign-blockquotes-container-blocks"],
+    "insert-toolbar-button": [
+      "2026-04-23-redesign-blockquotes-container-blocks",
+      "2026-01-28-add-code-drawing-node",
+      "2025-11-20-biome-ultracite"
+    ],
+    "insert-toolbar-classic-button": [
+      "2026-04-23-redesign-blockquotes-container-blocks",
+      "2025-11-20-biome-ultracite"
+    ],
+    "slash-node": [
+      "2026-04-23-redesign-blockquotes-container-blocks",
+      "2026-01-28-add-code-drawing-node"
+    ],
+    "transforms": [
+      "2026-04-23-redesign-blockquotes-container-blocks",
+      "2026-01-28-add-code-drawing-node",
+      "2025-11-20-biome-ultracite"
+    ],
+    "transforms-classic": [
+      "2026-04-23-redesign-blockquotes-container-blocks",
+      "2025-11-20-biome-ultracite"
+    ],
+    "autoformat-kit": ["2026-04-23-redesign-blockquotes-container-blocks"],
+    "table-demo": ["2026-03-31-resolve-merged-border-neighbors"],
+    "table-nomerge-demo": ["2026-03-31-resolve-merged-border-neighbors"],
+    "editor-ai": ["2026-03-28-render-url-videos-media-node"],
+    "editor-basic": ["2026-03-28-render-url-videos-media-node"],
+    "slate-to-html": [
+      "2026-03-28-render-url-videos-media-node",
+      "2025-11-20-biome-ultracite",
+      "2025-10-17-fix-react-decouple"
+    ],
+    "ai-kit": [
+      "2026-03-27-snapshot-ai-streaming-preview-task-pr-flow",
+      "2025-11-20-biome-ultracite"
+    ],
+    "ai-demo": [
+      "2026-03-27-snapshot-ai-streaming-preview-task-pr-flow",
+      "2025-11-20-biome-ultracite"
+    ],
+    "table-node": [
+      "2026-03-22-table-improve-selection-bug-fixed-insert-issue",
+      "2026-01-20-add-docx-file-import-word-export-support",
+      "2025-11-20-biome-ultracite",
+      "2025-10-17-fix-react-decouple"
+    ],
+    "font-color-toolbar-button": [
+      "2026-03-22-table-improve-selection-bug-fixed-insert-issue",
+      "2026-03-19-improve-non-react-test-coverage-ci-workflow-hygiene",
+      "2025-11-20-biome-ultracite"
+    ],
+    "code-drawing-kit": ["2026-01-28-add-code-drawing-node"],
+    "code-drawing-base-kit": ["2026-01-28-add-code-drawing-node"],
+    "code-drawing-demo": ["2026-01-28-add-code-drawing-node"],
+    "block-context-menu": ["2026-01-28-add-code-drawing-node"],
+    "turn-into-toolbar-button": ["2026-01-28-add-code-drawing-node"],
+    "docx-export-kit": ["2026-01-20-add-docx-file-import-word-export-support"],
+    "import-toolbar-button": [
+      "2026-01-20-add-docx-file-import-word-export-support",
+      "2025-10-17-fix-react-decouple"
+    ],
+    "export-toolbar-button": [
+      "2026-01-20-add-docx-file-import-word-export-support",
+      "2025-10-17-fix-react-decouple"
+    ],
+    "callout-node": [
+      "2026-01-20-add-docx-file-import-word-export-support",
+      "2025-11-20-biome-ultracite",
+      "2025-10-17-fix-react-decouple"
+    ],
+    "heading-node": [
+      "2026-01-20-add-docx-file-import-word-export-support",
+      "2025-11-20-biome-ultracite",
+      "2025-10-17-fix-react-decouple"
+    ],
+    "toc-node": [
+      "2026-01-20-add-docx-file-import-word-export-support",
+      "2025-11-20-biome-ultracite"
+    ],
+    "ai-api": [
+      "2026-01-09-support-using-ai-features-tables-improve-prompts",
+      "2025-11-20-biome-ultracite",
+      "2025-10-21-add-rejectaisuggestions"
+    ],
+    "ai-menu": [
+      "2026-01-09-support-using-ai-features-tables-improve-prompts",
+      "2025-11-20-biome-ultracite"
+    ],
+    "use-chat": [
+      "2026-01-09-support-using-ai-features-tables-improve-prompts",
+      "2025-11-20-biome-ultracite"
+    ],
+    "cursor-overlay": [
+      "2026-01-09-support-using-ai-features-tables-improve-prompts",
+      "2025-11-20-biome-ultracite"
+    ],
+    "inline-combobox": [
+      "2025-12-15-add-option-editor-collaborative-features",
+      "2025-12-14-fix-combobox-opening-popover-all-users-collaboration",
+      "2025-11-20-biome-ultracite"
+    ],
+    "mention-kit": ["2025-12-15-add-option-editor-collaborative-features"],
+    "copilot-api": ["2025-11-20-biome-ultracite"],
+    "block-placeholder-kit": ["2025-11-20-biome-ultracite"],
+    "block-selection-kit": ["2025-11-20-biome-ultracite"],
+    "tabbable-kit": ["2025-11-20-biome-ultracite"],
+    "markdown-joiner-transform": ["2025-11-20-biome-ultracite"],
+    "block-draggable": ["2025-11-20-biome-ultracite"],
+    "code-node": [
+      "2025-11-20-biome-ultracite",
+      "2025-10-17-fix-react-decouple"
+    ],
+    "editor": ["2025-11-20-biome-ultracite", "2025-10-17-fix-react-decouple"],
+    "emoji-node": ["2025-11-20-biome-ultracite"],
+    "emoji-toolbar-button": ["2025-11-20-biome-ultracite"],
+    "fixed-toolbar": ["2025-11-20-biome-ultracite"],
+    "floating-toolbar": ["2025-11-20-biome-ultracite"],
+    "font-size-toolbar-button": ["2025-11-20-biome-ultracite"],
+    "link-toolbar": ["2025-11-20-biome-ultracite"],
+    "list-classic-node": ["2025-11-20-biome-ultracite"],
+    "list-classic-toolbar-button": ["2025-11-20-biome-ultracite"],
+    "media-placeholder-node": ["2025-11-20-biome-ultracite"],
+    "media-preview-dialog": ["2025-11-20-biome-ultracite"],
+    "media-toolbar": ["2025-11-20-biome-ultracite"],
+    "media-toolbar-button": ["2025-11-20-biome-ultracite"],
+    "mode-toolbar-button": ["2025-11-20-biome-ultracite"],
+    "remote-cursor-overlay": ["2025-11-20-biome-ultracite"],
+    "resize-handle": ["2025-11-20-biome-ultracite"],
+    "select-editor": ["2025-11-20-biome-ultracite"],
+    "table-toolbar-button": ["2025-11-20-biome-ultracite"],
+    "tag-node": ["2025-11-20-biome-ultracite"],
+    "toc-node-static": [
+      "2025-11-20-biome-ultracite",
+      "2025-10-17-fix-react-decouple"
+    ],
+    "toggle-node": ["2025-11-20-biome-ultracite"],
+    "toggle-node-static": [
+      "2025-11-20-biome-ultracite",
+      "2025-10-17-fix-react-decouple"
+    ],
+    "toolbar": ["2025-11-20-biome-ultracite"],
+    "collaboration-demo": ["2025-11-20-biome-ultracite"],
+    "controlled-demo": ["2025-11-20-biome-ultracite"],
+    "image-pro-demo": ["2025-11-20-biome-ultracite"],
+    "markdown-streaming-demo": ["2025-11-20-biome-ultracite"],
+    "preview-markdown-demo": ["2025-11-20-biome-ultracite"],
+    "pro-iframe-demo": ["2025-11-20-biome-ultracite"],
+    "version-history-demo": ["2025-11-20-biome-ultracite"],
+    "fumadocs-mdx-components": ["2025-11-20-biome-ultracite"],
+    "mdx-plate-components": ["2025-11-20-biome-ultracite"],
+    "blockquote-node": ["2025-10-17-fix-react-decouple"],
+    "comment-node": ["2025-10-17-fix-react-decouple"],
+    "highlight-node": ["2025-10-17-fix-react-decouple"],
+    "hr-node": ["2025-10-17-fix-react-decouple"],
+    "kbd-node": ["2025-10-17-fix-react-decouple"],
+    "paragraph-node": ["2025-10-17-fix-react-decouple"]
+  }
+}

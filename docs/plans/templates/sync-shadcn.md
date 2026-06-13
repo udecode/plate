@@ -33,6 +33,14 @@ Sync source:
 - durable policy: `docs/sync/shadcn/decisions.md`
 - run artifacts: `docs/sync/shadcn/runs/<date>-<base>-to-<target>/`
 
+First checkpoint:
+- Before implementation or broad exploration, copy every explicit prompt
+  requirement into this plan as checkable checkpoints: scope, non-goals,
+  timing/duration, stop conditions, deliverables, final handoff sections,
+  verification surface, and success criteria.
+- Do not continue into upstream range mapping or implementation until this
+  extraction is complete or explicitly marked N/A with reason.
+
 Completion threshold:
 - Planning-only run: complete only when the upstream range has exact base and
   target SHAs, ancestry is proven or the ref problem is recorded, every
@@ -134,6 +142,7 @@ Completion rule:
 Start Gates:
 | Gate | Applies | Evidence |
 |------|---------|----------|
+| Prompt requirements captured before work | pending | pending |
 | `autogoal` loaded and active goal checked/created | pending | pending |
 | `sync-shadcn` skill/rule read | pending | pending |
 | Output budget strategy recorded before broad upstream commands | pending | pending |
@@ -147,6 +156,11 @@ Start Gates:
 | User-review boundary recorded | pending | pending |
 
 Work Checklist:
+- [ ] First checkpoint complete: every explicit prompt requirement, scope
+      boundary, timing constraint, stop condition, deliverable, final handoff
+      section, verification surface, and success criterion is copied into this
+      plan as checkable checkpoints before upstream range mapping or
+      implementation.
 - [ ] Objective, threshold, verification surface, constraints, boundaries, and
       blocked condition are filled from the active goal.
 - [ ] Upstream range recorded with exact base SHA, target SHA, commit dates,

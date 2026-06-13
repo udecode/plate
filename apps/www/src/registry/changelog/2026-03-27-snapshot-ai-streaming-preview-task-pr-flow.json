@@ -1,0 +1,102 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-03-27-snapshot-ai-streaming-preview-task-pr-flow",
+  "status": "draft",
+  "source": {
+    "kind": "legacy-mdx",
+    "path": "tooling/data/plate-ui-changelog.mdx"
+  },
+  "change": {
+    "type": "pull_request",
+    "date": "2026-03-27",
+    "commits": [
+      {
+        "sha": "eaaf96752d295dd62ce5386f7784cfe376b9a0b3",
+        "shortSha": "eaaf96752d",
+        "url": "https://github.com/udecode/plate/commit/eaaf96752d295dd62ce5386f7784cfe376b9a0b3",
+        "date": "2026-03-27",
+        "committedAt": "2026-03-27T11:19:17+01:00",
+        "subject": "docs: capture fast-suite ci fix"
+      }
+    ],
+    "pullRequest": {
+      "number": 4902,
+      "url": "https://github.com/udecode/plate/pull/4902",
+      "state": "MERGED",
+      "title": "fix: snapshot AI streaming preview and task PR flow",
+      "mergedAt": "2026-03-27T10:27:50Z"
+    }
+  },
+  "release": {
+    "status": "released",
+    "tag": "v52.3.12",
+    "source": "release-index-pr-match",
+    "packageTag": "@platejs/ai@52.3.12",
+    "requiresPlate": ">=52.3.12",
+    "changelogUrl": "https://github.com/udecode/plate/blob/6e137200c68723a0271c0e32f560eb48587ec33e/packages/ai/CHANGELOG.md",
+    "url": "https://github.com/udecode/plate/pull/4904",
+    "versionPackagePullRequest": {
+      "number": 4904,
+      "url": "https://github.com/udecode/plate/pull/4904"
+    }
+  },
+  "kind": "behavior",
+  "summary": "fix: snapshot AI streaming preview and task PR flow",
+  "targets": [
+    {
+      "name": "ai-kit",
+      "files": ["apps/www/src/registry/components/editor/plugins/ai-kit.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "ai-demo",
+      "files": [],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for ai-demo."
+        }
+      ]
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-03-27-29-4-018",
+      "kind": "behavior",
+      "summary": "Snapshot insert-mode AI preview state so streamed chunks stay out of undo history and accept, undo, and redo preserve selection.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["ai-kit"],
+      "source": {
+        "line": 54,
+        "row": 18,
+        "legacyRelease": {
+          "date": "2026-03-27",
+          "entry": "29.4",
+          "section": "March 2026 #29"
+        }
+      }
+    },
+    {
+      "id": "2026-03-27-29-4-019",
+      "kind": "behavior",
+      "summary": "Sync the AI demo with the insert-mode preview history flow.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["ai-demo"],
+      "source": {
+        "line": 55,
+        "row": 19,
+        "legacyRelease": {
+          "date": "2026-03-27",
+          "entry": "29.4",
+          "section": "March 2026 #29"
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}
