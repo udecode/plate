@@ -105,7 +105,7 @@
     "typecheck:all": "pnpm g:typecheck:all"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.4.16",
+    "@biomejs/biome": "2.5.0",
     "@changesets/cli": "2.30.0",
     "@changesets/get-github-info": "0.8.0",
     "@happy-dom/global-registrator": "20.0.10",
@@ -181,7 +181,7 @@
     "turbowatch": "2.29.4",
     "typescript": "6.0.2",
     "typescript-eslint": "^8.47.0",
-    "ultracite": "7.8.1",
+    "ultracite": "7.8.3",
     "y-webrtc": "10.3.0",
     "zod": "4.1.12"
   },

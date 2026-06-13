@@ -79,9 +79,7 @@
         "useBlockStatements": "off" // chill,
       },
       "nursery": {
-        "noShadow": "off", // chill
-        "useSortedClasses": "off", // chill
-        "noIncrementDecrement": "off" // chill
+        "useSortedClasses": "off" // chill
       },
       "complexity": {
         "noExtraBooleanCast": "off", // chill
