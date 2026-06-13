@@ -18,7 +18,7 @@ Use when:
 
 - Creating `.changeset/*.md` files
 - Documenting package changes: feat, fix, breaking
-- Updating `docs/components/changelog.mdx` for registry work
+- Updating Plate UI registry changelog source for copied registry components
 
 Do not use for:
 
@@ -93,7 +93,13 @@ If a package changed internally on this branch but has no user-visible delta fro
 
 If changes are only under `apps/www/src/registry/`, do **not** write a package changeset.
 
-Update `docs/components/changelog.mdx` instead.
+Update `tooling/data/plate-ui-changelog.mdx` instead, then regenerate the public JSON:
+
+```bash
+node tooling/scripts/generate-ui-changelog-entries.mjs --write
+```
+
+`sync-plate-ui` is for downstream user apps consuming the generated JSON. Do not use it to produce upstream Plate changelog entries.
 
 ### 5. Style
 
@@ -200,9 +206,14 @@ Before shipping:
 For `apps/www/src/registry` changes:
 
 ```md
-### [Month Day] #[Version]
+## <Month YYYY> #<monthly sequence>
+
+### <Month Day> #<monthly sequence.entry sequence>
+<!-- changelog: commit=<40-char commit sha when known> -->
 - **`component-name`**: Brief description
   - Migration note if actually needed
 ```
 
-Same style rules: concise, imperative, user impact only.
+Use the commit provenance comment when the PR number is not written in the source; the generator resolves commit, PR, release, and source-file metadata where possible. The generator fills public JSON under `apps/www/src/registry/changelog` and `/registry/changelog/*`.
+
+Same style rules: concise, imperative, user impact only. One component bullet should describe what a user copying that registry item must apply or know.

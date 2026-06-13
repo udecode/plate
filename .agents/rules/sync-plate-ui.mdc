@@ -8,13 +8,18 @@ Handle $ARGUMENTS.
 
 Goal: sync Plate UI registry components from this repo into a downstream app
 without flattening that app's product forks. The workflow reads Plate registry
-source, component changelog evidence, and downstream local files; classifies
+source, generated changelog JSON, and downstream local files; classifies
 upstream-owned versus target-owned hunks; writes reviewable artifacts; then
 applies only accepted sync rows.
 
 This is not `sync-shadcn`. `sync-shadcn` compares upstream shadcn docs with
 Plate docs. `sync-plate-ui` compares Plate UI registry source with a target app
 that copied and customized Plate UI, such as `../potion`.
+
+This skill is consumer-side only. It reads generated Plate UI changelog JSON;
+it does not create upstream Plate changelog entries. Upstream Plate devs author
+those through the `changeset` skill and
+`tooling/data/plate-ui-changelog.mdx`.
 
 ## Core Take
 
@@ -135,18 +140,22 @@ the user accepts the baseline.
 
 ## Plate Source Inputs
 
-Prefer structured component changelog entries when present:
+Prefer generated changelog JSON:
 
 ```txt
-content/docs/components/changelog/<component>/<pr>.json
+/registry/changelog/index.json
+/registry/changelog/components.json
+/registry/changelog/<event-id>.json
 ```
 
-Each entry should expose component id, PR, date, kind, affected Plate registry
-files, related components, migration notes, verification, and risk.
+When working from the local Plate repo, read the same files at
+`apps/www/src/registry/changelog`. `components.json` maps registry item ids to
+event JSON. Each event should expose id, change source, release, affected
+registry items, source files, migration notes, and diagnostics.
 
-If structured entries are missing, `content/docs/components/changelog.mdx` is
-only a clue. In that case, prove the sync from Plate registry source and PR-level
-or merge-base diffs before recommending apply. MDX prose alone is not enough.
+If generated JSON is missing or incomplete, treat that as weak evidence. Prove
+the sync from Plate registry source and PR-level or merge-base diffs before
+recommending apply. Prose alone is not enough.
 
 Plate registry sources to inspect first:
 
