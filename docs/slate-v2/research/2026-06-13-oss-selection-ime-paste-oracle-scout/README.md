@@ -19,9 +19,7 @@ Sources:
   - `/Users/zbeyens/git/prosemirror/view`
   - `/Users/zbeyens/git/codemirror-view`
   - `/Users/zbeyens/git/lexical`
-  - `/Users/zbeyens/git/tinymce`
   - `/Users/zbeyens/git/tiptap`
-  - `/Users/zbeyens/git/ckeditor5`
   - `/Users/zbeyens/git/monaco-editor`
 
 Outcome:
@@ -39,10 +37,9 @@ Outcome:
   suppresses selection updates during sensitive windows; Slate should keep
   tests that prove temporary DOM-selection manipulation for copy, projected
   selection, or hidden content does not corrupt model selection.
-- Promote contenteditable=false command-boundary tests from TinyMCE. Its tests
-  cover inserting new blocks before noneditable blocks and preserving cursor
-  placement; Slate editable voids and hidden/dom-boundary routes should keep
-  similar command-after-boundary oracles.
+- Keep contenteditable=false command-boundary pressure as inspiration. Slate
+  editable voids and hidden/dom-boundary routes should keep command-after-boundary
+  oracles without depending on external implementation details.
 - Reject Monaco smoke helpers as Slate runtime guidance. Monaco's public smoke
   tests use editor command APIs such as `trigger('type')`, which is correct for
   Monaco but not a replacement for Slate's native browser proof. Keep it only as

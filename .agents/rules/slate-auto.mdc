@@ -61,7 +61,7 @@ explicitly deferred, decisions are consolidated, and ship readiness is clean.
 - The user asks one architecture/API plan for review: use `slate-plan`.
 - The user asks one benchmark target: use `slate-ar-perf` or `slate-ar-fast`.
 - The user asks whether existing gates pass: use `slate-ar-gate`.
-- The target is not raw Slate v2 / `.tmp/slate-v2`, unless the prompt is an
+- The target is not raw Slate v2 packages in the Plate repo, unless the prompt is an
   external editor issue/test harvest whose output is explicitly for improving
   Slate v2 behavior, tests, or API robustness.
 
@@ -257,7 +257,7 @@ Split long work into checkpoints that fit one high-quality prompt:
   ledger detection/resume, latest issue refresh, closed-issue PR/test
   provenance, and the unchecked row loop to `issue-harvester`. Cluster open and
   closed issues first, skip framework/product/support noise, extract portable
-  editor invariants, map coverage to `.tmp/slate-v2` and Plate owners, then
+  editor invariants, map coverage to Slate v2 package paths and Plate owners, then
   create or refresh the issue-by-issue closure ledger. The cluster/matrix is
   only a routing checkpoint. For every relevant issue, mark one of:
   `covered-by-existing-test`, `test-written`, `plate-owned-covered`,
@@ -414,7 +414,7 @@ checklist:
 8. for every relevant closed issue, scan linked PRs and test diffs before
    deciding local coverage;
 9. search target tests/source/PRs for kept clusters;
-10. map each invariant to current `.tmp/slate-v2` and Plate coverage;
+10. map each invariant to current Slate v2 package paths and Plate coverage;
 11. create or refresh an issue-by-issue closure ledger for every relevant issue,
    with one row per issue and a checkmark state:
    `covered-by-existing-test`, `test-written`, `plate-owned-covered`,
@@ -534,25 +534,23 @@ Slate-v2-related `docs/**` artifacts. Do not warn about unrelated parent
 `.agents`, templates, locks, generated mirrors, or older manual changes in the
 final handoff.
 
-In `.tmp/slate-v2`, prefer these focused forms:
+In the Plate repo root, prefer these focused forms:
 
 ```bash
-PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun run playwright playwright/integration/examples/<suite>.test.ts --project=<chromium|firefox|webkit> --grep "<pattern>"
-bun test ./packages/<package>/test/<file>.ts --test-name-pattern "<pattern>"
+PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 pnpm --filter www exec playwright test --config playwright.slate.config.ts --project=<chromium|firefox|webkit> tests/slate-browser/donor/examples/<suite>.test.ts -g "<pattern>"
+pnpm --filter @platejs/<package> test -- <file-or-pattern>
 cd packages/<package> && bun test ./test/<file>.test.ts --test-name-pattern "<pattern>"
 ```
 
 Rules:
 
-- run commands from `.tmp/slate-v2` unless the command explicitly belongs to
-  the parent repo;
-- keep parent-doc and skill scans in `/Users/zbeyens/git/plate-2`; keep runtime,
-  package, benchmark, and Playwright scans in `.tmp/slate-v2`. Do not ask `rg`
-  for parent `docs/slate-v2/**` from the `.tmp/slate-v2` cwd or for runtime
-  package paths from the parent cwd unless the path is explicitly rooted;
+- run commands from the Plate repo root unless a package-local script requires
+  the package cwd;
+- keep docs, skill, runtime, package, benchmark, and Playwright scans rooted in
+  the Plate repo. Do not search the donor checkout for current runtime facts;
 - before running a focused test, resolve the actual runnable entrypoint from
-  the owning surface, not memory: from `.tmp/slate-v2`, use targeted searches
-  such as `rg --files packages/<pkg>/test playwright scripts | rg
+  the owning surface, not memory: use targeted searches such as
+  `rg --files packages/<pkg>/test apps/www/tests tooling benchmarks | rg
   "<basename>|<suite>"`, or run the same search from the package cwd for
   package-local Vitest. Do this first, not after one failed command. Many owner
   files are imported by a `*.test.*` wrapper, while some root Bun contract files
@@ -597,8 +595,14 @@ Rules:
   `bun --filter ./packages/slate-browser build` before browser proofs that import the
   package. The specs can otherwise load stale generated package output and fail
   on missing helper methods instead of product behavior;
-- use `bun test ./path` only with repo-relative Bun test paths from
-  `.tmp/slate-v2`, or with package-local paths after recording the package cwd;
+- after changing `packages/slate-react/src/**`, `packages/slate-dom/src/**`, or
+  any public package runtime consumed by the example app through package
+  exports, run the touched package build before managed Playwright proof, for
+  example `bun --filter ./packages/slate-react build`. The managed Playwright
+  wrapper builds `slate-browser` and the Next site, but stale package `dist`
+  can still make the browser prove old runtime behavior;
+- use `bun test ./path` only with repo-relative Bun test paths from the Plate
+  repo root, or with package-local paths after recording the package cwd;
 - if root `bun test ./packages/.../<file>.test.ts` says the path filter did not
   match and suggests adding more `./` prefixes, do not chase prefixes. Switch to
   the owning package cwd and run the local wrapper path, for example
@@ -616,9 +620,8 @@ Rules:
   does not already match `*.test.*`, locate the wrapper with
   `rg -n "<imported-file-basename>" <package>/test --glob "*.test.*"`;
 - `packages/slate-react` contracts are Vitest-owned. Run them from
-  `.tmp/slate-v2/packages/slate-react` as
-  `bun test:vitest test/<file>.test.tsx`; do not run them through root
-  `bun test ./packages/slate-react/...`;
+  `packages/slate-react` as `bun test:vitest test/<file>.test.tsx`; do not run
+  them through root `bun test ./packages/slate-react/...`;
 - do not run `generic-*-contract.ts` or other type-contract files with
   top-level compile examples through `bun test`; they may contain deliberate
   runtime-invalid `@ts-expect-error` calls. Use the owning package `typecheck`
@@ -636,7 +639,8 @@ Rules:
 - for API/docs/current-state audits, do not stream broad `rg -n` matches across
   `docs site packages` into chat. First run `rg -l` or `rg --count-matches`
   with generated trees excluded, then inspect only the small suspect files with
-  `sed` slices or write the full audit to an artifact;
+  `sed` slices or write the full audit to an artifact. Exclude generated static
+  output such as `apps/www/.next/**` unless that artifact is the target;
 - before any `rg -n` over more than one large root such as
   `docs/slate-v2`, `packages`, `site/examples`, or `playwright/integration`,
   run a preflight with `rg -l`, `rg --count-matches`, or `rg --files | rg`.
@@ -689,11 +693,10 @@ Rules:
   `checked` when the ledger uses `check`, and do not guess benchmark summary
   keys before reading the artifact shape;
 - when durable Slate v2 docs contain absolute checkout paths, verify the path
-  exists before reusing the command. In this repo the live Slate v2 runtime cwd
-  is `/Users/zbeyens/git/plate-2/.tmp/slate-v2`; stale
-  `/Users/zbeyens/git/slate-v2` command snippets should be repaired unless the
-  doc explicitly names a historical draft/source checkout such as
-  `slate-v2-draft`;
+  exists before reusing the command. Current Slate v2 runtime/package commands
+  belong to the Plate repo root; stale donor-checkout command snippets should
+  be repaired unless the doc explicitly names a historical draft/source
+  checkout such as `slate-v2-draft`;
 - when Playwright imports a package through public exports such as
   `slate-browser/playwright`, verify whether the export resolves built `dist`;
   after source changes to those packages, run the focused package build (for
@@ -706,12 +709,9 @@ Rules:
   build/server path, then record the extra time as proof cost instead of trusting
   stale green or stale red results;
 - for ad hoc route screenshot or DOM-metric proof outside a managed Playwright
-  spec, do not run raw `node` from the `.tmp/slate-v2` root and assume it can
-  import `playwright`. Resolve Playwright from a package that declares it,
-  currently `.tmp/slate-v2/packages/slate-browser`, or add the correct module
-  directory explicitly. In this Bun workspace, `bun --filter ... exec node` is
-  not a reliable substitute. Prefer a managed `bun run playwright` spec when the
-  proof should be durable;
+  spec, do not run raw `node` and assume it can import `playwright`. Prefer the
+  repo-managed `pnpm --filter www exec playwright test --config
+  playwright.slate.config.ts` path when the proof should be durable;
 - use `*_SKIP_BUILD=1` benchmark env vars only after a successful fresh build
   from the current runtime source. If runtime, example, package export, or
   benchmark-injected browser-handle code changed since the last build, rerun

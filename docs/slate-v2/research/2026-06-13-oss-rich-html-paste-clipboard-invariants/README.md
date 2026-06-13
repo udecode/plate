@@ -5,7 +5,7 @@ Date: 2026-06-13
 ## Question
 
 Which rich HTML paste and clipboard invariants from Lexical, ProseMirror,
-Tiptap, CKEditor, and TinyMCE expose missing Slate v2 proof?
+and Tiptap expose missing Slate v2 proof?
 
 ## Scope
 
@@ -71,4 +71,3 @@ current-regression patch.
 - Reject product/plugin-specific autolink-on-paste behavior for Slate core.
 - Keep ProseMirror table rectangle algebra as table-fragment semantics, not a
   generic clipboard runtime patch.
-

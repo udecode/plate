@@ -9,7 +9,6 @@ Local source repos inspected:
 
 - `../prosemirror-view`
 - `../lexical`
-- `../ckeditor5`
 
 No raw bulk source is copied here. The durable artifact records exact local
 paths and line ranges.
@@ -19,4 +18,3 @@ Decision:
 Keep as policy research. Do not patch Slate runtime until the
 `ime-overlap-cancellation-taste` stopping checkpoint is answered or accepted
 through `slate-plan`.
-

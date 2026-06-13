@@ -34,7 +34,7 @@ Verification surface:
 Constraints:
 - Planning mode only. Do not patch Slate v2 runtime, tests, or browser helpers
   from this plan.
-- Do not copy ProseMirror, Lexical, or CKEditor implementation code.
+- Do not copy ProseMirror or Lexical implementation code.
 - Do not claim current Slate v2 fully handles overlapping app/remote edits
   during active IME composition.
 - Do not let synthetic composition helpers prove DOM composition-span mutation
@@ -89,7 +89,7 @@ Policy Target:
 | Partial overlap | Same as full overlap. | Partial stale commits can resurrect deleted text or place caret inside invalid text. | Native browser row for partial range overlap. |
 | Edit inside composing range | Same as full overlap. | The active composition text no longer has a trustworthy DOM/model owner. | Native browser row for inside-range edit. |
 | Edit elsewhere | Preserve composition and rebase adjusted caret/range. | Existing Slate rows already prove non-overlap and same-point coherence. | Keep existing native IME model-update rows green. |
-| Renderer/reconciler update touching composition DOM | Protect active DOM or end composition first. | ProseMirror and CKEditor both treat active composition DOM as fragile. | Browser proof with real native composition span, not synthetic-only helper. |
+| Renderer/reconciler update touching composition DOM | Protect active DOM or end composition first. | Mature editor precedent treats active composition DOM as fragile. | Browser proof with real native composition span, not synthetic-only helper. |
 | Normalization/transform on active composition node | Suppress or route through cancellation policy. | Lexical skips transforms on the active composition node. | Package contract once Slate ownership shape is chosen. |
 
 Evidence:
@@ -97,7 +97,6 @@ Evidence:
 |--------|----------|----------------|
 | ProseMirror view | `docs/slate-v2/research/2026-06-12-ime-overlap-policy/sources/prosemirror-view-summary.md` | Strongest direct precedent: full, partial, and inside overlap cancel; non-overlap preserves. |
 | Lexical | `docs/slate-v2/research/2026-06-12-ime-overlap-policy/sources/lexical-summary.md` | Composition ownership should be explicit enough for transforms and stale events. |
-| CKEditor 5 | `docs/slate-v2/research/2026-06-12-ime-overlap-policy/sources/ckeditor-summary.md` | Rendering during active composition is risky; supporting evidence only. |
 | Slate v2 current proof | existing richtext native IME rows | Non-overlap and same-point delete/paste coherence are covered, but true overlap cancellation is not. |
 
 Stopping checkpoint:
