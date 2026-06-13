@@ -1,5 +1,11 @@
 # @platejs/markdown
 
+## 53.1.1
+
+### Patch Changes
+
+- [#5007](https://github.com/udecode/plate/pull/5007) by [@kiranmagic7](https://github.com/kiranmagic7) – Fix MDX fallback deserialization for GFM tables containing plain less-than text.
+
 ## 53.0.4
 
 ### Patch Changes
