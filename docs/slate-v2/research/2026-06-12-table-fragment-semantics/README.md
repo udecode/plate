@@ -1,7 +1,7 @@
 ---
 title: Slate v2 table fragment semantics research
 type: source
-status: partial
+status: promoted-kept
 updated: 2026-06-12
 source_refs:
   - ../../../../docs/research/raw/2026-06-12-table-fragment-semantics/README.md
@@ -16,8 +16,10 @@ the skipped `insertFragment/of-tables` fixtures can become real proof?
 
 ## Current Verdict
 
-Promote to `slate-plan` plus Slate core/browser proof. This is not safe to fix
-as a dirty local fixture tweak.
+Promoted to a durable Slate v2 contract:
+`docs/slate-v2/table-fragment-semantics.md`.
+
+This is not safe to fix as a dirty local fixture tweak.
 
 The best invariant from ProseMirror is table clipboard as rectangle algebra:
 selected cells form a rectangular area; pasted cells are normalized to a
@@ -43,13 +45,18 @@ Slate also skips them, so this is unsettled policy debt.
 
 ## Promotion
 
-Promote `table-fragment:rectangle-algebra:core-browser-proof` to:
+`table-fragment:rectangle-algebra:core-browser-proof` is kept as:
 
 - `slate-plan`: define the raw Slate table-fragment contract.
 - `slate` core tests: convert/replace skipped `insertFragment/of-tables` rows
   once the contract is accepted.
 - browser proof: add selected-cell copy/paste rows only after the core contract
   exists.
+
+Current proof-law owner:
+
+- `docs/slate-v2/table-fragment-semantics.md`
+- `docs/slate-v2/master-roadmap.md`
 
 First proof command after spec/test work:
 
@@ -64,4 +71,3 @@ Browser proof command after example rows exist:
 cd .tmp/slate-v2
 PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun run playwright playwright/integration/examples/tables.test.ts playwright/integration/examples/paste-html.test.ts --project=chromium --grep "table"
 ```
-

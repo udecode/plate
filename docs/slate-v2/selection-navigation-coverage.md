@@ -112,6 +112,99 @@ Browser-visible slices also assert:
 - no stale placeholder, zero-width, or boundary DOM captures the selection;
 - follow-up typing lands at the selected model point.
 
+## Native / Visual Proof Contract
+
+For any bug or packet involving navigation, selection, focus, IME, or huge-doc
+scrolling, text/model assertions are not enough. The proof must also cover the
+native and visual target whenever the route exposes it:
+
+- model selection: exact Slate anchor/focus paths and offsets;
+- native selection: `window.getSelection()` anchor/focus or `slate-browser`
+  selected text, plus direction when the browser exposes it or anchor/focus
+  order can infer it;
+- DOM endpoints: exact text-node or element endpoints when the route has stable
+  DOM shape;
+- visual geometry: caret or selection rectangles match the intended visual
+  line/target, including after scroll, staged mounting, or virtualization;
+- no double paint: projected/view selection does not leave a second native blue
+  highlight behind;
+- follow-up mutation: type, delete/backspace, Enter, paste, copy, undo, or redo
+  after the navigation proves the editor target is truly active.
+
+If the route depends on IME or text services, keep the claim scoped unless a raw
+device/IME lane runs. Desktop Playwright keyboard rows can prove browser editing
+behavior, but they do not prove Android/iOS keyboards, candidate windows, or IME
+composition decoration.
+
+EditContext-shaped evidence is a useful pressure test for this rule: native
+input systems need logical text, selection offsets, selection/control bounds,
+character bounds, focus routing, and composition decoration to stay in sync.
+Slate does not need an EditContext adapter to enforce that proof bar.
+
+## Native Event Trace Contract
+
+When a browser-visible packet touches `beforeinput`, `input`, composition,
+paste, delete, replace, or suspicious selection movement, final value assertions
+are not enough. The proof should capture the event chain around the operation:
+
+- native event order: `selectionchange`, `beforeinput`, `input`,
+  `compositionstart`, `compositionupdate`, and `compositionend` when relevant;
+- native selection at each step: anchor/focus, selected text, and direction when
+  available or inferable;
+- browser edit intent: `beforeinput.inputType`, `data`, `isComposing`, and
+  `getTargetRanges()`;
+- DOM delta: text nodes added, deleted, modified, or moved between
+  `beforeinput` and `input`;
+- visual rects: target-range, deleted-range, added-range, caret, and selection
+  rectangles for the affected region;
+- anomaly labels: missing `beforeinput`, parent/container mismatch, data
+  mismatch, selection jump, text leak, node-type change, composition mismatch,
+  sibling creation, or double paint.
+
+This contract is a proof bar, not product UI. Promote repeated manual tracing
+into a `slate-browser` helper instead of copying logs between tests.
+
+## Policy-Owned Claim Boundaries
+
+Some browser/WPT selection behaviors are intentionally not implied by ordinary
+Slate route proof.
+
+- IME overlap behavior is policy-owned. Current richtext rows cover
+  same-point/non-overlap native composition coherence, rich text replacement,
+  and WebKit compositionend cleanup, but they do not claim accepted behavior for
+  app/model/remote edits that intersect the active native composition span.
+  Before runtime overlap work, `slate-plan` must accept the conflict rule and
+  `slate-browser` must prove a real native composition span, stale terminal
+  events, follow-up typing, undo/redo, model selection, native selection, and
+  event trace coherence.
+- Keyboard events are not IME authority by themselves. IME proof needs
+  composition lifecycle state, `beforeinput`/`input` data where available,
+  target ranges where available, native selection, and explicit claim width for
+  browser-specific `insertCompositionText` behavior.
+- Raw IME/device proof requires a real device/emulator lane or deterministic
+  test IME that drives platform composition primitives. Appium Unicode/direct
+  text insertion, desktop Playwright keyboard rows, and Chromium CDP
+  `imeSetComposition` rows are useful scoped signals, but they do not prove OS
+  keyboard candidate UI, Android/iOS IME behavior, or raw mobile typing.
+- `selection.direction` is not the model import authority. Slate imports
+  anchor/focus endpoints and preserves backward native direction when resolving
+  DOM ranges. Directionless browser selections, such as double/triple-click
+  paragraph selection, are proved through selected text, anchor/focus, and
+  visual/native agreement instead.
+- App-level `selectstart.preventDefault()` does not currently veto Slate's
+  model-owned keyboard selection extension. Do not claim WPT
+  `selectstart`-veto parity unless `slate-plan` first defines that as editor
+  policy and `slate-browser` adds route proof.
+- CSS vertical writing-mode editing is not declared supported behavior. Current
+  ArrowUp/ArrowDown rows cover horizontal writing mode with visual line
+  movement. Do not use those rows to claim `writing-mode: vertical-lr` or
+  `writing-mode: vertical-rl` caret parity.
+- Mixed bidi line-boundary extension with browser
+  `Selection.modify("extend", left/right, "lineboundary")` is policy-owned.
+  RTL text-unit and deletion proof do not claim mixed bidi line-boundary
+  navigation until `slate-plan` defines the expected behavior and route proof
+  exists.
+
 ## Coverage Claim Levels
 
 | Claim | Bar |

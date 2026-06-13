@@ -1126,12 +1126,12 @@ Metric result:
 - Delete stayed bounded: staged `19.9ms`, virtualized `21.6ms`.
 - First-key after delete stayed bounded: staged `21.0ms`, virtualized `21.9ms`.
 
-Remaining owner:
+Follow-up closure:
 
-- Staged after-type state is `dom-current`, so the model-preferred keydown skip
-  does not apply there. The staged owner is whether repaired/model-owned text
-  insert should preserve model authority longer, or whether this is acceptable
-  full-DOM/staged debt below virtualized behavior/perf.
+- A later active `slate-auto` loop closed the staged undo-after-type tail with
+  guarded repair-induced model-owned selectionchange skips. Latest active-plan
+  200k traces record staged undoType around `20ms`; do not chase the old
+  staged `dom-current` row without a fresh regression.
 
 ## Evidence Summary
 
@@ -1184,9 +1184,12 @@ Monaco:
 
 ## Next Leads
 
-- `huge-doc:cross-strategy-command-smoke`: now that 200k virtualized
-  select-all/delete restores, run staged/virtualized command smoke for the
-  remaining huge-doc editing gestures before closing the huge-doc behavior lane.
+- No executable huge-document owner remains open in this artifact. Virtualized
+  undo-after-type, staged undo-after-type, Delete, first-key after Delete,
+  select-all/delete restore, scroll, Shift+Arrow, paste, Enter, and visual
+  selection proof are recorded in the active automation plan.
+- Do not reopen generic huge-document architecture from this artifact unless a
+  fresh benchmark or route proof regresses.
 
 ## Rejected Leads
 
@@ -1201,7 +1204,13 @@ Monaco:
 
 ## Claim Width
 
-This packet promotes one first-party browser contract and records architecture
-pressure for future metrics. It does not patch runtime, does not claim
-production readiness for virtualized rendering, and does not claim mobile/raw
-device behavior.
+This artifact now records kept architecture, metric, runtime, and quarantine
+packets for huge-document behavior and 200k performance. It does not claim raw
+mobile/device behavior or release readiness.
+
+## Ledger State
+
+- 2026-06-13: `lead-ledger.tsv` statuses are reconciled against
+  `promoted-ledger.tsv`; kept packet rows no longer remain in `promoted` state.
+  Reopen this artifact only from a fresh benchmark, browser proof regression, or
+  a new external source lead.

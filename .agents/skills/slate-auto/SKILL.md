@@ -248,7 +248,12 @@ Split long work into checkpoints that fit one high-quality prompt:
   discovery instead of blind local soak, invoke `slate-research`. The
   checkpoint is done only after the research artifact records ledgers, dedupe,
   evidence grade, scored leads, rejected leads, promoted packets, and next
-  owner.
+  owner. If a promoted research packet is executed later, close the loop in the
+  originating research artifact too: update `lead-ledger.tsv`,
+  `promoted-ledger.tsv`, and the README/summary status from `queued` or
+  `promote-*` to the real keep/revert/quarantine/defer result with the exact
+  proof command and metrics. Do not let the active goal plan be the only place
+  where a research lead is marked done.
 - **External issue-harvest checkpoint:** for prompts that name another editor's
   issues, route first-pass inventory and clustering through
   `editor-test-harvester --issues --state all` under ClawSweeper provenance
@@ -538,6 +543,7 @@ In `.tmp/slate-v2`, prefer these focused forms:
 ```bash
 PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun run playwright playwright/integration/examples/<suite>.test.ts --project=<chromium|firefox|webkit> --grep "<pattern>"
 bun test ./packages/<package>/test/<file>.ts --test-name-pattern "<pattern>"
+cd packages/<package> && bun test ./test/<file>.test.ts --test-name-pattern "<pattern>"
 ```
 
 Rules:
@@ -567,12 +573,13 @@ Rules:
   miss in this workspace and waste the loop;
 - use `bun run playwright ...` for Playwright specs; do not send Playwright specs
   through `bun test`;
-- do not run multiple managed `bun run playwright` commands in parallel. The
-  managed route builds and serves the Next example app, and concurrent runs can
-  trip the Next build lock (`Another next build process is already running`)
-  or prove the wrong stale server. Parallelize file reads and package-level
-  non-server tests, but serialize managed Playwright proofs unless one
-  checkpoint explicitly owns a prebuilt server plus `PLAYWRIGHT_BASE_URL`;
+- do not run multiple managed `bun run playwright` commands in parallel,
+  including through `multi_tool_use.parallel`. The managed route builds and
+  serves the Next example app, and concurrent runs can trip the Next build lock
+  (`Another next build process is already running`) or prove the wrong stale
+  server. Parallelize file reads and package-level non-server tests, but
+  serialize managed Playwright proofs unless one checkpoint explicitly owns a
+  prebuilt server plus `PLAYWRIGHT_BASE_URL`;
 - managed Playwright proofs can still reuse an already-listening server through
   `reuseExistingServer` and silently skip `bun build:next`. After package,
   runtime, example, generated-site, or route-control source edits, verify server
@@ -596,6 +603,11 @@ Rules:
   on missing helper methods instead of product behavior;
 - use `bun test ./path` only with repo-relative Bun test paths from
   `.tmp/slate-v2`, or with package-local paths after recording the package cwd;
+- if root `bun test ./packages/.../<file>.test.ts` says the path filter did not
+  match and suggests adding more `./` prefixes, do not chase prefixes. Switch to
+  the owning package cwd and run the local wrapper path, for example
+  `cd packages/slate-dom && bun test ./test/bridge.test.ts --test-name-pattern
+  "<pattern>"`;
 - do not use package test directories as focused Bun filters in Slate v2. The
   repo `bunfig.toml` ignores `*.test.*`, and several contract owners use plain
   `.ts` file names. Prefer the package script or exact contract files, for
@@ -622,6 +634,9 @@ Rules:
   backticks around command names, quote the pattern with single quotes or use
   `rg -F`. Do not put a backtick-containing `rg` pattern inside double quotes;
   the shell will execute it and create a fake command failure;
+- when searching docs for inline-code terms, search each literal with
+  `rg -F 'literal' <paths>` or a single-quoted regex. Do not combine
+  backtick-wrapped alternatives inside one double-quoted pattern;
 - for API/docs/current-state audits, do not stream broad `rg -n` matches across
   `docs site packages` into chat. First run `rg -l` or `rg --count-matches`
   with generated trees excluded, then inspect only the small suspect files with
@@ -633,6 +648,41 @@ Rules:
   ledgers/benchmarks, narrow the roots or write the full result to `.tmp/**`.
   Never stream a broad helper/test inventory into chat just to decide which
   package script to run;
+- if a packet already has a known owner file, fixture path, research artifact,
+  benchmark script, or package entrypoint, start there. Do not run a broad
+  repo/root scan first "just in case"; broaden only after the owner file proves
+  the missing symbol or dependency is outside its boundary;
+- when closing a `docs/slate-v2/research/**` lead, read that artifact's
+  `lead-ledger.tsv`, `promoted-ledger.tsv`, and `read-log.tsv` first. Use exact
+  source refs and owner files from those ledgers before any repo-wide `rg`.
+  Broad current-tree or OSS scans are allowed only after the recorded anchors
+  are missing, stale, or insufficient for the proof command;
+- when parsing ledgers, match exact column names before fuzzy fallbacks. Prefer
+  a literal `status` column over `decision`, `action`, or regex matches. Never
+  infer backlog/open state from a `decision` column when a `status` column
+  exists in the same TSV;
+- when scanning research backlog/open status, parse work ledgers only:
+  `lead-ledger.tsv`, `promoted-ledger.tsv`, issue closure ledgers, or an
+  explicitly named action matrix. Do not count `repo-registry.tsv`,
+  `read-log.tsv`, source registries, or other provenance metadata as open work
+  just because they contain a `status`-like column;
+- when classifying research status values, separate actionable backlog from
+  accepted deferral. `promote-*`, `promoted-pending`, `queued-*`, `open`,
+  `todo`, `candidate`, `needs-*`, and untriaged rows can be actionable. Statuses
+  like `promoted-kept`, `promoted-existing`, `kept-*`, `covered`,
+  `covered-existing`, `supporting`, `supporting-only`, `invalid-skip`,
+  `rejected`, and `closed` are closed. Statuses starting with `deferred-*` or
+  legacy `defer` are queued stopping checkpoints, not work to "fix" during a
+  timed run unless the active packet deliberately takes that owner;
+- if a checkpoint hits an output-budget miss from a broad scan, stop widening in
+  that checkpoint. Record the miss in the slowdown ledger, switch to exact
+  owner files or a scratch artifact, and patch this skill again if the miss
+  repeats after an existing rule should have prevented it;
+- before any `rg -n` over a newly cloned or unfamiliar OSS repo root, also run
+  `rg -l`, `rg --count-matches`, or a content index first, even when it is only
+  one root. If the first pass hits docs/cases/tests at repo scale, switch to
+  exact filenames or write the full result to `.tmp/**`; do not stream the
+  whole external corpus into chat;
 - do not broad-search `docs/editor-issue-harvester/**` or raw issue JSON just
   to learn ledger status. Parse `issue-closure-ledger.md` / `.tsv` directly
   for the `check` column, `unchecked relevant`, total rows, and next unchecked
@@ -988,11 +1038,13 @@ with a concrete reason, or remove the gate and run the row on the broader
 browser set. Before trusting a route-level Playwright proof, scan the target
 spec with `rg -n "\\breturn\\b|test\\.skip|project\\.name|browserName" <spec>`
 and classify every hit in the plan as helper return, explicit skip, or fake
-green repaired. When widening a row exposes browser-specific DOM leaf shape, keep
-the behavior assertion strict on model text, collapsed model selection, native
-caret/selected text, and visual caret, but do not overfit a Chromium-only leaf
-path when another browser preserves the same user-visible contract with a split
-text node.
+green repaired. For multi-file or route-family skip audits, do not stream raw
+hits into chat. Write the raw scan to a scratch/research artifact or summarize
+counts by skip class first, then inspect only suspicious rows. When widening a
+row exposes browser-specific DOM leaf shape, keep the behavior assertion strict
+on model text, collapsed model selection, native caret/selected text, and visual
+caret, but do not overfit a Chromium-only leaf path when another browser
+preserves the same user-visible contract with a split text node.
 
 Mobile-emulation proof is scoped proof. The Playwright `mobile` project can
 prove viewport, touch/semantic-handle, and claim-width behavior, but
@@ -1157,6 +1209,12 @@ Use the smallest durable target:
 - `.tmp/editor-issue-harvester/**/raw/**` for unversioned external issue-corpus
   scratch, especially open/closed GitHub issue bodies and hydrated JSON;
 - `.agents/rules/**` only for reusable agent workflow policy.
+
+When work originates from `docs/slate-v2/research/**`, update that artifact
+before closeout. A research lead is not closed while its durable
+`lead-ledger.tsv` / `promoted-ledger.tsv` still says `queued`, `promote-now`,
+or `TBD` after the packet was kept, reverted, quarantined, or deferred with an
+owner.
 
 Do not write public changelog prose. Write latest-state decisions, proof
 commands, accepted tradeoffs, rejected alternatives, and next owner.

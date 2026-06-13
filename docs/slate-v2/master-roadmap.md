@@ -252,6 +252,9 @@ Current tranche-7 read:
 - final integration/build/type/lint/perf closure is green for current-tree
   private alpha; release, PR, publish, and raw-device claim width remain open
   unless an explicit run owns them
+- table-fragment merge semantics remain an explicit deferred spec, not hidden
+  private-alpha runtime proof:
+  [table-fragment-semantics.md](/Users/zbeyens/git/plate-2/docs/slate-v2/table-fragment-semantics.md)
 - stronger slate-react perf-superiority is command-scoped:
   - private-alpha product gate:
     `HUGE_DOC_FULL_STRICT_BUDGET=1 bun run bench:react:huge-document:full:local`
