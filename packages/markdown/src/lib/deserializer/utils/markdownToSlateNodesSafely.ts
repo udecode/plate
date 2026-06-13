@@ -1,4 +1,11 @@
-import { type SlateEditor, ElementApi, getPluginType, KEYS } from 'platejs';
+import {
+  type Descendant,
+  type SlateEditor,
+  ElementApi,
+  getPluginType,
+  KEYS,
+  TextApi,
+} from 'platejs';
 
 import {
   type DeserializeMdOptions,
@@ -6,6 +13,64 @@ import {
 } from '../deserializeMd';
 import { deserializeInlineMd } from './deserializeInlineMd';
 import { splitIncompleteMdx } from './splitIncompleteMdx';
+
+const isPlainTextNode = (node: unknown): node is { text: string } =>
+  TextApi.isText(node) && Object.keys(node).every((key) => key === 'text');
+
+const isSplitInsideTableRow = (completeString: string) => {
+  const currentLine = completeString.slice(
+    completeString.lastIndexOf('\n') + 1
+  );
+
+  return currentLine.includes('|');
+};
+
+const appendInlineNodesToLastTextContainer = (
+  editor: SlateEditor,
+  node: unknown,
+  inlineNodes: Descendant[]
+): boolean => {
+  if (!ElementApi.isElement(node) || editor.api.isVoid(node)) {
+    return false;
+  }
+
+  const paragraphType = getPluginType(editor, KEYS.p);
+
+  if (
+    node.type === paragraphType ||
+    node.children.some((child) => TextApi.isText(child))
+  ) {
+    const lastChild = node.children.at(-1);
+
+    if (
+      isPlainTextNode(lastChild) &&
+      inlineNodes.every((inlineNode) => isPlainTextNode(inlineNode))
+    ) {
+      lastChild.text += inlineNodes
+        .map((inlineNode) => inlineNode.text)
+        .join('');
+
+      return true;
+    }
+
+    node.children.push(...inlineNodes);
+    return true;
+  }
+
+  for (let i = node.children.length - 1; i >= 0; i--) {
+    if (
+      appendInlineNodesToLastTextContainer(
+        editor,
+        node.children[i],
+        inlineNodes
+      )
+    ) {
+      return true;
+    }
+  }
+
+  return false;
+};
 
 export const markdownToSlateNodesSafely = (
   editor: SlateEditor,
@@ -45,9 +110,46 @@ export const markdownToSlateNodesSafely = (
     return [...completeNodes, newBlock];
   }
 
-  // FIXME table column will fail, need recursive find the last p
-  if (ElementApi.isElement(lastBlock) && lastBlock?.children) {
-    lastBlock.children.push(...incompleteNodes);
+  const tableType = getPluginType(editor, KEYS.table);
+
+  if (ElementApi.isElement(lastBlock) && lastBlock.type === tableType) {
+    if (isSplitInsideTableRow(completeString)) {
+      const withoutMdxNodes = markdownToSlateNodes(editor, data, {
+        ...options,
+        withoutMdx: true,
+      });
+      const tableOrdinal = completeNodes
+        .filter((node) => ElementApi.isElement(node) && node.type === tableType)
+        .indexOf(lastBlock);
+      let fallbackTableIndex = -1;
+      let seenTables = -1;
+
+      for (const [index, node] of withoutMdxNodes.entries()) {
+        if (ElementApi.isElement(node) && node.type === tableType) {
+          seenTables += 1;
+
+          if (seenTables === tableOrdinal) {
+            fallbackTableIndex = index;
+            break;
+          }
+        }
+      }
+
+      if (fallbackTableIndex !== -1) {
+        return [
+          ...completeNodes.slice(0, -1),
+          ...withoutMdxNodes.slice(fallbackTableIndex),
+        ];
+      }
+    }
+
+    return [...completeNodes, newBlock];
+  }
+
+  if (
+    ElementApi.isElement(lastBlock) &&
+    appendInlineNodesToLastTextContainer(editor, lastBlock, incompleteNodes)
+  ) {
     return completeNodes;
   }
 
