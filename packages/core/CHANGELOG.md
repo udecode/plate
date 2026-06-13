@@ -1,5 +1,11 @@
 # @platejs/core
 
+## 53.1.2
+
+### Patch Changes
+
+- [#5009](https://github.com/udecode/plate/pull/5009) by [@zbeyens](https://github.com/zbeyens) – Fix complex leaf and text renderers triggering React hook-order warnings when marks change.
+
 ## 53.0.7
 
 ### Patch Changes
