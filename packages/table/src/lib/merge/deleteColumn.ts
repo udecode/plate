@@ -13,6 +13,7 @@ import { BaseTablePlugin } from '../BaseTablePlugin';
 import { deleteColumnWhenExpanded } from './deleteColumnWhenExpanded';
 import { findCellByIndexes } from './findCellByIndexes';
 import { getCellPath } from './getCellPath';
+import { getTableMergedColumnCount } from './getTableMergedColumnCount';
 
 export const deleteTableMergeColumn = (editor: SlateEditor) => {
   const type = editor.getType(KEYS.table);
@@ -43,6 +44,12 @@ export const deleteTableMergeColumn = (editor: SlateEditor) => {
 
     const { col: deletingColIndex } = getCellIndices(editor, selectedCell);
     const colsDeleteNumber = api.table.getColSpan(selectedCell);
+
+    if (getTableMergedColumnCount(table) <= colsDeleteNumber) {
+      editor.tf.removeNodes({ at: tableEntry[1] });
+
+      return;
+    }
 
     const endingColIndex = deletingColIndex + colsDeleteNumber - 1;
 

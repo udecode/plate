@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "suggestion-toolbar-button",
-  "type": "registry:ui",
   "title": "Suggestion Toolbar Button",
   "description": "A toolbar button for toggling suggestion mode in the editor.",
   "dependencies": [
@@ -27,5 +26,6 @@
       "discussion-demo",
       "discussion-pro"
     ]
-  }
+  },
+  "type": "registry:ui"
 }

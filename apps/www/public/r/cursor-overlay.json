@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "cursor-overlay",
-  "type": "registry:ui",
   "title": "Cursor Overlay",
   "description": "A visual overlay for cursors and selections.",
   "dependencies": [
@@ -27,5 +26,6 @@
     "examples": [
       "ai-demo"
     ]
-  }
+  },
+  "type": "registry:ui"
 }

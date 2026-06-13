@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "callout-kit",
-  "type": "registry:component",
   "dependencies": [
     "@platejs/callout"
   ],
@@ -15,5 +14,6 @@
       "content": "'use client';\n\nimport { CalloutPlugin } from '@platejs/callout/react';\n\nimport { CalloutElement } from '@/registry/ui/callout-node';\n\nexport const CalloutKit = [CalloutPlugin.withComponent(CalloutElement)];\n",
       "type": "registry:component"
     }
-  ]
+  ],
+  "type": "registry:component"
 }

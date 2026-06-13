@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "blockquote-node",
-  "type": "registry:ui",
   "title": "Blockquote Element",
   "description": "A quote component for block quotes.",
   "dependencies": [],
@@ -31,5 +30,6 @@
       "basic-blocks-demo",
       "basic-nodes-pro"
     ]
-  }
+  },
+  "type": "registry:ui"
 }

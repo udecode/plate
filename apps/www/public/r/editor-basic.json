@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "editor-basic",
-  "type": "registry:block",
   "description": "A basic editor",
   "dependencies": [
     "@platejs/basic-nodes",
@@ -28,5 +27,6 @@
   ],
   "categories": [
     "Editors"
-  ]
+  ],
+  "type": "registry:block"
 }

@@ -1,17 +1,16 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "footnote-node",
-  "type": "registry:ui",
   "title": "Footnote Elements",
   "description": "Inline footnote references, definitions, and input UI.",
   "dependencies": [
     "@platejs/footnote"
   ],
   "registryDependencies": [
-    "@shadcn/button",
-    "@shadcn/command",
-    "@shadcn/hover-card",
-    "@shadcn/popover",
+    "button",
+    "command",
+    "hover-card",
+    "popover",
     "https://platejs.org/r/inline-combobox.json"
   ],
   "files": [
@@ -35,5 +34,6 @@
     "examples": [
       "footnote-demo"
     ]
-  }
+  },
+  "type": "registry:ui"
 }

@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "emoji-kit",
-  "type": "registry:component",
   "dependencies": [
     "@platejs/emoji",
     "@emoji-mart/data@1.2.1"
@@ -16,5 +15,6 @@
       "content": "'use client';\n\nimport emojiMartData from '@emoji-mart/data';\nimport { EmojiInputPlugin, EmojiPlugin } from '@platejs/emoji/react';\n\nimport { EmojiInputElement } from '@/registry/ui/emoji-node';\n\nexport const EmojiKit = [\n  EmojiPlugin.configure({\n    options: { data: emojiMartData as any },\n  }),\n  EmojiInputPlugin.withComponent(EmojiInputElement),\n];\n",
       "type": "registry:component"
     }
-  ]
+  ],
+  "type": "registry:component"
 }

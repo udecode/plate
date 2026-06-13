@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "media-upload-toast",
-  "type": "registry:ui",
   "title": "Media Upload Toast",
   "description": "Show toast notifications for media uploads.",
   "dependencies": [
@@ -26,5 +25,6 @@
       "media-demo",
       "media-pro"
     ]
-  }
+  },
+  "type": "registry:ui"
 }

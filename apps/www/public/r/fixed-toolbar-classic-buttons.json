@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "fixed-toolbar-classic-buttons",
-  "type": "registry:ui",
   "title": "Fixed Toolbar List Buttons",
   "dependencies": [],
   "registryDependencies": [
@@ -30,5 +29,6 @@
       "type": "registry:ui"
     }
   ],
-  "meta": {}
+  "meta": {},
+  "type": "registry:ui"
 }

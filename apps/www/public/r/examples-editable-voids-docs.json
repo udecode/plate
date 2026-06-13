@@ -1,15 +1,15 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "examples-editable-voids-docs",
-  "type": "registry:file",
   "title": "Editable Voids",
-  "description": "Documentation for Editable Voids",
+  "description": "Nest editable controls and a Plate editor inside a void element.",
   "files": [
     {
-      "path": "../../content/examples/editable-voids.mdx",
-      "content": "---\ntitle: Editable Voids\n---\n\n<ComponentPreview name=\"editable-voids-demo\" />\n",
+      "path": "../../content/docs/examples/editable-voids.mdx",
+      "content": "---\ntitle: Editable Voids\ndescription: Nest editable controls and a Plate editor inside a void element.\n---\n\nThis example renders form controls and a nested Plate editor inside a void\nelement. It is app-local demo code built with `createPlatePlugin`, not a packaged\nfeature plugin.\n\n## Demo\n\n<ComponentPreview name=\"editable-voids-demo\" />\n\n## Source\n\nThe demo registers an `editable-void` element plugin and renders custom React UI\nfor that node.\n\n<ComponentSource name=\"editable-voids-demo\" />\n\nThe initial value contains a normal paragraph, one `editable-void` element, and\nan empty paragraph after it.\n\n<ComponentSource src=\"examples/values/editable-voids-value.tsx\" />\n\n## Runtime Shape\n\n| Piece | Owner | Notes |\n| --- | --- | --- |\n| `EditableVoidPlugin` | Registry example | Uses `createPlatePlugin` with `node.isElement: true` and `node.isVoid: true`. |\n| `EditableVoidElement` | Registry example | Renders inputs, radio controls, and a nested `<Plate>` instance. |\n| Outer editor | Registry example | Loads `EditorKit` plus `EditableVoidPlugin` and the `editableVoidsValue`. |\n| Inner editor | Registry example | Creates a separate `usePlateEditor({ plugins: EditorKit })` inside the void element. |\n| Value shape | Slate | Keeps an empty text child inside the void node so Slate can select it. |\n\n## Void Element Rules\n\nSet `contentEditable={false}` on the custom void wrapper. Without it, browser\nediting behavior can leak into the nested controls; the demo notes Firefox input\nissues specifically.\n\nRender `{children}` after the non-editable UI. Slate still needs the hidden void\nchild mounted even when your visible element is fully custom React.\n\nThe nested editor is a separate Plate editor. It does not share the outer\neditor's value, selection, plugins, or undo history.\n\n## Related\n\n- [Plate Plugin](/docs/api/core/plate-plugin) covers `node.isVoid`, `node.component`, and plugin rendering.\n- [Plugin Components](/docs/plugin-components) covers custom node components.\n- [Plate Components](/docs/api/core/plate-components) covers `<Plate>`, editor providers, and node primitives.\n",
       "type": "registry:file",
       "target": "content/docs/plate/examples/editable-voids.mdx"
     }
-  ]
+  ],
+  "type": "registry:file"
 }

@@ -44,7 +44,7 @@ import { serializeHtml } from 'platejs/static';
 
 import juice from 'juice';
 
-import type { DocumentMargins } from './html-to-docx';
+import type { DocumentMargins, PageSize } from './html-to-docx';
 
 import { htmlToDocxBlob } from './html-to-docx';
 
@@ -176,12 +176,12 @@ export type DocxExportOperationOptions = {
   customStyles?: string;
 
   /**
-   * Font family for the document body.
-   * This overrides the default Calibri font.
+   * Font family for the document body. Sets the document default font; when
+   * omitted the document falls back to the docx default (Times New Roman).
    *
    * @example
    * ```typescript
-   * fontFamily: 'Times New Roman'
+   * fontFamily: 'Calibri'
    * ```
    */
   fontFamily?: string;
@@ -202,6 +202,17 @@ export type DocxExportOperationOptions = {
    * @default 'portrait'
    */
   orientation?: DocxExportOrientation;
+
+  /**
+   * Page size in twentieths of a point (twips). Defaults to the html-to-docx
+   * default (US Letter) when omitted.
+   *
+   * @example
+   * ```typescript
+   * pageSize: { width: 11906, height: 16838 } // A4 portrait
+   * ```
+   */
+  pageSize?: PageSize;
 
   /**
    * Document title (for metadata purposes).
@@ -381,18 +392,13 @@ function wrapHtmlForDocx(bodyHtml: string, customStyles?: string): string {
     ? `${DOCX_EXPORT_STYLES}\n${customStyles}`
     : DOCX_EXPORT_STYLES;
 
-  return `<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <style>
-${styles}
-    </style>
-  </head>
-  <body>
-${bodyHtml}
-  </body>
-</html>`;
+  // No DOCTYPE and no inter-tag whitespace. html-to-docx parses the whole
+  // document with html-to-vdom, which keeps the DOCTYPE and the whitespace-only
+  // text nodes between <html>/<head>/<body> and turns each into a blank
+  // paragraph at the top of the generated document. Keeping the markup tight
+  // avoids those leading blank lines. The `\n` inside <style> is harmless since
+  // <head> is skipped by the converter.
+  return `<html lang="en"><head><meta charset="utf-8" /><style>${styles}</style></head><body>${bodyHtml}</body></html>`;
 }
 
 /**
@@ -423,6 +429,7 @@ async function exportToDocxInternal(
     fontFamily,
     margins = DEFAULT_DOCX_MARGINS,
     orientation = 'portrait',
+    pageSize,
     value,
   } = options;
 
@@ -447,11 +454,13 @@ async function exportToDocxInternal(
 
   // Convert to DOCX using browser-compatible implementation
   const blob = await htmlToDocxBlob(inlinedHtml, {
+    font: fontFamily,
     margins: {
       ...DEFAULT_DOCX_MARGINS,
       ...margins,
     },
     orientation,
+    pageSize,
   });
 
   return blob;

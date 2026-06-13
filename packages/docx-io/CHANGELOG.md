@@ -1,5 +1,20 @@
 # @platejs/docx-io
 
+## 53.1.0
+
+### Minor Changes
+
+- [#4997](https://github.com/udecode/plate/pull/4997) by [@WilliamPeralta](https://github.com/WilliamPeralta) – Forward two dropped options in `exportToDocx`:
+
+  - **`pageSize`** — the html-to-docx engine accepts a page size, but `exportToDocx` only forwarded `margins` and `orientation`, so the document was always the default (US Letter). You can now pass e.g. `pageSize: { width: 11906, height: 16838 }` to export A4.
+  - **`fontFamily`** — it was only applied to the serialized HTML (and only when an `EditorStaticComponent` was provided), so the document default font was never set and Word fell back to Times New Roman. It now also sets the document default font (`documentOptions.font`).
+
+## 53.0.8
+
+### Patch Changes
+
+- [#4991](https://github.com/udecode/plate/pull/4991) by [@WilliamPeralta](https://github.com/WilliamPeralta) – Fix `exportToDocx` adding blank paragraphs at the top of the document. `wrapHtmlForDocx` emitted a `<!DOCTYPE html>` and indented the template; html-to-docx (html-to-vdom) keeps the DOCTYPE and the whitespace-only text nodes between tags and renders each as a blank paragraph. The wrapper now emits tight markup with no DOCTYPE.
+
 ## 53.0.0
 
 ## 52.3.10

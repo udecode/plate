@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "select-editor",
-  "type": "registry:ui",
   "title": "Select Editor",
   "description": "An editor to select tags.",
   "dependencies": [
@@ -11,8 +10,8 @@
   ],
   "registryDependencies": [
     "https://platejs.org/r/editor.json",
-    "@shadcn/command",
-    "@shadcn/popover",
+    "command",
+    "popover",
     "https://platejs.org/r/tag-node.json"
   ],
   "files": [
@@ -32,5 +31,6 @@
       "select-editor-demo"
     ],
     "label": "New"
-  }
+  },
+  "type": "registry:ui"
 }

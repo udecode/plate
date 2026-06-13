@@ -1,15 +1,15 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "examples-version-history-docs",
-  "type": "registry:file",
   "title": "Version History",
-  "description": "Documentation for Version History",
+  "description": "Save Plate value snapshots and render a diff against the live editor.",
   "files": [
     {
-      "path": "../../content/examples/version-history.mdx",
-      "content": "---\ntitle: Version History\n---\n\n\n## Examples\n\n### Plate UI\n\n<ComponentPreview name=\"version-history-demo\" />\n\n### Potion\n\n- Full version history:\n  - Save document snapshots\n  - View all document versions\n  - Compare any two versions\n  - Restore previous versions\n- Visual diff comparison:\n  - Added content in green\n  - Removed content in red\n- Beautifully crafted UI\n\nTry it out. Sign in, then click on the top right clock icon:\n\n<ComponentPreview name=\"potion-iframe-demo\" />",
+      "path": "../../content/docs/examples/version-history.mdx",
+      "content": "---\ntitle: Version History\ndescription: Save Plate value snapshots and render a diff against the live editor.\n---\n\nThis example stores immutable Plate value snapshots in local React state. It compares the selected revision with the current value through `@platejs/diff`.\n\n## Demo\n\n<ComponentPreview name=\"version-history-demo\" />\n\n## Source\n\n<ComponentSource name=\"version-history-demo\" />\n\n## Runtime Shape\n\n| Piece | Owner | Role |\n| --- | --- | --- |\n| `createVersionSnapshot` | registry example | Clones each `Value` with `cloneDeep` before saving or diffing. |\n| `revisions` | registry example | Stores the saved Plate values and feeds the revision picker. |\n| `computeDiff` | `@platejs/diff` | Compares the selected revision and live value, then returns diff-marked nodes. |\n| `DiffPlugin` | registry example | Renders diff leaves and wraps diff elements with insert, delete, or update styling. |\n| `InlinePlugin` and `InlineVoidPlugin` | registry example | Keep inline and inline-void nodes in the demo value so the diff path covers mixed content. |\n| `withGetFragmentExcludeDiff` | `@platejs/diff` | Removes `diff` and `diffOperation` metadata from copied fragments. |\n\n## Snapshot Flow\n\n1. The editor starts from `initialValue` and keeps the live value in local state.\n2. `Save revision` clones the live value and appends it to `revisions`.\n3. The select menu chooses one saved revision for comparison.\n4. `computeDiff` receives the selected revision, current value, `editor.api.isInline`, and `lineBreakChar: '¶'`.\n5. The read-only diff editor renders the returned value with the same inline plugins plus `DiffPlugin`.\n\n## Product Preview\n\nPotion uses the same document-history idea in a full app surface with stored versions, restore actions, and visual comparison.\n\n<ComponentPreview name=\"potion-iframe-demo\" />\n\n## Related\n\n- [Controlled Value](/docs/controlled) for owning editor value from React state.\n- [Plate Plugin](/docs/api/core/plate-plugin) for render hooks like `render.node` and `render.aboveNodes`.\n",
       "type": "registry:file",
       "target": "content/docs/plate/examples/version-history.mdx"
     }
-  ]
+  ],
+  "type": "registry:file"
 }

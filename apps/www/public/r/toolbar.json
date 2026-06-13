@@ -1,16 +1,15 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "toolbar",
-  "type": "registry:ui",
   "title": "Toolbar",
   "description": "A customizable toolbar component with various button styles and group",
   "dependencies": [
     "@radix-ui/react-toolbar"
   ],
   "registryDependencies": [
-    "@shadcn/tooltip",
-    "@shadcn/separator",
-    "@shadcn/dropdown-menu"
+    "tooltip",
+    "separator",
+    "dropdown-menu"
   ],
   "files": [
     {
@@ -19,5 +18,6 @@
       "type": "registry:ui"
     }
   ],
-  "meta": {}
+  "meta": {},
+  "type": "registry:ui"
 }

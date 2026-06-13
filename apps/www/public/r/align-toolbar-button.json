@@ -1,14 +1,13 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "align-toolbar-button",
-  "type": "registry:ui",
   "title": "Align Toolbar Button",
   "description": "A dropdown menu for text alignment controls.",
   "dependencies": [
     "@platejs/basic-styles"
   ],
   "registryDependencies": [
-    "@shadcn/dropdown-menu",
+    "dropdown-menu",
     "https://platejs.org/r/toolbar.json"
   ],
   "files": [
@@ -27,5 +26,6 @@
     "examples": [
       "align-demo"
     ]
-  }
+  },
+  "type": "registry:ui"
 }

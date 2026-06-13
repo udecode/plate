@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "ai-menu",
-  "type": "registry:ui",
   "title": "AI Menu",
   "description": "A menu for AI-powered content generation and insertion.",
   "dependencies": [
@@ -12,8 +11,8 @@
     "@faker-js/faker"
   ],
   "registryDependencies": [
-    "@shadcn/command",
-    "@shadcn/popover",
+    "command",
+    "popover",
     "https://platejs.org/r/use-chat.json",
     "https://platejs.org/r/editor-base-kit.json",
     "https://platejs.org/r/ai-node.json"
@@ -46,5 +45,6 @@
       "ai-pro"
     ],
     "label": "New"
-  }
+  },
+  "type": "registry:ui"
 }

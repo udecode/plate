@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "link-node",
-  "type": "registry:ui",
   "title": "Link Element",
   "description": "A component for rendering hyperlinks with hover states.",
   "dependencies": [
@@ -34,5 +33,6 @@
     "examples": [
       "link-demo"
     ]
-  }
+  },
+  "type": "registry:ui"
 }

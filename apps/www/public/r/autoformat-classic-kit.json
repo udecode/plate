@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "autoformat-classic-kit",
-  "type": "registry:component",
   "dependencies": [
     "@platejs/code-block",
     "@platejs/list-classic"
@@ -16,5 +15,6 @@
       "content": "export { AutoformatKit } from './autoformat-kit';\n",
       "type": "registry:component"
     }
-  ]
+  ],
+  "type": "registry:component"
 }

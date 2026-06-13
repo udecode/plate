@@ -94,9 +94,14 @@ describe('DndPlugin', () => {
     const setOption = mock();
     const editorNode = document.createElement('div');
     const inside = document.createElement('div');
+    const block = document.createElement('div');
+    const blockText = document.createElement('span');
     const outside = document.createElement('div');
 
+    block.dataset.blockId = 'block-1';
+    block.append(blockText);
     editorNode.append(inside);
+    editorNode.append(block);
     document.body.append(editorNode, outside);
     editor.api.toDOMNode = mock(() => editorNode);
 
@@ -107,6 +112,15 @@ describe('DndPlugin', () => {
     };
 
     const view = render(<TestComponent />);
+    const dragLeaveEvent = (relatedTarget: EventTarget | null) => {
+      const event = new Event('dragleave', { bubbles: true });
+
+      Object.defineProperty(event, 'relatedTarget', {
+        value: relatedTarget,
+      });
+
+      return event;
+    };
 
     outside.dispatchEvent(new Event('dragleave', { bubbles: true }));
 
@@ -114,6 +128,24 @@ describe('DndPlugin', () => {
 
     setOption.mockClear();
     inside.dispatchEvent(new Event('dragleave', { bubbles: true }));
+
+    expect(setOption).not.toHaveBeenCalled();
+
+    block.dispatchEvent(dragLeaveEvent(editorNode));
+
+    expect(setOption).toHaveBeenCalledWith('dropTarget', undefined);
+
+    setOption.mockClear();
+    blockText.dispatchEvent(dragLeaveEvent(inside));
+
+    expect(setOption).toHaveBeenCalledWith('dropTarget', undefined);
+
+    setOption.mockClear();
+    const nextBlock = document.createElement('div');
+    nextBlock.dataset.blockId = 'block-2';
+    editorNode.append(nextBlock);
+
+    block.dispatchEvent(dragLeaveEvent(nextBlock));
 
     expect(setOption).not.toHaveBeenCalled();
 

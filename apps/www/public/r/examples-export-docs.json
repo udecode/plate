@@ -1,15 +1,15 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "examples-export-docs",
-  "type": "registry:file",
   "title": "Export",
-  "description": "Documentation for Export",
+  "description": "Export a Plate document to HTML, PDF, image, Markdown, or Word.",
   "files": [
     {
-      "path": "../../content/examples/export.mdx",
-      "content": "---\ntitle: Export\ndocs:\n  - route: https://pro.platejs.org/docs/examples/export\n    title: Plus\n---\n\n<ComponentPreview name=\"playground-demo\" id=\"basic-blocks\" />\n\n<PackageInfo>\n\n## Features\n\n- Export editor content to:\n- Client-side export with no server dependencies\n\n</PackageInfo>\n\n## Usage\n\nInstall the [Export Toolbar Button](/docs/components/export-toolbar-button) component.\n\n## Plate Plus\n\n- Server-side PDF export:\n  - High-quality PDF generation\n  - Custom fonts and styling\n  - Headers and footers\n  - Page numbers\n  - Font selectable\n- Advanced export options:\n  - Paper size selection\n  - Margin controls\n  - Orientation settings\n  - Compression level\n{/* - Enterprise-ready features: */}\n  {/* - Batch processing */}\n  {/* - Watermarking */}\n  {/* - Custom templates */}\n  {/* - Password protection */}\n\nTry it out with our server-side PDF export:\n\n<ComponentPreviewPro name=\"export-pro\" />\n",
+      "path": "../../content/docs/examples/export.mdx",
+      "content": "---\ntitle: Export\ndescription: Export a Plate document to HTML, PDF, image, Markdown, or Word.\ndocs:\n  - route: https://pro.platejs.org/docs/examples/export\n    title: Plus\n---\n\nThis example exports the current Plate editor value from the browser. The\nregistry `export-toolbar-button` owns the client-side download menu for HTML,\nPDF, image, Markdown, and Word output.\n\n## Demo\n\n<ComponentPreview name=\"playground-demo\" id=\"basic-blocks\" />\n\n## Toolbar Source\n\nInstall the [Export Toolbar Button](/docs/components/export-toolbar-button)\ncomponent to add the menu to an editor toolbar.\n\n<ComponentSource name=\"export-toolbar-button\" />\n\n## Export Formats\n\n| Format | Implementation | Output |\n| --- | --- | --- |\n| HTML | `serializeHtml` from `platejs/static` with `BaseEditorKit` and `EditorStatic` | `plate.html` |\n| PDF | `html2canvas-pro` snapshot converted with `pdf-lib` | `plate.pdf` |\n| Image | `html2canvas-pro` snapshot | `plate.png` |\n| Markdown | `editor.getApi(MarkdownPlugin).markdown.serialize()` | `plate.md` |\n| Word | `exportToDocx(editor.children, { editorPlugins })` from `@platejs/docx-io` | `plate.docx` |\n\nThe PDF and image exporters snapshot the current editable DOM. Use them for a\nquick client-side download, not for paginated print layout.\n\n## DOCX Static Kit\n\nWord export passes the base static editor kit plus `DocxExportKit` so custom\nnodes can render with DOCX-friendly components.\n\n<ComponentSource name=\"docx-export-kit\" />\n\n`DocxExportKit` overrides code blocks, columns, equations, callouts, and table\nof contents rendering for the DOCX conversion path.\n\n## Plus Export\n\nPlate Plus includes a server-side export flow for PDF output with page settings.\n\n<ComponentPreviewPro name=\"export-pro\" />\n\n## Related\n\n- [DOCX Import/Export](/docs/docx-io) covers `@platejs/docx-io` options and plugin APIs.\n- [Markdown](/docs/markdown) covers Markdown serialization.\n- [Static Rendering](/docs/static) covers static editor rendering and HTML serialization.\n",
       "type": "registry:file",
       "target": "content/docs/plate/examples/export.mdx"
     }
-  ]
+  ],
+  "type": "registry:file"
 }

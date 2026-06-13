@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "kbd-node",
-  "type": "registry:ui",
   "title": "Keyboard Input Leaf",
   "description": "A component for styling keyboard shortcuts.",
   "dependencies": [],
@@ -28,5 +27,6 @@
     "examples": [
       "basic-marks-demo"
     ]
-  }
+  },
+  "type": "registry:ui"
 }

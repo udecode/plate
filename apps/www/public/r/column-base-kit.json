@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "column-base-kit",
-  "type": "registry:component",
   "dependencies": [
     "@platejs/layout"
   ],
@@ -14,5 +13,6 @@
       "content": "import { BaseColumnItemPlugin, BaseColumnPlugin } from '@platejs/layout';\n\nimport {\n  ColumnElementStatic,\n  ColumnGroupElementStatic,\n} from '@/registry/ui/column-node-static';\n\nexport const BaseColumnKit = [\n  BaseColumnPlugin.withComponent(ColumnGroupElementStatic),\n  BaseColumnItemPlugin.withComponent(ColumnElementStatic),\n];\n",
       "type": "registry:component"
     }
-  ]
+  ],
+  "type": "registry:component"
 }

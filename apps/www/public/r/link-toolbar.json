@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "link-toolbar",
-  "type": "registry:ui",
   "title": "Link Floating Toolbar",
   "description": "A floating interface for link editing.",
   "dependencies": [
@@ -9,10 +8,10 @@
     "@platejs/floating"
   ],
   "registryDependencies": [
-    "@shadcn/button",
-    "@shadcn/input",
-    "@shadcn/popover",
-    "@shadcn/separator"
+    "button",
+    "input",
+    "popover",
+    "separator"
   ],
   "files": [
     {
@@ -37,5 +36,6 @@
       "link-demo",
       "link-pro"
     ]
-  }
+  },
+  "type": "registry:ui"
 }

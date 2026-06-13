@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "link-base-kit",
-  "type": "registry:component",
   "dependencies": [
     "@platejs/link"
   ],
@@ -14,5 +13,6 @@
       "content": "import { BaseLinkPlugin } from '@platejs/link';\n\nimport { LinkElementStatic } from '@/registry/ui/link-node-static';\n\nexport const BaseLinkKit = [BaseLinkPlugin.withComponent(LinkElementStatic)];\n",
       "type": "registry:component"
     }
-  ]
+  ],
+  "type": "registry:component"
 }

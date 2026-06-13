@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "toc-base-kit",
-  "type": "registry:component",
   "dependencies": [
     "@platejs/toc"
   ],
@@ -14,5 +13,6 @@
       "content": "import { BaseTocPlugin } from '@platejs/toc';\n\nimport { TocElementStatic } from '@/registry/ui/toc-node-static';\n\nexport const BaseTocKit = [BaseTocPlugin.withComponent(TocElementStatic)];\n",
       "type": "registry:component"
     }
-  ]
+  ],
+  "type": "registry:component"
 }

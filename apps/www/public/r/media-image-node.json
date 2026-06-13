@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "media-image-node",
-  "type": "registry:ui",
   "title": "Image Element",
   "description": "Image element with lazy loading, resizing capabilities, and optional caption.",
   "dependencies": [
@@ -41,5 +40,6 @@
       "media-demo",
       "media-pro"
     ]
-  }
+  },
+  "type": "registry:ui"
 }

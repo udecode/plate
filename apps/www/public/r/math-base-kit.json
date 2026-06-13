@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "math-base-kit",
-  "type": "registry:component",
   "dependencies": [
     "@platejs/math"
   ],
@@ -14,5 +13,6 @@
       "content": "import { BaseEquationPlugin, BaseInlineEquationPlugin } from '@platejs/math';\n\nimport {\n  EquationElementStatic,\n  InlineEquationElementStatic,\n} from '@/registry/ui/equation-node-static';\n\nexport const BaseMathKit = [\n  BaseInlineEquationPlugin.withComponent(InlineEquationElementStatic),\n  BaseEquationPlugin.withComponent(EquationElementStatic),\n];\n",
       "type": "registry:component"
     }
-  ]
+  ],
+  "type": "registry:component"
 }

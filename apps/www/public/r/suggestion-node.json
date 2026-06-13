@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "suggestion-node",
-  "type": "registry:ui",
   "title": "Suggestion Leaf",
   "description": "A text component for suggestion.",
   "dependencies": [
@@ -33,5 +32,6 @@
       "discussion-demo",
       "discussion-pro"
     ]
-  }
+  },
+  "type": "registry:ui"
 }

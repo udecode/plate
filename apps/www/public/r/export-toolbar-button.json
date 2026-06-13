@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "export-toolbar-button",
-  "type": "registry:ui",
   "title": "Export Toolbar Button",
   "description": "A toolbar button for exporting editor content in various formats (HTML, PDF, Image, Markdown).",
   "dependencies": [
@@ -13,7 +12,7 @@
   ],
   "registryDependencies": [
     "https://platejs.org/r/docx-export-kit.json",
-    "@shadcn/dropdown-menu",
+    "dropdown-menu",
     "https://platejs.org/r/toolbar.json",
     "https://platejs.org/r/editor-base-kit.json"
   ],
@@ -35,5 +34,6 @@
       "basic-nodes-demo"
     ],
     "label": "New"
-  }
+  },
+  "type": "registry:ui"
 }

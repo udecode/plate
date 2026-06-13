@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "media-embed-node",
-  "type": "registry:ui",
   "title": "Media Embed Element",
   "description": "A component for embedded media content with resizing and caption support.",
   "dependencies": [
@@ -38,5 +37,6 @@
       "media-demo",
       "media-pro"
     ]
-  }
+  },
+  "type": "registry:ui"
 }

@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "ai-api",
-  "type": "registry:file",
   "dependencies": [
     "@ai-sdk/react@3",
     "ai@6",
@@ -66,5 +65,6 @@
       "type": "registry:file",
       "target": "app/api/ai/command/prompt/getGeneratePrompt.ts"
     }
-  ]
+  ],
+  "type": "registry:file"
 }

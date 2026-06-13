@@ -1,12 +1,11 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "turn-into-toolbar-button",
-  "type": "registry:ui",
   "title": "Turn Into Toolbar Button",
   "description": "A menu for converting between different block types.",
   "dependencies": [],
   "registryDependencies": [
-    "@shadcn/dropdown-menu",
+    "dropdown-menu",
     "https://platejs.org/r/toolbar.json",
     "https://platejs.org/r/transforms.json"
   ],
@@ -27,5 +26,6 @@
       "basic-nodes-demo",
       "basic-nodes-pro"
     ]
-  }
+  },
+  "type": "registry:ui"
 }

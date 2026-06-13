@@ -1,12 +1,11 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "more-toolbar-button",
-  "type": "registry:ui",
   "title": "More Toolbar Button",
   "description": "A menu for additional text formatting options.",
   "dependencies": [],
   "registryDependencies": [
-    "@shadcn/dropdown-menu",
+    "dropdown-menu",
     "https://platejs.org/r/toolbar.json"
   ],
   "files": [
@@ -26,5 +25,6 @@
       "basic-marks-demo",
       "basic-nodes-pro"
     ]
-  }
+  },
+  "type": "registry:ui"
 }

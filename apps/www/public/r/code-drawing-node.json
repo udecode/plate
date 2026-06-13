@@ -1,16 +1,15 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "code-drawing-node",
-  "type": "registry:ui",
   "title": "Code Drawing Node",
   "description": "Create diagrams from code using PlantUML, Graphviz, Flowchart, or Mermaid.",
   "dependencies": [
     "@platejs/code-drawing"
   ],
   "registryDependencies": [
-    "@shadcn/popover",
-    "@shadcn/button",
-    "@shadcn/select",
+    "popover",
+    "button",
+    "select",
     "https://platejs.org/r/use-mobile.json"
   ],
   "files": [
@@ -37,5 +36,6 @@
     "examples": [
       "code-drawing-demo"
     ]
-  }
+  },
+  "type": "registry:ui"
 }

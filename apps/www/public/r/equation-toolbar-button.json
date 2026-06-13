@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "equation-toolbar-button",
-  "type": "registry:ui",
   "title": "Equation Toolbar Button",
   "description": "A toolbar button for inserting and editing equations.",
   "dependencies": [
@@ -28,5 +27,6 @@
       "equation-demo",
       "floating-toolbar-demo"
     ]
-  }
+  },
+  "type": "registry:ui"
 }

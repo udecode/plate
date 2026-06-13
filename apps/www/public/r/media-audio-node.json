@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "media-audio-node",
-  "type": "registry:ui",
   "title": "Media Audio Element",
   "description": "An audio player component with caption support.",
   "dependencies": [
@@ -36,5 +35,6 @@
       "media-demo",
       "media-pro"
     ]
-  }
+  },
+  "type": "registry:ui"
 }
