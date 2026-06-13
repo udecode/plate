@@ -2,7 +2,7 @@
 
 Date: 2026-06-12
 Mode: slate-auto research packet
-Status: kept, promoted, and first promoted packet closed
+Status: kept, promoted, and promoted packets closed
 
 ## Verdict
 
@@ -21,10 +21,13 @@ only if the metric points to a real hot path.
 - Current v2 already prevents the old dirty fix class: virtualized repeated
   `Shift+ArrowDown` / `Shift+ArrowUp` is checked against staged focus-step
   parity and asserts no model-line fallback.
-- The remaining weak lanes are narrow:
-  - start-block repeated `Shift+ArrowDown` residual latency;
-  - select-all delete undo bulk-restore p95;
-  - benchmark honesty around cold versus warm/materialized selection paths.
+- The previously weak lanes are now closed:
+  - start-block repeated `Shift+ArrowDown` is covered by the 50-step
+    cross-editor benchmark;
+  - staged/full-DOM parity is covered by the 50-step staged keyboard command
+    benchmark on active-DOM-group and content-visibility surfaces;
+  - select-all delete undo bulk-restore p95 is covered by a five-iteration
+    200k staged/virtualized trace.
 - Legacy Slate's huge-document example is chunking-first with a shallow test.
   It is useful as a baseline, not as a quality target.
 
@@ -122,11 +125,25 @@ Packet result:
   The current browser tests allow 15s bounds; optimization without better p95
   attribution risks another fake win.
 
-## Next Checkpoint
+## Final Packet State
 
-The first promoted benchmark packet is closed and kept. Next checkpoints:
-- harvest the reusable test/oracle lesson into `slate-browser` only if another
-  packet repeats the same proof code;
-- continue research on editor testing oracles;
-- keep select-all undo p95 attribution queued, but do not reopen it unless a
-  fresh metric exceeds the current bounded result.
+The promoted benchmark packets are closed and kept:
+
+- Cross-editor 5k held ShiftDown rerun: Slate auto p95 `15.3ms`, Slate
+  virtualized p95 `15.8ms`, ProseMirror p95 `15.8ms`, Lexical p95 `16.4ms`.
+- Staged/full-DOM 10k parity: staged active-DOM-group repeated ShiftDown p95
+  `14.1ms`, staged content-visibility p95 `14.2ms`; both matched 50 full-DOM
+  reference steps.
+- 200k select-all/delete/undo p95: staged undo-delete `45.6ms`, virtualized
+  undo-delete `46.4ms`, both restored.
+- Selection screenshot/helper promotion: existing
+  `attachSlateBrowserSelectionScreenshot` plus no-double-highlight assertions
+  cover the repeated visual proof pattern. Current visual-native-selection and
+  huge-document projected-selection proof reused the helper; no new helper is
+  needed.
+
+Next checkpoints:
+- do not reopen select-all undo unless a fresh metric exceeds the current
+  bounded result;
+- keep browser-unattributed long-task noise under benchmark claim-width
+  discipline instead of treating it as a Slate runtime hot path.
