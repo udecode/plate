@@ -48,6 +48,22 @@ describe('markdownToSlateNodesSafely', () => {
     ]);
   });
 
+  it('preserves marked leaves in the incomplete inline MDX fallback tail', () => {
+    const editor = createTestEditor();
+
+    expect(markdownToSlateNodesSafely(editor, 'plain <u> **bold**')).toEqual([
+      {
+        children: [
+          { text: 'plain' },
+          { text: '<u>' },
+          { text: ' ' },
+          { bold: true, text: 'bold' },
+        ],
+        type: 'p',
+      },
+    ]);
+  });
+
   it('wraps incomplete inline MDX in a new paragraph when there are no complete blocks', () => {
     const editor = createTestEditor();
 

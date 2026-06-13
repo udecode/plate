@@ -17,6 +17,14 @@ import { splitIncompleteMdx } from './splitIncompleteMdx';
 const isPlainTextNode = (node: unknown): node is { text: string } =>
   TextApi.isText(node) && Object.keys(node).every((key) => key === 'text');
 
+const isSplitInsideTableRow = (completeString: string) => {
+  const currentLine = completeString.slice(
+    completeString.lastIndexOf('\n') + 1
+  );
+
+  return currentLine.includes('|');
+};
+
 const appendInlineNodesToLastTextContainer = (
   editor: SlateEditor,
   node: unknown,
@@ -36,7 +44,7 @@ const appendInlineNodesToLastTextContainer = (
 
     if (
       isPlainTextNode(lastChild) &&
-      inlineNodes.every((inlineNode) => TextApi.isText(inlineNode))
+      inlineNodes.every((inlineNode) => isPlainTextNode(inlineNode))
     ) {
       lastChild.text += inlineNodes
         .map((inlineNode) => inlineNode.text)
@@ -105,33 +113,37 @@ export const markdownToSlateNodesSafely = (
   const tableType = getPluginType(editor, KEYS.table);
 
   if (ElementApi.isElement(lastBlock) && lastBlock.type === tableType) {
-    const withoutMdxNodes = markdownToSlateNodes(editor, data, {
-      ...options,
-      withoutMdx: true,
-    });
-    const tableOrdinal = completeNodes
-      .filter((node) => ElementApi.isElement(node) && node.type === tableType)
-      .indexOf(lastBlock);
-    let fallbackTableIndex = -1;
-    let seenTables = -1;
+    if (isSplitInsideTableRow(completeString)) {
+      const withoutMdxNodes = markdownToSlateNodes(editor, data, {
+        ...options,
+        withoutMdx: true,
+      });
+      const tableOrdinal = completeNodes
+        .filter((node) => ElementApi.isElement(node) && node.type === tableType)
+        .indexOf(lastBlock);
+      let fallbackTableIndex = -1;
+      let seenTables = -1;
 
-    for (const [index, node] of withoutMdxNodes.entries()) {
-      if (ElementApi.isElement(node) && node.type === tableType) {
-        seenTables += 1;
+      for (const [index, node] of withoutMdxNodes.entries()) {
+        if (ElementApi.isElement(node) && node.type === tableType) {
+          seenTables += 1;
 
-        if (seenTables === tableOrdinal) {
-          fallbackTableIndex = index;
-          break;
+          if (seenTables === tableOrdinal) {
+            fallbackTableIndex = index;
+            break;
+          }
         }
+      }
+
+      if (fallbackTableIndex !== -1) {
+        return [
+          ...completeNodes.slice(0, -1),
+          ...withoutMdxNodes.slice(fallbackTableIndex),
+        ];
       }
     }
 
-    if (fallbackTableIndex !== -1) {
-      return [
-        ...completeNodes.slice(0, -1),
-        ...withoutMdxNodes.slice(fallbackTableIndex),
-      ];
-    }
+    return [...completeNodes, newBlock];
   }
 
   if (

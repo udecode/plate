@@ -253,6 +253,50 @@ describe('markdown tables', () => {
     ]);
   });
 
+  it('keeps a parsed table when incomplete MDX starts after the table', () => {
+    const editor = createTableEditor();
+    const input = ['| Content |', '| --- |', '| <u>ok</u> |', '', '<x>'].join(
+      '\n'
+    );
+
+    const value = deserializeMd(editor, input);
+
+    expect(value).toMatchObject([
+      {
+        children: [
+          {
+            children: [
+              {
+                children: [{ type: 'p', children: [{ text: 'Content' }] }],
+                type: 'th',
+              },
+            ],
+            type: 'tr',
+          },
+          {
+            children: [
+              {
+                children: [
+                  {
+                    type: 'p',
+                    children: [{ text: 'ok', underline: true }],
+                  },
+                ],
+                type: 'td',
+              },
+            ],
+            type: 'tr',
+          },
+        ],
+        type: 'table',
+      },
+      {
+        children: [{ text: '<x>' }],
+        type: 'p',
+      },
+    ]);
+  });
+
   it('serializes multi-paragraph table cells as html breaks inside one paragraph', () => {
     const editor = createTableEditor();
     const input = [
