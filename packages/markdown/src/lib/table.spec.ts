@@ -122,6 +122,137 @@ describe('markdown tables', () => {
     ]);
   });
 
+  it('keeps blocks after a table cell that falls back from incomplete MDX', () => {
+    const editor = createTableEditor();
+    const input = [
+      '| Dimension | Basis |',
+      '| --- | --- |',
+      '| Volume trend | a<b |',
+      '',
+      'After',
+    ].join('\n');
+
+    const value = deserializeMd(editor, input);
+
+    expect(value).toMatchObject([
+      {
+        children: [
+          {
+            children: [
+              {
+                children: [{ type: 'p', children: [{ text: 'Dimension' }] }],
+                type: 'th',
+              },
+              {
+                children: [{ type: 'p', children: [{ text: 'Basis' }] }],
+                type: 'th',
+              },
+            ],
+            type: 'tr',
+          },
+          {
+            children: [
+              {
+                children: [{ type: 'p', children: [{ text: 'Volume trend' }] }],
+                type: 'td',
+              },
+              {
+                children: [{ type: 'p', children: [{ text: 'a<b' }] }],
+                type: 'td',
+              },
+            ],
+            type: 'tr',
+          },
+        ],
+        type: 'table',
+      },
+      {
+        children: [{ text: 'After' }],
+        type: 'p',
+      },
+    ]);
+  });
+
+  it('repairs the fallback table at the MDX split when a later table exists', () => {
+    const editor = createTableEditor();
+    const input = [
+      '| Dimension | Basis |',
+      '| --- | --- |',
+      '| Volume trend | a<b |',
+      '',
+      '| Name | Value |',
+      '| --- | --- |',
+      '| Later | Table |',
+    ].join('\n');
+
+    const value = deserializeMd(editor, input);
+
+    expect(value).toMatchObject([
+      {
+        children: [
+          {
+            children: [
+              {
+                children: [{ type: 'p', children: [{ text: 'Dimension' }] }],
+                type: 'th',
+              },
+              {
+                children: [{ type: 'p', children: [{ text: 'Basis' }] }],
+                type: 'th',
+              },
+            ],
+            type: 'tr',
+          },
+          {
+            children: [
+              {
+                children: [{ type: 'p', children: [{ text: 'Volume trend' }] }],
+                type: 'td',
+              },
+              {
+                children: [{ type: 'p', children: [{ text: 'a<b' }] }],
+                type: 'td',
+              },
+            ],
+            type: 'tr',
+          },
+        ],
+        type: 'table',
+      },
+      {
+        children: [
+          {
+            children: [
+              {
+                children: [{ type: 'p', children: [{ text: 'Name' }] }],
+                type: 'th',
+              },
+              {
+                children: [{ type: 'p', children: [{ text: 'Value' }] }],
+                type: 'th',
+              },
+            ],
+            type: 'tr',
+          },
+          {
+            children: [
+              {
+                children: [{ type: 'p', children: [{ text: 'Later' }] }],
+                type: 'td',
+              },
+              {
+                children: [{ type: 'p', children: [{ text: 'Table' }] }],
+                type: 'td',
+              },
+            ],
+            type: 'tr',
+          },
+        ],
+        type: 'table',
+      },
+    ]);
+  });
+
   it('serializes multi-paragraph table cells as html breaks inside one paragraph', () => {
     const editor = createTableEditor();
     const input = [

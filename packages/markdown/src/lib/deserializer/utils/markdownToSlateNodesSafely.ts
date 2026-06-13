@@ -14,6 +14,9 @@ import {
 import { deserializeInlineMd } from './deserializeInlineMd';
 import { splitIncompleteMdx } from './splitIncompleteMdx';
 
+const isPlainTextNode = (node: unknown): node is { text: string } =>
+  TextApi.isText(node) && Object.keys(node).every((key) => key === 'text');
+
 const appendInlineNodesToLastTextContainer = (
   editor: SlateEditor,
   node: unknown,
@@ -32,7 +35,7 @@ const appendInlineNodesToLastTextContainer = (
     const lastChild = node.children.at(-1);
 
     if (
-      TextApi.isText(lastChild) &&
+      isPlainTextNode(lastChild) &&
       inlineNodes.every((inlineNode) => TextApi.isText(inlineNode))
     ) {
       lastChild.text += inlineNodes
@@ -106,12 +109,28 @@ export const markdownToSlateNodesSafely = (
       ...options,
       withoutMdx: true,
     });
-    const fallbackTable = withoutMdxNodes
+    const tableOrdinal = completeNodes
       .filter((node) => ElementApi.isElement(node) && node.type === tableType)
-      .at(-1);
+      .indexOf(lastBlock);
+    let fallbackTableIndex = -1;
+    let seenTables = -1;
 
-    if (fallbackTable) {
-      return [...completeNodes.slice(0, -1), fallbackTable];
+    for (const [index, node] of withoutMdxNodes.entries()) {
+      if (ElementApi.isElement(node) && node.type === tableType) {
+        seenTables += 1;
+
+        if (seenTables === tableOrdinal) {
+          fallbackTableIndex = index;
+          break;
+        }
+      }
+    }
+
+    if (fallbackTableIndex !== -1) {
+      return [
+        ...completeNodes.slice(0, -1),
+        ...withoutMdxNodes.slice(fallbackTableIndex),
+      ];
     }
   }
 
