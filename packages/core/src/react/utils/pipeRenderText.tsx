@@ -126,14 +126,12 @@ export const pipeRenderText = (
     }
 
     if (hasActiveRenderText) {
-      for (const { renderText, textKey } of renderTexts) {
+      for (const { renderText: RenderText, textKey } of renderTexts) {
         if (!text[textKey]) continue;
 
-        const newChildren = renderText(props as any);
-
-        if (newChildren !== undefined) {
-          props.children = newChildren;
-        }
+        props.children = (
+          <RenderText {...(props as any)}>{props.children}</RenderText>
+        );
       }
     }
 

@@ -189,14 +189,12 @@ export const pipeRenderLeaf = (
     }
 
     if (hasActiveComplexRenderLeaf) {
-      for (const { key, renderLeaf } of complexRenderLeafEntries) {
+      for (const { key, renderLeaf: RenderLeaf } of complexRenderLeafEntries) {
         if (!leaf[key]) continue;
 
-        const newChildren = renderLeaf(props as any);
-
-        if (newChildren !== undefined) {
-          props.children = newChildren;
-        }
+        props.children = (
+          <RenderLeaf {...(props as any)}>{props.children}</RenderLeaf>
+        );
       }
     }
 
