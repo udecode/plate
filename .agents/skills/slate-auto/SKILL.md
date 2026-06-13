@@ -601,6 +601,12 @@ Rules:
   `bun --filter ./packages/slate-browser build` before browser proofs that import the
   package. The specs can otherwise load stale generated package output and fail
   on missing helper methods instead of product behavior;
+- after changing `packages/slate-react/src/**`, `packages/slate-dom/src/**`, or
+  any public package runtime consumed by the example app through package
+  exports, run the touched package build before managed Playwright proof, for
+  example `bun --filter ./packages/slate-react build`. The managed Playwright
+  wrapper builds `slate-browser` and the Next site, but stale package `dist`
+  can still make the browser prove old runtime behavior;
 - use `bun test ./path` only with repo-relative Bun test paths from
   `.tmp/slate-v2`, or with package-local paths after recording the package cwd;
 - if root `bun test ./packages/.../<file>.test.ts` says the path filter did not
@@ -640,7 +646,8 @@ Rules:
 - for API/docs/current-state audits, do not stream broad `rg -n` matches across
   `docs site packages` into chat. First run `rg -l` or `rg --count-matches`
   with generated trees excluded, then inspect only the small suspect files with
-  `sed` slices or write the full audit to an artifact;
+  `sed` slices or write the full audit to an artifact. Exclude generated static
+  output such as `.tmp/slate-v2/site/out/**` unless that artifact is the target;
 - before any `rg -n` over more than one large root such as
   `docs/slate-v2`, `packages`, `site/examples`, or `playwright/integration`,
   run a preflight with `rg -l`, `rg --count-matches`, or `rg --files | rg`.
