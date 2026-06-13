@@ -1,5 +1,11 @@
 # @platejs/ai
 
+## 53.1.1
+
+### Patch Changes
+
+- Updated `@platejs/markdown`.
+
 ## 53.0.9
 
 ### Patch Changes
