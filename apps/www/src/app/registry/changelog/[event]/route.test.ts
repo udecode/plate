@@ -14,7 +14,7 @@ describe('/registry/changelog/[event].json', () => {
     expect(response.status).toBe(200);
     expect(data).toMatchObject({
       id: '2026-06-03-show-code-block-language-labels-read-only-mode',
-      release: { status: 'unreleased' },
+      release: { status: 'latest', source: 'open-pull-request' },
       change: {
         pullRequest: {
           number: 4989,

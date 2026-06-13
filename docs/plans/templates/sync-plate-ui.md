@@ -33,6 +33,14 @@ Sync source:
 - Target sync state: `<target>/.plate-ui-sync/status.json`
 - Target run artifacts: `<target>/.plate-ui-sync/runs/<date>-<scope>/`
 
+First checkpoint:
+- Before implementation or broad exploration, copy every explicit prompt
+  requirement into this plan as checkable checkpoints: scope, non-goals,
+  timing/duration, stop conditions, deliverables, final handoff sections,
+  verification surface, and success criteria.
+- Do not continue into source mapping or apply work until this extraction is
+  complete or explicitly marked N/A with reason.
+
 Completion threshold:
 - Planning-only run: complete only when target repo/config/source is mapped,
   Plate source and component changelog evidence are recorded, every scoped
@@ -117,6 +125,7 @@ Completion rule:
 Start Gates:
 | Gate | Applies | Evidence |
 |------|---------|----------|
+| Prompt requirements captured before work | pending | pending |
 | `autogoal` loaded and active goal checked/created | pending | pending |
 | `sync-plate-ui` rule read | pending | pending |
 | Output budget strategy recorded | pending | pending |
@@ -131,6 +140,10 @@ Start Gates:
 | User-review boundary recorded | pending | pending |
 
 Work Checklist:
+- [ ] First checkpoint complete: every explicit prompt requirement, scope
+      boundary, timing constraint, stop condition, deliverable, final handoff
+      section, verification surface, and success criterion is copied into this
+      plan as checkable checkpoints before source mapping or apply work.
 - [ ] Objective, threshold, verification surface, constraints, boundaries, and
       blocked condition are filled from the active goal.
 - [ ] Target repo config recorded with package manager, aliases, registry paths,

@@ -7,6 +7,7 @@ const DEFAULT_SOURCE = 'tooling/data/plate-ui-changelog.mdx';
 const DEFAULT_OUT_DIR = 'apps/www/src/registry/changelog';
 const DEFAULT_REGISTRY_ROOT = 'apps/www/src/registry';
 const DEFAULT_RELEASE_INDEX = 'apps/www/src/generated/release-index.json';
+const DEFAULT_CHANGESET_DIR = '.changeset';
 const GITHUB_REPO_URL = 'https://github.com/udecode/plate';
 const REGISTRY_CHANGELOG_PUBLIC_PATH = '/registry/changelog';
 
@@ -452,6 +453,19 @@ function readJsonArray(filePath) {
   return parsed;
 }
 
+function hasPendingChangeset(changesetDir = DEFAULT_CHANGESET_DIR) {
+  if (!fs.existsSync(changesetDir)) return false;
+
+  return fs
+    .readdirSync(changesetDir, { withFileTypes: true })
+    .some(
+      (entry) =>
+        entry.isFile() &&
+        entry.name.endsWith('.md') &&
+        entry.name !== 'README.md'
+    );
+}
+
 function readRegistryDefinitions(registryFiles) {
   return registryFiles
     .filter((filePath) => path.basename(filePath).startsWith('registry-'))
@@ -578,15 +592,49 @@ function toLegacyReleaseMetadata(release) {
   };
 }
 
-function toReleaseState(release, changeUnit) {
+function toReleaseState(
+  release,
+  changeUnit,
+  {
+    hasPendingChangeset,
+    isChangeAfterRelease,
+    isReleaseAncestor,
+    latestRelease,
+    previousRelease,
+  }
+) {
   if (release) return release;
 
-  return {
-    status:
-      changeUnit.pr?.state && changeUnit.pr.state !== 'MERGED'
-        ? 'unreleased'
-        : 'unresolved',
-  };
+  if (
+    latestRelease &&
+    isReleaseAncestor(changeUnit, latestRelease) &&
+    !(previousRelease && isReleaseAncestor(changeUnit, previousRelease))
+  ) {
+    return toReleaseMetadata(latestRelease, 'latest-release-no-changeset');
+  }
+
+  if (changeUnit.pr?.state && changeUnit.pr.state !== 'MERGED') {
+    return {
+      status: 'latest',
+      source: 'open-pull-request',
+    };
+  }
+
+  if (hasPendingChangeset) {
+    return {
+      status: 'latest',
+      source: 'pending-changeset',
+    };
+  }
+
+  if (latestRelease && isChangeAfterRelease(changeUnit, latestRelease)) {
+    return {
+      status: 'latest',
+      source: 'post-release-no-changeset',
+    };
+  }
+
+  return { status: 'unresolved' };
 }
 
 export function buildRegistryChangelogIndexes(outputs) {
@@ -645,11 +693,16 @@ function getRegistryChangelogArtifactOutputs(outputs, outDir) {
 export function buildRegistryChangelogEvents(
   rows,
   {
+    hasPendingChangeset = false,
+    isChangeAfterRelease = isChangeUnitAfterRelease,
+    isReleaseAncestor = isChangeUnitInRelease,
     outDir = DEFAULT_OUT_DIR,
     provenanceBySourceId = new Map(),
     registryDefinitions = [],
     registryFiles = [],
     releases = [],
+    latestRelease = releases[0] ?? null,
+    previousRelease = releases[1] ?? null,
     sourcePath = DEFAULT_SOURCE,
   } = {}
 ) {
@@ -696,7 +749,13 @@ export function buildRegistryChangelogEvents(
         path: sourcePath.replaceAll(path.sep, '/'),
       },
       change: toChangeMetadata(changeUnit, commits),
-      release: toReleaseState(release, changeUnit),
+      release: toReleaseState(release, changeUnit, {
+        hasPendingChangeset,
+        isChangeAfterRelease,
+        isReleaseAncestor,
+        latestRelease,
+        previousRelease,
+      }),
       kind: getChangeUnitKind(entries),
       summary: changeUnit.title ?? entries[0].summary,
       targets: buildRegistryChangelogTargets(groupRows, {
@@ -1043,6 +1102,67 @@ export function resolveReleaseForChangeUnit(changeUnit, releases) {
   return resolveReleaseForDate(changeUnit.date, releases);
 }
 
+function isChangeUnitInRelease(changeUnit, release) {
+  if (!release?.tag) return false;
+
+  const candidateCommits = getChangeUnitCommitCandidates(changeUnit);
+
+  for (const commit of candidateCommits) {
+    try {
+      execFileSync(
+        'git',
+        ['merge-base', '--is-ancestor', commit, release.tag],
+        {
+          stdio: 'ignore',
+        }
+      );
+
+      return true;
+    } catch {
+      // Keep looking. Missing local tags or non-ancestor commits are not proof.
+    }
+  }
+
+  return false;
+}
+
+function isChangeUnitAfterRelease(changeUnit, release) {
+  if (!release?.tag) return false;
+
+  const releaseDate = readGitCommitDate(release.tag);
+  if (!releaseDate) return false;
+
+  if (
+    changeUnit.pr?.mergedAt &&
+    Date.parse(changeUnit.pr.mergedAt) > Date.parse(releaseDate)
+  ) {
+    return true;
+  }
+
+  return getChangeUnitCommitCandidates(changeUnit).some((commit) => {
+    const commitDate = readGitCommitDate(commit);
+
+    return Boolean(
+      commitDate && Date.parse(commitDate) > Date.parse(releaseDate)
+    );
+  });
+}
+
+function getChangeUnitCommitCandidates(changeUnit) {
+  return unique([changeUnit.pr?.mergeCommit, changeUnit.commit?.oid]);
+}
+
+function readGitCommitDate(ref) {
+  try {
+    return execFileSync('git', ['log', '-1', '--format=%cI', ref], {
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+    }).trim();
+  } catch {
+    return null;
+  }
+}
+
 export function resolveReleaseForRow(row, releases) {
   return resolveReleaseForDate(row.date, releases);
 }
@@ -1124,6 +1244,7 @@ function main() {
   const registryFiles = listFiles(args.registryRoot);
   const registryDefinitions = readRegistryDefinitions(registryFiles);
   const releases = readJsonArray(args.releaseIndex);
+  const pendingChangeset = hasPendingChangeset();
   const provenanceBySourceId = args.inferProvenance
     ? getGitProvenanceBySourceId(selectedRows, {
         sourcePath: args.source,
@@ -1131,6 +1252,7 @@ function main() {
       })
     : new Map();
   const outputs = buildRegistryChangelogEvents(selectedRows, {
+    hasPendingChangeset: pendingChangeset,
     outDir: args.outDir,
     provenanceBySourceId,
     registryDefinitions,

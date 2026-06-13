@@ -404,6 +404,7 @@ test('current latest 14 source rows collapse to 5 change-unit events', () => {
     },
   ];
   const outputs = buildRegistryChangelogEvents(rows, {
+    isChangeAfterRelease: () => true,
     provenanceBySourceId,
     releases,
   });
@@ -421,11 +422,13 @@ test('current latest 14 source rows collapse to 5 change-unit events', () => {
     ]
   );
   assert.equal(outputs[0].entry.entries.length, 1);
-  assert.equal(outputs[0].entry.release.status, 'unresolved');
+  assert.equal(outputs[0].entry.release.status, 'latest');
+  assert.equal(outputs[0].entry.release.source, 'post-release-no-changeset');
   assert.equal(outputs[0].entry.change.pullRequest.number, 5003);
   assert.equal(outputs[0].entry.change.pullRequest.state, 'MERGED');
   assert.equal(outputs[1].entry.entries.length, 1);
-  assert.equal(outputs[1].entry.release.status, 'unreleased');
+  assert.equal(outputs[1].entry.release.status, 'latest');
+  assert.equal(outputs[1].entry.release.source, 'open-pull-request');
   assert.equal(outputs[1].entry.change.pullRequest.number, 4989);
   assert.equal(outputs[1].entry.change.pullRequest.state, 'OPEN');
   assert.equal(outputs[2].entry.entries.length, 2);
@@ -437,6 +440,75 @@ test('current latest 14 source rows collapse to 5 change-unit events', () => {
   assert.equal(outputs[4].entry.entries.length, 7);
   assert.equal(outputs[4].entry.release.tag, 'v53.0.0');
   assert.equal(outputs[4].entry.change.pullRequest.number, 4941);
+
+  const latestOutputs = buildRegistryChangelogEvents(rows, {
+    hasPendingChangeset: true,
+    isReleaseAncestor: () => false,
+    provenanceBySourceId,
+    releases,
+  });
+
+  assert.equal(latestOutputs[0].entry.release.status, 'latest');
+  assert.equal(latestOutputs[0].entry.release.source, 'pending-changeset');
+  assert.equal(latestOutputs[1].entry.release.status, 'latest');
+  assert.equal(latestOutputs[1].entry.release.source, 'open-pull-request');
+
+  const unprovenOutputs = buildRegistryChangelogEvents(rows, {
+    isChangeAfterRelease: () => false,
+    isReleaseAncestor: () => false,
+    provenanceBySourceId,
+    releases,
+  });
+
+  assert.equal(unprovenOutputs[0].entry.release.status, 'unresolved');
+
+  const coveredLatestOutputs = buildRegistryChangelogEvents(rows, {
+    isReleaseAncestor: (_changeUnit, release) => release.tag === 'v53.1.0',
+    provenanceBySourceId,
+    releases: [
+      {
+        date: '2026-06-10',
+        packageTag: 'platejs@53.1.0',
+        tag: 'v53.1.0',
+        versionPackagePrUrl: 'https://github.com/udecode/plate/pull/4999',
+      },
+      ...releases,
+    ],
+  });
+
+  assert.equal(coveredLatestOutputs[0].entry.release.status, 'released');
+  assert.equal(coveredLatestOutputs[0].entry.release.tag, 'v53.1.0');
+  assert.equal(
+    coveredLatestOutputs[0].entry.release.source,
+    'latest-release-no-changeset'
+  );
+
+  const previousReleaseAncestorOutputs = buildRegistryChangelogEvents(rows, {
+    isChangeAfterRelease: () => false,
+    isReleaseAncestor: () => true,
+    provenanceBySourceId,
+    releases,
+  });
+
+  assert.equal(
+    previousReleaseAncestorOutputs[0].entry.release.status,
+    'unresolved'
+  );
+
+  const releasedWithPendingChangesetOutputs = buildRegistryChangelogEvents(
+    rows,
+    {
+      hasPendingChangeset: true,
+      isReleaseAncestor: (_changeUnit, release) => release.tag === 'v53.0.7',
+      provenanceBySourceId,
+      releases,
+    }
+  );
+
+  assert.equal(
+    releasedWithPendingChangesetOutputs[0].entry.release.status,
+    'released'
+  );
   for (const output of outputs) {
     assert.equal('pr' in output.entry, false);
     assert.equal('commit' in output.entry, false);

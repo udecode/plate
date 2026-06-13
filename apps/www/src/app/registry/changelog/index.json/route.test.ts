@@ -15,7 +15,7 @@ describe('/registry/changelog/index.json', () => {
     expect(data.events[0]).toMatchObject({
       href: '/registry/changelog/2026-06-10-attach-column-drop-target-ref.json',
       id: '2026-06-10-attach-column-drop-target-ref',
-      release: { status: 'unresolved' },
+      release: { status: 'latest', source: 'post-release-no-changeset' },
       change: {
         pullRequest: {
           number: 5003,

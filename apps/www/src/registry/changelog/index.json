@@ -29,7 +29,8 @@
         }
       },
       "release": {
-        "status": "unresolved"
+        "status": "latest",
+        "source": "post-release-no-changeset"
       },
       "targets": ["column-node"],
       "entries": 1,
@@ -67,7 +68,8 @@
         }
       },
       "release": {
-        "status": "unreleased"
+        "status": "latest",
+        "source": "open-pull-request"
       },
       "targets": ["code-block-node", "code-block-node-static"],
       "entries": 1,

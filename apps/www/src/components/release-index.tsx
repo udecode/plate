@@ -11,7 +11,7 @@ import * as Typography from '@/components/typography';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import releaseIndexData from '@/generated/release-index.json';
-import { UNRELEASED_PLATE_UI_RELEASE_TAG } from '@/lib/plate-ui-release-tags';
+import { LATEST_PLATE_UI_RELEASE_TAG } from '@/lib/plate-ui-release-tags';
 import {
   formatReleaseDate,
   getCurrentReleaseMajorGroups,
@@ -38,6 +38,10 @@ export type PlateUiReleaseChange = {
   pullRequest?: {
     number: number;
     url: string;
+  };
+  release: {
+    status: 'latest' | 'released' | 'unresolved';
+    tag?: string;
   };
   summary: string;
   targets: {
@@ -71,26 +75,26 @@ export function ReleaseIndex({
   showMajorHeadings = false,
   showPackageChanges = true,
   showPlateUiChanges = true,
-  showUnreleasedPlateUiChanges = true,
+  showLatestPlateUiChanges = true,
 }: HTMLAttributes<HTMLDivElement> & {
   plateUiChangesByTag?: PlateUiReleaseChangesByTag;
   releases?: ReleaseIndexRelease[];
   showMajorHeadings?: boolean;
+  showLatestPlateUiChanges?: boolean;
   showPackageChanges?: boolean;
   showPlateUiChanges?: boolean;
-  showUnreleasedPlateUiChanges?: boolean;
 }) {
   const baseReleaseList =
     releases ??
     getCurrentReleaseMajorGroups(
       releaseIndexData as ReleaseIndexRelease[]
     ).flatMap((group) => group.releases);
-  const unreleasedPlateUiChanges = showUnreleasedPlateUiChanges
-    ? (plateUiChangesByTag?.[UNRELEASED_PLATE_UI_RELEASE_TAG] ?? [])
+  const latestPlateUiChanges = showLatestPlateUiChanges
+    ? (plateUiChangesByTag?.[LATEST_PLATE_UI_RELEASE_TAG] ?? [])
     : [];
   const messages = baseReleaseList.map((release, index) => {
     const plateUiChanges = [
-      ...(index === 0 ? unreleasedPlateUiChanges : []),
+      ...(index === 0 ? latestPlateUiChanges : []),
       ...(plateUiChangesByTag?.[release.tag] ?? []),
     ];
 
@@ -365,6 +369,11 @@ function PlateUiReleaseChangeItem({
         <div className="min-w-0 flex-1">
           <h3 className="font-heading font-semibold text-base tracking-tight">
             Plate UI
+            {change.release.status === 'latest' ? (
+              <Badge className="ml-2 align-middle" variant="outline">
+                Latest
+              </Badge>
+            ) : null}
           </h3>
           <Button
             asChild

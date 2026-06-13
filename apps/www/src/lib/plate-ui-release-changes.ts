@@ -11,7 +11,7 @@ import {
   type RegistryChangelogEvent,
   type RegistryChangelogTarget,
 } from '@/lib/registry-changelog';
-import { UNRELEASED_PLATE_UI_RELEASE_TAG } from './plate-ui-release-tags';
+import { LATEST_PLATE_UI_RELEASE_TAG } from './plate-ui-release-tags';
 
 export function getPlateUiReleaseChangesByTag() {
   const events = getRegistryChangelogIndex()
@@ -25,7 +25,10 @@ function groupPlateUiReleaseChangesByTag(events: RegistryChangelogEvent[]) {
   const changesByTag: PlateUiReleaseChangesByTag = {};
 
   for (const event of events) {
-    const tag = event.release.tag ?? UNRELEASED_PLATE_UI_RELEASE_TAG;
+    const tag =
+      event.release.status === 'latest'
+        ? LATEST_PLATE_UI_RELEASE_TAG
+        : (event.release.tag ?? LATEST_PLATE_UI_RELEASE_TAG);
 
     changesByTag[tag] ??= [];
     changesByTag[tag].push(toPlateUiReleaseChange(event));
@@ -42,6 +45,10 @@ function toPlateUiReleaseChange(
     href: `/registry/changelog/${event.id}.json`,
     id: event.id,
     kind: event.kind,
+    release: {
+      status: event.release.status,
+      tag: event.release.tag,
+    },
     pullRequest: event.change.pullRequest
       ? {
           number: event.change.pullRequest.number,

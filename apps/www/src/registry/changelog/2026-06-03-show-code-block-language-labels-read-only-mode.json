@@ -27,7 +27,8 @@
     }
   },
   "release": {
-    "status": "unreleased"
+    "status": "latest",
+    "source": "open-pull-request"
   },
   "kind": "behavior",
   "summary": "Show code block language labels in read-only mode",

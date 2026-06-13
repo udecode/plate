@@ -77,7 +77,7 @@ export default async function ReleaseMajorPage({
     <ReleasePageContent
       plateUiChangesByTag={plateUiChangesByTag}
       releases={group.releases}
-      showUnreleasedPlateUiChanges={false}
+      showLatestPlateUiChanges={false}
       title={`v${group.major} Releases`}
     />
   );

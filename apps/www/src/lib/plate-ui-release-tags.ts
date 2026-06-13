@@ -1,1 +1,1 @@
-export const UNRELEASED_PLATE_UI_RELEASE_TAG = 'plate-ui-unreleased';
+export const LATEST_PLATE_UI_RELEASE_TAG = 'plate-ui-latest';

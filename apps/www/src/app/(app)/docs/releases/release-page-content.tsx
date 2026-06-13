@@ -17,16 +17,16 @@ export function ReleasePageContent({
   description,
   plateUiChangesByTag,
   releases,
+  showLatestPlateUiChanges = true,
   showMajorHeadings = false,
-  showUnreleasedPlateUiChanges = true,
   title,
 }: {
   after?: ReactNode;
   description?: string;
   plateUiChangesByTag?: PlateUiReleaseChangesByTag;
   releases: ReleaseIndexRelease[];
+  showLatestPlateUiChanges?: boolean;
   showMajorHeadings?: boolean;
-  showUnreleasedPlateUiChanges?: boolean;
   title: string;
 }) {
   const [showPackageChanges, setShowPackageChanges] = useState(true);
@@ -92,7 +92,7 @@ export function ReleasePageContent({
               showPackageChanges={showPackageChanges}
               showMajorHeadings={showMajorHeadings}
               showPlateUiChanges={showPlateUiChanges}
-              showUnreleasedPlateUiChanges={showUnreleasedPlateUiChanges}
+              showLatestPlateUiChanges={showLatestPlateUiChanges}
             />
             {after}
           </div>

@@ -28,7 +28,8 @@
     }
   },
   "release": {
-    "status": "unresolved"
+    "status": "latest",
+    "source": "post-release-no-changeset"
   },
   "kind": "fix",
   "summary": "fix(dnd): attach column drop target ref",

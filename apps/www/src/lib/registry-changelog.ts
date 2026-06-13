@@ -8,7 +8,7 @@ export type RegistryChangelogDiagnostic = {
 };
 
 export type RegistryChangelogRelease = {
-  status: 'released' | 'unreleased' | 'unresolved';
+  status: 'latest' | 'released' | 'unresolved';
   changelogUrl?: string;
   packageTag?: string;
   requiresPlate?: string | null;
