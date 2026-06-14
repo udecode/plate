@@ -12,7 +12,8 @@
     {
       "path": "src/registry/components/editor/plugins/date-kit.tsx",
       "content": "'use client';\n\nimport { DatePlugin } from '@platejs/date/react';\n\nimport { DateElement } from '@/registry/ui/date-node';\n\nexport const DateKit = [DatePlugin.withComponent(DateElement)];\n",
-      "type": "registry:component"
+      "type": "registry:component",
+      "target": "@components/editor/plugins/date-kit.tsx"
     }
   ],
   "type": "registry:component"

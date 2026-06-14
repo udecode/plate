@@ -11,7 +11,8 @@
     {
       "path": "src/registry/components/editor/plugins/toc-base-kit.tsx",
       "content": "import { BaseTocPlugin } from '@platejs/toc';\n\nimport { TocElementStatic } from '@/registry/ui/toc-node-static';\n\nexport const BaseTocKit = [BaseTocPlugin.withComponent(TocElementStatic)];\n",
-      "type": "registry:component"
+      "type": "registry:component",
+      "target": "@components/editor/plugins/toc-base-kit.tsx"
     }
   ],
   "type": "registry:component"

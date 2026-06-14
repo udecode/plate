@@ -11,7 +11,8 @@
     {
       "path": "src/registry/components/editor/plugins/toggle-base-kit.tsx",
       "content": "import { BaseTogglePlugin } from '@platejs/toggle';\n\nimport { ToggleElementStatic } from '@/registry/ui/toggle-node-static';\n\nexport const BaseToggleKit = [\n  BaseTogglePlugin.withComponent(ToggleElementStatic),\n];\n",
-      "type": "registry:component"
+      "type": "registry:component",
+      "target": "@components/editor/plugins/toggle-base-kit.tsx"
     }
   ],
   "type": "registry:component"

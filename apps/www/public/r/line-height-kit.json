@@ -12,7 +12,8 @@
     {
       "path": "src/registry/components/editor/plugins/line-height-kit.tsx",
       "content": "'use client';\n\nimport { LineHeightPlugin } from '@platejs/basic-styles/react';\nimport { KEYS } from 'platejs';\n\nexport const LineHeightKit = [\n  LineHeightPlugin.configure({\n    inject: {\n      nodeProps: {\n        defaultNodeValue: 1.5,\n        validNodeValues: [1, 1.2, 1.5, 2, 3],\n      },\n      targetPlugins: [...KEYS.heading, KEYS.p],\n    },\n  }),\n];\n",
-      "type": "registry:component"
+      "type": "registry:component",
+      "target": "@components/editor/plugins/line-height-kit.tsx"
     }
   ],
   "type": "registry:component"

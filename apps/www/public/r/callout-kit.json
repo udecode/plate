@@ -12,7 +12,8 @@
     {
       "path": "src/registry/components/editor/plugins/callout-kit.tsx",
       "content": "'use client';\n\nimport { CalloutPlugin } from '@platejs/callout/react';\n\nimport { CalloutElement } from '@/registry/ui/callout-node';\n\nexport const CalloutKit = [CalloutPlugin.withComponent(CalloutElement)];\n",
-      "type": "registry:component"
+      "type": "registry:component",
+      "target": "@components/editor/plugins/callout-kit.tsx"
     }
   ],
   "type": "registry:component"

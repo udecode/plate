@@ -1607,7 +1607,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/align-base-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/align-base-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/align-base-kit.tsx")
@@ -1624,7 +1624,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/basic-blocks-base-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/basic-blocks-base-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/basic-blocks-base-kit.tsx")
@@ -1641,7 +1641,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/basic-marks-base-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/basic-marks-base-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/basic-marks-base-kit.tsx")
@@ -1658,7 +1658,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/callout-base-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/callout-base-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/callout-base-kit.tsx")
@@ -1675,7 +1675,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/code-block-base-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/code-block-base-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/code-block-base-kit.tsx")
@@ -1692,7 +1692,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/code-drawing-base-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/code-drawing-base-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/code-drawing-base-kit.tsx")
@@ -1709,7 +1709,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/column-base-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/column-base-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/column-base-kit.tsx")
@@ -1726,7 +1726,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/comment-base-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/comment-base-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/comment-base-kit.tsx")
@@ -1743,7 +1743,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/date-base-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/date-base-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/date-base-kit.tsx")
@@ -1760,7 +1760,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/footnote-base-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/footnote-base-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/footnote-base-kit.tsx")
@@ -1777,7 +1777,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/excalidraw-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/excalidraw-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/excalidraw-kit.tsx")
@@ -1794,7 +1794,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/font-base-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/font-base-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/font-base-kit.tsx")
@@ -1811,7 +1811,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/indent-base-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/indent-base-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/indent-base-kit.tsx")
@@ -1828,7 +1828,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/line-height-base-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/line-height-base-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/line-height-base-kit.tsx")
@@ -1845,7 +1845,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/link-base-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/link-base-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/link-base-kit.tsx")
@@ -1862,7 +1862,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/list-base-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/list-base-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/list-base-kit.tsx")
@@ -1879,7 +1879,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/math-base-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/math-base-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/math-base-kit.tsx")
@@ -1896,7 +1896,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/media-base-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/media-base-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/media-base-kit.tsx")
@@ -1913,7 +1913,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/mention-base-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/mention-base-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/mention-base-kit.tsx")
@@ -1930,7 +1930,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/suggestion-base-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/suggestion-base-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/suggestion-base-kit.tsx")
@@ -1947,7 +1947,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/table-base-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/table-base-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/table-base-kit.tsx")
@@ -1964,7 +1964,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/toc-base-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/toc-base-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/toc-base-kit.tsx")
@@ -1981,7 +1981,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/toggle-base-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/toggle-base-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/toggle-base-kit.tsx")
@@ -1998,7 +1998,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/editor-base-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/editor-base-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/editor-base-kit.tsx")
@@ -2015,7 +2015,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/ai-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/ai-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/ai-kit.tsx")
@@ -2032,7 +2032,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/align-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/align-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/align-kit.tsx")
@@ -2049,7 +2049,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/autoformat-classic-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/autoformat-classic-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/autoformat-classic-kit.tsx")
@@ -2066,7 +2066,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/autoformat-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/autoformat-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/autoformat-kit.tsx")
@@ -2083,7 +2083,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/basic-blocks-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/basic-blocks-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/basic-blocks-kit.tsx")
@@ -2100,7 +2100,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/basic-marks-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/basic-marks-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/basic-marks-kit.tsx")
@@ -2117,7 +2117,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/basic-nodes-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/basic-nodes-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/basic-nodes-kit.tsx")
@@ -2134,7 +2134,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/block-menu-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/block-menu-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/block-menu-kit.tsx")
@@ -2151,7 +2151,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/block-placeholder-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/block-placeholder-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/block-placeholder-kit.tsx")
@@ -2168,7 +2168,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/block-selection-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/block-selection-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/block-selection-kit.tsx")
@@ -2185,7 +2185,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/callout-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/callout-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/callout-kit.tsx")
@@ -2202,7 +2202,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/code-block-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/code-block-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/code-block-kit.tsx")
@@ -2219,7 +2219,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/code-drawing-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/code-drawing-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/code-drawing-kit.tsx")
@@ -2236,7 +2236,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/column-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/column-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/column-kit.tsx")
@@ -2253,7 +2253,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/comment-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/comment-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/comment-kit.tsx")
@@ -2270,7 +2270,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/copilot-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/copilot-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/copilot-kit.tsx")
@@ -2287,7 +2287,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/cursor-overlay-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/cursor-overlay-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/cursor-overlay-kit.tsx")
@@ -2304,7 +2304,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/date-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/date-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/date-kit.tsx")
@@ -2321,7 +2321,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/discussion-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/discussion-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/discussion-kit.tsx")
@@ -2338,7 +2338,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/dnd-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/dnd-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/dnd-kit.tsx")
@@ -2355,7 +2355,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/docx-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/docx-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/docx-kit.tsx")
@@ -2372,7 +2372,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/docx-export-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/docx-export-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/docx-export-kit.tsx")
@@ -2389,7 +2389,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/editor-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/editor-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/editor-kit.tsx")
@@ -2406,7 +2406,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/emoji-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/emoji-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/emoji-kit.tsx")
@@ -2423,7 +2423,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/exit-break-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/exit-break-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/exit-break-kit.tsx")
@@ -2440,7 +2440,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/fixed-toolbar-classic-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/fixed-toolbar-classic-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/fixed-toolbar-classic-kit.tsx")
@@ -2457,7 +2457,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/fixed-toolbar-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/fixed-toolbar-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/fixed-toolbar-kit.tsx")
@@ -2474,7 +2474,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/floating-toolbar-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/floating-toolbar-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/floating-toolbar-kit.tsx")
@@ -2491,7 +2491,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/floating-toolbar-classic-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/floating-toolbar-classic-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/floating-toolbar-classic-kit.tsx")
@@ -2508,7 +2508,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/footnote-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/footnote-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/footnote-kit.tsx")
@@ -2525,7 +2525,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/font-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/font-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/font-kit.tsx")
@@ -2542,7 +2542,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/indent-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/indent-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/indent-kit.tsx")
@@ -2559,7 +2559,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/line-height-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/line-height-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/line-height-kit.tsx")
@@ -2576,7 +2576,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/link-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/link-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/link-kit.tsx")
@@ -2593,7 +2593,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/list-classic-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/list-classic-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/list-classic-kit.tsx")
@@ -2610,7 +2610,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/list-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/list-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/list-kit.tsx")
@@ -2627,7 +2627,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/markdown-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/markdown-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/markdown-kit.tsx")
@@ -2644,7 +2644,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/math-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/math-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/math-kit.tsx")
@@ -2661,7 +2661,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/media-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/media-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/media-kit.tsx")
@@ -2687,7 +2687,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/mention-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/mention-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/mention-kit.tsx")
@@ -2704,7 +2704,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/slash-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/slash-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/slash-kit.tsx")
@@ -2721,7 +2721,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/suggestion-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/suggestion-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/suggestion-kit.tsx")
@@ -2738,7 +2738,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/tabbable-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/tabbable-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/tabbable-kit.tsx")
@@ -2755,7 +2755,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/table-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/table-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/table-kit.tsx")
@@ -2772,7 +2772,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/toc-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/toc-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/toc-kit.tsx")
@@ -2789,7 +2789,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/toggle-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/toggle-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/toggle-kit.tsx")
@@ -2889,7 +2889,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/settings-dialog.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/settings-dialog.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/settings-dialog.tsx")
@@ -2906,7 +2906,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/use-chat.ts",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/use-chat.ts"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/use-chat.ts")
@@ -2923,7 +2923,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/transforms.ts",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/transforms.ts"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/transforms.ts")
@@ -2940,7 +2940,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/transforms-classic.ts",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/transforms-classic.ts"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/transforms-classic.ts")
@@ -2957,7 +2957,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plate-types.ts",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plate-types.ts"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plate-types.ts")
@@ -2978,11 +2978,11 @@ export const Index: Record<string, any> = {
     },{
       path: "src/registry/blocks/editor-ai/components/editor/plate-editor.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plate-editor.tsx"
     },{
       path: "src/registry/blocks/editor-ai/components/editor/editor-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/editor-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/blocks/editor-ai/page.tsx")
@@ -3020,7 +3020,7 @@ export const Index: Record<string, any> = {
     },{
       path: "src/registry/blocks/editor-basic/components/editor/plate-editor.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plate-editor.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/blocks/editor-basic/page.tsx")
@@ -3041,7 +3041,7 @@ export const Index: Record<string, any> = {
     },{
       path: "src/registry/components/editor/slate-to-html.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/slate-to-html.tsx"
     },{
       path: "src/registry/lib/create-html-document.ts",
       type: "registry:lib",
@@ -3663,7 +3663,7 @@ export const Index: Record<string, any> = {
     },{
       path: "src/registry/components/editor/plugins/ai-kit.tsx",
       type: "registry:example",
-      target: ""
+      target: "@components/editor/plugins/ai-kit.tsx"
     },{
       path: "src/registry/examples/values/ai-value.tsx",
       type: "registry:example",

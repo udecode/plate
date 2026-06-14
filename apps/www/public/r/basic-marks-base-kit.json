@@ -13,7 +13,8 @@
     {
       "path": "src/registry/components/editor/plugins/basic-marks-base-kit.tsx",
       "content": "import {\n  BaseBoldPlugin,\n  BaseCodePlugin,\n  BaseHighlightPlugin,\n  BaseItalicPlugin,\n  BaseKbdPlugin,\n  BaseStrikethroughPlugin,\n  BaseSubscriptPlugin,\n  BaseSuperscriptPlugin,\n  BaseUnderlinePlugin,\n} from '@platejs/basic-nodes';\n\nimport { CodeLeafStatic } from '@/registry/ui/code-node-static';\nimport { HighlightLeafStatic } from '@/registry/ui/highlight-node-static';\nimport { KbdLeafStatic } from '@/registry/ui/kbd-node-static';\n\nexport const BaseBasicMarksKit = [\n  BaseBoldPlugin,\n  BaseItalicPlugin,\n  BaseUnderlinePlugin,\n  BaseCodePlugin.withComponent(CodeLeafStatic),\n  BaseStrikethroughPlugin,\n  BaseSubscriptPlugin,\n  BaseSuperscriptPlugin,\n  BaseHighlightPlugin.withComponent(HighlightLeafStatic),\n  BaseKbdPlugin.withComponent(KbdLeafStatic),\n];\n",
-      "type": "registry:component"
+      "type": "registry:component",
+      "target": "@components/editor/plugins/basic-marks-base-kit.tsx"
     }
   ],
   "type": "registry:component"

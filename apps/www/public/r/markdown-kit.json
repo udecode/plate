@@ -13,7 +13,8 @@
     {
       "path": "src/registry/components/editor/plugins/markdown-kit.tsx",
       "content": "import {\n  BaseFootnoteDefinitionPlugin,\n  BaseFootnoteReferencePlugin,\n} from '@platejs/footnote';\nimport { MarkdownPlugin, remarkMdx, remarkMention } from '@platejs/markdown';\nimport { KEYS } from 'platejs';\nimport remarkEmoji from 'remark-emoji';\nimport remarkGfm from 'remark-gfm';\nimport remarkMath from 'remark-math';\n\nexport const MarkdownKit = [\n  BaseFootnoteReferencePlugin,\n  BaseFootnoteDefinitionPlugin,\n  MarkdownPlugin.configure({\n    options: {\n      plainMarks: [KEYS.suggestion, KEYS.comment],\n      remarkPlugins: [\n        remarkMath,\n        remarkGfm,\n        remarkEmoji as any,\n        remarkMdx,\n        remarkMention,\n      ],\n    },\n  }),\n];\n",
-      "type": "registry:component"
+      "type": "registry:component",
+      "target": "@components/editor/plugins/markdown-kit.tsx"
     }
   ],
   "type": "registry:component"
