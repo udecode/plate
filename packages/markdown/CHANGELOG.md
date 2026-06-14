@@ -1,5 +1,11 @@
 # @platejs/markdown
 
+## 53.1.5
+
+### Patch Changes
+
+- [#5016](https://github.com/udecode/plate/pull/5016) by [@zbeyens](https://github.com/zbeyens) – Fix markdown deserialization from crashing on malformed HTML-like MDX input.
+
 ## 53.1.1
 
 ### Patch Changes
