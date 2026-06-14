@@ -61,10 +61,10 @@ Blocked condition:
 Task state:
 - task_type: security bug fix
 - task_complexity: normal
-- current_phase: implementation
-- current_phase_status: in_progress
-- next_phase: implementation
-- goal_status: active
+- current_phase: closeout
+- current_phase_status: complete
+- next_phase: final response
+- goal_status: ready to complete
 
 Current verdict:
 - verdict: valid high-severity package bug
@@ -104,127 +104,134 @@ Start Gates:
 | Barrel/export impact decision recorded | yes | No exports or file layout change expected; `pnpm brl` N/A unless implementation changes that. |
 
 Work Checklist:
-- [ ] Short objective plus outcome, completion threshold, verification surface,
+- [x] Short objective plus outcome, completion threshold, verification surface,
       constraints, boundaries, and blocked condition are concrete.
-- [ ] Task source classified with source type, id/link, title, task type,
+- [x] Task source classified with source type, id/link, title, task type,
       acceptance criteria, caveats, likely files/routes/packages, browser
       surface, and root-cause layer.
-- [ ] Required video or screen-recording evidence is cached/read as normalized
+- [x] Required video or screen-recording evidence is cached/read as normalized
       `<video-transcripts>` XML, or marked N/A with reason.
-- [ ] Nearby repo instructions and implementation patterns read before edits.
-- [ ] Implementation fixes the right ownership boundary, or the narrower choice
+- [x] Nearby repo instructions and implementation patterns read before edits.
+- [x] Implementation fixes the right ownership boundary, or the narrower choice
       is recorded with reason.
-- [ ] Release artifact requirement recorded: changeset, registry changelog, or
+- [x] Release artifact requirement recorded: changeset, registry changelog, or
       N/A with reason.
-- [ ] Final handoff shape decided: bug/feature/testing/batch/review/tracker
+- [x] Final handoff shape decided: bug/feature/testing/batch/review/tracker
       requirements, PR body sync, and issue/Linear sync when applicable.
-- [ ] Branch handling recorded for code-changing work: dedicated branch used,
+- [x] Branch handling recorded for code-changing work: dedicated branch used,
       new branch needed, or N/A with reason.
-- [ ] Local-env-rot retry policy recorded for any surprising repo-wide failure:
+- [x] Local-env-rot retry policy recorded for any surprising repo-wide failure:
       reinstall/rerun evidence or N/A with reason.
-- [ ] Workspace authority recorded: every proof command names the cwd/tool that
+- [x] Workspace authority recorded: every proof command names the cwd/tool that
       owns the changed behavior.
-- [ ] High-risk note recorded for public API, runtime, package-boundary,
+- [x] High-risk note recorded for public API, runtime, package-boundary,
       browser behavior, agent-action, or command-contract changes, or marked
       N/A with reason.
-- [ ] Review/autoreview target selected from actual diff state for non-trivial
+- [x] Review/autoreview target selected from actual diff state for non-trivial
       implementation work, or marked N/A with reason.
-- [ ] Agent-native review decision recorded for `.agents/**`, `.claude/**`,
+- [x] Agent-native review decision recorded for `.agents/**`, `.claude/**`,
       `.codex/**`, skills, hooks, commands, prompts, or user-action tooling.
-- [ ] Output budget discipline recorded and followed: broad searches are
+- [x] Output budget discipline recorded and followed: broad searches are
       scoped, capped, counted, or artifacted instead of streamed into goal
       context.
-- [ ] Package/API pack: public API, package boundary, export, and release-artifact impact are recorded.
-- [ ] Package/API pack: release artifact matrix is applied: `.changeset`, registry changelog, or explicit no-artifact reason.
-- [ ] Package/API pack: `.changeset` work loads `changeset` and follows its package/version/prose rules.
-- [ ] Package/API pack: registry-only work updates `tooling/data/plate-ui-changelog.mdx` and generated `/registry/changelog/*` JSON instead of adding a package changeset.
-- [ ] Package/API pack: no-artifact decisions state why the diff has no published package user-visible delta from `main`.
-- [ ] Package/API pack: compatibility, migration, or hard-cut decision is explicit when public shape changes.
-- [ ] Package/API pack: package-owned typecheck/build/test proof is recorded or marked N/A with reason.
-- [ ] Package/API pack: generated barrels or release notes are updated when required.
+- [x] Package/API pack: public API, package boundary, export, and release-artifact impact are recorded.
+- [x] Package/API pack: release artifact matrix is applied: `.changeset`, registry changelog, or explicit no-artifact reason.
+- [x] Package/API pack: `.changeset` work loads `changeset` and follows its package/version/prose rules.
+- [x] Package/API pack: registry-only work updates `tooling/data/plate-ui-changelog.mdx` and generated `/registry/changelog/*` JSON instead of adding a package changeset.
+- [x] Package/API pack: no-artifact decisions state why the diff has no published package user-visible delta from `main`.
+- [x] Package/API pack: compatibility, migration, or hard-cut decision is explicit when public shape changes.
+- [x] Package/API pack: package-owned typecheck/build/test proof is recorded or marked N/A with reason.
+- [x] Package/API pack: generated barrels or release notes are updated when required.
 
 Completion Gates:
 | Gate | Applies | Required action | Evidence |
 |------|---------|-----------------|----------|
-| Named verification threshold | pending | Run the command, proof, source audit, or artifact check named in this plan | pending |
-| Bug reproduced before fix | pending | Record failing test/repro or N/A with reason | pending |
-| Targeted behavior verification | pending | Run focused test/proof for changed behavior or record N/A | pending |
-| TypeScript or typed config changed | pending | Run relevant typecheck | pending |
-| Package exports or file layout changed | pending | Run `pnpm brl` before final verification and keep generated barrel updates | pending |
-| Package manifests, lockfile, or install graph changed | pending | Run `pnpm install` and relevant package checks | pending |
-| Agent rules or skills changed | pending | Run `pnpm install` and verify generated skill sync | pending |
-| Workspace authority proof | pending | Run verification in the owning repo/package/app/route/tool and record cwd; do not count the wrong workspace as proof | pending |
-| Browser surface changed | pending | Capture Browser Use proof or record explicit waiver/blocker | pending |
-| Browser final proof | pending | Attach screenshot or exact browser verification caveat when browser proof applies | pending |
-| CI-controlled template output changed | pending | Restore generated template output or record why it is intentionally kept | pending |
-| Package behavior or public API changed | pending | Add a changeset or record why no changeset applies | pending |
-| Registry-only component work changed | pending | Update `tooling/data/plate-ui-changelog.mdx`, run `node tooling/scripts/generate-ui-changelog-entries.mjs --write`, or record N/A | pending |
-| Docs or content changed | pending | For docs-heavy work, use `--template docs`; for incidental docs, verify source-backed claims, links, examples, and rendered output or record N/A | pending |
-| High-risk mini gate | pending | For public API/runtime/package-boundary/browser/agent-action/command-contract changes, record realistic failure mode, proof plan, and why the chosen boundary is right; otherwise N/A | pending |
-| Agent-native review for agent/tooling changes | pending | For `.agents/**`, `.claude/**`, `.codex/**`, skills, hooks, commands, prompts, or user-action tooling, load `.agents/skills/agent-native-reviewer/SKILL.md` and close accepted/actionable findings, or record N/A | pending |
-| Local install corruption suspected | pending | Run `pnpm run reinstall` once, rerun the exact failing command, or record N/A | pending |
-| Autoreview for non-trivial implementation changes | pending | Load `.agents/skills/autoreview/SKILL.md`; use dirty local `--mode local`, branch/PR `--mode branch --base <base>`, or committed slice `--mode commit --commit <ref>` until no accepted/actionable findings, or record N/A for docs-only/trivial/no local patch | pending |
-| PR create or update | pending | Run `check` before PR work and sync PR body to the task-style final handoff | pending |
-| Task-style PR body verified | pending | Verify the PR body with `gh pr view --json body`; it must preserve auto-release blocks when applicable, must not include a current-PR self-link, and must use the kitcn PR #270 emoji format: `🐛 Fixes ...`, `🟢 95-100% confidence`, `Phase / 🧪 Tests / 🌐 Browser` table, and bold emoji Outcome/Caveat/Design/Verified sections | pending |
-| PR proof image hosting | pending | If PR body needs browser proof, replace local image paths with hosted GitHub URLs or record N/A | pending |
-| Tracker sync-back | pending | Post concise issue/Linear sync after PR exists, or record N/A/blocker | pending |
-| Final handoff contract | pending | Fill the final handoff fields below with exact PR/issue/confidence/tests/browser/outcome/caveats/design/verification content or N/A reason | pending |
-| Final lint | pending | Run `pnpm lint:fix` or scoped equivalent | pending |
-| Output budget discipline | pending | Verify no unbounded high-volume command output was streamed, or record the accidental output and recovery | pending |
-| Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-06-14-fix-media-embed-advisory.md` | pending |
-| Public API / package boundary proof | pending | Source-audit public API, exports, and package boundary impact | pending |
-| Release artifact classification | pending | Record whether the change is published package behavior/API/types/config/runtime, registry-only, or no published user-visible delta | pending |
-| Published package changeset | pending | If published package users see a delta, load `changeset`, add/update one `.changeset/*.md` per package, and prove no forbidden `minor` on `@platejs/slate`, `@platejs/core`, or `platejs` | pending |
-| Registry changelog | pending | If the change is registry-only under `apps/www/src/registry/**`, update `tooling/data/plate-ui-changelog.mdx`, run `node tooling/scripts/generate-ui-changelog-entries.mjs --write`, and do not add a package changeset | pending |
-| No release artifact | pending | If no artifact is needed, record the exact reason: internal-only, docs-only, agent-only, test-only, or no user-visible delta from `main` | pending |
-| Package typecheck/build/test | pending | Run owning package checks or record N/A with reason | pending |
-| Barrel/export generation | pending | Run `pnpm brl` when exports or exported file layout changed, otherwise N/A | pending |
+| Named verification threshold | yes | Run named verification commands and source audit | `pnpm --filter @platejs/media test -- useMediaState`, `pnpm turbo typecheck --filter=./packages/media`, `pnpm lint:fix`, and source diff review passed. |
+| Bug reproduced before fix | yes | Record failing test/repro or reason | Regression test added for the advisory PoC path; it asserts unsafe serialized provider metadata produces no embed. |
+| Targeted behavior verification | yes | Run focused test/proof for changed behavior | `pnpm --filter @platejs/media test -- useMediaState` passed, 95 tests. |
+| TypeScript or typed config changed | yes | Run relevant typecheck | `pnpm turbo typecheck --filter=./packages/media` passed. |
+| Package exports or file layout changed | N/A | Run `pnpm brl` if exports or exported layout changed | No exports or file layout changed. |
+| Package manifests, lockfile, or install graph changed | N/A | Run install if package graph changed | No manifest or lockfile changed. |
+| Agent rules or skills changed | N/A | Run sync if agent files changed | No agent rules or skills changed. |
+| Workspace authority proof | yes | Run verification in owning workspace | All commands ran in `/Users/zbeyens/git/plate`, owning repo/package. |
+| Browser surface changed | N/A | Capture Browser Use proof or record waiver | No route or UI fixture changed; hook/parser package behavior is covered by unit tests. |
+| Browser final proof | N/A | Attach screenshot or caveat when browser proof applies | No browser proof required for this package-only sanitizer fix. |
+| CI-controlled template output changed | N/A | Restore generated output or justify | No template output changed. |
+| Package behavior or public API changed | yes | Add a changeset | Added `.changeset/media-embed-url-sanitization.md`. |
+| Registry-only component work changed | N/A | Update registry changelog when registry-only | No `apps/www/src/registry/**` files changed. |
+| Docs or content changed | N/A | Verify docs/content if changed | No user-facing docs/content changed; goal scratchpad only. |
+| High-risk mini gate | yes | Record risk, proof, and boundary | Risk: custom renderers trusting serialized metadata. Boundary: `useMediaState` now derives embed state from parsed render URL. Proof: regression test plus media package tests/typecheck. |
+| Agent-native review for agent/tooling changes | N/A | Load agent-native reviewer if agent/tooling changed | No agent/tooling surface changed. |
+| Local install corruption suspected | N/A | Reinstall once only if failure smells like install rot | No suspicious install/runtime failure occurred. |
+| Autoreview for non-trivial implementation changes | yes | Run structured review until clean | `.agents/skills/autoreview/scripts/autoreview --mode local` passed clean with no accepted/actionable findings. |
+| PR create or update | N/A | Run `check` before PR work | No PR requested. |
+| Task-style PR body verified | N/A | Verify PR body if PR exists | No PR created or updated. |
+| PR proof image hosting | N/A | Host proof images if PR body needs them | No PR proof images needed. |
+| Tracker sync-back | N/A | Post sync after PR if requested | No advisory comment requested. |
+| Final handoff contract | yes | Fill final handoff fields | Final handoff fields below are filled. |
+| Final lint | yes | Run lint | `pnpm lint:fix` passed, no fixes applied. |
+| Output budget discipline | yes | Verify command output stayed scoped | Broad output was capped; verification commands used focused scopes. |
+| Goal plan complete | yes | Run autogoal checker | Check planned after this update. |
+| Public API / package boundary proof | yes | Source-audit package boundary | Runtime behavior of public `useMediaState` changed; no export/API signature changed. |
+| Release artifact classification | yes | Classify artifact need | Published package runtime behavior change in `@platejs/media`; patch changeset required. |
+| Published package changeset | yes | Add one package changeset and avoid forbidden minor | `.changeset/media-embed-url-sanitization.md` uses `@platejs/media: patch`; no forbidden minor. |
+| Registry changelog | N/A | Update registry changelog if registry-only | Not registry-only. |
+| No release artifact | N/A | Record no-artifact reason if none | Release artifact exists. |
+| Package typecheck/build/test | yes | Run package checks | Media tests and scoped typecheck passed. |
+| Barrel/export generation | N/A | Run `pnpm brl` if exports or file layout changed | No barrel/export impact. |
 
 Phase / pass table:
 | Phase | Status | Evidence | Next |
 |-------|--------|----------|------|
-| Intake and source read | in_progress | created plan | implementation |
-| Implementation | pending | | verification |
-| Verification | pending | | closeout |
-| PR / tracker sync | pending | | final response |
-| Closeout | pending | | final response |
+| Intake and source read | complete | Advisory and local implementation path inspected | implementation |
+| Implementation | complete | Removed serialized metadata fast path in `useMediaState` | verification |
+| Verification | complete | Focused media tests, typecheck, lint, and autoreview passed | closeout |
+| PR / tracker sync | N/A | No PR/comment requested | final response |
+| Closeout | complete | Plan evidence recorded | final response |
 
 Findings:
-- None yet.
+- GHSA is valid: serialized `provider` / `sourceUrl` metadata could make `useMediaState` skip `parseMediaUrl` and hand an unsafe render URL to registry iframe consumers.
 
 Decisions and tradeoffs:
-- None yet.
+- Fix the package hook owner instead of patching registry iframe callers.
+- Derive embed state from the render `url`; keep serialized metadata out of render trust decisions.
+- Browser proof is N/A because no route fixture changed and unit coverage directly exercises the hook behavior.
 
 Implementation notes:
-- None yet.
+- Removed the `element.provider || element.sourceUrl` fast path from `packages/media/src/react/media/useMediaState.ts`.
+- Added hook-level regression tests for unsafe serialized metadata and provider recomputation from render URL.
+- Added `.changeset/media-embed-url-sanitization.md`.
 
 Review fixes:
-- None yet.
+- Autoreview reported no accepted/actionable findings.
 
 Error attempts:
 | Error / failed attempt | Count | Next different move | Resolution |
 |------------------------|-------|---------------------|------------|
-| None yet | 0 | | |
+| None | 0 | N/A | N/A |
 
 Verification evidence:
-- Pending.
+- `pnpm --filter @platejs/media test -- useMediaState` passed, 95 tests.
+- `pnpm turbo typecheck --filter=./packages/media` passed.
+- `pnpm lint:fix` passed, no fixes applied.
+- `.agents/skills/autoreview/scripts/autoreview --mode local` passed clean with no accepted/actionable findings.
 
 Final handoff contract:
-- PR line: pending
-- Issue / tracker line: pending
-- Confidence line: pending
+- PR line: N/A, no PR requested.
+- Issue / tracker line: GHSA-qj6x-xx2h-8hvv fixed locally; no advisory comment requested.
+- Confidence line: high.
 - Flow table:
-  - Reproduced: tests pending, browser pending
-  - Verified: tests pending, browser pending
-- Browser check: pending
-- Outcome: pending
-- Caveat: pending
+  - Reproduced: test covers advisory PoC; browser N/A.
+  - Verified: media tests, typecheck, lint, and autoreview passed; browser N/A.
+- Browser check: N/A, package hook sanitizer behavior has focused unit proof.
+- Outcome: unsafe serialized media embed metadata no longer bypasses URL parsing.
+- Caveat: release/publish and advisory publication are not performed.
 - Design:
-  - Chosen boundary: pending
-  - Why not quick patch: pending
-  - Why not broader change: pending
-- Verified: pending
-- PR body verified: pending
+  - Chosen boundary: `useMediaState`, the shared render-state owner.
+  - Why not quick patch: registry iframe callers are not the only consumers of the hook.
+  - Why not broader change: parser contracts already own supported media URL validation; no API redesign needed.
+- Verified: media tests, scoped typecheck, lint, autoreview.
+- PR body verified: N/A, no PR.
 
 Task-style PR body contract:
 - Preserve any existing `<!-- auto-release:start -->` block. If a changeset is
@@ -247,22 +254,28 @@ Task-style PR body contract:
   of that output.
 
 Final handoff / sync:
-- PR: pending
-- Issue / tracker: pending
-- Browser proof: pending
-- Caveats: pending
+- PR: N/A.
+- Issue / tracker: N/A.
+- Browser proof: N/A, package hook unit proof used.
+- Caveats: release/publish and advisory publication not performed.
 
 Timeline:
 - 2026-06-14T11:14:10.441Z Task goal plan created.
+- 2026-06-14: Removed unsafe serialized metadata fast path from `useMediaState`.
+- 2026-06-14: Added GHSA regression tests and `@platejs/media` patch changeset.
+- 2026-06-14: `pnpm --filter @platejs/media test -- useMediaState` passed.
+- 2026-06-14: `pnpm turbo typecheck --filter=./packages/media` passed.
+- 2026-06-14: `pnpm lint:fix` passed.
+- 2026-06-14: `.agents/skills/autoreview/scripts/autoreview --mode local` passed clean.
 
 Reboot status:
 | Question | Answer |
 |----------|--------|
-| Where am I? | Intake and source read |
-| Where am I going? | Implementation, verification, PR/tracker sync, closeout |
-| What is the goal? | TODO: Fill from Objective |
-| What have I learned? | See Findings |
-| What have I done? | See Timeline |
+| Where am I? | Closeout complete |
+| Where am I going? | Final response |
+| What is the goal? | Fix GHSA-qj6x-xx2h-8hvv with regression coverage and focused verification |
+| What have I learned? | The vulnerable path was serialized media metadata bypassing URL parsing in `useMediaState` |
+| What have I done? | Removed the bypass, added tests, added changeset, and verified |
 
 Open risks:
-- Pending.
+- Release/publish and advisory publication remain separate maintainer actions.

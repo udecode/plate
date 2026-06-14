@@ -36,18 +36,9 @@ export const useMediaState = ({
     )
       return;
 
-    if (element.provider || element.sourceUrl) {
-      return {
-        id: element.id,
-        provider: element.provider,
-        sourceUrl: element.sourceUrl,
-        url,
-      };
-    }
-
     return parseMediaUrl(url, { urlParsers });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [element.id, element.provider, element.sourceUrl, urlParsers, url]);
+  }, [urlParsers, url]);
 
   const isTweet = embed?.provider === 'twitter';
   const isVideo = !!embed?.provider && VIDEO_PROVIDERS.includes(embed.provider);
