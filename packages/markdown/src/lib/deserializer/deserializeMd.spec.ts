@@ -19,6 +19,23 @@ describe('deserializeMd', () => {
     expect(onError).toHaveBeenCalledTimes(1);
   });
 
+  it('falls back to editable text for malformed html-like mdx', () => {
+    const editor = createTestEditor();
+    const onError = mock();
+
+    expect(
+      deserializeMd(editor, String.raw`</ph\><`, {
+        onError: onError as any,
+      })
+    ).toEqual([
+      {
+        children: [{ text: '</ph><' }],
+        type: 'p',
+      },
+    ]);
+    expect(onError).toHaveBeenCalledTimes(1);
+  });
+
   it('wraps top-level text results from custom rules in paragraphs', () => {
     const editor = createTestEditor();
 
