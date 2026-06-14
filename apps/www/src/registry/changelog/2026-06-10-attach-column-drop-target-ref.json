@@ -28,8 +28,7 @@
     }
   },
   "release": {
-    "status": "latest",
-    "source": "post-release-no-changeset"
+    "status": "unresolved"
   },
   "kind": "fix",
   "summary": "fix(dnd): attach column drop target ref",
@@ -43,15 +42,15 @@
   ],
   "entries": [
     {
-      "id": "2026-06-10-32-2-001",
+      "id": "2026-06-10-32-2-column-fix-drag-drop-by-fa41961e",
       "kind": "fix",
       "summary": "Fix column drag and drop by attaching the DnD drop target ref to the rendered column element so horizontal drop lines can resolve a valid target.",
       "details": [],
       "migrationNotes": [],
       "targets": ["column-node"],
       "source": {
-        "line": 10,
-        "row": 1,
+        "line": 13,
+        "row": 2,
         "legacyRelease": {
           "date": "2026-06-10",
           "entry": "32.2",

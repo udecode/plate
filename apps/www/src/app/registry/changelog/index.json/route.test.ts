@@ -13,14 +13,12 @@ describe('/registry/changelog/index.json', () => {
     expect(data.schemaVersion).toBe(1);
     expect(data.events.length).toBeGreaterThanOrEqual(19);
     expect(data.events[0]).toMatchObject({
-      href: '/registry/changelog/2026-06-10-attach-column-drop-target-ref.json',
-      id: '2026-06-10-attach-column-drop-target-ref',
-      release: { status: 'latest', source: 'post-release-no-changeset' },
+      href: '/registry/changelog/2026-06-14-fix-shadcn-editor-kit-install-paths.json',
+      id: '2026-06-14-fix-shadcn-editor-kit-install-paths',
+      release: { status: 'latest', source: 'open-pull-request' },
       change: {
-        pullRequest: {
-          number: 5003,
-          state: 'MERGED',
-        },
+        date: '2026-06-14',
+        type: 'pull_request',
       },
     });
     expect(data.events.map((event) => event.id)).toContain(

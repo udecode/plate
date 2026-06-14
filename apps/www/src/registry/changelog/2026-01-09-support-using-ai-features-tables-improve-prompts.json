@@ -76,15 +76,15 @@
   ],
   "entries": [
     {
-      "id": "2026-01-09-28-1-028",
+      "id": "2026-01-09-28-1-ai-api-upgrade-copied-command-routes-1306d0ec",
       "kind": "behavior",
       "summary": "Upgrade copied AI command routes and chat UI for AI SDK v6 with split prompt helpers and table-cell editing prompts.",
       "details": [],
       "migrationNotes": [],
       "targets": ["ai-api", "ai-menu", "use-chat"],
       "source": {
-        "line": 84,
-        "row": 28,
+        "line": 87,
+        "row": 29,
         "legacyRelease": {
           "date": "2026-01-09",
           "entry": "28.1",
@@ -93,15 +93,15 @@
       }
     },
     {
-      "id": "2026-01-09-28-1-029",
+      "id": "2026-01-09-28-1-cursor-overlay-sync-behavior-ai-sdk-f014616f",
       "kind": "behavior",
       "summary": "Sync cursor overlay behavior with the AI SDK v6 interaction path.",
       "details": [],
       "migrationNotes": [],
       "targets": ["cursor-overlay"],
       "source": {
-        "line": 85,
-        "row": 29,
+        "line": 88,
+        "row": 30,
         "legacyRelease": {
           "date": "2026-01-09",
           "entry": "28.1",

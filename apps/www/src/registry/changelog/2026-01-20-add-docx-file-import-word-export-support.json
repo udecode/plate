@@ -132,7 +132,7 @@
   ],
   "entries": [
     {
-      "id": "2026-01-20-28-2-026",
+      "id": "2026-01-20-28-2-docx-export-import-registry-wiring-4a8f6756",
       "kind": "new",
       "summary": "Add DOCX import and export registry wiring.",
       "details": [],
@@ -143,8 +143,8 @@
         "export-toolbar-button"
       ],
       "source": {
-        "line": 79,
-        "row": 26,
+        "line": 82,
+        "row": 27,
         "legacyRelease": {
           "date": "2026-01-20",
           "entry": "28.2",
@@ -153,7 +153,7 @@
       }
     },
     {
-      "id": "2026-01-20-28-2-027",
+      "id": "2026-01-20-28-2-block-list-docx-friendly-updates-e8df822b",
       "kind": "behavior",
       "summary": "Add DOCX-friendly static rendering updates.",
       "details": [],
@@ -172,8 +172,8 @@
         "toc-node"
       ],
       "source": {
-        "line": 80,
-        "row": 27,
+        "line": 83,
+        "row": 28,
         "legacyRelease": {
           "date": "2026-01-20",
           "entry": "28.2",

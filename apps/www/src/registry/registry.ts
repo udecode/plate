@@ -13,6 +13,37 @@ const url =
     ? 'http://localhost:3000'
     : 'https://platejs.org';
 
+const EDITOR_COMPONENT_PATH_SEGMENT = 'components/editor/';
+const EDITOR_COMPONENT_TARGET_PREFIX = '@components/editor/';
+
+function getEditorComponentTarget(filePath: string) {
+  const segmentIndex = filePath.indexOf(EDITOR_COMPONENT_PATH_SEGMENT);
+
+  if (segmentIndex === -1) return null;
+
+  return `${EDITOR_COMPONENT_TARGET_PREFIX}${filePath.slice(segmentIndex + EDITOR_COMPONENT_PATH_SEGMENT.length)}`;
+}
+
+function withEditorComponentTargets(
+  items: Registry['items']
+): Registry['items'] {
+  return items.map((item) => ({
+    ...item,
+    files: item.files?.map((file) => {
+      const target = getEditorComponentTarget(file.path);
+
+      if (file.target || !target) {
+        return file;
+      }
+
+      return {
+        ...file,
+        target,
+      };
+    }),
+  }));
+}
+
 export const registryInit: RegistryItem[] = [
   {
     dependencies: ['platejs'],
@@ -50,7 +81,7 @@ export function createPlateRegistryItems(): Registry['items'] {
     ],
   }));
 
-  return [
+  return withEditorComponentTargets([
     ...registryInit,
     ...registryUI,
     ...registryComponents,
@@ -59,7 +90,7 @@ export function createPlateRegistryItems(): Registry['items'] {
     ...registryStyles,
     ...registryHooks,
     ...registryExamples,
-  ];
+  ]);
 }
 
 export function createPlateRegistry(homepage = url): Registry {

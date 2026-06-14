@@ -82,15 +82,15 @@
   ],
   "entries": [
     {
-      "id": "2026-03-28-29-5-016",
+      "id": "2026-03-28-29-5-media-video-render-plain-urls-when-bf870e04",
       "kind": "behavior",
       "summary": "Render plain video URLs with `ReactPlayer` when the node has a `url` and no upload flag.",
       "details": [],
       "migrationNotes": [],
       "targets": ["media-video-node"],
       "source": {
-        "line": 49,
-        "row": 16,
+        "line": 52,
+        "row": 17,
         "legacyRelease": {
           "date": "2026-03-28",
           "entry": "29.5",
@@ -99,15 +99,15 @@
       }
     },
     {
-      "id": "2026-03-28-29-5-017",
+      "id": "2026-03-28-29-5-editor-ai-sync-registry-blocks-url-9e2b12ab",
       "kind": "behavior",
       "summary": "Sync registry blocks with the URL video rendering path.",
       "details": [],
       "migrationNotes": [],
       "targets": ["editor-ai", "editor-basic", "slate-to-html"],
       "source": {
-        "line": 50,
-        "row": 17,
+        "line": 53,
+        "row": 18,
         "legacyRelease": {
           "date": "2026-03-28",
           "entry": "29.5",

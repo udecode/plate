@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 
@@ -10,6 +11,8 @@ import {
   inferRegistryHints,
   parseComponentChangelog,
   resolveReleaseForRow,
+  validateArgs,
+  writeRegistryChangelogEvents,
 } from './generate-ui-changelog-entries.mjs';
 
 test('extracts registry ids from markdown component labels', () => {
@@ -43,8 +46,68 @@ test('parses dated source rows and multi-item entries', () => {
     rows[0].provenanceCommit,
     'a471d051d2b32c494a94e8218ce1a8462aa26463'
   );
-  assert.equal(rows[0].sourceId, '2026-06-03-32-1-001');
+  assert.equal(
+    rows[0].sourceId,
+    '2026-06-03-32-1-code-block-language-label-e8dfda31'
+  );
   assert.equal(rows[0].release.section, 'June 2026 #32');
+});
+
+test('keeps source ids stable when rows are inserted above', () => {
+  const originalRows = parseComponentChangelog(`
+## June 2026 #32
+
+### June 3 #32.1
+- **\`code-block-node\`**, **\`code-block-node-static\`**: Show the selected language label in read-only and static rendering. Set \`showLanguageLabel={false}\` on the component to hide it.
+- **\`column-node\`**: Attach column drop target ref.
+`);
+  const insertedRows = parseComponentChangelog(`
+## June 2026 #32
+
+### June 3 #32.1
+- **\`editor-base-kit\`**: Install editor kit files through the configured components alias.
+- **\`code-block-node\`**, **\`code-block-node-static\`**: Show the selected language label in read-only and static rendering. Set \`showLanguageLabel={false}\` on the component to hide it.
+- **\`column-node\`**: Attach column drop target ref.
+`);
+  const originalCodeBlockRow = originalRows.find((row) =>
+    row.items.includes('code-block-node')
+  );
+  const insertedCodeBlockRow = insertedRows.find((row) =>
+    row.items.includes('code-block-node')
+  );
+
+  assert.equal(originalCodeBlockRow?.row, 1);
+  assert.equal(insertedCodeBlockRow?.row, 2);
+  assert.equal(originalCodeBlockRow?.sourceId, insertedCodeBlockRow?.sourceId);
+});
+
+test('write prunes stale generated changelog event files', () => {
+  const outDir = fs.mkdtempSync(path.join(os.tmpdir(), 'registry-changelog-'));
+  const stalePath = path.join(outDir, 'stale-event.json');
+  const keptPath = path.join(outDir, 'kept-event.json');
+
+  fs.writeFileSync(stalePath, '{}\n');
+  writeRegistryChangelogEvents(
+    [
+      {
+        entry: { id: 'kept-event', schemaVersion: 1 },
+        targetPath: keptPath,
+      },
+    ],
+    { pruneOutDir: outDir }
+  );
+
+  assert.equal(fs.existsSync(stalePath), false);
+  assert.equal(fs.existsSync(keptPath), true);
+});
+
+test('rejects limited writes before pruning generated artifacts', () => {
+  assert.throws(
+    () => validateArgs({ limit: 1, write: true }),
+    /--write cannot be combined with --limit/
+  );
+  assert.doesNotThrow(() => validateArgs({ limit: 1, write: false }));
+  assert.doesNotThrow(() => validateArgs({ limit: null, write: true }));
 });
 
 function commit(oid, date, subject) {
@@ -104,7 +167,7 @@ test('builds one registry event per change unit with row entries', () => {
     outDir: 'out',
     provenanceBySourceId: new Map([
       [
-        '2026-06-03-32-1-001',
+        rows[0].sourceId,
         provenance(commitValue, prValue, ['Matched PR 4989, but it is OPEN.']),
       ],
     ]),
@@ -283,7 +346,35 @@ test('does not guess release dependencies for ambiguous dates', () => {
   assert.match(result.warnings[0], /Multiple generated release-index entries/);
 });
 
-test('current latest 14 source rows collapse to 5 change-unit events', () => {
+test('does not guess release dependencies for source-only change units', () => {
+  const rows = parseComponentChangelog(`
+## June 2026 #32
+
+### June 14 #32.3
+- **\`editor-base-kit\`**, **\`editor-kit\`**: Install editor kit files through the configured components alias so relative \`./plugins/*\` imports resolve after shadcn CLI adds.
+`);
+  const [output] = buildRegistryChangelogEvents(rows, {
+    isChangeAfterRelease: () => true,
+    releases: [
+      {
+        content: 'Release list package',
+        date: '2026-06-14',
+        packageTag: '@platejs/list@53.1.3',
+        tag: 'v53.1.3',
+        versionPackagePrUrl: 'https://github.com/udecode/plate/pull/5012',
+      },
+    ],
+  });
+
+  assert.equal(output.entry.change.type, 'source');
+  assert.deepEqual(output.entry.release, { status: 'unresolved' });
+  assert.deepEqual(
+    output.entry.diagnostics.map((diagnostic) => diagnostic.code),
+    ['release-missing', 'provenance-missing']
+  );
+});
+
+test('current latest 14 source rows collapse to 6 change-unit events', () => {
   const content = fs.readFileSync(
     'tooling/data/plate-ui-changelog.mdx',
     'utf8'
@@ -315,65 +406,79 @@ test('current latest 14 source rows collapse to 5 change-unit events', () => {
     'docs'
   );
   const provenanceBySourceId = new Map(
-    rows.map((row) => {
-      if (row.sourceId === '2026-06-10-32-2-001') {
+    rows.flatMap((row) => {
+      if (row.date === '2026-06-14') {
+        return [];
+      }
+
+      if (row.date === '2026-06-10') {
         return [
-          row.sourceId,
-          provenance(
-            columnCommit,
-            pr(5003, 'fix(dnd): attach column drop target ref', {
-              mergedAt: '2026-06-10T10:46:04Z',
-            }),
-            ['No generated release-index entry found for PR 5003.']
-          ),
+          [
+            row.sourceId,
+            provenance(
+              columnCommit,
+              pr(5003, 'fix(dnd): attach column drop target ref', {
+                mergedAt: '2026-06-10T10:46:04Z',
+              }),
+              ['No generated release-index entry found for PR 5003.']
+            ),
+          ],
         ];
       }
 
       if (row.sourceId?.startsWith('2026-06-03')) {
         return [
-          row.sourceId,
-          provenance(
-            codeCommit,
-            pr(4989, 'Show code block language labels in read-only mode', {
-              state: 'OPEN',
-            }),
-            ['Matched PR 4989, but it is OPEN.']
-          ),
+          [
+            row.sourceId,
+            provenance(
+              codeCommit,
+              pr(4989, 'Show code block language labels in read-only mode', {
+                state: 'OPEN',
+              }),
+              ['Matched PR 4989, but it is OPEN.']
+            ),
+          ],
         ];
       }
 
       if (row.sourceId?.startsWith('2026-05-31')) {
         return [
-          row.sourceId,
-          provenance(
-            perfCommit,
-            pr(4987, 'perf: improve large document editing', {
-              mergedAt: '2026-06-02T19:26:44Z',
-            })
-          ),
+          [
+            row.sourceId,
+            provenance(
+              perfCommit,
+              pr(4987, 'perf: improve large document editing', {
+                mergedAt: '2026-06-02T19:26:44Z',
+              })
+            ),
+          ],
         ];
       }
 
       if (row.sourceId?.startsWith('2026-04-29')) {
         return [
-          row.sourceId,
-          provenance(
-            discussionCommit,
-            pr(4945, '[codex] Fix discussion and suggestion regressions', {
-              mergedAt: '2026-04-29T09:59:13Z',
-            })
-          ),
+          [
+            row.sourceId,
+            provenance(
+              discussionCommit,
+              pr(4945, '[codex] Fix discussion and suggestion regressions', {
+                mergedAt: '2026-04-29T09:59:13Z',
+              })
+            ),
+          ],
         ];
       }
 
       return [
-        row.sourceId,
-        provenance(
-          footnoteCommit,
-          pr(4941, 'fix: redesign blockquotes as container blocks', {
-            mergedAt: '2026-04-23T11:41:41Z',
-          })
-        ),
+        [
+          row.sourceId,
+          provenance(
+            footnoteCommit,
+            pr(4941, 'fix: redesign blockquotes as container blocks', {
+              mergedAt: '2026-04-23T11:41:41Z',
+            })
+          ),
+        ],
       ];
     })
   );
@@ -410,10 +515,11 @@ test('current latest 14 source rows collapse to 5 change-unit events', () => {
   });
 
   assert.equal(rows.length, 14);
-  assert.equal(outputs.length, 5);
+  assert.equal(outputs.length, 6);
   assert.deepEqual(
     outputs.map((output) => path.basename(output.targetPath)),
     [
+      '2026-06-14-editor-install-kit-files-through.json',
       '2026-06-10-attach-column-drop-target-ref.json',
       '2026-06-03-show-code-block-language-labels-read-only-mode.json',
       '2026-06-02-improve-large-document-editing.json',
@@ -422,24 +528,27 @@ test('current latest 14 source rows collapse to 5 change-unit events', () => {
     ]
   );
   assert.equal(outputs[0].entry.entries.length, 1);
-  assert.equal(outputs[0].entry.release.status, 'latest');
-  assert.equal(outputs[0].entry.release.source, 'post-release-no-changeset');
-  assert.equal(outputs[0].entry.change.pullRequest.number, 5003);
-  assert.equal(outputs[0].entry.change.pullRequest.state, 'MERGED');
+  assert.equal(outputs[0].entry.release.status, 'unresolved');
+  assert.equal(outputs[0].entry.change.type, 'source');
   assert.equal(outputs[1].entry.entries.length, 1);
   assert.equal(outputs[1].entry.release.status, 'latest');
-  assert.equal(outputs[1].entry.release.source, 'open-pull-request');
-  assert.equal(outputs[1].entry.change.pullRequest.number, 4989);
-  assert.equal(outputs[1].entry.change.pullRequest.state, 'OPEN');
-  assert.equal(outputs[2].entry.entries.length, 2);
-  assert.equal(outputs[2].entry.release.tag, 'v53.0.7');
-  assert.equal(outputs[2].entry.change.pullRequest.number, 4987);
-  assert.equal(outputs[3].entry.entries.length, 3);
-  assert.equal(outputs[3].entry.release.tag, 'v53.0.3');
-  assert.equal(outputs[3].entry.change.pullRequest.number, 4945);
-  assert.equal(outputs[4].entry.entries.length, 7);
-  assert.equal(outputs[4].entry.release.tag, 'v53.0.0');
-  assert.equal(outputs[4].entry.change.pullRequest.number, 4941);
+  assert.equal(outputs[1].entry.release.source, 'post-release-no-changeset');
+  assert.equal(outputs[1].entry.change.pullRequest.number, 5003);
+  assert.equal(outputs[1].entry.change.pullRequest.state, 'MERGED');
+  assert.equal(outputs[2].entry.entries.length, 1);
+  assert.equal(outputs[2].entry.release.status, 'latest');
+  assert.equal(outputs[2].entry.release.source, 'open-pull-request');
+  assert.equal(outputs[2].entry.change.pullRequest.number, 4989);
+  assert.equal(outputs[2].entry.change.pullRequest.state, 'OPEN');
+  assert.equal(outputs[3].entry.entries.length, 2);
+  assert.equal(outputs[3].entry.release.tag, 'v53.0.7');
+  assert.equal(outputs[3].entry.change.pullRequest.number, 4987);
+  assert.equal(outputs[4].entry.entries.length, 3);
+  assert.equal(outputs[4].entry.release.tag, 'v53.0.3');
+  assert.equal(outputs[4].entry.change.pullRequest.number, 4945);
+  assert.equal(outputs[5].entry.entries.length, 6);
+  assert.equal(outputs[5].entry.release.tag, 'v53.0.0');
+  assert.equal(outputs[5].entry.change.pullRequest.number, 4941);
 
   const latestOutputs = buildRegistryChangelogEvents(rows, {
     hasPendingChangeset: true,
@@ -448,10 +557,9 @@ test('current latest 14 source rows collapse to 5 change-unit events', () => {
     releases,
   });
 
-  assert.equal(latestOutputs[0].entry.release.status, 'latest');
-  assert.equal(latestOutputs[0].entry.release.source, 'pending-changeset');
+  assert.equal(latestOutputs[0].entry.release.status, 'unresolved');
   assert.equal(latestOutputs[1].entry.release.status, 'latest');
-  assert.equal(latestOutputs[1].entry.release.source, 'open-pull-request');
+  assert.equal(latestOutputs[1].entry.release.source, 'pending-changeset');
 
   const unprovenOutputs = buildRegistryChangelogEvents(rows, {
     isChangeAfterRelease: () => false,
@@ -476,10 +584,11 @@ test('current latest 14 source rows collapse to 5 change-unit events', () => {
     ],
   });
 
-  assert.equal(coveredLatestOutputs[0].entry.release.status, 'released');
-  assert.equal(coveredLatestOutputs[0].entry.release.tag, 'v53.1.0');
+  assert.equal(coveredLatestOutputs[0].entry.release.status, 'unresolved');
+  assert.equal(coveredLatestOutputs[1].entry.release.status, 'released');
+  assert.equal(coveredLatestOutputs[1].entry.release.tag, 'v53.1.0');
   assert.equal(
-    coveredLatestOutputs[0].entry.release.source,
+    coveredLatestOutputs[1].entry.release.source,
     'latest-release-no-changeset'
   );
 
@@ -507,6 +616,10 @@ test('current latest 14 source rows collapse to 5 change-unit events', () => {
 
   assert.equal(
     releasedWithPendingChangesetOutputs[0].entry.release.status,
+    'unresolved'
+  );
+  assert.equal(
+    releasedWithPendingChangesetOutputs[1].entry.release.status,
     'released'
   );
   for (const output of outputs) {
@@ -521,6 +634,7 @@ test('current latest 14 source rows collapse to 5 change-unit events', () => {
   assert.deepEqual(
     index.events.map((event) => event.id),
     [
+      '2026-06-14-editor-install-kit-files-through',
       '2026-06-10-attach-column-drop-target-ref',
       '2026-06-03-show-code-block-language-labels-read-only-mode',
       '2026-06-02-improve-large-document-editing',
@@ -531,6 +645,7 @@ test('current latest 14 source rows collapse to 5 change-unit events', () => {
   assert.deepEqual(
     index.events.map((event) => event.href),
     [
+      '/registry/changelog/2026-06-14-editor-install-kit-files-through.json',
       '/registry/changelog/2026-06-10-attach-column-drop-target-ref.json',
       '/registry/changelog/2026-06-03-show-code-block-language-labels-read-only-mode.json',
       '/registry/changelog/2026-06-02-improve-large-document-editing.json',
@@ -540,6 +655,10 @@ test('current latest 14 source rows collapse to 5 change-unit events', () => {
   );
   assert.deepEqual(components.components['column-node'], [
     '2026-06-10-attach-column-drop-target-ref',
+  ]);
+  assert.deepEqual(components.components['editor-base-kit'], [
+    '2026-06-14-editor-install-kit-files-through',
+    '2026-04-23-redesign-blockquotes-container-blocks',
   ]);
   assert.deepEqual(components.components['code-block-node'], [
     '2026-06-03-show-code-block-language-labels-read-only-mode',

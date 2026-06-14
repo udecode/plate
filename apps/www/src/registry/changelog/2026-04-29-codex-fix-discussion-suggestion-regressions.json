@@ -168,15 +168,15 @@
   ],
   "entries": [
     {
-      "id": "2026-04-29-30-3-005",
+      "id": "2026-04-29-30-3-block-discussion-rebuild-indexes-from-editor-1f58b253",
       "kind": "behavior",
       "summary": "Rebuild discussion indexes from editor state so accept and reject updates, inline text summaries, and deleted comments stay current.",
       "details": [],
       "migrationNotes": [],
       "targets": ["block-discussion", "discussion-kit", "comment-kit"],
       "source": {
-        "line": 27,
-        "row": 5,
+        "line": 30,
+        "row": 6,
         "legacyRelease": {
           "date": "2026-04-29",
           "entry": "30.3",
@@ -185,7 +185,7 @@
       }
     },
     {
-      "id": "2026-04-29-30-3-006",
+      "id": "2026-04-29-30-3-suggestion-fix-block-inline-regressions-53f39ba6",
       "kind": "fix",
       "summary": "Fix block and inline suggestion regressions around inline voids, links, line breaks, block voids, and trailing-block normalization.",
       "details": [],
@@ -197,8 +197,8 @@
         "suggestion-node"
       ],
       "source": {
-        "line": 28,
-        "row": 6,
+        "line": 31,
+        "row": 7,
         "legacyRelease": {
           "date": "2026-04-29",
           "entry": "30.3",
@@ -207,7 +207,7 @@
       }
     },
     {
-      "id": "2026-04-29-30-3-007",
+      "id": "2026-04-29-30-3-block-list-keep-slate-children-mount-75c8351f",
       "kind": "behavior",
       "summary": "Keep Slate children mount points and suggestion wrappers stable for static and media-style nodes.",
       "details": [],
@@ -227,8 +227,8 @@
         "link-node"
       ],
       "source": {
-        "line": 29,
-        "row": 7,
+        "line": 32,
+        "row": 8,
         "legacyRelease": {
           "date": "2026-04-29",
           "entry": "30.3",

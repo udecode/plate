@@ -52,7 +52,7 @@
   ],
   "entries": [
     {
-      "id": "2025-12-14-27-1-031",
+      "id": "2025-12-14-27-1-inline-combobox-scope-yjs-popovers-user-6fdd33e6",
       "kind": "behavior",
       "summary": "Scope Yjs combobox popovers to the user who typed the trigger.",
       "details": [
@@ -63,8 +63,8 @@
       ],
       "targets": ["inline-combobox"],
       "source": {
-        "line": 96,
-        "row": 31,
+        "line": 99,
+        "row": 32,
         "legacyRelease": {
           "date": "2025-12-14",
           "entry": "27.1",

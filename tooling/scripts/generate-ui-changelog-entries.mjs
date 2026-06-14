@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import { createHash } from 'node:crypto';
 import path from 'node:path';
 import process from 'node:process';
 import { execFileSync } from 'node:child_process';
@@ -124,8 +125,21 @@ function escapeRegExp(value) {
 
 function formatSourceId(row) {
   const release = row.release.entry.replaceAll('.', '-');
+  const hash = createHash('sha1')
+    .update(
+      JSON.stringify({
+        date: row.date,
+        details: row.details,
+        items: row.items,
+        prefix: row.prefix,
+        release: row.release.entry,
+        summary: row.summary,
+      })
+    )
+    .digest('hex')
+    .slice(0, 8);
 
-  return `${row.date}-${release}-${String(row.row).padStart(3, '0')}`;
+  return `${row.date}-${release}-${formatEventSlug(row)}-${hash}`;
 }
 
 function formatChangeUnitId(changeUnit) {
@@ -145,9 +159,7 @@ function formatEventSlug(row) {
     .slice(0, 2);
   const tokens = [...itemTokens, ...summaryTokens, ...codeTokens].slice(0, 8);
 
-  return tokens.length > 0
-    ? tokens.join('-')
-    : `row-${String(row.row).padStart(3, '0')}`;
+  return tokens.length > 0 ? tokens.join('-') : 'entry';
 }
 
 function formatChangeUnitSlug(changeUnit) {
@@ -352,6 +364,14 @@ function parseArgs(argv) {
   }
 
   return args;
+}
+
+export function validateArgs(args) {
+  if (args.write && args.limit) {
+    throw new Error(
+      '--write cannot be combined with --limit because partial writes would produce incomplete changelog artifacts.'
+    );
+  }
 }
 
 function parseDate(label, section) {
@@ -605,6 +625,10 @@ function toReleaseState(
 ) {
   if (release) return release;
 
+  if (!hasReleaseProvenance(changeUnit)) {
+    return { status: 'unresolved' };
+  }
+
   if (
     latestRelease &&
     isReleaseAncestor(changeUnit, latestRelease) &&
@@ -635,6 +659,10 @@ function toReleaseState(
   }
 
   return { status: 'unresolved' };
+}
+
+function hasReleaseProvenance(changeUnit) {
+  return Boolean(changeUnit.pr || changeUnit.commit?.oid);
 }
 
 export function buildRegistryChangelogIndexes(outputs) {
@@ -1099,6 +1127,15 @@ export function resolveReleaseForChangeUnit(changeUnit, releases) {
     };
   }
 
+  if (!changeUnit.commit?.oid) {
+    return {
+      release: null,
+      warnings: [
+        `No generated release-index entry found for source-only change on ${changeUnit.date}.`,
+      ],
+    };
+  }
+
   return resolveReleaseForDate(changeUnit.date, releases);
 }
 
@@ -1226,7 +1263,34 @@ function toReleaseMetadata(release, source) {
   return metadata;
 }
 
-export function writeRegistryChangelogEvents(outputs) {
+export function pruneStaleRegistryChangelogEvents(outputs, outDir) {
+  if (!outDir || !fs.existsSync(outDir)) return [];
+
+  const expectedPaths = new Set(
+    outputs.map((output) => path.resolve(output.targetPath))
+  );
+  const removedPaths = [];
+
+  for (const entry of fs.readdirSync(outDir, { withFileTypes: true })) {
+    if (!entry.isFile() || !entry.name.endsWith('.json')) continue;
+
+    const filePath = path.resolve(outDir, entry.name);
+
+    if (expectedPaths.has(filePath)) continue;
+
+    fs.unlinkSync(filePath);
+    removedPaths.push(filePath);
+  }
+
+  return removedPaths;
+}
+
+export function writeRegistryChangelogEvents(
+  outputs,
+  { pruneOutDir = null } = {}
+) {
+  const removedPaths = pruneStaleRegistryChangelogEvents(outputs, pruneOutDir);
+
   for (const output of outputs) {
     fs.mkdirSync(path.dirname(output.targetPath), { recursive: true });
     fs.writeFileSync(
@@ -1234,10 +1298,15 @@ export function writeRegistryChangelogEvents(outputs) {
       `${JSON.stringify(output.entry, null, 2)}\n`
     );
   }
+
+  return { removedPaths };
 }
 
 function main() {
   const args = parseArgs(process.argv.slice(2));
+
+  validateArgs(args);
+
   const source = fs.readFileSync(args.source, 'utf8');
   const rows = parseComponentChangelog(source);
   const selectedRows = args.limit ? rows.slice(0, args.limit) : rows;
@@ -1267,7 +1336,13 @@ function main() {
   );
 
   if (args.write) {
-    writeRegistryChangelogEvents(artifactOutputs);
+    const { removedPaths } = writeRegistryChangelogEvents(artifactOutputs, {
+      pruneOutDir: args.outDir,
+    });
+
+    for (const removedPath of removedPaths) {
+      console.log(`Removed stale ${relativePath(removedPath)}`);
+    }
   }
 
   console.log(

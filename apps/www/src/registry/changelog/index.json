@@ -2,6 +2,88 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-06-14-fix-shadcn-editor-kit-install-paths",
+      "href": "/registry/changelog/2026-06-14-fix-shadcn-editor-kit-install-paths.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Fix shadcn editor kit install paths",
+      "change": {
+        "type": "pull_request",
+        "date": "2026-06-14",
+        "commits": [
+          {
+            "sha": "129a4b4644b17db4ba5adef56a43233dc24e5be6",
+            "shortSha": "129a4b4644",
+            "url": "https://github.com/udecode/plate/commit/129a4b4644b17db4ba5adef56a43233dc24e5be6",
+            "date": "2026-06-14",
+            "committedAt": "2026-06-14T14:08:43+02:00",
+            "subject": "Fix shadcn editor kit install paths"
+          }
+        ],
+        "pullRequest": {
+          "number": 5013,
+          "url": "https://github.com/udecode/plate/pull/5013",
+          "state": "OPEN",
+          "title": "Fix shadcn editor kit install paths"
+        }
+      },
+      "release": {
+        "status": "latest",
+        "source": "open-pull-request"
+      },
+      "targets": ["editor-base-kit", "editor-kit"],
+      "entries": 1,
+      "diagnostics": [
+        {
+          "code": "release-missing",
+          "severity": "warning"
+        },
+        {
+          "code": "pull-request-not-merged",
+          "severity": "warning"
+        }
+      ]
+    },
+    {
+      "id": "2026-06-13-show-code-block-language-labels-read-only-mode",
+      "href": "/registry/changelog/2026-06-13-show-code-block-language-labels-read-only-mode.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Show code block language labels in read-only mode",
+      "change": {
+        "type": "pull_request",
+        "date": "2026-06-13",
+        "commits": [
+          {
+            "sha": "a471d051d2b32c494a94e8218ce1a8462aa26463",
+            "shortSha": "a471d051d2",
+            "url": "https://github.com/udecode/plate/commit/a471d051d2b32c494a94e8218ce1a8462aa26463",
+            "date": "2026-06-03",
+            "committedAt": "2026-06-03T13:20:44+02:00",
+            "subject": "fix code block language labels"
+          }
+        ],
+        "pullRequest": {
+          "number": 4989,
+          "url": "https://github.com/udecode/plate/pull/4989",
+          "state": "MERGED",
+          "title": "Show code block language labels in read-only mode",
+          "mergedAt": "2026-06-13T21:22:24Z"
+        }
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["code-block-node", "code-block-node-static"],
+      "entries": 1,
+      "diagnostics": [
+        {
+          "code": "release-missing",
+          "severity": "warning"
+        }
+      ]
+    },
+    {
       "id": "2026-06-10-attach-column-drop-target-ref",
       "href": "/registry/changelog/2026-06-10-attach-column-drop-target-ref.json",
       "status": "draft",
@@ -29,57 +111,13 @@
         }
       },
       "release": {
-        "status": "latest",
-        "source": "post-release-no-changeset"
+        "status": "unresolved"
       },
       "targets": ["column-node"],
       "entries": 1,
       "diagnostics": [
         {
           "code": "release-missing",
-          "severity": "warning"
-        }
-      ]
-    },
-    {
-      "id": "2026-06-03-show-code-block-language-labels-read-only-mode",
-      "href": "/registry/changelog/2026-06-03-show-code-block-language-labels-read-only-mode.json",
-      "status": "draft",
-      "kind": "behavior",
-      "summary": "Show code block language labels in read-only mode",
-      "change": {
-        "type": "pull_request",
-        "date": "2026-06-03",
-        "commits": [
-          {
-            "sha": "a471d051d2b32c494a94e8218ce1a8462aa26463",
-            "shortSha": "a471d051d2",
-            "url": "https://github.com/udecode/plate/commit/a471d051d2b32c494a94e8218ce1a8462aa26463",
-            "date": "2026-06-03",
-            "committedAt": "2026-06-03T13:20:44+02:00",
-            "subject": "fix code block language labels"
-          }
-        ],
-        "pullRequest": {
-          "number": 4989,
-          "url": "https://github.com/udecode/plate/pull/4989",
-          "state": "OPEN",
-          "title": "Show code block language labels in read-only mode"
-        }
-      },
-      "release": {
-        "status": "latest",
-        "source": "open-pull-request"
-      },
-      "targets": ["code-block-node", "code-block-node-static"],
-      "entries": 1,
-      "diagnostics": [
-        {
-          "code": "release-missing",
-          "severity": "warning"
-        },
-        {
-          "code": "pull-request-not-merged",
           "severity": "warning"
         }
       ]

@@ -64,15 +64,15 @@
   ],
   "entries": [
     {
-      "id": "2026-05-31-31-1-003",
+      "id": "2026-05-31-31-1-huge-document-10k-block-plate-slate-acc08681",
       "kind": "new",
       "summary": "Add a 10k-block Plate and Slate comparison demo with performance controls and benchmark links.",
       "details": [],
       "migrationNotes": [],
       "targets": ["huge-document-demo"],
       "source": {
-        "line": 20,
-        "row": 3,
+        "line": 23,
+        "row": 4,
         "legacyRelease": {
           "date": "2026-05-31",
           "entry": "31.1",
@@ -81,15 +81,15 @@
       }
     },
     {
-      "id": "2026-05-31-31-1-004",
+      "id": "2026-05-31-31-1-hundreds-blocks-rename-huge-document-3d2ca91a",
       "kind": "rename",
       "summary": "Rename to `huge-document-demo`.",
       "details": [],
       "migrationNotes": ["Rename to `huge-document-demo`."],
       "targets": ["hundreds-blocks-demo"],
       "source": {
-        "line": 21,
-        "row": 4,
+        "line": 24,
+        "row": 5,
         "legacyRelease": {
           "date": "2026-05-31",
           "entry": "31.1",

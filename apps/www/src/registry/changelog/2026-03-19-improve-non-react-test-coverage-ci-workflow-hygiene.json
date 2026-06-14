@@ -52,15 +52,15 @@
   ],
   "entries": [
     {
-      "id": "2026-03-19-29-1-023",
+      "id": "2026-03-19-29-1-font-color-toolbar-keep-typing-compatible-non-9d59a1d9",
       "kind": "behavior",
       "summary": "Keep color toolbar typing compatible with the non-React test and TypeScript cleanup.",
       "details": [],
       "migrationNotes": [],
       "targets": ["font-color-toolbar-button"],
       "source": {
-        "line": 68,
-        "row": 23,
+        "line": 71,
+        "row": 24,
         "legacyRelease": {
           "date": "2026-03-19",
           "entry": "29.1",
