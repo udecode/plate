@@ -1,6 +1,11 @@
 /** @jsx jsxt */
 
-import { type SlateEditor, createSlateEditor } from 'platejs';
+import {
+  type SlateEditor,
+  createSlateEditor,
+  createTSlatePlugin,
+  KEYS,
+} from 'platejs';
 
 import { BaseIndentPlugin } from '@platejs/indent';
 import { jsxt } from '@platejs/test-utils';
@@ -10,6 +15,50 @@ import { BaseListPlugin } from '../BaseListPlugin';
 import { toggleList } from './toggleList';
 
 jsxt;
+
+const CUSTOM_H1 = 'heading-one';
+
+const H1Plugin = createTSlatePlugin({
+  key: KEYS.h1,
+});
+
+const CustomH1Plugin = H1Plugin.extend({
+  node: { type: CUSTOM_H1 },
+});
+
+const BlockquotePlugin = createTSlatePlugin({
+  key: KEYS.blockquote,
+});
+
+const headingListPlugins = [
+  H1Plugin,
+  BlockquotePlugin,
+  BaseListPlugin.configure({
+    inject: {
+      targetPlugins: [KEYS.blockquote, KEYS.h1, KEYS.p],
+    },
+  }),
+  BaseIndentPlugin.configure({
+    inject: {
+      targetPlugins: [KEYS.blockquote, KEYS.h1, KEYS.p],
+    },
+  }),
+];
+
+const customHeadingListPlugins = [
+  CustomH1Plugin,
+  BlockquotePlugin,
+  BaseListPlugin.configure({
+    inject: {
+      targetPlugins: [KEYS.blockquote, KEYS.h1, KEYS.p],
+    },
+  }),
+  BaseIndentPlugin.configure({
+    inject: {
+      targetPlugins: [KEYS.blockquote, KEYS.h1, KEYS.p],
+    },
+  }),
+];
 
 const getToggledEditor = ({
   input,
@@ -269,6 +318,164 @@ describe('toggleList', () => {
 
           expect(editor.children).toEqual(output.children);
         });
+
+        it('adds listRestartPolite after a numbered heading', () => {
+          const input = (
+            <editor>
+              <element indent={1} listStyleType="decimal" type="h1">
+                Heading one
+              </element>
+              <element
+                indent={1}
+                listStart={2}
+                listStyleType="decimal"
+                type="h1"
+              >
+                Heading two
+              </element>
+              <hp>
+                <cursor />3
+              </hp>
+            </editor>
+          ) as any as SlateEditor;
+
+          const output = (
+            <editor>
+              <element indent={1} listStyleType="decimal" type="h1">
+                Heading one
+              </element>
+              <element
+                indent={1}
+                listStart={2}
+                listStyleType="decimal"
+                type="h1"
+              >
+                Heading two
+              </element>
+              <hp
+                indent={1}
+                listRestartPolite={3}
+                listStart={3}
+                listStyleType="decimal"
+              >
+                3
+              </hp>
+            </editor>
+          ) as any as SlateEditor;
+
+          const editor = getToggledEditor({
+            input,
+            options: {
+              listRestartPolite: 3,
+              listStyleType: 'decimal',
+            },
+            plugins: headingListPlugins,
+          });
+
+          expect(editor.children).toEqual(output.children);
+        });
+
+        it('adds listRestartPolite after a numbered heading with an earlier paragraph list', () => {
+          const input = (
+            <editor>
+              <hp indent={1} listStyleType="decimal">
+                Earlier paragraph
+              </hp>
+              <element indent={1} listStyleType="decimal" type="h1">
+                Heading one
+              </element>
+              <hp>
+                <cursor />3
+              </hp>
+            </editor>
+          ) as any as SlateEditor;
+
+          const output = (
+            <editor>
+              <hp indent={1} listStyleType="decimal">
+                Earlier paragraph
+              </hp>
+              <element indent={1} listStyleType="decimal" type="h1">
+                Heading one
+              </element>
+              <hp
+                indent={1}
+                listRestartPolite={3}
+                listStart={3}
+                listStyleType="decimal"
+              >
+                3
+              </hp>
+            </editor>
+          ) as any as SlateEditor;
+
+          const editor = getToggledEditor({
+            input,
+            options: {
+              listRestartPolite: 3,
+              listStyleType: 'decimal',
+            },
+            plugins: headingListPlugins,
+          });
+
+          expect(editor.children).toEqual(output.children);
+        });
+
+        it('adds listRestartPolite after a configured heading node type', () => {
+          const input = (
+            <editor>
+              <element indent={1} listStyleType="decimal" type={CUSTOM_H1}>
+                Heading one
+              </element>
+              <element
+                indent={1}
+                listStart={2}
+                listStyleType="decimal"
+                type={CUSTOM_H1}
+              >
+                Heading two
+              </element>
+              <hp>
+                <cursor />3
+              </hp>
+            </editor>
+          ) as any as SlateEditor;
+
+          const output = (
+            <editor>
+              <element indent={1} listStyleType="decimal" type={CUSTOM_H1}>
+                Heading one
+              </element>
+              <element
+                indent={1}
+                listStart={2}
+                listStyleType="decimal"
+                type={CUSTOM_H1}
+              >
+                Heading two
+              </element>
+              <hp
+                indent={1}
+                listRestartPolite={3}
+                listStart={3}
+                listStyleType="decimal"
+              >
+                3
+              </hp>
+            </editor>
+          ) as any as SlateEditor;
+
+          const editor = getToggledEditor({
+            input,
+            options: {
+              listRestartPolite: 3,
+              listStyleType: 'decimal',
+            },
+            plugins: customHeadingListPlugins,
+          });
+
+          expect(editor.children).toEqual(output.children);
+        });
       });
 
       describe('when there is a previous list item', () => {
@@ -307,6 +514,129 @@ describe('toggleList', () => {
               listRestartPolite: 5,
               listStyleType: 'decimal',
             },
+          });
+
+          expect(editor.children).toEqual(output.children);
+        });
+
+        it('does not add listRestartPolite after a nested numbered heading', () => {
+          const input = (
+            <editor>
+              <hp indent={1} listStyleType="decimal">
+                1
+              </hp>
+              <element indent={2} listStyleType="decimal" type="h1">
+                Nested heading
+              </element>
+              <hp>
+                <cursor />2
+              </hp>
+            </editor>
+          ) as any as SlateEditor;
+
+          const output = (
+            <editor>
+              <hp indent={1} listStyleType="decimal">
+                1
+              </hp>
+              <element indent={2} listStyleType="decimal" type="h1">
+                Nested heading
+              </element>
+              <hp indent={1} listStart={2} listStyleType="decimal">
+                2
+              </hp>
+            </editor>
+          ) as any as SlateEditor;
+
+          const editor = getToggledEditor({
+            input,
+            options: {
+              listRestartPolite: 5,
+              listStyleType: 'decimal',
+            },
+            plugins: headingListPlugins,
+          });
+
+          expect(editor.children).toEqual(output.children);
+        });
+
+        it('does not add listRestartPolite after non-numbered headings', () => {
+          const input = (
+            <editor>
+              <hp indent={1} listStyleType="decimal">
+                1
+              </hp>
+              <element indent={1} type="h1">
+                Plain heading
+              </element>
+              <element indent={1} listStyleType="disc" type="h1">
+                Bullet heading
+              </element>
+              <hp>
+                <cursor />2
+              </hp>
+            </editor>
+          ) as any as SlateEditor;
+
+          const output = (
+            <editor>
+              <hp indent={1} listStyleType="decimal">
+                1
+              </hp>
+              <element indent={1} type="h1">
+                Plain heading
+              </element>
+              <element indent={1} listStyleType="disc" type="h1">
+                Bullet heading
+              </element>
+              <hp indent={1} listStart={2} listStyleType="decimal">
+                2
+              </hp>
+            </editor>
+          ) as any as SlateEditor;
+
+          const editor = getToggledEditor({
+            input,
+            options: {
+              listRestartPolite: 5,
+              listStyleType: 'decimal',
+            },
+            plugins: headingListPlugins,
+          });
+
+          expect(editor.children).toEqual(output.children);
+        });
+
+        it('does not add listRestartPolite after a numbered blockquote', () => {
+          const input = (
+            <editor>
+              <hblockquote indent={1} listStyleType="decimal">
+                1
+              </hblockquote>
+              <hp>
+                <cursor />2
+              </hp>
+            </editor>
+          ) as any as SlateEditor;
+
+          const output = (
+            <editor>
+              <hblockquote indent={1} listStyleType="decimal">
+                1
+              </hblockquote>
+              <hp indent={1} listStart={2} listStyleType="decimal">
+                2
+              </hp>
+            </editor>
+          ) as any as SlateEditor;
+
+          const editor = getToggledEditor({
+            input,
+            options: {
+              listRestartPolite: 5,
+              listStyleType: 'decimal',
+            },
+            plugins: headingListPlugins,
           });
 
           expect(editor.children).toEqual(output.children);
