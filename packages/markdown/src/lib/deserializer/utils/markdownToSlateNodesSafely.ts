@@ -25,6 +25,28 @@ const isSplitInsideTableRow = (completeString: string) => {
   return currentLine.includes('|');
 };
 
+const markdownToSlateNodesWithoutMdx = (
+  editor: SlateEditor,
+  data: string,
+  options?: Omit<DeserializeMdOptions, 'editor'>
+) =>
+  markdownToSlateNodes(editor, data, {
+    ...options,
+    withoutMdx: true,
+  });
+
+const markdownToSlateNodesWithMdxFallback = (
+  editor: SlateEditor,
+  data: string,
+  options?: Omit<DeserializeMdOptions, 'editor'>
+) => {
+  try {
+    return markdownToSlateNodes(editor, data, options);
+  } catch {
+    return markdownToSlateNodesWithoutMdx(editor, data, options);
+  }
+};
+
 const appendInlineNodesToLastTextContainer = (
   editor: SlateEditor,
   node: unknown,
@@ -80,10 +102,7 @@ export const markdownToSlateNodesSafely = (
   const result = splitIncompleteMdx(data);
 
   if (!Array.isArray(result))
-    return markdownToSlateNodes(editor, data, {
-      ...options,
-      withoutMdx: true,
-    });
+    return markdownToSlateNodesWithoutMdx(editor, data, options);
 
   const [completeString, incompleteString] = result;
 
@@ -92,7 +111,11 @@ export const markdownToSlateNodesSafely = (
     withoutMdx: true,
   });
 
-  const completeNodes = markdownToSlateNodes(editor, completeString, options);
+  const completeNodes = markdownToSlateNodesWithMdxFallback(
+    editor,
+    completeString,
+    options
+  );
 
   const newBlock = {
     children: incompleteNodes,
@@ -114,10 +137,11 @@ export const markdownToSlateNodesSafely = (
 
   if (ElementApi.isElement(lastBlock) && lastBlock.type === tableType) {
     if (isSplitInsideTableRow(completeString)) {
-      const withoutMdxNodes = markdownToSlateNodes(editor, data, {
-        ...options,
-        withoutMdx: true,
-      });
+      const withoutMdxNodes = markdownToSlateNodesWithoutMdx(
+        editor,
+        data,
+        options
+      );
       const tableOrdinal = completeNodes
         .filter((node) => ElementApi.isElement(node) && node.type === tableType)
         .indexOf(lastBlock);

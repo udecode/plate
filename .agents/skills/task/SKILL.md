@@ -37,6 +37,13 @@ they earn their keep, and verify before calling the task done.
    - File path or spec path: read it first.
    - GitHub issue URL: fetch it with `gh issue view` first.
    - GitHub PR URL: fetch it with `gh pr view` first.
+   - GitHub repository security advisory URL
+     (`github.com/<owner>/<repo>/security/advisories/GHSA-*`): fetch it with
+     `gh api repos/<owner>/<repo>/security-advisories/<GHSA_ID>` first.
+   - Public GitHub Advisory Database URL (`github.com/advisories/GHSA-*`):
+     fetch it with `gh api advisories/<GHSA_ID>` first. Treat it as read-only
+     unless you can identify a repository security advisory owned by the
+     current repo/org.
    - Bare GitHub issue like `#555`: resolve it against the current `gh` repo
      first, then fetch it with `gh issue view`.
    - Linear issue link/id: fetch it with the Linear integration first.
@@ -77,6 +84,8 @@ they earn their keep, and verify before calling the task done.
      - browser/UI route or interaction touched: add `--with browser`
      - package exports, public API, release artifacts, or package boundary
        touched: add `--with package-api`
+     - GitHub security advisory, GHSA, CVE, npm advisory, or private
+       vulnerability disclosure touched: add `--with security-advisory`
      `node .agents/skills/autogoal/scripts/create-goal-scratchpad.mjs --template <task|docs> --with <pack> --title "<short task title>"`
    - follow local repo overrides for where planning files live
 10. If testing or coverage work, load `testing` before `tdd` and choose the
@@ -106,6 +115,57 @@ Apply only when the source is a tracker item.
 - Do not require PR creation, screenshots, or comments for analytical, blocked,
   or inconclusive work.
 
+## Security Advisory Hotfixes
+
+Apply this when the source or required closeout is a GitHub security advisory,
+GHSA, CVE request, npm advisory, private vulnerability report, or public
+package security hotfix.
+
+- Treat the advisory as the tracker source. Use the GitHub advisory API through
+  `gh api` when the source is a GitHub repository advisory or public GHSA; do
+  not rely on the web UI as the only proof. For npm-only advisories or private
+  reports without a GitHub advisory, record the external advisory/report source
+  and the external owner or blocker instead.
+- Public GitHub Advisory Database records from `github.com/advisories/GHSA-*`
+  are read-only for normal repo maintainers. If the fix belongs to this repo,
+  locate or create the repository security advisory before trying to update
+  vulnerable ranges, publish, or request a CVE. If no repo advisory is owned by
+  this repo/org, close with global GHSA readback plus external owner/blocker.
+- If the source is private, draft, embargoed, or not yet publicly disclosed,
+  do not create a public PR, public issue comment, release note, or tracker
+  sync that reveals exploit details before the fixed version is available and
+  disclosure is approved. Use the repository advisory/private fork workflow
+  when available. If a public PR is necessary before disclosure, keep the title,
+  body, branch, commits, tests, and comments sanitized unless the user
+  explicitly approves disclosure.
+- Use `--with security-advisory` in the goal plan. Also use
+  `--with package-api` when a published package, changeset, or npm release is
+  part of the fix.
+- Do not stop at a merged PR, merged Version Packages PR, or created GitHub
+  Release while the advisory is still draft, lacks a patched version, or points
+  at the wrong affected range.
+- Verify the patched package is actually published before publishing the
+  advisory. For npm packages, read back `npm view <package>@<version>` and the
+  GitHub release/tag when relevant.
+- When a repository advisory exists, update advisory vulnerabilities with the
+  exact package, vulnerable range, and fixed version. The affected range should
+  exclude the fixed version. Public/global GHSA records without a repo advisory
+  are read-only; record readback and owner/blocker instead of mutating them.
+- Publish repository advisories after the fixed version is available. For
+  external/npm/private advisories, record the external publication state or the
+  owner/blocker instead.
+- If a repository advisory has empty `cve_id` and is eligible, request a CVE
+  through the advisory API unless the user explicitly says not to; read back the
+  advisory afterward and record that assignment may remain pending. For
+  public/global GHSA records without a repo advisory and non-GitHub sources,
+  record existing CVE, external CNA/request owner, GitHub/global owner, or N/A
+  reason.
+- Final closeout must read back state, published timestamp, affected package,
+  vulnerable range, patched version, CVE status, and the expected GitHub
+  review/Dependabot propagation caveat.
+- Final handoff for private/draft work must state the disclosure-safe path used
+  or the exact user approval that allowed public details.
+
 ## Load Skills Only When Justified
 
 ## Skill Diet
@@ -126,9 +186,10 @@ lock.
 - `autogoal`: measurable or auditable non-trivial work. Use the dominant-risk
   primary template and touched-surface packs: docs-heavy work gets
   `--template docs`, normal work gets `--template task`, and supporting docs,
-  browser, agent-native, or package/API surfaces add matching `--with <pack>`
-  rows. Review expectations stay in the primary template. Do not use root
-  planning files, hooks, `.planning/**`, or `docs/goals/**`.
+  browser, agent-native, security-advisory, or package/API surfaces add
+  matching `--with <pack>` rows. Review expectations stay in the primary
+  template. Do not use root planning files, hooks, `.planning/**`, or
+  `docs/goals/**`.
 - `major-task`: heavyweight architecture, framework, migration, benchmark, or
   proposal work.
 - `testing`: tasks primarily about tests, coverage, regression gaps, or suite
@@ -265,6 +326,9 @@ Keep verification mandatory and proportional.
   signals unrelated to the diff, run `pnpm run reinstall` once and rerun the
   exact failing command before declaring the task blocked.
 - If work changes published packages, satisfy the changeset gate.
+- If work changes or resolves a security advisory, satisfy the
+  security-advisory gate through publish/readback or record the external
+  blocker.
 - If work is registry-only under `apps/www/src/registry/`, satisfy the registry
   changelog gate instead of a package changeset.
 - If verified work changed code, create or update the PR before tracker
@@ -326,6 +390,8 @@ with `gh pr view --json body` before final handoff.
 - Non-trivial docs work loaded `docs-creator` and used `--template docs`.
 - Supporting docs, browser, agent-native, package/API, or extra-review surfaces
   used the matching `--with <pack>` rows when they were not the dominant risk.
+- Security advisory hotfixes used `--with security-advisory` and closed
+  release, advisory publication, CVE request, and readback evidence.
 - Testing work loaded the testing policy before implementation.
 - Only necessary skills were loaded.
 - Batch work did not sprawl without explicit instruction.

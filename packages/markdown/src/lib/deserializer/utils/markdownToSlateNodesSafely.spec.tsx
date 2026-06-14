@@ -75,6 +75,45 @@ describe('markdownToSlateNodesSafely', () => {
     ]);
   });
 
+  it('falls back to editable text for malformed html-like mdx', () => {
+    const editor = createTestEditor();
+
+    expect(markdownToSlateNodesSafely(editor, String.raw`</ph\><`)).toEqual([
+      {
+        children: [{ text: '</ph><' }],
+        type: 'p',
+      },
+    ]);
+  });
+
+  it('preserves completed MDX member tags before an incomplete tail', () => {
+    const editor = createTestEditor();
+
+    expect(
+      markdownToSlateNodesSafely(editor, '<Foo.Bar>ok</Foo.Bar><u>', {
+        rules: {
+          'Foo.Bar': {
+            deserialize: () => ({
+              children: [{ text: 'member' }],
+              type: 'member',
+            }),
+          },
+        },
+      })
+    ).toEqual([
+      {
+        children: [
+          {
+            children: [{ text: 'member' }],
+            type: 'member',
+          },
+          { text: '<u>' },
+        ],
+        type: 'p',
+      },
+    ]);
+  });
+
   it('preserves complete void blocks before appending the fallback paragraph', () => {
     const editor = createTestEditor();
 
