@@ -35,7 +35,7 @@
         "@platejs/list": "^53.1.3",
         "@platejs/markdown": "^53.1.1",
         "@platejs/math": "^53.0.0",
-        "@platejs/media": "^53.0.1",
+        "@platejs/media": "^53.1.4",
         "@platejs/mention": "^53.0.0",
         "@platejs/resizable": "^53.0.0",
         "@platejs/selection": "^53.0.0",
@@ -462,7 +462,7 @@
 
     "@platejs/math": ["@platejs/math@53.0.0", "", { "dependencies": { "katex": "0.16.22", "react-compiler-runtime": "^1.0.0" }, "peerDependencies": { "platejs": ">=53.0.0", "react": ">=18.0.0", "react-dom": ">=18.0.0" } }, "sha512-rXfM7L2mJ4eyjUoQUXkApkjmCPfCSYX46i2d0+bVUzfNjQI6DhB19wAAa4eW4X9MLSqC+PakBAqPnkHr4pP1+w=="],
 
-    "@platejs/media": ["@platejs/media@53.0.1", "", { "dependencies": { "react-compiler-runtime": "^1.0.0" }, "peerDependencies": { "platejs": ">=53.0.0", "react": ">=18.0.0", "react-dom": ">=18.0.0" } }, "sha512-0CSEPEMXfBPO26/dfXHkF1G5EZ9Ip+zOL3Uwzdhn2208LWF0ZY+RXxk/n6n+Fzl6oqFijChZVhRa2Cb0mqn0mw=="],
+    "@platejs/media": ["@platejs/media@53.1.4", "", { "dependencies": { "react-compiler-runtime": "^1.0.0" }, "peerDependencies": { "platejs": ">=53.0.0", "react": ">=18.0.0", "react-dom": ">=18.0.0" } }, "sha512-KmiV68QM5YiO52BmqPaDGMvynTBIFrGn3k22FGmOk5hJLETO44weAuZRhSxbQiqQS07PveCAK8ZWJIzmM8yKSg=="],
 
     "@platejs/mention": ["@platejs/mention@53.0.0", "", { "dependencies": { "@platejs/combobox": "53.0.0", "react-compiler-runtime": "^1.0.0" }, "peerDependencies": { "platejs": ">=53.0.0", "react": ">=18.0.0", "react-dom": ">=18.0.0" } }, "sha512-x7kr9SgFlO0yoJdRcv4mIeiM47cnDEIUJBMYFAQEI42JdwcVKUBiPP4bCZwkQKpGndxmlXT9iTz8+w/UBqDJOA=="],
 
