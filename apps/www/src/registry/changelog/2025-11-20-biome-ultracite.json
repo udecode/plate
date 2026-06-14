@@ -492,7 +492,7 @@
   ],
   "entries": [
     {
-      "id": "2025-11-20-26-11-032",
+      "id": "2025-11-20-26-11-033",
       "kind": "behavior",
       "summary": "Format copied AI registry files for Biome and Ultracite compatibility.",
       "details": [],
@@ -506,8 +506,8 @@
         "cursor-overlay"
       ],
       "source": {
-        "line": 103,
-        "row": 32,
+        "line": 106,
+        "row": 33,
         "legacyRelease": {
           "date": "2025-11-20",
           "entry": "26.11",
@@ -516,7 +516,7 @@
       }
     },
     {
-      "id": "2025-11-20-26-11-033",
+      "id": "2025-11-20-26-11-034",
       "kind": "behavior",
       "summary": "Format copied editor kits and transforms for Biome and Ultracite compatibility.",
       "details": [],
@@ -531,8 +531,8 @@
         "markdown-joiner-transform"
       ],
       "source": {
-        "line": 104,
-        "row": 33,
+        "line": 107,
+        "row": 34,
         "legacyRelease": {
           "date": "2025-11-20",
           "entry": "26.11",
@@ -541,7 +541,7 @@
       }
     },
     {
-      "id": "2025-11-20-26-11-034",
+      "id": "2025-11-20-26-11-035",
       "kind": "fix",
       "summary": "Format copied UI components for Biome and Ultracite compatibility.",
       "details": [],
@@ -592,8 +592,8 @@
         "toolbar"
       ],
       "source": {
-        "line": 105,
-        "row": 34,
+        "line": 108,
+        "row": 35,
         "legacyRelease": {
           "date": "2025-11-20",
           "entry": "26.11",
@@ -602,7 +602,7 @@
       }
     },
     {
-      "id": "2025-11-20-26-11-035",
+      "id": "2025-11-20-26-11-036",
       "kind": "behavior",
       "summary": "Format copied registry demos and block examples for Biome and Ultracite compatibility.",
       "details": [],
@@ -622,8 +622,8 @@
         "mdx-plate-components"
       ],
       "source": {
-        "line": 106,
-        "row": 35,
+        "line": 109,
+        "row": 36,
         "legacyRelease": {
           "date": "2025-11-20",
           "entry": "26.11",

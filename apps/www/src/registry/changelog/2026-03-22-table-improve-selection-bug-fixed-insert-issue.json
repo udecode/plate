@@ -58,7 +58,7 @@
   ],
   "entries": [
     {
-      "id": "2026-03-22-29-2-021",
+      "id": "2026-03-22-29-2-022",
       "kind": "behavior",
       "summary": "Move large-table selection state to root-level DOM sync and editor selectors to reduce selection latency.",
       "details": [],
@@ -67,8 +67,8 @@
       ],
       "targets": ["table-node"],
       "source": {
-        "line": 63,
-        "row": 21,
+        "line": 66,
+        "row": 22,
         "legacyRelease": {
           "date": "2026-03-22",
           "entry": "29.2",
@@ -77,15 +77,15 @@
       }
     },
     {
-      "id": "2026-03-22-29-2-022",
+      "id": "2026-03-22-29-2-023",
       "kind": "behavior",
       "summary": "Sync toolbar typing with the table-selection update.",
       "details": [],
       "migrationNotes": [],
       "targets": ["font-color-toolbar-button"],
       "source": {
-        "line": 64,
-        "row": 22,
+        "line": 67,
+        "row": 23,
         "legacyRelease": {
           "date": "2026-03-22",
           "entry": "29.2",

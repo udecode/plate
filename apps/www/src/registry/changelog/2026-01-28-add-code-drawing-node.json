@@ -113,7 +113,7 @@
   ],
   "entries": [
     {
-      "id": "2026-01-28-28-3-024",
+      "id": "2026-01-28-28-3-025",
       "kind": "new",
       "summary": "Add inline code drawing for Mermaid, PlantUML, Graphviz, and Flowchart diagrams.",
       "details": [],
@@ -125,8 +125,8 @@
         "code-drawing-demo"
       ],
       "source": {
-        "line": 74,
-        "row": 24,
+        "line": 77,
+        "row": 25,
         "legacyRelease": {
           "date": "2026-01-28",
           "entry": "28.3",
@@ -135,7 +135,7 @@
       }
     },
     {
-      "id": "2026-01-28-28-3-025",
+      "id": "2026-01-28-28-3-026",
       "kind": "wiring",
       "summary": "Register code drawing in editor kits, insert actions, slash actions, block menu actions, and transforms.",
       "details": [],
@@ -151,8 +151,8 @@
         "transforms"
       ],
       "source": {
-        "line": 75,
-        "row": 25,
+        "line": 78,
+        "row": 26,
         "legacyRelease": {
           "date": "2026-01-28",
           "entry": "28.3",

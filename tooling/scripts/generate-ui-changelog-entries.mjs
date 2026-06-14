@@ -605,6 +605,10 @@ function toReleaseState(
 ) {
   if (release) return release;
 
+  if (!hasReleaseProvenance(changeUnit)) {
+    return { status: 'unresolved' };
+  }
+
   if (
     latestRelease &&
     isReleaseAncestor(changeUnit, latestRelease) &&
@@ -635,6 +639,10 @@ function toReleaseState(
   }
 
   return { status: 'unresolved' };
+}
+
+function hasReleaseProvenance(changeUnit) {
+  return Boolean(changeUnit.pr || changeUnit.commit?.oid);
 }
 
 export function buildRegistryChangelogIndexes(outputs) {
@@ -1096,6 +1104,15 @@ export function resolveReleaseForChangeUnit(changeUnit, releases) {
     return {
       release: toReleaseMetadata(prReleases[0], 'release-index-pr-match'),
       warnings: [],
+    };
+  }
+
+  if (!changeUnit.commit?.oid) {
+    return {
+      release: null,
+      warnings: [
+        `No generated release-index entry found for source-only change on ${changeUnit.date}.`,
+      ],
     };
   }
 

@@ -64,15 +64,15 @@
   ],
   "entries": [
     {
-      "id": "2026-03-31-29-6-015",
+      "id": "2026-03-31-29-6-016",
       "kind": "behavior",
       "summary": "Update table border demos for merged-cell neighbor resolution so border toggles target the visual adjacent cell.",
       "details": [],
       "migrationNotes": [],
       "targets": ["table-demo", "table-nomerge-demo"],
       "source": {
-        "line": 45,
-        "row": 15,
+        "line": 48,
+        "row": 16,
         "legacyRelease": {
           "date": "2026-03-31",
           "entry": "29.6",

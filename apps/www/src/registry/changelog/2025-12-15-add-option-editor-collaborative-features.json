@@ -60,7 +60,7 @@
   ],
   "entries": [
     {
-      "id": "2025-12-15-27-2-030",
+      "id": "2025-12-15-27-2-031",
       "kind": "behavior",
       "summary": "Read collaborative trigger ownership from `editor.meta.userId`.",
       "details": [
@@ -71,8 +71,8 @@
       ],
       "targets": ["inline-combobox", "mention-kit"],
       "source": {
-        "line": 91,
-        "row": 30,
+        "line": 94,
+        "row": 31,
         "legacyRelease": {
           "date": "2025-12-15",
           "entry": "27.2",

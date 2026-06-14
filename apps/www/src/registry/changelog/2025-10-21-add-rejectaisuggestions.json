@@ -78,7 +78,7 @@
   ],
   "entries": [
     {
-      "id": "2025-10-21-26-10-036",
+      "id": "2025-10-21-26-10-037",
       "kind": "behavior",
       "summary": "Use `SuggestionLineBreak` instead of `BlockSuggestion` for suggestion styling.",
       "details": [],
@@ -87,8 +87,8 @@
       ],
       "targets": ["suggestion-kit", "suggestion-node", "block-discussion"],
       "source": {
-        "line": 112,
-        "row": 36,
+        "line": 115,
+        "row": 37,
         "legacyRelease": {
           "date": "2025-10-21",
           "entry": "26.10",
@@ -97,15 +97,15 @@
       }
     },
     {
-      "id": "2025-10-21-26-10-037",
+      "id": "2025-10-21-26-10-038",
       "kind": "behavior",
       "summary": "Keep AI comments visible after the stream finishes.",
       "details": [],
       "migrationNotes": [],
       "targets": ["ai-api"],
       "source": {
-        "line": 113,
-        "row": 37,
+        "line": 116,
+        "row": 38,
         "legacyRelease": {
           "date": "2025-10-21",
           "entry": "26.10",
