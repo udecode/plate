@@ -48,7 +48,7 @@
   ],
   "entries": [
     {
-      "id": "2026-06-03-32-1-003",
+      "id": "2026-06-03-32-1-code-block-language-label-e8dfda31",
       "kind": "behavior",
       "summary": "Show the selected language label in read-only and static rendering. Set `showLanguageLabel={false}` on the component to hide it.",
       "details": [],

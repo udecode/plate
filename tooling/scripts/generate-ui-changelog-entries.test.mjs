@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 
@@ -10,6 +11,8 @@ import {
   inferRegistryHints,
   parseComponentChangelog,
   resolveReleaseForRow,
+  validateArgs,
+  writeRegistryChangelogEvents,
 } from './generate-ui-changelog-entries.mjs';
 
 test('extracts registry ids from markdown component labels', () => {
@@ -43,8 +46,68 @@ test('parses dated source rows and multi-item entries', () => {
     rows[0].provenanceCommit,
     'a471d051d2b32c494a94e8218ce1a8462aa26463'
   );
-  assert.equal(rows[0].sourceId, '2026-06-03-32-1-001');
+  assert.equal(
+    rows[0].sourceId,
+    '2026-06-03-32-1-code-block-language-label-e8dfda31'
+  );
   assert.equal(rows[0].release.section, 'June 2026 #32');
+});
+
+test('keeps source ids stable when rows are inserted above', () => {
+  const originalRows = parseComponentChangelog(`
+## June 2026 #32
+
+### June 3 #32.1
+- **\`code-block-node\`**, **\`code-block-node-static\`**: Show the selected language label in read-only and static rendering. Set \`showLanguageLabel={false}\` on the component to hide it.
+- **\`column-node\`**: Attach column drop target ref.
+`);
+  const insertedRows = parseComponentChangelog(`
+## June 2026 #32
+
+### June 3 #32.1
+- **\`editor-base-kit\`**: Install editor kit files through the configured components alias.
+- **\`code-block-node\`**, **\`code-block-node-static\`**: Show the selected language label in read-only and static rendering. Set \`showLanguageLabel={false}\` on the component to hide it.
+- **\`column-node\`**: Attach column drop target ref.
+`);
+  const originalCodeBlockRow = originalRows.find((row) =>
+    row.items.includes('code-block-node')
+  );
+  const insertedCodeBlockRow = insertedRows.find((row) =>
+    row.items.includes('code-block-node')
+  );
+
+  assert.equal(originalCodeBlockRow?.row, 1);
+  assert.equal(insertedCodeBlockRow?.row, 2);
+  assert.equal(originalCodeBlockRow?.sourceId, insertedCodeBlockRow?.sourceId);
+});
+
+test('write prunes stale generated changelog event files', () => {
+  const outDir = fs.mkdtempSync(path.join(os.tmpdir(), 'registry-changelog-'));
+  const stalePath = path.join(outDir, 'stale-event.json');
+  const keptPath = path.join(outDir, 'kept-event.json');
+
+  fs.writeFileSync(stalePath, '{}\n');
+  writeRegistryChangelogEvents(
+    [
+      {
+        entry: { id: 'kept-event', schemaVersion: 1 },
+        targetPath: keptPath,
+      },
+    ],
+    { pruneOutDir: outDir }
+  );
+
+  assert.equal(fs.existsSync(stalePath), false);
+  assert.equal(fs.existsSync(keptPath), true);
+});
+
+test('rejects limited writes before pruning generated artifacts', () => {
+  assert.throws(
+    () => validateArgs({ limit: 1, write: true }),
+    /--write cannot be combined with --limit/
+  );
+  assert.doesNotThrow(() => validateArgs({ limit: 1, write: false }));
+  assert.doesNotThrow(() => validateArgs({ limit: null, write: true }));
 });
 
 function commit(oid, date, subject) {
@@ -104,7 +167,7 @@ test('builds one registry event per change unit with row entries', () => {
     outDir: 'out',
     provenanceBySourceId: new Map([
       [
-        '2026-06-03-32-1-001',
+        rows[0].sourceId,
         provenance(commitValue, prValue, ['Matched PR 4989, but it is OPEN.']),
       ],
     ]),
@@ -344,11 +407,11 @@ test('current latest 14 source rows collapse to 6 change-unit events', () => {
   );
   const provenanceBySourceId = new Map(
     rows.flatMap((row) => {
-      if (row.sourceId === '2026-06-14-32-3-001') {
+      if (row.date === '2026-06-14') {
         return [];
       }
 
-      if (row.sourceId === '2026-06-10-32-2-002') {
+      if (row.date === '2026-06-10') {
         return [
           [
             row.sourceId,

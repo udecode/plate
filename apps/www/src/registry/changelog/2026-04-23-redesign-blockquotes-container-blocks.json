@@ -125,7 +125,7 @@
   ],
   "entries": [
     {
-      "id": "2026-04-08-30-2-009",
+      "id": "2026-04-08-30-2-footnote-gfm-footnotes-reference-definition-bac13652",
       "kind": "new",
       "summary": "Add GFM footnotes with reference, definition, and input plugins plus UI — hover preview, navigation flash, multi-reference picker, and duplicate-definition recovery.",
       "details": [],
@@ -142,7 +142,7 @@
       }
     },
     {
-      "id": "2026-04-08-30-2-010",
+      "id": "2026-04-08-30-2-footnote-ssr-markdown-pipelines-d92e65f4",
       "kind": "new",
       "summary": "Add static footnote rendering for SSR and markdown pipelines.",
       "details": [],
@@ -159,7 +159,7 @@
       }
     },
     {
-      "id": "2026-04-08-30-2-011",
+      "id": "2026-04-08-30-2-editor-register-footnote-kits-c0b7736b",
       "kind": "new",
       "summary": "Register the new footnote kits.",
       "details": [],
@@ -176,7 +176,7 @@
       }
     },
     {
-      "id": "2026-04-08-30-2-012",
+      "id": "2026-04-08-30-2-markdown-register-base-footnote-plugins-remark-emoji-975854b1",
       "kind": "wiring",
       "summary": "Register the base footnote plugins and add `remark-emoji` so GFM footnotes and emoji shortcodes round-trip.",
       "details": [],
@@ -195,7 +195,7 @@
       }
     },
     {
-      "id": "2026-04-08-30-2-013",
+      "id": "2026-04-08-30-2-insert-toolbar-footnote-entry-wired-action-footnote-ca66c2d3",
       "kind": "behavior",
       "summary": "Add a Footnote insert entry wired to `action_footnote`.",
       "details": [],
@@ -216,7 +216,7 @@
       }
     },
     {
-      "id": "2026-04-08-30-2-014",
+      "id": "2026-04-08-30-2-transforms-map-action-footnote-3d2ad293",
       "kind": "wiring",
       "summary": "Map `action_footnote` to `insertFootnote(editor, { select: true })`.",
       "details": [],
@@ -235,7 +235,7 @@
       }
     },
     {
-      "id": "2026-04-08-30-2-015",
+      "id": "2026-04-08-30-2-autoformat-reduce-symbol-substitutions-arrows-7173ec42",
       "kind": "behavior",
       "summary": "Reduce to symbol substitutions (arrows, fractions, legal, punctuation, smart quotes, sub/superscript). Markdown shortcuts move to the feature kits below. Add link automd so `[text](url)` closing on `)` resolves to a structured link.",
       "details": [],

@@ -64,7 +64,7 @@
   ],
   "entries": [
     {
-      "id": "2026-03-27-29-4-019",
+      "id": "2026-03-27-29-4-ai-snapshot-insert-mode-preview-f53422b5",
       "kind": "behavior",
       "summary": "Snapshot insert-mode AI preview state so streamed chunks stay out of undo history and accept, undo, and redo preserve selection.",
       "details": [],
@@ -81,7 +81,7 @@
       }
     },
     {
-      "id": "2026-03-27-29-4-020",
+      "id": "2026-03-27-29-4-ai-sync-demo-insert-mode-054db6db",
       "kind": "behavior",
       "summary": "Sync the AI demo with the insert-mode preview history flow.",
       "details": [],

@@ -2,18 +2,34 @@
   "schemaVersion": 1,
   "events": [
     {
-      "id": "2026-06-14-editor-install-kit-files-through",
-      "href": "/registry/changelog/2026-06-14-editor-install-kit-files-through.json",
+      "id": "2026-06-14-fix-shadcn-editor-kit-install-paths",
+      "href": "/registry/changelog/2026-06-14-fix-shadcn-editor-kit-install-paths.json",
       "status": "draft",
       "kind": "behavior",
-      "summary": "Install editor kit files through the configured components alias so relative `./plugins/*` imports resolve after shadcn CLI adds.",
+      "summary": "Fix shadcn editor kit install paths",
       "change": {
-        "type": "source",
+        "type": "pull_request",
         "date": "2026-06-14",
-        "commits": []
+        "commits": [
+          {
+            "sha": "129a4b4644b17db4ba5adef56a43233dc24e5be6",
+            "shortSha": "129a4b4644",
+            "url": "https://github.com/udecode/plate/commit/129a4b4644b17db4ba5adef56a43233dc24e5be6",
+            "date": "2026-06-14",
+            "committedAt": "2026-06-14T14:08:43+02:00",
+            "subject": "Fix shadcn editor kit install paths"
+          }
+        ],
+        "pullRequest": {
+          "number": 5013,
+          "url": "https://github.com/udecode/plate/pull/5013",
+          "state": "OPEN",
+          "title": "Fix shadcn editor kit install paths"
+        }
       },
       "release": {
-        "status": "unresolved"
+        "status": "latest",
+        "source": "open-pull-request"
       },
       "targets": ["editor-base-kit", "editor-kit"],
       "entries": 1,
@@ -23,7 +39,7 @@
           "severity": "warning"
         },
         {
-          "code": "warning",
+          "code": "pull-request-not-merged",
           "severity": "warning"
         }
       ]

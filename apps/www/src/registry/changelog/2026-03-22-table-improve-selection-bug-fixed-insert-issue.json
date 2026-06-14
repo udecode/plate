@@ -58,7 +58,7 @@
   ],
   "entries": [
     {
-      "id": "2026-03-22-29-2-022",
+      "id": "2026-03-22-29-2-table-move-large-selection-state-b0991d6a",
       "kind": "behavior",
       "summary": "Move large-table selection state to root-level DOM sync and editor selectors to reduce selection latency.",
       "details": [],
@@ -77,7 +77,7 @@
       }
     },
     {
-      "id": "2026-03-22-29-2-023",
+      "id": "2026-03-22-29-2-font-color-toolbar-sync-typing-table-selection-ab918188",
       "kind": "behavior",
       "summary": "Sync toolbar typing with the table-selection update.",
       "details": [],

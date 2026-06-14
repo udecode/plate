@@ -2,11 +2,11 @@
   "schemaVersion": 1,
   "components": {
     "editor-base-kit": [
-      "2026-06-14-editor-install-kit-files-through",
+      "2026-06-14-fix-shadcn-editor-kit-install-paths",
       "2026-04-23-redesign-blockquotes-container-blocks"
     ],
     "editor-kit": [
-      "2026-06-14-editor-install-kit-files-through",
+      "2026-06-14-fix-shadcn-editor-kit-install-paths",
       "2026-04-23-redesign-blockquotes-container-blocks",
       "2026-01-28-add-code-drawing-node"
     ],

@@ -13,7 +13,7 @@ describe('/registry/changelog/components.json', () => {
       '2026-06-13-show-code-block-language-labels-read-only-mode'
     );
     expect(data.components['editor-base-kit']).toContain(
-      '2026-06-14-editor-install-kit-files-through'
+      '2026-06-14-fix-shadcn-editor-kit-install-paths'
     );
     expect(data.components['huge-document-demo']).toEqual([
       '2026-06-02-improve-large-document-editing',

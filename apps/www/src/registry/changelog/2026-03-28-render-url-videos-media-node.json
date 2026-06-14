@@ -82,7 +82,7 @@
   ],
   "entries": [
     {
-      "id": "2026-03-28-29-5-017",
+      "id": "2026-03-28-29-5-media-video-render-plain-urls-when-bf870e04",
       "kind": "behavior",
       "summary": "Render plain video URLs with `ReactPlayer` when the node has a `url` and no upload flag.",
       "details": [],
@@ -99,7 +99,7 @@
       }
     },
     {
-      "id": "2026-03-28-29-5-018",
+      "id": "2026-03-28-29-5-editor-ai-sync-registry-blocks-url-9e2b12ab",
       "kind": "behavior",
       "summary": "Sync registry blocks with the URL video rendering path.",
       "details": [],

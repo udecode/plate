@@ -132,7 +132,7 @@
   ],
   "entries": [
     {
-      "id": "2026-01-20-28-2-027",
+      "id": "2026-01-20-28-2-docx-export-import-registry-wiring-4a8f6756",
       "kind": "new",
       "summary": "Add DOCX import and export registry wiring.",
       "details": [],
@@ -153,7 +153,7 @@
       }
     },
     {
-      "id": "2026-01-20-28-2-028",
+      "id": "2026-01-20-28-2-block-list-docx-friendly-updates-e8df822b",
       "kind": "behavior",
       "summary": "Add DOCX-friendly static rendering updates.",
       "details": [],

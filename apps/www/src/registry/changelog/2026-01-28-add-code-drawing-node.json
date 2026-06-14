@@ -113,7 +113,7 @@
   ],
   "entries": [
     {
-      "id": "2026-01-28-28-3-025",
+      "id": "2026-01-28-28-3-code-drawing-inline-mermaid-plantuml-graphviz-605121a0",
       "kind": "new",
       "summary": "Add inline code drawing for Mermaid, PlantUML, Graphviz, and Flowchart diagrams.",
       "details": [],
@@ -135,7 +135,7 @@
       }
     },
     {
-      "id": "2026-01-28-28-3-026",
+      "id": "2026-01-28-28-3-editor-register-code-drawing-kits-b61b770d",
       "kind": "wiring",
       "summary": "Register code drawing in editor kits, insert actions, slash actions, block menu actions, and transforms.",
       "details": [],

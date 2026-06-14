@@ -492,7 +492,7 @@
   ],
   "entries": [
     {
-      "id": "2025-11-20-26-11-033",
+      "id": "2025-11-20-26-11-ai-api-format-copied-registry-files-dad0c3be",
       "kind": "behavior",
       "summary": "Format copied AI registry files for Biome and Ultracite compatibility.",
       "details": [],
@@ -516,7 +516,7 @@
       }
     },
     {
-      "id": "2025-11-20-26-11-034",
+      "id": "2025-11-20-26-11-block-placeholder-format-copied-editor-kits-8cfd039a",
       "kind": "behavior",
       "summary": "Format copied editor kits and transforms for Biome and Ultracite compatibility.",
       "details": [],
@@ -541,7 +541,7 @@
       }
     },
     {
-      "id": "2025-11-20-26-11-035",
+      "id": "2025-11-20-26-11-block-discussion-format-copied-ui-components-07b227ef",
       "kind": "fix",
       "summary": "Format copied UI components for Biome and Ultracite compatibility.",
       "details": [],
@@ -602,7 +602,7 @@
       }
     },
     {
-      "id": "2025-11-20-26-11-036",
+      "id": "2025-11-20-26-11-ai-format-copied-registry-demos-697d1f15",
       "kind": "behavior",
       "summary": "Format copied registry demos and block examples for Biome and Ultracite compatibility.",
       "details": [],

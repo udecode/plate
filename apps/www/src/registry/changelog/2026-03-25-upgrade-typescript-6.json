@@ -52,7 +52,7 @@
   ],
   "entries": [
     {
-      "id": "2026-03-25-29-3-021",
+      "id": "2026-03-25-29-3-code-drawing-keep-registry-template-compatible-dac6991c",
       "kind": "behavior",
       "summary": "Keep the code drawing registry template compatible with the TypeScript 6 check path.",
       "details": [],

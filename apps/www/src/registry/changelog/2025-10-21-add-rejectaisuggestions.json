@@ -78,7 +78,7 @@
   ],
   "entries": [
     {
-      "id": "2025-10-21-26-10-037",
+      "id": "2025-10-21-26-10-suggestion-instead-styling-7fb36069",
       "kind": "behavior",
       "summary": "Use `SuggestionLineBreak` instead of `BlockSuggestion` for suggestion styling.",
       "details": [],
@@ -97,7 +97,7 @@
       }
     },
     {
-      "id": "2025-10-21-26-10-038",
+      "id": "2025-10-21-26-10-ai-api-keep-comments-visible-after-61174ea8",
       "kind": "behavior",
       "summary": "Keep AI comments visible after the stream finishes.",
       "details": [],

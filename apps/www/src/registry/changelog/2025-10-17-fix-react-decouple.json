@@ -222,7 +222,7 @@
   ],
   "entries": [
     {
-      "id": "2025-10-17-26-9-039",
+      "id": "2025-10-17-26-9-block-list-import-path-copied-components-21efe1ce",
       "kind": "wiring",
       "summary": "Use the `platejs/static` import path in copied static rendering components.",
       "details": [],

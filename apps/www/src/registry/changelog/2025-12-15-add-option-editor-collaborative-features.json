@@ -60,7 +60,7 @@
   ],
   "entries": [
     {
-      "id": "2025-12-15-27-2-031",
+      "id": "2025-12-15-27-2-inline-combobox-collaborative-trigger-ownership-from-f8b64879",
       "kind": "behavior",
       "summary": "Read collaborative trigger ownership from `editor.meta.userId`.",
       "details": [

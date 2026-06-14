@@ -13,12 +13,12 @@ describe('/registry/changelog/index.json', () => {
     expect(data.schemaVersion).toBe(1);
     expect(data.events.length).toBeGreaterThanOrEqual(19);
     expect(data.events[0]).toMatchObject({
-      href: '/registry/changelog/2026-06-14-editor-install-kit-files-through.json',
-      id: '2026-06-14-editor-install-kit-files-through',
-      release: { status: 'unresolved' },
+      href: '/registry/changelog/2026-06-14-fix-shadcn-editor-kit-install-paths.json',
+      id: '2026-06-14-fix-shadcn-editor-kit-install-paths',
+      release: { status: 'latest', source: 'open-pull-request' },
       change: {
         date: '2026-06-14',
-        type: 'source',
+        type: 'pull_request',
       },
     });
     expect(data.events.map((event) => event.id)).toContain(
