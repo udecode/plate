@@ -14,7 +14,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@ai-sdk/gateway": "^3.0.130",
+    "@ai-sdk/gateway": "^3.0.131",
     "@ai-sdk/react": "3",
     "@ariakit/react": "^0.4.29",
     "@emoji-mart/data": "1.2.1",
@@ -41,7 +41,7 @@
     "@platejs/juice": "^53.0.0",
     "@platejs/layout": "^53.0.0",
     "@platejs/link": "^53.0.3",
-    "@platejs/list": "^53.0.2",
+    "@platejs/list": "^53.1.3",
     "@platejs/markdown": "^53.1.1",
     "@platejs/math": "^53.0.0",
     "@platejs/media": "^53.0.1",

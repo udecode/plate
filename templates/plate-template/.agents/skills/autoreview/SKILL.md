@@ -1,6 +1,6 @@
 ---
 name: autoreview
-description: "Run a structured code review (Codex default, optional Claude, Pi, Droid, Copilot, or OpenCode) as a closeout check on a local or PR branch before commit or ship."
+description: "Pre-commit/ship code review: Codex default; optional Claude, Pi, Droid, Copilot, or OpenCode."
 ---
 
 # Auto Review
