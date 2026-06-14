@@ -716,6 +716,43 @@
       }
     },
     {
+      "id": "yjs-collaboration",
+      "question": "Does @slate/yjs keep multi-peer sync, awareness, reconnect, and large-document collaboration fast while preserving convergence?",
+      "owner": "slate-v2",
+      "family": "collaboration",
+      "kind": "current",
+      "cwd": ".tmp/slate-v2",
+      "command": "bun run bench:core:yjs-collaboration:local",
+      "metrics": {
+        "primary": "yjs_collaboration_worst_p95_ms",
+        "direction": "lower",
+        "unit": "ms",
+        "printsMetric": true,
+        "upgrade": "Primary metric is the worst total p95 across multi-editor sync, awareness updates, reconnect, and large-document sync. Pair it with yjs_collaboration_worst_work_p95_ms, yjs_collaboration_worst_verification_p95_ms, and yjs_correctness_failures so work-time wins do not hide verification or convergence regressions."
+      },
+      "correctness": {
+        "command": "bun test ./packages/slate-yjs/test && bun --filter ./packages/slate-yjs typecheck",
+        "policy": "Promotion requires the @slate/yjs package suite and source-first typecheck plus yjs_correctness_failures=0 from the benchmark artifact."
+      },
+      "artifacts": [
+        {
+          "path": ".tmp/slate-v2/tmp/slate-yjs-collaboration-benchmark.json",
+          "required": true
+        }
+      ],
+      "docs": {
+        "sources": [
+          "docs/plans/2026-06-13-yjs-research-mode-8h.md",
+          "docs/plans/2026-06-12-yjs-optimization-strict-8h.md"
+        ]
+      },
+      "thresholds": {
+        "calibration": "repeat 3 baseline runs before enforcing a promotion threshold",
+        "correctness": "yjs_correctness_failures=0",
+        "plateau": "stop after two correctness-green packets with no meaningful yjs_collaboration_worst_work_p95_ms improvement"
+      }
+    },
+    {
       "id": "collab-readiness",
       "question": "Are remote replay, bookmark rebase, canonical replacement, history skip, and cleanup lanes ready?",
       "owner": "slate-v2",
