@@ -1,5 +1,11 @@
 # @platejs/list
 
+## 53.1.3
+
+### Patch Changes
+
+- [#5011](https://github.com/udecode/plate/pull/5011) by [@zbeyens](https://github.com/zbeyens) – Fix ordered paragraph lists continuing numbering from numbered headings.
+
 ## 53.0.2
 
 ### Patch Changes
