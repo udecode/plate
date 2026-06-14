@@ -125,31 +125,14 @@
   ],
   "entries": [
     {
-      "id": "2026-04-08-30-2-008",
+      "id": "2026-04-08-30-2-009",
       "kind": "new",
       "summary": "Add GFM footnotes with reference, definition, and input plugins plus UI — hover preview, navigation flash, multi-reference picker, and duplicate-definition recovery.",
       "details": [],
       "migrationNotes": [],
       "targets": ["footnote-kit"],
       "source": {
-        "line": 33,
-        "row": 8,
-        "legacyRelease": {
-          "date": "2026-04-08",
-          "entry": "30.2",
-          "section": "April 2026 #30"
-        }
-      }
-    },
-    {
-      "id": "2026-04-08-30-2-009",
-      "kind": "new",
-      "summary": "Add static footnote rendering for SSR and markdown pipelines.",
-      "details": [],
-      "migrationNotes": [],
-      "targets": ["footnote-base-kit"],
-      "source": {
-        "line": 34,
+        "line": 36,
         "row": 9,
         "legacyRelease": {
           "date": "2026-04-08",
@@ -161,12 +144,12 @@
     {
       "id": "2026-04-08-30-2-010",
       "kind": "new",
-      "summary": "Register the new footnote kits.",
+      "summary": "Add static footnote rendering for SSR and markdown pipelines.",
       "details": [],
-      "migrationNotes": ["Register the new footnote kits."],
-      "targets": ["editor-kit", "editor-base-kit"],
+      "migrationNotes": [],
+      "targets": ["footnote-base-kit"],
       "source": {
-        "line": 35,
+        "line": 37,
         "row": 10,
         "legacyRelease": {
           "date": "2026-04-08",
@@ -177,15 +160,13 @@
     },
     {
       "id": "2026-04-08-30-2-011",
-      "kind": "wiring",
-      "summary": "Register the base footnote plugins and add `remark-emoji` so GFM footnotes and emoji shortcodes round-trip.",
+      "kind": "new",
+      "summary": "Register the new footnote kits.",
       "details": [],
-      "migrationNotes": [
-        "Register the base footnote plugins and add `remark-emoji` so GFM footnotes and emoji shortcodes round-trip."
-      ],
-      "targets": ["markdown-kit"],
+      "migrationNotes": ["Register the new footnote kits."],
+      "targets": ["editor-kit", "editor-base-kit"],
       "source": {
-        "line": 36,
+        "line": 38,
         "row": 11,
         "legacyRelease": {
           "date": "2026-04-08",
@@ -196,17 +177,15 @@
     },
     {
       "id": "2026-04-08-30-2-012",
-      "kind": "behavior",
-      "summary": "Add a Footnote insert entry wired to `action_footnote`.",
+      "kind": "wiring",
+      "summary": "Register the base footnote plugins and add `remark-emoji` so GFM footnotes and emoji shortcodes round-trip.",
       "details": [],
-      "migrationNotes": [],
-      "targets": [
-        "insert-toolbar-button",
-        "insert-toolbar-classic-button",
-        "slash-node"
+      "migrationNotes": [
+        "Register the base footnote plugins and add `remark-emoji` so GFM footnotes and emoji shortcodes round-trip."
       ],
+      "targets": ["markdown-kit"],
       "source": {
-        "line": 37,
+        "line": 39,
         "row": 12,
         "legacyRelease": {
           "date": "2026-04-08",
@@ -217,15 +196,17 @@
     },
     {
       "id": "2026-04-08-30-2-013",
-      "kind": "wiring",
-      "summary": "Map `action_footnote` to `insertFootnote(editor, { select: true })`.",
+      "kind": "behavior",
+      "summary": "Add a Footnote insert entry wired to `action_footnote`.",
       "details": [],
-      "migrationNotes": [
-        "Map `action_footnote` to `insertFootnote(editor, { select: true })`."
+      "migrationNotes": [],
+      "targets": [
+        "insert-toolbar-button",
+        "insert-toolbar-classic-button",
+        "slash-node"
       ],
-      "targets": ["transforms", "transforms-classic"],
       "source": {
-        "line": 38,
+        "line": 40,
         "row": 13,
         "legacyRelease": {
           "date": "2026-04-08",
@@ -236,14 +217,33 @@
     },
     {
       "id": "2026-04-08-30-2-014",
+      "kind": "wiring",
+      "summary": "Map `action_footnote` to `insertFootnote(editor, { select: true })`.",
+      "details": [],
+      "migrationNotes": [
+        "Map `action_footnote` to `insertFootnote(editor, { select: true })`."
+      ],
+      "targets": ["transforms", "transforms-classic"],
+      "source": {
+        "line": 41,
+        "row": 14,
+        "legacyRelease": {
+          "date": "2026-04-08",
+          "entry": "30.2",
+          "section": "April 2026 #30"
+        }
+      }
+    },
+    {
+      "id": "2026-04-08-30-2-015",
       "kind": "behavior",
       "summary": "Reduce to symbol substitutions (arrows, fractions, legal, punctuation, smart quotes, sub/superscript). Markdown shortcuts move to the feature kits below. Add link automd so `[text](url)` closing on `)` resolves to a structured link.",
       "details": [],
       "migrationNotes": [],
       "targets": ["autoformat-kit"],
       "source": {
-        "line": 39,
-        "row": 14,
+        "line": 42,
+        "row": 15,
         "legacyRelease": {
           "date": "2026-04-08",
           "entry": "30.2",

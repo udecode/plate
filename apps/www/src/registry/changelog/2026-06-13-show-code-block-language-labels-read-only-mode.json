@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "id": "2026-06-03-show-code-block-language-labels-read-only-mode",
+  "id": "2026-06-13-show-code-block-language-labels-read-only-mode",
   "status": "draft",
   "source": {
     "kind": "legacy-mdx",
@@ -8,7 +8,7 @@
   },
   "change": {
     "type": "pull_request",
-    "date": "2026-06-03",
+    "date": "2026-06-13",
     "commits": [
       {
         "sha": "a471d051d2b32c494a94e8218ce1a8462aa26463",
@@ -22,13 +22,13 @@
     "pullRequest": {
       "number": 4989,
       "url": "https://github.com/udecode/plate/pull/4989",
-      "state": "OPEN",
-      "title": "Show code block language labels in read-only mode"
+      "state": "MERGED",
+      "title": "Show code block language labels in read-only mode",
+      "mergedAt": "2026-06-13T21:22:24Z"
     }
   },
   "release": {
-    "status": "latest",
-    "source": "open-pull-request"
+    "status": "unresolved"
   },
   "kind": "behavior",
   "summary": "Show code block language labels in read-only mode",
@@ -48,7 +48,7 @@
   ],
   "entries": [
     {
-      "id": "2026-06-03-32-1-002",
+      "id": "2026-06-03-32-1-003",
       "kind": "behavior",
       "summary": "Show the selected language label in read-only and static rendering. Set `showLanguageLabel={false}` on the component to hide it.",
       "details": [],
@@ -57,8 +57,8 @@
       ],
       "targets": ["code-block-node", "code-block-node-static"],
       "source": {
-        "line": 14,
-        "row": 2,
+        "line": 17,
+        "row": 3,
         "legacyRelease": {
           "date": "2026-06-03",
           "entry": "32.1",
@@ -72,11 +72,6 @@
       "severity": "warning",
       "code": "release-missing",
       "message": "No generated release-index entry found for PR 4989."
-    },
-    {
-      "severity": "warning",
-      "code": "pull-request-not-merged",
-      "message": "Matched PR 4989, but it is OPEN."
     }
   ]
 }

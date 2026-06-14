@@ -1,20 +1,29 @@
 {
   "schemaVersion": 1,
   "components": {
-    "column-node": [
-      "2026-06-10-attach-column-drop-target-ref",
-      "2026-01-20-add-docx-file-import-word-export-support",
-      "2025-11-20-biome-ultracite",
-      "2025-10-17-fix-react-decouple"
+    "editor-base-kit": [
+      "2026-06-14-editor-install-kit-files-through",
+      "2026-04-23-redesign-blockquotes-container-blocks"
+    ],
+    "editor-kit": [
+      "2026-06-14-editor-install-kit-files-through",
+      "2026-04-23-redesign-blockquotes-container-blocks",
+      "2026-01-28-add-code-drawing-node"
     ],
     "code-block-node": [
-      "2026-06-03-show-code-block-language-labels-read-only-mode",
+      "2026-06-13-show-code-block-language-labels-read-only-mode",
       "2026-01-20-add-docx-file-import-word-export-support",
       "2025-11-20-biome-ultracite",
       "2025-10-17-fix-react-decouple"
     ],
     "code-block-node-static": [
-      "2026-06-03-show-code-block-language-labels-read-only-mode"
+      "2026-06-13-show-code-block-language-labels-read-only-mode"
+    ],
+    "column-node": [
+      "2026-06-10-attach-column-drop-target-ref",
+      "2026-01-20-add-docx-file-import-word-export-support",
+      "2025-11-20-biome-ultracite",
+      "2025-10-17-fix-react-decouple"
     ],
     "huge-document-demo": ["2026-06-02-improve-large-document-editing"],
     "hundreds-blocks-demo": [
@@ -107,11 +116,6 @@
     ],
     "footnote-kit": ["2026-04-23-redesign-blockquotes-container-blocks"],
     "footnote-base-kit": ["2026-04-23-redesign-blockquotes-container-blocks"],
-    "editor-kit": [
-      "2026-04-23-redesign-blockquotes-container-blocks",
-      "2026-01-28-add-code-drawing-node"
-    ],
-    "editor-base-kit": ["2026-04-23-redesign-blockquotes-container-blocks"],
     "markdown-kit": ["2026-04-23-redesign-blockquotes-container-blocks"],
     "insert-toolbar-button": [
       "2026-04-23-redesign-blockquotes-container-blocks",
