@@ -1,5 +1,11 @@
 # @platejs/media
 
+## 53.1.4
+
+### Patch Changes
+
+- [#5014](https://github.com/udecode/plate/pull/5014) by [@zbeyens](https://github.com/zbeyens) – Fix media embed rendering to reject unsafe serialized iframe URLs
+
 ## 53.0.1
 
 ### Patch Changes
