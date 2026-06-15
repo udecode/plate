@@ -60,15 +60,15 @@ Blocked condition:
 Task state:
 - task_type: bug
 - task_complexity: non-trivial
-- current_phase: PR / tracker sync
-- current_phase_status: in_progress
-- next_phase: closeout
+- current_phase: closeout
+- current_phase_status: complete
+- next_phase: final response
 - goal_status: active
 
 Current verdict:
 - verdict: fixed in local docs-preview wrapper
 - confidence: high
-- next owner: PR / tracker sync
+- next owner: complete
 - reason: The public issue route embeds `discussion-pro`; at browser width 935px the local docs iframe measured 873px wide, while the Pro discussion rail appears only when the iframe viewport is at least 900px. `discussion-pro` now declares a 900px iframe minimum, and `BlockViewer` exposes horizontal scroll when the preview panel is narrower.
 
 Completion rule:
@@ -171,14 +171,14 @@ Completion Gates:
 | Agent-native review for agent/tooling changes | no | For `.agents/**`, `.claude/**`, `.codex/**`, skills, hooks, commands, prompts, or user-action tooling, load `.agents/skills/agent-native-reviewer/SKILL.md` and close accepted/actionable findings, or record N/A | N/A: no agent/tooling changes. |
 | Local install corruption suspected | no | Run `pnpm run reinstall` once, rerun the exact failing command, or record N/A | N/A: no local env rot signal. |
 | Autoreview for non-trivial implementation changes | yes | Load `.agents/skills/autoreview/SKILL.md`; use dirty local `--mode local`, branch/PR `--mode branch --base <base>`, or committed slice `--mode commit --commit <ref>` until no accepted/actionable findings, or record N/A for docs-only/trivial/no local patch | First run found clipped min-width bug; fixed. Final `.agents/skills/autoreview/scripts/autoreview --mode local` passed clean. |
-| PR create or update | pending | Run `check` before PR work and sync PR body to the task-style final handoff | `pnpm check` passed; PR pending. |
-| Task-style PR body verified | pending | Verify the PR body with `gh pr view --json body`; it must preserve auto-release blocks when applicable, must not include a current-PR self-link, and must use the kitcn PR #270 emoji format: `🐛 Fixes ...`, `🟢 95-100% confidence`, `Phase / 🧪 Tests / 🌐 Browser` table, and bold emoji Outcome/Caveat/Design/Verified sections | pending |
-| PR proof image hosting | pending | If PR body needs browser proof, replace local image paths with hosted GitHub URLs or record N/A | N/A likely: PR body can cite route/DOM proof without images; pending final body. |
-| Tracker sync-back | pending | Post concise issue/Linear sync after PR exists, or record N/A/blocker | pending |
-| Final handoff contract | pending | Fill the final handoff fields below with exact PR/issue/confidence/tests/browser/outcome/caveats/design/verification content or N/A reason | pending |
+| PR create or update | yes | Run `check` before PR work and sync PR body to the task-style final handoff | `pnpm check` passed; PR created: https://github.com/udecode/plate/pull/5020. |
+| Task-style PR body verified | yes | Verify the PR body with `gh pr view --json body`; it must preserve auto-release blocks when applicable, must not include a current-PR self-link, and must use the kitcn PR #270 emoji format: `🐛 Fixes ...`, `🟢 95-100% confidence`, `Phase / 🧪 Tests / 🌐 Browser` table, and bold emoji Outcome/Caveat/Design/Verified sections | `gh pr view 5020 --json url,title,body,headRefName,baseRefName` verified body shape and branch/base. |
+| PR proof image hosting | no | If PR body needs browser proof, replace local image paths with hosted GitHub URLs or record N/A | N/A: PR body uses route/DOM proof, not embedded images. |
+| Tracker sync-back | yes | Post concise issue/Linear sync after PR exists, or record N/A/blocker | Posted #4706 sync: https://github.com/udecode/plate/issues/4706#issuecomment-4705800886. |
+| Final handoff contract | yes | Fill the final handoff fields below with exact PR/issue/confidence/tests/browser/outcome/caveats/design/verification content or N/A reason | Filled below. |
 | Final lint | yes | Run `pnpm lint:fix` or scoped equivalent | `pnpm lint:fix` passed, no fixes applied. |
 | Output budget discipline | yes | Verify no unbounded high-volume command output was streamed, or record the accidental output and recovery | Accidental broad `rg` and raw screenshot-byte outputs are recorded below; recovered with focused searches and saved screenshot files. |
-| Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-06-15-4706-block-discussion-responsive-display.md` | pending |
+| Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-06-15-4706-block-discussion-responsive-display.md` | Passed. |
 | Browser interaction proof | yes | Exercise the target route/interaction with the approved browser tool or record blocker | Local docs route verified at 935px and 700px with in-app Browser/node bridge. |
 | Browser console/network check | caveat | Record console/network state or why it is not applicable | Browser wrapper did not expose event listeners (`tab.playwright.on is not a function`); DOM and screenshot proof recorded instead. |
 | Browser final proof artifact | yes | Record screenshot/trace/route proof or exact caveat | `/tmp/plate-4706-local-935-after-scroll-fix.jpg` and `/tmp/plate-4706-local-700-scrolled-after-scroll-fix.jpg`. |
@@ -196,8 +196,8 @@ Phase / pass table:
 | Intake and source read | complete | Read #4706 source, comments, screenshots, video transcript, prior block-discussion notes, and current component. | implementation |
 | Implementation | complete | `discussion-pro` declares a 900px iframe minimum; `BlockViewer` wraps fallback iframes in a scrollable container when a minimum width is present. | verification |
 | Verification | complete | Browser proof, app typecheck, lint, autoreview, and `pnpm check` passed. | PR / tracker sync |
-| PR / tracker sync | pending | `pnpm check` passed before PR. | final response |
-| Closeout | pending | | final response |
+| PR / tracker sync | complete | PR #5020 created and #4706 sync comment posted. | final response |
+| Closeout | complete | Final checker passed. | final response |
 
 Findings:
 - Issue #4706 reports `block-discussion` cards disappear or render incorrectly when width drops below about 935px on the Plate Plus `suggestion-toolbar-button` example.
@@ -254,21 +254,21 @@ Verification evidence:
 - `pnpm check` passed. Caveats in green run: pre-existing `apps/www/src/components/ui/sidebar.tsx` hook warning; test output printed the existing "Detected multiple @platejs/core instances!" warning, with all tests passing.
 
 Final handoff contract:
-- PR line: pending
-- Issue / tracker line: pending
-- Confidence line: pending
+- PR line: https://github.com/udecode/plate/pull/5020
+- Issue / tracker line: https://github.com/udecode/plate/issues/4706#issuecomment-4705800886
+- Confidence line: 95-100%; root cause measured on local docs iframe and direct Pro iframe threshold.
 - Flow table:
-  - Reproduced: tests pending, browser pending
-  - Verified: tests pending, browser pending
-- Browser check: pending
-- Outcome: pending
-- Caveat: pending
+  - Reproduced: Browser measured local docs iframe at 873px when browser width was 935px; direct Pro iframe hides cards below 900px.
+  - Verified: `pnpm lint:fix`, `pnpm turbo typecheck --filter=./apps/www`, autoreview, `pnpm check`, Browser proof at 935px and 700px.
+- Browser check: Local `/docs/components/suggestion-toolbar-button` verified at 935px with cards visible and at 700px with horizontal scroll reachability.
+- Outcome: Plate Plus discussion preview keeps the right-side discussion cards visible at the reported 935px docs viewport.
+- Caveat: Browser bridge could not attach console/request listeners; DOM measurement and visual screenshots were used. `pnpm check` passed with existing warning output.
 - Design:
-  - Chosen boundary: pending
-  - Why not quick patch: pending
-  - Why not broader change: pending
-- Verified: pending
-- PR body verified: pending
+  - Chosen boundary: `ComponentPreviewPro` + `BlockViewer` docs-preview iframe plumbing.
+  - Why not quick patch: Direct `minWidth` inside hidden overflow cropped the iframe; accepted autoreview finding forced scroll wrapper.
+  - Why not broader change: OSS `BlockDiscussion` did not reproduce; changing registry UI would hit the wrong owner.
+- Verified: `pnpm lint:fix`; `pnpm turbo typecheck --filter=./apps/www`; autoreview clean; `pnpm check`; Browser proof.
+- PR body verified: `gh pr view 5020 --repo udecode/plate --json url,title,body,headRefName,baseRefName`.
 
 Task-style PR body contract:
 - Preserve any existing `<!-- auto-release:start -->` block. If a changeset is
@@ -291,10 +291,10 @@ Task-style PR body contract:
   of that output.
 
 Final handoff / sync:
-- PR: pending
-- Issue / tracker: pending
-- Browser proof: pending
-- Caveats: pending
+- PR: https://github.com/udecode/plate/pull/5020
+- Issue / tracker: https://github.com/udecode/plate/issues/4706#issuecomment-4705800886
+- Browser proof: local route verified at 935px and 700px; screenshots saved under `/tmp`.
+- Caveats: Browser console/network listeners unavailable in this bridge; PR body records this.
 
 Timeline:
 - 2026-06-15T07:21:47.391Z Task goal plan created.
@@ -302,11 +302,11 @@ Timeline:
 Reboot status:
 | Question | Answer |
 |----------|--------|
-| Where am I? | Intake and source read |
-| Where am I going? | Implementation, verification, PR/tracker sync, closeout |
-| What is the goal? | TODO: Fill from Objective |
-| What have I learned? | See Findings |
-| What have I done? | See Timeline |
+| Where am I? | Closeout complete; PR and tracker sync are done. |
+| Where am I going? | Final response after checker, final push, and active goal completion. |
+| What is the goal? | Fix #4706 so the Plate Plus discussion preview remains visible/reachable around the reported 935px docs viewport. |
+| What have I learned? | The docs page gave `discussion-pro` an iframe viewport below its 900px discussion-rail breakpoint. |
+| What have I done? | Added `iframeMinWidth` support for Pro previews, made minimum-width fallback iframes scrollable, verified locally, opened PR #5020, and synced #4706. |
 
 Open risks:
-- Pending.
+- None.
