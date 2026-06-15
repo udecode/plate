@@ -7,6 +7,8 @@ import test from 'node:test';
 import {
   buildRegistryChangelogEvents,
   buildRegistryChangelogEntryFileEvents,
+  checkRegistryChangelogArtifacts,
+  createRegistryChangelogEntrySource,
   buildRegistryChangelogIndexes,
   extractRegistryItemNames,
   inferRegistryHints,
@@ -146,6 +148,32 @@ legacyRelease: {"date":"2026-06-15","entry":"32.4","section":"June 2026 #32"}
   assert.equal(output.entry.entries[1].source.row, 2);
 });
 
+test('creates contract-shaped per-entry MDX changelog sources', () => {
+  const sourceDir = fs.mkdtempSync(path.join(os.tmpdir(), 'registry-source-'));
+  const targetPath = createRegistryChangelogEntrySource({
+    id: '2026-06-15-fix-editor-wrapping',
+    items: 'editor,editor-static',
+    kind: 'fix',
+    sourceDir,
+    summary: 'Fix editor wrapping',
+  });
+
+  assert.equal(
+    targetPath,
+    path.join(sourceDir, '2026-06-15-fix-editor-wrapping.mdx')
+  );
+
+  const [source] = parseRegistryChangelogEntryFiles(sourceDir);
+
+  assert.equal(source.id, '2026-06-15-fix-editor-wrapping');
+  assert.equal(source.date, '2026-06-15');
+  assert.equal(source.kind, 'fix');
+  assert.equal(source.summary, 'Fix editor wrapping');
+  assert.deepEqual(source.rows[0].items, ['editor', 'editor-static']);
+  assert.equal(source.rows[0].kind, 'fix');
+  assert.deepEqual(source.rows[0].migrationNotes, []);
+});
+
 test('adding an entry file does not rewrite existing event output', () => {
   const sourceDir = fs.mkdtempSync(path.join(os.tmpdir(), 'registry-source-'));
   const firstEntry = `---
@@ -190,6 +218,30 @@ diagnostics: []
   assert.deepEqual(after?.entry, before?.entry);
 });
 
+test('checks generated registry changelog artifacts without mutating output', () => {
+  const outDir = fs.mkdtempSync(path.join(os.tmpdir(), 'registry-out-'));
+  const output = {
+    entry: { id: 'demo', schemaVersion: 1 },
+    targetPath: path.join(outDir, 'demo.json'),
+  };
+
+  writeRegistryChangelogEvents([output]);
+
+  assert.deepEqual(
+    checkRegistryChangelogArtifacts([output], outDir, { format: false }),
+    []
+  );
+
+  fs.writeFileSync(output.targetPath, '{"id":"stale"}\n');
+
+  const failures = checkRegistryChangelogArtifacts([output], outDir, {
+    format: false,
+  });
+
+  assert.equal(failures.length, 1);
+  assert.match(failures[0], /Out of date .*demo\.json$/);
+});
+
 test('write prunes stale generated changelog event files', () => {
   const outDir = fs.mkdtempSync(path.join(os.tmpdir(), 'registry-changelog-'));
   const stalePath = path.join(outDir, 'stale-event.json');
@@ -217,6 +269,45 @@ test('rejects limited writes before pruning generated artifacts', () => {
   );
   assert.doesNotThrow(() => validateArgs({ limit: 1, write: false }));
   assert.doesNotThrow(() => validateArgs({ limit: null, write: true }));
+});
+
+test('validates scaffold and check argument combinations', () => {
+  assert.throws(
+    () => validateArgs({ check: true, write: true }),
+    /--check cannot be combined with --write/
+  );
+  assert.throws(
+    () => validateArgs({ check: true, limit: 1, write: false }),
+    /--check cannot be combined with --limit/
+  );
+  assert.throws(
+    () =>
+      validateArgs({
+        check: false,
+        items: 'editor',
+        kind: 'fix',
+        limit: null,
+        newEntryId: 'bad-id',
+        source: 'apps/www/src/registry/changelog/entries',
+        summary: 'Fix editor',
+        write: false,
+      }),
+    /--new id must use YYYY-MM-DD-short-slug format/
+  );
+  assert.throws(
+    () =>
+      validateArgs({
+        check: false,
+        items: 'editor',
+        kind: 'wrong',
+        limit: null,
+        newEntryId: '2026-06-15-fix-editor',
+        source: 'apps/www/src/registry/changelog/entries',
+        summary: 'Fix editor',
+        write: false,
+      }),
+    /--kind must be one of/
+  );
 });
 
 function commit(oid, date, subject) {

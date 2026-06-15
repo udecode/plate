@@ -75,6 +75,14 @@ and registry wiring.
 - If a component depends on shared CSS vars like highlight tokens, add the style registry dep.
 - Examples should depend on kits plus any extra styles/components they introduce.
 
+### Registry Changelog
+
+- User-visible registry UI, kit, example, metadata, style dependency, copied-code
+  install shape, or generated registry changelog changes need a registry
+  changelog entry or a concrete N/A reason.
+- Use the `registry-changelog` skill for schema, scaffold, generation, and
+  verification. Do not duplicate the entry contract here.
+
 ### Shadcn Proofing → [shadcn-proofing.md](./rules/shadcn-proofing.md)
 
 - Keep `asChild`, `data-slot`, `data-state`, variants, and file shape recognizable.
@@ -171,8 +179,12 @@ const {
 6. Build the component as open code first.
 7. Extract only the boundaries that survive the test.
 8. Wire base/live kits and registry deps.
-9. If package exports changed, run `pnpm brl`.
-10. Verify the smallest honest surface:
+9. Apply the registry changelog decision:
+   - user-visible registry change: add or update a registry changelog entry,
+     run the generator, and run the registry changelog check
+   - not user-visible: record `N/A: <reason>`
+10. If package exports changed, run `pnpm brl`.
+11. Verify the smallest honest surface:
    - component spec for UI-only changes
    - package build/typecheck when package code changed
    - browser verification when the surface is interactive

@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import { createHash } from 'node:crypto';
+import os from 'node:os';
 import path from 'node:path';
 import process from 'node:process';
 import { execFileSync } from 'node:child_process';
@@ -34,6 +35,7 @@ const BOLD_MARKER_PATTERN = /\*\*/g;
 const COMPONENT_PATH_PATTERN = /[^a-z0-9-]/g;
 const CODE_IDENTIFIER_PATTERN = /^[a-z0-9_-]+$/i;
 const DATE_HEADING_PATTERN = /^([A-Za-z]+)\s+(\d{1,2})$/;
+const DATE_ONLY_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 const DETAIL_MARKER_PATTERN = /^-\s+/;
 const EMPTY_GIT_COMMIT_PATTERN = /^0+$/;
 const ENTRY_HEADING_PATTERN = /^###\s+(.+?)\s+#([\d.]+)\s*$/;
@@ -55,6 +57,15 @@ const PROVENANCE_COMMIT_PATTERN =
 const PR_URL_PATTERN = /\/pull\/(\d+)(?:\D|$)/;
 const REGEXP_SPECIAL_PATTERN = /[.*+?^${}()|[\]\\]/g;
 const REGISTRY_ID_PATTERN = /^[a-z0-9][a-z0-9-]*[a-z0-9]$/;
+const REGISTRY_CHANGELOG_ENTRY_ID_PATTERN = /^\d{4}-\d{2}-\d{2}-[a-z0-9-]+$/;
+const REGISTRY_CHANGELOG_KIND_VALUES = new Set([
+  'behavior',
+  'fix',
+  'new',
+  'remove',
+  'rename',
+  'wiring',
+]);
 const SECTION_HEADING_PATTERN = /^##\s+(.+?)\s+#(\d+)\s*$/;
 const SENTENCE_PATTERN = /[^.!?]+[.!?]?/g;
 const SPEC_OR_TEST_FILE_PATTERN = /[./](?:spec|test)\.[cm]?[tj]sx?$/;
@@ -123,6 +134,14 @@ function assertPositiveInteger(value, label) {
   return parsed;
 }
 
+function assertStringValue(value, label) {
+  if (typeof value !== 'string' || value.trim() === '') {
+    throw new Error(`${label} must be a non-empty string`);
+  }
+
+  return value.trim();
+}
+
 function escapeRegExp(value) {
   return value.replace(REGEXP_SPECIAL_PATTERN, '\\$&');
 }
@@ -177,6 +196,20 @@ function formatChangeUnitSlug(changeUnit) {
   }
 
   return formatEventSlug(changeUnit.rows[0]);
+}
+
+function formatEntryFileRowId({ date, items, summary }) {
+  const row = {
+    items,
+    prefix: items.map((item) => `\`${item}\``).join(', '),
+    summary,
+  };
+  const hash = createHash('sha1')
+    .update(JSON.stringify({ date, items, summary }))
+    .digest('hex')
+    .slice(0, 8);
+
+  return `${date}-${formatEventSlug(row)}-${hash}`;
 }
 
 function formatDateOnly(value) {
@@ -307,12 +340,18 @@ function isLikelyRegistryId(value) {
 
 function parseArgs(argv) {
   const args = {
+    check: false,
+    date: null,
     inferProvenance: true,
+    items: null,
+    kind: 'behavior',
     limit: null,
+    newEntryId: null,
     outDir: DEFAULT_OUT_DIR,
     registryRoot: DEFAULT_REGISTRY_ROOT,
     releaseIndex: DEFAULT_RELEASE_INDEX,
     source: DEFAULT_SOURCE,
+    summary: null,
     write: false,
   };
 
@@ -331,6 +370,36 @@ function parseArgs(argv) {
 
     if (arg === '--write') {
       args.write = true;
+      continue;
+    }
+
+    if (arg === '--check') {
+      args.check = true;
+      continue;
+    }
+
+    if (arg === '--new') {
+      args.newEntryId = nextValue();
+      continue;
+    }
+
+    if (arg === '--date') {
+      args.date = nextValue();
+      continue;
+    }
+
+    if (arg === '--summary') {
+      args.summary = nextValue();
+      continue;
+    }
+
+    if (arg === '--items') {
+      args.items = nextValue();
+      continue;
+    }
+
+    if (arg === '--kind') {
+      args.kind = nextValue();
       continue;
     }
 
@@ -375,6 +444,45 @@ export function validateArgs(args) {
     throw new Error(
       '--write cannot be combined with --limit because partial writes would produce incomplete changelog artifacts.'
     );
+  }
+
+  if (args.check && args.write) {
+    throw new Error('--check cannot be combined with --write.');
+  }
+
+  if (args.check && args.limit) {
+    throw new Error(
+      '--check cannot be combined with --limit because partial checks would report valid generated changelog artifacts as stale.'
+    );
+  }
+
+  if (args.newEntryId) {
+    if (args.check || args.write || args.limit) {
+      throw new Error(
+        '--new cannot be combined with --check, --write, or --limit.'
+      );
+    }
+
+    if (!REGISTRY_CHANGELOG_ENTRY_ID_PATTERN.test(args.newEntryId)) {
+      throw new Error('--new id must use YYYY-MM-DD-short-slug format.');
+    }
+
+    if (args.date && !DATE_ONLY_PATTERN.test(args.date)) {
+      throw new Error('--date must use YYYY-MM-DD format.');
+    }
+
+    if (!REGISTRY_CHANGELOG_KIND_VALUES.has(args.kind)) {
+      throw new Error(
+        `--kind must be one of ${[...REGISTRY_CHANGELOG_KIND_VALUES].join(', ')}.`
+      );
+    }
+
+    if (path.extname(args.source)) {
+      throw new Error('--source must be a directory when used with --new.');
+    }
+
+    assertStringValue(args.summary, '--summary');
+    assertStringValue(args.items, '--items');
   }
 }
 
@@ -624,6 +732,8 @@ export function parseRegistryChangelogEntryFiles(sourceDir) {
 function printUsage() {
   console.log(`Usage:
   node tooling/scripts/generate-ui-changelog-entries.mjs [--limit 10] [--write]
+  node tooling/scripts/generate-ui-changelog-entries.mjs --check
+  node tooling/scripts/generate-ui-changelog-entries.mjs --new <id> --summary "<summary>" --items <item-a,item-b> [--kind fix]
 
 Options:
   --source <path>         MDX changelog entry directory, or legacy MDX changelog file. Defaults to ${DEFAULT_SOURCE}
@@ -632,6 +742,12 @@ Options:
   --release-index <path>  Release index JSON. Defaults to ${DEFAULT_RELEASE_INDEX}
   --limit <n>             Limit source changelog rows.
   --no-provenance         Skip git blame and GitHub PR lookup.
+  --new <id>              Create a new registry changelog entry source file.
+  --summary <text>        Summary for --new.
+  --items <ids>           Comma-separated registry item ids for --new.
+  --kind <kind>           Entry kind for --new. Defaults to behavior.
+  --date <YYYY-MM-DD>     Entry date for --new. Defaults to the date prefix in --new id.
+  --check                 Verify generated JSON is current without writing.
   --write                 Write files. Omit for a dry run.`);
 }
 
@@ -676,6 +792,90 @@ function isDirectory(filePath) {
   } catch {
     return false;
   }
+}
+
+function getDateFromEntryId(id) {
+  return id.slice(0, 10);
+}
+
+function parseItemList(value) {
+  return unique(
+    value
+      .split(',')
+      .map((item) => item.trim())
+      .filter(Boolean)
+  );
+}
+
+function stringifyFrontmatterValue(value) {
+  return JSON.stringify(value);
+}
+
+function formatRegistryChangelogEntrySource({
+  date,
+  id,
+  items,
+  kind,
+  summary,
+}) {
+  const rowId = formatEntryFileRowId({ date, items, summary });
+  const itemLabel = items.map((item) => `**\`${item}\`**`).join(', ');
+
+  return `---
+id: ${id}
+date: ${date}
+status: draft
+kind: ${kind}
+summary: ${stringifyFrontmatterValue(summary)}
+change: ${stringifyFrontmatterValue({ type: 'source', date, commits: [] })}
+release: ${stringifyFrontmatterValue({ status: 'unresolved' })}
+diagnostics: []
+---
+<!-- entry: ${stringifyFrontmatterValue({ id: rowId, kind, migrationNotes: [] })} -->
+- ${itemLabel}: ${summary}
+`;
+}
+
+export function createRegistryChangelogEntrySource({
+  date,
+  id,
+  items,
+  kind = 'behavior',
+  sourceDir = DEFAULT_SOURCE,
+  summary,
+}) {
+  const entryDate = date ?? getDateFromEntryId(id);
+  const itemList = Array.isArray(items) ? items : parseItemList(items);
+
+  if (itemList.length === 0) {
+    throw new Error('--items must include at least one registry item id');
+  }
+
+  for (const item of itemList) {
+    if (!isLikelyRegistryId(item)) {
+      throw new Error(`Invalid registry item id: ${item}`);
+    }
+  }
+
+  const targetPath = path.join(sourceDir, `${id}.mdx`);
+
+  if (fs.existsSync(targetPath)) {
+    throw new Error(`Registry changelog entry already exists: ${targetPath}`);
+  }
+
+  fs.mkdirSync(sourceDir, { recursive: true });
+  fs.writeFileSync(
+    targetPath,
+    formatRegistryChangelogEntrySource({
+      date: entryDate,
+      id,
+      items: itemList,
+      kind,
+      summary,
+    })
+  );
+
+  return targetPath;
 }
 
 function relativePath(filePath, cwd = process.cwd()) {
@@ -1540,10 +1740,88 @@ export function writeRegistryChangelogEvents(
   return { removedPaths };
 }
 
+function getJsonFileNames(outDir) {
+  if (!fs.existsSync(outDir)) return [];
+
+  return fs
+    .readdirSync(outDir, { withFileTypes: true })
+    .filter((entry) => entry.isFile() && entry.name.endsWith('.json'))
+    .map((entry) => entry.name)
+    .sort();
+}
+
+function createTempArtifactOutputs(outputs, tempOutDir) {
+  return outputs.map((output) => ({
+    ...output,
+    targetPath: path.join(tempOutDir, path.basename(output.targetPath)),
+  }));
+}
+
+export function checkRegistryChangelogArtifacts(
+  outputs,
+  outDir,
+  { format = true } = {}
+) {
+  const tempOutDir = fs.mkdtempSync(
+    path.join(os.tmpdir(), 'registry-changelog-check-')
+  );
+  const expectedOutputs = createTempArtifactOutputs(outputs, tempOutDir);
+  const failures = [];
+
+  writeRegistryChangelogEvents(expectedOutputs, {
+    format,
+    pruneOutDir: tempOutDir,
+  });
+
+  const expectedNames = getJsonFileNames(tempOutDir);
+  const actualNames = getJsonFileNames(outDir);
+
+  for (const name of expectedNames) {
+    const actualPath = path.join(outDir, name);
+    const expectedPath = path.join(tempOutDir, name);
+
+    if (!fs.existsSync(actualPath)) {
+      failures.push(`Missing ${relativePath(actualPath)}`);
+      continue;
+    }
+
+    const actual = fs.readFileSync(actualPath, 'utf8');
+    const expected = fs.readFileSync(expectedPath, 'utf8');
+
+    if (actual !== expected) {
+      failures.push(`Out of date ${relativePath(actualPath)}`);
+    }
+  }
+
+  for (const name of actualNames) {
+    if (!expectedNames.includes(name)) {
+      failures.push(`Stale ${relativePath(path.join(outDir, name))}`);
+    }
+  }
+
+  fs.rmSync(tempOutDir, { force: true, recursive: true });
+
+  return failures;
+}
+
 function main() {
   const args = parseArgs(process.argv.slice(2));
 
   validateArgs(args);
+
+  if (args.newEntryId) {
+    const targetPath = createRegistryChangelogEntrySource({
+      date: args.date,
+      id: args.newEntryId,
+      items: args.items,
+      kind: args.kind,
+      sourceDir: args.source,
+      summary: args.summary,
+    });
+
+    console.log(`Created ${relativePath(targetPath)}`);
+    return;
+  }
 
   const registryFiles = listFiles(args.registryRoot);
   const registryDefinitions = readRegistryDefinitions(registryFiles);
@@ -1601,8 +1879,28 @@ function main() {
     }
   }
 
+  if (args.check) {
+    const failures = checkRegistryChangelogArtifacts(
+      artifactOutputs,
+      args.outDir
+    );
+
+    if (failures.length > 0) {
+      console.error('Registry changelog artifacts are out of date:');
+
+      for (const failure of failures) {
+        console.error(`- ${failure}`);
+      }
+
+      process.exitCode = 1;
+      return;
+    }
+  }
+
   console.log(
-    `${args.write ? 'Wrote' : 'Would write'} ${outputs.length} registry changelog events from ${
+    `${args.write ? 'Wrote' : args.check ? 'Checked' : 'Would write'} ${
+      outputs.length
+    } registry changelog events from ${
       sourceEntries ? selectedEntries.length : selectedRows.length
     } ${sourceEntries ? 'source entries' : 'source rows'}.`
   );
