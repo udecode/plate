@@ -48,6 +48,7 @@ export type BlockViewerContext = {
   item: z.infer<typeof registryItemSchema> & {
     meta?: {
       descriptionSrc?: string;
+      iframeMinWidth?: number;
       isPro?: boolean;
       src?: string;
     };
@@ -388,6 +389,7 @@ function BlockViewerView({
   const { iframeKey, item, resizablePanelRef } = useBlockViewer();
   const previewNode =
     typeof preview === 'function' ? preview({ iframeKey, item }) : preview;
+  const iframeMinWidth = item.meta?.iframeMinWidth;
 
   return (
     <div
@@ -424,15 +426,27 @@ function BlockViewerView({
             /> */}
 
             {previewNode ?? (
-              <iframe
-                key={iframeKey}
-                // className="chunk-mode relative z-20 hidden w-full bg-background md:block"
-                className="chunk-mode relative z-20 size-full bg-background"
-                title={item.name}
-                height={item.meta?.iframeHeight ?? '100%'}
-                sandbox="allow-scripts allow-same-origin allow-top-navigation allow-forms"
-                src={item.meta?.src ?? `/view/${item.name}`}
-              />
+              <div
+                className={cn(
+                  'size-full',
+                  iframeMinWidth && 'overflow-x-auto overflow-y-hidden'
+                )}
+              >
+                <iframe
+                  key={iframeKey}
+                  // className="chunk-mode relative z-20 hidden w-full bg-background md:block"
+                  className="chunk-mode relative z-20 size-full bg-background"
+                  title={item.name}
+                  height={item.meta?.iframeHeight ?? '100%'}
+                  sandbox="allow-scripts allow-same-origin allow-top-navigation allow-forms"
+                  src={item.meta?.src ?? `/view/${item.name}`}
+                  style={
+                    iframeMinWidth
+                      ? { minWidth: `${iframeMinWidth}px` }
+                      : undefined
+                  }
+                />
+              </div>
             )}
           </ResizablePanel>
           <ResizableHandle className="after:-translate-x-px after:-translate-y-1/2 relative hidden w-3 bg-transparent p-0 after:absolute after:top-1/2 after:right-0 after:h-8 after:w-[6px] after:rounded-full after:bg-border after:transition-all hover:after:h-10 md:block" />

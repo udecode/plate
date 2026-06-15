@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils';
 interface ComponentPreviewProps extends React.HTMLAttributes<HTMLDivElement> {
   id: string;
   description?: string;
+  iframeMinWidth?: number;
   name?: string;
 }
 
@@ -18,12 +19,15 @@ export function ComponentPreviewPro({
   children,
   className,
   description,
+  iframeMinWidth,
   name,
   ...props
 }: ComponentPreviewProps) {
   if (!id && name) {
     id = name?.replace('-pro', '');
   }
+
+  const minWidth = iframeMinWidth ?? (id === 'discussion' ? 900 : undefined);
 
   return (
     <div
@@ -39,6 +43,7 @@ export function ComponentPreviewPro({
         item={{
           meta: {
             descriptionSrc: siteConfig.links.plateProExample(id),
+            iframeMinWidth: minWidth,
             isPro: true,
             src: `${siteConfig.links.plateProIframe}/${id}`,
           },
