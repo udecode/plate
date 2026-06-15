@@ -8,14 +8,14 @@
     "docs": "Docs and research files are linked evidence, not benchmark control state."
   },
   "counts": {
-    "targets": 28,
-    "artifacts": 28,
-    "existingArtifacts": 26,
+    "targets": 29,
+    "artifacts": 29,
+    "existingArtifacts": 27,
     "missingOptionalArtifacts": 2,
     "missingRequiredArtifacts": 0,
-    "requiredArtifacts": 26,
+    "requiredArtifacts": 27,
     "statusCounts": {
-      "ok": 26,
+      "ok": 27,
       "missing-optional-artifact": 2
     }
   },
@@ -744,6 +744,28 @@
       "artifacts": [
         {
           "path": ".tmp/slate-v2/packages/slate-react/tmp/slate-react-runtime-node-fanout-benchmark.json",
+          "required": true,
+          "exists": true
+        }
+      ],
+      "status": "ok",
+      "migration": null
+    },
+    {
+      "id": "yjs-collaboration",
+      "family": "collaboration",
+      "kind": "current",
+      "owner": "slate-v2",
+      "question": "Does @slate/yjs keep multi-peer sync, awareness, reconnect, and large-document collaboration fast while preserving convergence?",
+      "command": "bun run bench:core:yjs-collaboration:local",
+      "cwd": ".tmp/slate-v2",
+      "metric": "yjs_collaboration_worst_p95_ms",
+      "direction": "lower",
+      "printsMetric": true,
+      "correctnessCommand": "bun test ./packages/slate-yjs/test && bun --filter ./packages/slate-yjs typecheck",
+      "artifacts": [
+        {
+          "path": ".tmp/slate-v2/tmp/slate-yjs-collaboration-benchmark.json",
           "required": true,
           "exists": true
         }

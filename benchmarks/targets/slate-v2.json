@@ -728,7 +728,7 @@
         "direction": "lower",
         "unit": "ms",
         "printsMetric": true,
-        "upgrade": "Primary metric is the worst total p95 across multi-editor sync, awareness updates, reconnect, and large-document sync. Pair it with yjs_collaboration_worst_work_p95_ms, yjs_collaboration_worst_verification_p95_ms, and yjs_correctness_failures so work-time wins do not hide verification or convergence regressions."
+        "upgrade": "Primary metric is the worst total p95 across multi-editor sync, awareness updates, reconnect, and large-document sync. Pair it with yjs_collaboration_worst_work_p95_ms, yjs_collaboration_worst_verification_p95_ms, yjs_large_doc_local_edit_p95_ms, yjs_large_doc_remote_sync_p95_ms, yjs_large_doc_remote_encode_p95_ms, yjs_large_doc_remote_apply_p95_ms, and yjs_correctness_failures so work-time wins do not hide verification, remote-import, or convergence regressions."
       },
       "correctness": {
         "command": "bun test ./packages/slate-yjs/test && bun --filter ./packages/slate-yjs typecheck",
@@ -749,7 +749,7 @@
       "thresholds": {
         "calibration": "repeat 3 baseline runs before enforcing a promotion threshold",
         "correctness": "yjs_correctness_failures=0",
-        "plateau": "stop after two correctness-green packets with no meaningful yjs_collaboration_worst_work_p95_ms improvement"
+        "plateau": "stop after two correctness-green packets with no meaningful yjs_collaboration_worst_work_p95_ms improvement; if large-doc remains worst, use yjs_large_doc_local_edit_p95_ms, yjs_large_doc_remote_sync_p95_ms, yjs_large_doc_remote_encode_p95_ms, and yjs_large_doc_remote_apply_p95_ms to pick the next owner"
       }
     },
     {

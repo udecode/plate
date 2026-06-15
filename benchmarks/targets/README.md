@@ -66,6 +66,10 @@ These are the target-registry replacement for Evidence Kit's active
 health/report surface. They summarize target status from registered artifacts.
 They do not run expensive benchmarks.
 
+Artifact existence is sticky: a target stays present when the artifact exists
+locally or in the latest known generated history. This keeps partial local
+caches from turning unrelated target rows red during focused benchmark work.
+
 `pnpm bench:targets:dry-run -- <target-id>` checks the registry, builds the
 report model in memory, and asks Autoresearch for a setup plan for that target.
 Use it before starting a real optimization loop.

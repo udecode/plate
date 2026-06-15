@@ -33,6 +33,13 @@ For reads, teach `editor.read((state) => ...)`. For writes, teach
   and Playwright wrapper-script edits.
 - Full `bun test:integration-local` is a closure gate, not the default
   iteration gate.
+- Yjs soak proof runners are manual-only diagnostics:
+  `scripts/proof/yjs-collaboration-soak.mjs`,
+  `scripts/proof/yjs-hocuspocus-persistent-room-soak.mjs`,
+  `scripts/proof/persistent-browser-soak.mjs`, and
+  `scripts/proof/yjs-hocuspocus-production-soak.mjs`. Do not run them unless the
+  user explicitly asks for a soak run. Do not add them to `check`, `test`,
+  `test:release-proof`, or any automatic agent gate.
 - Native mobile proof remains scoped unless a raw-device lane runs.
 - Huge-document superiority remains claim-scoped, not release-scoped. The
   strict product gate is green, and the latest broad direct legacy diagnostic is

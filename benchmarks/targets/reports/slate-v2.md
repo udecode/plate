@@ -8,12 +8,12 @@ runners, Autoresearch, and report generation.
 
 ## Summary
 
-- Targets: 28
-- Required artifacts: 26
-- Existing artifacts: 26
+- Targets: 29
+- Required artifacts: 27
+- Existing artifacts: 27
 - Missing optional artifacts: 2
 - Missing required artifacts: 0
-- Status counts: ok=26, missing-optional-artifact=2
+- Status counts: ok=27, missing-optional-artifact=2
 
 ## Targets
 
@@ -47,3 +47,4 @@ runners, Autoresearch, and report generation.
 | react-pagination-virtualized-real-editor-ops | react-pagination | pagination_virtualized_real_ops_worst_p95_ms | ok | 1/1 | yes |
 | react-rerender-breadth | react-locality | benchmark_seconds | ok | 1/1 | wrapped |
 | react-runtime-node-fanout | react-locality | slate_react_runtime_node_fanout_count | ok | 1/1 | yes |
+| yjs-collaboration | collaboration | yjs_collaboration_worst_p95_ms | ok | 1/1 | yes |
