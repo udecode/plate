@@ -43,7 +43,7 @@ answers if the search is managed like engineering work.
 - `slate-research`: discovery and synthesis. Owns web/GitHub/OSS search,
   ledgers, source reading, dedupe, evidence grades, scoring, and promotion.
 - `slate-ar`: execution wrapper. Owns Slate defaults for measured
-  `codex-autoresearch` packet loops in `.tmp/slate-v2`.
+  `codex-autoresearch` packet loops from the Plate repo root.
 - `slate-ar-quality`: executes an accepted quality-gap checklist through
   Codex Autoresearch. It does not own broad OSS discovery.
 - `slate-ar-gate`: repeats existing proof gates once a command/oracle exists.
@@ -137,7 +137,7 @@ surfaces include code search, issues, PRs, discussions, examples, benchmark
 harnesses, browser test fixtures, and commit history.
 
 Include OSS projects beyond the usual three when relevant: ProseMirror, Lexical,
-Tiptap, CodeMirror, Milkdown, Remirror, Monaco, Quill, CKEditor, TinyMCE, TipTap
+Tiptap, CodeMirror, Milkdown, Remirror, Monaco, Quill, TipTap
 extensions, document editors, browser editor test suites, pagination/
 virtualization libraries, and TypeScript-heavy UI/runtime projects.
 

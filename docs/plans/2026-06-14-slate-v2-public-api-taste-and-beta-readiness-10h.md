@@ -15,9 +15,11 @@ Primary template:
 docs/plans/templates/slate-auto.md
 
 Applied packs:
+
 - none
 
 Automation source:
+
 - type: user-invoked `slate-auto`
 - prompt / link: "continue asking those questions and slate-auto for 10h";
   updated by user to remove the 10h constraint and finish the full active loops
@@ -34,6 +36,7 @@ Automation source:
   proof/audit/repair packets while unresolved beta-readiness gaps remain.
 
 First checkpoint:
+
 - Before implementation or broad exploration, copy every explicit prompt
   requirement into this plan as checkable rows: scope, non-goals, timing,
   stop conditions, deliverables, final handoff sections, verification surfaces,
@@ -45,6 +48,7 @@ First checkpoint:
   explicitly marked N/A with reason.
 
 Extracted requirements:
+
 - Continue the public API/taste question batch from the previous `grill-me`
   lane.
 - Start a `slate-auto` timed loop; later user update removes the 10h minimum
@@ -65,6 +69,7 @@ Extracted requirements:
   owner.
 
 Queued API/taste questions:
+
 1. Keep `useSlateEditor` as the canonical editor factory/front door.
 2. Keep no `<Slate initialValue>` prop; initial value belongs to editor
    creation.
@@ -80,22 +85,22 @@ Queued API/taste questions:
 8. Keep annotation/widget projector APIs as Slate-native overlay primitives.
 9. Keep weak maps hard-cut from public roots; internals only.
 10. Keep Slate React docs discoverable for public render primitives and advanced
-   helper hooks, but do not document every low-level metrics/options type as a
-   first-class concept.
+    helper hooks, but do not document every low-level metrics/options type as a
+    first-class concept.
 11. Keep projection-store runtime machinery out of the public Slate React root
-   export surface; apps should use decoration/range-decoration sources,
-   annotations, widgets, and projection-entry reads instead.
+    export surface; apps should use decoration/range-decoration sources,
+    annotations, widgets, and projection-entry reads instead.
 12. Keep `EditableElement` public for documented DOM-coverage/custom-shell
-   examples, but keep text-rendering internals (`EditableText`, `TextString`,
-   `ZeroWidthString`) out of the root export surface.
+    examples, but keep text-rendering internals (`EditableText`, `TextString`,
+    `ZeroWidthString`) out of the root export surface.
 13. Keep annotation/widget hooks and types public, but keep raw
-   `createSlateAnnotationStore` and `createSlateWidgetStore` constructors out
-   of the root runtime export surface.
+    `createSlateAnnotationStore` and `createSlateWidgetStore` constructors out
+    of the root runtime export surface.
 14. Keep decoration source hooks/types public, but keep raw
-   `createDecorationSource`, `createRangeDecorationSource`,
-   `composeDecorationSources`, and `DefaultPlaceholder` out of the root runtime
-   export surface. Keep `defaultScrollSelectionIntoView` public for wrapping
-   and sibling layout integration.
+    `createDecorationSource`, `createRangeDecorationSource`,
+    `composeDecorationSources`, and `DefaultPlaceholder` out of the root runtime
+    export surface. Keep `defaultScrollSelectionIntoView` public for wrapping
+    and sibling layout integration.
 15. Round 29: keep strict package export/type smoke in the fast package-DX gate,
     keep package import/type smoke beta-blocking but private-alpha only, and
     decide whether raw expert props/internal bridge policy need the same exact
@@ -110,6 +115,7 @@ Queued API/taste questions:
     need.
 
 Completion threshold:
+
 - The current packet is verified, reverted, or quarantined, and every required
   beta-readiness checkpoint row is complete, explicitly deferred with owner, or
   N/A with evidence.
@@ -125,6 +131,7 @@ Completion threshold:
   passes.
 
 Verification surface:
+
 - Source audits: focused `rg`/file reads over `.tmp/slate-v2` public API exports,
   Slate React hooks/components, docs, examples, and proof specs.
 - Package/API proof: focused Bun package tests or typecheck commands for touched
@@ -141,9 +148,10 @@ Verification surface:
 - Skill proof: if `.agents/rules/**` changes, run `pnpm install`, mirror audit,
   and agent-native review.
 - Final proof: `node .agents/skills/autogoal/scripts/check-complete.mjs
-  docs/plans/2026-06-14-slate-v2-public-api-taste-and-beta-readiness-10h.md`.
+docs/plans/2026-06-14-slate-v2-public-api-taste-and-beta-readiness-10h.md`.
 
 Constraints:
+
 - Slate v2 private alpha by default: no release, publish, changeset, PR, or
   branch readiness unless the prompt explicitly asks.
 - Run Slate v2 behavior commands from `.tmp/slate-v2`; parent repo commands
@@ -155,6 +163,7 @@ Constraints:
 - Do not patch Plate when the run is scoped to Slate v2.
 
 Boundaries:
+
 - Source of truth: `.tmp/slate-v2` source/docs/tests for Slate v2 behavior/API;
   `.agents/rules/**` for skill policy; `docs/plans/**` for this run.
 - Allowed edit scope: `.tmp/slate-v2/**`, `docs/plans/**`,
@@ -174,6 +183,7 @@ Boundaries:
   unless a later checkpoint explicitly routes them.
 
 Blocked condition:
+
 - Hard stop only if no autonomous safe checkpoint remains, a required user-only
   taste decision blocks the next move, raw device/browser access is required for
   the claim, or the same real blocker repeats after distinct attempts.
@@ -185,6 +195,7 @@ Blocked condition:
   workflow slowdowns.
 
 Automation state:
+
 - surface: `.tmp/slate-v2` public API taste, beta readiness, docs/proof/workflow
 - mode: timed batch loop
 - minimum_runtime: 10h active runtime
@@ -198,6 +209,7 @@ Automation state:
 - goal_status: active
 
 Current verdict:
+
 - latest_packet: final full-browser proof passed with four retry-recovered flakes isolated as non-reproducible under focused retries-off repeats.
 - verdict: Strict public package declaration smoke is now a fast package-DX gate with `paths: {}`, Node/React ambient types only, and `skipLibCheck: false`; fast gate is green after package declaration build policy and source type-boundary repairs. Public current-state wording rescan is clean; public example complexity triage has no new patch need; review anchors are backed by focused proof commands; beta review attention is capped and ranked to five grouped decisions; huge-document browser-trace metric smoke is healthy after correctness and visual proof; huge-document visual/scrollbar and correctness smoke are green across desktop browsers; screenshot-backed visual/native selection smoke is green; cross-browser native-selection slice and stable Chromium editor behavior smoke are green; public docs markdown link oracles strip fenced code and validate reference-style link definitions; release-discipline is green after the package-DX guard family; docs proof map now anchors package import paths, export targets, build entries, README casing, public docs/example import specifiers, and package import smoke; package README casing, public docs/examples import specifiers, package export maps, target shapes, build-entry alignment, and package import smoke are guarded across all seven Slate v2 packages; Slate Layout root and React subpath runtime exports, Slate Browser public subpaths, Slate History, Slate Hyperscript, Slate DOM, and Slate React runtime exports are exact-guarded; public docs/examples have a current-state wording guard against compatibility/migration/deprecated/legacy posture; the `slate/internal` bridge has an exact classified sibling importer guard; public root value exports are exact and documented/classified; root `isObject`, `getCharacterDistance`, and `getWordDistance` leaks are hard-cut; sibling packages use `slate/internal` for internal helpers; public root editor type export coverage is source-backed; public extension type docs name the important extension/schema/middleware exported type groups; public extension authoring docs show all three core authoring helpers; public transform concept now matches the fuller transaction reference; full transaction API docs completeness is green; `tx.nodes.insertMany` alias hard cut is green; transaction transform docs now name source-backed options and reject false fragment-delete options; package README case-sensitive proof repair, Slate React README factory classification, TypeScript concept useSlateEditor cleanup, Slate History package README React front-door cleanup, React-owned docs useSlateEditor cleanup, hard-cut symbol leakage classification scan, projection-store public summary wording hard cut, post-type-docs release discipline, Slate core public type group docs, Slate DOM public type group docs, Slate Browser subpath proof API docs contract, scoped latest-state public-doc wording audit, static API docs parity, Slate core runtime/view docs coverage, Slate DOM grouped root utility docs coverage, stable package README export docs, Slate Browser subpath-only hard cut, sibling package pure-alias hard cut, all-package pure-alias guard, Slate React public render/helper docs coverage, root type export docs classification, default scroll helper docs, projection/text/overlay/decoration root runtime hard cuts, public/runtime alias hard cut, and durable pure-alias guard are green after accumulated API hard cuts
 - confidence: high for current desktop behavior/API/docs/package-boundary/example-DX state
@@ -206,6 +218,7 @@ Current verdict:
 - reason: The slate-browser package-scripts contract now checks every direct value and type export in `src/playwright/index.ts`. Added source JSDoc for the 102 direct exported Playwright type declarations, replaced the partial critical-type list with an exhaustive scanner, rebuilt declarations, verified representative emitted Playwright type docs, and full `bun check` passed.
 
 Completion rule:
+
 - Do not call `update_goal(status: complete)` while any required checklist item
   remains unchecked. If an item does not apply, check it and add
   `N/A: <reason>`.
@@ -437,6 +450,7 @@ Checkpoint mutation ledger:
 | 142 | update | public-api-contract-audit, package-api-proof | Root workspace package link guard | Type smoke caught missing `slate-layout` root package resolution, but a stale local symlink could hide future root `package.json` drift. | Added public-surface guard that root `devDependencies` link every public Slate v2 package with `workspace:*`; focused public-surface passed 780 tests and `bun check` passed. |
 
 Mutation rules:
+
 - Add a checkpoint when a new failure, missing oracle, missing metric, API smell,
   visual proof gap, workflow slowdown, taste gap, or owner gap appears.
 - Update a checkpoint when evidence changes its scope, priority, owner, command,
@@ -473,6 +487,7 @@ Start Gates:
 | Skill repair authority and source-rule boundary recorded | yes | Boundaries and verification surface record `.agents/rules/**` + `pnpm install`. |
 
 Work Checklist:
+
 - [x] First checkpoint complete: every explicit prompt requirement, scope
       boundary, timing constraint, stop condition, deliverable, final handoff
       section, verification surface, and success criterion is copied into this
@@ -857,26 +872,26 @@ Workflow slowdowns:
 | Shared Vitest wrapper contract | slate-auto | small command mismatch | `dom-strategy-and-scroll.tsx` has Vitest globals but is included through `dom-strategy-and-scroll.test.tsx`; direct Bun and direct Vitest path runs fail for different reasons. | Ran `bunx vitest run --config ./vitest.config.mjs test/dom-strategy-and-scroll.test.tsx`; wrapper proof passed 51 tests. | For Slate React shared contract modules, run the `.test.tsx` wrapper under Vitest, not the shared `.tsx` file directly. |
 | Slate History package README focused test path | slate-auto | small command mismatch | Root `bun test ./packages/slate-history/test/package-readme-contract.test.ts` did not match because the repo Bun config ignores package `*.test.*` entries from the root filter. | Ran `bun test ./test/package-readme-contract.test.ts` from `packages/slate-history`; focused proof passed, then site typecheck and `bun check` passed. | For package-local Bun `*.test.*` README contracts, run from the package cwd instead of root path filters. |
 | Transform source path probe | slate-auto | tiny command mismatch | Tried `packages/slate/src/interfaces/transforms.ts`, but transform interfaces are split under `packages/slate/src/interfaces/transforms/{general,text,node,selection}.ts`. | Re-read the split owner files and patched docs/contracts from them. | Start transform audits from the split owner directory, not a guessed aggregate file. |
-| Transform docs regex assertion | slate-auto | tiny lint/syntax repair | First docs-source contract used a bad escaped-backtick regex, then a string-concat regex that Biome rejected. | Focused proof caught the syntax issue; `bun check` caught the lint-only concat issue; final escaped template literal passed. | Use `new RegExp(\`\\\`${escapeRegExp(option)}\\\\??\`)` for markdown code-span token assertions. |
-| Root type export parser first run | slate-auto | tiny test/format repair | First source-backed type export parser over-escaped the named export block, then `bun check` caught one formatter-only line wrap in the classification list. | Focused proof failed before the regex repair, then passed 667 tests plus site typecheck; `bun check` passed after formatter shape. | Keep the source-backed parser. For future export contracts, prove the parser on the target source before adding broader assertions, then run the full fast gate after formatting-sensitive tables/lists. |
-| Public root hard-cut stale package dist | slate-auto / package builds | small but blocking | After source removed root `isObject`, Bun test preload still loaded stale `slate-history` / `slate-hyperscript` dist that imported `isObject` from `slate`. | Rebuilt touched packages with `bun --filter ./packages/slate build && bun --filter ./packages/slate-history build && bun --filter ./packages/slate-hyperscript build`; dist root check then passed. | Source hard cuts that affect package-name imports need touched package builds or a source-first test setup before trusting package-name preload failures. |
-| Broad dist scan during root export audit | slate-auto | noisy repeat | A broad `rg` over dist artifacts streamed huge generated output while checking forbidden root leaks. | Switched to a small Bun file-read/import check over exact dist files and recorded exact key/import results. | Never scan `dist` with line output in automation. Use exact files plus `--count`, `-l`, or a small script that prints structured summary only. |
-| Post-root-value-export fast gate | slate-auto | expected full gate plus one formatter repair | Root export hard cut changed imports in touched Slate core files. | First `bun check` failed on Biome import ordering in `interfaces/element.ts`; manual import-order repair fixed it; rerun passed full fast gate. | Keep full fast gate after public root export changes. |
-| Sibling internal bridge first scan | slate-auto | noisy | Initial `rg -n "slate/internal|/internal|internal"` over packages/docs pulled in every test fixture and many unrelated internal prose hits. | It revealed enough to choose the owner contract but wasted output budget. | For internal bridge audits, start from `public-surface-contract.ts` bridge sections and source-import allowlists; use structured file lists instead of broad line output. |
+| Transform docs regex assertion | slate-auto | tiny lint/syntax repair | First docs-source contract used a bad escaped-backtick regex, then a string-concat regex that Biome rejected. | Focused proof caught the syntax issue; `bun check` caught the lint-only concat issue; final escaped template literal passed. | Use `new RegExp(\`\\\`${escapeRegExp(option)}\\\\??\`)`for markdown code-span token assertions. |
+| Root type export parser first run | slate-auto | tiny test/format repair | First source-backed type export parser over-escaped the named export block, then`bun check`caught one formatter-only line wrap in the classification list. | Focused proof failed before the regex repair, then passed 667 tests plus site typecheck;`bun check`passed after formatter shape. | Keep the source-backed parser. For future export contracts, prove the parser on the target source before adding broader assertions, then run the full fast gate after formatting-sensitive tables/lists. |
+| Public root hard-cut stale package dist | slate-auto / package builds | small but blocking | After source removed root`isObject`, Bun test preload still loaded stale `slate-history`/`slate-hyperscript`dist that imported`isObject`from`slate`. | Rebuilt touched packages with `bun --filter ./packages/slate build && bun --filter ./packages/slate-history build && bun --filter ./packages/slate-hyperscript build`; dist root check then passed. | Source hard cuts that affect package-name imports need touched package builds or a source-first test setup before trusting package-name preload failures. |
+| Broad dist scan during root export audit | slate-auto | noisy repeat | A broad `rg`over dist artifacts streamed huge generated output while checking forbidden root leaks. | Switched to a small Bun file-read/import check over exact dist files and recorded exact key/import results. | Never scan`dist`with line output in automation. Use exact files plus`--count`, `-l`, or a small script that prints structured summary only. |
+| Post-root-value-export fast gate | slate-auto | expected full gate plus one formatter repair | Root export hard cut changed imports in touched Slate core files. | First `bun check`failed on Biome import ordering in`interfaces/element.ts`; manual import-order repair fixed it; rerun passed full fast gate. | Keep full fast gate after public root export changes. |
+| Sibling internal bridge first scan | slate-auto | noisy | Initial `rg -n "slate/internal|/internal|internal"`over packages/docs pulled in every test fixture and many unrelated internal prose hits. | It revealed enough to choose the owner contract but wasted output budget. | For internal bridge audits, start from`public-surface-contract.ts`bridge sections and source-import allowlists; use structured file lists instead of broad line output. |
 | Sibling internal bridge classifier first run | slate-auto | useful failure | The first allowlist only included history/hyperscript and missed existing Slate DOM/React sibling bridge users. | Focused public-surface proof failed with exact missing importer list; classified the real current list and reran green. | Keep the exact classifier; it prevents future bridge drift from being invisible. |
-| Compat/alias wording source scan | slate-auto | acceptable count-first scan | Count-first scan showed one public example `COMPAT` comment plus many internal browser/platform `COMPAT` implementation comments. | Public example was cleaned; public docs/examples now have a current-state wording guard; internal runtime comments were classified as platform behavior notes. | Do not churn browser workaround comments in an API docs packet. If internal `COMPAT` wording becomes a taste issue, run a separate runtime-comment cleanup packet with behavior tests. |
-| Package build-entry target-match fast gate | slate-auto | tiny formatter retry | The new shared-config build-script assertion exceeded formatter width. | First `bun check` failed on Biome wrapping only; exact wrap repair made the rerun pass. | Keep the fast gate after central contract edits; formatter-only retries are acceptable but should be logged. |
-| Public package import smoke direct root filter | slate-auto | small command mismatch | Root `bun test ./packages/slate/test/public-package-import-smoke.test.ts` did not match the package-local `*.test.ts` file. | Running from `packages/slate` picked up the file; root package-folder sweep and `bun check` also included it. | For direct package-local Bun tests, prefer package cwd or folder sweep; keep the known path-filter quirk in mind. |
-| Public package import smoke first expectation | slate-auto | useful first-run failure | The new smoke expected `withDOM` from `slate-dom/internal`, but the current intentional internal bridge exports `installDOM` instead. | Corrected the smoke expectation and reran package-local proof green. | Keep import smoke assertions tied to current actual package surface, not guessed internals. |
-| Public import-specifier first scan | slate-auto | noisy invalid scan | The first import-specifier scan included `packages/**` recursively, so it pulled source/tests and regex strings from contracts instead of public docs/examples only. | Re-ran with the real public allowlist: root README, docs, package READMEs, and site examples. | Never include package source/test folders in public-doc import audits. Start from public markdown and example files only. |
-| Public import-specifier fast gate | slate-auto | tiny formatter retry | The new import-specifier helper/assertion needed formatter line wrapping. | First `bun check` failed on Biome wrapping only; exact wrap repair made the rerun pass. | Keep fast gate after central contract edits. |
-| Package README casing scan | slate-auto | small filesystem trap | A custom scan used `existsSync` for both `README.md` and `Readme.md`; on the case-insensitive local filesystem, that made one file look like two. | `find` showed one actual README per package, and a directory-entry guard now proves casing exactly. | Use `readdirSync` entries for casing audits, not `existsSync` probes. |
-| Public doc link scan false positive | slate-auto | small oracle repair | A one-off reference-link scan treated `[documentTitle.key]: 'Untitled'` inside a fenced code block as a markdown reference definition. | The central public-surface markdown link contract now strips fenced code before scanning and checks reference-style definitions directly. | Markdown/link scans must strip fenced code before interpreting link syntax. |
-| Public doc link helper refactor | slate-auto | tiny test-code repair | Moving link checks into a helper left a `continue` inside a non-loop function. | Focused public-surface test failed before any product assertion ran; replacing it with `return` made the contract pass. | Keep focused proof immediately after test helper refactors. |
-| Public doc link fast gate | slate-auto | tiny formatter retry | The new `stripFencedCodeBlocks` helper exceeded Biome's preferred one-line shape. | First `bun check` failed on formatter output only; exact wrap repair made the rerun pass. | Keep fast gate after central contract edits. |
-| Public package type-resolution smoke command shape | slate-auto | small command/config repair | Direct `tsc --project ...` was not on shell PATH from the package cwd, and the first type-smoke config inherited JSX settings that were wrong for source-path React imports. | Switched to the package typecheck path / `bunx tsc`, added `jsx: react-jsx` plus React types to the smoke tsconfig, fixed lint/format shape, and reran `bun --filter ./packages/slate typecheck` plus `bun check` green. | Use package scripts or `bunx tsc` for direct TS proof; TypeScript public package smoke that resolves source TSX needs the same JSX/type environment as consumer docs. |
-| Public package type-resolution smoke honesty repair | slate-auto | useful false-proof repair | Loop 134 inherited repo `paths`, so it could pass while package export/type metadata was broken. After `paths: {}` it failed on missing `slate-layout` package resolution. | Added the missing root `slate-layout: workspace:*` devDependency, ran `bun install`, and reran strict `bunx tsc`, Slate package typecheck, and `bun check` green. | Package-DX type smoke must disable monorepo `paths` when the claim is package export/type resolution. Source-path type smoke is not enough for beta package review. |
-| Public named type declaration smoke caught stale package declarations | slate-auto | useful artifact drift | Source exported `EditableDOMStrategyLayout`, but `slate-react/dist/index.d.ts` did not, so a package consumer would miss a documented raw `Editable` expert type. | Targeted `bun --filter ./packages/slate-react build` regenerated package declarations; strict package type smoke, package typecheck, and `bun check` passed. | Artifact-facing package-DX proof can require a targeted package build. Do not downgrade it to source-first when the claim is package export declarations. |
+| Compat/alias wording source scan | slate-auto | acceptable count-first scan | Count-first scan showed one public example`COMPAT`comment plus many internal browser/platform`COMPAT`implementation comments. | Public example was cleaned; public docs/examples now have a current-state wording guard; internal runtime comments were classified as platform behavior notes. | Do not churn browser workaround comments in an API docs packet. If internal`COMPAT`wording becomes a taste issue, run a separate runtime-comment cleanup packet with behavior tests. |
+| Package build-entry target-match fast gate | slate-auto | tiny formatter retry | The new shared-config build-script assertion exceeded formatter width. | First`bun check`failed on Biome wrapping only; exact wrap repair made the rerun pass. | Keep the fast gate after central contract edits; formatter-only retries are acceptable but should be logged. |
+| Public package import smoke direct root filter | slate-auto | small command mismatch | Root`bun test ./packages/slate/test/public-package-import-smoke.test.ts`did not match the package-local`_.test.ts`file. | Running from`packages/slate`picked up the file; root package-folder sweep and`bun check`also included it. | For direct package-local Bun tests, prefer package cwd or folder sweep; keep the known path-filter quirk in mind. |
+| Public package import smoke first expectation | slate-auto | useful first-run failure | The new smoke expected`withDOM`from`slate-dom/internal`, but the current intentional internal bridge exports `installDOM`instead. | Corrected the smoke expectation and reran package-local proof green. | Keep import smoke assertions tied to current actual package surface, not guessed internals. |
+| Public import-specifier first scan | slate-auto | noisy invalid scan | The first import-specifier scan included`packages/\*\*`recursively, so it pulled source/tests and regex strings from contracts instead of public docs/examples only. | Re-ran with the real public allowlist: root README, docs, package READMEs, and site examples. | Never include package source/test folders in public-doc import audits. Start from public markdown and example files only. |
+| Public import-specifier fast gate | slate-auto | tiny formatter retry | The new import-specifier helper/assertion needed formatter line wrapping. | First`bun check`failed on Biome wrapping only; exact wrap repair made the rerun pass. | Keep fast gate after central contract edits. |
+| Package README casing scan | slate-auto | small filesystem trap | A custom scan used`existsSync`for both`README.md`and`Readme.md`; on the case-insensitive local filesystem, that made one file look like two. | `find`showed one actual README per package, and a directory-entry guard now proves casing exactly. | Use`readdirSync`entries for casing audits, not`existsSync`probes. |
+| Public doc link scan false positive | slate-auto | small oracle repair | A one-off reference-link scan treated`[documentTitle.key]: 'Untitled'`inside a fenced code block as a markdown reference definition. | The central public-surface markdown link contract now strips fenced code before scanning and checks reference-style definitions directly. | Markdown/link scans must strip fenced code before interpreting link syntax. |
+| Public doc link helper refactor | slate-auto | tiny test-code repair | Moving link checks into a helper left a`continue`inside a non-loop function. | Focused public-surface test failed before any product assertion ran; replacing it with`return`made the contract pass. | Keep focused proof immediately after test helper refactors. |
+| Public doc link fast gate | slate-auto | tiny formatter retry | The new`stripFencedCodeBlocks`helper exceeded Biome's preferred one-line shape. | First`bun check`failed on formatter output only; exact wrap repair made the rerun pass. | Keep fast gate after central contract edits. |
+| Public package type-resolution smoke command shape | slate-auto | small command/config repair | Direct`tsc --project ...`was not on shell PATH from the package cwd, and the first type-smoke config inherited JSX settings that were wrong for source-path React imports. | Switched to the package typecheck path /`bunx tsc`, added `jsx: react-jsx`plus React types to the smoke tsconfig, fixed lint/format shape, and reran`bun --filter ./packages/slate typecheck`plus`bun check`green. | Use package scripts or`bunx tsc`for direct TS proof; TypeScript public package smoke that resolves source TSX needs the same JSX/type environment as consumer docs. |
+| Public package type-resolution smoke honesty repair | slate-auto | useful false-proof repair | Loop 134 inherited repo`paths`, so it could pass while package export/type metadata was broken. After `paths: {}`it failed on missing`slate-layout`package resolution. | Added the missing root`slate-layout: workspace:_`devDependency, ran`bun install`, and reran strict `bunx tsc`, Slate package typecheck, and `bun check`green. | Package-DX type smoke must disable monorepo`paths`when the claim is package export/type resolution. Source-path type smoke is not enough for beta package review. |
+| Public named type declaration smoke caught stale package declarations | slate-auto | useful artifact drift | Source exported`EditableDOMStrategyLayout`, but `slate-react/dist/index.d.ts`did not, so a package consumer would miss a documented raw`Editable`expert type. | Targeted`bun --filter ./packages/slate-react build`regenerated package declarations; strict package type smoke, package typecheck, and`bun check` passed. | Artifact-facing package-DX proof can require a targeted package build. Do not downgrade it to source-first when the claim is package export declarations. |
 
 Changed list:
 | Group | Current-run changes |
@@ -1023,6 +1038,7 @@ Stopping checkpoints to unblock:
 | round-26-transaction-helper-alias-taste | soft taste | Treat `tx.nodes.insertMany` as an alias-shaped helper and cut it if it only duplicates `tx.nodes.insert`. | The user approved alias hard-cuts, and transaction docs should not normalize duplicate helper names. | Keeping a separate bulk insert helper name without distinct semantics. | Source/type/test audit proved no distinct semantics; hard cut completed. | Approved by user; keep `tx.nodes.insert` only. | Queued during loop 99; approved and implemented. |
 
 Findings:
+
 - Read-first docs confirm current API posture: `useSlateEditor` / editor
   creation owns initial value, `<Slate>` owns provider/root callbacks,
   `state`/`tx` owns normal read/write API, projections own durable overlays,
@@ -1053,6 +1069,7 @@ Findings:
   package manifests ship only `dist/`.
 
 Decisions and tradeoffs:
+
 - None yet.
 
 Error attempts:
@@ -1087,9 +1104,10 @@ Error attempts:
 | First `bun check` after strengthening the type smoke failed on large formatter-only wrapping | 1 | Format the single touched smoke file with Biome instead of hand-wrapping dozens of type rows | Resolved; strict smoke, Slate typecheck, and `bun check` passed. |
 
 Verification evidence:
+
 - `.tmp/slate-v2/packages/slate`: `bunx tsc --project
-  test/tsconfig.public-package-types.json --noEmit --skipLibCheck false --types
-  node,react,react-dom` -> passed after adding declaration-level unknown
+test/tsconfig.public-package-types.json --noEmit --skipLibCheck false --types
+node,react,react-dom` -> passed after adding declaration-level unknown
   predicate input assertions.
 - `.tmp/slate-v2`: `bun --filter ./packages/slate typecheck` -> passed after
   adding the public package unknown predicate type smoke.
@@ -1098,14 +1116,14 @@ Verification evidence:
 - `.tmp/slate-v2`: `bun check` -> passed after the declaration-level unknown
   predicate smoke.
 - `.tmp/slate-v2`: `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun run
-  playwright playwright/integration/examples/richtext.test.ts
-  playwright/integration/examples/plaintext.test.ts
-  playwright/integration/examples/markdown-shortcuts.test.ts
-  playwright/integration/examples/editable-voids.test.ts --project=chromium -g
-  "undo restores deleted selected text|keyboard undo restores caret after
-  middle-line typing|creates current markdown shortcuts and can undo and redo a
-  heading shortcut|moves across editable void child-root boundaries with
-  keyboard"` -> passed 4 tests.
+playwright playwright/integration/examples/richtext.test.ts
+playwright/integration/examples/plaintext.test.ts
+playwright/integration/examples/markdown-shortcuts.test.ts
+playwright/integration/examples/editable-voids.test.ts --project=chromium -g
+"undo restores deleted selected text|keyboard undo restores caret after
+middle-line typing|creates current markdown shortcuts and can undo and redo a
+heading shortcut|moves across editable void child-root boundaries with
+keyboard"` -> passed 4 tests.
 - `.tmp/slate-v2`: `bun test:release-discipline` -> passed 985 tests after the
   predicate-input API hard cut. Private-alpha proof only, not release/publish.
 - `.tmp/slate-v2`: `bun --filter slate-browser test:core` -> passed 77 tests,
@@ -1114,15 +1132,15 @@ Verification evidence:
   selection snapshot helpers.
 - `.tmp/slate-v2`: predicate-only drift scan for `value: any` / `props: any`
   in public checker source/docs -> no matches; remaining `editor.ts` `value:
-  any` hits are mark payload APIs and deliberately outside this packet.
+any` hits are mark payload APIs and deliberately outside this packet.
 - `.tmp/slate-v2`: `bun --filter ./packages/slate typecheck`, `bun --filter
-  ./packages/slate-dom typecheck`, and `bun --filter ./packages/slate-history
-  typecheck` -> passed after explicit unknown-boundary narrowing.
+./packages/slate-dom typecheck`, and `bun --filter ./packages/slate-history
+typecheck` -> passed after explicit unknown-boundary narrowing.
 - `.tmp/slate-v2`: `bun build:packages` -> passed and regenerated package
   declarations after public source type changes.
 - `.tmp/slate-v2/packages/slate`: `bunx tsc --project
-  test/tsconfig.public-package-types.json --noEmit --skipLibCheck false --types
-  node,react,react-dom` -> passed after package declaration rebuild.
+test/tsconfig.public-package-types.json --noEmit --skipLibCheck false --types
+node,react,react-dom` -> passed after package declaration rebuild.
 - `.tmp/slate-v2`: `bun test ./packages/slate/test/public-surface-contract.ts`
   -> passed 941 tests after predicate input guards.
 - `.tmp/slate-v2`: `bun check` -> passed after predicate input hard cut,
@@ -1161,14 +1179,14 @@ Verification evidence:
 - `.tmp/slate-v2`: `bun --filter ./packages/slate-react build` -> passed and
   regenerated the affected package declaration artifacts.
 - `.tmp/slate-v2/packages/slate`: `bunx tsc --project
-  test/tsconfig.public-package-types.json --noEmit` -> passed after rebuilding
+test/tsconfig.public-package-types.json --noEmit` -> passed after rebuilding
   `slate-react`.
 - `.tmp/slate-v2`: `bun --filter ./packages/slate typecheck && bun check` ->
   passed after the named public type declaration smoke, covering lint,
   package/site/root typechecks, 1252 Bun tests / 91 skips, 49 Slate Layout
   tests / 169 expects, and 821 Slate React Vitest tests.
 - `.tmp/slate-v2/packages/slate`: `bun test
-  ./test/public-package-import-smoke.test.ts` -> passed 15 tests / 27 expects
+./test/public-package-import-smoke.test.ts` -> passed 15 tests / 27 expects
   after adding exact runtime export guards for `slate/internal` and
   `slate-dom/internal`.
 - `.tmp/slate-v2`: `bun check` -> passed after the internal bridge exactness
@@ -1188,7 +1206,7 @@ Verification evidence:
   references representative named declaration exports for every allowed public
   package/subpath, aligned with the runtime import-smoke names.
 - `.tmp/slate-v2/packages/slate`: `bunx tsc --project
-  test/tsconfig.public-package-types.json --noEmit` -> passed after adding
+test/tsconfig.public-package-types.json --noEmit` -> passed after adding
   named declaration export references.
 - `.tmp/slate-v2`: `bun --filter ./packages/slate typecheck` -> passed after
   adding named declaration export references.
@@ -1203,7 +1221,7 @@ Verification evidence:
   `public-package-types-smoke.ts`, and
   `tsconfig.public-package-types.json`.
 - `.tmp/slate-v2`: `bun test ./packages/slate/test/public-surface-contract.ts
-  && bun typecheck:site` -> passed after the proof-map type-smoke anchor:
+&& bun typecheck:site` -> passed after the proof-map type-smoke anchor:
   779 public-surface tests plus site typecheck.
 - `.tmp/slate-v2`: `bun check` -> passed after the proof-map type-smoke
   anchor, covering lint, package/site/root typechecks, 1250 Bun tests / 91
@@ -1217,7 +1235,7 @@ Verification evidence:
   `slate-layout: workspace:*`; `bun install` completed and saved the lockfile
   with no package changes reported.
 - `.tmp/slate-v2/packages/slate`: `bunx tsc --project
-  test/tsconfig.public-package-types.json --noEmit` -> passed with
+test/tsconfig.public-package-types.json --noEmit` -> passed with
   `paths: {}`, proving the public package/subpath import types resolve through
   package export/type metadata instead of repo source aliases.
 - `.tmp/slate-v2`: `bun --filter ./packages/slate typecheck` -> passed after
@@ -1227,7 +1245,7 @@ Verification evidence:
   91 skips, 49 Slate Layout tests / 169 expects, and 821 Slate React Vitest
   tests.
 - `.tmp/slate-v2/packages/slate`: direct `tsc --project
-  test/tsconfig.public-package-types.json --noEmit` was not available on shell
+test/tsconfig.public-package-types.json --noEmit` was not available on shell
   PATH; `bunx tsc --project test/tsconfig.public-package-types.json --noEmit`
   initially exposed missing React JSX/type config for source-path package
   imports, then passed after the smoke tsconfig set `jsx: react-jsx` and React
@@ -1250,9 +1268,8 @@ Verification evidence:
   `docs/concepts/11-normalizing.md` normalizer removal/null-operation prose,
   and `site/examples/ts/utils/normalize-tokens.ts` token `alias` data.
 - `.tmp/slate-v2`: `rg --files site/examples/ts | xargs wc -l | sort -nr
-  | head -25` -> top examples: `pagination.tsx` 2095 lines, `code-highlighting.tsx`
-  831, `huge-document.tsx` 773, `mentions.tsx` 738, `comment-mode.tsx`
-  674. `site/constants/examples.ts` keeps only Pagination marked `alpha`, and
+| head -25` -> top examples: `pagination.tsx` 2095 lines, `code-highlighting.tsx`
+  831, `huge-document.tsx` 773, `mentions.tsx` 738, `comment-mode.tsx` 674. `site/constants/examples.ts` keeps only Pagination marked `alpha`, and
   public-surface contract guards the normal-example direct-factory exception
   to `huge-document.tsx`.
 - `.tmp/slate-v2`: review-anchor proofs passed:
@@ -1263,45 +1280,45 @@ Verification evidence:
   -> 13 tests / 25 expects; `.tmp/slate-v2`: `bun test:release-discipline`
   -> 823 tests.
 - `.tmp/slate-v2`: `SLATE_BROWSER_TRACE_SKIP_BUILD=1
-  SLATE_BROWSER_TRACE_SURFACES=stagedActiveDOMGroup,virtualized
-  SLATE_BROWSER_TRACE_BLOCKS=5000 SLATE_BROWSER_TRACE_ITERATIONS=2
-  SLATE_BROWSER_TRACE_TYPE_OPS=5 SLATE_BROWSER_TRACE_SELECT_ALL_DELETE=1
-  SLATE_BROWSER_TRACE_RUN_LABEL=slate-auto-2026-06-15-post-api-smoke bun run
-  bench:react:huge-document:browser-trace:local` -> passed. Max p95:
+SLATE_BROWSER_TRACE_SURFACES=stagedActiveDOMGroup,virtualized
+SLATE_BROWSER_TRACE_BLOCKS=5000 SLATE_BROWSER_TRACE_ITERATIONS=2
+SLATE_BROWSER_TRACE_TYPE_OPS=5 SLATE_BROWSER_TRACE_SELECT_ALL_DELETE=1
+SLATE_BROWSER_TRACE_RUN_LABEL=slate-auto-2026-06-15-post-api-smoke bun run
+bench:react:huge-document:browser-trace:local` -> passed. Max p95:
   type-to-paint 26.5ms, select-to-paint 55.9ms, selection-ready 25.1ms,
   click-to-paint 23.7ms, DOM nodes 325, heap 16.31MB, long-task max/total 0ms.
   Select-all/delete undo restored on staged and virtualized surfaces.
 - `.tmp/slate-v2`: `bun run playwright
-  playwright/integration/examples/huge-document.test.ts --project=chromium
-  --project=firefox --project=webkit -g <visual/scrollbar rows>` -> passed
+playwright/integration/examples/huge-document.test.ts --project=chromium
+--project=firefox --project=webkit -g <visual/scrollbar rows>` -> passed
   14 tests with 1 scoped Firefox skip, covering staged 10k projected
   Shift+ArrowDown, virtualized row stacking, native scrollbar drag buffering,
   downward drag autoscroll, and blank-gap selection.
 - `.tmp/slate-v2`: `bun run playwright
-  playwright/integration/examples/huge-document.test.ts --project=chromium
-  --project=firefox --project=webkit -g <correctness rows>` -> passed 15
+playwright/integration/examples/huge-document.test.ts --project=chromium
+--project=firefox --project=webkit -g <correctness rows>` -> passed 15
   tests covering staged middle-block editing/undo/Enter/scroll,
   staged+virtualized Shift+ArrowUp/Down, select-all delete/typing/undo,
   huge select-all paste/undo restore, and virtualized 5k
   typing/undo/arrows/Enter/scroll.
 - `.tmp/slate-v2`: `bun run playwright
-  playwright/integration/examples/visual-native-selection-smoke.test.ts
-  --project=chromium --project=firefox --project=webkit` -> passed 27 tests
+playwright/integration/examples/visual-native-selection-smoke.test.ts
+--project=chromium --project=firefox --project=webkit` -> passed 27 tests
   with screenshot artifacts and hidden-boundary double-highlight assertions.
 - `.tmp/slate-v2`: `bun run playwright playwright/integration/examples/richtext.test.ts
-  playwright/integration/examples/plaintext.test.ts
-  playwright/integration/examples/hidden-content-blocks.test.ts
-  playwright/integration/examples/editable-voids.test.ts
-  playwright/integration/examples/placeholder.test.ts --project=firefox
-  --project=webkit -g <native-selection rows>` -> passed 22 tests with 2
+playwright/integration/examples/plaintext.test.ts
+playwright/integration/examples/hidden-content-blocks.test.ts
+playwright/integration/examples/editable-voids.test.ts
+playwright/integration/examples/placeholder.test.ts --project=firefox
+--project=webkit -g <native-selection rows>` -> passed 22 tests with 2
   scoped Firefox skips for WebKit-only composition rows.
 - `.tmp/slate-v2`: `bun run playwright playwright/integration/examples/richtext.test.ts
-  playwright/integration/examples/plaintext.test.ts
-  playwright/integration/examples/markdown-shortcuts.test.ts
-  playwright/integration/examples/hidden-content-blocks.test.ts
-  playwright/integration/examples/dom-coverage-boundaries.test.ts
-  playwright/integration/examples/editable-voids.test.ts
-  playwright/integration/examples/placeholder.test.ts --project=chromium` ->
+playwright/integration/examples/plaintext.test.ts
+playwright/integration/examples/markdown-shortcuts.test.ts
+playwright/integration/examples/hidden-content-blocks.test.ts
+playwright/integration/examples/dom-coverage-boundaries.test.ts
+playwright/integration/examples/editable-voids.test.ts
+playwright/integration/examples/placeholder.test.ts --project=chromium` ->
   passed 225 tests with 6 scoped skips after building `slate-browser` and
   serving the static examples site.
 - `.tmp/slate-v2`: `bun test ./packages/slate/test/public-surface-contract.ts`
@@ -1326,7 +1343,7 @@ Verification evidence:
   covering lint, package/site/root typechecks, 1250 Bun tests / 91 skips, 49
   Slate Layout tests, and 821 Slate React Vitest tests.
 - `.tmp/slate-v2`: `find packages -maxdepth 2 -name 'README.md' -o -name
-  'Readme.md'` showed one actual package README per package. A separate
+'Readme.md'` showed one actual package README per package. A separate
   `existsSync` probe falsely reported both casings on the local
   case-insensitive filesystem.
 - `.tmp/slate-v2`: `bun test ./packages/slate/test/public-surface-contract.ts`
@@ -1425,7 +1442,7 @@ Verification evidence:
   `browser`, `playwright`, and `transports` showed the exact runtime subpath
   value lists used for the new Slate Browser contract.
 - `.tmp/slate-v2`: `bun --filter ./packages/slate-browser test:core && bun
-  typecheck:packages && bun typecheck:site` -> passed 77 Slate Browser core
+typecheck:packages && bun typecheck:site` -> passed 77 Slate Browser core
   tests / 242 expects, seven package typechecks, and site typecheck.
 - `.tmp/slate-v2`: `bun check` -> passed after Slate Browser subpath exact
   guards, covering lint, package/site/root typechecks, 1237 Bun tests / 91
@@ -1435,30 +1452,30 @@ Verification evidence:
   History exports `History`, `history`; Hyperscript exports `createEditor`,
   `createHyperscript`, `createText`, `jsx`.
 - `.tmp/slate-v2`: `(cd packages/slate-history && bun test
-  ./test/package-readme-contract.test.ts) && (cd packages/slate-hyperscript &&
-  bun test ./test/package-readme-contract.test.ts) && bun typecheck:packages &&
-  bun typecheck:site` -> passed two focused tests per package, seven package
+./test/package-readme-contract.test.ts) && (cd packages/slate-hyperscript &&
+bun test ./test/package-readme-contract.test.ts) && bun typecheck:packages &&
+bun typecheck:site` -> passed two focused tests per package, seven package
   typechecks, and site typecheck.
 - `.tmp/slate-v2`: `bun check` -> passed after stable sibling exact root
   guards, covering lint, package/site/root typechecks, 1236 Bun tests / 91
   skips, 48 slate-layout tests, and 821 Slate React Vitest tests.
 - `.tmp/slate-v2`: `bun - <<'BUN' import * as SlateDOM from
-  './packages/slate-dom/src/index.ts'; console.log(Object.keys(SlateDOM).sort())`
+'./packages/slate-dom/src/index.ts'; console.log(Object.keys(SlateDOM).sort())`
   -> source import showed the compact Slate DOM root runtime value surface used
   for the exact guard.
 - `.tmp/slate-v2`: `bun test ./packages/slate-dom/test/public-surface-contract.ts
-  && bun typecheck:packages && bun typecheck:site` -> passed 15 Slate DOM
+&& bun typecheck:packages && bun typecheck:site` -> passed 15 Slate DOM
   public-surface tests, seven package typechecks, and site typecheck after
   adding the exact root runtime export guard.
 - `.tmp/slate-v2`: `bun check` -> passed after the Slate DOM exact root
   runtime export guard, covering lint, package/site/root typechecks, 1234 Bun
   tests / 91 skips, 48 slate-layout tests, and 821 Slate React Vitest tests.
 - `.tmp/slate-v2`: `bun - <<'BUN' import * as SlateReact from
-  './packages/slate-react/src/index.ts'; console.log(Object.keys(SlateReact).sort())`
+'./packages/slate-react/src/index.ts'; console.log(Object.keys(SlateReact).sort())`
   -> source import showed the compact root runtime value surface used for the
   exact guard.
 - `.tmp/slate-v2`: `bun test ./packages/slate-react/test/surface-contract.tsx
-  && bun typecheck:packages && bun typecheck:site` -> passed 49 Slate React
+&& bun typecheck:packages && bun typecheck:site` -> passed 49 Slate React
   surface tests / 306 expects, seven package typechecks, and site typecheck
   after adding the exact root runtime export guard.
 - `.tmp/slate-v2`: `bun check` -> passed after the Slate React exact root
@@ -1470,14 +1487,14 @@ Verification evidence:
   comment; other public hits were legitimate editor terms such as backward
   ranges, removed nodes, or Prism token aliases.
 - `.tmp/slate-v2`: `bun test ./packages/slate/test/public-surface-contract.ts
-  && bun typecheck:packages && bun typecheck:site` -> passed 776
+&& bun typecheck:packages && bun typecheck:site` -> passed 776
   public-surface tests, seven package typechecks, and site typecheck after the
   public current-state wording guard.
 - `.tmp/slate-v2`: `bun check` -> passed after public wording cleanup,
   covering lint, package/site/root typechecks, 1233 Bun tests / 91 skips, 48
   slate-layout tests, and 820 Slate React Vitest tests.
 - `.tmp/slate-v2`: `bun test ./packages/slate/test/public-surface-contract.ts
-  && bun typecheck:packages && bun typecheck:site` -> first failed because the
+&& bun typecheck:packages && bun typecheck:site` -> first failed because the
   new `slate/internal` importer allowlist only included History/Hyperscript and
   missed existing Slate DOM/React importers; after classifying the real
   importer list, rerun passed 668 public-surface tests, seven package
@@ -1495,19 +1512,19 @@ Verification evidence:
   `getCharacterDistance`, `getWordDistance`, and `isObject` absent from
   runtime/types; sibling dist imports `isObject` from `slate/internal`.
 - `.tmp/slate-v2`: `bun --filter ./packages/slate build && bun --filter
-  ./packages/slate-history build && bun --filter ./packages/slate-hyperscript
-  build` -> passed after source root hard cut so package-name preload consumed
+./packages/slate-history build && bun --filter ./packages/slate-hyperscript
+build` -> passed after source root hard cut so package-name preload consumed
   current dist instead of stale root imports.
 - `.tmp/slate-v2`: `bun test ./packages/slate/test/public-surface-contract.ts
-  ./packages/slate/test/text-units-contract.ts && bun typecheck:packages && bun
-  typecheck:site` -> passed 681 focused tests, seven package typechecks, and
+./packages/slate/test/text-units-contract.ts && bun typecheck:packages && bun
+typecheck:site` -> passed 681 focused tests, seven package typechecks, and
   site typecheck.
 - `.tmp/slate-v2`: `bun check` -> first failed on one Biome import-order issue
   in `packages/slate/src/interfaces/element.ts`, then passed after targeted
   import-order repair, covering lint, package/site/root typechecks, 1233 Bun
   tests / 91 skips, 48 slate-layout tests, and 820 Slate React Vitest tests.
 - `.tmp/slate-v2`: `bun test ./packages/slate/test/public-surface-contract.ts
-  && bun typecheck:site` -> first failed on an over-escaped named-export
+&& bun typecheck:site` -> first failed on an over-escaped named-export
   parser, then passed 667 public-surface tests and site typecheck after the
   regex repair.
 - `.tmp/slate-v2`: `bun check` -> first failed on one formatter-only row in
@@ -1515,24 +1532,24 @@ Verification evidence:
   lint, package/site/root typechecks, 1233 Bun tests / 91 skips, 48
   slate-layout tests, and 820 Slate React Vitest tests.
 - `.tmp/slate-v2`: `bun test ./packages/slate/test/public-surface-contract.ts
-  && bun typecheck:site` -> passed 666 public-surface tests and site typecheck
+&& bun typecheck:site` -> passed 666 public-surface tests and site typecheck
   after expanding Slate package extension/schema/middleware type docs.
 - `.tmp/slate-v2`: `bun check` -> passed after extension type docs coverage,
   covering lint, package/site/root typechecks, 1233 Bun tests / 91 skips, 48
   slate-layout tests, and 820 Slate React Vitest tests.
 - `.tmp/slate-v2`: focused package README case-sensitive proof
   (`bun test ./packages/slate/test/public-surface-contract.ts &&
-  bun test ./packages/slate-react/test/surface-contract.tsx &&
-  (cd packages/slate-history && bun test ./test/package-readme-contract.test.ts) &&
-  (cd packages/slate-hyperscript && bun test ./test/package-readme-contract.test.ts) &&
-  bun typecheck:site`) -> passed 663 public-surface tests, 48 Slate React
+bun test ./packages/slate-react/test/surface-contract.tsx &&
+(cd packages/slate-history && bun test ./test/package-readme-contract.test.ts) &&
+(cd packages/slate-hyperscript && bun test ./test/package-readme-contract.test.ts) &&
+bun typecheck:site`) -> passed 663 public-surface tests, 48 Slate React
   surface tests / 305 expects, both package README contracts, and site
   typecheck.
 - `.tmp/slate-v2`: `bun check` -> passed after package README casing and proof
   map repair, covering lint, package/site/root typechecks, 1233 Bun tests / 91
   skips, 48 slate-layout tests, and 820 Slate React Vitest tests.
 - `.tmp/slate-v2`: `bun test ./packages/slate-react/test/surface-contract.tsx
-  && bun typecheck:site` -> passed 48 Slate React surface tests / 305 expects
+&& bun typecheck:site` -> passed 48 Slate React surface tests / 305 expects
   and site typecheck after Slate React package README classified
   `createReactEditor` as the lower-level factory.
 - `.tmp/slate-v2`: `bun check` -> passed after Slate React package README
@@ -1544,14 +1561,14 @@ Verification evidence:
   `createReactEditor` matches are only the Slate React package owner README and
   `docs/libraries/slate-react/slate.md` outside-React-lifetime guidance.
 - `.tmp/slate-v2`: `bun test ./packages/slate-react/test/surface-contract.tsx
-  && bun typecheck:site` -> passed 48 Slate React surface tests / 303 expects
+&& bun typecheck:site` -> passed 48 Slate React surface tests / 303 expects
   and site typecheck after TypeScript concept docs switched to
   `useSlateEditor`.
 - `.tmp/slate-v2`: `bun check` -> passed after TypeScript concept docs cleanup,
   covering lint, package/site/root typechecks, 1233 Bun tests / 91 skips, 48
   slate-layout tests, and 820 Slate React Vitest tests.
 - `.tmp/slate-v2/packages/slate-history`: `bun test ./test/package-readme-contract.test.ts
-  && cd ../.. && bun typecheck:site` -> passed the Slate History package
+&& cd ../.. && bun typecheck:site` -> passed the Slate History package
   README contract and site typecheck after replacing the public README's
   React-default wording with `useSlateEditor`.
 - `.tmp/slate-v2`: `bun check` -> passed after Slate History package README
@@ -1563,14 +1580,14 @@ Verification evidence:
   `react-editor.md` / `react-editor-setup.md`) -> no direct
   `createReactEditor(...)` or `useState(() => createReactEditor(...))` matches.
 - `.tmp/slate-v2`: `bun test ./packages/slate-history/test/history-contract.ts
-  ./packages/slate-react/test/surface-contract.tsx && bun typecheck:site` ->
+./packages/slate-react/test/surface-contract.tsx && bun typecheck:site` ->
   passed 97 focused docs/API tests and site typecheck after History React setup
   switched to `useSlateEditor`.
 - `.tmp/slate-v2`: `bun check` -> passed after History React setup cleanup,
   covering lint, package/site/root typechecks, 1233 Bun tests / 91 skips, 48
   slate-layout tests, and 819 Slate React Vitest tests.
 - `.tmp/slate-v2`: `bun test ./packages/slate-react/test/surface-contract.tsx
-  && bun typecheck:site` -> passed 47 Slate React surface tests / 299 expects
+&& bun typecheck:site` -> passed 47 Slate React surface tests / 299 expects
   and site typecheck after Rendering concept docs switched to `useSlateEditor`.
 - `.tmp/slate-v2`: `bun check` -> passed after Rendering concept docs cleanup,
   covering lint, package/site/root typechecks, 1233 Bun tests / 91 skips, 48
@@ -1583,7 +1600,7 @@ Verification evidence:
   Slate React surface contract -> remaining matches only internal/negative
   guard tests.
 - `.tmp/slate-v2`: `bun test ./packages/slate/test/public-surface-contract.ts
-  ./packages/slate-react/test/surface-contract.tsx && bun typecheck:site` ->
+./packages/slate-react/test/surface-contract.tsx && bun typecheck:site` ->
   passed 690 focused public docs/API tests and site typecheck after projection
   wording cleanup.
 - `.tmp/slate-v2`: `bun check` -> passed after projection wording cleanup,
@@ -1592,13 +1609,13 @@ Verification evidence:
 - `.tmp/slate-v2`: `bun test:release-discipline` -> passed 687 tests after
   core/DOM/Browser public docs/API contract edits.
 - `.tmp/slate-v2`: `bun test ./packages/slate/test/public-surface-contract.ts
-  && bun typecheck:site` -> passed 643 public-surface tests and site typecheck
+&& bun typecheck:site` -> passed 643 public-surface tests and site typecheck
   after Slate core grouped public type docs.
 - `.tmp/slate-v2`: `bun check` -> passed after Slate core type docs/contract
   edits, covering lint, package/site/root typechecks, 1233 Bun tests / 91
   skips, 48 slate-layout tests, and 819 Slate React Vitest tests.
 - `.tmp/slate-v2`: `bun test ./packages/slate-dom/test/public-surface-contract.ts
-  && bun typecheck:site` -> passed 14 Slate DOM public-surface tests and site
+&& bun typecheck:site` -> passed 14 Slate DOM public-surface tests and site
   typecheck after grouped public type docs.
 - `.tmp/slate-v2`: `bun check` -> passed after Slate DOM type docs/contract
   edits, covering lint, package/site/root typechecks, 1233 Bun tests / 91
@@ -1617,7 +1634,7 @@ Verification evidence:
   extensions/nodes/properties, not changelog, migration, alias, deprecated, or
   old/new API wording.
 - `.tmp/slate-v2`: `bun test ./packages/slate/test/public-surface-contract.ts
-  && bun typecheck:site` -> passed 664 public-surface tests and site typecheck
+&& bun typecheck:site` -> passed 664 public-surface tests and site typecheck
   after transaction transform docs/source option guard.
 - `.tmp/slate-v2`: `bun check` -> first failed on a lint-only string-concat
   regex in `packages/slate/test/public-surface-contract.ts`, then passed after
@@ -1625,8 +1642,8 @@ Verification evidence:
   typechecks, 1233 Bun tests / 91 skips, 48 slate-layout tests, and 820 Slate
   React Vitest tests.
 - `.tmp/slate-v2`: `bun test ./packages/slate/test/public-surface-contract.ts
-  ./packages/slate/test/editor-runtime-view-contract.ts &&
-  bun typecheck:packages && bun typecheck:site` -> passed 718 tests, all seven
+./packages/slate/test/editor-runtime-view-contract.ts &&
+bun typecheck:packages && bun typecheck:site` -> passed 718 tests, all seven
   package typechecks, and site typecheck after the `tx.nodes.insertMany` alias
   hard cut.
 - `.tmp/slate-v2`: scoped `insertMany` / `nodes.insertMany` scan over Slate
@@ -1635,19 +1652,19 @@ Verification evidence:
   alias hard cut, covering lint, package/site/root typechecks, 1233 Bun tests /
   91 skips, 48 slate-layout tests, and 820 Slate React Vitest tests.
 - `.tmp/slate-v2`: `bun test ./packages/slate/test/public-surface-contract.ts
-  && bun typecheck:site` -> passed 666 public-surface tests and site typecheck
+&& bun typecheck:site` -> passed 666 public-surface tests and site typecheck
   after the transaction API docs completeness guard.
 - `.tmp/slate-v2`: `bun check` -> passed after transaction API docs
   completeness, covering lint, package/site/root typechecks, 1233 Bun tests /
   91 skips, 48 slate-layout tests, and 820 Slate React Vitest tests.
 - `.tmp/slate-v2`: `bun test ./packages/slate/test/public-surface-contract.ts
-  && bun typecheck:site` -> passed 666 public-surface tests and site typecheck
+&& bun typecheck:site` -> passed 666 public-surface tests and site typecheck
   after the transform concept cross-page consistency guard.
 - `.tmp/slate-v2`: `bun check` -> passed after transform concept cross-page
   consistency, covering lint, package/site/root typechecks, 1233 Bun tests /
   91 skips, 48 slate-layout tests, and 820 Slate React Vitest tests.
 - `.tmp/slate-v2`: `bun test ./packages/slate/test/public-surface-contract.ts
-  && bun typecheck:site` -> passed 666 public-surface tests and site typecheck
+&& bun typecheck:site` -> passed 666 public-surface tests and site typecheck
   after extension authoring helper docs coverage.
 - `.tmp/slate-v2`: `bun check` -> passed after extension authoring helper docs
   coverage, covering lint, package/site/root typechecks, 1233 Bun tests / 91
@@ -1985,6 +2002,7 @@ Verification evidence:
   slate-layout tests, and 813 Slate React Vitest tests.
 
 Final handoff contract:
+
 - Goal plan: `docs/plans/2026-06-14-slate-v2-public-api-taste-and-beta-readiness-10h.md`; the old `10h` filename is historical, not the active stop rule.
 - Surface and route/package: Slate v2 public API/docs/package-DX plus stable editor behavior, visual/native selection, huge-document staged/virtualized smoke, and `slate-browser` proof API docs.
 - Invocation mode, removed timebox, loop/checkpoint count: beta-readiness loop; user removed the 10h constraint; ledger records 170+ checkpoint/packet rows and closes on beta-readiness evidence instead of wall-clock duration.
@@ -2010,6 +2028,7 @@ Reboot status:
 | What changed in the checkpoint plan? | Removed the old timebox as a completion condition, closed stale pending/in-progress rows with concrete evidence, marked raw mobile and skill sync as scoped/N/A, filled final handoff rows, and kept taste questions as review attention rather than blockers. |
 
 Timeline:
+
 - 2026-06-14T22:18:20.053Z Goal plan created.
 - 2026-06-15T00:19:00+0200 Checkpoint zero filled: prompt
   requirements, queued questions, boundaries, timebox, stop rules, proof
@@ -2667,11 +2686,6 @@ Timeline:
   Workflow slowdown: first hook-name `rg` was too broad and streamed internal
   selection implementation/test matches; future hook-name audits should start
   from docs, root exports, and surface-contract rows before widening.
-- 2026-06-15T08:42:01+0200 Kept no-change packet
-  `tinymce-ckeditor-code-path-evidence-scan`: targeted scan found no copied
-  source paths or durable code evidence leaks. Hits were skill research target
-  lists, explicit exclusion notes, and false-positive `trackEditorClick`
-  substrings; no patch needed.
 - 2026-06-15T08:43:40+0200 Kept packet
   `public-alias-wording-drift-repair`: replaced the docs proof-map phrase
   "aliases" with "route mappings" and widened the public no-alias wording
@@ -2769,7 +2783,7 @@ Timeline:
   `.tmp/slate-v2` `bun check` passed. Workflow slowdown: root-level Bun path
   filters missed `packages/slate-dom/test/public-surface-contract.test.ts`;
   package-local `cd packages/slate-dom && bun test
-  ./test/public-surface-contract.test.ts` is the stable focused command.
+./test/public-surface-contract.test.ts` is the stable focused command.
 - 2026-06-15T09:19:00+0200 Kept packet
   `slate-browser-browser-subpath-jsdoc-guard`: `slate-browser/browser`
   runtime helper exports now require immediate source JSDoc through the package
@@ -2880,6 +2894,7 @@ Timeline:
   log as harness/artifact/full-matrix flake debt if it repeats.
 
 Open risks:
+
 - Raw mobile/device proof remains deferred until a real device lane exists; do not market raw mobile coverage from Playwright viewport or desktop browser evidence.
 - No release, publish, PR, or commit was performed. This is beta-readiness evidence for review, not a release action.
 - Pagination architecture remains explicit opt-in and was not reopened in this closeout.

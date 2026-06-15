@@ -18,7 +18,7 @@ one owner lane processed into an execution-grade plan.
 Examples:
 
 ```text
-editor-harvest-plan slate-v2 tinymce
+editor-harvest-plan slate-v2 tiptap
 editor-harvest-plan slate-v2 .tmp/editor-test-harvester/name/report.md
 editor-harvest-plan docs/editor-test-harvester/tiptap/report.md --lane slate-v2
 ```

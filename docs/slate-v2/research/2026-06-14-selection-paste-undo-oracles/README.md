@@ -9,8 +9,7 @@ Slate-native proof for paste, undo/redo, and selection synchronization?
 
 - Local source only for code-level claims.
 - Repos sampled: Slate upstream, ProseMirror, Lexical, Tiptap, Monaco.
-- Explicit exclusions: pagination, runtime architecture rewrites, TinyMCE and
-  CKEditor source-path evidence.
+- Explicit exclusions: copyrighted code.
 - Promotion target: Playwright or `slate-browser` test/oracle packets first;
   benchmark or plan packets only if the source evidence demands it.
 
