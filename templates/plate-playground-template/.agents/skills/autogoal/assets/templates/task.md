@@ -41,6 +41,26 @@ Boundaries:
 - Tracker sync: TODO.
 - Non-goals: TODO.
 
+Current verdict:
+- verdict: pending
+- confidence: pending
+- next owner: task
+- reason: pending
+
+Pre-solution issue challenge:
+- reporter claim: pending
+- suggested diagnosis or fix: pending
+- repro ladder:
+  - tests / source-level repro: pending
+  - repo-owned automated browser or integration proof: pending
+  - Browser plugin: pending
+  - screenshot / visual proof: pending
+- reproduction verdict: pending
+- validity verdict: pending
+- best long-term fix boundary: pending
+- harsh honest feedback: pending
+- hard-stop decision: pending
+
 Blocked condition:
 - TODO: Name the missing source context, repro, access, command, or decision that stops autonomous work.
 
@@ -55,6 +75,10 @@ Start Gates:
 | Active goal checked or created | pending | pending |
 | Source of truth read before edits | pending | pending |
 | Acceptance criteria captured | pending | pending |
+| Pre-solution issue challenge required | pending | pending |
+| Reproduction verdict before implementation | pending | pending |
+| Repro escalation ladder selected | pending | pending |
+| Suggested fix reviewed against durable boundary | pending | pending |
 | TDD decision before behavior change or bug fix | pending | pending |
 | Browser proof decision for browser surface | pending | pending |
 
@@ -65,14 +89,38 @@ Work Checklist:
       plan as checkable checkpoints before implementation.
 - [ ] Short objective plus threshold, verification surface, constraints, boundaries, and blocked condition are concrete.
 - [ ] Task source and acceptance criteria are captured.
+- [ ] For public tracker bug reports, behavior claims, technical diagnoses, or
+      suggested fixes, reporter claims are challenged before implementation
+      with a recorded verdict: `valid`, `not reproduced`, `invalid`,
+      `wont-fix`, `partially valid`, or `platform limitation`. Feature, docs,
+      support, or cleanup requests with no bug claim may mark reproduction
+      `N/A` with reason.
+- [ ] Repro escalation ladder followed for bug/behavior claims: focused
+      test/source-level repro first when applicable; existing repo-owned
+      automated browser or integration proof next when available and useful as
+      executable coverage; the repo-approved Browser tool next when tests or
+      automation cannot reproduce or cannot model the surface honestly;
+      screenshot or explicit visual-proof waiver when visual/native state
+      matters.
+- [ ] Hard-stop rule followed for bug/behavior claims: no code when the issue
+      is not reproduced, invalid, or won't-fix; partial validity pivots to the
+      best long-term fix and records what was wrong or incomplete in the
+      issue's proposed path.
 - [ ] Nearby implementation patterns are read before edits.
-- [ ] Implementation fixes the right ownership boundary.
+- [ ] Implementation fixes the right ownership boundary, or the narrower choice
+      is recorded with reason.
+- [ ] Review/autoreview target selected from actual diff state for non-trivial
+      implementation work, or marked N/A with reason.
 - [ ] Verification evidence is recorded beside each relevant gate.
 
 Completion Gates:
 | Gate | Applies | Required action | Evidence |
 |------|---------|-----------------|----------|
 | Named verification threshold | pending | Run the named proof or record blocker | pending |
+| Pre-solution issue challenge verdict | pending | Record reporter claim, suggested fix, repro verdict, validity verdict, durable boundary, and hard-stop/pivot decision before implementation | pending |
+| Repro escalation ladder | pending | For bug/behavior claims, record test/source-level, automated browser/integration, Browser, and screenshot/visual-proof outcomes or N/A/blocker reasons before `not reproduced` | pending |
+| Bug reproduced before fix | pending | Record failing test/repro or N/A with reason | pending |
+| Targeted behavior verification | pending | Run focused test/proof for changed behavior or record N/A | pending |
 | TypeScript or typed config changed | pending | Run relevant typecheck | pending |
 | Build-sensitive behavior changed | pending | Run relevant build/check | pending |
 | Browser surface changed | pending | Capture browser proof | pending |
