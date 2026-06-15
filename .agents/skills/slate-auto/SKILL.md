@@ -100,15 +100,22 @@ timebox, and stop-question policy in the active plan.
 
 Natural prompts should work:
 
-- `slate-auto pagination rows800 virtualized`
-- `slate-auto pagination rows800 virtualized full loop`
-- `slate-auto pagination rows800 virtualized for 1 hour`
 - `slate-auto huge-document auto timed 2h`
 - `slate-auto editor behavior batch loop`
 - `slate-auto lexical all issues robustness harvest`
 - `slate-auto facebook/lexical --issues --state all batch-loop`
 - `slate-auto issue-harvester prosemirror`
 - `slate-auto issue-harvester facebook/lexical --state all`
+
+Pagination is explicit opt-in only. `slate-auto` must not infer pagination work
+from `virtualized`, `huge-document`, performance debt, skip ledgers,
+supervision mode, or generic architecture backlog. It may enter pagination only
+when the user's prompt literally names pagination or a pagination route/plan.
+Valid explicit prompts include:
+
+- `slate-auto pagination rows800 virtualized`
+- `slate-auto pagination rows800 virtualized full loop`
+- `slate-auto pagination rows800 virtualized for 1 hour`
 
 For timed and batch-loop modes:
 
@@ -328,10 +335,13 @@ Default next-owner order for stable feature/API validation:
 5. rerun focused proof and record packet keep/revert/quarantine;
 6. run `check-complete.mjs` only when the whole goal is actually closable.
 
-For pagination/virtualization-specific prompts, replace the stable-example
-ladder with the route's scenario matrix, but keep the same rule: continue until
-the minimum runtime has elapsed and the active packet is closed. Before that,
-empty obvious backlog is not a stop condition.
+For prompts that explicitly name pagination, replace the stable-example ladder
+with the pagination route's scenario matrix, but keep the same rule: continue
+until the minimum runtime has elapsed and the active packet is closed. Before
+that, empty obvious backlog is not a stop condition. For prompts that mention
+only virtualization, huge documents, perf, DOM budget, or staged/virtualized
+strategies, stay in those non-pagination owners unless the user explicitly says
+pagination.
 
 ## Supervision Mode
 
@@ -345,7 +355,8 @@ Supervision mode loop:
 2. scan for stale claims, weak proofs, missing browser/selection oracles,
    benchmark honesty gaps, API/docs mismatch, command pitfalls, skill drift,
    issue-harvest gaps, sibling-editor comparison opportunities,
-   `slate-research` opportunities, and slow loop steps;
+   `slate-research` opportunities, and slow loop steps. Treat pagination as
+   out of scope unless the prompt explicitly names it;
 3. add, split, or reprioritize checkpoints from that scan;
 4. run the highest-value reversible checkpoint that does not require new user
    authority;
@@ -439,8 +450,9 @@ checklist:
     `.tmp/editor-issue-harvester/<repo>/raw/`.
 
 Do not broaden into experimental architecture when the user scoped it out.
-Route that as a stopping checkpoint or `slate-plan` next owner in the final
-handoff.
+Pagination is scoped out by default for `slate-auto`; route it as a deferred
+stopping checkpoint only, not a next owner, unless the prompt explicitly names
+pagination.
 
 ## Packet Ledger
 
@@ -573,6 +585,11 @@ Rules:
   miss in this workspace and waste the loop;
 - use `bun run playwright ...` for Playwright specs; do not send Playwright specs
   through `bun test`;
+- do not insert an extra `test` subcommand after `bun run playwright`. Use
+  `bun run playwright playwright/integration/examples/<suite>.test.ts --grep
+  "<pattern>"`, not `bun run playwright test <file>`. The extra `test` can make
+  a file-only proof fan out into the configured integration suite, waste hours,
+  and hide focused failures behind broad retry noise;
 - do not run multiple managed `bun run playwright` commands in parallel,
   including through `multi_tool_use.parallel`. The managed route builds and
   serves the Next example app, and concurrent runs can trip the Next build lock
@@ -1253,6 +1270,9 @@ Stop when:
   for the next safe move and no safe alternate owner remains, or the invocation
   mode is full-loop;
 - the next safe move is a `slate-plan` public API/runtime decision;
+- the next safe move is pagination and the prompt did not explicitly request
+  pagination. Queue it as deferred with owner `slate-plan` instead of entering
+  it from `slate-auto`;
 - a same-signal behavior failure has already been routed through the right
   specialist owner and still needs a user-only decision or unsafe architecture
   choice;

@@ -21,9 +21,10 @@ capture native `selectionchange`, `beforeinput`, `input`, and composition events
 with browser selection, `beforeinput.getTargetRanges()`, DOM text-node snapshots,
 input-time DOM deltas, endpoint identity, visual rects, and anomaly classes.
 
-This belongs as a `slate-browser` helper/backlog item before runtime patches.
-When a bug involves selection, IME, delete/replace, paste, or native input, a
-strong proof should show the event chain and DOM delta around the operation, not
+This belongs in `slate-browser` before runtime patches. That helper now exists:
+`startSlateBrowserNativeEventTrace`, `takeSlateBrowserNativeEventTrace`,
+`resetSlateBrowserNativeEventTrace`, and `stopSlateBrowserNativeEventTrace`
+capture the event chain and DOM delta around selection/input operations, not
 just final model text.
 
 Kept doc promotion:
@@ -32,9 +33,13 @@ Kept doc promotion:
   - Owner: `slate-browser`
   - Kept in:
     `docs/slate-v2/selection-navigation-coverage.md#native-event-trace-contract`
-  - Action: browser-visible input/selection packets now have an explicit event
-    trace contract for native event ordering, target ranges, DOM deltas, visual
-    rects, and anomaly classes.
+  - Implementation:
+    `.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts`
+  - Proof:
+    `.tmp/slate-v2/packages/slate-browser/test/core/playwright-native-event-trace.test.ts`
+  - Action: browser-visible input/selection packets now have first-class trace
+    helpers for native event ordering, target ranges, DOM deltas, visual rects,
+    and anomaly classes.
 
 Rejected:
 
@@ -45,5 +50,8 @@ Rejected:
 
 ## Freshness
 
-This packet used a local clone snapshot. Re-open with a fresh web/GitHub scan
-before treating repository status or browser support as current.
+This packet used a local clone snapshot. P114 refreshed the local Slate-native
+implementation/proof status in
+`docs/slate-v2/research/2026-06-14-proof-methodology-refresh/`.
+Re-open with a fresh web/GitHub scan only when the external source status or
+browser support matrix itself matters.

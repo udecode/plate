@@ -14,6 +14,12 @@ is live unless a prompt explicitly asks for that lane.
 The repo has moved past the package-runtime blocker phase. The active owner is
 keeping the claim width exact while private-alpha proof continues.
 
+Public-beta review can run when explicitly requested, but it is a review
+confidence packet, not release authority. A public-beta packet may score API,
+docs, examples, behavior, proof, and review burden; it must still leave
+publish, PR, changeset, and release commands inactive until the user asks for
+that lane and same-turn ship gates pass.
+
 ## Readiness Gates
 
 Release or publish readiness stays out of scope until all of these are true and

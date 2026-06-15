@@ -46,15 +46,27 @@ the metric tracks runtime and the log status carries truth:
 
 ## Commands
 
+Resolve the installed TheGreenCedar CLI through `slate-ar` first:
+
+```bash
+AR_CLI="$(find "${CODEX_HOME:-$HOME/.codex}/plugins/cache/thegreencedar-autoresearch/codex-autoresearch" -path '*/scripts/autoresearch.mjs' -print | sort -V | tail -1)"
+test -n "$AR_CLI"
+```
+
 For an explicit gate command:
 
 ```bash
-<autoresearch-cli> setup-plan --cwd .tmp/slate-v2 --name "<gate-name>" --metric-name "seconds" --benchmark-command "<gate command>" --benchmark-prints-metric false --checks-command "<gate command>"
-<autoresearch-cli> doctor --cwd .tmp/slate-v2
-<autoresearch-cli> serve --cwd .tmp/slate-v2
-<autoresearch-cli> next --cwd .tmp/slate-v2
-<autoresearch-cli> log --cwd .tmp/slate-v2 --from-last --status measure --description "<gate result>"
+node "$AR_CLI" setup-plan --cwd .tmp/slate-v2 --name "<gate-name>" --metric-name "seconds" --benchmark-command "<gate command>" --benchmark-prints-metric false --checks-command "<gate command>"
+node "$AR_CLI" checks-inspect --cwd .tmp/slate-v2 --command "<gate command>"
+node "$AR_CLI" doctor --cwd .tmp/slate-v2 --explain
+node "$AR_CLI" serve --cwd .tmp/slate-v2
+node "$AR_CLI" next --cwd .tmp/slate-v2
+node "$AR_CLI" log --cwd .tmp/slate-v2 --from-last --status measure --description "<gate result>"
 ```
+
+If a gate crashes or times out after producing artifacts, run
+`partial-results --from-last` before spending another full rerun. Log useful
+partial evidence as diagnostic `measure`, not as promotion-grade proof.
 
 For full editor behavior proof, prefer one focused command first, then broaden:
 

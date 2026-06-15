@@ -31,16 +31,35 @@ promoted research; it does not own the open-ended research search.
 
 ## Commands
 
+Resolve the installed TheGreenCedar CLI through `slate-ar` first:
+
+```bash
+AR_CLI="$(find "${CODEX_HOME:-$HOME/.codex}/plugins/cache/thegreencedar-autoresearch/codex-autoresearch" -path '*/scripts/autoresearch.mjs' -print | sort -V | tail -1)"
+test -n "$AR_CLI"
+```
+
 Use Codex Autoresearch directly through the `slate-ar` wrapper:
 
 ```bash
-<autoresearch-cli> research-setup --cwd .tmp/slate-v2 --slug "<slug>" --goal "<goal>"
-<autoresearch-cli> quality-gap --cwd .tmp/slate-v2 --research-slug "<slug>" --list
-<autoresearch-cli> gap-candidates --cwd .tmp/slate-v2 --research-slug "<slug>"
+node "$AR_CLI" research-setup --cwd .tmp/slate-v2 --slug "<slug>" --goal "<goal>"
+node "$AR_CLI" quality-gap --cwd .tmp/slate-v2 --research-slug "<slug>" --list
+node "$AR_CLI" gap-candidates --cwd .tmp/slate-v2 --research-slug "<slug>"
 ```
 
 Use `gap-candidates --apply` only after inspecting the candidates and deciding
 the write scope is safe.
+
+If the accepted checklist is too broad for one serial path, use generic fanout
+before patching:
+
+```bash
+node "$AR_CLI" research-fanout --cwd .tmp/slate-v2 --dry-run
+node "$AR_CLI" lane-runner --cwd .tmp/slate-v2 --lane-id "<lane>" --mode read_only_scout --summary "<evidence>" --recommendation "<next measured packet>" --yes
+```
+
+If the key evidence lives in a prior Codex session, import a bounded capsule
+with `session-forensics --dry-run` before another agent relies on compressed
+chat memory.
 
 ## Routing
 

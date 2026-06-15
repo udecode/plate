@@ -78,6 +78,10 @@ Do not duplicate Codex Autoresearch mechanics here. Load
 dashboard operation, ASI syntax, quality-gap internals, stale-packet recovery,
 or finalization rules.
 
+The installed TheGreenCedar plugin is the executable source of truth. Treat
+`../codex-autoresearch` as a legacy protocol/reference checkout only. Do not run
+commands from it, and do not copy its old Python artifact layout into Slate AR.
+
 ## Slate Defaults
 
 - Target cwd is `.tmp/slate-v2`.
@@ -133,8 +137,47 @@ Use the `slate-ar*` skills as the operator entrypoints. Do not invent package
 scripts for Slate AR; Plate only exposes benchmark target scripts.
 
 For exact shell execution, load `codex-autoresearch:codex-autoresearch` and use
-its CLI fallback with `--cwd .tmp/slate-v2`. For target-backed setup from the
-Plate control repo, use:
+the installed TheGreenCedar CLI with `--cwd .tmp/slate-v2`:
+
+```bash
+AR_CLI="$(find "${CODEX_HOME:-$HOME/.codex}/plugins/cache/thegreencedar-autoresearch/codex-autoresearch" -path '*/scripts/autoresearch.mjs' -print | sort -V | tail -1)"
+test -n "$AR_CLI"
+node "$AR_CLI" --help --all
+```
+
+If that path is missing, refresh the marketplace/plugin before touching Slate
+AR wrappers. If `../codex-autoresearch` differs, compare it for protocol ideas,
+not command paths.
+
+Current high-value CLI capabilities the wrappers should know about:
+
+- read-only resume: `onboarding-packet`, `state --compact`, `state --report`,
+  `recommend-next --compact --operator-checklist`, `doctor --explain`;
+- setup: `prompt-plan`, `guide`, `setup-plan`, `setup --interactive`,
+  `benchmark-lint`, `checks-inspect`;
+- packet economics: `next`, `run`, `partial-results --from-last`, `log`;
+- stuck-loop recovery: `config`, `new-segment`, `promote-gate`,
+  `research-fanout`, `lane-runner`;
+- evidence carry-forward: `session-forensics`;
+- quality gaps: `research-setup`, `quality-gap`, `gap-candidates`;
+- finalization/readout: `finalize-preview`, `finalize-current-tree`, `serve`,
+  `export`.
+
+Before spending a heavy packet, prefer the cheapest current-state command that
+can answer the question. If the operator checklist blocks `next`, clear that
+blocker first instead of brute-forcing another packet.
+
+Legacy `../codex-autoresearch` protocol lessons still apply as guardrails:
+
+- log every completed experiment before the next one starts;
+- after compaction or long gaps, re-read the active run state and operator
+  checklist before continuing;
+- after repeated discards or plateau, refine, pivot, start a new segment, or
+  fan out lanes instead of near-neighbor tweaking;
+- do not ask the user mid-run after they approved an autonomous run unless a
+  real blocker or explicit stop condition is hit.
+
+For target-backed setup from the Plate control repo, use:
 
 ```bash
 pnpm bench:targets:dry-run -- <target-id>
@@ -156,7 +199,8 @@ node tooling/scripts/bench-targets.mjs autoresearch-init <target-id>
    - measured loop, quality gap, status, or finalization: continue here.
 3. Read existing `.tmp/slate-v2/autoresearch.*` session files when present.
 4. Use generic Codex Autoresearch for onboarding, recommendation, doctor,
-   dashboard, packet, log, stale-packet, segment, and finalization mechanics.
+   dashboard, packet, log, stale-packet, segment, fanout, diagnostics, and
+   finalization mechanics.
 5. Keep Slate-specific routing in force after every packet:
    - `keep` only when the measured target improves and Slate correctness checks
      pass;

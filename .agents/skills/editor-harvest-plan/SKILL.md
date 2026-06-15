@@ -1,6 +1,6 @@
 ---
 description: Turn an editor-test-harvester report into one lane-specific execution plan, e.g. process every Slate v2 candidate from a harvest through slate-plan without executing implementation.
-argument-hint: "[<lane> <harvest-report-or-repo-key> | <harvest-report-or-repo-key> --lane <lane>]"
+argument-hint: '[<lane> <harvest-report-or-repo-key> | <harvest-report-or-repo-key> --lane <lane>]'
 disable-model-invocation: true
 name: editor-harvest-plan
 metadata:
@@ -49,10 +49,10 @@ tests. It does not mean blindly port every upstream test.
 
 ## Lane Registry
 
-| Lane       | Aliases                  | Downstream skill                     | Owner                                                                   | Output                                                  |
-| ---------- | ------------------------ | ------------------------------------ | ----------------------------------------------------------------------- | ------------------------------------------------------- |
-| `slate-v2` | `slate`, `raw-slate`     | `.agents/skills/slate-plan/SKILL.md` | Raw Slate v2 substrate in `.tmp/slate-v2`                               | `docs/plans/YYYY-MM-DD-slate-v2-<repo>-harvest-plan.md` |
-| `plate`    | `platejs`, `plate-owned` | `.agents/skills/plate-plan/SKILL.md` | Plate packages, kits, docs, examples, and product behavior in this repo | `docs/plans/YYYY-MM-DD-plate-<repo>-harvest-plan.md`    |
+| Lane       | Aliases                  | Downstream skill                     | Owner                                                                   | Output                                                       |
+| ---------- | ------------------------ | ------------------------------------ | ----------------------------------------------------------------------- | ------------------------------------------------------------ |
+| `slate-v2` | `slate`, `raw-slate`     | `.agents/skills/slate-plan/SKILL.md` | Raw Slate v2 substrate in `.tmp/slate-v2`                               | `docs/plans/YYYY-MM-DD-slate-v2-<repo>-harvest-plan.md`      |
+| `plate`    | `platejs`, `plate-owned` | `.agents/skills/plate-plan/SKILL.md` | Plate packages, kits, docs, examples, and product behavior in this repo | `docs/plans/YYYY-MM-DD-plate-<repo>-harvest-plan.md`         |
 
 If the lane is unknown, infer only when the harvest row owner labels make the
 mapping obvious. Otherwise ask for the lane. Do not invent a new owner lane and
