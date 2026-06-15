@@ -1,5 +1,11 @@
 # @platejs/selection
 
+## 53.1.6
+
+### Patch Changes
+
+- [#5018](https://github.com/udecode/plate/pull/5018) by [@zbeyens](https://github.com/zbeyens) – Fix block selection copy and cut in Safari by writing selected blocks to the native clipboard event.
+
 ## 53.0.0
 
 ## 52.3.10

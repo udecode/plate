@@ -1,5 +1,11 @@
 # @platejs/ai
 
+## 53.1.6
+
+### Patch Changes
+
+- Updated `@platejs/selection`.
+
 ## 53.1.5
 
 ### Patch Changes
