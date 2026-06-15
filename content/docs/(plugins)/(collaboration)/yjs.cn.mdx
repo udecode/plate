@@ -10,9 +10,9 @@ toc: true
 
 ## 功能特性
 
-- **多提供者支持:** 使用 [Yjs](https://github.com/yjs/yjs) 和 [slate-yjs](https://docs.slate-yjs.dev/) 实现实时协作。支持同时使用多个同步提供者（例如 Hocuspocus + WebRTC）共享同一个 `Y.Doc`。
-- **内置提供者:** 开箱即用地支持 [Hocuspocus](https://tiptap.dev/hocuspocus)（服务器端）和 [WebRTC](https://github.com/yjs/y-webrtc)（点对点）提供者。
-- **自定义提供者:** 可扩展架构允许通过实现 `UnifiedProvider` 接口添加自定义提供者（例如用于离线存储的 IndexedDB）。
+- **多提供者支持:** 使用 [Yjs](https://github.com/yjs/yjs) 和 [slate-yjs](https://docs.slate-yjs.dev/) 实现实时协作。支持同时使用多个同步提供者（例如 IndexedDB + Hocuspocus + WebRTC）共享同一个 `Y.Doc`。
+- **内置提供者:** 开箱即用地支持 [IndexedDB](https://github.com/yjs/y-indexeddb) 本地持久化、[Hocuspocus](https://tiptap.dev/hocuspocus)（服务器端）和 [WebRTC](https://github.com/yjs/y-webrtc)（点对点）提供者。
+- **自定义提供者:** 可扩展架构允许通过实现 `UnifiedProvider` 接口添加自定义提供者。
 - **感知与光标:** 集成 Yjs Awareness 协议，用于在用户之间共享光标位置和其他临时状态。包含 [`RemoteCursorOverlay`](/docs/components/remote-cursor-overlay) 用于渲染远程光标。
 - **可自定义光标:** 可通过 `cursors` 自定义光标外观（名称、颜色）。
 - **手动生命周期:** 提供显式的 `init` 和 `destroy` 方法来管理 Yjs 连接生命周期。
@@ -25,7 +25,7 @@ toc: true
 
 ### 安装
 
-安装核心 Yjs 插件和您打算使用的特定提供者包：
+安装核心 Yjs 插件。
 
 ```bash
 npm install @platejs/yjs
@@ -89,6 +89,13 @@ const editor = createPlateEditor({
         },
         // 配置提供者。所有提供者共享同一个 Y.Doc 和 Awareness 实例。
         providers: [
+          // 示例：用于本地持久化的 IndexedDB 提供者
+          {
+            type: 'indexeddb',
+            options: {
+              docName: 'my-document-id', // 唯一的 IndexedDB 数据库名称
+            },
+          },
           // 示例：Hocuspocus 提供者
           {
             type: 'hocuspocus',
@@ -275,6 +282,19 @@ type WebRTCProviderConfig = {
 }
 ```
 
+### IndexedDB 提供者
+
+使用 [y-indexeddb](https://github.com/yjs/y-indexeddb) 的浏览器本地持久化。当编辑器需要在远程同步完成前恢复本地状态时，将它与网络提供者一起使用。
+
+```tsx
+type IndexeddbProviderConfig = {
+  type: 'indexeddb',
+  options: {
+    docName: string; // 此文档稳定的 IndexedDB 数据库名称
+  }
+}
+```
+
 ### 自定义提供者
 
 通过实现 `UnifiedProvider` 接口创建自定义提供者：
@@ -305,6 +325,21 @@ YjsPlugin.configure({
 ```
 
 ## 后端设置
+
+### IndexedDB 本地持久化
+
+IndexedDB 在浏览器中运行，并使用 `YjsPlugin` 创建的共享 `Y.Doc`。组合多个提供者时，`docName` 应与网络提供者的 room/name 使用同一个文档标识符：
+
+```tsx
+{
+  type: 'indexeddb',
+  options: {
+    docName: 'document-1',
+  },
+}
+```
+
+IndexedDB 不传输远程 Awareness 或光标。它只在本地持久化文档更新；Hocuspocus 或 WebRTC 仍然负责多用户传输。
 
 ### Hocuspocus 服务器
 
@@ -422,7 +457,7 @@ YjsPlugin.configure({
 
 **检查 URL 和名称：**
 - 验证 `url`（Hocuspocus）和 `signaling` URL（WebRTC）是否正确
-- 确保 `name` 或 `roomName` 在所有协作者之间完全匹配
+- 确保共享同一个文档的 `docName`、`name` 或 `roomName` 完全匹配
 - 本地开发使用 `ws://`，生产环境使用 `wss://`
 
 **服务器状态：**
@@ -464,6 +499,7 @@ YjsPlugin.configure({
 
 - [Yjs](https://github.com/yjs/yjs) - 用于协作的 CRDT 框架
 - [slate-yjs](https://docs.slate-yjs.dev/) - Slate 的 Yjs 绑定
+- [y-indexeddb](https://github.com/yjs/y-indexeddb) - IndexedDB 持久化提供者
 - [Hocuspocus](https://tiptap.dev/hocuspocus) - Yjs 后端服务器
 - [y-webrtc](https://github.com/yjs/y-webrtc) - WebRTC 提供者
 - [RemoteCursorOverlay](/docs/components/remote-cursor-overlay) - 远程光标组件
@@ -478,7 +514,7 @@ YjsPlugin.configure({
 <API name="YjsPlugin">
 <APIOptions>
   <APIItem name="providers" type="(UnifiedProvider | YjsProviderConfig)[]">
-    提供者配置数组或预实例化的提供者实例。插件将从配置创建实例并直接使用现有实例。所有提供者将共享同一个 Y.Doc 和 Awareness。每个配置对象指定提供者 `type`（例如 `'hocuspocus'`、`'webrtc'`）及其特定的 `options`。自定义提供者实例必须符合 `UnifiedProvider` 接口。
+    提供者配置数组或预实例化的提供者实例。插件将从配置创建实例并直接使用现有实例。所有提供者将共享同一个 Y.Doc 和 Awareness。每个配置对象指定提供者 `type`（例如 `'indexeddb'`、`'hocuspocus'` 或 `'webrtc'`）及其特定的 `options`。自定义提供者实例必须符合 `UnifiedProvider` 接口。
   </APIItem>
   <APIItem name="cursors" type="WithCursorsOptions | null" optional>
     远程光标配置。设置为 `null` 可显式禁用光标。如果省略，当指定了提供者时默认启用光标。传递给 `withTCursors`。参见 [WithCursorsOptions API](https://docs.slate-yjs.dev/api/slate-yjs-core/cursor-plugin#withcursors)。包括 `data`（本地用户信息）和 `autoSend`（默认 `true`）。

@@ -9,6 +9,9 @@ describe('provider registry', () => {
     expect(getProviderClass('hocuspocus')?.name).toBe(
       'HocuspocusProviderWrapper'
     );
+    expect(getProviderClass('indexeddb')?.name).toBe(
+      'IndexeddbProviderWrapper'
+    );
     expect(getProviderClass('webrtc')?.name).toBe('WebRTCProviderWrapper');
   });
 

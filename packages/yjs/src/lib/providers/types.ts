@@ -16,12 +16,22 @@ export interface BaseYjsProviderConfig extends ProviderEventHandlers {
 }
 
 // Built-in provider types
-export type DefaultYjsProviderType = 'hocuspocus' | 'webrtc';
+export type DefaultYjsProviderType = 'hocuspocus' | 'indexeddb' | 'webrtc';
 
 export type HocuspocusProviderConfig = BaseYjsProviderConfig & {
   options: HocuspocusProviderConfiguration;
   type: 'hocuspocus';
   wsOptions?: HocuspocusProviderWebsocketConfiguration;
+};
+
+export type IndexeddbProviderConfig = BaseYjsProviderConfig & {
+  options: IndexeddbProviderOptions;
+  type: 'indexeddb';
+};
+
+export type IndexeddbProviderOptions = {
+  /** Stable IndexedDB database name for this document. */
+  docName: string;
 };
 
 // Provider constructor type
@@ -58,6 +68,16 @@ export type UnifiedProvider = {
   connect: () => void;
   destroy: () => void;
   disconnect: () => void;
+  /**
+   * Whether this provider only reads/writes local persistence. Local
+   * persistence should not satisfy the initial remote-sync gate when a network
+   * provider is also configured.
+   */
+  isLocalPersistence?: boolean;
+  /** Whether the provider owns a live connection attempt that needs cleanup. */
+  isConnectionPending?: boolean;
+  /** Whether the provider may still apply initial synced state. */
+  isSyncPending?: boolean;
   /**
    * Whether this provider is currently connected Used for provider-specific
    * connection status
@@ -160,7 +180,10 @@ export type YjsConfig = PluginConfig<
 >;
 
 // Union type for all known provider configurations
-export type YjsProviderConfig = HocuspocusProviderConfig | WebRTCProviderConfig; // Add custom config types here if needed
+export type YjsProviderConfig =
+  | HocuspocusProviderConfig
+  | IndexeddbProviderConfig
+  | WebRTCProviderConfig; // Add custom config types here if needed
 
 // Extensible provider type that can include custom types
 export type YjsProviderType = DefaultYjsProviderType | string;

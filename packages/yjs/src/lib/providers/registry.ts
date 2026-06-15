@@ -6,11 +6,13 @@ import type {
 } from './types';
 
 import { HocuspocusProviderWrapper } from './hocuspocus-provider';
+import { IndexeddbProviderWrapper } from './indexeddb-provider';
 import { WebRTCProviderWrapper } from './webrtc-provider';
 
 // Provider registry for extensibility
 const providerRegistry: ProviderRegistry = {
   hocuspocus: HocuspocusProviderWrapper,
+  indexeddb: IndexeddbProviderWrapper,
   webrtc: WebRTCProviderWrapper,
 };
 

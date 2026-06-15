@@ -27,6 +27,13 @@ const isProviderConfig = (
   'type' in item &&
   'options' in item;
 
+const hasSharedRootState = (sharedRoot: Y.XmlText) =>
+  sharedRoot.length > 0 ||
+  // Y.XmlText exposes no public "has tombstone history" check. `_start`
+  // stays set after content is deleted, which lets us preserve persisted
+  // empty documents instead of reseeding fallback content.
+  (sharedRoot as Y.XmlText & { _start?: unknown })._start != null;
+
 export const BaseYjsPlugin = createTSlatePlugin<YjsConfig>({
   key: KEYS.yjs,
   extendEditor: withPlateYjs,
@@ -113,7 +120,7 @@ export const BaseYjsPlugin = createTSlatePlugin<YjsConfig>({
 
       for (const provider of [..._providers].reverse()) {
         try {
-          if (provider.isConnected) {
+          if (provider.isConnected || provider.isConnectionPending) {
             provider.destroy();
           }
         } catch (error) {
@@ -150,7 +157,7 @@ export const BaseYjsPlugin = createTSlatePlugin<YjsConfig>({
       for (const provider of [..._providers].reverse()) {
         try {
           if (
-            provider.isConnected &&
+            (provider.isConnected || provider.isConnectionPending) &&
             (typesToDisconnect === null ||
               typesToDisconnect.includes(provider.type))
           ) {
@@ -196,6 +203,9 @@ export const BaseYjsPlugin = createTSlatePlugin<YjsConfig>({
         sharedType: customSharedType,
         ydoc,
       } = options;
+      const getSharedRoot = () =>
+        customSharedType ?? (ydoc.get('content', Y.XmlText) as Y.XmlText);
+      const hasSharedDocumentState = () => hasSharedRootState(getSharedRoot());
 
       // Validate configuration
       if (providerConfigsOrInstances.length === 0) {
@@ -206,6 +216,12 @@ export const BaseYjsPlugin = createTSlatePlugin<YjsConfig>({
 
       // Final providers array that will contain both configured and custom providers
       const finalProviders: UnifiedProvider[] = [];
+      const hasPendingLocalPersistence = () =>
+        finalProviders.some(
+          (provider) =>
+            provider.isLocalPersistence &&
+            (provider.isConnectionPending || provider.isSyncPending)
+        );
 
       // Track sync state for waiting
       let syncResolve: (() => void) | null = null;
@@ -217,6 +233,7 @@ export const BaseYjsPlugin = createTSlatePlugin<YjsConfig>({
       for (const item of providerConfigsOrInstances) {
         if (isProviderConfig(item)) {
           const { options: providerOptions, type } = item;
+          let providerRef: UnifiedProvider | null = null;
 
           if (!providerOptions) {
             continue;
@@ -252,12 +269,21 @@ export const BaseYjsPlugin = createTSlatePlugin<YjsConfig>({
                 setOption('_isSynced', isSynced);
 
                 // Resolve sync promise on first sync
-                if (isSynced && syncResolve) {
+                const hasNonLocalProvider = finalProviders.some(
+                  (provider) => !provider.isLocalPersistence
+                );
+                const canResolveInitialSync =
+                  !providerRef?.isLocalPersistence ||
+                  !hasNonLocalProvider ||
+                  hasSharedDocumentState();
+
+                if (isSynced && syncResolve && canResolveInitialSync) {
                   syncResolve();
                   syncResolve = null;
                 }
               },
             });
+            providerRef = provider;
             finalProviders.push(provider);
           } catch {
             // Provider creation failed
@@ -295,13 +321,12 @@ export const BaseYjsPlugin = createTSlatePlugin<YjsConfig>({
         ]);
       }
 
-      // After sync, check if ydoc has content from server
-      // Use custom sharedType if provided, otherwise use default 'content' key
-      const sharedRoot =
-        customSharedType ?? (ydoc.get('content', Y.XmlText) as Y.XmlText);
-
-      // Only apply initial value if ydoc is empty (no content from server)
-      if (sharedRoot.length === 0 && value !== null) {
+      // Only apply initial value if ydoc has no existing shared state.
+      if (
+        !hasSharedDocumentState() &&
+        !hasPendingLocalPersistence() &&
+        value !== null
+      ) {
         let initialNodes = value as Value;
 
         if (typeof value === 'string') {
