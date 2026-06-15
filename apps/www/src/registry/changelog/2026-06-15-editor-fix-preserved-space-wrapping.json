@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-06-15-editor-fix-preserved-space-wrapping",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-06-15-editor-fix-preserved-space-wrapping.mdx"
+  },
+  "change": {
+    "type": "pull_request",
+    "date": "2026-06-15",
+    "commits": [],
+    "pullRequest": {
+      "number": 5022,
+      "url": "https://github.com/udecode/plate/pull/5022",
+      "state": "OPEN",
+      "title": "Fix editor preserved-space wrapping"
+    }
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Fix editor preserved-space wrapping",
+  "targets": [
+    {
+      "name": "editor",
+      "files": ["apps/www/src/registry/ui/editor.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "editor-static",
+      "files": ["apps/www/src/registry/ui/editor-static.tsx"],
+      "definitionFiles": [],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-06-15-editor-fix-preserved-space-wrapping",
+      "kind": "fix",
+      "summary": "Fix preserved-space wrapping so inserted space runs stay inside editable and static editor widths.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["editor", "editor-static"],
+      "source": {
+        "line": 13,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-06-15",
+          "entry": "32.4",
+          "section": "June 2026 #32"
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

@@ -2,6 +2,30 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-06-15-editor-fix-preserved-space-wrapping",
+      "href": "/registry/changelog/2026-06-15-editor-fix-preserved-space-wrapping.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Fix editor preserved-space wrapping",
+      "change": {
+        "type": "pull_request",
+        "date": "2026-06-15",
+        "commits": [],
+        "pullRequest": {
+          "number": 5022,
+          "url": "https://github.com/udecode/plate/pull/5022",
+          "state": "OPEN",
+          "title": "Fix editor preserved-space wrapping"
+        }
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["editor", "editor-static"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-06-14-fix-shadcn-editor-kit-install-paths",
       "href": "/registry/changelog/2026-06-14-fix-shadcn-editor-kit-install-paths.json",
       "status": "draft",

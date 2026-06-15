@@ -595,11 +595,12 @@ test('current entry files generate registry changelog indexes', () => {
   });
   const { components, index } = buildRegistryChangelogIndexes(outputs);
 
-  assert.equal(sources.length, 20);
-  assert.equal(outputs.length, 20);
+  assert.equal(sources.length, 21);
+  assert.equal(outputs.length, 21);
   assert.deepEqual(
-    index.events.slice(0, 3).map((event) => event.id),
+    index.events.slice(0, 4).map((event) => event.id),
     [
+      '2026-06-15-editor-fix-preserved-space-wrapping',
       '2026-06-14-fix-shadcn-editor-kit-install-paths',
       '2026-06-13-show-code-block-language-labels-read-only-mode',
       '2026-06-10-attach-column-drop-target-ref',
@@ -607,8 +608,19 @@ test('current entry files generate registry changelog indexes', () => {
   );
   assert.equal(
     index.events[0].href,
+    '/registry/changelog/2026-06-15-editor-fix-preserved-space-wrapping.json'
+  );
+  assert.equal(
+    index.events[1].href,
     '/registry/changelog/2026-06-14-fix-shadcn-editor-kit-install-paths.json'
   );
+  assert.equal(
+    components.components.editor[0],
+    '2026-06-15-editor-fix-preserved-space-wrapping'
+  );
+  assert.deepEqual(components.components['editor-static'], [
+    '2026-06-15-editor-fix-preserved-space-wrapping',
+  ]);
   assert.deepEqual(components.components['column-node'], [
     '2026-06-10-attach-column-drop-target-ref',
     '2026-01-20-add-docx-file-import-word-export-support',
