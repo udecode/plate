@@ -197,6 +197,53 @@ describe('commonmark package surfaces', () => {
     expect(deserializeMd(editor, markdown)).toMatchObject(value);
   });
 
+  it('round-trips hard line breaks embedded inside one text leaf', () => {
+    const editor = createTestEditor();
+    const value = [
+      {
+        children: [
+          {
+            text: 'Text followed by two empty lines\n\n\nFollowed by more text.',
+          },
+        ],
+        type: 'p',
+      },
+    ] as any;
+
+    const markdown = serializeMd(editor, { value });
+
+    expect(markdown).toBe(
+      'Text followed by two empty lines\\\n\\\n\\\nFollowed by more text.\n'
+    );
+    expect(deserializeMd(editor, markdown)).toMatchObject([
+      {
+        children: [
+          { text: 'Text followed by two empty lines' },
+          { text: '\n' },
+          { text: '\n' },
+          { text: '\n' },
+          { text: 'Followed by more text.' },
+        ],
+        type: 'p',
+      },
+    ]);
+  });
+
+  it('serializes a trailing hard break embedded inside one text leaf like a split break child', () => {
+    const editor = createTestEditor();
+
+    expect(
+      serializeMd(editor, {
+        value: [
+          {
+            children: [{ text: 'alpha\n' }],
+            type: 'p',
+          },
+        ] as any,
+      })
+    ).toBe('alpha\n<br />\n');
+  });
+
   it('serializes trailing blockquote breaks without losing the final newline', () => {
     const editor = createTestEditor();
     const value = [
