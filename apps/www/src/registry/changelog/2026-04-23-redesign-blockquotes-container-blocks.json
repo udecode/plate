@@ -132,8 +132,8 @@
       "migrationNotes": [],
       "targets": ["footnote-kit"],
       "source": {
-        "line": 36,
-        "row": 9,
+        "line": 39,
+        "row": 10,
         "legacyRelease": {
           "date": "2026-04-08",
           "entry": "30.2",
@@ -149,8 +149,8 @@
       "migrationNotes": [],
       "targets": ["footnote-base-kit"],
       "source": {
-        "line": 37,
-        "row": 10,
+        "line": 40,
+        "row": 11,
         "legacyRelease": {
           "date": "2026-04-08",
           "entry": "30.2",
@@ -166,8 +166,8 @@
       "migrationNotes": ["Register the new footnote kits."],
       "targets": ["editor-kit", "editor-base-kit"],
       "source": {
-        "line": 38,
-        "row": 11,
+        "line": 41,
+        "row": 12,
         "legacyRelease": {
           "date": "2026-04-08",
           "entry": "30.2",
@@ -185,8 +185,8 @@
       ],
       "targets": ["markdown-kit"],
       "source": {
-        "line": 39,
-        "row": 12,
+        "line": 42,
+        "row": 13,
         "legacyRelease": {
           "date": "2026-04-08",
           "entry": "30.2",
@@ -206,8 +206,8 @@
         "slash-node"
       ],
       "source": {
-        "line": 40,
-        "row": 13,
+        "line": 43,
+        "row": 14,
         "legacyRelease": {
           "date": "2026-04-08",
           "entry": "30.2",
@@ -225,8 +225,8 @@
       ],
       "targets": ["transforms", "transforms-classic"],
       "source": {
-        "line": 41,
-        "row": 14,
+        "line": 44,
+        "row": 15,
         "legacyRelease": {
           "date": "2026-04-08",
           "entry": "30.2",
@@ -242,8 +242,8 @@
       "migrationNotes": [],
       "targets": ["autoformat-kit"],
       "source": {
-        "line": 42,
-        "row": 15,
+        "line": 45,
+        "row": 16,
         "legacyRelease": {
           "date": "2026-04-08",
           "entry": "30.2",

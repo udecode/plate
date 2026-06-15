@@ -67,8 +67,8 @@
       ],
       "targets": ["table-node"],
       "source": {
-        "line": 66,
-        "row": 22,
+        "line": 69,
+        "row": 23,
         "legacyRelease": {
           "date": "2026-03-22",
           "entry": "29.2",
@@ -84,8 +84,8 @@
       "migrationNotes": [],
       "targets": ["font-color-toolbar-button"],
       "source": {
-        "line": 67,
-        "row": 23,
+        "line": 70,
+        "row": 24,
         "legacyRelease": {
           "date": "2026-03-22",
           "entry": "29.2",

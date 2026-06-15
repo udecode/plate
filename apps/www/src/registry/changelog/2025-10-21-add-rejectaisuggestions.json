@@ -87,8 +87,8 @@
       ],
       "targets": ["suggestion-kit", "suggestion-node", "block-discussion"],
       "source": {
-        "line": 115,
-        "row": 37,
+        "line": 118,
+        "row": 38,
         "legacyRelease": {
           "date": "2025-10-21",
           "entry": "26.10",
@@ -104,8 +104,8 @@
       "migrationNotes": [],
       "targets": ["ai-api"],
       "source": {
-        "line": 116,
-        "row": 38,
+        "line": 119,
+        "row": 39,
         "legacyRelease": {
           "date": "2025-10-21",
           "entry": "26.10",

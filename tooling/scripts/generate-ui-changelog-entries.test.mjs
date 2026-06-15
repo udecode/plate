@@ -374,7 +374,7 @@ test('does not guess release dependencies for source-only change units', () => {
   );
 });
 
-test('current latest 14 source rows collapse to 6 change-unit events', () => {
+test('current latest 14 source rows collapse to 7 change-unit events', () => {
   const content = fs.readFileSync(
     'tooling/data/plate-ui-changelog.mdx',
     'utf8'
@@ -407,6 +407,10 @@ test('current latest 14 source rows collapse to 6 change-unit events', () => {
   );
   const provenanceBySourceId = new Map(
     rows.flatMap((row) => {
+      if (row.date === '2026-06-15') {
+        return [];
+      }
+
       if (row.date === '2026-06-14') {
         return [];
       }
@@ -515,10 +519,11 @@ test('current latest 14 source rows collapse to 6 change-unit events', () => {
   });
 
   assert.equal(rows.length, 14);
-  assert.equal(outputs.length, 6);
+  assert.equal(outputs.length, 7);
   assert.deepEqual(
     outputs.map((output) => path.basename(output.targetPath)),
     [
+      '2026-06-15-editor-fix-preserved-space-wrapping.json',
       '2026-06-14-editor-install-kit-files-through.json',
       '2026-06-10-attach-column-drop-target-ref.json',
       '2026-06-03-show-code-block-language-labels-read-only-mode.json',
@@ -531,24 +536,27 @@ test('current latest 14 source rows collapse to 6 change-unit events', () => {
   assert.equal(outputs[0].entry.release.status, 'unresolved');
   assert.equal(outputs[0].entry.change.type, 'source');
   assert.equal(outputs[1].entry.entries.length, 1);
-  assert.equal(outputs[1].entry.release.status, 'latest');
-  assert.equal(outputs[1].entry.release.source, 'post-release-no-changeset');
-  assert.equal(outputs[1].entry.change.pullRequest.number, 5003);
-  assert.equal(outputs[1].entry.change.pullRequest.state, 'MERGED');
+  assert.equal(outputs[1].entry.release.status, 'unresolved');
+  assert.equal(outputs[1].entry.change.type, 'source');
   assert.equal(outputs[2].entry.entries.length, 1);
   assert.equal(outputs[2].entry.release.status, 'latest');
-  assert.equal(outputs[2].entry.release.source, 'open-pull-request');
-  assert.equal(outputs[2].entry.change.pullRequest.number, 4989);
-  assert.equal(outputs[2].entry.change.pullRequest.state, 'OPEN');
-  assert.equal(outputs[3].entry.entries.length, 2);
-  assert.equal(outputs[3].entry.release.tag, 'v53.0.7');
-  assert.equal(outputs[3].entry.change.pullRequest.number, 4987);
-  assert.equal(outputs[4].entry.entries.length, 3);
-  assert.equal(outputs[4].entry.release.tag, 'v53.0.3');
-  assert.equal(outputs[4].entry.change.pullRequest.number, 4945);
-  assert.equal(outputs[5].entry.entries.length, 6);
-  assert.equal(outputs[5].entry.release.tag, 'v53.0.0');
-  assert.equal(outputs[5].entry.change.pullRequest.number, 4941);
+  assert.equal(outputs[2].entry.release.source, 'post-release-no-changeset');
+  assert.equal(outputs[2].entry.change.pullRequest.number, 5003);
+  assert.equal(outputs[2].entry.change.pullRequest.state, 'MERGED');
+  assert.equal(outputs[3].entry.entries.length, 1);
+  assert.equal(outputs[3].entry.release.status, 'latest');
+  assert.equal(outputs[3].entry.release.source, 'open-pull-request');
+  assert.equal(outputs[3].entry.change.pullRequest.number, 4989);
+  assert.equal(outputs[3].entry.change.pullRequest.state, 'OPEN');
+  assert.equal(outputs[4].entry.entries.length, 2);
+  assert.equal(outputs[4].entry.release.tag, 'v53.0.7');
+  assert.equal(outputs[4].entry.change.pullRequest.number, 4987);
+  assert.equal(outputs[5].entry.entries.length, 3);
+  assert.equal(outputs[5].entry.release.tag, 'v53.0.3');
+  assert.equal(outputs[5].entry.change.pullRequest.number, 4945);
+  assert.equal(outputs[6].entry.entries.length, 5);
+  assert.equal(outputs[6].entry.release.tag, 'v53.0.0');
+  assert.equal(outputs[6].entry.change.pullRequest.number, 4941);
 
   const latestOutputs = buildRegistryChangelogEvents(rows, {
     hasPendingChangeset: true,
@@ -558,8 +566,9 @@ test('current latest 14 source rows collapse to 6 change-unit events', () => {
   });
 
   assert.equal(latestOutputs[0].entry.release.status, 'unresolved');
-  assert.equal(latestOutputs[1].entry.release.status, 'latest');
-  assert.equal(latestOutputs[1].entry.release.source, 'pending-changeset');
+  assert.equal(latestOutputs[1].entry.release.status, 'unresolved');
+  assert.equal(latestOutputs[2].entry.release.status, 'latest');
+  assert.equal(latestOutputs[2].entry.release.source, 'pending-changeset');
 
   const unprovenOutputs = buildRegistryChangelogEvents(rows, {
     isChangeAfterRelease: () => false,
@@ -585,10 +594,11 @@ test('current latest 14 source rows collapse to 6 change-unit events', () => {
   });
 
   assert.equal(coveredLatestOutputs[0].entry.release.status, 'unresolved');
-  assert.equal(coveredLatestOutputs[1].entry.release.status, 'released');
-  assert.equal(coveredLatestOutputs[1].entry.release.tag, 'v53.1.0');
+  assert.equal(coveredLatestOutputs[1].entry.release.status, 'unresolved');
+  assert.equal(coveredLatestOutputs[2].entry.release.status, 'released');
+  assert.equal(coveredLatestOutputs[2].entry.release.tag, 'v53.1.0');
   assert.equal(
-    coveredLatestOutputs[1].entry.release.source,
+    coveredLatestOutputs[2].entry.release.source,
     'latest-release-no-changeset'
   );
 
@@ -620,6 +630,10 @@ test('current latest 14 source rows collapse to 6 change-unit events', () => {
   );
   assert.equal(
     releasedWithPendingChangesetOutputs[1].entry.release.status,
+    'unresolved'
+  );
+  assert.equal(
+    releasedWithPendingChangesetOutputs[2].entry.release.status,
     'released'
   );
   for (const output of outputs) {
@@ -634,6 +648,7 @@ test('current latest 14 source rows collapse to 6 change-unit events', () => {
   assert.deepEqual(
     index.events.map((event) => event.id),
     [
+      '2026-06-15-editor-fix-preserved-space-wrapping',
       '2026-06-14-editor-install-kit-files-through',
       '2026-06-10-attach-column-drop-target-ref',
       '2026-06-03-show-code-block-language-labels-read-only-mode',
@@ -645,6 +660,7 @@ test('current latest 14 source rows collapse to 6 change-unit events', () => {
   assert.deepEqual(
     index.events.map((event) => event.href),
     [
+      '/registry/changelog/2026-06-15-editor-fix-preserved-space-wrapping.json',
       '/registry/changelog/2026-06-14-editor-install-kit-files-through.json',
       '/registry/changelog/2026-06-10-attach-column-drop-target-ref.json',
       '/registry/changelog/2026-06-03-show-code-block-language-labels-read-only-mode.json',
@@ -655,6 +671,12 @@ test('current latest 14 source rows collapse to 6 change-unit events', () => {
   );
   assert.deepEqual(components.components['column-node'], [
     '2026-06-10-attach-column-drop-target-ref',
+  ]);
+  assert.deepEqual(components.components.editor, [
+    '2026-06-15-editor-fix-preserved-space-wrapping',
+  ]);
+  assert.deepEqual(components.components['editor-static'], [
+    '2026-06-15-editor-fix-preserved-space-wrapping',
   ]);
   assert.deepEqual(components.components['editor-base-kit'], [
     '2026-06-14-editor-install-kit-files-through',

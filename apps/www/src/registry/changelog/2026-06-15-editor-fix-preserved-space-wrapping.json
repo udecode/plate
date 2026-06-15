@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-06-15-editor-fix-preserved-space-wrapping",
+  "status": "draft",
+  "source": {
+    "kind": "legacy-mdx",
+    "path": "tooling/data/plate-ui-changelog.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-06-15",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Fix preserved-space wrapping so inserted space runs stay inside editable and static editor widths.",
+  "targets": [
+    {
+      "name": "editor",
+      "files": ["apps/www/src/registry/ui/editor.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "editor-static",
+      "files": ["apps/www/src/registry/ui/editor-static.tsx"],
+      "definitionFiles": [],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-06-15-32-4-editor-fix-preserved-space-wrapping-ff758701",
+      "kind": "fix",
+      "summary": "Fix preserved-space wrapping so inserted space runs stay inside editable and static editor widths.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["editor", "editor-static"],
+      "source": {
+        "line": 9,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-06-15",
+          "entry": "32.4",
+          "section": "June 2026 #32"
+        }
+      }
+    }
+  ],
+  "diagnostics": [
+    {
+      "severity": "warning",
+      "code": "release-missing",
+      "message": "No generated release-index entry found for source-only change on 2026-06-15."
+    },
+    {
+      "severity": "warning",
+      "code": "warning",
+      "message": "No blame commit found for tooling/data/plate-ui-changelog.mdx:9."
+    }
+  ]
+}

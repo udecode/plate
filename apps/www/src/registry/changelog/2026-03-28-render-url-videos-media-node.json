@@ -89,8 +89,8 @@
       "migrationNotes": [],
       "targets": ["media-video-node"],
       "source": {
-        "line": 52,
-        "row": 17,
+        "line": 55,
+        "row": 18,
         "legacyRelease": {
           "date": "2026-03-28",
           "entry": "29.5",
@@ -106,8 +106,8 @@
       "migrationNotes": [],
       "targets": ["editor-ai", "editor-basic", "slate-to-html"],
       "source": {
-        "line": 53,
-        "row": 18,
+        "line": 56,
+        "row": 19,
         "legacyRelease": {
           "date": "2026-03-28",
           "entry": "29.5",

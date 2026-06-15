@@ -71,8 +71,8 @@
       "migrationNotes": [],
       "targets": ["ai-kit"],
       "source": {
-        "line": 57,
-        "row": 19,
+        "line": 60,
+        "row": 20,
         "legacyRelease": {
           "date": "2026-03-27",
           "entry": "29.4",
@@ -88,8 +88,8 @@
       "migrationNotes": [],
       "targets": ["ai-demo"],
       "source": {
-        "line": 58,
-        "row": 20,
+        "line": 61,
+        "row": 21,
         "legacyRelease": {
           "date": "2026-03-27",
           "entry": "29.4",

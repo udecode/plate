@@ -71,8 +71,8 @@
       "migrationNotes": [],
       "targets": ["table-demo", "table-nomerge-demo"],
       "source": {
-        "line": 48,
-        "row": 16,
+        "line": 51,
+        "row": 17,
         "legacyRelease": {
           "date": "2026-03-31",
           "entry": "29.6",

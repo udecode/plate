@@ -71,8 +71,8 @@
       ],
       "targets": ["inline-combobox", "mention-kit"],
       "source": {
-        "line": 94,
-        "row": 31,
+        "line": 97,
+        "row": 32,
         "legacyRelease": {
           "date": "2025-12-15",
           "entry": "27.2",

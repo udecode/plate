@@ -506,8 +506,8 @@
         "cursor-overlay"
       ],
       "source": {
-        "line": 106,
-        "row": 33,
+        "line": 109,
+        "row": 34,
         "legacyRelease": {
           "date": "2025-11-20",
           "entry": "26.11",
@@ -531,8 +531,8 @@
         "markdown-joiner-transform"
       ],
       "source": {
-        "line": 107,
-        "row": 34,
+        "line": 110,
+        "row": 35,
         "legacyRelease": {
           "date": "2025-11-20",
           "entry": "26.11",
@@ -592,8 +592,8 @@
         "toolbar"
       ],
       "source": {
-        "line": 108,
-        "row": 35,
+        "line": 111,
+        "row": 36,
         "legacyRelease": {
           "date": "2025-11-20",
           "entry": "26.11",
@@ -622,8 +622,8 @@
         "mdx-plate-components"
       ],
       "source": {
-        "line": 109,
-        "row": 36,
+        "line": 112,
+        "row": 37,
         "legacyRelease": {
           "date": "2025-11-20",
           "entry": "26.11",

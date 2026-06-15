@@ -1,6 +1,12 @@
 {
   "schemaVersion": 1,
   "components": {
+    "editor": [
+      "2026-06-15-editor-fix-preserved-space-wrapping",
+      "2025-11-20-biome-ultracite",
+      "2025-10-17-fix-react-decouple"
+    ],
+    "editor-static": ["2026-06-15-editor-fix-preserved-space-wrapping"],
     "editor-base-kit": [
       "2026-06-14-fix-shadcn-editor-kit-install-paths",
       "2026-04-23-redesign-blockquotes-container-blocks"
@@ -229,7 +235,6 @@
       "2025-11-20-biome-ultracite",
       "2025-10-17-fix-react-decouple"
     ],
-    "editor": ["2025-11-20-biome-ultracite", "2025-10-17-fix-react-decouple"],
     "emoji-node": ["2025-11-20-biome-ultracite"],
     "emoji-toolbar-button": ["2025-11-20-biome-ultracite"],
     "fixed-toolbar": ["2025-11-20-biome-ultracite"],

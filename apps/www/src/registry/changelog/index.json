@@ -2,6 +2,33 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-06-15-editor-fix-preserved-space-wrapping",
+      "href": "/registry/changelog/2026-06-15-editor-fix-preserved-space-wrapping.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Fix preserved-space wrapping so inserted space runs stay inside editable and static editor widths.",
+      "change": {
+        "type": "source",
+        "date": "2026-06-15",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["editor", "editor-static"],
+      "entries": 1,
+      "diagnostics": [
+        {
+          "code": "release-missing",
+          "severity": "warning"
+        },
+        {
+          "code": "warning",
+          "severity": "warning"
+        }
+      ]
+    },
+    {
       "id": "2026-06-14-fix-shadcn-editor-kit-install-paths",
       "href": "/registry/changelog/2026-06-14-fix-shadcn-editor-kit-install-paths.json",
       "status": "draft",
@@ -12,34 +39,30 @@
         "date": "2026-06-14",
         "commits": [
           {
-            "sha": "129a4b4644b17db4ba5adef56a43233dc24e5be6",
-            "shortSha": "129a4b4644",
-            "url": "https://github.com/udecode/plate/commit/129a4b4644b17db4ba5adef56a43233dc24e5be6",
+            "sha": "6801e8a1103cda613e727dba525adfcde88dfb35",
+            "shortSha": "6801e8a110",
+            "url": "https://github.com/udecode/plate/commit/6801e8a1103cda613e727dba525adfcde88dfb35",
             "date": "2026-06-14",
-            "committedAt": "2026-06-14T14:08:43+02:00",
-            "subject": "Fix shadcn editor kit install paths"
+            "committedAt": "2026-06-14T20:34:08+02:00",
+            "subject": "Fix shadcn editor kit install paths (#5013)"
           }
         ],
         "pullRequest": {
           "number": 5013,
           "url": "https://github.com/udecode/plate/pull/5013",
-          "state": "OPEN",
-          "title": "Fix shadcn editor kit install paths"
+          "state": "MERGED",
+          "title": "Fix shadcn editor kit install paths",
+          "mergedAt": "2026-06-14T18:34:08Z"
         }
       },
       "release": {
-        "status": "latest",
-        "source": "open-pull-request"
+        "status": "unresolved"
       },
       "targets": ["editor-base-kit", "editor-kit"],
       "entries": 1,
       "diagnostics": [
         {
           "code": "release-missing",
-          "severity": "warning"
-        },
-        {
-          "code": "pull-request-not-merged",
           "severity": "warning"
         }
       ]

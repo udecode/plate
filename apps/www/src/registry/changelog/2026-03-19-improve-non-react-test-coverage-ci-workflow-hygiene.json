@@ -59,8 +59,8 @@
       "migrationNotes": [],
       "targets": ["font-color-toolbar-button"],
       "source": {
-        "line": 71,
-        "row": 24,
+        "line": 74,
+        "row": 25,
         "legacyRelease": {
           "date": "2026-03-19",
           "entry": "29.1",

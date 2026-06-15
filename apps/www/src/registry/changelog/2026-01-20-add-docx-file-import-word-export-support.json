@@ -143,8 +143,8 @@
         "export-toolbar-button"
       ],
       "source": {
-        "line": 82,
-        "row": 27,
+        "line": 85,
+        "row": 28,
         "legacyRelease": {
           "date": "2026-01-20",
           "entry": "28.2",
@@ -172,8 +172,8 @@
         "toc-node"
       ],
       "source": {
-        "line": 83,
-        "row": 28,
+        "line": 86,
+        "row": 29,
         "legacyRelease": {
           "date": "2026-01-20",
           "entry": "28.2",
