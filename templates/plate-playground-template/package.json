@@ -47,7 +47,7 @@
     "@platejs/media": "^53.1.4",
     "@platejs/mention": "^53.0.0",
     "@platejs/resizable": "^53.0.0",
-    "@platejs/selection": "^53.0.0",
+    "@platejs/selection": "^53.1.6",
     "@platejs/slash-command": "^53.0.0",
     "@platejs/suggestion": "^53.0.3",
     "@platejs/table": "^53.0.9",
