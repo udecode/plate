@@ -141,7 +141,7 @@ surfaces include code search, issues, PRs, discussions, examples, benchmark
 harnesses, browser test fixtures, and commit history.
 
 Include OSS projects beyond the usual three when relevant: ProseMirror, Lexical,
-Tiptap, CodeMirror, Milkdown, Remirror, Monaco, Quill, CKEditor, TinyMCE, TipTap
+Tiptap, CodeMirror, Milkdown, Remirror, Monaco, Quill, TipTap
 extensions, document editors, browser editor test suites, pagination/
 virtualization libraries, and TypeScript-heavy UI/runtime projects.
 

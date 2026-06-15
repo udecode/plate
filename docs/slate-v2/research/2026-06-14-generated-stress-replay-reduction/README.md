@@ -5,6 +5,7 @@ How should Slate v2 reduce, classify, and replay generated editor stress
 failures after desktop stress and project-specific replay commands are green?
 
 Scope:
+
 - Source-backed testing/oracle patterns for replay reduction, minimization,
   failure triage, seed/shard identity, and generated editor/browser stress.
 - Prefer local source reads from cloned OSS/editor/browser-test repos.
@@ -12,9 +13,10 @@ Scope:
   docs packet, or no-code decision.
 
 Explicit exclusions:
+
 - No pagination work.
 - No runtime patch from snippets, issue titles, or README claims.
-- No TinyMCE or CKEditor code-path evidence in durable ledgers.
+- No Copyrighted code-path evidence in durable ledgers.
 - No duplicate DOM-mutation import stress lead; that is owned by
   `docs/slate-v2/research/2026-06-13-editor-property-fuzzing-oracles/`.
 
@@ -38,6 +40,7 @@ the artifact should help future agents reduce the reproducer or classify the
 failure without replaying a large action sequence by hand.
 
 Promoted Lead:
+
 - `replay-reduction:failed-artifact-candidates`
 - owner: `slate-browser` / generated stress
 - proof kind: stress artifact contract plus focused generated stress artifact
@@ -48,6 +51,7 @@ Promoted Lead:
   `STRESS_ROUTES=richtext STRESS_FAMILIES=paste-normalize-undo PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun run playwright playwright/stress/generated-editing.test.ts --project=firefox --grep "richtext paste-normalize-undo"`
 
 Follow-up Promoted Lead:
+
 - `replay-reduction:candidate-command`
 - owner: `slate-browser` / generated stress replay
 - proof kind: reduced replay command and separate reduced trace artifact
@@ -57,6 +61,7 @@ Follow-up Promoted Lead:
   `STRESS_REPLAY=<artifact> STRESS_REDUCTION=prefix:12 bun test:stress:replay:firefox`
 
 Supporting Source Notes:
+
 - Lexical's recorder supports replayable browser steps plus HTML/selection
   snapshots, but not automatic shrinking.
 - CodeMirror has random view/decorations invariant tests, but sampled rows do

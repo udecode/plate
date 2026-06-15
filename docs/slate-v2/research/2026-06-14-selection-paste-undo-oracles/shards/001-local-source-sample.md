@@ -30,8 +30,6 @@ proof.
 
 - Monaco local files sampled here were wrappers around core features, not
   source-backed Slate v2 oracle material.
-- TinyMCE/CKEditor source-path evidence is intentionally excluded from durable
-  artifacts per user direction.
 
 ## Promotions
 
