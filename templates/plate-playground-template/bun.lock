@@ -24,7 +24,7 @@
         "@platejs/dnd": "^53.1.0",
         "@platejs/docx": "^53.0.0",
         "@platejs/docx-io": "^53.1.0",
-        "@platejs/emoji": "^53.0.0",
+        "@platejs/emoji": "^53.1.7",
         "@platejs/excalidraw": "^53.0.0",
         "@platejs/floating": "^53.0.0",
         "@platejs/footnote": "^53.0.0",
@@ -440,7 +440,7 @@
 
     "@platejs/docx-io": ["@platejs/docx-io@53.1.0", "", { "dependencies": { "color-name": "^2.0.0", "html-entities": "^2.5.2", "html-to-vdom": "^0.7.0", "jszip": "^3.10.1", "juice": "^11.0.1", "lodash": "^4.17.21", "mammoth": "^1.9.0", "mime-types": "^2.1.35", "nanoid": "^5.0.9", "react-compiler-runtime": "^1.0.0", "validator": "^13.15.15", "virtual-dom": "^2.1.1", "xmlbuilder2": "^3.1.1" }, "peerDependencies": { "@platejs/docx": ">=53.0.0", "@platejs/markdown": ">=53.0.0", "platejs": ">=53.0.0", "react": ">=18.0.0", "react-dom": ">=18.0.0" } }, "sha512-gNqh4zHPFOM8g4VIsFopW6A4wVmn+QQg8z2+V6pSmYDzRfYUrv/DuRVKd1laPW6eUl4V3GGWRwujg3qZ1D7sXg=="],
 
-    "@platejs/emoji": ["@platejs/emoji@53.0.0", "", { "dependencies": { "@platejs/combobox": "53.0.0", "react-compiler-runtime": "^1.0.0" }, "peerDependencies": { "@emoji-mart/data": ">=1.2.0", "platejs": ">=53.0.0", "react": ">=18.0.0", "react-dom": ">=18.0.0" } }, "sha512-5oOM6QE5ZYEDAAZ7goVWbYiHRVtyj/7xLJELzU7kRNtKEkr+Otzoi34PxgCyYk5fIEgBm1E+dnNgEE2O9cxtJw=="],
+    "@platejs/emoji": ["@platejs/emoji@53.1.7", "", { "dependencies": { "@platejs/combobox": "53.0.0", "react-compiler-runtime": "^1.0.0" }, "peerDependencies": { "@emoji-mart/data": ">=1.2.0", "platejs": ">=53.0.0", "react": ">=18.0.0", "react-dom": ">=18.0.0" } }, "sha512-Gs+3nDqiup7I7DU9hgv9WyWve1cD0G7w4mfjZ4jTb5uy8VBT/ahRJW9GLkc+hGi8xuy29tdceGR1aiIxPMcltg=="],
 
     "@platejs/excalidraw": ["@platejs/excalidraw@53.0.0", "", { "dependencies": { "@excalidraw/excalidraw": "0.18.0", "lodash": "^4.17.21", "react-compiler-runtime": "^1.0.0" }, "peerDependencies": { "platejs": ">=53.0.0", "react": ">=18.0.0", "react-dom": ">=18.0.0" } }, "sha512-qrZHfIv3VRCLaD7P2UydagduLxuBIYGqBbxzZOXiZThlIzTA2WuOTTPwhQJnHzyEGqem0pWftetpaUBWXF1+gQ=="],
 
