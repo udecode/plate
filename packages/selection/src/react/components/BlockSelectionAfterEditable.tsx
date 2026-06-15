@@ -234,10 +234,12 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
   /** Handle copy / cut / paste in block selection */
   const handleCopy = React.useCallback(
     (e: React.ClipboardEvent<HTMLInputElement>) => {
-      e.preventDefault();
-
       if (getOption('isSelectingSome')) {
-        copySelectedBlocks(editor);
+        const copied = copySelectedBlocks(editor, e.clipboardData);
+
+        if (copied) {
+          e.preventDefault();
+        }
       }
     },
     [editor, getOption]
@@ -245,12 +247,14 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
 
   const handleCut = React.useCallback(
     (e: React.ClipboardEvent<HTMLInputElement>) => {
-      e.preventDefault();
-
       if (getOption('isSelectingSome')) {
-        copySelectedBlocks(editor);
+        const copied = copySelectedBlocks(editor, e.clipboardData);
 
-        if (!editor.api.isReadOnly()) {
+        if (copied) {
+          e.preventDefault();
+        }
+
+        if (copied && !editor.api.isReadOnly()) {
           removeSelectedBlocks();
         }
       }

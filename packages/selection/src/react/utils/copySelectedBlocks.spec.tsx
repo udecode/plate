@@ -224,5 +224,57 @@ describe('copySelectedBlocks', () => {
         expect.any(String)
       );
     });
+
+    it('writes to provided clipboard data without starting a synthetic copy', () => {
+      const mockDataTransfer = {
+        getData: mock((type: string) => {
+          if (type === 'text/plain') return 'mock plain text';
+          if (type === 'text/html') return '<p>mock html</p>';
+          return '';
+        }),
+        setData: mock(),
+      };
+
+      const mockSetFragmentData = mock();
+      editor.tf.setFragmentData = mockSetFragmentData;
+
+      editor.getApi = mock().mockReturnValue({
+        blockSelection: {
+          getNodes: mock().mockReturnValue([
+            [
+              { id: 'block1', children: [{ text: 'First block' }], type: 'p' },
+              [0],
+            ],
+            [
+              { id: 'block2', children: [{ text: 'Second block' }], type: 'p' },
+              [1],
+            ],
+          ]),
+        },
+      });
+
+      const copied = (
+        copySelectedBlocks as (
+          editor: any,
+          dataTransfer?: DataTransfer
+        ) => boolean
+      )(editor, mockDataTransfer as any);
+
+      expect(copied).toBe(true);
+      expect(copyToClipboardMock).not.toHaveBeenCalled();
+      expect(mockSetFragmentData).toHaveBeenCalledTimes(2);
+      expect(mockDataTransfer.setData).toHaveBeenCalledWith(
+        'text/plain',
+        expect.any(String)
+      );
+      expect(mockDataTransfer.setData).toHaveBeenCalledWith(
+        'text/html',
+        expect.any(String)
+      );
+      expect(mockDataTransfer.setData).toHaveBeenCalledWith(
+        'application/x-slate-fragment',
+        expect.any(String)
+      );
+    });
   });
 });
