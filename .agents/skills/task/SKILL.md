@@ -22,6 +22,8 @@ they earn their keep, and verify before calling the task done.
   editing.
 - Search for existing patterns before inventing new ones.
 - Prefer the best durable ownership fix over the smallest local patch.
+- Treat public issue diagnoses and suggested fixes as claims to challenge, not
+  instructions to implement.
 - Prefer targeted tests and checks during iteration.
 - Keep the user updated at milestones.
 - Verify the actual result before claiming done.
@@ -93,8 +95,9 @@ they earn their keep, and verify before calling the task done.
 11. If program or batch work, restate the ordered scope and finish one slice at
     a time unless the user asked for a broader sweep.
 12. For any tracker source, record source type/id/title, task type, acceptance
-    criteria, caveats, likely files/routes/packages, browser surface, and likely
-    root-cause layer in the plan when a plan exists.
+    criteria, caveats, likely files/routes/packages, browser surface, likely
+    root-cause layer, and the pre-solution issue challenge verdict when
+    applicable in the plan when a plan exists.
 13. If code will change, decide branch handling before edits using repo policy;
     do not reuse an unrelated branch just because it is checked out.
 14. If anything important is still ambiguous after the source and nearby code
@@ -114,6 +117,60 @@ Apply only when the source is a tracker item.
   tracker owner.
 - Do not require PR creation, screenshots, or comments for analytical, blocked,
   or inconclusive work.
+
+## Public Issue Challenge Gate
+
+Apply this before implementation when a public tracker item reports a bug, makes
+a user-visible behavior claim, includes a technical diagnosis, or proposes an
+implementation fix.
+
+- Load `.agents/skills/autoreview/SKILL.md` for its review contract and use that
+  stance before code: adversarial, source-backed, and willing to reject weak
+  claims. This is a pre-solution issue/design review, not a dirty-diff helper
+  invocation. The structured autoreview helper remains the closeout gate after a
+  real diff exists.
+- For bug reports and behavior claims, reproduce the user-visible behavior or
+  the smallest honest failing surface before treating the issue as valid.
+  Reproduce the bug, not the suggested fix.
+- Escalate reproduction from lowest/fastest to highest/slowest before declaring
+  `not reproduced`:
+  1. focused unit/package/integration test or source-level executable repro
+  2. existing repo-owned Playwright regression/test harness when available and
+     useful as executable coverage; do not use standalone Playwright,
+     Puppeteer, or raw DevTools as a substitute for the repo Browser policy
+  3. `[@Browser](plugin://browser@openai-bundled)` against the real route or
+     local app when tests or Playwright cannot reproduce or cannot model the
+     user-visible surface honestly
+  4. Browser screenshot or explicit visual-proof waiver when layout, rendering,
+     selection, clipboard prompts, native dialogs, or visual state matters
+- Mark a ladder level `N/A` only when that level cannot observe the reported
+  behavior; record why. Do not call a bug `not reproduced` until every
+  applicable lower-to-higher repro level has either failed to reproduce or is
+  blocked with evidence.
+- For feature, docs, support, or cleanup requests with no bug or failing
+  behavior claim, mark reproduction `N/A` with a reason. Still challenge any
+  proposed technical fix against source ownership before coding.
+- Read the nearby ownership boundary before choosing a solution. If the durable
+  fix is an API, abstraction, data model, or package-boundary change, prefer
+  that over patching every caller or copying the issue's proposal.
+- Record a pre-solution verdict in the plan when one exists:
+  - `valid`: reproduced and worth fixing, or non-bug work whose source-backed
+    acceptance criteria are valid with reproduction marked `N/A`.
+  - `not reproduced`: hard stop. Do not code. Report exact repro attempts and
+    missing evidence. Use this only when a bug or behavior claim needed
+    reproduction.
+  - `invalid` or `wont-fix`: hard stop. Do not code. Give harsh honest feedback
+    about the bad premise or policy boundary.
+  - `partially valid`: pivot to the best long-term fix and explicitly record
+    which part of the issue or suggested fix is wrong, narrow, or incomplete.
+  - `platform limitation`: hard stop unless a docs note, guardrail, or graceful
+    fallback is the actual durable fix.
+- When the issue suggests a fix, compare it against source ownership and reject
+  it if it only papers over symptoms, depends on stale assumptions, widens API
+  debt, or would make a future maintainer pay for the reporter's guess.
+- Be blunt in tracker and final handoff language. If the premise is wrong, say
+  so. If only half the issue is real, say which half. Nice ambiguity is how bad
+  patches land.
 
 ## Security Advisory Hotfixes
 
@@ -228,6 +285,10 @@ Keep this lighter than Slate Plan. A normal task should not grow a scorecard,
 issue ledger, or pass calendar, but it still needs real closeout pressure when
 the patch is risky.
 
+- For public tracker implementation work, the pre-solution issue challenge gate
+  is mandatory before writing code. It is separate from final autoreview: first
+  decide whether the issue deserves a fix and what the long-term boundary is,
+  then implement, then run structured autoreview on the actual diff.
 - Autoreview is a hard closeout gate for non-trivial implementation changes.
   Load `.agents/skills/autoreview/SKILL.md`, pick the target from the actual
   diff state, and keep going until there are no accepted/actionable findings.
@@ -251,12 +312,13 @@ the patch is risky.
 
 ### Bug
 
-1. Reproduce first when possible.
-2. Add a behavior-level regression test when sane.
-3. Fix the real ownership boundary, not every caller around it.
-4. If the best fix requires an API change, make it unless task constraints rule
+1. For tracker-backed bugs, complete the public issue challenge gate first.
+2. Reproduce first when possible.
+3. Add a behavior-level regression test when sane.
+4. Fix the real ownership boundary, not every caller around it.
+5. If the best fix requires an API change, make it unless task constraints rule
    it out.
-5. Re-run targeted checks and browser flow only when the bug lives there.
+6. Re-run targeted checks and browser flow only when the bug lives there.
 
 ### Feature
 
@@ -382,6 +444,8 @@ with `gh pr view --json body` before final handoff.
 - Source-of-truth context was read first.
 - Relevant repo instructions and patterns were read before editing.
 - Tracker items were fetched and summarized correctly when provided.
+- Public issue claims and suggested fixes were challenged before solution; not
+  reproduced, invalid, and won't-fix cases stopped before code.
 - Video evidence used `video-transcripts` before implementation when required.
 - Bare GitHub issues like `#555` were resolved against the current repo.
 - The chosen fix addressed the highest-leverage ownership boundary available.
