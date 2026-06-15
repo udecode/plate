@@ -49,6 +49,7 @@ describe('useEmojiPicker', () => {
             },
           },
         }),
+        sections: () => [],
       }),
       updateFrequentCategory: mock(),
     };
@@ -62,9 +63,10 @@ describe('useEmojiPicker', () => {
     useEditorRefMock.mockReturnValue({ id: 'editor' });
     useEmojiPickerStateMock.mockReturnValue([
       {
+        hasFound: true,
         isOpen: true,
-        isSearching: false,
-        searchValue: '',
+        isSearching: true,
+        searchValue: 'pizza',
         visibleCategories: new Map(),
       },
       dispatch,
@@ -96,5 +98,169 @@ describe('useEmojiPicker', () => {
       { id: 'wave' }
     );
     expect(emojiLibrary.updateFrequentCategory).toHaveBeenCalledWith('wave');
+  });
+
+  it('marks a clicked category visible before scrolling to it', async () => {
+    const { useEmojiPicker } = await import(
+      `./useEmojiPicker?test=${Math.random().toString(36).slice(2)}`
+    );
+    const dispatch = mock();
+    const foodsRoot = {
+      getBoundingClientRect: () => ({ top: 110 }),
+    };
+    const contentRoot = {
+      scrollTop: 5,
+      contains: (element: unknown) => element === foodsRoot,
+      getBoundingClientRect: () => ({ top: 10 }),
+    };
+    const sections = [
+      {
+        id: 'people',
+        root: {
+          current: {
+            getBoundingClientRect: () => ({ top: 10 }),
+          },
+        },
+      },
+      {
+        id: 'foods',
+        root: {
+          current: foodsRoot,
+        },
+      },
+    ];
+    const emojiLibrary = {
+      getGrid: () => ({
+        section: (id: string) => sections.find((section) => section.id === id),
+        sections: () => sections,
+      }),
+      updateFrequentCategory: mock(),
+    };
+    const indexSearch = {
+      get: () => [],
+      search: () => ({
+        hasFound: () => false,
+      }),
+    };
+
+    useEditorRefMock.mockReturnValue({ id: 'editor' });
+    useEmojiPickerStateMock.mockReturnValue([
+      {
+        isOpen: true,
+        isSearching: false,
+        searchValue: '',
+        visibleCategories: new Map(),
+      },
+      dispatch,
+    ]);
+
+    const { result } = renderHook(() =>
+      useEmojiPicker({
+        closeOnSelect: true,
+        emojiLibrary: emojiLibrary as any,
+        indexSearch: indexSearch as any,
+      })
+    );
+
+    result.current.refs.current.contentRoot.current = contentRoot as any;
+
+    act(() => {
+      result.current.handleCategoryClick('foods' as any);
+    });
+
+    expect(dispatch).toHaveBeenCalledWith({
+      payload: {
+        focusedCategory: 'foods',
+        hasFound: false,
+        isSearching: false,
+        searchValue: '',
+        visibleCategories: new Map([
+          ['people', false],
+          ['foods', true],
+        ]),
+      },
+      type: 'SET_FOCUSED_AND_VISIBLE_CATEGORIES',
+    });
+    expect(contentRoot.scrollTop).toBe(106);
+  });
+
+  it('scrolls to a clicked category after search results unmount', async () => {
+    const { useEmojiPicker } = await import(
+      `./useEmojiPicker?test=${Math.random().toString(36).slice(2)}`
+    );
+    let state = {
+      hasFound: true,
+      isOpen: true,
+      isSearching: true,
+      searchValue: 'pizza',
+      visibleCategories: new Map(),
+    };
+    const dispatch = mock((action: any) => {
+      state = { ...state, ...action.payload };
+    });
+    const contentRoot = {
+      scrollTop: 5,
+      contains: (element: unknown) => element === foodsRoot.current,
+      getBoundingClientRect: () => ({ top: 10 }),
+    };
+    const foodsRoot = {
+      current: null as null | { getBoundingClientRect: () => { top: number } },
+    };
+    const sections = [
+      {
+        id: 'people',
+        root: {
+          current: {
+            getBoundingClientRect: () => ({ top: 10 }),
+          },
+        },
+      },
+      {
+        id: 'foods',
+        root: foodsRoot,
+      },
+    ];
+    const emojiLibrary = {
+      getGrid: () => ({
+        section: (id: string) => sections.find((section) => section.id === id),
+        sections: () => sections,
+      }),
+      updateFrequentCategory: mock(),
+    };
+    const indexSearch = {
+      get: () => [],
+      search: () => ({
+        hasFound: () => false,
+      }),
+    };
+
+    useEditorRefMock.mockReturnValue({ id: 'editor' });
+    useEmojiPickerStateMock.mockImplementation(() => [state, dispatch]);
+
+    const { rerender, result } = renderHook(() =>
+      useEmojiPicker({
+        closeOnSelect: true,
+        emojiLibrary: emojiLibrary as any,
+        indexSearch: indexSearch as any,
+      })
+    );
+
+    result.current.refs.current.contentRoot.current = contentRoot as any;
+
+    act(() => {
+      result.current.handleCategoryClick('foods' as any);
+    });
+
+    expect(contentRoot.scrollTop).toBe(5);
+
+    foodsRoot.current = {
+      getBoundingClientRect: () => ({ top: 110 }),
+    };
+
+    act(() => {
+      rerender();
+    });
+
+    expect(contentRoot.scrollTop).toBe(106);
   });
 });

@@ -71,6 +71,7 @@ export const useEmojiPicker = ({
     content: React.createRef<HTMLDivElement>(),
     contentRoot: React.createRef<HTMLDivElement>(),
   });
+  const pendingCategoryScrollRef = React.useRef<EmojiCategoryList | null>(null);
 
   const setIsOpen = React.useCallback(
     (isOpen: boolean) => {
@@ -164,39 +165,75 @@ export const useEmojiPicker = ({
     [editor, updateFrequentEmojis]
   );
 
+  const scrollCategoryIntoView = React.useCallback(
+    (categoryId: EmojiCategoryList) => {
+      const grid = emojiLibrary.getGrid();
+      const contentRoot = refs.current.contentRoot.current;
+      const sectionRoot = grid.section(categoryId)?.root.current;
+
+      if (!contentRoot || !sectionRoot || !contentRoot.contains(sectionRoot)) {
+        return false;
+      }
+
+      const threshold = 1;
+      const contentRootScrollTop = contentRoot.scrollTop;
+      const contentRootTopPosition = contentRoot.getBoundingClientRect().top;
+      const sectionTopPosition = sectionRoot.getBoundingClientRect().top;
+
+      contentRoot.scrollTop =
+        threshold +
+        contentRootScrollTop +
+        sectionTopPosition -
+        contentRootTopPosition;
+
+      return true;
+    },
+    [emojiLibrary]
+  );
+
   const handleCategoryClick = React.useCallback(
     (categoryId: EmojiCategoryList) => {
+      const grid = emojiLibrary.getGrid();
+      pendingCategoryScrollRef.current = categoryId;
+
       dispatch({
-        payload: { focusedCategory: categoryId },
-        type: 'SET_FOCUSED_CATEGORY',
+        payload: {
+          focusedCategory: categoryId,
+          hasFound: false,
+          isSearching: false,
+          searchValue: '',
+          visibleCategories: new Map(
+            grid
+              .sections()
+              .map((section) => [section.id, section.id === categoryId])
+          ),
+        },
+        type: 'SET_FOCUSED_AND_VISIBLE_CATEGORIES',
       });
 
-      const getSectionPositionToScrollIntoView = () => {
-        const trashHold = 1;
-        const section = emojiLibrary.getGrid().section(categoryId);
-
-        const contentRootScrollTop =
-          refs.current.contentRoot.current?.scrollTop ?? 0;
-        const contentRootTopPosition =
-          refs.current.contentRoot.current?.getBoundingClientRect().top ?? 0;
-        const sectionTopPosition =
-          section?.root.current?.getBoundingClientRect().top ?? 0;
-
-        return (
-          trashHold +
-          contentRootScrollTop +
-          sectionTopPosition -
-          contentRootTopPosition
-        );
-      };
-
-      if (refs.current.contentRoot.current) {
-        refs.current.contentRoot.current.scrollTop =
-          getSectionPositionToScrollIntoView();
+      if (scrollCategoryIntoView(categoryId)) {
+        pendingCategoryScrollRef.current = null;
       }
     },
-    [dispatch, emojiLibrary]
+    [dispatch, emojiLibrary, scrollCategoryIntoView]
   );
+
+  React.useLayoutEffect(() => {
+    if (state.isSearching) return;
+
+    const categoryId = pendingCategoryScrollRef.current;
+
+    if (!categoryId) return;
+
+    if (scrollCategoryIntoView(categoryId)) {
+      pendingCategoryScrollRef.current = null;
+    }
+  }, [
+    scrollCategoryIntoView,
+    state.focusedCategory,
+    state.isSearching,
+    state.visibleCategories,
+  ]);
 
   React.useEffect(() => {
     if (state.isOpen && !state.isSearching) {
