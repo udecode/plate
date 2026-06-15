@@ -3,8 +3,8 @@
   "id": "2026-01-28-add-code-drawing-node",
   "status": "draft",
   "source": {
-    "kind": "legacy-mdx",
-    "path": "tooling/data/plate-ui-changelog.mdx"
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-01-28-add-code-drawing-node.mdx"
   },
   "change": {
     "type": "pull_request",
@@ -125,8 +125,8 @@
         "code-drawing-demo"
       ],
       "source": {
-        "line": 77,
-        "row": 25,
+        "line": 13,
+        "row": 1,
         "legacyRelease": {
           "date": "2026-01-28",
           "entry": "28.3",
@@ -151,8 +151,8 @@
         "transforms"
       ],
       "source": {
-        "line": 78,
-        "row": 26,
+        "line": 15,
+        "row": 2,
         "legacyRelease": {
           "date": "2026-01-28",
           "entry": "28.3",

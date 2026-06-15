@@ -3,8 +3,8 @@
   "id": "2025-12-15-add-option-editor-collaborative-features",
   "status": "draft",
   "source": {
-    "kind": "legacy-mdx",
-    "path": "tooling/data/plate-ui-changelog.mdx"
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2025-12-15-add-option-editor-collaborative-features.mdx"
   },
   "change": {
     "type": "pull_request",
@@ -71,8 +71,8 @@
       ],
       "targets": ["inline-combobox", "mention-kit"],
       "source": {
-        "line": 94,
-        "row": 31,
+        "line": 13,
+        "row": 1,
         "legacyRelease": {
           "date": "2025-12-15",
           "entry": "27.2",

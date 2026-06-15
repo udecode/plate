@@ -3,8 +3,8 @@
   "id": "2025-10-17-fix-react-decouple",
   "status": "draft",
   "source": {
-    "kind": "legacy-mdx",
-    "path": "tooling/data/plate-ui-changelog.mdx"
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2025-10-17-fix-react-decouple.mdx"
   },
   "change": {
     "type": "pull_request",
@@ -261,8 +261,8 @@
         "toggle-node-static"
       ],
       "source": {
-        "line": 120,
-        "row": 39,
+        "line": 13,
+        "row": 1,
         "legacyRelease": {
           "date": "2025-10-17",
           "entry": "26.9",

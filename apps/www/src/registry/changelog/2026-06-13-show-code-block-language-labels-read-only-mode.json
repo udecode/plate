@@ -3,8 +3,8 @@
   "id": "2026-06-13-show-code-block-language-labels-read-only-mode",
   "status": "draft",
   "source": {
-    "kind": "legacy-mdx",
-    "path": "tooling/data/plate-ui-changelog.mdx"
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-06-13-show-code-block-language-labels-read-only-mode.mdx"
   },
   "change": {
     "type": "pull_request",
@@ -57,8 +57,8 @@
       ],
       "targets": ["code-block-node", "code-block-node-static"],
       "source": {
-        "line": 17,
-        "row": 3,
+        "line": 13,
+        "row": 1,
         "legacyRelease": {
           "date": "2026-06-03",
           "entry": "32.1",

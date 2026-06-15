@@ -292,9 +292,7 @@ least one useful inbound link from the owning neighborhood.
 
 - `/docs/releases` renders generated package release data and generated Plate UI
   changelog JSON. Do not hand-author release-page Plate UI entries; use the
-  `changeset` skill's registry changelog path:
-  `tooling/data/plate-ui-changelog.mdx` plus
-  `node tooling/scripts/generate-ui-changelog-entries.mjs --write`.
+  `registry-changelog` skill for source entries, generation, and verification.
 - Keep the latest two major release groups on `/docs/releases`.
 - Move older v49+ major groups to dedicated `/docs/releases/<major>` pages
   instead of burying them in a catch-all archive.

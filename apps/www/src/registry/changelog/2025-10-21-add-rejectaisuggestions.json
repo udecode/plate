@@ -3,8 +3,8 @@
   "id": "2025-10-21-add-rejectaisuggestions",
   "status": "draft",
   "source": {
-    "kind": "legacy-mdx",
-    "path": "tooling/data/plate-ui-changelog.mdx"
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2025-10-21-add-rejectaisuggestions.mdx"
   },
   "change": {
     "type": "pull_request",
@@ -87,8 +87,8 @@
       ],
       "targets": ["suggestion-kit", "suggestion-node", "block-discussion"],
       "source": {
-        "line": 115,
-        "row": 37,
+        "line": 13,
+        "row": 1,
         "legacyRelease": {
           "date": "2025-10-21",
           "entry": "26.10",
@@ -104,8 +104,8 @@
       "migrationNotes": [],
       "targets": ["ai-api"],
       "source": {
-        "line": 116,
-        "row": 38,
+        "line": 15,
+        "row": 2,
         "legacyRelease": {
           "date": "2025-10-21",
           "entry": "26.10",

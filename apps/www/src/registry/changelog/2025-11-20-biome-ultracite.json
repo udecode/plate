@@ -3,8 +3,8 @@
   "id": "2025-11-20-biome-ultracite",
   "status": "draft",
   "source": {
-    "kind": "legacy-mdx",
-    "path": "tooling/data/plate-ui-changelog.mdx"
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2025-11-20-biome-ultracite.mdx"
   },
   "change": {
     "type": "pull_request",
@@ -506,8 +506,8 @@
         "cursor-overlay"
       ],
       "source": {
-        "line": 106,
-        "row": 33,
+        "line": 13,
+        "row": 1,
         "legacyRelease": {
           "date": "2025-11-20",
           "entry": "26.11",
@@ -531,8 +531,8 @@
         "markdown-joiner-transform"
       ],
       "source": {
-        "line": 107,
-        "row": 34,
+        "line": 15,
+        "row": 2,
         "legacyRelease": {
           "date": "2025-11-20",
           "entry": "26.11",
@@ -592,8 +592,8 @@
         "toolbar"
       ],
       "source": {
-        "line": 108,
-        "row": 35,
+        "line": 17,
+        "row": 3,
         "legacyRelease": {
           "date": "2025-11-20",
           "entry": "26.11",
@@ -622,8 +622,8 @@
         "mdx-plate-components"
       ],
       "source": {
-        "line": 109,
-        "row": 36,
+        "line": 19,
+        "row": 4,
         "legacyRelease": {
           "date": "2025-11-20",
           "entry": "26.11",

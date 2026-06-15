@@ -86,6 +86,8 @@ they earn their keep, and verify before calling the task done.
      - browser/UI route or interaction touched: add `--with browser`
      - package exports, public API, release artifacts, or package boundary
        touched: add `--with package-api`
+     - user-visible Plate registry UI, kit, example, metadata, install shape, or
+       generated registry changelog touched: add `--with registry-changelog`
      - GitHub security advisory, GHSA, CVE, npm advisory, or private
        vulnerability disclosure touched: add `--with security-advisory`
      `node .agents/skills/autogoal/scripts/create-goal-scratchpad.mjs --template <task|docs> --with <pack> --title "<short task title>"`
@@ -265,6 +267,9 @@ lock.
 - `agent-browser-issue`: browser automation is blocked by a reusable tool-side
   issue.
 - `changeset`: published package work under `packages/` needs release notes.
+- `registry-changelog`: user-visible Plate registry UI, kit, example,
+  metadata, copied-code install shape, or generated registry changelog work
+  needs a registry changelog entry or a concrete N/A reason.
 - `plate-ui`: authoring or refactoring Plate registry UI/components, static/live
   renderers, kits, registry wiring, or ownership/extraction decisions under
   `apps/www/src/registry/**`.
@@ -388,11 +393,13 @@ Keep verification mandatory and proportional.
   signals unrelated to the diff, run `pnpm run reinstall` once and rerun the
   exact failing command before declaring the task blocked.
 - If work changes published packages, satisfy the changeset gate.
+- If work changes user-visible registry output under
+  `apps/www/src/registry/**`, satisfy the registry changelog gate.
 - If work changes or resolves a security advisory, satisfy the
   security-advisory gate through publish/readback or record the external
   blocker.
-- If work is registry-only under `apps/www/src/registry/`, satisfy the registry
-  changelog gate instead of a package changeset.
+- If work is registry-only under `apps/www/src/registry/`, the registry
+  changelog gate replaces the package changeset.
 - If verified work changed code, create or update the PR before tracker
   sync-back unless the user said not to.
 - If the task came from a tracker item and reached a meaningful outcome, sync
@@ -454,6 +461,7 @@ with `gh pr view --json body` before final handoff.
 - Non-trivial docs work loaded `docs-creator` and used `--template docs`.
 - Supporting docs, browser, agent-native, package/API, or extra-review surfaces
   used the matching `--with <pack>` rows when they were not the dominant risk.
+- Supporting user-visible registry surfaces used `--with registry-changelog`.
 - Security advisory hotfixes used `--with security-advisory` and closed
   release, advisory publication, CVE request, and readback evidence.
 - Testing work loaded the testing policy before implementation.

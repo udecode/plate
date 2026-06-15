@@ -89,14 +89,17 @@ Do not write:
 If a package changed internally on this branch but has no user-visible delta from
 `main`, do not write a changeset for that package.
 
-### 4. Registry work is changelog work
+### 4. Registry work is registry-changelog work
 
 If changes are only under `apps/www/src/registry/`, do **not** write a package changeset.
 
-Update `tooling/data/plate-ui-changelog.mdx` instead, then regenerate the public JSON:
+Use the `registry-changelog` skill instead. It owns the source entry schema,
+scaffold command, generator command, and verification check:
 
 ```bash
+node tooling/scripts/generate-ui-changelog-entries.mjs --new <id> --summary "<summary>" --items <item-a,item-b> --kind <kind>
 node tooling/scripts/generate-ui-changelog-entries.mjs --write
+node tooling/scripts/generate-ui-changelog-entries.mjs --check
 ```
 
 `sync-plate-ui` is for downstream user apps consuming the generated JSON. Do not use it to produce upstream Plate changelog entries.
@@ -201,19 +204,7 @@ Before shipping:
 - [ ] Too much explanation? Cut it
 - [ ] API change without before/after? Add one
 
-## Registry Changelog Format
+## Registry Changelog
 
-For `apps/www/src/registry` changes:
-
-```md
-## <Month YYYY> #<monthly sequence>
-
-### <Month Day> #<monthly sequence.entry sequence>
-<!-- changelog: commit=<40-char commit sha when known> -->
-- **`component-name`**: Brief description
-  - Migration note if actually needed
-```
-
-Use the commit provenance comment when the PR number is not written in the source; the generator resolves commit, PR, release, and source-file metadata where possible. The generator fills public JSON under `apps/www/src/registry/changelog` and `/registry/changelog/*`.
-
-Same style rules: concise, imperative, user impact only. One component bullet should describe what a user copying that registry item must apply or know.
+For `apps/www/src/registry` changes, use the `registry-changelog` skill. Do not
+duplicate its schema here.
