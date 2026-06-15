@@ -4,7 +4,8 @@ import path from 'node:path';
 import process from 'node:process';
 import { execFileSync } from 'node:child_process';
 
-const DEFAULT_SOURCE = 'tooling/data/plate-ui-changelog.mdx';
+const DEFAULT_SOURCE = 'apps/www/src/registry/changelog/entries';
+const LEGACY_SOURCE = 'tooling/data/plate-ui-changelog.mdx';
 const DEFAULT_OUT_DIR = 'apps/www/src/registry/changelog';
 const DEFAULT_REGISTRY_ROOT = 'apps/www/src/registry';
 const DEFAULT_RELEASE_INDEX = 'apps/www/src/generated/release-index.json';
@@ -36,6 +37,9 @@ const DATE_HEADING_PATTERN = /^([A-Za-z]+)\s+(\d{1,2})$/;
 const DETAIL_MARKER_PATTERN = /^-\s+/;
 const EMPTY_GIT_COMMIT_PATTERN = /^0+$/;
 const ENTRY_HEADING_PATTERN = /^###\s+(.+?)\s+#([\d.]+)\s*$/;
+const ENTRY_METADATA_PATTERN = /^<!--\s*entry:\s*(\{.*\})\s*-->\s*$/;
+const FRONTMATTER_PATTERN = /^---\n([\s\S]*?)\n---\n?([\s\S]*)$/;
+const FRONTMATTER_NUMBER_PATTERN = /^-?\d+(?:\.\d+)?$/;
 const HEADING_PATTERN = /^#{2,3}\s/;
 const KIND_FIX_PATTERN = /\bfix(?:ed|es)?\b/;
 const KIND_NEW_PATTERN = /\(new\)|\bnew\b|^add(?:ed)?\b/;
@@ -447,12 +451,182 @@ function parseItemLines(lines, release, row, line, provenanceCommit = null) {
   };
 }
 
+function parseFrontmatterValue(value, filePath, key) {
+  const trimmed = value.trim();
+
+  if (trimmed === '') return '';
+  if (
+    trimmed === 'true' ||
+    trimmed === 'false' ||
+    trimmed === 'null' ||
+    trimmed.startsWith('"') ||
+    trimmed.startsWith('{') ||
+    trimmed.startsWith('[') ||
+    FRONTMATTER_NUMBER_PATTERN.test(trimmed)
+  ) {
+    try {
+      return JSON.parse(trimmed);
+    } catch (error) {
+      throw new Error(
+        `Invalid frontmatter JSON value for ${key} in ${filePath}: ${error.message}`
+      );
+    }
+  }
+
+  return trimmed;
+}
+
+function parseFrontmatter(content, filePath) {
+  const normalizedContent = content.replaceAll('\r\n', '\n');
+  const match = normalizedContent.match(FRONTMATTER_PATTERN);
+
+  if (!match) {
+    throw new Error(`${filePath} must start with frontmatter`);
+  }
+
+  const bodyStartIndex = normalizedContent.length - match[2].length;
+  const bodyLineOffset =
+    normalizedContent.slice(0, bodyStartIndex).split('\n').length - 1;
+  const data = {};
+
+  for (const line of match[1].split('\n')) {
+    if (!line.trim()) continue;
+
+    const colonIndex = line.indexOf(':');
+
+    if (colonIndex === -1) {
+      throw new Error(`Invalid frontmatter line in ${filePath}: ${line}`);
+    }
+
+    const key = line.slice(0, colonIndex).trim();
+    const value = line.slice(colonIndex + 1);
+
+    data[key] = parseFrontmatterValue(value, filePath, key);
+  }
+
+  return { body: match[2], bodyLineOffset, data };
+}
+
+function parseEntryMetadata(line, filePath) {
+  const raw = line.match(ENTRY_METADATA_PATTERN)?.[1];
+
+  if (!raw) return null;
+
+  try {
+    return JSON.parse(raw);
+  } catch (error) {
+    throw new Error(
+      `Invalid entry metadata JSON in ${filePath}: ${error.message}`
+    );
+  }
+}
+
+function parseEntryBodyRows(body, source) {
+  const lines = body.replaceAll('\r\n', '\n').split('\n');
+  const rows = [];
+  let nextEntryMetadata = null;
+  let row = 0;
+
+  for (let index = 0; index < lines.length; index += 1) {
+    const line = lines[index];
+    const metadata = parseEntryMetadata(line, source.path);
+
+    if (metadata) {
+      nextEntryMetadata = metadata;
+      continue;
+    }
+
+    if (!line.startsWith('- ')) continue;
+
+    const itemLines = [line];
+    const startLine = source.bodyLineOffset + index + 1;
+    let nextIndex = index + 1;
+
+    while (
+      nextIndex < lines.length &&
+      !HEADING_PATTERN.test(lines[nextIndex]) &&
+      !ENTRY_METADATA_PATTERN.test(lines[nextIndex]) &&
+      !lines[nextIndex].startsWith('- ')
+    ) {
+      itemLines.push(lines[nextIndex]);
+      nextIndex += 1;
+    }
+
+    row += 1;
+    rows.push({
+      ...parseItemLines(itemLines, source.legacyRelease, row, startLine, null),
+      kind: nextEntryMetadata?.kind ?? null,
+      migrationNotes: nextEntryMetadata?.migrationNotes ?? null,
+      sourceId: nextEntryMetadata?.id ?? `${source.id}-${row}`,
+      sourcePath: source.path,
+    });
+    nextEntryMetadata = null;
+    index = nextIndex - 1;
+  }
+
+  return rows;
+}
+
+function assertEntrySource(value, filePath, key) {
+  if (value === undefined || value === null || value === '') {
+    throw new Error(`${filePath} frontmatter is missing ${key}`);
+  }
+
+  return value;
+}
+
+function parseRegistryChangelogEntryFile(filePath) {
+  const content = fs.readFileSync(filePath, 'utf8');
+  const { body, bodyLineOffset, data } = parseFrontmatter(content, filePath);
+  const id = assertEntrySource(data.id, filePath, 'id');
+  const date = assertEntrySource(data.date, filePath, 'date');
+  const relativeSourcePath = relativePath(filePath);
+  const legacyRelease = data.legacyRelease ?? {
+    date,
+    entry: data.legacyEntry ?? id,
+    section: data.legacySection ?? null,
+  };
+  const rows = parseEntryBodyRows(body, {
+    id,
+    bodyLineOffset,
+    legacyRelease,
+    path: relativeSourcePath,
+  });
+
+  if (rows.length === 0) {
+    throw new Error(`${filePath} must contain at least one changelog row`);
+  }
+
+  return {
+    change: data.change ?? { type: 'source', date, commits: [] },
+    date,
+    diagnostics: data.diagnostics ?? [],
+    id,
+    kind: data.kind ?? null,
+    legacyRelease,
+    release: data.release ?? { status: 'unresolved' },
+    rows,
+    sourcePath: relativeSourcePath,
+    status: data.status ?? 'draft',
+    summary: data.summary ?? null,
+  };
+}
+
+export function parseRegistryChangelogEntryFiles(sourceDir) {
+  if (!fs.existsSync(sourceDir)) return [];
+
+  return listFiles(sourceDir)
+    .filter((filePath) => filePath.endsWith('.mdx'))
+    .sort()
+    .map((filePath) => parseRegistryChangelogEntryFile(filePath));
+}
+
 function printUsage() {
   console.log(`Usage:
   node tooling/scripts/generate-ui-changelog-entries.mjs [--limit 10] [--write]
 
 Options:
-  --source <path>         MDX changelog source. Defaults to ${DEFAULT_SOURCE}
+  --source <path>         MDX changelog entry directory, or legacy MDX changelog file. Defaults to ${DEFAULT_SOURCE}
   --out-dir <path>        JSON output directory. Defaults to ${DEFAULT_OUT_DIR}
   --registry-root <path>  Registry source root. Defaults to ${DEFAULT_REGISTRY_ROOT}
   --release-index <path>  Release index JSON. Defaults to ${DEFAULT_RELEASE_INDEX}
@@ -494,6 +668,14 @@ function readRegistryDefinitions(registryFiles) {
       content: fs.readFileSync(filePath, 'utf8'),
       path: filePath,
     }));
+}
+
+function isDirectory(filePath) {
+  try {
+    return fs.statSync(filePath).isDirectory();
+  } catch {
+    return false;
+  }
 }
 
 function relativePath(filePath, cwd = process.cwd()) {
@@ -731,7 +913,7 @@ export function buildRegistryChangelogEvents(
     releases = [],
     latestRelease = releases[0] ?? null,
     previousRelease = releases[1] ?? null,
-    sourcePath = DEFAULT_SOURCE,
+    sourcePath = LEGACY_SOURCE,
   } = {}
 ) {
   const groups = new Map();
@@ -802,13 +984,55 @@ export function buildRegistryChangelogEvents(
   });
 }
 
+export function buildRegistryChangelogEntryFileEvents(
+  sources,
+  {
+    outDir = DEFAULT_OUT_DIR,
+    registryDefinitions = [],
+    registryFiles = [],
+  } = {}
+) {
+  return sources.map((source) => {
+    const entries = source.rows.map((row) => buildRegistryChangelogEntry(row));
+    const event = {
+      schemaVersion: 1,
+      id: source.id,
+      status: source.status,
+      source: {
+        kind: 'entry-mdx',
+        path: source.sourcePath,
+      },
+      change: source.change,
+      release: source.release,
+      kind: source.kind ?? getChangeUnitKind(entries),
+      summary:
+        source.summary ??
+        source.change.pullRequest?.title ??
+        entries[0]?.summary ??
+        source.id,
+      targets: buildRegistryChangelogTargets(source.rows, {
+        registryDefinitions,
+        registryFiles,
+      }),
+      entries,
+      diagnostics: source.diagnostics,
+    };
+    const targetPath = path.join(
+      outDir,
+      `${sanitizeFileSegment(event.id)}.json`
+    );
+
+    return { entry: event, targetPath };
+  });
+}
+
 function buildRegistryChangelogEntry(row) {
   return {
     id: row.sourceId ?? formatSourceId(row),
-    kind: inferKind(row),
+    kind: row.kind ?? inferKind(row),
     summary: row.summary,
     details: row.details,
-    migrationNotes: inferMigrationNotes(row),
+    migrationNotes: row.migrationNotes ?? inferMigrationNotes(row),
     targets: row.items,
     source: {
       line: row.line,
@@ -1287,7 +1511,7 @@ export function pruneStaleRegistryChangelogEvents(outputs, outDir) {
 
 export function writeRegistryChangelogEvents(
   outputs,
-  { pruneOutDir = null } = {}
+  { format = false, pruneOutDir = null } = {}
 ) {
   const removedPaths = pruneStaleRegistryChangelogEvents(outputs, pruneOutDir);
 
@@ -1299,6 +1523,20 @@ export function writeRegistryChangelogEvents(
     );
   }
 
+  if (format && outputs.length > 0) {
+    execFileSync(
+      'pnpm',
+      [
+        'exec',
+        'biome',
+        'format',
+        '--write',
+        ...outputs.map((output) => output.targetPath),
+      ],
+      { stdio: 'ignore' }
+    );
+  }
+
   return { removedPaths };
 }
 
@@ -1307,28 +1545,45 @@ function main() {
 
   validateArgs(args);
 
-  const source = fs.readFileSync(args.source, 'utf8');
-  const rows = parseComponentChangelog(source);
-  const selectedRows = args.limit ? rows.slice(0, args.limit) : rows;
   const registryFiles = listFiles(args.registryRoot);
   const registryDefinitions = readRegistryDefinitions(registryFiles);
   const releases = readJsonArray(args.releaseIndex);
   const pendingChangeset = hasPendingChangeset();
-  const provenanceBySourceId = args.inferProvenance
-    ? getGitProvenanceBySourceId(selectedRows, {
-        sourcePath: args.source,
-        lookupPullRequests: true,
+  const sourceIsDirectory = isDirectory(args.source);
+  const sourceEntries = sourceIsDirectory
+    ? parseRegistryChangelogEntryFiles(args.source)
+    : null;
+  const source = sourceIsDirectory
+    ? null
+    : fs.readFileSync(args.source, 'utf8');
+  const rows = source ? parseComponentChangelog(source) : [];
+  const selectedRows = args.limit ? rows.slice(0, args.limit) : rows;
+  const selectedEntries =
+    args.limit && sourceEntries
+      ? sourceEntries.slice(0, args.limit)
+      : sourceEntries;
+  const provenanceBySourceId =
+    args.inferProvenance && !sourceIsDirectory
+      ? getGitProvenanceBySourceId(selectedRows, {
+          sourcePath: args.source,
+          lookupPullRequests: true,
+        })
+      : new Map();
+  const outputs = sourceEntries
+    ? buildRegistryChangelogEntryFileEvents(selectedEntries, {
+        outDir: args.outDir,
+        registryDefinitions,
+        registryFiles,
       })
-    : new Map();
-  const outputs = buildRegistryChangelogEvents(selectedRows, {
-    hasPendingChangeset: pendingChangeset,
-    outDir: args.outDir,
-    provenanceBySourceId,
-    registryDefinitions,
-    registryFiles,
-    releases,
-    sourcePath: args.source,
-  });
+    : buildRegistryChangelogEvents(selectedRows, {
+        hasPendingChangeset: pendingChangeset,
+        outDir: args.outDir,
+        provenanceBySourceId,
+        registryDefinitions,
+        registryFiles,
+        releases,
+        sourcePath: args.source,
+      });
   const skippedRows = selectedRows.filter((row) => row.items.length === 0);
   const artifactOutputs = getRegistryChangelogArtifactOutputs(
     outputs,
@@ -1337,6 +1592,7 @@ function main() {
 
   if (args.write) {
     const { removedPaths } = writeRegistryChangelogEvents(artifactOutputs, {
+      format: true,
       pruneOutDir: args.outDir,
     });
 
@@ -1346,7 +1602,9 @@ function main() {
   }
 
   console.log(
-    `${args.write ? 'Wrote' : 'Would write'} ${outputs.length} registry changelog events from ${selectedRows.length} source rows.`
+    `${args.write ? 'Wrote' : 'Would write'} ${outputs.length} registry changelog events from ${
+      sourceEntries ? selectedEntries.length : selectedRows.length
+    } ${sourceEntries ? 'source entries' : 'source rows'}.`
   );
 
   if (skippedRows.length > 0) {

@@ -51,7 +51,7 @@ export type RegistryChangelogEvent = {
   id: string;
   status: 'draft';
   source: {
-    kind: 'legacy-mdx';
+    kind: 'entry-mdx' | 'legacy-mdx';
     path: string;
   };
   change: {

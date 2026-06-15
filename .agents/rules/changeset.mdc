@@ -89,7 +89,9 @@ If a package changed internally on this branch but has no user-visible delta fro
 
 If changes are only under `apps/www/src/registry/`, do **not** write a package changeset.
 
-Update `tooling/data/plate-ui-changelog.mdx` instead, then regenerate the public JSON:
+Add or update a source entry under
+`apps/www/src/registry/changelog/entries/*.mdx` instead, then regenerate the
+public JSON:
 
 ```bash
 node tooling/scripts/generate-ui-changelog-entries.mjs --write

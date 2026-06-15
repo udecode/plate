@@ -6,10 +6,12 @@ import test from 'node:test';
 
 import {
   buildRegistryChangelogEvents,
+  buildRegistryChangelogEntryFileEvents,
   buildRegistryChangelogIndexes,
   extractRegistryItemNames,
   inferRegistryHints,
   parseComponentChangelog,
+  parseRegistryChangelogEntryFiles,
   resolveReleaseForRow,
   validateArgs,
   writeRegistryChangelogEvents,
@@ -79,6 +81,113 @@ test('keeps source ids stable when rows are inserted above', () => {
   assert.equal(originalCodeBlockRow?.row, 1);
   assert.equal(insertedCodeBlockRow?.row, 2);
   assert.equal(originalCodeBlockRow?.sourceId, insertedCodeBlockRow?.sourceId);
+});
+
+test('parses stable per-entry MDX changelog sources', () => {
+  const sourceDir = fs.mkdtempSync(path.join(os.tmpdir(), 'registry-source-'));
+  const entryPath = path.join(sourceDir, '2026-06-15-editor-wrap.mdx');
+
+  fs.writeFileSync(
+    entryPath,
+    `---
+id: 2026-06-15-editor-wrap
+date: 2026-06-15
+status: draft
+kind: fix
+summary: "Fix editor space wrapping"
+change: {"type":"pull_request","date":"2026-06-15","commits":[],"pullRequest":{"number":5022,"url":"https://github.com/udecode/plate/pull/5022","state":"OPEN","title":"Fix editor preserved-space wrapping"}}
+release: {"status":"unresolved"}
+diagnostics: []
+legacyRelease: {"date":"2026-06-15","entry":"32.4","section":"June 2026 #32"}
+---
+<!-- entry: {"id":"editor-wrap-row","kind":"fix","migrationNotes":[]} -->
+- **\`editor\`**, **\`editor-static\`**: Fix preserved-space wrapping so inserted space runs stay inside editable and static editor widths.
+<!-- entry: {"id":"editor-wrap-row-2","kind":"behavior","migrationNotes":["Use the stable entry id."]} -->
+- **\`editor\`**: Keep the second row metadata stable.
+`
+  );
+
+  const [source] = parseRegistryChangelogEntryFiles(sourceDir);
+
+  assert.equal(source.id, '2026-06-15-editor-wrap');
+  assert.equal(source.sourcePath.endsWith('2026-06-15-editor-wrap.mdx'), true);
+  assert.deepEqual(source.rows[0].items, ['editor', 'editor-static']);
+  assert.equal(source.rows[0].sourceId, 'editor-wrap-row');
+  assert.equal(source.rows[1].sourceId, 'editor-wrap-row-2');
+  assert.equal(source.rows[1].kind, 'behavior');
+  assert.deepEqual(source.rows[1].migrationNotes, ['Use the stable entry id.']);
+
+  const [output] = buildRegistryChangelogEntryFileEvents([source], {
+    outDir: 'out',
+    registryDefinitions: [
+      {
+        content: "export const ui = [{ name: 'editor' }];",
+        path: 'apps/www/src/registry/registry-ui.ts',
+      },
+    ],
+    registryFiles: [
+      'apps/www/src/registry/ui/editor.tsx',
+      'apps/www/src/registry/ui/editor-static.tsx',
+    ],
+  });
+
+  assert.equal(output.entry.id, '2026-06-15-editor-wrap');
+  assert.deepEqual(output.entry.source, {
+    kind: 'entry-mdx',
+    path: source.sourcePath,
+  });
+  assert.equal(output.entry.change.pullRequest.number, 5022);
+  assert.equal(output.entry.summary, 'Fix editor space wrapping');
+  assert.equal(output.entry.entries[0].id, 'editor-wrap-row');
+  assert.equal(output.entry.entries[1].id, 'editor-wrap-row-2');
+  assert.equal(output.entry.entries[0].source.line, 13);
+  assert.equal(output.entry.entries[0].source.row, 1);
+  assert.equal(output.entry.entries[1].source.line, 15);
+  assert.equal(output.entry.entries[1].source.row, 2);
+});
+
+test('adding an entry file does not rewrite existing event output', () => {
+  const sourceDir = fs.mkdtempSync(path.join(os.tmpdir(), 'registry-source-'));
+  const firstEntry = `---
+id: 2026-06-10-column-drop-target
+date: 2026-06-10
+status: draft
+kind: fix
+summary: "Attach column drop target ref"
+change: {"type":"source","date":"2026-06-10","commits":[]}
+release: {"status":"unresolved"}
+diagnostics: []
+---
+- **\`column-node\`**: Attach column drop target ref.
+`;
+  const secondEntry = `---
+id: 2026-06-15-editor-wrap
+date: 2026-06-15
+status: draft
+kind: fix
+summary: "Fix editor space wrapping"
+change: {"type":"source","date":"2026-06-15","commits":[]}
+release: {"status":"unresolved"}
+diagnostics: []
+---
+- **\`editor\`**: Fix preserved-space wrapping.
+`;
+
+  fs.writeFileSync(path.join(sourceDir, '2026-06-10-column.mdx'), firstEntry);
+
+  const before = buildRegistryChangelogEntryFileEvents(
+    parseRegistryChangelogEntryFiles(sourceDir),
+    { outDir: 'out' }
+  ).find((output) => output.entry.id === '2026-06-10-column-drop-target');
+
+  fs.writeFileSync(path.join(sourceDir, '2026-06-15-editor.mdx'), secondEntry);
+
+  const after = buildRegistryChangelogEntryFileEvents(
+    parseRegistryChangelogEntryFiles(sourceDir),
+    { outDir: 'out' }
+  ).find((output) => output.entry.id === '2026-06-10-column-drop-target');
+
+  assert.deepEqual(after?.entry, before?.entry);
 });
 
 test('write prunes stale generated changelog event files', () => {
@@ -374,302 +483,49 @@ test('does not guess release dependencies for source-only change units', () => {
   );
 });
 
-test('current latest 14 source rows collapse to 6 change-unit events', () => {
-  const content = fs.readFileSync(
-    'tooling/data/plate-ui-changelog.mdx',
-    'utf8'
+test('current entry files generate registry changelog indexes', () => {
+  const sources = parseRegistryChangelogEntryFiles(
+    'apps/www/src/registry/changelog/entries'
   );
-  const rows = parseComponentChangelog(content).slice(0, 14);
-  const columnCommit = commit(
-    '224b0d13083c199a8f4525b063ad04de2dcf2dbb',
-    '2026-06-10',
-    'fix(dnd): attach column drop target ref'
-  );
-  const codeCommit = commit(
-    'a471d051d2b32c494a94e8218ce1a8462aa26463',
-    '2026-06-03',
-    'fix code block language labels'
-  );
-  const perfCommit = commit(
-    '68560ccc9e1d525f29e8a49b0c673723837639d8',
-    '2026-06-02',
-    'perf: improve large document editing'
-  );
-  const discussionCommit = commit(
-    '59e088318686e94c74f89390d9ab307b469767af',
-    '2026-04-29',
-    '[codex] Fix discussion and suggestion regressions'
-  );
-  const footnoteCommit = commit(
-    '700286bf84ac987b9cc2296f9f69746f0f095936',
-    '2026-04-23',
-    'docs'
-  );
-  const provenanceBySourceId = new Map(
-    rows.flatMap((row) => {
-      if (row.date === '2026-06-14') {
-        return [];
-      }
-
-      if (row.date === '2026-06-10') {
-        return [
-          [
-            row.sourceId,
-            provenance(
-              columnCommit,
-              pr(5003, 'fix(dnd): attach column drop target ref', {
-                mergedAt: '2026-06-10T10:46:04Z',
-              }),
-              ['No generated release-index entry found for PR 5003.']
-            ),
-          ],
-        ];
-      }
-
-      if (row.sourceId?.startsWith('2026-06-03')) {
-        return [
-          [
-            row.sourceId,
-            provenance(
-              codeCommit,
-              pr(4989, 'Show code block language labels in read-only mode', {
-                state: 'OPEN',
-              }),
-              ['Matched PR 4989, but it is OPEN.']
-            ),
-          ],
-        ];
-      }
-
-      if (row.sourceId?.startsWith('2026-05-31')) {
-        return [
-          [
-            row.sourceId,
-            provenance(
-              perfCommit,
-              pr(4987, 'perf: improve large document editing', {
-                mergedAt: '2026-06-02T19:26:44Z',
-              })
-            ),
-          ],
-        ];
-      }
-
-      if (row.sourceId?.startsWith('2026-04-29')) {
-        return [
-          [
-            row.sourceId,
-            provenance(
-              discussionCommit,
-              pr(4945, '[codex] Fix discussion and suggestion regressions', {
-                mergedAt: '2026-04-29T09:59:13Z',
-              })
-            ),
-          ],
-        ];
-      }
-
-      return [
-        [
-          row.sourceId,
-          provenance(
-            footnoteCommit,
-            pr(4941, 'fix: redesign blockquotes as container blocks', {
-              mergedAt: '2026-04-23T11:41:41Z',
-            })
-          ),
-        ],
-      ];
-    })
-  );
-  const releases = [
-    {
-      content:
-        'Improve large document editing ([#4987](https://github.com/udecode/plate/pull/4987))',
-      date: '2026-06-03',
-      packageTag: 'platejs@53.0.7',
-      tag: 'v53.0.7',
-      versionPackagePrUrl: 'https://github.com/udecode/plate/pull/4986',
-    },
-    {
-      content:
-        'Fix discussion and suggestion regressions ([#4945](https://github.com/udecode/plate/pull/4945))',
-      date: '2026-04-29',
-      packageTag: 'platejs@53.0.3',
-      tag: 'v53.0.3',
-      versionPackagePrUrl: 'https://github.com/udecode/plate/pull/4954',
-    },
-    {
-      content:
-        'Add footnotes ([#4941](https://github.com/udecode/plate/pull/4941))',
-      date: '2026-04-23',
-      packageTag: 'platejs@53.0.0',
-      tag: 'v53.0.0',
-      versionPackagePrUrl: 'https://github.com/udecode/plate/pull/4948',
-    },
-  ];
-  const outputs = buildRegistryChangelogEvents(rows, {
-    isChangeAfterRelease: () => true,
-    provenanceBySourceId,
-    releases,
-  });
-
-  assert.equal(rows.length, 14);
-  assert.equal(outputs.length, 6);
-  assert.deepEqual(
-    outputs.map((output) => path.basename(output.targetPath)),
-    [
-      '2026-06-14-editor-install-kit-files-through.json',
-      '2026-06-10-attach-column-drop-target-ref.json',
-      '2026-06-03-show-code-block-language-labels-read-only-mode.json',
-      '2026-06-02-improve-large-document-editing.json',
-      '2026-04-29-codex-fix-discussion-suggestion-regressions.json',
-      '2026-04-23-redesign-blockquotes-container-blocks.json',
-    ]
-  );
-  assert.equal(outputs[0].entry.entries.length, 1);
-  assert.equal(outputs[0].entry.release.status, 'unresolved');
-  assert.equal(outputs[0].entry.change.type, 'source');
-  assert.equal(outputs[1].entry.entries.length, 1);
-  assert.equal(outputs[1].entry.release.status, 'latest');
-  assert.equal(outputs[1].entry.release.source, 'post-release-no-changeset');
-  assert.equal(outputs[1].entry.change.pullRequest.number, 5003);
-  assert.equal(outputs[1].entry.change.pullRequest.state, 'MERGED');
-  assert.equal(outputs[2].entry.entries.length, 1);
-  assert.equal(outputs[2].entry.release.status, 'latest');
-  assert.equal(outputs[2].entry.release.source, 'open-pull-request');
-  assert.equal(outputs[2].entry.change.pullRequest.number, 4989);
-  assert.equal(outputs[2].entry.change.pullRequest.state, 'OPEN');
-  assert.equal(outputs[3].entry.entries.length, 2);
-  assert.equal(outputs[3].entry.release.tag, 'v53.0.7');
-  assert.equal(outputs[3].entry.change.pullRequest.number, 4987);
-  assert.equal(outputs[4].entry.entries.length, 3);
-  assert.equal(outputs[4].entry.release.tag, 'v53.0.3');
-  assert.equal(outputs[4].entry.change.pullRequest.number, 4945);
-  assert.equal(outputs[5].entry.entries.length, 6);
-  assert.equal(outputs[5].entry.release.tag, 'v53.0.0');
-  assert.equal(outputs[5].entry.change.pullRequest.number, 4941);
-
-  const latestOutputs = buildRegistryChangelogEvents(rows, {
-    hasPendingChangeset: true,
-    isReleaseAncestor: () => false,
-    provenanceBySourceId,
-    releases,
-  });
-
-  assert.equal(latestOutputs[0].entry.release.status, 'unresolved');
-  assert.equal(latestOutputs[1].entry.release.status, 'latest');
-  assert.equal(latestOutputs[1].entry.release.source, 'pending-changeset');
-
-  const unprovenOutputs = buildRegistryChangelogEvents(rows, {
-    isChangeAfterRelease: () => false,
-    isReleaseAncestor: () => false,
-    provenanceBySourceId,
-    releases,
-  });
-
-  assert.equal(unprovenOutputs[0].entry.release.status, 'unresolved');
-
-  const coveredLatestOutputs = buildRegistryChangelogEvents(rows, {
-    isReleaseAncestor: (_changeUnit, release) => release.tag === 'v53.1.0',
-    provenanceBySourceId,
-    releases: [
+  const outputs = buildRegistryChangelogEntryFileEvents(sources, {
+    outDir: 'apps/www/src/registry/changelog',
+    registryDefinitions: [
       {
-        date: '2026-06-10',
-        packageTag: 'platejs@53.1.0',
-        tag: 'v53.1.0',
-        versionPackagePrUrl: 'https://github.com/udecode/plate/pull/4999',
+        content:
+          "export const ui = [{ name: 'editor' }, { name: 'column-node' }, { name: 'editor-base-kit' }];",
+        path: 'apps/www/src/registry/registry-ui.ts',
       },
-      ...releases,
+    ],
+    registryFiles: [
+      'apps/www/src/registry/ui/editor.tsx',
+      'apps/www/src/registry/ui/column-node.tsx',
+      'apps/www/src/registry/components/editor/plugins/editor-base-kit.tsx',
     ],
   });
-
-  assert.equal(coveredLatestOutputs[0].entry.release.status, 'unresolved');
-  assert.equal(coveredLatestOutputs[1].entry.release.status, 'released');
-  assert.equal(coveredLatestOutputs[1].entry.release.tag, 'v53.1.0');
-  assert.equal(
-    coveredLatestOutputs[1].entry.release.source,
-    'latest-release-no-changeset'
-  );
-
-  const previousReleaseAncestorOutputs = buildRegistryChangelogEvents(rows, {
-    isChangeAfterRelease: () => false,
-    isReleaseAncestor: () => true,
-    provenanceBySourceId,
-    releases,
-  });
-
-  assert.equal(
-    previousReleaseAncestorOutputs[0].entry.release.status,
-    'unresolved'
-  );
-
-  const releasedWithPendingChangesetOutputs = buildRegistryChangelogEvents(
-    rows,
-    {
-      hasPendingChangeset: true,
-      isReleaseAncestor: (_changeUnit, release) => release.tag === 'v53.0.7',
-      provenanceBySourceId,
-      releases,
-    }
-  );
-
-  assert.equal(
-    releasedWithPendingChangesetOutputs[0].entry.release.status,
-    'unresolved'
-  );
-  assert.equal(
-    releasedWithPendingChangesetOutputs[1].entry.release.status,
-    'released'
-  );
-  for (const output of outputs) {
-    assert.equal('pr' in output.entry, false);
-    assert.equal('commit' in output.entry, false);
-    assert.equal('provenance' in output.entry, false);
-    assert.equal('warnings' in output.entry, false);
-  }
-
   const { components, index } = buildRegistryChangelogIndexes(outputs);
 
+  assert.equal(sources.length, 20);
+  assert.equal(outputs.length, 20);
   assert.deepEqual(
-    index.events.map((event) => event.id),
+    index.events.slice(0, 3).map((event) => event.id),
     [
-      '2026-06-14-editor-install-kit-files-through',
+      '2026-06-14-fix-shadcn-editor-kit-install-paths',
+      '2026-06-13-show-code-block-language-labels-read-only-mode',
       '2026-06-10-attach-column-drop-target-ref',
-      '2026-06-03-show-code-block-language-labels-read-only-mode',
-      '2026-06-02-improve-large-document-editing',
-      '2026-04-29-codex-fix-discussion-suggestion-regressions',
-      '2026-04-23-redesign-blockquotes-container-blocks',
     ]
   );
-  assert.deepEqual(
-    index.events.map((event) => event.href),
-    [
-      '/registry/changelog/2026-06-14-editor-install-kit-files-through.json',
-      '/registry/changelog/2026-06-10-attach-column-drop-target-ref.json',
-      '/registry/changelog/2026-06-03-show-code-block-language-labels-read-only-mode.json',
-      '/registry/changelog/2026-06-02-improve-large-document-editing.json',
-      '/registry/changelog/2026-04-29-codex-fix-discussion-suggestion-regressions.json',
-      '/registry/changelog/2026-04-23-redesign-blockquotes-container-blocks.json',
-    ]
+  assert.equal(
+    index.events[0].href,
+    '/registry/changelog/2026-06-14-fix-shadcn-editor-kit-install-paths.json'
   );
   assert.deepEqual(components.components['column-node'], [
     '2026-06-10-attach-column-drop-target-ref',
+    '2026-01-20-add-docx-file-import-word-export-support',
+    '2025-11-20-biome-ultracite',
+    '2025-10-17-fix-react-decouple',
   ]);
   assert.deepEqual(components.components['editor-base-kit'], [
-    '2026-06-14-editor-install-kit-files-through',
-    '2026-04-23-redesign-blockquotes-container-blocks',
-  ]);
-  assert.deepEqual(components.components['code-block-node'], [
-    '2026-06-03-show-code-block-language-labels-read-only-mode',
-  ]);
-  assert.deepEqual(components.components['huge-document-demo'], [
-    '2026-06-02-improve-large-document-editing',
-  ]);
-  assert.deepEqual(components.components['block-discussion'], [
-    '2026-04-29-codex-fix-discussion-suggestion-regressions',
-  ]);
-  assert.deepEqual(components.components['footnote-kit'], [
+    '2026-06-14-fix-shadcn-editor-kit-install-paths',
     '2026-04-23-redesign-blockquotes-container-blocks',
   ]);
 });
