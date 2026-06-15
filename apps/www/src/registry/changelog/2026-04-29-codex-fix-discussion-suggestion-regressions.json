@@ -3,8 +3,8 @@
   "id": "2026-04-29-codex-fix-discussion-suggestion-regressions",
   "status": "draft",
   "source": {
-    "kind": "legacy-mdx",
-    "path": "tooling/data/plate-ui-changelog.mdx"
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-04-29-codex-fix-discussion-suggestion-regressions.mdx"
   },
   "change": {
     "type": "pull_request",
@@ -175,8 +175,8 @@
       "migrationNotes": [],
       "targets": ["block-discussion", "discussion-kit", "comment-kit"],
       "source": {
-        "line": 33,
-        "row": 7,
+        "line": 13,
+        "row": 1,
         "legacyRelease": {
           "date": "2026-04-29",
           "entry": "30.3",
@@ -197,8 +197,8 @@
         "suggestion-node"
       ],
       "source": {
-        "line": 34,
-        "row": 8,
+        "line": 15,
+        "row": 2,
         "legacyRelease": {
           "date": "2026-04-29",
           "entry": "30.3",
@@ -227,8 +227,8 @@
         "link-node"
       ],
       "source": {
-        "line": 35,
-        "row": 9,
+        "line": 17,
+        "row": 3,
         "legacyRelease": {
           "date": "2026-04-29",
           "entry": "30.3",

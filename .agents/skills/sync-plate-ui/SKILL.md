@@ -23,7 +23,7 @@ that copied and customized Plate UI, such as `../potion`.
 This skill is consumer-side only. It reads generated Plate UI changelog JSON;
 it does not create upstream Plate changelog entries. Upstream Plate devs author
 those through the `changeset` skill and
-`tooling/data/plate-ui-changelog.mdx`.
+`apps/www/src/registry/changelog/entries/*.mdx`.
 
 ## Core Take
 

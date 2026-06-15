@@ -3,19 +3,25 @@
   "id": "2026-06-15-editor-fix-preserved-space-wrapping",
   "status": "draft",
   "source": {
-    "kind": "legacy-mdx",
-    "path": "tooling/data/plate-ui-changelog.mdx"
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-06-15-editor-fix-preserved-space-wrapping.mdx"
   },
   "change": {
-    "type": "source",
+    "type": "pull_request",
     "date": "2026-06-15",
-    "commits": []
+    "commits": [],
+    "pullRequest": {
+      "number": 5022,
+      "url": "https://github.com/udecode/plate/pull/5022",
+      "state": "OPEN",
+      "title": "Fix editor preserved-space wrapping"
+    }
   },
   "release": {
     "status": "unresolved"
   },
   "kind": "fix",
-  "summary": "Fix preserved-space wrapping so inserted space runs stay inside editable and static editor widths.",
+  "summary": "Fix editor preserved-space wrapping",
   "targets": [
     {
       "name": "editor",
@@ -32,14 +38,14 @@
   ],
   "entries": [
     {
-      "id": "2026-06-15-32-4-editor-fix-preserved-space-wrapping-ff758701",
+      "id": "2026-06-15-editor-fix-preserved-space-wrapping",
       "kind": "fix",
       "summary": "Fix preserved-space wrapping so inserted space runs stay inside editable and static editor widths.",
       "details": [],
       "migrationNotes": [],
       "targets": ["editor", "editor-static"],
       "source": {
-        "line": 9,
+        "line": 13,
         "row": 1,
         "legacyRelease": {
           "date": "2026-06-15",
@@ -49,16 +55,5 @@
       }
     }
   ],
-  "diagnostics": [
-    {
-      "severity": "warning",
-      "code": "release-missing",
-      "message": "No generated release-index entry found for source-only change on 2026-06-15."
-    },
-    {
-      "severity": "warning",
-      "code": "warning",
-      "message": "No blame commit found for tooling/data/plate-ui-changelog.mdx:9."
-    }
-  ]
+  "diagnostics": []
 }

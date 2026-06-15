@@ -3,8 +3,8 @@
   "id": "2026-03-19-improve-non-react-test-coverage-ci-workflow-hygiene",
   "status": "draft",
   "source": {
-    "kind": "legacy-mdx",
-    "path": "tooling/data/plate-ui-changelog.mdx"
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-03-19-improve-non-react-test-coverage-ci-workflow-hygiene.mdx"
   },
   "change": {
     "type": "pull_request",
@@ -59,8 +59,8 @@
       "migrationNotes": [],
       "targets": ["font-color-toolbar-button"],
       "source": {
-        "line": 74,
-        "row": 25,
+        "line": 13,
+        "row": 1,
         "legacyRelease": {
           "date": "2026-03-19",
           "entry": "29.1",

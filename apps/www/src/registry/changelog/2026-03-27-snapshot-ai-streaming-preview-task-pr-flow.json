@@ -3,8 +3,8 @@
   "id": "2026-03-27-snapshot-ai-streaming-preview-task-pr-flow",
   "status": "draft",
   "source": {
-    "kind": "legacy-mdx",
-    "path": "tooling/data/plate-ui-changelog.mdx"
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-03-27-snapshot-ai-streaming-preview-task-pr-flow.mdx"
   },
   "change": {
     "type": "pull_request",
@@ -71,8 +71,8 @@
       "migrationNotes": [],
       "targets": ["ai-kit"],
       "source": {
-        "line": 60,
-        "row": 20,
+        "line": 13,
+        "row": 1,
         "legacyRelease": {
           "date": "2026-03-27",
           "entry": "29.4",
@@ -88,8 +88,8 @@
       "migrationNotes": [],
       "targets": ["ai-demo"],
       "source": {
-        "line": 61,
-        "row": 21,
+        "line": 15,
+        "row": 2,
         "legacyRelease": {
           "date": "2026-03-27",
           "entry": "29.4",

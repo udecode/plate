@@ -3,32 +3,32 @@
   "id": "2026-06-14-fix-shadcn-editor-kit-install-paths",
   "status": "draft",
   "source": {
-    "kind": "legacy-mdx",
-    "path": "tooling/data/plate-ui-changelog.mdx"
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-06-14-fix-shadcn-editor-kit-install-paths.mdx"
   },
   "change": {
     "type": "pull_request",
     "date": "2026-06-14",
     "commits": [
       {
-        "sha": "6801e8a1103cda613e727dba525adfcde88dfb35",
-        "shortSha": "6801e8a110",
-        "url": "https://github.com/udecode/plate/commit/6801e8a1103cda613e727dba525adfcde88dfb35",
+        "sha": "129a4b4644b17db4ba5adef56a43233dc24e5be6",
+        "shortSha": "129a4b4644",
+        "url": "https://github.com/udecode/plate/commit/129a4b4644b17db4ba5adef56a43233dc24e5be6",
         "date": "2026-06-14",
-        "committedAt": "2026-06-14T20:34:08+02:00",
-        "subject": "Fix shadcn editor kit install paths (#5013)"
+        "committedAt": "2026-06-14T14:08:43+02:00",
+        "subject": "Fix shadcn editor kit install paths"
       }
     ],
     "pullRequest": {
       "number": 5013,
       "url": "https://github.com/udecode/plate/pull/5013",
-      "state": "MERGED",
-      "title": "Fix shadcn editor kit install paths",
-      "mergedAt": "2026-06-14T18:34:08Z"
+      "state": "OPEN",
+      "title": "Fix shadcn editor kit install paths"
     }
   },
   "release": {
-    "status": "unresolved"
+    "status": "latest",
+    "source": "open-pull-request"
   },
   "kind": "behavior",
   "summary": "Fix shadcn editor kit install paths",
@@ -58,8 +58,8 @@
       "migrationNotes": [],
       "targets": ["editor-base-kit", "editor-kit"],
       "source": {
-        "line": 12,
-        "row": 2,
+        "line": 13,
+        "row": 1,
         "legacyRelease": {
           "date": "2026-06-14",
           "entry": "32.3",
@@ -73,6 +73,11 @@
       "severity": "warning",
       "code": "release-missing",
       "message": "No generated release-index entry found for PR 5013."
+    },
+    {
+      "severity": "warning",
+      "code": "pull-request-not-merged",
+      "message": "Matched PR 5013, but it is OPEN."
     }
   ]
 }
