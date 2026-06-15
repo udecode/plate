@@ -13,11 +13,15 @@ Use this when the user asks where the Slate v2 Autoresearch loop stands.
 Contract:
 
 - Read `.tmp/slate-autoresearch/autoresearch.*` state when present.
-- Run read-only Codex Autoresearch commands such as `state`,
-  `onboarding-packet`, `recommend-next`, and dashboard liveness with
-  `--cwd .`.
+- Run read-only Codex Autoresearch commands with `--cwd .`:
+  `onboarding-packet --compact`, `state --compact`, `state --report`,
+  `recommend-next --compact --operator-checklist`, and `doctor --explain`.
+- Read the operator checklist as the shortest safe continuation path. If it
+  blocks `next`, report the blocker instead of running a packet.
 - Start or restart Codex Autoresearch `serve` only to provide a live dashboard
   URL.
+- Use `export` only for a static snapshot. Do not treat an old exported HTML
+  file as live runtime truth.
 - Report latest, best, baseline, kept/discarded/checks-failed/crashed packet
   counts when available.
 - Do not run `next`, `log`, setup, benchmark packets, finalization, branch,

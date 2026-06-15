@@ -190,4 +190,4 @@ Run:
 [$ralph](.agents/skills/ralph/SKILL.md) docs/plans/2026-05-11-slate-v2-wpt-harvest-test-processing-ralplan.md
 ```
 
-Start with queue 1 and queue 2. Dedupe against the named current owner files before adding tests. Do not reopen the TinyMCE TMS lane. Do not change Slate issue claims from WPT rows unless a later execution reproduces a named issue with exact evidence.
+Start with queue 1 and queue 2. Dedupe against the named current owner files before adding tests. Do not reopen the external TMS lane. Do not change Slate issue claims from WPT rows unless a later execution reproduces a named issue with exact evidence.

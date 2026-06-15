@@ -41,14 +41,21 @@ measured but not obviously performance-specific.
 
 ## Commands
 
-Use direct CLI until a root shortcut exists:
+Use the installed TheGreenCedar plugin CLI until a root shortcut exists. Never
+use the legacy `../codex-autoresearch` checkout; that repo can point at a
+different upstream.
 
 ```bash
-node ../codex-autoresearch/plugins/codex-autoresearch/scripts/autoresearch.mjs recipes list --cwd .
-node ../codex-autoresearch/plugins/codex-autoresearch/scripts/autoresearch.mjs recipes recommend --cwd .
-node ../codex-autoresearch/plugins/codex-autoresearch/scripts/autoresearch.mjs recipes show <recipe-id> --cwd .
-node ../codex-autoresearch/plugins/codex-autoresearch/scripts/autoresearch.mjs setup-plan --cwd . --recipe <recipe-id>
-node ../codex-autoresearch/plugins/codex-autoresearch/scripts/autoresearch.mjs doctor --cwd . --check-benchmark --explain
+AR_CLI="$(find "${CODEX_HOME:-$HOME/.codex}/plugins/cache/thegreencedar-autoresearch/codex-autoresearch" -path '*/scripts/autoresearch.mjs' -print | sort -V | tail -1)"
+test -n "$AR_CLI"
+```
+
+```bash
+node "$AR_CLI" recipes list --cwd .
+node "$AR_CLI" recipes recommend --cwd .
+node "$AR_CLI" recipes show <recipe-id> --cwd .
+node "$AR_CLI" setup-plan --cwd . --recipe <recipe-id>
+node "$AR_CLI" doctor --cwd . --check-benchmark --explain
 ```
 
 If the recipe output is customized, run `benchmark-lint` before any packet.

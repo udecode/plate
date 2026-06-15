@@ -27,11 +27,14 @@ owner.
 
 Default behavior:
 
-1. run `slate-ar-status` behavior;
+1. run `slate-ar-status` behavior, including
+   `recommend-next --compact --operator-checklist`;
 2. identify the strongest current blocker or opportunity;
-3. choose exactly one next owner;
-4. run one safe step only;
-5. report metric/check result and the next recommended owner.
+3. if the operator checklist blocks packets, clear or report that blocker
+   before choosing another packet;
+4. choose exactly one next owner;
+5. run one safe step only;
+6. report metric/check result and the next recommended owner.
 
 If the current state is too broad for one useful step and the user asked to
 continue improving the surface, start or recommend `slate-ar-perfect <surface>`

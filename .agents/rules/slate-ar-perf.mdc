@@ -68,6 +68,19 @@ Default path:
    checks inspection, packets, stale-run detection,
    ASI, dashboard, keep/discard decisions, and final evidence.
 
+Before a heavy perf packet, run the cheapest diagnostic that can falsify the
+packet:
+
+- `benchmark-inspect` when the metric contract or output shape is suspect;
+- `benchmark-lint` when a command is new or customized;
+- `checks-inspect` when the correctness command is opaque or slow;
+- `partial-results --from-last` after a timeout/crash that wrote artifacts;
+- `recommend-next --compact --operator-checklist` when the session has stale
+  packet, source-cleanliness, budget, capsule, or watchdog friction.
+
+If the serial path plateaus, use `new-segment`, `promote-gate`, or
+`research-fanout` instead of another near-neighbor optimization.
+
 ## Missing Target Policy
 
 A specific target id is enough instruction. Do not force the user to write a
