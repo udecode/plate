@@ -22,6 +22,13 @@ Docs lane:
 - nearest sibling docs: pending
 - plugin page: pending
 
+Timed checkpoint:
+- requested duration: pending
+- semantics: pending
+- initial confidence score: pending
+- improvement loop: pending
+- final score / loop closure: pending
+
 Completion threshold:
 - TODO: Define the exact docs done state.
 - Docs closure is legal only when the page teaches the fastest correct path,
@@ -79,6 +86,7 @@ Completion rule:
 Start Gates:
 | Gate | Applies | Evidence |
 |------|---------|----------|
+| Timed checkpoint parsed | pending | pending |
 | `docs-creator` loaded | pending | pending |
 | Active goal checked or created | pending | pending |
 | Docs lane selected | pending | pending |
@@ -92,6 +100,9 @@ Start Gates:
 | PR/tracker expectation decision | pending | pending |
 
 Work Checklist:
+- [ ] If a duration was requested, it is recorded as minimum active work unless
+      explicitly marked hard stop; when no better metric exists, initial and
+      final confidence scores are recorded.
 - [ ] Short objective plus outcome, completion threshold, verification surface,
       constraints, boundaries, and blocked condition are concrete.
 - [ ] Docs lane is classified as install, guide/system, plugin/feature,
@@ -129,7 +140,7 @@ Completion Gates:
 | Docs lane shape satisfied | pending | Check the lane-specific structure against `docs-creator` | pending |
 | Source-backed claim audit | pending | Verify every named API/option/transform/component/import/route against source | pending |
 | Ownership map verified | pending | Confirm package/layer/kit/app-local ownership claims against source | pending |
-| MDX/content parser | pending | Run `pnpm --filter www build:contentlayer` for MDX/content changes, or record N/A | pending |
+| MDX/content parser | pending | Run `pnpm --filter www build:source` for MDX/content changes, or record N/A | pending |
 | Links/routes/previews verified | pending | Check leaf links, routes, anchors, and `<ComponentPreview>` names or record N/A | pending |
 | Plugin page specifics | pending | If plugin page, apply `docs-creator` kit/manual/API rules or record N/A | pending |
 | Browser/render surface changed | pending | Capture Browser Use proof or record explicit waiver/blocker | pending |
@@ -137,6 +148,7 @@ Completion Gates:
 | Agent rules or skills changed | pending | Run `pnpm install` and verify generated skill sync | pending |
 | Autoreview for non-trivial docs changes | pending | Load `.agents/skills/autoreview/SKILL.md` and run the right target, or record N/A for tiny/no-local-patch work | pending |
 | Final lint | pending | Run `pnpm lint:fix` or scoped equivalent | pending |
+| Timed checkpoint | pending | If duration was requested, keep improving until elapsed, then finish the current loop cleanly; otherwise N/A | pending |
 | Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` | pending |
 
 Phase / pass table:

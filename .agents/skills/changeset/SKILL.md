@@ -68,7 +68,21 @@ Never combine packages in one changeset.
 .changeset/utils-add-helper.md
 ```
 
-### 3. Relative to `main`, not to your thought process
+### 3. Always relative to `main`, never last commit
+
+NEVER write a changeset relative to the last commit, staged diff, current
+working tree, branch-local plan, or the change you just made. Those are agent
+breadcrumbs, not release truth.
+
+Before creating or editing a changeset, answer one question:
+
+> What will a user upgrading from current `main` observe?
+
+Use `main` / `origin/main` as the release baseline. If a symbol, option,
+behavior, file, or bug only existed inside the current branch and never existed
+on `main`, do **not** write a removal, migration, or breaking changeset for it.
+Instead, describe only the final user-visible delta from `main`, or write no
+changeset if there is no published package delta.
 
 Write changesets for the user-visible delta from the current `main` branch.
 
@@ -77,9 +91,13 @@ That means:
 - describe what users upgrading from `main` need to know
 - describe migration steps only when the user actually has to do something
 - prefer API shape, runtime behavior, serialized data shape, or config changes
+- check whether any named removed/renamed API actually exists on `main` before
+  writing removal or migration prose
 
 Do not write:
 
+- last-commit-relative removals for APIs introduced and deleted on the same
+  branch
 - implementation diary
 - architecture rationale
 - internal ownership or seam language
@@ -198,7 +216,10 @@ Before shipping:
 
 - [ ] Used `minor` for `@platejs/slate`, `@platejs/core`, or `platejs`? Change to `patch`
 - [ ] Multiple packages in frontmatter? Split files
-- [ ] Describes internals instead of the user-visible delta from `main`? Rewrite it
+- [ ] Describes the last commit, working tree, or branch-only API instead of the
+      user-visible delta from `main`? Rewrite it
+- [ ] Claims an API was removed or needs migration without proving that API
+      exists on `main`? Delete that claim
 - [ ] Past tense verbs? Fix them
 - [ ] Multiple paragraphs? Condense
 - [ ] Too much explanation? Cut it

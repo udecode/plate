@@ -1,5 +1,11 @@
 # @platejs/core
 
+## 53.2.1
+
+### Patch Changes
+
+- [#5029](https://github.com/udecode/plate/pull/5029) by [@zbeyens](https://github.com/zbeyens) – Add `node.isMetadataProp` and `editor.api.isElementStateEmpty` for element state checks.
+
 ## 53.1.2
 
 ### Patch Changes

@@ -1,5 +1,22 @@
 [
   {
+    "changelogUrl": "https://github.com/udecode/plate/blob/2e675c6987b7946cae3cd8b368c8abb45add659e/packages/plate/CHANGELOG.md",
+    "content": "`@platejs/core`\n\n### Bug Fixes\n\n- Add `node.isMetadataProp` and `editor.api.isElementStateEmpty` for element state checks. ([#5029](https://github.com/udecode/plate/pull/5029))\n\n`platejs`\n\n### Bug Fixes\n\n- Updated `@platejs/core`, `@platejs/utils`.\n\n`@platejs/utils`\n\n### Bug Fixes\n\n- Fix block placeholders on single empty list items. ([#5029](https://github.com/udecode/plate/pull/5029))\n\n[`v53.2.0...v53.2.1`](https://github.com/udecode/plate/compare/v53.2.0...v53.2.1) · By [@zbeyens](https://github.com/zbeyens)",
+    "contributors": [
+      {
+        "url": "https://github.com/zbeyens",
+        "username": "@zbeyens"
+      }
+    ],
+    "date": "2026-06-16",
+    "packageTag": "platejs@53.2.1",
+    "tag": "v53.2.1",
+    "title": "v53.2.1",
+    "type": "patch",
+    "versionPackagePrUrl": "https://github.com/udecode/plate/pull/5032",
+    "url": "https://github.com/udecode/plate/releases/tag/v53.2.1"
+  },
+  {
     "changelogUrl": "https://github.com/udecode/plate/blob/0c20033598f53293bcd384a270112623b7891e01/packages/yjs/CHANGELOG.md",
     "content": "`@platejs/yjs`\n\n### Features\n\n- Add built-in IndexedDB provider support. ([#5027](https://github.com/udecode/plate/pull/5027))\n\n[`v53.1.7...v53.2.0`](https://github.com/udecode/plate/compare/v53.1.7...v53.2.0) · By [@zbeyens](https://github.com/zbeyens)",
     "contributors": [

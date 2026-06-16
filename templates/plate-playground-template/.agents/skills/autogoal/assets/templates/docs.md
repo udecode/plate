@@ -23,6 +23,13 @@ First checkpoint:
 - Do not continue into implementation until this extraction is complete or
   explicitly marked N/A with reason.
 
+Timed checkpoint:
+- requested duration: pending
+- semantics: pending
+- initial confidence score: pending
+- improvement loop: pending
+- final score / loop closure: pending
+
 Completion threshold:
 - TODO: Define the exact docs done state.
 
@@ -51,6 +58,7 @@ Start Gates:
 | Gate | Applies | Evidence |
 |------|---------|----------|
 | Prompt requirements captured before work | pending | pending |
+| Timed checkpoint parsed | pending | pending |
 | Active goal checked or created | pending | pending |
 | Target docs read | pending | pending |
 | Nearest sibling docs read | pending | pending |
@@ -62,6 +70,9 @@ Work Checklist:
       section, verification surface, and success criterion is copied into this
       plan as checkable checkpoints before implementation.
 - [ ] Target docs and nearest sibling docs were read before writing.
+- [ ] If a duration was requested, it is recorded as minimum active work unless
+      explicitly marked hard stop; when no better metric exists, initial and
+      final confidence scores are recorded.
 - [ ] Documented behavior or API was verified against current source.
 - [ ] Fastest success path appears before deeper mechanics or API reference.
 - [ ] Named APIs, imports, routes, options, and examples are exact and current.
@@ -74,6 +85,7 @@ Completion Gates:
 | Docs links / routes / previews | pending | Verify or record N/A | pending |
 | Docs parser/build | pending | Run relevant docs parser/build or record N/A | pending |
 | Autoreview | pending | Review final docs against objective, constraints, source truth, and newest user request | pending |
+| Timed checkpoint | pending | If duration was requested, keep improving until elapsed, then finish the current loop cleanly; otherwise N/A | pending |
 | Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` | pending |
 
 Phase / pass table:

@@ -72,6 +72,7 @@ export type BaseEditor = EditorBase & {
       node: {
         isContainer: string[];
         isLeaf: string[];
+        isMetadataProp: string[];
         isText: string[];
         leafProps: string[];
         textProps: string[];

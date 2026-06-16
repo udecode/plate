@@ -92,6 +92,11 @@ they earn their keep, and verify before calling the task done.
        vulnerability disclosure touched: add `--with security-advisory`
      `node .agents/skills/autogoal/scripts/create-goal-scratchpad.mjs --template <task|docs> --with <pack> --title "<short task title>"`
    - follow local repo overrides for where planning files live
+   - supporting docs means `content/**`, docs/API/reference pages, docs nav,
+     docs examples, or public ownership/API claims changed by a code task.
+     Load `docs-creator` before editing those docs and include the docs pack.
+     If docs enter scope after the plan already exists, stop before closeout,
+     read `docs-creator`, and copy the docs-pack gates into the active plan.
 10. If testing or coverage work, load `testing` before `tdd` and choose the
     smallest honest slice.
 11. If program or batch work, restate the ordered scope and finish one slice at
@@ -273,11 +278,12 @@ lock.
 - `plate-ui`: authoring or refactoring Plate registry UI/components, static/live
   renderers, kits, registry wiring, or ownership/extraction decisions under
   `apps/www/src/registry/**`.
-- `docs-creator`: non-trivial docs/content work, new or rewritten pages,
-  plugin/API/spec/serialization docs, route moves, example changes, or docs with
-  source-backed ownership/API claims. Use `--template docs` when docs dominate;
-  use `--with docs` when docs are a supporting touched surface under a normal or
-  major task.
+- `docs-creator`: mandatory for non-trivial docs/content work, new or rewritten
+  pages, plugin/API/spec/serialization docs, route moves, example changes,
+  public docs under `content/**`, or docs with source-backed ownership/API
+  claims. Use `--template docs` when docs dominate. Use `--with docs` and still
+  load `docs-creator` when docs are a supporting touched surface under a normal
+  or major task. Tiny typo/link-only edits may skip it with an explicit reason.
 - `git-commit-push-pr`: verified code should ship as a PR.
 - Review skills: load only for risky, large, user-facing, or
   architecture-sensitive changes.
@@ -357,7 +363,10 @@ the patch is risky.
 1. Skip engineering ceremony.
 2. For non-trivial docs, load `docs-creator` and use the docs goal template.
 3. If docs are only a supporting touched surface on another task, add the docs
-   pack instead of switching the primary template.
+   pack instead of switching the primary template. Still load `docs-creator`
+   before writing docs. If supporting docs are discovered late, add the docs
+   pack rows to the active plan before closeout; do not hide them under the
+   generic "Docs or content changed" gate.
 4. For tiny copy edits, skip the docs goal and keep verification proportional.
 5. Verify links, examples, formatting, source-backed claims, and rendered output
    as appropriate.
@@ -393,6 +402,11 @@ Keep verification mandatory and proportional.
   signals unrelated to the diff, run `pnpm run reinstall` once and rerun the
   exact failing command before declaring the task blocked.
 - If work changes published packages, satisfy the changeset gate.
+- If work changes public docs/content/API reference/examples, satisfy the
+  `docs-creator` gate. Supporting docs under a code task still need
+  `docs-creator`, docs-pack evidence, `pnpm --filter www build:source`, and
+  `pnpm --filter www check:docs` when source parity or generated docs can be
+  affected.
 - If work changes user-visible registry output under
   `apps/www/src/registry/**`, satisfy the registry changelog gate.
 - If work changes or resolves a security advisory, satisfy the
@@ -459,8 +473,10 @@ with `gh pr view --json body` before final handoff.
 - Non-trivial measurable work loaded `autogoal` and used the right goal
   template.
 - Non-trivial docs work loaded `docs-creator` and used `--template docs`.
-- Supporting docs, browser, agent-native, package/API, or extra-review surfaces
-  used the matching `--with <pack>` rows when they were not the dominant risk.
+- Supporting docs loaded `docs-creator`, used `--with docs`, and closed the docs
+  pack unless the change was truly typo/link-only with an explicit reason.
+- Browser, agent-native, package/API, or extra-review surfaces used the matching
+  `--with <pack>` rows when they were not the dominant risk.
 - Supporting user-visible registry surfaces used `--with registry-changelog`.
 - Security advisory hotfixes used `--with security-advisory` and closed
   release, advisory publication, CVE request, and readback evidence.

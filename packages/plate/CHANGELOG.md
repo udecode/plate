@@ -1,5 +1,11 @@
 # platejs
 
+## 53.2.1
+
+### Patch Changes
+
+- Updated `@platejs/core`, `@platejs/utils`.
+
 ## 53.1.2
 
 ### Patch Changes

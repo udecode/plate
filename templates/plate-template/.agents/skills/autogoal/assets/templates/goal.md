@@ -17,6 +17,13 @@ First checkpoint:
 - Do not continue into implementation until this extraction is complete or
   explicitly marked N/A with reason.
 
+Timed checkpoint:
+- requested duration: pending
+- semantics: pending
+- initial confidence score: pending
+- improvement loop: pending
+- final score / loop closure: pending
+
 Completion threshold:
 - TODO: Define the exact measurable or auditable done state.
 
@@ -40,6 +47,7 @@ Start Gates:
 | Gate | Applies | Evidence |
 |------|---------|----------|
 | Prompt requirements captured before work | pending | pending |
+| Timed checkpoint parsed | pending | pending |
 | Active goal checked or created | pending | pending |
 | Source of truth read before edits | pending | pending |
 | TDD decision before behavior change or bug fix | pending | pending |
@@ -51,6 +59,9 @@ Work Checklist:
       section, verification surface, and success criterion is copied into this
       plan as checkable checkpoints before implementation.
 - [ ] Objective, threshold, verification surface, constraints, boundaries, and blocked condition are concrete.
+- [ ] If a duration was requested, it is recorded as minimum active work unless
+      explicitly marked hard stop; when no better metric exists, initial and
+      final confidence scores are recorded.
 - [ ] Work phases are updated with evidence.
 - [ ] Decisions and tradeoffs are recorded.
 - [ ] Failed attempts and next different moves are recorded.
@@ -62,6 +73,7 @@ Completion Gates:
 | Typecheck/build/test proof | pending | Run relevant owner checks or record N/A | pending |
 | Browser proof | pending | Exercise the affected browser surface or record N/A | pending |
 | Autoreview | pending | Review final diff/output against objective, constraints, and newest user request | pending |
+| Timed checkpoint | pending | If duration was requested, keep improving until elapsed, then finish the current loop cleanly; otherwise N/A | pending |
 | Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` | pending |
 
 Phase / pass table:
