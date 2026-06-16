@@ -29,10 +29,6 @@ const promoteWorkflowPath = new URL(
   '../../.github/workflows/promote.yml',
   import.meta.url
 );
-const autoRetargetWorkflowPath = new URL(
-  '../../.github/workflows/auto-retarget.yml',
-  import.meta.url
-);
 const verifyChangesetsWorkflowPath = new URL(
   '../../.github/workflows/verify-changesets.yml',
   import.meta.url
@@ -677,26 +673,17 @@ test('main to next sync keeps stable sections after the last matched anchor', ()
   assert.match(resolved, /- Main patch after the final shared anchor\./);
 });
 
-test('auto-retarget workflow moves non-patch changesets from main to next', async () => {
-  const workflow = await readFile(autoRetargetWorkflowPath, 'utf8');
-
-  assert.match(workflow, /pull_request_target:/);
-  assert.match(workflow, /branches:\s*\n\s*-\s*main/);
-  assert.match(
-    workflow,
-    /github\.event\.pull_request\.head\.repo\.full_name != github\.repository/
+test('auto-retarget workflow is removed', async () => {
+  await assert.rejects(
+    readFile(
+      new URL('../../.github/workflows/auto-retarget.yml', import.meta.url),
+      'utf8'
+    ),
+    /ENOENT/
   );
-  assert.match(workflow, /github\.event\.pull_request\.head\.ref != 'next'/);
-  assert.match(workflow, /github\.event\.repository\.default_branch/);
-  assert.match(workflow, /getChangesetReleaseType/);
-  assert.match(workflow, /releaseType !== 'minor' && releaseType !== 'major'/);
-  assert.match(workflow, /branch:\s*'next'/);
-  assert.match(workflow, /base:\s*'next'/);
-  assert.match(workflow, /retargeted-to-next/);
-  assert.match(workflow, /main` only accepts patch changes/);
 });
 
-test('verify changesets workflow blocks non-patch releases on main', async () => {
+test('verify changesets workflow allows minor on main and keeps release branches patch-only', async () => {
   const workflow = await readFile(verifyChangesetsWorkflowPath, 'utf8');
   const preJsonGuardIndex = workflow.indexOf(
     '.changeset/pre.json must not be committed to main'
@@ -723,6 +710,7 @@ test('verify changesets workflow blocks non-patch releases on main', async () =>
   assert.doesNotMatch(workflow, /Checkout workflow helper/);
   assert.doesNotMatch(workflow, /pathToFileURL/);
   assert.match(workflow, /function isChangesetFile/);
+  assert.match(workflow, /function getChangesetReleaseTypes/);
   assert.match(workflow, /function getChangesetReleaseType/);
   assert.ok(preJsonGuardIndex > 0);
   assert.ok(promoteExemptionIndex > preJsonGuardIndex);
@@ -731,9 +719,29 @@ test('verify changesets workflow blocks non-patch releases on main', async () =>
   assert.match(workflow, /getChangesetValidationErrors/);
   assert.match(
     workflow,
-    /releaseType === 'minor' \|\| releaseType === 'major'/
+    /const hasMajorChangeset = releaseTypes\.includes\('major'\)/
   );
-  assert.match(workflow, /Only patch bumps are allowed/);
+  assert.match(
+    workflow,
+    /const hasMinorChangeset = releaseTypes\.includes\('minor'\)/
+  );
+  assert.match(workflow, /baseRef === 'main' && hasMajorChangeset/);
+  assert.doesNotMatch(
+    workflow,
+    /baseRef === 'main'\s*&&\s*releaseType === 'minor'/
+  );
+  assert.match(
+    workflow,
+    /Major bumps target next for beta before stable promotion/
+  );
+  assert.match(workflow, /baseRef === 'next' && hasMinorChangeset/);
+  assert.match(
+    workflow,
+    /Minor bumps target main; next is only for major beta work/
+  );
+  assert.match(workflow, /baseRef\.startsWith\('release\/'\)/);
+  assert.match(workflow, /hasMinorChangeset \|\| hasMajorChangeset/);
+  assert.match(workflow, /Only patch bumps are allowed on \$\{baseRef\}/);
 });
 
 test('verify main-to-next sync workflow checks only sync PR metadata', async () => {
