@@ -719,6 +719,11 @@ test('verify changesets workflow blocks non-patch releases on main', async () =>
     workflow,
     /\.changeset\/pre\.json must not be committed to main/
   );
+  assert.doesNotMatch(workflow, /github\.event\.repository\.default_branch/);
+  assert.doesNotMatch(workflow, /Checkout workflow helper/);
+  assert.doesNotMatch(workflow, /pathToFileURL/);
+  assert.match(workflow, /function isChangesetFile/);
+  assert.match(workflow, /function getChangesetReleaseType/);
   assert.ok(preJsonGuardIndex > 0);
   assert.ok(promoteExemptionIndex > preJsonGuardIndex);
   assert.match(workflow, /Missing changeset/);

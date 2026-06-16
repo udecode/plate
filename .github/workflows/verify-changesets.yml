@@ -24,27 +24,95 @@ jobs:
         if: github.event_name == 'merge_group'
         run: echo "Skipping merge_group; this policy runs on the source PR."
 
-      - name: 📥 Checkout workflow helper
-        if: github.event_name != 'merge_group'
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.repository.default_branch }}
-          persist-credentials: false
-
       - name: 🛡️ Verify changeset policy
         if: github.event_name != 'merge_group'
         uses: actions/github-script@v7
         with:
           script: |
-            const { pathToFileURL } = await import('node:url');
-            const helperUrl = pathToFileURL(
-              `${process.env.GITHUB_WORKSPACE}/tooling/scripts/auto-release-pr.mjs`
-            ).href;
-            const {
-              getChangesetReleaseType,
-              getChangesetValidationErrors,
-              isChangesetFile,
-            } = await import(helperUrl);
+            const changesetFrontmatterPattern = /^---\r?\n([\s\S]*?)\r?\n---/;
+            const changesetReleaseTypePattern = /:\s*(major|minor|patch)\b/g;
+            const changesetFilenamePattern = /^[a-z][a-z0-9-]*\.md$/;
+
+            function isChangesetFile(file) {
+              return (
+                file.filename.startsWith('.changeset/') &&
+                file.filename.endsWith('.md') &&
+                file.filename !== '.changeset/README.md' &&
+                file.status !== 'removed'
+              );
+            }
+
+            function getAddedPatchContent(patch = '') {
+              return patch
+                .split('\n')
+                .filter((line) => line.startsWith('+') && !line.startsWith('+++'))
+                .map((line) => line.slice(1))
+                .join('\n');
+            }
+
+            function getChangesetContent(file) {
+              return getAddedPatchContent(file.patch);
+            }
+
+            function parseChangesetReleaseTypes(content) {
+              const frontmatter = content.match(changesetFrontmatterPattern)?.[1];
+
+              return [...(frontmatter ?? '').matchAll(changesetReleaseTypePattern)].map(
+                (match) => match[1]
+              );
+            }
+
+            function getChangesetReleaseType(files) {
+              const releaseTypes = files
+                .filter(isChangesetFile)
+                .flatMap((file) => parseChangesetReleaseTypes(getChangesetContent(file)));
+
+              if (releaseTypes.includes('major')) return 'major';
+              if (releaseTypes.includes('minor')) return 'minor';
+              if (releaseTypes.includes('patch')) return 'patch';
+
+              return null;
+            }
+
+            function validateChangesetFile(file) {
+              const basename = file.filename.split('/').pop() ?? '';
+              const errors = [];
+
+              if (!changesetFilenamePattern.test(basename)) {
+                errors.push(
+                  `${file.filename} has an invalid filename. Use lowercase letters, digits, and hyphens.`
+                );
+              }
+
+              const content = getChangesetContent(file);
+              const frontmatter = content.match(changesetFrontmatterPattern)?.[1];
+
+              if (!frontmatter) {
+                errors.push(`${file.filename} is missing YAML frontmatter.`);
+                return errors;
+              }
+
+              const entries = frontmatter
+                .split(/\r?\n/)
+                .map((line) => line.trim())
+                .filter(Boolean);
+
+              if (entries.length !== 1) {
+                errors.push(`${file.filename} must declare exactly one package.`);
+              }
+
+              for (const entry of entries) {
+                if (!/^"[^"]+"\s*:\s*(major|minor|patch|none)$/.test(entry)) {
+                  errors.push(`${file.filename} has invalid changeset frontmatter: ${entry}`);
+                }
+              }
+
+              return errors;
+            }
+
+            function getChangesetValidationErrors(files) {
+              return files.filter(isChangesetFile).flatMap(validateChangesetFile);
+            }
 
             const pullRequest = context.payload.pull_request;
             const baseRef = pullRequest.base.ref;
