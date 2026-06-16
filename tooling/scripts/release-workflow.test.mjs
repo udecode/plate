@@ -150,29 +150,38 @@ test('release workflow uses the pruned GitHub Release path', async () => {
   assert.doesNotMatch(workflow, /release\/\*\*/);
 });
 
-test('pull request workflows skip generated Changesets release branches', async () => {
+test('pull request workflows handle generated Changesets release branches', async () => {
   const ciWorkflow = await readFile(ciWorkflowPath, 'utf8');
   const registryWorkflow = await readFile(registryWorkflowPath, 'utf8');
 
-  for (const workflow of [ciWorkflow, registryWorkflow]) {
-    assert.match(
-      workflow,
-      /github\.event\.pull_request\.head\.repo\.full_name != github\.repository/
-    );
-    assert.match(
-      workflow,
-      /!startsWith\(github\.event\.pull_request\.head\.ref, 'changeset-release\/'\)/
-    );
-    assert.doesNotMatch(
-      workflow,
-      /github\.event\.pull_request\.title != '\[Release\] Version packages'/
-    );
-  }
+  assert.match(ciWorkflow, /GENERATED_RELEASE_PR:/);
+  assert.match(ciWorkflow, /env\.GENERATED_RELEASE_PR == 'true'/);
+  assert.match(ciWorkflow, /env\.GENERATED_RELEASE_PR != 'true'/);
+  assert.match(
+    ciWorkflow,
+    /Generated Changesets release PR; release workflow validates package output\./
+  );
 
   assert.match(
     ciWorkflow,
     /!contains\(github\.event\.head_commit\.message, '\[Release\] Version packages'\)/
   );
+
+  assert.match(
+    registryWorkflow,
+    /github\.event\.pull_request\.head\.repo\.full_name != github\.repository/
+  );
+  assert.match(
+    registryWorkflow,
+    /!startsWith\(github\.event\.pull_request\.head\.ref, 'changeset-release\/'\)/
+  );
+
+  for (const workflow of [ciWorkflow, registryWorkflow]) {
+    assert.doesNotMatch(
+      workflow,
+      /github\.event\.pull_request\.title != '\[Release\] Version packages'/
+    );
+  }
 });
 
 test('promote workflow exits beta mode and creates next to main PR', async () => {
