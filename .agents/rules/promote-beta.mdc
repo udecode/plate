@@ -1,0 +1,44 @@
+---
+description: Compatibility entrypoint for beta promotion. Prefer release-lanes for end-to-end latest/beta lane maintenance.
+argument-hint: '[repo, dry-run, real promote, PR URL, or release version]'
+---
+
+# Promote Beta
+
+Compatibility shim. Use `release-lanes` for end-to-end beta/latest maintenance.
+This file exists so older prompts that say `promote-beta` still route correctly.
+
+## Route
+
+If the request is anything beyond read-only explanation, load
+`.agents/rules/release-lanes.mdc` and follow that skill instead.
+
+The old split was too manual: promote PR, generated sync PR, then beta re-entry.
+The current owner is `release-lanes`, which treats promotion, direct
+`main -> next` sync, beta re-entry, release watching, npm readback, and stale PR
+cleanup as one autogoal-backed lane.
+
+Do not run the old post-promotion checklist from this file.
+
+## Quick Commands
+
+Create the lane plan:
+
+```bash
+node .agents/skills/autogoal/scripts/create-goal-scratchpad.mjs \
+  --template release-lanes \
+  --title "release lane maintenance"
+```
+
+Run a promote dry run:
+
+```bash
+gh workflow run promote.yml --ref next -f dry_run=true
+```
+
+Run direct `main -> next` sync through the release-lanes script:
+
+```bash
+node tooling/scripts/release-branch-prs.mjs sync-main-to-next --dry-run
+node tooling/scripts/release-branch-prs.mjs sync-main-to-next --push
+```
