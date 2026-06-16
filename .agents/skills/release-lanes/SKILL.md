@@ -48,8 +48,10 @@ complete only when the requested lane state is true and the template gates pass.
 - `next` publishes prerelease packages with npm tag `beta`.
 - `.changeset/pre.json` belongs on `next` only.
 - `main` must never publish while `.changeset/pre.json` exists.
-- Minor and major changesets target `next`.
-- Patch changes may target `main`.
+- Major changesets target `next` for beta before stable promotion.
+- Minor changesets target `main`, not `next`.
+- Patch changes may target `main`; use `next` patch changes only for active
+  beta-lane fixes or direct-sync beta metadata.
 
 ## Modes
 

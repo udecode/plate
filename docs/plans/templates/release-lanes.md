@@ -40,6 +40,9 @@ Verification surface:
 Constraints:
 - Do not publish manually with `npm publish`.
 - Do not commit `.changeset/pre.json` to `main`.
+- Do not route minor changesets to `next`; minor releases target `main`.
+- Treat `next` as the major beta lane. Patch changes on `next` are only for
+  active beta-lane fixes or direct-sync beta metadata.
 - Do not push a direct `next` sync commit with beta changesets unless beta pre
   mode is present in that same commit.
 - Do not leave generated beta changeset files waiting for a Version Packages PR

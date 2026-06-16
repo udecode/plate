@@ -62,11 +62,14 @@ jobs:
               );
             }
 
-            function getChangesetReleaseType(files) {
-              const releaseTypes = files
+            function getChangesetReleaseTypes(files) {
+              return files
                 .filter(isChangesetFile)
                 .flatMap((file) => parseChangesetReleaseTypes(getChangesetContent(file)));
+            }
 
+            function getChangesetReleaseType(files) {
+              const releaseTypes = getChangesetReleaseTypes(files);
               if (releaseTypes.includes('major')) return 'major';
               if (releaseTypes.includes('minor')) return 'minor';
               if (releaseTypes.includes('patch')) return 'patch';
@@ -173,13 +176,24 @@ jobs:
               failures.push(...getChangesetValidationErrors(files));
             }
 
+            const releaseTypes = getChangesetReleaseTypes(files);
+            const hasMajorChangeset = releaseTypes.includes('major');
+            const hasMinorChangeset = releaseTypes.includes('minor');
             const releaseType = getChangesetReleaseType(files);
 
+            if (baseRef === 'main' && hasMajorChangeset) {
+              failures.push(`Changeset contains a major bump. Major bumps target next for beta before stable promotion.`);
+            }
+
+            if (baseRef === 'next' && hasMinorChangeset) {
+              failures.push(`Changeset contains a minor bump. Minor bumps target main; next is only for major beta work.`);
+            }
+
             if (
-              (baseRef === 'main' || baseRef.startsWith('release/')) &&
-              (releaseType === 'minor' || releaseType === 'major')
+              baseRef.startsWith('release/') &&
+              (hasMinorChangeset || hasMajorChangeset)
             ) {
-              failures.push(`Changeset contains a ${releaseType} bump. Only patch bumps are allowed on ${baseRef}; target next instead.`);
+              failures.push(`Changeset contains a ${releaseType} bump. Only patch bumps are allowed on ${baseRef}.`);
             }
 
             if (failures.length > 0) {
