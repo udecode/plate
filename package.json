@@ -39,7 +39,7 @@
     "check": "pnpm lint && pnpm typecheck && pnpm test:all && pnpm test:slowest",
     "check:push": "pnpm lint && pnpm typecheck && pnpm test:all",
     "ci:release": "node tooling/scripts/release-packages.mjs",
-    "ci:version": "pnpm changeset version && pnpm install --no-frozen-lockfile",
+    "ci:version": "node tooling/scripts/version-packages.mjs",
     "deps:check": "npx npm-check-updates@latest --configFileName config/ncurc.yml --workspaces --root --mergeConfig",
     "deps:update": "npx npm-check-updates@latest --configFileName config/ncurc.yml -u --workspaces --root --mergeConfig",
     "dev": "turbo --filter=www dev",

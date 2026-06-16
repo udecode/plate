@@ -25,6 +25,14 @@ const releaseWorkflowPath = new URL(
   '../../.github/workflows/release.yml',
   import.meta.url
 );
+const ciWorkflowPath = new URL(
+  '../../.github/workflows/ci.yml',
+  import.meta.url
+);
+const registryWorkflowPath = new URL(
+  '../../.github/workflows/registry.yml',
+  import.meta.url
+);
 const promoteWorkflowPath = new URL(
   '../../.github/workflows/promote.yml',
   import.meta.url
@@ -140,6 +148,31 @@ test('release workflow uses the pruned GitHub Release path', async () => {
   assert.doesNotMatch(workflow, /pr-analyzer/);
   assert.doesNotMatch(workflow, /snapshot:/);
   assert.doesNotMatch(workflow, /release\/\*\*/);
+});
+
+test('pull request workflows skip generated Changesets release branches', async () => {
+  const ciWorkflow = await readFile(ciWorkflowPath, 'utf8');
+  const registryWorkflow = await readFile(registryWorkflowPath, 'utf8');
+
+  for (const workflow of [ciWorkflow, registryWorkflow]) {
+    assert.match(
+      workflow,
+      /github\.event\.pull_request\.head\.repo\.full_name != github\.repository/
+    );
+    assert.match(
+      workflow,
+      /!startsWith\(github\.event\.pull_request\.head\.ref, 'changeset-release\/'\)/
+    );
+    assert.doesNotMatch(
+      workflow,
+      /github\.event\.pull_request\.title != '\[Release\] Version packages'/
+    );
+  }
+
+  assert.match(
+    ciWorkflow,
+    /!contains\(github\.event\.head_commit\.message, '\[Release\] Version packages'\)/
+  );
 });
 
 test('promote workflow exits beta mode and creates next to main PR', async () => {
@@ -770,7 +803,7 @@ test('package scripts expose CI version and release commands only', async () => 
 
   assert.equal(
     packageJson.scripts['ci:version'],
-    'pnpm changeset version && pnpm install --no-frozen-lockfile'
+    'node tooling/scripts/version-packages.mjs'
   );
   assert.equal(
     packageJson.scripts['ci:release'],

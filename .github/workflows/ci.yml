@@ -60,10 +60,12 @@ jobs:
     if: >-
       (
         github.event_name != 'pull_request' ||
-        github.event.pull_request.title != '[Release] Version packages'
+        github.event.pull_request.head.repo.full_name != github.repository ||
+        !startsWith(github.event.pull_request.head.ref, 'changeset-release/')
       ) && (
         github.event_name != 'push' || (
           github.event.head_commit.message != 'Version Packages' &&
+          !contains(github.event.head_commit.message, '[Release] Version packages') &&
           !contains(github.event.head_commit.message, '[skip ci]')
         )
       )
