@@ -23,6 +23,13 @@ First checkpoint:
 - Do not continue into implementation until this extraction is complete or
   explicitly marked N/A with reason.
 
+Timed checkpoint:
+- requested duration: pending
+- semantics: pending
+- initial confidence score: pending
+- improvement loop: pending
+- final score / loop closure: pending
+
 Completion threshold:
 - TODO: Define what proves the repair is complete.
 
@@ -48,6 +55,7 @@ Start Gates:
 | Gate | Applies | Evidence |
 |------|---------|----------|
 | Prompt requirements captured before work | pending | pending |
+| Timed checkpoint parsed | pending | pending |
 
 Work Checklist:
 - [ ] First checkpoint complete: every explicit prompt requirement, scope
@@ -55,6 +63,9 @@ Work Checklist:
       section, verification surface, and success criterion is copied into this
       plan as checkable checkpoints before implementation.
 - [ ] Expected behavior and observed miss are concrete.
+- [ ] If a duration was requested, it is recorded as minimum active work unless
+      explicitly marked hard stop; when no better metric exists, initial and
+      final confidence scores are recorded.
 - [ ] Source of truth for the missed rule is identified.
 - [ ] Root cause is recorded before repair.
 - [ ] Repair updates the canonical surface.
@@ -68,6 +79,7 @@ Completion Gates:
 | Canonical source repaired | pending | Patch the real source of truth | pending |
 | Verification proof | pending | Run named proof or record blocker | pending |
 | Autoreview | pending | Review repair against expected behavior, observed miss, and newest user request | pending |
+| Timed checkpoint | pending | If duration was requested, keep improving until elapsed, then finish the current loop cleanly; otherwise N/A | pending |
 | Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` | pending |
 
 Phase / pass table:

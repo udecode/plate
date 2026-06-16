@@ -16,6 +16,13 @@ Expectation:
 - owning skill/template/helper: TODO
 - repair classification: pending
 
+Timed checkpoint:
+- requested duration: pending
+- semantics: pending
+- initial confidence score: pending
+- improvement loop: pending
+- final score / loop closure: pending
+
 Completion threshold:
 - TODO: Name the exact repaired behavior.
 - Repair closure is legal only when the source owner is patched, generated
@@ -73,6 +80,7 @@ Completion rule:
 Start Gates:
 | Gate | Applies | Evidence |
 |------|---------|----------|
+| Timed checkpoint parsed | pending | pending |
 | Expectation restated | pending | pending |
 | Active goal checked | pending | pending |
 | Named plan or skill read | pending | pending |
@@ -82,6 +90,9 @@ Start Gates:
 | Output budget strategy recorded | pending | pending |
 
 Work Checklist:
+- [ ] If a duration was requested, it is recorded as minimum active work unless
+      explicitly marked hard stop; when no better metric exists, initial and
+      final confidence scores are recorded.
 - [ ] Expectation and observed miss are stated with source evidence.
 - [ ] Primary owner selected: runtime plan, template, skill rule, or
       helper/checker.
@@ -106,6 +117,7 @@ Completion Gates:
 | Autoreview / review | pending | Run applicable review gate or record N/A for docs-only/source-rule-only repair | pending |
 | Final lint | pending | Run scoped formatter/lint or record ignored-path/N/A reason | pending |
 | Output budget discipline | pending | Verify no unbounded high-volume command output was streamed, or record the accidental output and recovery | pending |
+| Timed checkpoint | pending | If duration was requested, keep improving until elapsed, then finish the current loop cleanly; otherwise N/A | pending |
 | Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` | pending |
 
 Phase / pass table:

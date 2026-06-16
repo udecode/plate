@@ -331,6 +331,11 @@ export const NodeIdPlugin = createTSlatePlugin<NodeIdConfig>({
     idCreator: () => nanoid(10),
   },
 })
+  .extend(({ getOptions }) => ({
+    node: {
+      isMetadataProp: ({ key }) => key === (getOptions().idKey ?? 'id'),
+    },
+  }))
   .extendTransforms(({ editor, getOptions }) => ({
     normalize() {
       const options = getOptions();
