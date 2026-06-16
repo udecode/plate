@@ -2,7 +2,9 @@ name: ReleaseOrVersionPR
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
+      - next
 
 permissions: {}
 
@@ -14,7 +16,10 @@ jobs:
   release:
     name: Release and changelog
     runs-on: ubuntu-latest
-    if: ${{ github.repository == 'udecode/plate' && github.ref == 'refs/heads/main' && !contains(github.event.head_commit.message, '[skip release]') }}
+    if: >-
+      (github.repository == 'udecode/plate' || vars.RELEASE_VERSION_PR_TEST == 'true') &&
+      (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/next') &&
+      !contains(github.event.head_commit.message, '[skip release]')
     permissions:
       contents: write
       pull-requests: write
@@ -22,6 +27,7 @@ jobs:
     outputs:
       published: ${{ steps.changesets.outputs.published }}
       publishedPackages: ${{ steps.changesets.outputs.publishedPackages }}
+      versionPullRequestNumber: ${{ steps.changesets.outputs.pullRequestNumber }}
 
     steps:
       - name: Generate App Token
@@ -124,6 +130,35 @@ jobs:
         with:
           node-version: 22
 
+      - name: 🛡️ Guard release channel
+        id: release_channel
+        run: |
+          set -euo pipefail
+
+          if [[ "$GITHUB_REF_NAME" == "main" ]]; then
+            if [[ -f .changeset/pre.json ]]; then
+              echo "::error::main cannot publish while .changeset/pre.json exists."
+              exit 1
+            fi
+
+            echo "channel=latest" >> "$GITHUB_OUTPUT"
+            echo "npm_tag=latest" >> "$GITHUB_OUTPUT"
+            echo "sync_artifacts=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if [[ "$GITHUB_REF_NAME" == "next" ]]; then
+            node tooling/scripts/guard-beta-pre-release.mjs
+
+            echo "channel=beta" >> "$GITHUB_OUTPUT"
+            echo "npm_tag=" >> "$GITHUB_OUTPUT"
+            echo "sync_artifacts=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "::error::Unsupported release branch: $GITHUB_REF_NAME"
+          exit 1
+
       - name: 📦 Monorepo install
         uses: ./.github/actions/pnpm-install
         with:
@@ -147,9 +182,12 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token || secrets.API_TOKEN_GITHUB || secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_TAG: ${{ steps.release_channel.outputs.npm_tag }}
+          PLATE_DISABLE_PUBLISH: ${{ github.repository != 'udecode/plate' }}
+          PLATE_RELEASE_CHANNEL: ${{ steps.release_channel.outputs.channel }}
 
       - name: 🏷️ Push package tags
-        if: ${{ steps.changesets.outputs.published == 'true' }}
+        if: ${{ github.repository == 'udecode/plate' && steps.changesets.outputs.published == 'true' }}
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token || secrets.API_TOKEN_GITHUB || secrets.GITHUB_TOKEN }}
           PUBLISHED_PACKAGES: ${{ steps.changesets.outputs.publishedPackages }}
@@ -189,7 +227,7 @@ jobs:
 
       - name: 📝 Generate raw release notes
         id: raw-notes
-        if: ${{ steps.changesets.outputs.published == 'true' }}
+        if: ${{ github.repository == 'udecode/plate' && steps.changesets.outputs.published == 'true' }}
         env:
           PUBLISHED_PACKAGES: ${{ steps.changesets.outputs.publishedPackages }}
         run: node tooling/scripts/release-notes.mjs
@@ -235,7 +273,7 @@ jobs:
           fi
 
       - name: 📝 Create GitHub Release
-        if: ${{ steps.changesets.outputs.published == 'true' }}
+        if: ${{ github.repository == 'udecode/plate' && steps.changesets.outputs.published == 'true' }}
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token || secrets.API_TOKEN_GITHUB || secrets.GITHUB_TOKEN }}
           VERSION: ${{ steps.raw-notes.outputs.version }}
@@ -247,6 +285,11 @@ jobs:
           fi
 
           TAG="v${VERSION}"
+          PRERELEASE_FLAG=()
+
+          if [[ "$VERSION" == *"-"* || "${{ steps.release_channel.outputs.channel }}" == "beta" ]]; then
+            PRERELEASE_FLAG=(--prerelease)
+          fi
 
           if [[ -f "${RAW_PATH}.final" && -f "${RAW_PATH}.final.validated" ]]; then
             NOTES_FILE="${RAW_PATH}.final"
@@ -264,10 +307,10 @@ jobs:
             || echo "Tag $TAG already exists."
 
           if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
-            gh release edit "$TAG" --repo "$GITHUB_REPOSITORY" --title "$TAG" --notes-file "$NOTES_FILE"
+            gh release edit "$TAG" --repo "$GITHUB_REPOSITORY" --title "$TAG" --notes-file "$NOTES_FILE" "${PRERELEASE_FLAG[@]}"
             echo "Updated release $TAG."
           else
-            gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --title "$TAG" --notes-file "$NOTES_FILE" --target "$GITHUB_SHA"
+            gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --title "$TAG" --notes-file "$NOTES_FILE" --target "$GITHUB_SHA" "${PRERELEASE_FLAG[@]}"
             echo "Created release $TAG."
           fi
 
@@ -290,7 +333,7 @@ jobs:
     name: Sync registry and templates after publish
     runs-on: ubuntu-latest
     needs: release
-    if: ${{ needs.release.result == 'success' && needs.release.outputs.published == 'true' }}
+    if: ${{ needs.release.result == 'success' && needs.release.outputs.published == 'true' && github.ref_name == 'main' && github.repository == 'udecode/plate' }}
     permissions:
       contents: write
       pull-requests: write
@@ -476,3 +519,33 @@ jobs:
             tail -n 200 "$RUNNER_TEMP/template-ci.log"
           fi
           exit 1
+
+  sync-main-to-next:
+    name: Sync main to next after release workflow
+    runs-on: ubuntu-latest
+    needs:
+      - release
+      - sync-release-artifacts
+    if: ${{ always() && needs.release.result == 'success' && (needs.sync-release-artifacts.result == 'success' || needs.sync-release-artifacts.result == 'skipped') && github.ref_name == 'main' && needs.release.outputs.versionPullRequestNumber == '' }}
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: 📥 Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: true
+          token: ${{ secrets.API_TOKEN_GITHUB || secrets.GITHUB_TOKEN }}
+
+      - name: ♻️ Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: 🔀 Create or update main-to-next sync PR
+        env:
+          GH_TOKEN: ${{ secrets.API_TOKEN_GITHUB || secrets.GITHUB_TOKEN }}
+        run: node tooling/scripts/release-branch-prs.mjs sync-main-to-next

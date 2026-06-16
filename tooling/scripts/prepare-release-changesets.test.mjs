@@ -4,6 +4,7 @@ import test from 'node:test';
 import {
   createAutoChangesetContent,
   getAutoReleasePackages,
+  getChangesetStatusArgs,
 } from './prepare-release-changesets.mjs';
 
 function createWorkspacePackages(entries) {
@@ -90,4 +91,28 @@ test('formats a synthetic changeset for one auto-bumped package', () => {
 
   assert.match(content, /"platejs": patch/);
   assert.match(content, /Updated `@platejs\/core`, `@platejs\/utils`\./);
+});
+
+test('uses the release branch as the changeset status base in CI', () => {
+  assert.deepEqual(
+    getChangesetStatusArgs({
+      env: { GITHUB_REF_NAME: 'next' },
+      outputPath: '.tmp/status.json',
+    }),
+    ['exec', 'changeset', 'status', '--output=.tmp/status.json', '--since=next']
+  );
+
+  assert.deepEqual(
+    getChangesetStatusArgs({
+      env: { PLATE_CHANGESET_STATUS_BASE: 'release/v53' },
+      outputPath: '.tmp/status.json',
+    }),
+    [
+      'exec',
+      'changeset',
+      'status',
+      '--output=.tmp/status.json',
+      '--since=release/v53',
+    ]
+  );
 });

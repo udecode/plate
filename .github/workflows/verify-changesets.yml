@@ -1,0 +1,122 @@
+name: Verify Changesets
+
+on:
+  pull_request:
+    types: [opened, synchronize, labeled, unlabeled, edited]
+    branches:
+      - main
+      - next
+      - 'release/**'
+  merge_group:
+
+permissions: {}
+
+jobs:
+  verify:
+    name: Verify changeset policy
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+
+    steps:
+      - name: Skip merge queue
+        if: github.event_name == 'merge_group'
+        run: echo "Skipping merge_group; this policy runs on the source PR."
+
+      - name: 📥 Checkout workflow helper
+        if: github.event_name != 'merge_group'
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
+
+      - name: 🛡️ Verify changeset policy
+        if: github.event_name != 'merge_group'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { pathToFileURL } = await import('node:url');
+            const helperUrl = pathToFileURL(
+              `${process.env.GITHUB_WORKSPACE}/tooling/scripts/auto-release-pr.mjs`
+            ).href;
+            const {
+              getChangesetReleaseType,
+              getChangesetValidationErrors,
+              isChangesetFile,
+            } = await import(helperUrl);
+
+            const pullRequest = context.payload.pull_request;
+            const baseRef = pullRequest.base.ref;
+            const headRef = pullRequest.head.ref;
+            const headRepo = pullRequest.head.repo.full_name;
+            const upstreamRepo = `${context.repo.owner}/${context.repo.repo}`;
+            const files = await github.paginate(github.rest.pulls.listFiles, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: pullRequest.number,
+              per_page: 100,
+            });
+            const failures = [];
+
+            if (
+              baseRef === 'main' &&
+              files.some((file) => file.filename === '.changeset/pre.json' && file.status !== 'removed')
+            ) {
+              failures.push('.changeset/pre.json must not be committed to main. Pre-release mode belongs on next.');
+            }
+
+            if (headRepo === upstreamRepo) {
+              if (headRef.startsWith('changeset-release/')) {
+                if (failures.length > 0) {
+                  core.setFailed(failures.map((failure) => `- ${failure}`).join('\n'));
+                  return;
+                }
+                core.info('Verification exempt: release PR from changeset-release/* branch.');
+                return;
+              }
+
+              if (headRef === 'next' && baseRef === 'main') {
+                if (failures.length > 0) {
+                  core.setFailed(failures.map((failure) => `- ${failure}`).join('\n'));
+                  return;
+                }
+                core.info('Verification exempt: next -> main promotion PR.');
+                return;
+              }
+
+              if ((headRef === 'main' || headRef === 'sync/main-to-next') && baseRef === 'next') {
+                core.info('Verification exempt: main -> next sync PR.');
+                return;
+              }
+            }
+
+            const labels = new Set((pullRequest.labels ?? []).map((label) => label.name));
+
+            const changesetFiles = files.filter(isChangesetFile);
+
+            if (changesetFiles.length === 0) {
+              const hasPackageChanges = files.some((file) => file.filename.startsWith('packages/'));
+
+              if (hasPackageChanges && !labels.has('skip-changeset')) {
+                failures.push("Missing changeset. Add one with 'pnpm changeset' or add the skip-changeset label.");
+              }
+            } else {
+              failures.push(...getChangesetValidationErrors(files));
+            }
+
+            const releaseType = getChangesetReleaseType(files);
+
+            if (
+              (baseRef === 'main' || baseRef.startsWith('release/')) &&
+              (releaseType === 'minor' || releaseType === 'major')
+            ) {
+              failures.push(`Changeset contains a ${releaseType} bump. Only patch bumps are allowed on ${baseRef}; target next instead.`);
+            }
+
+            if (failures.length > 0) {
+              core.setFailed(failures.map((failure) => `- ${failure}`).join('\n'));
+              return;
+            }
+
+            core.info(`Changeset policy passed for ${headRef} -> ${baseRef}. Release type: ${releaseType ?? 'none'}.`);

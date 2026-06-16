@@ -1,0 +1,35 @@
+name: Verify main-to-next sync
+
+on:
+  pull_request:
+    branches:
+      - next
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - ready_for_review
+
+permissions:
+  contents: read
+
+jobs:
+  verify-release-metadata:
+    name: Verify release metadata resolution
+    if: ${{ github.event.pull_request.head.ref == 'sync/main-to-next' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout sync branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Verify main-to-next metadata merge
+        run: node tooling/scripts/release-branch-prs.mjs verify-main-to-next-sync

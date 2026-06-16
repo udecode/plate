@@ -1,0 +1,112 @@
+name: Auto-retarget Changesets
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+    branches:
+      - main
+
+permissions: {}
+
+jobs:
+  retarget:
+    name: Retarget minor and major changesets
+    runs-on: ubuntu-latest
+    if: >-
+      github.actor != 'github-actions[bot]' &&
+      (
+        github.event.pull_request.head.repo.full_name != github.repository ||
+        (
+          !startsWith(github.event.pull_request.head.ref, 'changeset-release/') &&
+          github.event.pull_request.head.ref != 'next'
+        )
+      )
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Generate App Token
+        id: app-token
+        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
+        if: vars.RELEASE_APP_ID != ''
+        with:
+          app-id: ${{ vars.RELEASE_APP_ID }}
+          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+
+      - name: 📥 Checkout workflow helper
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
+          token: ${{ steps.app-token.outputs.token || secrets.API_TOKEN_GITHUB || secrets.GITHUB_TOKEN }}
+
+      - name: 🔀 Retarget minor and major changesets to next
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ steps.app-token.outputs.token || secrets.API_TOKEN_GITHUB || secrets.GITHUB_TOKEN }}
+          script: |
+            const { pathToFileURL } = await import('node:url');
+            const helperUrl = pathToFileURL(
+              `${process.env.GITHUB_WORKSPACE}/tooling/scripts/auto-release-pr.mjs`
+            ).href;
+            const { getChangesetReleaseType } = await import(helperUrl);
+
+            const pullRequest = context.payload.pull_request;
+            const files = await github.paginate(github.rest.pulls.listFiles, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: pullRequest.number,
+              per_page: 100,
+            });
+
+            const releaseType = getChangesetReleaseType(files);
+
+            if (releaseType !== 'minor' && releaseType !== 'major') {
+              core.info(`No retarget needed. Changeset release type: ${releaseType ?? 'none'}.`);
+              return;
+            }
+
+            try {
+              await github.rest.repos.getBranch({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                branch: 'next',
+              });
+            } catch (error) {
+              if (error.status === 404) {
+                core.warning('next branch does not exist. Cannot retarget PR.');
+                return;
+              }
+
+              throw error;
+            }
+
+            await github.rest.pulls.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: pullRequest.number,
+              base: 'next',
+            });
+
+            try {
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: pullRequest.number,
+                labels: ['retargeted-to-next'],
+              });
+            } catch (error) {
+              core.warning(`Could not add retargeted-to-next label: ${error.message}`);
+            }
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: pullRequest.number,
+              body: [
+                `This PR was automatically retargeted from \`main\` to \`next\` because it contains a **${releaseType}** changeset.`,
+                '',
+                '`main` only accepts patch changes. Features and breaking changes go through `next` for beta testing before stable promotion.',
+              ].join('\n'),
+            });
