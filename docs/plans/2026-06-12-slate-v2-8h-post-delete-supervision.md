@@ -113,7 +113,7 @@ Constraints:
 
 Boundaries:
 - Source of truth: `.agents/skills/slate-auto/SKILL.md`,
-  `.agents/skills/autogoal/SKILL.md`, `.agents/skills/slate-north-star/SKILL.md`,
+  `.agents/skills/autogoal/SKILL.md`, `.agents/skills/vision/SKILL.md`,
   `docs/slate-v2/agent-start.md`, the previous plan
   `docs/plans/2026-06-12-slate-v2-8h-research-first-automation.md`, and live
   `.tmp/slate-v2` source/tests/benchmarks.
@@ -125,7 +125,7 @@ Boundaries:
 - Package/API surfaces: Slate core, slate-react, slate-browser, slate-dom, and
   benchmark scripts only when the packet proves ownership.
 - Agent/skill surfaces: `slate-auto`, `slate-research`, `slate-browser`,
-  `autogoal`, and `slate-north-star` source rules only when required by a
+  `autogoal`, and `vision` source rules only when required by a
   workflow miss or taste gap.
 - Docs/research surfaces: parent `docs/slate-v2/**` and this `docs/plans/**`
   plan; avoid raw dumps in durable docs.
@@ -146,14 +146,14 @@ Blocked condition:
 - Block only when no safe alternate checkpoint remains and the next action
   needs missing user taste, unavailable raw device/credential/source, destructive
   authority, commit/PR authority, or an unsafe architecture fork that
-  `slate-north-star` does not cover.
+  `vision` does not cover.
 - If the minimum runtime remains and a soft question appears, queue it and
   continue with another safe packet.
 - Do not block while a safe alternate checkpoint remains runnable. In timed or
   batch mode, queue soft questions for final handoff.
 - Do not hand off before a timed minimum runtime has elapsed because the obvious
   backlog looks empty. Enter supervision mode and infer the next checkpoint from
-  `slate-north-star`, current evidence, weak proofs, benchmark gaps, API/docs
+  `vision`, current evidence, weak proofs, benchmark gaps, API/docs
   mismatch, issue/test harvest gaps, and workflow slowdowns.
 
 Automation state:
@@ -460,7 +460,7 @@ Mutation rules:
 - Reprioritize after every loop. The next checkpoint is chosen from current
   evidence, not from the original row order.
 - The supervisor is not stuck on this template or the initial prompt plan. The
-  user's latest request, `slate-north-star`, and current source evidence outrank
+  user's latest request, `vision`, and current source evidence outrank
   stale plan rows.
 
 Start Gates:
@@ -468,7 +468,7 @@ Start Gates:
 |------|---------|----------|
 | Prompt requirements captured before work | yes | First checkpoint extraction above. |
 | `slate-auto` source rule read | yes | Read `/Users/zbeyens/git/plate-2/.agents/skills/slate-auto/SKILL.md` through EOF. |
-| `slate-north-star` read as checkpoint zero | yes | Read `/Users/zbeyens/git/plate-2/.agents/skills/slate-north-star/SKILL.md` through EOF. |
+| `vision` read as checkpoint zero | yes | Read `/Users/zbeyens/git/plate-2/.agents/skills/vision/SKILL.md` through EOF. |
 | Active goal checked or created | yes | `get_goal` returned none; `create_goal` created this objective. |
 | Invocation mode and timebox recorded | yes | Timed mode, 8h minimum, target no earlier than `2026-06-13 05:20:19 CEST`. |
 | Dynamic checkpoint policy accepted | yes | Checkpoint table and mutation rules retained; new owner rows added. |

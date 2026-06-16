@@ -16,6 +16,14 @@ Expectation:
 - owning skill/template/helper: TODO
 - repair classification: pending
 
+First checkpoint:
+- Before implementation or broad exploration, copy every explicit prompt
+  requirement into this plan as checkable checkpoints: scope, non-goals,
+  timing/duration, stop conditions, deliverables, final handoff sections,
+  verification surface, and success criteria.
+- Do not continue into implementation until this extraction is complete or
+  explicitly marked N/A with reason.
+
 Timed checkpoint:
 - requested duration: pending
 - semantics: pending
@@ -80,6 +88,7 @@ Completion rule:
 Start Gates:
 | Gate | Applies | Evidence |
 |------|---------|----------|
+| Prompt requirements captured before work | pending | pending |
 | Timed checkpoint parsed | pending | pending |
 | Expectation restated | pending | pending |
 | Active goal checked | pending | pending |
@@ -93,6 +102,10 @@ Work Checklist:
 - [ ] If a duration was requested, it is recorded as minimum active work unless
       explicitly marked hard stop; when no better metric exists, initial and
       final confidence scores are recorded.
+- [ ] First checkpoint complete: every explicit prompt requirement, scope
+      boundary, timing constraint, stop condition, deliverable, final handoff
+      section, verification surface, and success criterion is copied into this
+      plan as checkable checkpoints before implementation.
 - [ ] Expectation and observed miss are stated with source evidence.
 - [ ] Primary owner selected: runtime plan, template, skill rule, or
       helper/checker.

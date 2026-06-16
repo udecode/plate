@@ -219,7 +219,7 @@ Decisions and tradeoffs:
 Implementation notes:
 - Moved `.agents/rules/slate-autoresearch.mdc` to `.agents/rules/slate-research.mdc`.
 - Renamed `tooling/scripts/slate-autoresearch.mjs` to `tooling/scripts/slate-research.mjs` and updated usage strings.
-- Updated `slate-automation`, `slate-ar`, `slate-ar-quality`, `slate-ar-perfect`, `slate-ar-next`, `slate-ar-recipe`, `slate-north-star`, `slate-patch`, `.agents/AGENTS.md`, and generated mirrors through `pnpm install`.
+- Updated `slate-automation`, `slate-ar`, `slate-ar-quality`, `slate-ar-perfect`, `slate-ar-next`, `slate-ar-recipe`, `vision`, `slate-patch`, `.agents/AGENTS.md`, and generated mirrors through `pnpm install`.
 
 Review fixes:
 - Agent-native review PASS. No accepted findings.

@@ -109,7 +109,7 @@ Completion rule:
 Checkpoint supervisor:
 | Checkpoint | Owner | Status | Priority | Why it exists | Evidence / exit rule | Mutation decision |
 |------------|-------|--------|----------|---------------|----------------------|-------------------|
-| checkpoint-zero | slate-automation | complete | P0 | Copy prompt requirements and read north-star before implementation. | User requirements copied; `slate-automation`, `autogoal`, `slate-north-star`, `docs/slate-v2/agent-start.md`, and source rules read. | update |
+| checkpoint-zero | slate-automation | complete | P0 | Copy prompt requirements and read north-star before implementation. | User requirements copied; `slate-automation`, `autogoal`, `vision`, `docs/slate-v2/agent-start.md`, and source rules read. | update |
 | status | slate-automation | complete | P0 | Read active plan, latest prompt, source status, and current evidence. | Package exists; baseline `bun test ./packages/slate-yjs/test` and `bun --filter @slate/yjs typecheck` passed before cleanup. | update |
 | gap-scan | slate-automation | complete | P0 | Identify behavior, visual, API, test, metric, docs, skill, and workflow gaps. | Found oversized controller ownership and duplicated structural contract helpers. | update |
 | behavior-proof | slate-ar-stabilize | complete | P0 | Prove stable editor behavior before perf. | `bun test ./packages/slate-yjs/test`; full Chromium `yjs-collaboration` 62/62. | update |
@@ -126,7 +126,7 @@ Checkpoint mutation ledger:
 | Loop | Mutation | Checkpoint(s) | Evidence | Reason | Result |
 |------|----------|---------------|----------|--------|--------|
 | 0 | seed | initial template rows | plan creation | starter topology only | updated |
-| 0 | update | checkpoint-zero, status, boundaries, proof surfaces | prompt, active goal, `slate-automation`, `autogoal`, `slate-north-star`, `docs/slate-v2/agent-start.md`, `.agents/rules/slate-automation.mdc`, `.agents/rules/slate-north-star.mdc` | First checkpoint captured explicit requirements before implementation. | checkpoint-zero complete; status/gap scan next |
+| 0 | update | checkpoint-zero, status, boundaries, proof surfaces | prompt, active goal, `slate-automation`, `autogoal`, `vision`, `docs/slate-v2/agent-start.md`, `.agents/rules/slate-automation.mdc`, `.agents/rules/vision.mdc` | First checkpoint captured explicit requirements before implementation. | checkpoint-zero complete; status/gap scan next |
 | 1 | update | gap-scan, packet ledger | source audit, baseline package tests/typecheck | Controller mixed provider lifecycle, Slate history pruning, and split-history repair helpers. | Routed to extraction packets. |
 | 2 | split | gap-scan | `provider.ts`, `history.ts`, `split-history.ts` | Three distinct controller concerns had different ownership and proof surfaces. | Kept after package/browser proof. |
 | 3 | update | tests/oracles | structural contract helper scan | Four structural tests duplicated peer factories and Yjs helper casts. | Consolidated to `test/support/collaboration.ts`. |
@@ -149,7 +149,7 @@ Mutation rules:
 - Reprioritize after every loop. The next checkpoint is chosen from current
   evidence, not from the original row order.
 - The supervisor is not stuck on this template or the initial prompt plan. The
-  user's latest request, `slate-north-star`, and current source evidence outrank
+  user's latest request, `vision`, and current source evidence outrank
   stale plan rows.
 
 Start Gates:
@@ -157,7 +157,7 @@ Start Gates:
 |------|---------|----------|
 | Prompt requirements captured before work | yes | Automation source, boundaries, completion threshold, non-goals, and proof surfaces filled before code edits. |
 | `slate-automation` source rule read | yes | Read `.agents/skills/slate-automation/SKILL.md` and `.agents/rules/slate-automation.mdc`. |
-| `slate-north-star` read as checkpoint zero | yes | Read `.agents/skills/slate-north-star/SKILL.md` and `.agents/rules/slate-north-star.mdc`. |
+| `vision` read as checkpoint zero | yes | Read `.agents/skills/vision/SKILL.md` and `.agents/rules/vision.mdc`. |
 | Active goal checked or created | yes | `get_goal` returned none; `create_goal` created active goal `019eab54-e63b-7bf2-a7a7-563569c44bc5`. |
 | Invocation mode and timebox recorded | yes | Timed mode, 5h, start `2026-06-09T15:46:11+0800`, deadline `2026-06-09T20:46:11+0800`. |
 | Dynamic checkpoint policy accepted | yes | Checkpoint supervisor and mutation ledger retained as runtime truth. |

@@ -1,6 +1,6 @@
 ---
-description: 'Mine external editor repositories and issue corpora for portable editor-behavior tests with ClawSweeper-style discipline: multi-pass exhaustive inventory, confidence scoring, framework-specific skip reasons, open/closed issue clustering, Slate/Plate coverage mapping, license-aware invariant extraction, and copy/refactor/create decisions.'
-argument-hint: '[<repo-path-or-owner/repo> [--issues [--state all|open|closed]] [--apply] [surface/tag/filter]]'
+description: Mine external editor repositories and issue corpora for portable editor-behavior tests with ClawSweeper-style discipline, then optionally turn a completed harvest into a lane-specific Slate v2 or Plate plan that pauses for review before execution.
+argument-hint: '[<repo-path-or-owner/repo> [--issues [--state all|open|closed]] [--apply] [surface/tag/filter] | plan <slate-v2|plate> <harvest-report-or-repo-key> | <harvest-report-or-repo-key> --lane <slate-v2|plate>]'
 disable-model-invocation: true
 name: editor-test-harvester
 metadata:
@@ -35,6 +35,13 @@ source-first, exhaustive inventory, explicit skip reasons, evidence rows, scored
 passes, narrow claims, license-aware invariant extraction, then implementation
 only when asked.
 
+When the user asks to process an existing harvest report into "all Slate tests",
+"all Plate rows", "a lane plan", or "the execution plan", stay in this skill and
+switch to lane-plan mode. Do not route to a separate wrapper. Lane-plan mode
+reads the completed or near-complete harvest, accounts for every row, applies the
+right downstream owner gates, writes a `docs/plans/*-harvest-plan.md`, and then
+pauses for user review. It must not patch implementation code.
+
 ## Source Of Truth
 
 Read these first:
@@ -48,6 +55,9 @@ Read these first:
 5. `docs/solutions/` for prior browser, IME, selection, and mobile proof lessons.
 6. `.agents/skills/clawsweeper/SKILL.md` for issue/PR provenance discipline
    when a test exists because of a known upstream bug.
+7. For lane-plan mode, the downstream lane skill:
+   - `slate-v2`: `.agents/skills/slate-plan/SKILL.md`
+   - `plate`: `.agents/skills/plate-plan/SKILL.md`
 
 Never browse GitHub files. If the target is `owner/repo` and the checkout is
 missing, clone it to `../repo-name`.
@@ -151,6 +161,12 @@ from the invariant, not pasted or mechanically ported from upstream source.
   `behavior-only` targets, do not paste, mechanically translate, or preserve
   upstream fixture/helper shape in versioned output. Write the strongest fresh
   local proof for the invariant, with source path references only.
+- When a portable invariant is really a runtime-boundary problem, route it to a
+  small fake-runtime or contract-test helper instead of a one-off smoke. The
+  local proof should drive both sides: Slate/Plate sends the expected
+  operation/event/request, and the fake host or peer returns deterministic data
+  that proves the local behavior. Promote the helper only when repeated rows use
+  the same boundary.
 - Prefer DRY Slate coverage: if a related test exists, strengthen or split it
   instead of creating a duplicate.
 - Use `plate-owned` when the useful behavior should fit Plate, not raw Slate.
@@ -164,6 +180,12 @@ from the invariant, not pasted or mechanically ported from upstream source.
 - Browser, mobile, selection, clipboard, and IME claims need honest runtime
   proof. A jsdom composition test does not prove mobile/IME behavior.
 - Do not edit `Plate repo root` unless the user asks for apply/copy/fix execution.
+- In lane-plan mode, do not edit `Plate repo root`, Plate packages, apps, docs,
+  examples, tests, package files, or build config. Planning mode writes only the
+  plan and goal-plan evidence.
+- In lane-plan mode, user phrases like "go", "process", "apply", or "all tests"
+  do not override the review pause. Build the plan, write the accepted-plan
+  execution handoff, and stop for user review before downstream execution.
 - No GitHub comments, labels, commits, pushes, or PRs unless explicitly asked.
 - In `--issues` mode, default to `--state all`. Closed issues are often the best
   source of regression stories, browser quirks, and already-fixed failure
@@ -199,7 +221,7 @@ Use an agent-native goal for comprehensive harvests, long-running reruns, and
 apply runs. Always call `get_goal` first. Call `create_goal` only when no active
 matching goal exists. There can be only one active goal per thread.
 
-Create the harvest goal plan from the project template:
+Create the harvest or lane-plan goal plan from the project template:
 
 ```bash
 node .agents/skills/autogoal/scripts/create-goal-scratchpad.mjs \
@@ -207,9 +229,17 @@ node .agents/skills/autogoal/scripts/create-goal-scratchpad.mjs \
   --title "<Repo> Editor Test Harvest"
 ```
 
+For lane-plan mode, use the same template:
+
+```bash
+node .agents/skills/autogoal/scripts/create-goal-scratchpad.mjs \
+  --template editor-test-harvester \
+  --title "<Lane> <Repo> Harvest Plan"
+```
+
 The generated `docs/plans` file is the durable pass-state ledger, scratch log,
 decision record, verification ledger, and completion checklist. Do not create
-hook state.
+hook state. Do not create or call a separate lane-plan template.
 
 The harvest report itself still lives in the license-selected report directory:
 
@@ -237,6 +267,7 @@ current_pass: <pass-name>
 current_pass_status: in_progress
 current_pass_skill: .agents/skills/editor-test-harvester/SKILL.md
 next_pass: <next-pass>
+mode: harvest|issue-harvest|lane-plan
 ```
 
 Set `done` only when:
@@ -253,6 +284,23 @@ Set `done` only when:
 - every create/copy/refactor/plate-owned row has an implementation target and
   verification command or a documented Plate backlog owner;
 - the report has a full inventory appendix or a linked inventory file.
+
+For lane-plan mode, set `done` only when:
+
+- total score is `>= 0.92`;
+- no dimension is below `0.85`;
+- harvest report path and license mode are recorded;
+- inventory and test-index status are recorded with missing-file reasons when
+  absent;
+- every harvest row is counted as in-lane, out-of-lane, split, duplicate, skip,
+  or unresolved;
+- no unresolved in-lane row remains;
+- every in-lane row has owner coverage, action, target location, proof kind, and
+  verification command or explicit defer reason;
+- downstream lane gates are applied and recorded;
+- behavior-only rows use fresh invariant wording only;
+- the accepted-plan execution handoff is present;
+- the final handoff pauses for user review before implementation.
 
 If any gate fails but more work is possible, keep `pending` and write the active
 goal plan with the next harvest pass. Use `blocked` only when the target repo,
@@ -410,6 +458,123 @@ Pass-state ledger rows must include:
 - report delta;
 - open issues;
 - next owner.
+
+## Lane-Plan Mode
+
+Use lane-plan mode after a completed or near-complete harvest report exists and
+the user wants one owner lane processed into an execution-grade plan.
+
+Examples:
+
+```text
+editor-test-harvester plan slate-v2 tiptap
+editor-test-harvester plan slate-v2 .tmp/editor-test-harvester/name/report.md
+editor-test-harvester docs/editor-test-harvester/tiptap/report.md --lane slate-v2
+```
+
+Lane registry:
+
+| Lane       | Aliases                  | Downstream skill                     | Owner                                                                   | Output                                                       |
+| ---------- | ------------------------ | ------------------------------------ | ----------------------------------------------------------------------- | ------------------------------------------------------------ |
+| `slate-v2` | `slate`, `raw-slate`     | `.agents/skills/slate-plan/SKILL.md` | Raw Slate v2 substrate in `Plate repo root`                               | `docs/plans/YYYY-MM-DD-slate-v2-<repo>-harvest-plan.md`      |
+| `plate`    | `platejs`, `plate-owned` | `.agents/skills/plate-plan/SKILL.md` | Plate packages, kits, docs, examples, and product behavior in this repo | `docs/plans/YYYY-MM-DD-plate-<repo>-harvest-plan.md`         |
+
+If the lane is unknown, infer only when harvest row owner labels make the
+mapping obvious. Otherwise ask for the lane. Do not invent a new owner lane.
+
+Lane-plan hard policy:
+
+- Planning/routing only. Do not patch implementation code, tests, examples,
+  package files, or build config.
+- Preserve harvest license mode. Behavior-only rows in versioned plans use fresh
+  invariant wording and source path provenance only.
+- Do not count Plate/product rows as Slate v2 tests. Split mixed rows.
+- Do not count raw Slate substrate rows as Plate backlog unless split and routed.
+- "All lane tests" means every harvest row that belongs to the lane, including
+  `covered`, `refactor-existing`, `create-new`, `fresh-invariant`, `copy-now`
+  for permissive sources, `defer`, and unresolved lane candidates.
+- Browser, clipboard, selection, mobile, and IME rows need honest proof routes.
+  Package tests alone do not close browser/device claims.
+
+Lane-plan workflow:
+
+1. Resolve arguments: `plan <lane> <report-or-repo-key>` or
+   `<report-or-repo-key> --lane <lane>`.
+2. Resolve the harvest report:
+   - explicit path wins;
+   - else try `docs/editor-test-harvester/<repo>/report.md`;
+   - else try `.tmp/editor-test-harvester/<repo>/report.md`;
+   - else run or request harvest mode first.
+3. Start or reuse an autogoal plan with `--template editor-test-harvester`.
+4. Read harvest metadata: status, score, license mode, output mode, inventory
+   counts, matrix rows, skips, next slice, and pass-state ledger.
+5. Validate companion files: inventory exists or has a missing reason;
+   test-index exists or has a missing reason.
+6. Normalize lane aliases and select the lane registry row.
+7. Account for every harvest row as:
+   - `in-lane`: belongs to the requested owner lane;
+   - `out-of-lane`: belongs to another owner;
+   - `split`: contains both lane-owned substrate and product/plugin behavior;
+   - `duplicate`: already represented by another row;
+   - `skip`: no portable behavior;
+   - `unresolved`: needs more reading or user decision.
+8. For `slate-v2`, include raw editor substrate: selection DOM mapping,
+   beforeinput/input, IME/composition, clipboard, paste, drag/drop, history,
+   normalization, transforms, delete/backspace, insert fragment, marks/inline,
+   void primitives, shadow DOM, browser engine behavior, focus/blur, and
+   large-doc performance when the invariant is raw editor behavior.
+9. For `slate-v2`, exclude or split product policy: links, lists, markdown UX,
+   mention/hashtag/emoji/date-time plugins, media/product decorators,
+   toolbar/menu/dialog state, React plugin hosts, and NodeView/PluginView-style
+   authoring unless reduced to raw substrate.
+10. Search current owner coverage before claiming covered or missing:
+    - for `slate-v2`, search `Plate repo root` by behavior words and adjacent
+      concepts, not upstream API names;
+    - for `plate`, search packages, kits, docs, examples, and behavior-law docs.
+11. Apply downstream lane gates:
+    - `slate-v2`: load and apply `slate-plan` gates;
+    - `plate`: load and apply `plate-plan` gates.
+12. Fill the lane-plan sections in the template.
+13. If below threshold, keep `pending` and name the next pass.
+14. If threshold passes, set `done`, run `check-complete.mjs`, and produce the
+    review handoff. Stop there. Do not execute implementation.
+
+Lane-plan confidence score:
+
+| Dimension                        | Weight |
+| -------------------------------- | -----: |
+| Harvest source readiness         |   0.15 |
+| Lane-filter completeness         |   0.25 |
+| Current owner coverage mapping   |   0.25 |
+| Actionability of execution queue |   0.20 |
+| License/provenance discipline    |   0.15 |
+
+Score caps:
+
+- Total cannot exceed `0.80` if the harvest report is missing.
+- Total cannot exceed `0.86` if inventory or test-index status is unknown.
+- Lane-filter completeness cannot exceed `0.80` unless every harvest matrix row
+  is counted as in-lane or out-of-lane/split/duplicate/skip.
+- Coverage mapping cannot exceed `0.85` unless current owner tests/source were
+  searched in the target workspace.
+- Actionability cannot exceed `0.85` unless every non-covered in-lane row names
+  target file, proof kind, and focused verification command or defer reason.
+- License/provenance cannot exceed `0.80` for behavior-only sources unless the
+  plan states the fresh-invariant-only rule and avoids copied source wording.
+
+Accepted-plan execution handoff must include:
+
+- read-first plan path;
+- requested lane;
+- exact execution queue IDs;
+- implementation boundaries;
+- focused verification commands;
+- broad final gate;
+- issue/claim sync rule;
+- stop rule.
+
+The user reviews the finished plan first, then invokes the downstream lane skill
+with the accepted plan path. This pause is the point of lane-plan mode.
 
 ## Discovery Workflow
 
@@ -829,21 +994,29 @@ rg -n "state: all|open \\+ closed|closed" "$issue_report_dir/issues.md" "$issue_
 ! rg -n "bodyMarkdown|bodyText|comments\\s*:" "$issue_report_dir" 2>/dev/null
 ```
 
+Lane-plan verification:
+
+```bash
+rg -n "Lane contract|Full harvest row accounting|In-lane candidate matrix|Execution queue|Downstream lane application|Accepted-plan execution handoff|review" docs/plans/<plan>.md
+node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/<plan>.md
+```
+
 Versioned-output hygiene check for behavior-only sources:
 
 ```bash
 test ! -f "docs/editor-test-harvester/<repo>/inventory.md"
 test ! -f "docs/editor-test-harvester/<repo>/test-index.md"
 rg -n "copied from|verbatim|fixture copied|ported from" \
-  docs Plate repo root packages apps examples 2>/dev/null && \
+  docs packages apps content benchmarks tooling 2>/dev/null && \
   echo "Review versioned output for unsafe behavior-only wording" || true
 ```
 
-Implementation verification in `Plate repo root` or Plate:
+Implementation verification in Slate v2 packages or Plate:
 
 - Run the focused package or browser test that owns the new proof.
-- Run `bun check` before claiming the applied slice is closed.
-- For release-quality browser claims, use `bun check:full`.
+- Run `pnpm slate:packages:test` before claiming a Slate applied slice is closed.
+- For release-quality Slate browser claims, pair package proof with
+  `pnpm --filter www test:slate-browser`.
 - Use raw mobile proof only when real device/Appium artifacts exist; semantic
   mobile handles and Playwright mobile viewports are not raw-device proof.
 - For `behavior-only` sources, verify that versioned local tests use local

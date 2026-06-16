@@ -60,7 +60,7 @@ Constraints:
 - Do not add broad ceremony when the task is trivial or docs-only.
 
 Boundaries:
-- Source of truth: `slate-automation`, `editor-test-harvester`, `clawsweeper`, `slate-north-star`, local `../prosemirror`, `.tmp/slate-v2` current tests/source.
+- Source of truth: `slate-automation`, `editor-test-harvester`, `clawsweeper`, `vision`, local `../prosemirror`, `.tmp/slate-v2` current tests/source.
 - Allowed edit scope: `docs/plans/2026-06-04-prosemirror-issue-harvest-slate-v2.md`, `.tmp/editor-issue-harvester/prosemirror/**`, and `.tmp/slate-v2/**` only for fresh Slate-v2 tests/oracles needed by a portable issue row.
 - Browser surface: Playwright/browser proof only when a new or exact Slate-v2 browser test is linked; no in-app Browser route is required for metadata-only ledger rows.
 - Tracker sync: N/A: no GitHub comments, labels, issue edits, commits, pushes, PRs, or tracker sync requested.
@@ -101,7 +101,7 @@ Start Gates:
 | Gate | Applies | Evidence |
 |------|---------|----------|
 | Prompt requirements captured before work | yes | This section records `../prosemirror`, full harvest, one-by-one closure, no stop, Slate-v2-only target, and no Plate patching. |
-| Skill analysis before edits | yes | Read `slate-automation`, `autogoal`, `editor-test-harvester`, `clawsweeper`, and `slate-north-star`. |
+| Skill analysis before edits | yes | Read `slate-automation`, `autogoal`, `editor-test-harvester`, `clawsweeper`, and `vision`. |
 | Active goal checked or created | yes | `create_goal` created ProseMirror all-issues Slate v2 closure goal. |
 | Source of truth read before edits | yes | Local `../prosemirror` exists; license/package read; `.tmp/slate-v2` is the target proof surface. |
 | Tracker comments and attachments read | N/A | No tracker mutation; GitHub issue metadata will be fetched as scratch issue provenance. |

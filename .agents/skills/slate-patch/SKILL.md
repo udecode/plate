@@ -49,11 +49,12 @@ the right long-term shape, verify, autoreview, hand off. It does not mean
 
 - Current `Plate repo root` source wins over memory, old plans, and prior
   diagnosis.
-- Run Slate v2 proof from the Plate repo root, targeting the package/app owner.
-- Benchmark target work runs from `plate-2` through
+- Run Slate v2 commands from the Plate repo root with the Slate package/browser
+  commands. Generic Plate app commands do not prove Slate v2 behavior.
+- Benchmark target work runs from the Plate repo root through
   `benchmarks/targets/slate-v2.json` and `pnpm bench:targets:*`. It can route
-  next work, expose benchmark gaps, and hand optimization to `slate-ar-perf`,
-  but it never replaces `Plate repo root` reproduction, tests, or browser proof.
+  next work, expose benchmark gaps, and hand optimization to `slate-ar perf`,
+  but it never replaces Slate package reproduction, tests, or browser proof.
 - Reproduce first whenever practical. For browser routes, use the real route and
   behavior-level interaction, not only model-state calls.
 - Add a behavior-level regression test when sane. Prefer tests that cover the
@@ -80,9 +81,9 @@ the right long-term shape, verify, autoreview, hand off. It does not mean
 
 - Correctness fails: use `slate-patch`.
 - Generic measured loop with an existing proof surface: use `slate-ar`.
-- Metric optimization with an existing correctness oracle: use `slate-ar-perf`.
+- Metric optimization with an existing correctness oracle: use `slate-ar perf`.
 - Missing oracle for a performance loop: add repro/test/browser proof here
-  first, then hand off to `slate-ar-perf`.
+  first, then hand off to `slate-ar perf`.
 - A perf-sensitive correctness fix may end with a benchmark target handoff, not
   an Autoresearch packet loop.
 
@@ -327,9 +328,10 @@ Pick the relevant set:
 - changed site typecheck for examples;
 - focused Playwright route tests;
 - browser repro script when Playwright is not enough;
-- `bun check` only when the touched surface justifies a broader fast gate;
-- `bun check:full` only for release-quality browser claims or when explicitly
-  requested.
+- `pnpm slate:packages:test` and `pnpm slate:packages:typecheck` for package
+  behavior claims;
+- `pnpm --filter www test:slate-browser` for release-quality browser behavior
+  claims or when explicitly requested.
 
 If a gate fails for unrelated existing debt, record the exact command and why it
 is unrelated. Do not hide a relevant failure.
@@ -337,7 +339,7 @@ is unrelated. Do not hide a relevant failure.
 ### 7. Benchmark Target Handoff
 
 After Slate v2 correctness proof, decide whether the patch needs benchmark
-target sync or a `slate-ar-perf` handoff.
+target sync or a `slate-ar perf` handoff.
 
 Run this when the bug class or patch touches performance/scalability,
 rendering/projection, React rerender behavior, huge documents, history,
@@ -353,7 +355,7 @@ Workflow:
    `node tooling/scripts/slate-research.mjs suggest-loops --with-checks`
    to find the matching target.
 3. If a target exists, run `pnpm bench:targets:dry-run -- <target-id>` and
-   record whether `slate-ar-perf` should own further optimization.
+   record whether `slate-ar perf` should own further optimization.
 4. If no target exists, record
    `Benchmark target candidate needed - <behavior>` and the likely benchmark
    plus correctness command.
@@ -371,18 +373,23 @@ Final checklist item for non-trivial implementation changes:
 
 1. Load `.agents/skills/autoreview/SKILL.md`.
 2. Run the helper from the checkout that owns the patch.
-3. For Slate package/app patches, run proof from the Plate repo root:
+3. For Slate v2 package patches, cwd must be the Plate repo root:
 
 ```bash
 /Users/zbeyens/git/plate-2/.agents/skills/autoreview/scripts/autoreview --mode local
 ```
 
 4. Verify every accepted/actionable finding against source.
-5. Fix valid findings.
-6. Rerun focused proof and autoreview until no accepted/actionable findings
+5. For every finding, confirm the cited file belongs to the reviewed scope, the
+   line range still exists in the current checkout, and any quoted code still
+   matches current file contents. Reject stale, out-of-scope, or non-matching
+   findings instead of patching around review noise.
+6. Fix valid findings.
+7. Rerun focused proof and autoreview until no accepted/actionable findings
    remain.
 
-Run autoreview against the current checkout when Slate package/app patches are dirty.
+Do not run autoreview against a donor checkout for transplanted Slate packages.
+That reviews the wrong source.
 
 ## Final Response
 
@@ -394,7 +401,7 @@ Keep it short. Include:
 - selection/navigation matrix slice covered or intentionally skipped when
   applicable;
 - tests/proof run with cwd when not obvious;
-- benchmark target handoff when applicable: target dry-run, `slate-ar-perf`
+- benchmark target handoff when applicable: target dry-run, `slate-ar perf`
   handoff, candidate target needed, or N/A with reason;
 - autoreview result;
 - any relevant unresolved gate or unrelated existing failure.

@@ -91,7 +91,7 @@ Constraints:
 
 Boundaries:
 - Source of truth: live `.tmp/slate-v2` source/tests/benchmarks for runtime;
-  `docs/slate-v2/agent-start.md`, `slate-north-star`, benchmark targets, and
+  `docs/slate-v2/agent-start.md`, `vision`, benchmark targets, and
   this plan for control state.
 - Allowed edit scope: `.tmp/slate-v2` runtime/tests/benchmarks/docs as needed;
   parent `docs/**` for durable plans/Slate-v2 evidence; `.agents/rules/**`
@@ -116,7 +116,7 @@ Blocked condition:
   claims, unsafe public API/runtime fork requiring `slate-plan`, credential or
   tool access failure that blocks all useful work, repeated same-signal blocker
   after the right owner was tried, commit/PR/destructive authority, or missing
-  reusable taste in `slate-north-star` with no safe alternate checkpoint.
+  reusable taste in `vision` with no safe alternate checkpoint.
 - Do not block while a safe alternate checkpoint remains runnable. In timed or
   batch mode, queue soft questions for final handoff.
 
@@ -157,7 +157,7 @@ Completion rule:
 Checkpoint supervisor:
 | Checkpoint | Owner | Status | Priority | Why it exists | Evidence / exit rule | Mutation decision |
 |------------|-------|--------|----------|---------------|----------------------|-------------------|
-| checkpoint-zero | slate-automation | complete | P0 | Copy prompt requirements and read north-star before implementation. | Requirements copied; `slate-north-star` and `docs/slate-v2/agent-start.md` read. | updated from seed |
+| checkpoint-zero | slate-automation | complete | P0 | Copy prompt requirements and read north-star before implementation. | Requirements copied; `vision` and `docs/slate-v2/agent-start.md` read. | updated from seed |
 | status-and-current-evidence | slate-automation | complete | P0 | Learn current route/test/benchmark owners without patching blindly. | Source/test/benchmark owner map recorded in packet, behavior, visual/native, benchmark, and verification ledgers. | split from status |
 | checkpoint-supervision | slate-automation | complete | P0 | Reconcile plan after every loop, adding/removing/splitting rows from evidence. | 19 mutation rows recorded; autoreview reopened benchmark-honesty/report/plan-state/runtime-selection/stable-richtext/final-review-state/reboot-state rows and they were repaired. | added |
 | selection-oracle-inventory | slate-automation / slate-browser | complete | P0 | Identify current model/native/DOM endpoint helpers and missing multi-leaf coverage. | Helper/test map recorded; repeated model/native/DOM endpoint proof promoted into `slate-browser`. | added |
@@ -185,7 +185,7 @@ Checkpoint supervisor:
 Checkpoint mutation ledger:
 | Loop | Mutation | Checkpoint(s) | Evidence | Reason | Result |
 |------|----------|---------------|----------|--------|--------|
-| 0 | update/split/add/reprioritize | all prompt lanes | current user prompt + `slate-north-star` + `docs/slate-v2/agent-start.md` | template was too broad for "loop each until fully confident"; selection/oracle confidence must lead perf | checkpoint-zero complete; next status-and-current-evidence |
+| 0 | update/split/add/reprioritize | all prompt lanes | current user prompt + `vision` + `docs/slate-v2/agent-start.md` | template was too broad for "loop each until fully confident"; selection/oracle confidence must lead perf | checkpoint-zero complete; next status-and-current-evidence |
 | 1 | update/reprioritize | selection-oracle-inventory, selection-multi-leaf-oracle, slate-browser-promotion, workflow-slowdown | source/test map + focused richtext proof | Existing richtext multi-leaf proof is strong, but helper coverage is partly route-local and discovery had one broad command miss. | multi-leaf richtext proof covered by existing tests; next run blank/pointer and helper-promotion proof |
 | 2 | update/reprioritize | selection-pointer-oracle, selection-keyboard-oracle, slate-browser-promotion, workflow-slowdown | focused Chromium + Firefox/WebKit selection proof | Gesture coverage exists, but some cross-browser rows are intentionally skipped and repeated contract assertions needed helper promotion. | helper added; selection still scoped for cross-browser pointer/arrow claims |
 | 3 | update/reprioritize | stable-richtext-plaintext, stable-markdown-history, stable-void-placeholder-hidden, benchmark-honesty-inventory | 22 focused Chromium example rows + 47 package history rows | Stable current editor behavior is green enough to advance to benchmark honesty; no runtime patch needed. | stable sweep complete; next checkpoint benchmark honesty inventory |
@@ -222,7 +222,7 @@ Mutation rules:
 - Reprioritize after every loop. The next checkpoint is chosen from current
   evidence, not from the original row order.
 - The supervisor is not stuck on this template or the initial prompt plan. The
-  user's latest request, `slate-north-star`, and current source evidence outrank
+  user's latest request, `vision`, and current source evidence outrank
   stale plan rows.
 
 Start Gates:
@@ -230,7 +230,7 @@ Start Gates:
 |------|---------|----------|
 | Prompt requirements captured before work | yes | This plan copies all 11 user lanes and the "do not rush / granular checkpoints" constraint. |
 | `slate-automation` source rule read | yes | User supplied skill body; active rule requires slate-automation template and checkpoint-zero extraction. |
-| `slate-north-star` read as checkpoint zero | yes | Read `/Users/zbeyens/git/plate-2/.agents/skills/slate-north-star/SKILL.md`. |
+| `vision` read as checkpoint zero | yes | Read `/Users/zbeyens/git/plate-2/.agents/skills/vision/SKILL.md`. |
 | `docs/slate-v2/agent-start.md` read | yes | Read `/Users/zbeyens/git/plate-2/docs/slate-v2/agent-start.md`. |
 | Active goal checked or created | yes | `get_goal` returned none; `create_goal` created active goal for this plan. |
 | Invocation mode and timebox recorded | yes | Full-loop mode, no explicit timebox, stop at real checkpoint only. |
@@ -343,7 +343,7 @@ Scenario matrix:
 Packet ledger:
 | Packet | Loop | Owner | Hypothesis / failure signature | Files / commands | Behavior / visual proof | Decision | Next |
 |--------|------|-------|--------------------------------|------------------|-------------------------|----------|------|
-| P0-checkpoint-zero | 0 | slate-automation | A huge prompt will lose requirements unless every lane becomes a checkable row first. | Edited this plan; read `slate-north-star`, `docs/slate-v2/agent-start.md`, benchmark targets, memory registry. | No runtime proof yet. | keep | status-and-current-evidence |
+| P0-checkpoint-zero | 0 | slate-automation | A huge prompt will lose requirements unless every lane becomes a checkable row first. | Edited this plan; read `vision`, `docs/slate-v2/agent-start.md`, benchmark targets, memory registry. | No runtime proof yet. | keep | status-and-current-evidence |
 | P1-richtext-multi-leaf-selection | 1 | slate-ar-stabilize / slate-browser | Existing richtext multi-leaf and right-margin rows should prove model + native + DOM endpoint behavior before new oracle work. | `bun --filter slate-browser build`; `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/richtext.test.ts --project=chromium --grep "mouse drag undo restores typed multi-leaf selected text replacement|places a right-margin click at the multi-leaf text end"` from `.tmp/slate-v2`. | 2 passed. Multi-leaf drag/undo asserts model selection, native selected text, and DOM endpoints; right-margin row asserts multi-leaf caret selection and DOM caret. | keep | blank-gap pointer, keyboard selection, and slate-browser helper promotion |
 | P2-selection-pointer-keyboard-scroll | 2 | slate-ar-stabilize | Existing pointer/keyboard/scroll rows should prove the requested selection gesture classes before new runtime work. | Chromium: plaintext + huge-doc grep passed 6/6. Firefox/WebKit: non-skipped plaintext/richtext/huge-doc grep passed 13 and skipped 5. Richtext double-click native word row passed 1/1 Chromium. | Drag, blank-gap, margin click, double-click, arrows, undo/redo, scroll-away/refocus all covered at least in Chromium; Firefox/WebKit cover undo/scroll subset. | keep with scoped browser-width risk | stable behavior sweep and cross-browser skip decision |
 | P3-slate-browser-selection-contract-helper | 2 | slate-browser | Repeated route-local assertions for model selection, native selected text, and DOM endpoints should be first-class helper API. | Edited `packages/slate-browser/src/playwright/index.ts`, `richtext.test.ts`, `plaintext.test.ts`; ran `bun --filter slate-browser build`, `bun --filter slate-browser typecheck`, focused Chromium helper-backed grep. | Helper-backed richtext/plaintext rows passed 2/2. | keep | consider geometry helper promotion after stable behavior proof |
@@ -510,7 +510,7 @@ Error attempts:
 | `pnpm bench:targets:report:check` failed while the strict benchmark was still writing artifacts | 1 | Wait for benchmark process to stop, regenerate reports, then check stable output | `pnpm bench:targets:report` followed by `pnpm bench:targets:report:check` passed |
 
 Verification evidence:
-- Read `/Users/zbeyens/git/plate-2/.agents/skills/slate-north-star/SKILL.md`.
+- Read `/Users/zbeyens/git/plate-2/.agents/skills/vision/SKILL.md`.
 - Read `/Users/zbeyens/git/plate-2/docs/slate-v2/agent-start.md`.
 - Read `/Users/zbeyens/git/plate-2/benchmarks/targets/slate-v2.json`.
 - Created active goal with objective tied to this plan.

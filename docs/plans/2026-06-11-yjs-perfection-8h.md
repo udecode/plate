@@ -201,7 +201,7 @@ Mutation rules:
 - Reprioritize after every loop. The next checkpoint is chosen from current
   evidence, not from the original row order.
 - The supervisor is not stuck on this template or the initial prompt plan. The
-  user's latest request, `slate-north-star`, and current source evidence outrank
+  user's latest request, `vision`, and current source evidence outrank
   stale plan rows.
 
 Start Gates:
@@ -209,7 +209,7 @@ Start Gates:
 |------|---------|----------|
 | Prompt requirements captured before work | yes | explicit prompt rows copied into Automation source, Boundaries, Completion threshold, and Verification surface |
 | `slate-automation` source rule read | yes | user supplied skill body; `.agents/rules/slate-automation.mdc` read |
-| `slate-north-star` read as checkpoint zero | yes | `.agents/skills/slate-north-star/SKILL.md` read |
+| `vision` read as checkpoint zero | yes | `.agents/skills/vision/SKILL.md` read |
 | Active goal checked or created | yes | `get_goal` returned null; `create_goal` created active goal |
 | Invocation mode and timebox recorded | yes | timed mode; 8h; start/deadline recorded |
 | Dynamic checkpoint policy accepted | yes | supervisor/mutation ledgers retained |
@@ -460,7 +460,7 @@ Error attempts:
 
 Verification evidence:
 - Checkpoint-zero evidence: active goal created; `slate-automation`,
-  `slate-north-star`, and `docs/slate-v2/agent-start.md` read; memory quick pass
+  `vision`, and `docs/slate-v2/agent-start.md` read; memory quick pass
   read prior Yjs cleanup/Hocuspocus summaries.
 - `bun test ./packages/slate-yjs/test` from `/Users/felixfeng/Desktop/repos/slate-v2` passed: 187 pass, 0 fail.
 - `bun --filter @slate/yjs typecheck` from `/Users/felixfeng/Desktop/repos/slate-v2` exited 0.

@@ -144,9 +144,9 @@ Start Gates:
 | Gate | Applies | Evidence |
 |------|---------|----------|
 | Prompt requirements captured before work | yes | extracted in First checkpoint before implementation |
-| Skill analysis before edits | yes | read `slate-automation`, `autogoal`, and `slate-north-star` |
+| Skill analysis before edits | yes | read `slate-automation`, `autogoal`, and `vision` |
 | Active goal checked or created | yes | `get_goal` returned null before plan creation; goal created from this plan |
-| Source of truth read before edits | yes | `slate-north-star`; target source/tests read during implementation before patches |
+| Source of truth read before edits | yes | `vision`; target source/tests read during implementation before patches |
 | Tracker comments and attachments read | N/A: no tracker | no issue/PR/tracker in prompt |
 | Video transcript evidence required | N/A: no new video | prompt contains text backlog only |
 | `docs/solutions` checked for non-trivial existing-code work | N/A: regression validation first | use live `.tmp/slate-v2` source/tests unless a bug points to prior solution |
@@ -179,7 +179,7 @@ Work Checklist:
 - [x] Required video or screen-recording evidence is cached/read as normalized
       `<video-transcripts>` XML, or marked N/A with reason.
 - [x] Nearby repo instructions and implementation patterns read before edits:
-      `slate-automation`, `slate-north-star`, Browser skill/client surface, and
+      `slate-automation`, `vision`, Browser skill/client surface, and
       touched `.tmp/slate-v2` source/tests.
 - [x] Implementation fixes the right ownership boundary: `slate-browser`
       selection helpers and `slate-dom` focus handle own nested-editor DOM

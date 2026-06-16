@@ -22,6 +22,14 @@ Docs lane:
 - nearest sibling docs: pending
 - plugin page: pending
 
+First checkpoint:
+- Before implementation or broad exploration, copy every explicit prompt
+  requirement into this plan as checkable checkpoints: scope, non-goals,
+  timing/duration, stop conditions, deliverables, final handoff sections,
+  verification surface, and success criteria.
+- Do not continue into implementation until this extraction is complete or
+  explicitly marked N/A with reason.
+
 Timed checkpoint:
 - requested duration: pending
 - semantics: pending
@@ -86,6 +94,7 @@ Completion rule:
 Start Gates:
 | Gate | Applies | Evidence |
 |------|---------|----------|
+| Prompt requirements captured before work | pending | pending |
 | Timed checkpoint parsed | pending | pending |
 | `docs-creator` loaded | pending | pending |
 | Active goal checked or created | pending | pending |
@@ -103,6 +112,10 @@ Work Checklist:
 - [ ] If a duration was requested, it is recorded as minimum active work unless
       explicitly marked hard stop; when no better metric exists, initial and
       final confidence scores are recorded.
+- [ ] First checkpoint complete: every explicit prompt requirement, scope
+      boundary, timing constraint, stop condition, deliverable, final handoff
+      section, verification surface, and success criterion is copied into this
+      plan as checkable checkpoints before implementation.
 - [ ] Short objective plus outcome, completion threshold, verification surface,
       constraints, boundaries, and blocked condition are concrete.
 - [ ] Docs lane is classified as install, guide/system, plugin/feature,
@@ -140,7 +153,7 @@ Completion Gates:
 | Docs lane shape satisfied | pending | Check the lane-specific structure against `docs-creator` | pending |
 | Source-backed claim audit | pending | Verify every named API/option/transform/component/import/route against source | pending |
 | Ownership map verified | pending | Confirm package/layer/kit/app-local ownership claims against source | pending |
-| MDX/content parser | pending | Run `pnpm --filter www build:source` for MDX/content changes, or record N/A | pending |
+| MDX/content parser | pending | Run `pnpm --filter www build:contentlayer` for MDX/content changes, or record N/A | pending |
 | Links/routes/previews verified | pending | Check leaf links, routes, anchors, and `<ComponentPreview>` names or record N/A | pending |
 | Plugin page specifics | pending | If plugin page, apply `docs-creator` kit/manual/API rules or record N/A | pending |
 | Browser/render surface changed | pending | Capture Browser Use proof or record explicit waiver/blocker | pending |

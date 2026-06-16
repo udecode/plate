@@ -62,7 +62,7 @@ Constraints:
 
 Boundaries:
 - Source of truth: `.agents/skills/slate-automation/SKILL.md`,
-  `.agents/skills/slate-north-star/SKILL.md`, `docs/slate-v2/agent-start.md`,
+  `.agents/skills/vision/SKILL.md`, `docs/slate-v2/agent-start.md`,
   and live `.tmp/slate-v2` docs/tests/source.
 - Allowed edit scope: current-run plan plus safe Slate v2 docs/API contract
   repairs discovered by focused gates.
@@ -109,9 +109,9 @@ Start Gates:
 | Gate | Applies | Evidence |
 |------|---------|----------|
 | Prompt requirements captured before work | yes | First checkpoint copied no-arg full-loop scope, non-goals, stop rules, and final handoff fields. |
-| Skill analysis before edits | yes | Read `slate-automation`, `autogoal`, `slate-north-star`, and `docs/slate-v2/agent-start.md`. |
+| Skill analysis before edits | yes | Read `slate-automation`, `autogoal`, `vision`, and `docs/slate-v2/agent-start.md`. |
 | Active goal checked or created | yes | No active goal existed; created current autogoal and plan. |
-| Source of truth read before edits | yes | Read `slate-north-star`, `agent-start`, prior docs/API parity plan, hook docs, public surface contract, and live slate-react exports. |
+| Source of truth read before edits | yes | Read `vision`, `agent-start`, prior docs/API parity plan, hook docs, public surface contract, and live slate-react exports. |
 | Tracker comments and attachments read | N/A | No issue/tracker target in the invocation. |
 | Video transcript evidence required | N/A | No video or browser bug report in this invocation. |
 | `docs/solutions` checked for non-trivial existing-code work | N/A | Single docs contract packet, no runtime implementation. |

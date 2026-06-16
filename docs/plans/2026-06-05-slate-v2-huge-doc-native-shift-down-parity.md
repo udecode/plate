@@ -116,7 +116,7 @@ Boundaries:
 Blocked condition:
 - Block only if upstream `../slate` huge-document behavior cannot be run or
   captured after local setup attempts, if the next safe move requires a public
-  architecture decision not covered by `slate-north-star`, or if the timebox
+  architecture decision not covered by `vision`, or if the timebox
   expires after the current packet is closed.
 - Do not block while a safe alternate checkpoint remains runnable. In timed or
   batch mode, queue soft questions for final handoff.
@@ -194,7 +194,7 @@ Mutation rules:
 - Reprioritize after every loop. The next checkpoint is chosen from current
   evidence, not from the original row order.
 - The supervisor is not stuck on this template or the initial prompt plan. The
-  user's latest request, `slate-north-star`, and current source evidence outrank
+  user's latest request, `vision`, and current source evidence outrank
   stale plan rows.
 
 Start Gates:
@@ -202,7 +202,7 @@ Start Gates:
 |------|---------|----------|
 | Prompt requirements captured before work | yes | Rows above capture 8h, native/upstream comparison, full editing behavior, no release/PR, final handoff shape. |
 | `slate-automation` source rule read | yes | User supplied skill body in prompt; previous source rule already synced. |
-| `slate-north-star` read as checkpoint zero | yes | `.agents/skills/slate-north-star/SKILL.md` read; it rejects non-native/model-only browser proof. |
+| `vision` read as checkpoint zero | yes | `.agents/skills/vision/SKILL.md` read; it rejects non-native/model-only browser proof. |
 | Active goal checked or created | yes | Active goal created for this 8h native parity loop. |
 | Invocation mode and timebox recorded | yes | Timed mode, 8h loop-start budget. |
 | Dynamic checkpoint policy accepted | yes | New P0 checkpoints added before code edits. |

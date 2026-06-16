@@ -57,7 +57,7 @@ Start Gates:
 | Gate | Applies | Evidence |
 |------|---------|----------|
 | Prompt requirements captured before work | yes | Requirements copied below: docs and public API DX, closest possible to Slate, keep v2 perfect, do not lower bar. |
-| Skill analysis before edits | yes | Read `slate-automation`, `autogoal`, `slate-north-star`, `slate-plan`, and `docs/slate-v2/agent-start.md`. |
+| Skill analysis before edits | yes | Read `slate-automation`, `autogoal`, `vision`, `slate-plan`, and `docs/slate-v2/agent-start.md`. |
 | Active goal checked or created | yes | `get_goal` returned none; created this Slate v2 API/docs DX goal. |
 | Source of truth read before edits | yes | Read `.tmp/slate-v2` docs/API surfaces and `../slate` reference docs/API surfaces. |
 | Docs pack selected | yes | Docs changed under `.tmp/slate-v2/docs`. |

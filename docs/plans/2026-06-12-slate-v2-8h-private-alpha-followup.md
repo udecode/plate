@@ -107,13 +107,13 @@ Blocked condition:
 - Stop early only for explicit user interruption, commit/push/PR/destructive
   authority, missing tool/access that prevents all meaningful work, same real
   blocker repeated with no alternate owner, or an uncovered taste/runtime
-  decision where `slate-north-star` lacks the needed rule and no safe alternate
+  decision where `vision` lacks the needed rule and no safe alternate
   checkpoint remains.
 - Do not block while a safe alternate checkpoint remains runnable. In timed or
   batch mode, queue soft questions for final handoff.
 - Do not hand off before a timed minimum runtime has elapsed because the obvious
   backlog looks empty. Enter supervision mode and infer the next checkpoint from
-  `slate-north-star`, current evidence, weak proofs, benchmark gaps, API/docs
+  `vision`, current evidence, weak proofs, benchmark gaps, API/docs
   mismatch, issue/test harvest gaps, and workflow slowdowns.
 
 Automation state:
@@ -166,7 +166,7 @@ Completion rule:
 Checkpoint supervisor:
 | Checkpoint | Owner | Status | Priority | Why it exists | Evidence / exit rule | Mutation decision |
 |------------|-------|--------|----------|---------------|----------------------|-------------------|
-| checkpoint-zero | slate-automation | done | P0 | Copy prompt requirements and read north-star before implementation. | Requirement rows complete; autogoal, slate-north-star, `agent-start`, scoreboard, and template read. | update |
+| checkpoint-zero | slate-automation | done | P0 | Copy prompt requirements and read north-star before implementation. | Requirement rows complete; autogoal, vision, `agent-start`, scoreboard, and template read. | update |
 | status | slate-automation | done | P0 | Read active plan, latest prompt, source status, and current evidence. | Current state recorded from previous 8h plan, roadmap, readiness docs, and huge-doc artifact inventory. | update |
 | gap-scan | slate-automation | done | P0 | Identify behavior, visual, API, test, metric, docs, skill, and workflow gaps. | Runtime gates are current-green/scoped; docs claim-width mismatch selected as first safe owner. | update |
 | private-alpha-proof-ledger-closure | docs / slate-automation | done | P0 | Roadmap tranche 8 and readiness docs still said proof-ledger closure was pending after the previous run closed private-alpha gates. | Current-state docs patched; `pnpm docs:slate-v2:audit` and `.tmp/slate-v2` `bun check` passed. | keep |
@@ -224,7 +224,7 @@ Checkpoint mutation ledger:
 | Loop | Mutation | Checkpoint(s) | Evidence | Reason | Result |
 |------|----------|---------------|----------|--------|--------|
 | 0 | seed | initial template rows | plan creation | starter topology only | done: seed replaced by evidence-backed checkpoints |
-| 1 | update | checkpoint-zero, automation source, thresholds, boundaries, status | user prompt + slate-automation + autogoal + slate-north-star + agent-start + scoreboard | Convert bare `8h` into a measurable timed supervisor run without inventing a narrow surface. | checkpoint-zero complete; next status |
+| 1 | update | checkpoint-zero, automation source, thresholds, boundaries, status | user prompt + slate-automation + autogoal + vision + agent-start + scoreboard | Convert bare `8h` into a measurable timed supervisor run without inventing a narrow surface. | checkpoint-zero complete; next status |
 | 2 | update/add | status, gap-scan, private-alpha-proof-ledger-closure | previous 8h plan + roadmap + readiness docs | The last run left table-fragment and raw-device as boundaries; readiness docs still called proof-ledger closure pending. | patch current-state docs before rerunning proof |
 | 3 | update/add | behavior-proof, stable-behavior-skip-width-audit | stable Playwright sweep output + exact-file skip audit | The next autonomous owner was stable behavior proof; the high skip count needed claim-width audit before calling it coverage. | keep behavior proof; scope skipped rows |
 | 4 | update/add | visual-proof | visual-native smoke output + screenshot artifact inspection | User repeatedly cares about visible double-highlight/native selection bugs; model-heavy behavior proof is insufficient. | keep visual proof; run huge-doc next |
@@ -286,7 +286,7 @@ Mutation rules:
 - Reprioritize after every loop. The next checkpoint is chosen from current
   evidence, not from the original row order.
 - The supervisor is not stuck on this template or the initial prompt plan. The
-  user's latest request, `slate-north-star`, and current source evidence outrank
+  user's latest request, `vision`, and current source evidence outrank
   stale plan rows.
 
 Start Gates:
@@ -294,7 +294,7 @@ Start Gates:
 |------|---------|----------|
 | Prompt requirements captured before work | yes | User prompt is `slate-automation 8h`; explicit requirements captured as timed minimum runtime, broad Slate v2 supervision, dynamic checkpointing, and no early stop. |
 | `slate-automation` source rule read | yes | User provided the full skill body in the prompt; plan uses timed-mode, checkpoint, handoff, and private-alpha rules from it. |
-| `slate-north-star` read as checkpoint zero | yes | `.agents/skills/slate-north-star/SKILL.md` read before runtime work. |
+| `vision` read as checkpoint zero | yes | `.agents/skills/vision/SKILL.md` read before runtime work. |
 | Active goal checked or created | yes | `get_goal` returned none; `create_goal` created active goal for this plan. |
 | Invocation mode and timebox recorded | yes | Timed mode, minimum 8h, target deadline 2026-06-12 10:33:00 CEST. |
 | Dynamic checkpoint policy accepted | yes | Checkpoint supervisor allows add/update/split/merge/retire/remove/reopen/reprioritize after each loop. |

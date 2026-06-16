@@ -98,12 +98,12 @@ Blocked condition:
 - Block only if the route cannot be run locally after normal install/server
   recovery, the bug cannot be reproduced from the video surface, or the root
   fix requires an architectural/taste decision not covered by
-  `slate-north-star` and no safe alternate packet remains.
+  `vision` and no safe alternate packet remains.
 - Do not block while a safe alternate checkpoint remains runnable. In timed or
   batch mode, queue soft questions for final handoff.
 - Do not hand off before a timed minimum runtime has elapsed because the obvious
   backlog looks empty. Enter supervision mode and infer the next checkpoint from
-  `slate-north-star`, current evidence, weak proofs, benchmark gaps, API/docs
+  `vision`, current evidence, weak proofs, benchmark gaps, API/docs
   mismatch, issue/test harvest gaps, and workflow slowdowns.
 
 Automation state:
@@ -187,7 +187,7 @@ Mutation rules:
 - Reprioritize after every loop. The next checkpoint is chosen from current
   evidence, not from the original row order.
 - The supervisor is not stuck on this template or the initial prompt plan. The
-  user's latest request, `slate-north-star`, and current source evidence outrank
+  user's latest request, `vision`, and current source evidence outrank
   stale plan rows.
 
 Start Gates:
@@ -195,7 +195,7 @@ Start Gates:
 |------|---------|----------|
 | Prompt requirements captured before work | yes | This plan records the video path, scrollbar bug, huge-document virtualized surface, stop rules, non-goals, browser proof, final handoff rows. |
 | `slate-automation` source rule read | yes | `.agents/skills/slate-automation/SKILL.md` read. |
-| `slate-north-star` read as checkpoint zero | yes | `.agents/skills/slate-north-star/SKILL.md` read. |
+| `vision` read as checkpoint zero | yes | `.agents/skills/vision/SKILL.md` read. |
 | Active goal checked or created | yes | Active goal created for scrollbar behavior closure. |
 | Invocation mode and timebox recorded | yes | Full-loop mode; no timed minimum. |
 | Dynamic checkpoint policy accepted | yes | Checkpoint rows added for scrollbar repro/oracle/runtime fix. |
@@ -276,7 +276,7 @@ Completion Gates:
 Phase / pass table:
 | Phase | Status | Evidence | Next |
 |-------|--------|----------|------|
-| Checkpoint zero and requirement extraction | done | plan filled from prompt, video frames, slate-automation, slate-north-star | status |
+| Checkpoint zero and requirement extraction | done | plan filled from prompt, video frames, slate-automation, vision | status |
 | Status and current-tree closure | done | video/source/test surface inspected | gap scan |
 | Gap scan and scenario matrix | done | scrollbar row-stacking gap identified | behavior proof |
 | Behavior proof | done | adjacent virtualized editing/backward-scroll tests pass | oracle repair |

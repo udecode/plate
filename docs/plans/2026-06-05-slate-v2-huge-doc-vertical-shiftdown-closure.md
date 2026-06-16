@@ -111,7 +111,7 @@ Boundaries:
 Blocked condition:
 - Stop only for a true unsafe architecture fork with no reversible experiment,
   missing source/tooling that blocks all meaningful proof, a user taste/risk
-  decision not covered by `slate-north-star`, or a proven plateau after
+  decision not covered by `vision`, or a proven plateau after
   multiple credible experiments where the next move is an explicit public/API
   architecture choice.
 - Do not block while a safe alternate checkpoint remains runnable. In timed or
@@ -184,7 +184,7 @@ Mutation rules:
 - Reprioritize after every loop. The next checkpoint is chosen from current
   evidence, not from the original row order.
 - The supervisor is not stuck on this template or the initial prompt plan. The
-  user's latest request, `slate-north-star`, and current source evidence outrank
+  user's latest request, `vision`, and current source evidence outrank
   stale plan rows.
 
 Start Gates:
@@ -192,7 +192,7 @@ Start Gates:
 |------|---------|----------|
 | Prompt requirements captured before work | yes | Copied explicit target: fix huge-doc vertical Shift+Down architecture/perf gap, run for hours if needed, use slate-automation. |
 | `slate-automation` source rule read | yes | Read `/Users/zbeyens/git/plate-2/.agents/skills/slate-automation/SKILL.md`; user also supplied the full skill body. |
-| `slate-north-star` read as checkpoint zero | yes | Read `/Users/zbeyens/git/plate-2/.agents/skills/slate-north-star/SKILL.md`; no taste gap before first runtime investigation. |
+| `vision` read as checkpoint zero | yes | Read `/Users/zbeyens/git/plate-2/.agents/skills/vision/SKILL.md`; no taste gap before first runtime investigation. |
 | Active goal checked or created | yes | Created active autogoal for huge-doc vertical Shift+Down closure. |
 | Invocation mode and timebox recorded | yes | Full-loop / long repair; no hard timebox; keep looping while safe reversible work remains. |
 | Dynamic checkpoint policy accepted | yes | Plan may add/update/split/reprioritize from evidence; no frozen route-to-plan stop. |

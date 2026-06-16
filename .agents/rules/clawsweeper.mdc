@@ -1,14 +1,21 @@
 ---
-description: 'Triage and process the Slate v2 issue ledger, and provide ClawSweeper-style provenance for external editor issue harvests: archive-first discovery, duplicate proof, small-fix gates, exact claim rules, maintainer-safe issue output, and gitcrawl CLI refreshes.'
-argument-hint: '[<update> | issue refs | cluster name | ledger batch | sweep goal | external <owner/repo> issues]'
+description: 'Slate issue-ledger provenance and claim-hygiene skill: archive-first discovery, duplicate/stale/invalid proof, exact claim levels, fork dossier accounting, external issue provenance support, and gitcrawl CLI refreshes. Not a public issue/PR queue orchestrator.'
+argument-hint: '[<update> | issue refs | cluster name | ledger batch | claim-sync | fork-dossier | external <owner/repo> provenance]'
 disable-model-invocation: true
 ---
 
 # ClawSweeper
 
-Use this skill for Slate issue-ledger triage and processing: issue clusters,
-duplicate/stale/invalid decisions, small high-confidence repro/fix candidates,
-PR-body issue claim sync, and execution prompts for the active Slate v2 rewrite.
+Use this skill for Slate issue-ledger provenance and claim hygiene: issue
+clusters, duplicate/stale/invalid decisions, exact claim levels, fork dossier
+accounting, issue coverage matrix sync, PR-body issue claim sync, and evidence
+handoffs for the active Slate v2 rewrite.
+
+Do not use ClawSweeper as the public GitHub queue brain. `maintainer` owns
+public issue/PR/security queue orchestration, VISION fit, priority, route
+selection, authority boundaries, and heartbeat scans. If the request is to
+maintain the repo, scan public queues, pick work, route a PR/issue, or decide
+what should be worked next, route to `maintainer` first.
 
 Also use its discipline as a subordinate provenance layer for external editor
 issue harvests, such as Lexical open and closed issues. In that mode, do not
@@ -21,7 +28,7 @@ under `docs/editor-issue-harvester/<repo>/`.
 
 This is adapted from `../openclaw/.agents` and the current
 `../clawsweeper` checkout: ClawSweeper, duplicate-tagging,
-small-bugfix-sweep, gitcrawl, maintainer-triage, testing, work-lane, proof, and
+gitcrawl, closure policy, testing, work-lane, proof, and
 security-boundary discipline. Keep the useful discipline. Drop the OpenClaw
 bot/app/automerge/comment-sync/dashboard machinery.
 
@@ -34,16 +41,17 @@ Plate-local skills unless a future workflow needs a real standalone command.
   closed/open thread search.
 - `tag-duplicate-prs-issues`: duplicate proof bar and one-cluster discipline,
   without `prtags` writes or GitHub comment sync.
-- `openclaw-small-bugfix-sweep`: one-by-one high-certainty issue loop, skip
-  rules, narrow local proof.
-- `openclaw-pr-maintainer`: maintainer evidence bar, no speculative closure,
-  no claim without repro/root-cause/fix-path proof.
+- `openclaw-small-bugfix-sweep`: issue-by-issue discipline, skip rules, and
+  narrow proof bars, without owning implementation.
+- `openclaw-pr-maintainer`: evidence bar, no speculative closure, no claim
+  without repro/root-cause/fix-path proof; public queue decisions belong to
+  `maintainer`.
 - `openclaw-testing`: cheapest safe verification path for the touched surface.
 - `openclaw-test-performance`: evidence-first benchmark/profiling discipline,
   only for `v2-performance-benchmark` rows.
 - `clawsweeper-upstream`: AGENTS-grounded review, work-candidate routing, real
   behavior proof, security quarantine, and storm-control lessons from
-  `../clawsweeper`.
+  `../clawsweeper`, reduced to ledger/provenance handoffs.
 
 ## Upstream ClawSweeper Refresh
 
@@ -106,6 +114,33 @@ current manual issue classifications. The frozen open issues ledger is the
 issue dossier owns long-form fork-local issue sections. The issue coverage
 matrix owns exact implementation claims. The PR description must stay synced
 with exact claims, counts, proof references, and non-claims.
+
+## Goal Contract
+
+Use `autogoal` for non-trivial ClawSweeper runs.
+
+Goal handle shape:
+
+```txt
+Close Slate issue-ledger claim hygiene; done when every in-scope ref has a proven ledger decision or owner handoff; plan docs/plans/<path>.md.
+```
+
+Use the dedicated project template:
+
+```bash
+node .agents/skills/autogoal/scripts/create-goal-scratchpad.mjs \
+  --template clawsweeper \
+  --title "<issue refs or ledger scope>"
+```
+
+The plan must record the first checkpoint, maintainer boundary decision, source
+ledgers, issue refs or cluster scope, live/archive proof needs, duplicate and
+claim evidence, exact claim levels, dossier/matrix/PR-text sync, owner handoff,
+public mutation authority, final handoff, and `check-complete` proof.
+
+This template is the reason ClawSweeper can stay small. If a run needs public
+queue selection, broad priority ranking, PR triage, security routing, or
+heartbeat behavior, use `maintainer` with its template instead.
 
 ## Gitcrawl Install And CLI Baseline
 
@@ -232,6 +267,8 @@ prove the release exists locally.
 
 ## Core Rules
 
+- `maintainer` owns public issue/PR/security queue orchestration. ClawSweeper
+  owns ledger/provenance/claim hygiene after the scope is known.
 - Do not process 630 live issues one by one. Cluster first, then route by architecture
   owner.
 - For external editor issue harvests, do not process all issues one by one
@@ -268,6 +305,8 @@ prove the release exists locally.
 - In external editor mode, skip framework-specific API, node-class, command
   registry, product, docs, release, and support issues unless they expose a raw
   portable editor primitive.
+- If ClawSweeper discovers implementation, security, public queue, PR review, or
+  maintainer-choice work, write an owner handoff. Do not execute it here.
 
 ## Action Buckets
 
@@ -419,9 +458,11 @@ Outcomes:
 If a row appears to belong to two unrelated clusters, stop and record
 `needs-human`. Do not force a prettier taxonomy.
 
-## Small-Fix Sweep Loop
+## Issue Ledger Processing Loop
 
-Use this when the user gives issue refs or asks for processable issues.
+Use this when the user gives issue refs, a cluster, or a ledger batch and wants
+provenance, duplicate/stale/invalid classification, claim sync, or fork dossier
+accounting.
 
 For each issue:
 
@@ -429,27 +470,27 @@ For each issue:
 2. Search related issues, duplicates, closed threads, and current code.
 3. Trace the real runtime path in `Plate repo root` or legacy `../slate`.
 4. Try a focused repro or proof.
-5. Classify before patching.
-6. Fix locally only if this is a current bug, root cause is clear, the patch is
-   narrow, and focused regression proof is practical.
+5. Classify before writing claim text or ledger sync.
+6. Decide the claim level and ledger action.
 7. Update the v2 sync ledger, issue coverage matrix, active plan, and PR
    description if claim status changes.
-8. Run the smallest meaningful verification.
+8. Write an owner handoff when code, public queue, security, or product work is
+   needed.
+9. Run the smallest meaningful verification for changed ledger/provenance
+   artifacts.
 
-Qualified candidates must pass every gate:
+Ledger changes must pass every gate:
 
-- small owner/surface with likely narrow fix and focused regression proof
 - symptom is reproducible or provable through logs, failing test, browser proof,
   dependency contract, or current code behavior
 - root cause is traceable to code with file/line
-- proposed fix touches the implicated path
-- no strong smell that broader architecture, owner-boundary work, or product
-  policy is the real owner
+- owner boundary is clear enough to choose a claim level or handoff owner
 - dependency behavior is checked against source/docs/types when relevant
 - browser/runtime/selection behavior has real behavior proof when tests alone do
   not prove the user-visible path
 
-Skip instead of patching when:
+Use `needs-repro`, `needs-human`, `not-claimed`, or owner handoff instead of a
+claim when:
 
 - not a bug
 - current repro is missing
@@ -461,18 +502,19 @@ Skip instead of patching when:
 - owner boundary is unclear
 - no focused proof is feasible
 
-Do not pad a batch with low-confidence fixes. If no issue qualifies, say so.
+Do not pad a batch with low-confidence claims. If no issue can be classified,
+say so and leave the row as `needs-repro` or `needs-human`.
 
-## Work Candidate Routing
+## Owner Handoff Routing
 
-Adapt upstream `queue_fix_pr` discipline to Slate v2 issue sweeps. This is a
-classification aid, not permission to mutate GitHub.
+Adapt upstream `queue_fix_pr` discipline only as handoff classification. This is
+not permission to mutate GitHub, choose public queue priority, or patch runtime.
 
 For external editor issue harvests, "work candidate" means "candidate local
 Slate/Plate invariant or test gap" until the harvester matrix proves a current
 Slate bug. Do not route external issues directly to implementation.
 
-Use `focused fix path` only when all are true:
+Use `handoff: focused fix path` only when all are true:
 
 - the issue is valid and not already covered by a merged/current fix
 - the fix is narrow enough for one focused patch
@@ -488,9 +530,11 @@ judgment before implementation. Use `none` for stale/unclear reports, support
 noise, ecosystem work, already-covered duplicates, or anything paired with an
 open fix PR.
 
-For automatic-looking bug fixes, keep the bar stricter: exact current repro,
-high confidence, no new feature/config option, no product decision, narrow code
-owner, and focused regression proof.
+For automatic-looking bug fixes, hand off to `resolve-slate-issue`,
+`slate-patch`, `slate-auto`, or `maintainer` instead of patching from
+ClawSweeper. Keep the bar stricter: exact current repro, high confidence, no new
+feature/config option, no product decision, narrow code owner, and focused
+regression proof.
 
 External issue harvest routing:
 
@@ -509,10 +553,10 @@ External issue harvest routing:
 
 Prove the touched surface first:
 
-1. Reproduce narrowly before fixing when a repro path exists.
-2. Fix the root cause.
-3. Rerun the same narrow proof.
-4. Broaden only when the touched contract demands it.
+1. Reproduce or prove narrowly when a repro path exists.
+2. Trace the root cause or owner boundary before writing claims.
+3. Rerun the same narrow proof or source audit after ledger/provenance changes.
+4. Broaden only when the claim contract demands it.
 
 For `Plate repo root`, prefer focused package tests, focused Playwright greps, and
 package typecheck before broad gates. Use `bun check:full` only when the issue

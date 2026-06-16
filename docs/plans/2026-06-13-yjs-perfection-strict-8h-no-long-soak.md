@@ -122,7 +122,7 @@ Completion rule:
 Checkpoint supervisor:
 | Checkpoint | Owner | Status | Priority | Why it exists | Evidence / exit rule | Mutation decision |
 |------------|-------|--------|----------|---------------|----------------------|-------------------|
-| checkpoint-zero | slate-automation | complete | P0 | Copy prompt requirements and read north-star before implementation. | Latest user correction, `slate-automation`, `autogoal`, `slate-north-star`, `agent-start`, and source rule read; hard 8h/no-long-soak rows recorded. | update: filled |
+| checkpoint-zero | slate-automation | complete | P0 | Copy prompt requirements and read north-star before implementation. | Latest user correction, `slate-automation`, `autogoal`, `vision`, `agent-start`, and source rule read; hard 8h/no-long-soak rows recorded. | update: filled |
 | status | slate-automation | complete | P0 | Read active plan, latest prompt, source status, and current evidence without git-state hygiene. | Package tests 215/0; typecheck 0; benchmark correctness 0, worst p95 67.87 ms. | complete |
 | gap-scan | slate-automation | in_progress | P0 | Identify behavior, visual, API, test, metric, docs, skill, and workflow gaps. | Gaps routed to packet owners. | update: current owner |
 | behavior-proof | slate-ar-stabilize | pending | P0 | Prove stable editor behavior before perf. | Focused behavior commands pass or failures routed. | seed |
@@ -161,7 +161,7 @@ Mutation rules:
 - Reprioritize after every loop. The next checkpoint is chosen from current
   evidence, not from the original row order.
 - The supervisor is not stuck on this template or the initial prompt plan. The
-  user's latest request, `slate-north-star`, and current source evidence outrank
+  user's latest request, `vision`, and current source evidence outrank
   stale plan rows.
 
 Start Gates:
@@ -169,7 +169,7 @@ Start Gates:
 |------|---------|----------|
 | Prompt requirements captured before work | yes | Explicit rows record: must run full 8h, must improve/perfect `@slate/yjs`, must not run long-duration soak tests, no early complete before `2026-06-14T06:55:46+0800`, short proof only, final handoff/checker required. |
 | `slate-automation` source rule read | yes | `.agents/skills/slate-automation/SKILL.md` and `.agents/rules/slate-automation.mdc` read before runtime work. |
-| `slate-north-star` read as checkpoint zero | yes | `.agents/skills/slate-north-star/SKILL.md` read before runtime work. |
+| `vision` read as checkpoint zero | yes | `.agents/skills/vision/SKILL.md` read before runtime work. |
 | Active goal checked or created | yes | `get_goal` returned none; `create_goal` created active strict 8h objective for this plan. |
 | Invocation mode and timebox recorded | yes | strict timed 8h; start `2026-06-13T22:55:46+0800`; earliest legal completion `2026-06-14T06:55:46+0800`. |
 | Dynamic checkpoint policy accepted | yes | supervisor may add/update/split/merge/retire/reopen rows after each packet; early close is disallowed by hard time gate. |
@@ -545,7 +545,7 @@ Error attempts:
 | Broad `rg` over `site` included `site/out` generated chunks | 1 | exclude `site/out/**` and read exact example files | corrected scan; no source change |
 
 Verification evidence:
-- `/Users/felixfeng/Desktop/repos/plate-copy`: read `slate-automation`, `autogoal`, `slate-north-star`, `docs/slate-v2/agent-start.md`, and `.agents/rules/slate-automation.mdc`.
+- `/Users/felixfeng/Desktop/repos/plate-copy`: read `slate-automation`, `autogoal`, `vision`, `docs/slate-v2/agent-start.md`, and `.agents/rules/slate-automation.mdc`.
 - `/Users/felixfeng/Desktop/repos/plate-copy`: `get_goal` returned none; `create_goal` created active goal for this strict 8h plan.
 - `/Users/felixfeng/Desktop/repos/slate-v2`: `bun test ./packages/slate-yjs/test` passed 215/0 across 26 files.
 - `/Users/felixfeng/Desktop/repos/slate-v2`: `bun --filter ./packages/slate-yjs typecheck` exited 0.

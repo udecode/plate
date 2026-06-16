@@ -141,7 +141,7 @@ Checkpoint mutation ledger:
 | Loop | Mutation | Checkpoint(s) | Evidence | Reason | Result |
 |------|----------|---------------|----------|--------|--------|
 | 0 | seed | initial template rows | plan creation | starter topology only | superseded by user-constrained strict 8h row |
-| 0 | update | objective, automation source, completion threshold, verification surface, constraints, boundaries, blocked condition, checkpoint table | latest prompt + `slate-automation` + `slate-north-star` + `docs/slate-v2/agent-start.md` | user explicitly excludes expensive/final tests and asks for 8h optimization | checkpoint-zero ready for status/gap scan |
+| 0 | update | objective, automation source, completion threshold, verification surface, constraints, boundaries, blocked condition, checkpoint table | latest prompt + `slate-automation` + `vision` + `docs/slate-v2/agent-start.md` | user explicitly excludes expensive/final tests and asks for 8h optimization | checkpoint-zero ready for status/gap scan |
 | 1 | update | status, gap-scan, behavior-proof, oracle-repair | live `../slate-v2` source and focused unit proof | found and fixed nested parent-level virtual move loss during grandparent split | packet 1 kept; continue next gap scan |
 | 2 | update | perf-packet, package/API proof | live `../slate-v2` source and full local `@slate/yjs` unit proof | repeated virtual-id lookup scans appeared in read/path/split traversal; persistent cache rejected as unsafe | packet 2 kept; continue next gap scan |
 | 3 | update | awareness cleanup oracle-repair | `YjsController.destroy()` source and focused awareness/provider unit proof | standalone `awareness` can be supplied without provider, but cleanup only cleared provider-backed awareness | packet 3 kept; continue next gap scan |
@@ -337,7 +337,7 @@ Mutation rules:
 - Reprioritize after every loop. The next checkpoint is chosen from current
   evidence, not from the original row order.
 - The supervisor is not stuck on this template or the initial prompt plan. The
-  user's latest request, `slate-north-star`, and current source evidence outrank
+  user's latest request, `vision`, and current source evidence outrank
   stale plan rows.
 
 Start Gates:
@@ -345,7 +345,7 @@ Start Gates:
 |------|---------|----------|
 | Prompt requirements captured before work | yes | Latest prompt copied into objective, automation source, constraints, verification surface, and non-goals before runtime edits. |
 | `slate-automation` source rule read | yes | Read `.agents/skills/slate-automation/SKILL.md` and `.agents/rules/slate-automation.mdc` during checkpoint-zero. |
-| `slate-north-star` read as checkpoint zero | yes | Read `.agents/skills/slate-north-star/SKILL.md`; `docs/slate-v2/agent-start.md` also read. |
+| `vision` read as checkpoint zero | yes | Read `.agents/skills/vision/SKILL.md`; `docs/slate-v2/agent-start.md` also read. |
 | Active goal checked or created | yes | `get_goal` returned no active goal; `create_goal` created active goal for this strict 8h plan. |
 | Invocation mode and timebox recorded | yes | Timed strict 8h; budget 2026-06-12T10:18:49+0800 to 2026-06-12T18:18:49+0800. |
 | Dynamic checkpoint policy accepted | yes | Checkpoint table updated from latest user constraints; mutation ledger records update. |
@@ -426,7 +426,7 @@ Completion Gates:
 Phase / pass table:
 | Phase | Status | Evidence | Next |
 |-------|--------|----------|------|
-| Checkpoint zero and requirement extraction | complete | created plan; latest prompt copied; `slate-automation`, source rule, `slate-north-star`, and `agent-start` read | status |
+| Checkpoint zero and requirement extraction | complete | created plan; latest prompt copied; `slate-automation`, source rule, `vision`, and `agent-start` read | status |
 | Status and current-tree closure | complete for loop 1 | source/test scan in live `../slate-v2`; no git-state check | next gap scan |
 | Gap scan and scenario matrix | complete for loop 1 | nested parent-level virtual split gap found | behavior proof |
 | Behavior proof | complete for packet 1 | focused split/merge contract red then green | next gap scan |
@@ -582,7 +582,7 @@ Error attempts:
 
 Verification evidence:
 - 2026-06-12T10:18:49+0800: generated this `slate-automation` plan.
-- 2026-06-12T10:30:50+0800: confirmed no active goal via `get_goal`; read `slate-automation`, `.agents/rules/slate-automation.mdc`, `slate-north-star`, and `docs/slate-v2/agent-start.md`.
+- 2026-06-12T10:30:50+0800: confirmed no active goal via `get_goal`; read `slate-automation`, `.agents/rules/slate-automation.mdc`, `vision`, and `docs/slate-v2/agent-start.md`.
 - 2026-06-12T10:36+0800: `bun test ./packages/slate-yjs/test/split-merge-contract.spec.ts` failed with nested quote containing empty text instead of `moved`.
 - 2026-06-12T10:38+0800: after fix, `bun test ./packages/slate-yjs/test/split-merge-contract.spec.ts` passed: 5 pass, 0 fail.
 - 2026-06-12T10:39+0800: `bun --filter @slate/yjs typecheck` passed.

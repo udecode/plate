@@ -62,7 +62,7 @@ Constraints:
 
 Boundaries:
 - Source of truth: ledger TSV, issue bodies JSON, generated closure ledger MD,
-  Slate v2 source/tests under `.tmp/slate-v2`, and `slate-north-star` for
+  Slate v2 source/tests under `.tmp/slate-v2`, and `vision` for
   taste/routing.
 - Allowed edit scope: issue-harvest scratch artifacts, local Slate v2 tests and
   runtime fixes when a relevant issue exposes a real gap, and `.agents/rules/**`
@@ -116,9 +116,9 @@ Start Gates:
 | Gate | Applies | Evidence |
 |------|---------|----------|
 | Prompt requirements captured before work | yes | User requested ascending full issue-by-issue loop; hard rule: one checkmark per relevant issue; per-row steps and final handoff sections copied into this plan. |
-| Skill analysis before edits | yes | Read `slate-automation`, `slate-north-star`, `autogoal`, and `docs/slate-v2/agent-start.md`. |
+| Skill analysis before edits | yes | Read `slate-automation`, `vision`, `autogoal`, and `docs/slate-v2/agent-start.md`. |
 | Active goal checked or created | yes | `create_goal` active for closing the Lexical closure ledger. |
-| Source of truth read before edits | yes | Read `issue-closure-ledger.tsv`, issue #3 body, `slate-north-star`, and Slate v2 agent start. |
+| Source of truth read before edits | yes | Read `issue-closure-ledger.tsv`, issue #3 body, `vision`, and Slate v2 agent start. |
 | Tracker comments and attachments read | N/A | External Lexical issues are local corpus input; no GitHub posting/sync requested. |
 | Video transcript evidence required | N/A | No local video is part of this prompt; issue videos are external links in corpus only unless a row specifically needs visual reproduction. |
 | `docs/solutions` checked for non-trivial existing-code work | pending | Check targeted solution docs only when a row maps to a matching Plate/Slate package. |
@@ -139,7 +139,7 @@ Start Gates:
 | `changeset` skill loaded when `.changeset` is required | N/A | No changeset currently required. |
 | Barrel/export impact decision recorded | yes | N/A unless a row changes exports or exported file layout. |
 | Agent-native pack selected | yes | Applies because workflow/skill rules and generated mirrors may be repaired. |
-| Agent-facing action surface identified | yes | `slate-automation`, `editor-test-harvester`, and `slate-north-star` are the agent-facing workflow surfaces. |
+| Agent-facing action surface identified | yes | `slate-automation`, `editor-test-harvester`, and `vision` are the agent-facing workflow surfaces. |
 | Source rule versus generated mirror boundary identified | yes | Edit `.agents/rules/**`; run `pnpm install`; verify generated `.agents/skills/**` mirrors. |
 | `agent-native-reviewer` loaded or waiver recorded | pending | Required before completion if agent workflow edits remain in the current diff. |
 
@@ -434,7 +434,7 @@ Current issue owner: pending query.
 | tests/oracles/browser proof | #7, #8, #9, #10, #17, #21, #28, #33, #36, #37, #40, #60, #66, #72, #123, #141, #146, #148, #158, #171, #175 exact Slate-v2 contracts/proofs written and verified; #14, #27, #46, #59, #65, #71, #147 linked to verified existing tests; #170/#172 reclassified as invalid skips; attempted Plate combobox test was reverted due Slate-v2-only scope |
 | benchmarks/metrics/targets | none |
 | examples/docs | `docs/plans/2026-06-03-lexical-all-issues-closure.md` created and filled |
-| skills/workflow | Patched `slate-automation` and `slate-north-star` to defer Plate-owned rows in Slate-v2-only harvests; synced generated mirrors |
+| skills/workflow | Patched `slate-automation` and `vision` to defer Plate-owned rows in Slate-v2-only harvests; synced generated mirrors |
 | reverted/quarantined packets | none |
 
 ## Needs Your Attention

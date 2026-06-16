@@ -224,7 +224,7 @@ Decisions and tradeoffs:
 Implementation notes:
 - Moved `.agents/rules/slate-automation.mdc` to `.agents/rules/slate-auto.mdc`.
 - Moved `docs/plans/templates/slate-automation.md` to `docs/plans/templates/slate-auto.md`.
-- Updated current references in `slate-auto`, `slate-research`, `slate-north-star`, `issue-harvester`, `.agents/AGENTS.md`, generated `AGENTS.md`, and `docs/editor-issue-harvester/lexical/full/supervisor-miss.md`.
+- Updated current references in `slate-auto`, `slate-research`, `vision`, `issue-harvester`, `.agents/AGENTS.md`, generated `AGENTS.md`, and `docs/editor-issue-harvester/lexical/full/supervisor-miss.md`.
 - Ran `pnpm install` to regenerate `.agents/skills/slate-auto/SKILL.md`.
 
 Review fixes:

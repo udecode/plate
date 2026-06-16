@@ -54,7 +54,7 @@ First checkpoint:
   - keep Slate v2 private alpha: no release, publish, PR, or changeset framing;
   - defer raw mobile claims until a real device lane exists;
   - if no obvious implementation remains, predict the next checkpoint from
-    `slate-north-star`, current evidence, weak proofs, benchmark gaps,
+    `vision`, current evidence, weak proofs, benchmark gaps,
     issue/test harvest gaps, docs/API mismatch, and workflow slowdowns.
 
 Completion threshold:
@@ -94,7 +94,7 @@ Constraints:
 
 Boundaries:
 - Source of truth: `.agents/skills/slate-auto/SKILL.md`,
-  `.agents/skills/slate-north-star/SKILL.md`, `.agents/skills/slate-research/SKILL.md`,
+  `.agents/skills/vision/SKILL.md`, `.agents/skills/slate-research/SKILL.md`,
   `docs/slate-v2/**`, `docs/slate-browser/**`, and `.tmp/slate-v2` runtime
   source/tests when a packet is promoted.
 - Allowed edit scope: generated plan state; `docs/slate-v2/research/**` and
@@ -122,7 +122,7 @@ Blocked condition:
   batch mode, queue soft questions for final handoff.
 - Do not hand off before a timed minimum runtime has elapsed because the obvious
   backlog looks empty. Enter supervision mode and infer the next checkpoint from
-  `slate-north-star`, current evidence, weak proofs, benchmark gaps, API/docs
+  `vision`, current evidence, weak proofs, benchmark gaps, API/docs
   mismatch, issue/test harvest gaps, and workflow slowdowns.
 
 Automation state:
@@ -329,7 +329,7 @@ Mutation rules:
 - Reprioritize after every loop. The next checkpoint is chosen from current
   evidence, not from the original row order.
 - The supervisor is not stuck on this template or the initial prompt plan. The
-  user's latest request, `slate-north-star`, and current source evidence outrank
+  user's latest request, `vision`, and current source evidence outrank
   stale plan rows.
 
 Start Gates:
@@ -337,7 +337,7 @@ Start Gates:
 |------|---------|----------|
 | Prompt requirements captured before work | yes | First checkpoint section copied prompt, timing, scope, boundaries, stop conditions, and final handoff requirements. |
 | `slate-auto` source rule read | yes | Read current `slate-auto` routing/headings and timed mode rules. |
-| `slate-north-star` read as checkpoint zero | yes | Read current north-star checkpoint/taste/proof rules. |
+| `vision` read as checkpoint zero | yes | Read current north-star checkpoint/taste/proof rules. |
 | Active goal checked or created | yes | `get_goal` returned none; created active slate-auto goal for this plan. |
 | Invocation mode and timebox recorded | yes | Timed mode; 8h minimum; start `2026-06-12 12:14:33 CEST`; target no earlier than `2026-06-12 20:14:33 CEST`. |
 | Dynamic checkpoint policy accepted | yes | Checkpoint supervisor says add/update/split/merge/reopen based on evidence, not seed order. |
@@ -601,7 +601,7 @@ Stopping checkpoints to unblock:
 |----|------|---------------------|----------------|-------------|----------------|----------------|--------|
 | huge-doc-post-delete-burst-and-staged-undo-attribution | perf/architecture deferral | Should the next loop attack physical post-delete burst cadence first, staged DOM-current undo-type first, or route both through one event-cadence/caret-authority design? | Delete is fixed, but the latest 200k trace still shows visible post-delete tail work; the wrong shortcut already corrupted text once. | Runtime event-cadence patching beyond measured attribution. | Final proof, plan closure, and documentation updates. | Start with `slate-ar-perf` attribution; patch only after native/model caret agreement is covered. | Final fresh-build 200k trace row above. |
 | table-fragment-contract-review | user-review boundary | Accept or revise `docs/plans/2026-06-12-slate-v2-table-fragment-rectangle-algebra-plan.md` before executing fixture/runtime changes. | `slate-plan` planning mode forbids implementation until the ready plan is accepted; executing without review would bypass the skill boundary. | Fixture conversion and browser selected-cell proof. | Huge-doc/native-selection research and other safe automation checkpoints. | Accept rectangle-algebra direction unless issue/accounting pass finds a contradiction. | `docs/plans/2026-06-12-slate-v2-table-fragment-rectangle-algebra-plan.md` |
-| ime-overlap-cancellation-taste | missing taste / policy boundary | Should Slate v2 adopt ProseMirror-style overlap cancellation: app/model/remote overlap wins, stale composition commits are ignored, and non-overlap edits preserve composition? | External research narrowed the policy, but Slate north-star does not yet define this conflict rule. | Browser/runtime test for overlapping app/remote edits during active composition. | Other safe testing-oracle, huge-doc, API/DX, and research checkpoints. | Route to `slate-plan` before runtime policy; my default is yes. | `docs/slate-v2/research/2026-06-12-ime-overlap-policy/README.md` |
+| ime-overlap-cancellation-taste | missing taste / policy boundary | Should Slate v2 adopt ProseMirror-style overlap cancellation: app/model/remote overlap wins, stale composition commits are ignored, and non-overlap edits preserve composition? | External research narrowed the policy, but Vision does not yet define this conflict rule. | Browser/runtime test for overlapping app/remote edits during active composition. | Other safe testing-oracle, huge-doc, API/DX, and research checkpoints. | Route to `slate-plan` before runtime policy; my default is yes. | `docs/slate-v2/research/2026-06-12-ime-overlap-policy/README.md` |
 
 Findings:
 - ProseMirror tables treats table clipboard as rectangle algebra: source cells

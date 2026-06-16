@@ -38,8 +38,8 @@ Major lane:
   a compact first-read profile backed by source docs
 
 Completion threshold:
-- `.agents/rules/slate-north-star.mdc` and generated
-  `.agents/skills/slate-north-star/SKILL.md` exist and record
+- `.agents/rules/vision.mdc` and generated
+  `.agents/skills/vision/SKILL.md` exist and record
   reusable taste, correction patterns, proof hierarchy, skill routing,
   claim-width discipline, benchmark target authority, degraded-mode contracts,
   selection proof shape, and recent pagination lessons.
@@ -55,7 +55,7 @@ Verification surface:
 - `pnpm install`
 - `pnpm docs:slate-v2:audit`
 - `pnpm lint:fix`
-- `rg` source/mirror audit for checkpoint-zero and `slate-north-star` sections
+- `rg` source/mirror audit for checkpoint-zero and `vision` sections
 - `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-06-03-compile-slate-automation-taste-profile.md`
 
 Constraints:
@@ -154,7 +154,7 @@ Work Checklist:
 Completion Gates:
 | Gate | Applies | Required action | Evidence |
 |------|---------|-----------------|----------|
-| Named verification threshold | yes | Create profile skill, wire checkpoint zero, sync mirrors, pass checks | `slate-north-star` source/mirror exist; source and mirrors contain checkpoint-zero and numbered source-read rules; checks pass. |
+| Named verification threshold | yes | Create profile skill, wire checkpoint zero, sync mirrors, pass checks | `vision` source/mirror exist; source and mirrors contain checkpoint-zero and numbered source-read rules; checks pass. |
 | Current-state source audit | yes | Map owner docs and rules | 10 iterations over current truth, release/proof, API decisions, perf, behavior, AR routing, governance, research, benchmark, and pagination docs. |
 | Decision criteria closure | yes | Mark criteria satisfied | All criteria in Major source satisfied. |
 | Options / tradeoffs / rejection record | yes | Record compact profile vs giant dump | Chose compact first-read profile with outward links; rejected raw chat dump. |
@@ -179,7 +179,7 @@ Phase / pass table:
 |-------|--------|----------|------|
 | Intake and source read | complete | Goal created; source surfaces counted | 10 iterations |
 | Ten source-read iterations | complete | Iteration table below | profile patch |
-| Profile and rule patch | complete | `slate-north-star` and `slate-automation` updated | sync |
+| Profile and rule patch | complete | `vision` and `slate-automation` updated | sync |
 | Generated sync | complete | `pnpm install` passed | verification |
 | Verification | complete | docs audit, lint, mirror audit, completion checker passed | closeout |
 | Closeout | complete | Final handoff ready | final response |
@@ -207,7 +207,7 @@ Findings:
   were repaired in this pass.
 
 Decisions and tradeoffs:
-- Keep one compact `slate-north-star` skill as the first-read profile.
+- Keep one compact `vision` skill as the first-read profile.
 - Keep sourced architecture decisions in `docs/research/decisions/**`, not in
   the profile body.
 - Keep `slate-automation` as supervisor, not a mega-skill that absorbs AR,
@@ -216,8 +216,8 @@ Decisions and tradeoffs:
   improved.
 
 Implementation notes:
-- Added `.agents/rules/slate-north-star.mdc` and generated
-  `.agents/skills/slate-north-star/SKILL.md`.
+- Added `.agents/rules/vision.mdc` and generated
+  `.agents/skills/vision/SKILL.md`.
 - Updated `.agents/rules/slate-automation.mdc` to read the profile as
   checkpoint zero and require numbered source-read passes for profile updates.
 - Synced generated `.agents/skills/slate-automation/SKILL.md`.
@@ -238,7 +238,7 @@ Error attempts:
 
 Verification evidence:
 - `pnpm install` passed and regenerated skills.
-- `rg -n "slate-north-star|numbered source-read passes|Taste checkpoint|checkpoint zero|Degraded Mode Contract|Recent Pagination Lessons|Benchmark Target Authority|Claim Width|state/tx|source-read passes" .agents/rules/slate-automation.mdc .agents/skills/slate-automation/SKILL.md .agents/rules/slate-north-star.mdc .agents/skills/slate-north-star/SKILL.md` found the source, mirrors, and profile sections.
+- `rg -n "vision|numbered source-read passes|Taste checkpoint|checkpoint zero|Degraded Mode Contract|Recent Pagination Lessons|Benchmark Target Authority|Claim Width|state/tx|source-read passes" .agents/rules/slate-automation.mdc .agents/skills/slate-automation/SKILL.md .agents/rules/vision.mdc .agents/skills/vision/SKILL.md` found the source, mirrors, and profile sections.
 - `pnpm docs:slate-v2:audit` passed after stale API doc repair.
 - `rg -n "editor\\.(getSelection|getChildren|insertNodes|insertNode|setNodes|moveNodes|wrapNodes|unwrapNodes|removeNodes|insertText|insertFragment|delete|select|move)\\(" docs/slate-v2/absolute-architecture-release-claim.md docs/slate-v2/references/architecture-contract.md` returned no matches.
 - `pnpm lint:fix` passed; Biome checked 3234 files and applied no fixes.
@@ -246,7 +246,7 @@ Verification evidence:
 
 Final handoff contract:
 - Recommendation: future long Slate automation loops should read
-  `slate-north-star` as checkpoint zero, then drill into current owner docs by
+  `vision` as checkpoint zero, then drill into current owner docs by
   surface.
 - Confidence: high.
 - Evidence: 10 source-read iterations, profile doc, source-rule update,

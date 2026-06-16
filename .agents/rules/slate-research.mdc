@@ -1,5 +1,5 @@
 ---
-description: Slate v2 research intelligence. Use for web/GitHub/OSS discovery, scalable repo scans, external prior art, source synthesis, research ledgers, dedupe, evidence grading, scoring, and promotion into Slate-native owners. Does not run Codex Autoresearch packets; routes accepted work to slate-ar-quality, slate-ar-gate, slate-ar-perf, slate-patch, slate-plan, issue-harvester, or docs.
+description: Slate v2 research intelligence. Use for web/GitHub/OSS discovery, scalable repo scans, external prior art, source synthesis, research ledgers, dedupe, evidence grading, scoring, and promotion into Slate-native owners. Does not run Codex Autoresearch packets; routes accepted work to slate-ar modes, slate-patch, slate-plan, issue-harvester, or docs.
 argument-hint: <research question/topic> [setup | doctor | next | log | state | promote-preview | shard | audit]
 disable-model-invocation: true
 ---
@@ -15,8 +15,8 @@ large OSS repo scans before patching.
 
 This is not `slate-ar` and does not run Codex Autoresearch packets. It discovers
 and synthesizes research, then promotes accepted leads to the right execution
-owner. `slate-ar` and `slate-ar-*` run measured loops; `slate-research` decides
-what evidence-backed loops, oracles, plans, docs, and fixes should exist.
+owner. `slate-ar` modes run measured loops; `slate-research` decides what
+evidence-backed loops, oracles, plans, docs, and fixes should exist.
 
 ## Core Take
 
@@ -43,11 +43,11 @@ answers if the search is managed like engineering work.
 - `slate-research`: discovery and synthesis. Owns web/GitHub/OSS search,
   ledgers, source reading, dedupe, evidence grades, scoring, and promotion.
 - `slate-ar`: execution wrapper. Owns Slate defaults for measured
-  `codex-autoresearch` packet loops from the Plate repo root.
-- `slate-ar-quality`: executes an accepted quality-gap checklist through
+  `codex-autoresearch` packet loops in `Plate repo root`.
+- `slate-ar quality`: executes an accepted quality-gap checklist through
   Codex Autoresearch. It does not own broad OSS discovery.
-- `slate-ar-gate`: repeats existing proof gates once a command/oracle exists.
-- `slate-ar-perf`: optimizes benchmark-backed performance targets.
+- `slate-ar gate`: repeats existing proof gates once a command/oracle exists.
+- `slate-ar perf`: optimizes benchmark-backed performance targets.
 - `slate-patch`: fixes concrete bugs or missing oracles.
 - `slate-plan`: decides architecture/API shape.
 - `issue-harvester`: owns exhaustive issue-by-issue external corpus closure.
@@ -57,16 +57,16 @@ Flow:
 ```txt
 slate-auto
   -> slate-research        # discover, dedupe, synthesize, promote
-      -> slate-ar-quality  # execute accepted quality_gap checklist
-      -> slate-ar-gate     # repeat existing proof
-      -> slate-ar-perf     # optimize benchmark target
+      -> slate-ar quality  # execute accepted quality_gap checklist
+      -> slate-ar gate     # repeat existing proof
+      -> slate-ar perf     # optimize benchmark target
       -> slate-patch       # bug/oracle fix
       -> slate-plan        # architecture/API decision
       -> issue-harvester   # exhaustive issue closure
 ```
 
 Do not route `research`, `web/GitHub discovery`, or `OSS scan` directly to
-`slate-ar-quality` unless a quality-gap checklist already exists. Discovery
+`slate-ar quality` unless a quality-gap checklist already exists. Discovery
 first belongs here; execution after promotion belongs to the target owner.
 
 ## Use When
@@ -91,8 +91,8 @@ first belongs here; execution after promotion belongs to the target owner.
 - The user wants one narrow local bug fix with a live repro. Use `slate-patch`.
 - The next safe move is an accepted runtime/API decision. Use `slate-plan`.
 - The work is a measured packet loop with known target/checklist/command. Use
-  `slate-ar` or a `slate-ar-*` shortcut.
-- The only work left is measured perf packet execution. Use `slate-ar-perf`.
+  the matching `slate-ar` mode.
+- The only work left is measured perf packet execution. Use `slate-ar perf`.
 
 External issue-harvest is the exhaustive version of discovery. Ordinary
 autoresearch samples the strongest repos, issues, PRs, tests, and examples

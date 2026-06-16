@@ -42,17 +42,11 @@
         "modelSelection": {
           "anchor": {
             "offset": 0,
-            "path": [
-              0,
-              0
-            ]
+            "path": [0, 0]
           },
           "focus": {
             "offset": 0,
-            "path": [
-              0,
-              0
-            ]
+            "path": [0, 0]
           }
         },
         "nativeSelection": {
@@ -85,17 +79,11 @@
         "modelSelection": {
           "anchor": {
             "offset": 0,
-            "path": [
-              0,
-              0
-            ]
+            "path": [0, 0]
           },
           "focus": {
             "offset": 102,
-            "path": [
-              4999,
-              0
-            ]
+            "path": [4999, 0]
           }
         },
         "nativeSelection": {
@@ -156,17 +144,11 @@
         "modelSelection": {
           "anchor": {
             "offset": 0,
-            "path": [
-              0,
-              0
-            ]
+            "path": [0, 0]
           },
           "focus": {
             "offset": 0,
-            "path": [
-              0,
-              0
-            ]
+            "path": [0, 0]
           }
         },
         "nativeSelection": {
@@ -199,17 +181,11 @@
         "modelSelection": {
           "anchor": {
             "offset": 0,
-            "path": [
-              0,
-              0
-            ]
+            "path": [0, 0]
           },
           "focus": {
             "offset": 102,
-            "path": [
-              4999,
-              0
-            ]
+            "path": [4999, 0]
           }
         },
         "nativeSelection": {
@@ -324,17 +300,11 @@
         "modelSelection": {
           "anchor": {
             "offset": 8,
-            "path": [
-              0,
-              0
-            ]
+            "path": [0, 0]
           },
           "focus": {
             "offset": 42,
-            "path": [
-              0,
-              0
-            ]
+            "path": [0, 0]
           }
         },
         "nativeSelection": {
@@ -358,17 +328,11 @@
         "modelSelection": {
           "anchor": {
             "offset": 8,
-            "path": [
-              0,
-              0
-            ]
+            "path": [0, 0]
           },
           "focus": {
             "offset": 8,
-            "path": [
-              0,
-              0
-            ]
+            "path": [0, 0]
           }
         },
         "nativeSelection": {
@@ -392,17 +356,11 @@
         "modelSelection": {
           "anchor": {
             "offset": 8,
-            "path": [
-              0,
-              0
-            ]
+            "path": [0, 0]
           },
           "focus": {
             "offset": 42,
-            "path": [
-              0,
-              0
-            ]
+            "path": [0, 0]
           }
         },
         "nativeSelection": {
@@ -426,17 +384,11 @@
         "modelSelection": {
           "anchor": {
             "offset": 8,
-            "path": [
-              0,
-              0
-            ]
+            "path": [0, 0]
           },
           "focus": {
             "offset": 8,
-            "path": [
-              0,
-              0
-            ]
+            "path": [0, 0]
           }
         },
         "nativeSelection": {

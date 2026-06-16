@@ -21,7 +21,7 @@ Automation source:
 - surface / route / package: `.tmp/slate-v2` Slate v2 runtime, tests, examples, browser proof, benchmarks, package API/DX, docs, and skill workflow repair
 - invocation mode: timed mode with dynamic supervision
 - minimum runtime / deadline: start `2026-06-06T13:57:45+02:00`; target deadline `2026-06-06T19:57:45+02:00`; do not hand off before 6h minimum active runtime unless user interrupts or a hard external blocker prevents all autonomous work
-- completion threshold summary: run autonomous Slate v2 checkpoints for at least 6h; every packet gets keep/revert/quarantine, proof, changed-list, review-attention, and next-owner rows; if obvious backlog is empty before the deadline, enter supervision mode and generate the next checkpoint from `slate-north-star` plus current evidence
+- completion threshold summary: run autonomous Slate v2 checkpoints for at least 6h; every packet gets keep/revert/quarantine, proof, changed-list, review-attention, and next-owner rows; if obvious backlog is empty before the deadline, enter supervision mode and generate the next checkpoint from `vision` plus current evidence
 
 First checkpoint:
 - Before implementation or broad exploration, copy every explicit prompt
@@ -36,7 +36,7 @@ First checkpoint:
 - Captured prompt requirements:
   - use `autogoal`;
   - run autodidact loops, meaning the agent chooses, supervises, mutates, and reprioritizes checkpoints from evidence without waiting for user routing;
-  - target "perfect v2", interpreted through `slate-north-star`: stabilize behavior first, then improve perf, then clean API/DX, then prove readiness;
+  - target "perfect v2", interpreted through `vision`: stabilize behavior first, then improve perf, then clean API/DX, then prove readiness;
   - duration is exactly a 6h minimum active runtime, not an estimate;
   - do not stop early because the first packet finishes or the obvious backlog looks empty;
   - when no obvious next packet remains, enter supervision mode and infer the next checkpoint from taste, source evidence, weak proofs, benchmark gaps, API/docs mismatch, issue/test harvest gaps, sibling-editor comparisons, and workflow slowdowns;
@@ -86,7 +86,7 @@ Constraints:
 
 Boundaries:
 - Source of truth: live `.tmp/slate-v2` source/tests/benchmarks/examples, this
-  plan, `slate-automation`, `slate-north-star`, relevant docs under
+  plan, `slate-automation`, `vision`, relevant docs under
   `docs/slate-v2/**`, and existing evidence plans.
 - Allowed edit scope: `.tmp/slate-v2` runtime/tests/benchmarks/examples/docs
   for Slate v2; parent `docs/plans/**` and Slate-v2 docs artifacts; `.agents/rules/**`
@@ -97,7 +97,7 @@ Boundaries:
 - Package/API surfaces: `packages/slate`, `packages/slate-react`,
   `packages/slate-browser`, `packages/slate-history`, `packages/slate-dom`, and
   public docs/examples when evidence routes there.
-- Agent/skill surfaces: `slate-automation`, `slate-north-star`, autogoal
+- Agent/skill surfaces: `slate-automation`, `vision`, autogoal
   templates, `slate-browser`, `slate-ar-*`, and benchmark/test workflow rules
   only when the loop proves a recurring miss.
 - Docs/research surfaces: this plan first; durable `docs/slate-v2/**` only for
@@ -112,12 +112,12 @@ Blocked condition:
   missing local source/tooling that prevents all meaningful Slate v2 proof,
   raw-device-only claims without hardware lane, unsafe API/runtime fork with no
   reversible experiment, or a reusable taste gap not covered by
-  `slate-north-star` when no safe alternate checkpoint remains.
+  `vision` when no safe alternate checkpoint remains.
 - Do not block while a safe alternate checkpoint remains runnable. In timed or
   batch mode, queue soft questions for final handoff.
 - Do not hand off before a timed minimum runtime has elapsed because the obvious
   backlog looks empty. Enter supervision mode and infer the next checkpoint from
-  `slate-north-star`, current evidence, weak proofs, benchmark gaps, API/docs
+  `vision`, current evidence, weak proofs, benchmark gaps, API/docs
   mismatch, issue/test harvest gaps, and workflow slowdowns.
 
 Automation state:
@@ -215,7 +215,7 @@ Checkpoint mutation ledger:
 | Loop | Mutation | Checkpoint(s) | Evidence | Reason | Result |
 |------|----------|---------------|----------|--------|--------|
 | 0 | seed | initial template rows | plan creation | starter topology only | seeded then superseded by concrete checkpoints |
-| 0 | update | checkpoint-zero | user prompt, autogoal skill body, slate-automation timed-mode rule, slate-north-star taste rule | prevent compaction miss and enforce 6h as minimum runtime | complete |
+| 0 | update | checkpoint-zero | user prompt, autogoal skill body, slate-automation timed-mode rule, vision taste rule | prevent compaction miss and enforce 6h as minimum runtime | complete |
 | 0 | split | status-and-gap-scan | broad `perfect v2` objective needs current evidence before runtime patching | avoid stale handoff-driven patching | completed |
 | 1 | add | perf-benchmark-hygiene | legacy compare showed select-then-type near parity but promotion+typing still slow | needed a promotion-only metric before runtime work | complete |
 | 1 | add | promotion-runtime-owner | promotion-only p95 about 49-56ms and trace shows 32 mounted text hosts | direct owner is partial-DOM promotion mount cost | complete: quarantined |
@@ -229,7 +229,7 @@ Checkpoint mutation ledger:
 | 3 | keep | native-select-all-toolbar-formatting | stable sweep failed richtext clear-formatting: model/view select-all spanned two paragraphs but native selection covered only the first; toolbar click narrowed model selection before mark command | select-all should use projected view selection only for partial/staged/large full-document selections; small full DOM exports native endpoints | runtime and browser proof verified |
 | 3 | keep | slate-history-type-contract-runtime-shield | broad `bun test ./packages/slate-history/test` executed negative type assertions at module top level | wrap `@ts-expect-error` assertions in an uncalled function; typecheck still proves them | test-command repair verified |
 | 4 | keep | slate-browser-exact-selection-wait | `selection.selectAll()` waited for any native selection in root, so it missed native/model disagreement | exact expected selections now require native DOM endpoints to match unless the editor declares partial-dom-backed selection | helper proof verified |
-| 4 | add | api-dx-hard-cut-audit | behavior and oracle lanes are green enough for current API/DX consistency pass | `slate-north-star` says clean public API and docs after behavior | completed |
+| 4 | add | api-dx-hard-cut-audit | behavior and oracle lanes are green enough for current API/DX consistency pass | `vision` says clean public API and docs after behavior | completed |
 | 5 | keep | docs-api-mismatch-repair | docs content was current but wrapper filenames still referenced cut `withReact`/`withHistory` APIs | renamed setup docs and proof-map links; stale link grep leaves only negative surface assertions | verified |
 | 5 | keep | history-public-surface-guard | `slate-history` lacked the same explicit no-wrapper guard as `slate-react` | added type/runtime `withHistory` negative contract; history typecheck and tests pass | verified |
 | 5 | keep | delete-fragment-command-shape | focused transaction tests showed `delete_fragment` command leaked `at: undefined` to middleware | command object now omits undefined `at`; strict existing oracle passes | verified |
@@ -305,7 +305,7 @@ Mutation rules:
 - Reprioritize after every loop. The next checkpoint is chosen from current
   evidence, not from the original row order.
 - The supervisor is not stuck on this template or the initial prompt plan. The
-  user's latest request, `slate-north-star`, and current source evidence outrank
+  user's latest request, `vision`, and current source evidence outrank
   stale plan rows.
 
 Start Gates:
@@ -313,7 +313,7 @@ Start Gates:
 |------|---------|----------|
 | Prompt requirements captured before work | yes | First checkpoint captures autogoal, autodidact loop, "perfect v2", 6h minimum runtime, supervision fallback, non-goals, verification, and handoff sections |
 | `slate-automation` source rule read | yes | `.agents/skills/slate-automation/SKILL.md` timed mode and supervision mode read |
-| `slate-north-star` read as checkpoint zero | yes | `.agents/skills/slate-north-star/SKILL.md` user-correction/timed-runtime taste rules read |
+| `vision` read as checkpoint zero | yes | `.agents/skills/vision/SKILL.md` user-correction/timed-runtime taste rules read |
 | Active goal checked or created | yes | `get_goal` returned null; `create_goal` created this objective |
 | Invocation mode and timebox recorded | yes | timed mode; 6h minimum runtime; target `2026-06-06T19:57:45+02:00` |
 | Dynamic checkpoint policy accepted | yes | plan checkpoint table is mutable; supervision mode enabled |
@@ -592,7 +592,7 @@ Stopping checkpoints to unblock:
 
 Findings:
 - No active goal existed before this run.
-- `slate-automation` and `slate-north-star` already contain the repaired timed-mode rule: durations are minimum active runtime and empty backlog triggers supervision mode.
+- `slate-automation` and `vision` already contain the repaired timed-mode rule: durations are minimum active runtime and empty backlog triggers supervision mode.
 - Prior huge-document all-lanes plan is a useful seed but not the whole 6h scope; next scan must verify current source/proof before patching.
 - Fresh fair compare before runtime experiment: worst p95 ratio 1.05 in the 5-iteration run; default-auto select-then-type was 41.3ms vs legacy 39.21ms, so the old large select-then-type gap is no longer the main owner.
 - New benchmark split: default-auto promotion-only p95 is about 49-56ms, and promotion+type is about 79-84ms.
@@ -615,7 +615,7 @@ Findings:
 - Remaining measured huge-doc perf owner after that repair moved: virtualized cold middle select dropped from about 99.6ms to about 73.8ms with direct estimated-offset scrolling, while materialized select stayed about 32ms. The remaining gap is cold virtualized mount/render/materialization cost, not Slate selection mutation.
 
 Decisions and tradeoffs:
-- Interpret "perfect v2" through `slate-north-star`: behavior first, perf second, API/DX third, workflow repair whenever the loop misses.
+- Interpret "perfect v2" through `vision`: behavior first, perf second, API/DX third, workflow repair whenever the loop misses.
 - Use 6h as a minimum active runtime, not a stopping estimate.
 - Do not run git-state hygiene at startup; inspect source/proof surfaces directly.
 - Keep benchmark instrumentation because it prevents false promotion wins.
@@ -632,7 +632,7 @@ Error attempts:
 
 Verification evidence:
 - Goal lifecycle: `get_goal` returned null; `create_goal` created the active objective.
-- Checkpoint zero source reads: `slate-automation` timed/supervision rules and `slate-north-star` timed taste rule read.
+- Checkpoint zero source reads: `slate-automation` timed/supervision rules and `vision` timed taste rule read.
 - Baseline fair compare: `REACT_HUGE_COMPARE_BLOCKS=5000 REACT_HUGE_COMPARE_ITERATIONS=5 REACT_HUGE_COMPARE_TYPE_OPS=10 REACT_HUGE_COMPARE_SURFACES=v2DefaultRenderAuto,v2DomPresent REACT_HUGE_COMPARE_SPLIT_SELECTION=1 bun run bench:react:huge-document:legacy-compare:local` from `.tmp/slate-v2` passed; worst p95 ratio 1.05, worst delta 2.09ms, promotion+type p95 73.27ms.
 - Benchmark instrumentation smoke: current-only profile wrote `tmp/slate-react-huge-document-legacy-compare-benchmark-current-only-v2DefaultRenderAuto-blocks-5000-iters-2-ops-10-chunk-1000-segment-32-radius-0-dispose-500-full-run-native-beforeinput-combined-surfaces-split-selection-profile.json`; `middleBlockPromoteMs` p95 50.6ms, `promoted=1`, textHostCount 32.
 - Corrected lookup proof: segment env 8/16 now infers actual segment size 32 and promotes segment 78; no false promotion skip.

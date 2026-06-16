@@ -82,7 +82,7 @@ Constraints:
 
 Boundaries:
 - Source of truth: `.tmp/slate-v2` live source/tests/benchmarks first;
-  `docs/slate-v2/agent-start.md`, `slate-north-star`, and active plans for
+  `docs/slate-v2/agent-start.md`, `vision`, and active plans for
   current control-plane truth.
 - Allowed edit scope: `.tmp/slate-v2/packages/slate*`, `.tmp/slate-v2/site`,
   `.tmp/slate-v2/playwright`, `.tmp/slate-v2/scripts/benchmarks`, parent
@@ -105,12 +105,12 @@ Blocked condition:
   external credential/device gap blocking all meaningful work, unsafe
   public/runtime API fork with no safe alternate packet, repeated tool/source
   blocker with no autonomous move, or missing reusable taste not covered by
-  `slate-north-star` when no safe alternate owner remains.
+  `vision` when no safe alternate owner remains.
 - Do not block while a safe alternate checkpoint remains runnable. In timed or
   batch mode, queue soft questions for final handoff.
 - Do not hand off before a timed minimum runtime has elapsed because the obvious
   backlog looks empty. Enter supervision mode and infer the next checkpoint from
-  `slate-north-star`, current evidence, weak proofs, benchmark gaps, API/docs
+  `vision`, current evidence, weak proofs, benchmark gaps, API/docs
   mismatch, issue/test harvest gaps, and workflow slowdowns.
 
 Automation state:
@@ -147,7 +147,7 @@ Completion rule:
 Checkpoint supervisor:
 | Checkpoint | Owner | Status | Priority | Why it exists | Evidence / exit rule | Mutation decision |
 |------------|-------|--------|----------|---------------|----------------------|-------------------|
-| checkpoint-zero | slate-automation | done | P0 | Copy prompt requirements and read north-star before implementation. | `slate-north-star`, `agent-start`, and this plan filled with 8h timed rows. | update |
+| checkpoint-zero | slate-automation | done | P0 | Copy prompt requirements and read north-star before implementation. | `vision`, `agent-start`, and this plan filled with 8h timed rows. | update |
 | status | slate-automation | done | P0 | Read active plan, latest prompt, current source/control evidence without relying on chat. | Current docs read; first packet chosen. | update |
 | gap-scan | slate-automation | done | P0 | Identify behavior, visual, API, test, metric, docs, skill, and workflow gaps. | Routed first to huge-document proof, then stable example behavior sweep. | update |
 | current-tree-closure | slate-automation | done | P0 | Establish that the just-committed current Slate v2 tree has no obvious fast gate break before deeper packets. | `bun check` passed after `bun lint:fix` fixed formatting. | update |
@@ -213,7 +213,7 @@ Checkpoint mutation ledger:
 | Loop | Mutation | Checkpoint(s) | Evidence | Reason | Result |
 |------|----------|---------------|----------|--------|--------|
 | 0 | seed | initial template rows | plan creation | starter topology only | superseded by extraction |
-| 0 | update | checkpoint-zero | `slate-north-star`, `agent-start`, prompt `8 hours`, plan edits | Copied explicit timing, mode, stop, deliverable, proof, and private-alpha requirements before implementation. | done |
+| 0 | update | checkpoint-zero | `vision`, `agent-start`, prompt `8 hours`, plan edits | Copied explicit timing, mode, stop, deliverable, proof, and private-alpha requirements before implementation. | done |
 | 0 | add | current-tree-closure | no named surface; latest prior work touched broad runtime/docs/tests | Need a fast current-tree gate before choosing deeper supervision packets. | pending |
 | 1 | update | current-tree-closure | `.tmp/slate-v2`: `bun check`; first run failed format/import-order, `bun lint:fix`, rerun passed. | Current tree fast gate is green; formatting drift repaired. | done |
 | 1 | add | huge-document-browser-proof | current docs: huge-doc superiority is scoped and recent work touched selection/virtualized runtime. | Need replayable browser behavior before perf/API packet. | pending |
@@ -321,7 +321,7 @@ Mutation rules:
 - Reprioritize after every loop. The next checkpoint is chosen from current
   evidence, not from the original row order.
 - The supervisor is not stuck on this template or the initial prompt plan. The
-  user's latest request, `slate-north-star`, and current source evidence outrank
+  user's latest request, `vision`, and current source evidence outrank
   stale plan rows.
 
 Start Gates:
@@ -329,7 +329,7 @@ Start Gates:
 |------|---------|----------|
 | Prompt requirements captured before work | yes | `8 hours` copied as minimum runtime; final handoff/stop/checkpoint requirements copied from skill into plan rows. |
 | `slate-automation` source rule read | yes | User provided full invoked skill body; plan follows timed-mode contract. |
-| `slate-north-star` read as checkpoint zero | yes | `.agents/skills/slate-north-star/SKILL.md` read 2026-06-07. |
+| `vision` read as checkpoint zero | yes | `.agents/skills/vision/SKILL.md` read 2026-06-07. |
 | Active goal checked or created | yes | Codex goal created: timed 8h Slate v2 automation. |
 | Invocation mode and timebox recorded | yes | Timed mode, 8h minimum, target 2026-06-07 21:51:36 CEST. |
 | Dynamic checkpoint policy accepted | yes | Supervisor may add/update/split/merge/retire/reprioritize/reopen rows each loop. |
@@ -411,7 +411,7 @@ Completion Gates:
 Phase / pass table:
 | Phase | Status | Evidence | Next |
 |-------|--------|----------|------|
-| Checkpoint zero and requirement extraction | done | `slate-north-star`, `agent-start`, scoreboard, release claim, prompt `8 hours`; plan rows filled. | status |
+| Checkpoint zero and requirement extraction | done | `vision`, `agent-start`, scoreboard, release claim, prompt `8 hours`; plan rows filled. | status |
 | Status and current-tree closure | done | `bun check` passed after `bun lint:fix` fixed 4 formatting/import-order files. | gap scan |
 | Gap scan and scenario matrix | done | First evidence-driven owner: huge-document browser proof; next stable examples/API/docs by result. | behavior proof |
 | Behavior proof | done | Huge-document focused browser proof green; stable Chromium example sweep green; targeted Firefox/WebKit selection sweep green. | visual/native proof |

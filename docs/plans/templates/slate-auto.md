@@ -70,7 +70,7 @@ Blocked condition:
   batch mode, queue soft questions for final handoff.
 - Do not hand off before a timed minimum runtime has elapsed because the obvious
   backlog looks empty. Enter supervision mode and infer the next checkpoint from
-  `slate-north-star`, current evidence, weak proofs, benchmark gaps, API/docs
+  `vision`, current evidence, weak proofs, benchmark gaps, API/docs
   mismatch, issue/test harvest gaps, and workflow slowdowns.
 
 Automation state:
@@ -107,17 +107,17 @@ Completion rule:
 Checkpoint supervisor:
 | Checkpoint | Owner | Status | Priority | Why it exists | Evidence / exit rule | Mutation decision |
 |------------|-------|--------|----------|---------------|----------------------|-------------------|
-| checkpoint-zero | slate-auto | in_progress | P0 | Copy prompt requirements and read north-star before implementation. | Requirement rows complete. | seed |
+| checkpoint-zero | slate-auto | in_progress | P0 | Copy prompt requirements and read vision before implementation. | Requirement rows complete. | seed |
 | status | slate-auto | pending | P0 | Read active plan, latest prompt, source status, and current evidence. | Current state recorded. | seed |
 | gap-scan | slate-auto | pending | P0 | Identify behavior, visual, API, test, metric, docs, skill, and workflow gaps. | Gaps routed to packet owners. | seed |
-| behavior-proof | slate-ar-stabilize | pending | P0 | Prove stable editor behavior before perf. | Focused behavior commands pass or failures routed. | seed |
+| behavior-proof | slate-ar stabilize | pending | P0 | Prove stable editor behavior before perf. | Focused behavior commands pass or failures routed. | seed |
 | oracle-repair | slate-patch / tdd | pending | P0 | Add missing native/visual/model oracles for found gaps. | New proof fails before fix or coverage gap is explicit. | seed |
 | visual-proof | Browser / Playwright | pending | P0 | Prove visible editor behavior and native selection. | Browser/screenshot/geometry evidence recorded. | seed |
 | slate-browser-promotion | slate-browser | pending | P1 | Promote repeated browser proof into reusable API/helper. | Helper added, queued, or N/A with reason. | seed |
 | mobile-claim-width | slate-auto | pending | P1 | Separate raw-device proof from viewport proof. | Raw proof command passes or scoped blocker recorded. | seed |
-| huge-document-smoke | slate-ar-stabilize | pending | P1 | Smoke huge-doc correctness without broad architecture work. | Typing/Enter/paste/select-all/undo/nav/scroll proof recorded. | seed |
-| perf-packet | slate-ar-fast / slate-ar-perf | pending | P2 | Optimize only after correctness is green. | Metric target or plateau recorded. | seed |
-| supervision-mode | slate-auto | pending | P0 when timed runtime remains | If backlog looks empty before minimum runtime, predict next useful checkpoint from north-star and evidence. | New checkpoint added/run, or hard blocker recorded. | seed |
+| huge-document-smoke | slate-ar stabilize | pending | P1 | Smoke huge-doc correctness without broad architecture work. | Typing/Enter/paste/select-all/undo/nav/scroll proof recorded. | seed |
+| perf-packet | slate-ar perf | pending | P2 | Optimize only after correctness is green. | Metric target or plateau recorded. | seed |
+| supervision-mode | slate-auto | pending | P0 when timed runtime remains | If backlog looks empty before minimum runtime, predict next useful checkpoint from vision and evidence. | New checkpoint added/run, or hard blocker recorded. | seed |
 | consolidation | slate-auto | pending | P1 | Move accepted reusable decisions to durable docs/rules. | Durable owner updated or N/A. | seed |
 | final-handoff | slate-auto | pending | P0 | Emit changed list, review attention, queued checkpoints, commands, residual risks. | Handoff rows complete. | seed |
 
@@ -142,7 +142,7 @@ Mutation rules:
 - Reprioritize after every loop. The next checkpoint is chosen from current
   evidence, not from the original row order.
 - The supervisor is not stuck on this template or the initial prompt plan. The
-  user's latest request, `slate-north-star`, and current source evidence outrank
+  user's latest request, `vision`, and current source evidence outrank
   stale plan rows.
 
 Start Gates:
@@ -150,7 +150,7 @@ Start Gates:
 |------|---------|----------|
 | Prompt requirements captured before work | pending | pending |
 | `slate-auto` source rule read | pending | pending |
-| `slate-north-star` read as checkpoint zero | pending | pending |
+| `vision` read as checkpoint zero | pending | pending |
 | Active goal checked or created | pending | pending |
 | Invocation mode and timebox recorded | pending | pending |
 | Dynamic checkpoint policy accepted | pending | pending |
@@ -191,7 +191,7 @@ Work Checklist:
       this run.
 - [ ] Package/API hard cuts, aliases, exports, and docs/API consistency are
       audited when in scope.
-- [ ] Docs/north-star/rule consolidation is applied when a reusable decision is
+- [ ] Docs/vision/rule consolidation is applied when a reusable decision is
       accepted, or marked N/A.
 - [ ] Workflow slowdowns are logged and avoidable repeats are repaired in the
       owner skill/script/gate.

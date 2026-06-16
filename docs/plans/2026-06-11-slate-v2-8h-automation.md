@@ -107,13 +107,13 @@ Blocked condition:
 - Stop early only for explicit user interruption, commit/push/PR/destructive
   authority, missing tool/access that prevents all meaningful work, same real
   blocker repeated with no alternate owner, or an uncovered taste/runtime
-  decision where `slate-north-star` lacks the needed rule and no safe alternate
+  decision where `vision` lacks the needed rule and no safe alternate
   checkpoint remains.
 - Do not block while a safe alternate checkpoint remains runnable. In timed or
   batch mode, queue soft questions for final handoff.
 - Do not hand off before a timed minimum runtime has elapsed because the obvious
   backlog looks empty. Enter supervision mode and infer the next checkpoint from
-  `slate-north-star`, current evidence, weak proofs, benchmark gaps, API/docs
+  `vision`, current evidence, weak proofs, benchmark gaps, API/docs
   mismatch, issue/test harvest gaps, and workflow slowdowns.
 
 Automation state:
@@ -362,7 +362,7 @@ Checkpoint mutation ledger:
 | Loop | Mutation | Checkpoint(s) | Evidence | Reason | Result |
 |------|----------|---------------|----------|--------|--------|
 | 0 | seed | initial template rows | plan creation | starter topology only | pending |
-| 0 | update | automation source, thresholds, boundaries, status/gap-scan | user prompt + slate-automation + slate-north-star | Convert bare `8h` into a measurable timed supervisor run without inventing a narrow surface. | checkpoint-zero continuing |
+| 0 | update | automation source, thresholds, boundaries, status/gap-scan | user prompt + slate-automation + vision | Convert bare `8h` into a measurable timed supervisor run without inventing a narrow surface. | checkpoint-zero continuing |
 | 1 | update/add | status, gap-scan, example-parity-claim-width, huge-doc-residual-caveats, table-fragment-merge-policy | `agent-start`, scoreboard, roadmap, previous 8h plan | Current docs say broad gates are green but contributor-facing parity rows remain open; do not reopen completed ProseMirror #416. | example parity packet opened |
 | 2 | update/add | scroll-into-view-parity-claim-width, example-parity-claim-width | current registry, git history, focused package proof, docs audit | `scroll-into-view` same-path example/test are deleted current-state, not an open runtime parity row. | scroll row moved to explicit cut; continue parity backlog |
 | 3 | update/add | shadow-dom-parity-oracle-repair, example-parity-claim-width | current/legacy source read, Playwright proof, docs audit | Shadow DOM source is a current API wrapper over the legacy shape, but proof had fake-green returns. | shadow row moved to recovered; continue parity backlog |
@@ -498,7 +498,7 @@ Mutation rules:
 - Reprioritize after every loop. The next checkpoint is chosen from current
   evidence, not from the original row order.
 - The supervisor is not stuck on this template or the initial prompt plan. The
-  user's latest request, `slate-north-star`, and current source evidence outrank
+  user's latest request, `vision`, and current source evidence outrank
   stale plan rows.
 
 Start Gates:
@@ -506,7 +506,7 @@ Start Gates:
 |------|---------|----------|
 | Prompt requirements captured before work | yes | User prompt is only `slate-automation 8h`; explicit requirements captured as timed minimum runtime, broad Slate v2 supervision, dynamic checkpointing, and no early stop. |
 | `slate-automation` source rule read | yes | User provided full skill body in prompt; plan uses timed-mode, checkpoint, handoff, and private-alpha rules from it. |
-| `slate-north-star` read as checkpoint zero | yes | `.agents/skills/slate-north-star/SKILL.md` read 2026-06-11 before runtime work. |
+| `vision` read as checkpoint zero | yes | `.agents/skills/vision/SKILL.md` read 2026-06-11 before runtime work. |
 | Active goal checked or created | yes | `get_goal` returned none; `create_goal` created active goal for this plan. |
 | Invocation mode and timebox recorded | yes | Timed mode, minimum 8h, target deadline 2026-06-12 02:23:51 CEST. |
 | Dynamic checkpoint policy accepted | yes | Checkpoint supervisor allows add/update/split/merge/retire/remove/reopen/reprioritize after each loop. |
@@ -860,7 +860,7 @@ Error attempts:
 
 Verification evidence:
 - Goal setup: `get_goal` returned none; `create_goal` started this plan.
-- Checkpoint zero: `slate-north-star`, `docs/slate-v2/agent-start.md`, and
+- Checkpoint zero: `vision`, `docs/slate-v2/agent-start.md`, and
   `docs/plans/templates/slate-automation.md` read before runtime work.
 - Status/gap scan: scoreboard, roadmap, previous 8h plan, and example parity
   matrix read with targeted slices after the initial output miss.

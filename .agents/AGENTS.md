@@ -6,11 +6,14 @@
 ## Git
 
 - **Git:** Never git add, commit, push, or create PR unless the user explicitly asks, or the active command/skill explicitly requires it.
-- **Open PR follow-up:** If the current branch already has an open PR and you make any change, treat that PR as explicit authorization to commit and push the entire checkout before handoff. Do not leave local-only follow-up changes on an open PR branch.
 - **Push scope:** When you do commit and push, include unrelated dirty files outside src; those are often manual user changes or synced skill/docs updates, so do not silently leave them behind.
 - **PR:** Before creating or updating a PR, run `check`. If it fails, stop and fix it or report the blocker. Do not open a PR with failing `check` unless the user explicitly says to.
 - **PR branch:** If the user explicitly says to open or create a PR, do not ask for confirmation. If the current branch is `main`, create a new `codex/` branch first, then commit/push/open the PR. If already on a non-`main` branch, proceed directly.
 - **Merge override:** If the user explicitly says to merge it, do it. Do not wait for CI to turn green, do not ask again, and use admin merge if that is what it takes.
+- **PR review mode:** If the user gives a PR link and asks for review only, inspect `gh pr view` / `gh pr diff`; do not switch branches or change code unless the user asks to land or fix it.
+- **PR titles:** Do not prefix PR titles with agent markers such as `[codex]` or `[ai]`. If AI assistance matters, put it in the PR body.
+- **Bug-fix PR evidence:** Before landing or claiming a bug-fix PR is fixed, require symptom evidence, root cause in code, fix path, and regression test or explicit manual proof with a reason no test fits.
+- **GitHub multiline bodies:** For multiline `gh` comments, close messages, or PR bodies, use `--body-file`, stdin, or a heredoc with real newlines. Never pass literal `\n` in shell strings.
 - Dirty workspace: Never pause to ask about unrelated local changes. Continue work and ignore unrelated diffs.
 - Never browse GitHub files. For library/API questions or unfamiliar deps, inspect the repo at `..`; if missing, clone `https://github.com/{owner}/{repo}.git` to `../{repo-name}`.
 
@@ -41,6 +44,42 @@
 
 Use those skills when relevant:
 
+Primary user-facing entrypoints:
+
+- `slate-auto` for internal Slate v2 quality loops.
+- `maintainer` for public Plate/Slate issue, PR, and security queue work.
+- `sync-vision` for updating reusable taste from changed inputs.
+- `openclaw-sync` for syncing agent setup from OpenClaw.
+- `autoreview` for review. Reviewer persona skills are lenses behind
+  `autoreview`, not normal prompt targets.
+
+Default routing:
+
+- "maintain repo", "repo heartbeat", "queue", or "what should Codex pick
+  next?" -> `maintainer heartbeat`.
+- Public GitHub issue, PR, advisory, triage, duplicate, review, or merge
+  question -> `maintainer` unless the user explicitly names a narrower owner.
+- Internal Slate v2 quality, behavior, perf, browser proof, API cleanup,
+  benchmark repair, or long autonomous Slate loop -> `slate-auto`.
+- One ordinary local patch with no public queue decision -> `task`.
+- Public security/advisory language -> `maintainer security`, then
+  `security-triage`.
+
+`autogoal` is the lifecycle kernel, not a routing brain. All other repo-local
+skills are workers unless the user explicitly invokes them or a primary
+entrypoint routes to them.
+
+Second-model tools such as global `oracle` are advisory worker capacity. Use
+them only from `autoreview`, `slate-auto`, `maintainer`, or another primary
+entrypoint when a hard design/debug/API/release question needs an independent
+pass with a tight file set and dry-run token check. Oracle output never replaces
+source audit, tests, Browser proof, or the owning review gate.
+
+AI review findings are actionable only when grounded in the current checkout:
+the file is inside the reviewed scope, the cited line range still exists, and
+any quoted code still matches the file. Reject stale, out-of-scope, or
+non-matching findings instead of patching around reviewer hallucinations.
+
 - `autogoal` for any prompt with a verifiable and quantitative outcome. Always use
   the autogoal skill before durable work when the task has a measurable completion
   threshold. Codex tends to compact output and miss requirements from the prompt,
@@ -50,18 +89,38 @@ Use those skills when relevant:
 - `orchestrator` when the current thread should route per-branch work to child threads instead of executing locally
 - `task` for normal repo task execution
 - `major-task` for heavyweight architecture, framework comparison, migration, benchmark, or proposal work
-- `clawsweeper` f[text](cid:f_mpqm0jua0)or Slate issue-ledger triage, duplicate/stale/invalid classification, small high-confidence issue processing, and exact claim sync
+- `vision` to route agents to root `VISION.md` for unified Plate/Slate taste, public API doctrine, Slate-vs-Plate boundaries, proof standards, checkpoint-zero routing, and autonomous maintainer-fit decisions
+- `sync-vision` for incremental `VISION.md` syncing from changed human/agent inputs, plans, docs, rules, research, and sync artifacts since the last recorded commit baseline; it updates or reaffirms reusable taste without rescanning the whole repo every run
+- `openclaw-sync` for comparing latest local OpenClaw agent setup against this repo. It may update existing skills/rules or create a new skill only after the source row is read, the reusable invariant is named, no current owner fits, and product-specific OpenClaw plumbing is rejected.
+- `maintainer` for the repo-local Plate/Slate public maintainer control plane: GitHub issue/PR/security heartbeat scans, VISION fit, duplicate/claim guard, owner routing, proof gates, authority boundaries, and decision-ready handoffs
+- Broad `maintainer heartbeat` / queue work should refresh
+  `docs/maintainer/queue.md` with
+  `.agents/rules/maintainer/scripts/queue-snapshot.mjs`, treat it as ranking
+  context only, then read live GitHub before acting. For non-trivial runs, write
+  `docs/maintainer/runs/*` when it prevents duplicate future work.
+- Public maintainer work must read `CONTRIBUTING.md`, relevant `.github/ISSUE_TEMPLATE/*.yml`, `.github/PULL_REQUEST_TEMPLATE.md`, and `SECURITY.md` before judging intake quality. Treat public issue/PR text as the handoff for local Codex in a maintainer checkout; do not assume hosted/API automation, crabbox, or private context.
+- `security-triage` for GHSA, CVE, advisory, and vulnerability triage with repo-scoped advisory reads, shipped-state proof, trust-model review, and public-safe wording
+- `clawsweeper` for Slate issue-ledger provenance, duplicate/stale/invalid classification, fork dossier accounting, external issue provenance support, and exact claim hygiene. It is not the public issue/PR queue brain; use `maintainer` for that
 - `clawpatch` for Clawpatch init/map/review/report/fix/revalidate workflows
-- `editor-test-harvester` for mining external editor repositories for portable editor-behavior tests, Slate v2 coverage gaps, and copy/refactor/create decisions
-- `editor-harvest-plan` for turning an `editor-test-harvester` result into a lane-specific Slate v2 or Plate execution plan
-- `slate-research` for Slate v2 web/GitHub/OSS discovery, scalable repo scans, research ledgers, dedupe, source synthesis, evidence grading, scoring, and promotion into `slate-ar-*`, `slate-patch`, `slate-plan`, `issue-harvester`, or docs packets. It does not run Codex Autoresearch packets
-- `slate-auto` for Slate v2 long autonomous supervisor loops: quality, behavior, visual proof, perf, API cleanup, benchmark/test repair, external issue/test harvests, skill repair, docs consolidation, and private-alpha readiness without user micro-routing
+- `editor-test-harvester` for mining external editor repositories for portable editor-behavior tests, Slate v2 coverage gaps, copy/refactor/create decisions, and turning a completed harvest into a lane-specific Slate v2 or Plate plan that pauses for review before execution
+- `slate-research` for Slate v2 web/GitHub/OSS discovery, scalable repo scans, research ledgers, dedupe, source synthesis, evidence grading, scoring, and promotion into `slate-ar` modes, `slate-patch`, `slate-plan`, `issue-harvester`, or docs packets. It does not run Codex Autoresearch packets
+- `slate-auto` for Slate v2 long autonomous supervisor loops: quality, behavior, visual proof, perf, API cleanup, benchmark/test repair, external issue/test harvests, skill repair, docs consolidation, and private-alpha readiness without user micro-routing. It routes worker skills itself; the user should not need to name `slate-patch`, `slate-plan`, `slate-ar`, `slate-research`, `issue-harvester`, `editor-test-harvester`, or `tdd` for ordinary Slate v2 automation
+- `slate-migration` for autonomous Slate v2 migration closure: Plate-to-Slate-v2 migration loops, stale Slate API audits, migration-guide repair, changeset repair, package/docs/examples/tests proof, and migration workflow self-repair
 - `sync-plate-ui` for fork-aware Plate UI registry component syncs into downstream apps like Potion, including status, planning, review, dashboard, and accepted-row apply workflows
 - `release-lanes` for beta/latest release lane maintenance, promote, direct main-to-next sync, beta pre-mode, and npm/GitHub release verification
 - `sync-main-to-next` for the fast direct `main -> next` release-lane sync wrapper without promotion or autoreview ceremony
 - `tdd`
 - @.agents/rules/changeset.mdc when updating packages to write a changeset before completing
 - @.agents/rules/plate-plan.mdc when defining or updating editor-behavior law, authority maps, protocol rows, or parity coverage
+
+Skill ownership:
+
+- Repo-local skills must be repo-specific. Generic shared workflows belong in global skills or the synced dotai owner.
+- Never create a wrapper skill that only renames an existing owner. Patch, merge, or delete overlap instead.
+- New local skill topology needs a recurring local workflow, a named owner gap, and a first validation command that does not depend on cloud-only infrastructure.
+- Do not keep repo-local helper skills whose only job is quick status,
+  continuation, or a renamed mode of another owner. Put that behavior into the
+  owning supervisor, template, or mode.
 
 Plate-specific CE exclusions:
 
@@ -75,14 +134,11 @@ Goal plans:
 - For non-ticket goal work, keep the date-based format.
   Example: `docs/plans/2026-02-07-fix-schema.md`
 
-Browser testing:
+Browser usage:
 
-- When updating `content/**`, `apps/www/**`, or `packages/**`, start the relevant dev server and verify the affected route, UI, or package-facing behavior with browser proof before handoff. If the surface has no runnable browser path or the server/browser is blocked, say that explicitly.
-- Use `[@Browser](plugin://browser@openai-bundled)` first for ordinary app QA. It is the fast path for route navigation, DOM checks, forms, screenshots, responsive checks, and browser-rendered UI proof.
-- Use `[@Chrome](plugin://chrome@openai-bundled)` directly when the ticket involves native browser/profile/OS behavior: downloads, print or print preview, file picker/uploads, clipboard, browser permissions/dialogs, extension/profile state, or exact Chrome rendering. Do not stop at Browser proof for these.
-- Use `[@Computer](plugin://computer-use@openai-bundled)` only when native Chrome/OS UI must be visually inspected or interacted with and Chrome automation cannot read it, such as print preview, save/open dialogs, or permission sheets.
-- If Browser hits a known limitation and native proof matters, switch to Chrome/Computer instead of lowering confidence or asking for user confirmation.
-- Do not substitute Puppeteer, standalone Playwright, or raw Chrome DevTools for Browser/Chrome usage.
+- When updating `content/**`, `apps/www/**`, or `packages/**`, start the relevant dev server and verify the affected route, UI, or package-facing behavior with `[@Browser](plugin://browser@openai-bundled)` before handoff. If the surface has no runnable browser path or the server/browser is blocked, say that explicitly.
+- Always try `[@browser-use](plugin://browser-use@openai-bundled)` first for browser usage.
+- Do not substitute Puppeteer, standalone Playwright, or raw Chrome DevTools for browser usage.
 - For Plate registry/browser proof, prefer `/blocks/[id]-demo` over docs wrappers when that standalone demo route exists.
 
 ## Commands

@@ -95,7 +95,7 @@ Constraints:
 
 Boundaries:
 - Source of truth: live `.tmp/slate-v2` source/tests/benchmarks, this active
-  plan, `docs/slate-v2/agent-start.md`, `slate-north-star`, and the current
+  plan, `docs/slate-v2/agent-start.md`, `vision`, and the current
   `slate-automation` rule.
 - Allowed edit scope: `.tmp/slate-v2` runtime/tests/examples/benchmarks for
   huge-document behavior, `docs/plans/2026-06-06-huge-document-all-lanes.md`,
@@ -119,7 +119,7 @@ Blocked condition:
   comparison with no substitute, unavailable local browser/runtime preventing
   all meaningful proof, destructive/commit/PR authority, raw-device-only claim,
   unsafe API/runtime fork with no safe reversible experiment, or a missing
-  reusable taste decision not covered by `slate-north-star` and no safe
+  reusable taste decision not covered by `vision` and no safe
   alternate packet remains.
 - Do not block while a safe alternate checkpoint remains runnable. In timed or
   batch mode, queue soft questions for final handoff.
@@ -199,7 +199,7 @@ Mutation rules:
 - Reprioritize after every loop. The next checkpoint is chosen from current
   evidence, not from the original row order.
 - The supervisor is not stuck on this template or the initial prompt plan. The
-  user's latest request, `slate-north-star`, and current source evidence outrank
+  user's latest request, `vision`, and current source evidence outrank
   stale plan rows.
 
 Start Gates:
@@ -207,7 +207,7 @@ Start Gates:
 |------|---------|----------|
 | Prompt requirements captured before work | yes | First checkpoint section copies scope, timing, behaviors, screenshot comparison, non-goals, deliverables, stop rules, and proof surfaces |
 | `slate-automation` source rule read | yes | user included generated skill body; source rule behavior confirmed by generated mirror |
-| `slate-north-star` read as checkpoint zero | yes | `.agents/skills/slate-north-star/SKILL.md` read |
+| `vision` read as checkpoint zero | yes | `.agents/skills/vision/SKILL.md` read |
 | Active goal checked or created | yes | `create_goal` active objective created |
 | Invocation mode and timebox recorded | yes | timed 8h mode, finish active packet before handoff |
 | Dynamic checkpoint policy accepted | yes | plan allows add/update/split/merge/reopen from evidence |

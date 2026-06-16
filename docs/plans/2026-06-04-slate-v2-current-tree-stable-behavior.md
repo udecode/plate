@@ -79,7 +79,7 @@ Constraints:
 
 Boundaries:
 - Source of truth: live `.tmp/slate-v2` source/tests plus
-  `docs/slate-v2/agent-start.md`, `slate-north-star`, and this active plan.
+  `docs/slate-v2/agent-start.md`, `vision`, and this active plan.
 - Allowed edit scope: `.tmp/slate-v2` runtime/tests/docs/proof helpers and
   parent `docs/**` plan/proof artifacts. Agent-rule edits only if the loop
   itself proves a recurring workflow miss.
@@ -98,7 +98,7 @@ Output budget strategy:
 Blocked condition:
 - Block only for destructive git/commit/PR authority, unavailable raw mobile
   device lane after scoped proof is recorded, or an unsafe API/runtime fork that
-  requires user taste not covered by `slate-north-star` and has no safe
+  requires user taste not covered by `vision` and has no safe
   alternate owner.
 
 Task state:
@@ -129,9 +129,9 @@ Start Gates:
 | Gate | Applies | Evidence |
 |------|---------|----------|
 | Prompt requirements captured before work | yes | Acceptance criteria above copy the latest prompt scope, non-goals, verification surfaces, and handoff sections. |
-| Skill analysis before edits | yes | Read `slate-automation`, `slate-north-star`, `autogoal`, and `docs/slate-v2/agent-start.md`. |
+| Skill analysis before edits | yes | Read `slate-automation`, `vision`, `autogoal`, and `docs/slate-v2/agent-start.md`. |
 | Active goal checked or created | yes | Created thread goal `019e6aa0-8ace-7e73-b0e9-166d6fbc4a30`. |
-| Source of truth read before edits | yes | `docs/slate-v2/agent-start.md`, `slate-north-star`, and live `.tmp/slate-v2` root listed. |
+| Source of truth read before edits | yes | `docs/slate-v2/agent-start.md`, `vision`, and live `.tmp/slate-v2` root listed. |
 | Tracker comments and attachments read | N/A | No tracker issue or attachment in this prompt. |
 | Video transcript evidence required | N/A | No video attached to this prompt. |
 | `docs/solutions` checked for non-trivial existing-code work | N/A | This is current Slate v2 live-tree proof, not solution lookup. |
@@ -152,7 +152,7 @@ Start Gates:
 | `changeset` skill loaded when `.changeset` is required | N/A | No changeset authority in this run. |
 | Barrel/export impact decision recorded | pending | Audit current diff before deciding. |
 | Agent-native pack selected | yes | Automation may repair workflow rules only if a recurring miss is proven. |
-| Agent-facing action surface identified | yes | `slate-automation`, `slate-browser` proof helper docs/API, and `slate-north-star` taste gaps. |
+| Agent-facing action surface identified | yes | `slate-automation`, `slate-browser` proof helper docs/API, and `vision` taste gaps. |
 | Source rule versus generated mirror boundary identified | yes | Edit `.agents/rules/**`, not generated `.agents/skills/**`, if skill repair is needed. |
 | `agent-native-reviewer` loaded or waiver recorded | pending | Load only if agent-rule changes become necessary. |
 
@@ -285,7 +285,7 @@ Slate automation ledger:
 Packet ledger:
 | Packet | Owner | Hypothesis / failure signature | Files / commands | Proof | Decision | Next |
 |--------|-------|--------------------------------|------------------|-------|----------|------|
-| P0 | requirement extraction | Prompt constraints must be durable before implementation to avoid compaction misses. | This plan; `slate-north-star`; `slate-automation`; `docs/slate-v2/agent-start.md` | Requirement rows filled before current-tree audit. | keep | Current-tree closure |
+| P0 | requirement extraction | Prompt constraints must be durable before implementation to avoid compaction misses. | This plan; `vision`; `slate-automation`; `docs/slate-v2/agent-start.md` | Requirement rows filled before current-tree audit. | keep | Current-tree closure |
 
 Workflow slowdowns:
 | Step / command | Owner | Why slow | Evidence | Repair decision |
