@@ -2,4 +2,4 @@
 "@platejs/utils": patch
 ---
 
-Fix block placeholders on empty list items.
+Fix block placeholders on single empty list items.

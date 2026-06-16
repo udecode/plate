@@ -235,7 +235,7 @@ Findings:
 
 Decisions and tradeoffs:
 - Do not hardcode `listStyleType` / `indent` as the fix. Treat only `type` and plugin-claimed inert metadata as empty; every unclaimed prop means the element carries state.
-- Put prop inertness on the node-owning plugin with `node.isMetadataProp`. `BlockPlaceholderPlugin` consumes the editor API through its default `isEmptyBlockPristine` policy instead of owning list or node-id semantics.
+- Put prop inertness on the node-owning plugin with `node.isMetadataProp`. `BlockPlaceholderPlugin` consumes `editor.api.isElementStateEmpty` directly instead of owning list or node-id semantics.
 - Renamed `node.isPropEmpty` to `node.isMetadataProp` with no alias because the old name only existed in this unmerged PR and lied about the contract.
 
 Implementation notes:

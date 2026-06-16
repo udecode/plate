@@ -17,12 +17,6 @@ export type BlockPlaceholderConfig = PluginConfig<
   'blockPlaceholder',
   {
     _target: { node: TElement; placeholder: string } | null;
-    isEmptyBlockPristine: (
-      context: PlatePluginContext<BlockPlaceholderConfig> & {
-        node: TElement;
-        path: Path;
-      }
-    ) => boolean;
     placeholders: Record<string, string>;
     query: (
       context: PlatePluginContext<BlockPlaceholderConfig> & {
@@ -44,8 +38,6 @@ export const BlockPlaceholderPlugin =
       placeholders: {
         [KEYS.p]: 'Type something...',
       },
-      isEmptyBlockPristine: ({ editor, node }) =>
-        editor.api.isElementStateEmpty(node),
       query: ({ path }) => path.length === 1,
     },
     useHooks: (ctx) => {
@@ -73,14 +65,14 @@ export const BlockPlaceholderPlugin =
           return;
         }
 
-        const { isEmptyBlockPristine, placeholders, query } = getOptions();
+        const { placeholders, query } = getOptions();
 
         const [element, path] = entry;
         const firstNode = editor.children[0] as TElement;
         const isPristineEmptyEditor =
           editor.children.length === 1 &&
           editor.api.isEmpty(firstNode) &&
-          isEmptyBlockPristine({ ...ctx, node: firstNode, path: [0] });
+          editor.api.isElementStateEmpty(firstNode);
 
         const placeholder = Object.keys(placeholders).find(
           (key) => editor.getType(key) === element.type

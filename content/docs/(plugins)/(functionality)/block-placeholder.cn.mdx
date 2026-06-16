@@ -112,7 +112,6 @@ BlockPlaceholderPlugin.configure({
 - `placeholders`: 块类型与占位文本的映射
 - `className`: 应用于带占位符块的 CSS 类
 - `query`: 决定哪些块应显示占位符的函数
-- `isEmptyBlockPristine`: 判断唯一空块是否仍属于初始空编辑器状态的函数
 
 </Steps>
 
@@ -125,12 +124,12 @@ BlockPlaceholderPlugin.configure({
 当满足以下所有条件时，插件会显示占位符：
 
 1. 块为空（不含内容）
-2. 编辑器不是 `isEmptyBlockPristine` 判定的初始单空块状态；带可见结构状态的空列表项也符合条件
+2. 编辑器不是初始单空块状态；带可见结构状态的空列表项也符合条件
 3. 编辑器处于聚焦状态
 4. 块符合查询函数条件
 5. 块类型匹配 placeholders 映射中的键
 
-默认 `isEmptyBlockPristine` 使用 `editor.api.isElementStateEmpty`，因此只把 `type` 和插件通过 `node.isMetadataProp` 声明为空的属性视为空状态元数据。
+初始空状态检查使用 `editor.api.isElementStateEmpty`，因此只把 `type` 和插件通过 `node.isMetadataProp` 声明为空的属性视为空状态元数据。
 
 <API name="BlockPlaceholderPlugin">
 <APIOptions>
@@ -141,9 +140,6 @@ BlockPlaceholderPlugin.configure({
   <APIItem name="query" type="(context: PlatePluginContext & { node: TElement; path: Path }) => boolean">
     决定块是否应显示占位符的函数
     - **默认值:** 对最外层块返回 true (`path.length === 1`)
-  </APIItem>
-  <APIItem name="isEmptyBlockPristine" type="(context: PlatePluginContext & { node: TElement; path: Path }) => boolean">
-    判断唯一空块是否应视为编辑器的初始空状态
   </APIItem>
   <APIItem name="className" type="string" optional>
     应用于带占位符块的 CSS 类

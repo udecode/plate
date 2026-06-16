@@ -17,7 +17,6 @@ Block Placeholder injects a `placeholder` prop into the active empty block. It i
 - Active-block placeholder text.
 - Per-type placeholder map through `placeholders`.
 - Root-level filtering through `query`.
-- Custom pristine-empty block detection through `isEmptyBlockPristine`.
 - Custom placeholder styling through `className`.
 - Focus, read-only, composition, selection, and empty-editor guards.
 
@@ -126,11 +125,11 @@ The plugin shows a placeholder only when every gate passes.
 | Focus | Editor is focused and has a selection. |
 | Selection | Selection is collapsed. |
 | Active block | `editor.api.block()` returns an empty block. |
-| Whole editor | The editor is not in its pristine single-empty-block state according to `isEmptyBlockPristine`. Empty blocks with visible structural state, such as list metadata, still qualify. |
+| Whole editor | The editor is not in its pristine single-empty-block state. Empty blocks with visible structural state, such as list metadata, still qualify. |
 | Placeholder map | The block type matches one entry in `placeholders`. |
 | Query | `query({ editor, node, path, ...ctx })` returns `true`. |
 
-The default `query` returns `true` for root blocks only. The default `isEmptyBlockPristine` delegates to `editor.api.isElementStateEmpty`, so only `type` and props claimed by plugins through `node.isMetadataProp` are treated as pristine metadata.
+The default `query` returns `true` for root blocks only. The whole-editor guard uses `editor.api.isElementStateEmpty`, so only `type` and props claimed by plugins through `node.isMetadataProp` are treated as pristine metadata.
 
 ```tsx
 query: ({ path }) => path.length === 1
@@ -161,7 +160,6 @@ className:
 | `BlockPlaceholderPlugin` | `platejs/react` / `@platejs/utils/react` | Adds block placeholders through injected node props. |
 | `options.placeholders` | `Record<string, string>` | Maps plugin keys to placeholder text. Default: `{ [KEYS.p]: 'Type something...' }`. |
 | `options.query` | `(context) => boolean` | Filters eligible blocks. Default: `({ path }) => path.length === 1`. |
-| `options.isEmptyBlockPristine` | `(context) => boolean` | Controls whether the only empty block should count as the pristine editor state. |
 | `options.className` | `string` | Class applied to the block only while its placeholder is active. |
 | `options._target` | Internal runtime state | Stores the current target node and placeholder string. |
 | `selectors.placeholder(node)` | Plugin selector | Returns the placeholder string for the current target node. |

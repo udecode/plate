@@ -2,6 +2,7 @@
 
 import React from 'react';
 
+import { createSlatePlugin } from '@platejs/core';
 import { createPlateEditor, PlateTest } from '@platejs/core/react';
 import { render, waitFor } from '@testing-library/react';
 
@@ -9,7 +10,6 @@ import { BlockPlaceholderPlugin } from './BlockPlaceholderPlugin';
 
 const createEditor = (options?: {
   className?: string;
-  isEmptyBlockPristine?: (context: any) => boolean;
   nodeId?: any;
   placeholders?: Record<string, string>;
   query?: (context: any) => boolean;
@@ -29,9 +29,6 @@ const createEditor = (options?: {
             : {}),
           ...(options?.placeholders !== undefined
             ? { placeholders: options.placeholders }
-            : {}),
-          ...(options?.isEmptyBlockPristine !== undefined
-            ? { isEmptyBlockPristine: options.isEmptyBlockPristine }
             : {}),
           ...(options?.query !== undefined ? { query: options.query } : {}),
         },
@@ -145,13 +142,21 @@ describe('BlockPlaceholderPlugin', () => {
     ).toBeInTheDocument();
   });
 
-  it('lets callers keep custom metadata-only blocks pristine', async () => {
-    const editor = createEditor({
-      isEmptyBlockPristine: ({ node }) =>
-        Object.keys(node).every(
-          (key) =>
-            key === 'children' || key === 'data-test-id' || key === 'type'
-        ),
+  it('honors custom node metadata rules for pristine empty blocks', async () => {
+    const CustomMetadataPlugin = createSlatePlugin({
+      key: 'customMetadata',
+    }).extend({
+      node: {
+        isMetadataProp: ({ key }) => key === 'data-test-id',
+      },
+    });
+
+    const editor = createPlateEditor({
+      plugins: [BlockPlaceholderPlugin, CustomMetadataPlugin],
+      selection: {
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 0, path: [0, 0] },
+      },
       value: [
         {
           children: [{ text: '' }],
