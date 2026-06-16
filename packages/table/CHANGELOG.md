@@ -1,5 +1,7 @@
 # @platejs/table
 
+## 54.0.0-beta.0
+
 ## 53.0.9
 
 ### Patch Changes

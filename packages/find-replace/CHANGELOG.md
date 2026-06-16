@@ -1,5 +1,7 @@
 # @platejs/find-replace
 
+## 54.0.0-beta.0
+
 ## 53.0.0
 
 ## 52.3.10

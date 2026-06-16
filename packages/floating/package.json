@@ -1,6 +1,6 @@
 {
   "name": "@platejs/floating",
-  "version": "53.0.0",
+  "version": "54.0.0-beta.0",
   "description": "React floating UI for Plate",
   "keywords": [
     "plate",
@@ -48,7 +48,7 @@
     "platejs": "workspace:^"
   },
   "peerDependencies": {
-    "platejs": ">=53.0.0",
+    "platejs": ">=54.0.0-beta.0",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
   },

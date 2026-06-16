@@ -1,5 +1,7 @@
 # @platejs/yjs
 
+## 54.0.0-beta.0
+
 ## 53.2.0
 
 ### Minor Changes
