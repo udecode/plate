@@ -64,7 +64,7 @@ Constraints:
 Boundaries:
 - Source of truth: `.tmp/slate-v2/packages/slate-react/src/index.ts`, nearby
   `slate-react` hook source/tests, `.tmp/slate-v2/docs/**`, and
-  `slate-north-star` hard-cut taste rule.
+  `vision` hard-cut taste rule.
 - Allowed edit scope: `.tmp/slate-v2` code/tests/docs and this parent plan.
 - Browser surface: N/A unless docs/example route proof becomes necessary.
 - Tracker sync: N/A, no tracker target.
@@ -78,7 +78,7 @@ Output budget strategy:
 
 Blocked condition:
 - Stop only if source evidence shows two viable public API futures and
-  `slate-north-star` does not cover the taste decision, or if package checks
+  `vision` does not cover the taste decision, or if package checks
   reveal removing a surface requires a broader API plan.
 
 Task state:
@@ -109,7 +109,7 @@ Start Gates:
 | Gate | Applies | Evidence |
 |------|---------|----------|
 | Prompt requirements captured before work | yes | Copied hard-cut scope, code/docs boundary, no release/PR/commit, and verification threshold into this plan before edits. |
-| Skill analysis before edits | yes | Read `slate-automation`, `hard-cut`, `autogoal`, and `slate-north-star`. |
+| Skill analysis before edits | yes | Read `slate-automation`, `hard-cut`, `autogoal`, and `vision`. |
 | Active goal checked or created | yes | `get_goal` returned none; created active hard-cut goal. |
 | Source of truth read before edits | yes | Read `slate-react` root exports, hook docs, proof map, generic type contract, surface contract, and public surface contract. |
 | Tracker comments and attachments read | N/A | No tracker target. |

@@ -114,7 +114,7 @@ Blocked condition:
   batch mode, queue soft questions for final handoff.
 - Do not hand off before a timed minimum runtime has elapsed because the obvious
   backlog looks empty. Enter supervision mode and infer the next checkpoint from
-  `slate-north-star`, current evidence, weak proofs, benchmark gaps, API/docs
+  `vision`, current evidence, weak proofs, benchmark gaps, API/docs
   mismatch, issue/test harvest gaps, and workflow slowdowns.
 
 Automation state:
@@ -157,7 +157,7 @@ Completion rule:
 Checkpoint supervisor:
 | Checkpoint | Owner | Status | Priority | Why it exists | Evidence / exit rule | Mutation decision |
 |------------|-------|--------|----------|---------------|----------------------|-------------------|
-| checkpoint-zero | slate-automation | done | P0 | Copy prompt requirements and read north-star before implementation. | User prompt was bare `8H`; `slate-north-star`, `agent-start`, active roadmap, and `slate-automation` source rule read; timed-mode contract, boundaries, stop rules, handoff sections, and proof surfaces recorded. | update |
+| checkpoint-zero | slate-automation | done | P0 | Copy prompt requirements and read north-star before implementation. | User prompt was bare `8H`; `vision`, `agent-start`, active roadmap, and `slate-automation` source rule read; timed-mode contract, boundaries, stop rules, handoff sections, and proof surfaces recorded. | update |
 | status | slate-automation | done | P0 | Read active plan, latest prompt, source status, and current evidence. | `.tmp/slate-v2` clean at `a278e2bd`; parent only has this new plan; scoreboard still marks examples/benchmarks/root proof closure and RC ledger pending, with huge-doc universal diagnostic command-scoped open. | update |
 | current-tree-full-gate | slate-ar-gate / Playwright | blocked_by_repair | P0 | Broad 8h current-tree automation should begin with the full private-alpha proof gate because docs say final integration/build/type/lint/perf closure remains open. | First run failed in release discipline; repair kept and rerun opened. | update |
 | release-discipline-inventory-repair | hard-cut / package contract | done | P0 | `bun check:full` failed in release discipline because the escape-hatch inventory was stale after kept internal React contract-test setup additions. | Updated legitimate `slate-react-tests:primitive` count `18 -> 22`; `.tmp/slate-v2`: `bun test:release-discipline` passed `432`. | keep |
@@ -506,7 +506,7 @@ Mutation rules:
 - Reprioritize after every loop. The next checkpoint is chosen from current
   evidence, not from the original row order.
 - The supervisor is not stuck on this template or the initial prompt plan. The
-  user's latest request, `slate-north-star`, and current source evidence outrank
+  user's latest request, `vision`, and current source evidence outrank
   stale plan rows.
 
 Start Gates:
@@ -514,7 +514,7 @@ Start Gates:
 |------|---------|----------|
 | Prompt requirements captured before work | yes | Bare request `[$slate-automation] 8H` captured as current-tree broad Slate v2 timed mode. |
 | `slate-automation` source rule read | yes | `.agents/rules/slate-automation.mdc` and generated skill body inspected. |
-| `slate-north-star` read as checkpoint zero | yes | `/Users/zbeyens/git/plate-2/.agents/skills/slate-north-star/SKILL.md` read. |
+| `vision` read as checkpoint zero | yes | `/Users/zbeyens/git/plate-2/.agents/skills/vision/SKILL.md` read. |
 | Active goal checked or created | yes | No active goal existed; goal created for timed 8h automation. |
 | Invocation mode and timebox recorded | yes | Timed mode, 28800s minimum, target deadline `2026-06-11T00:29:34+0200`. |
 | Dynamic checkpoint policy accepted | yes | Checkpoint supervisor may add/update/split/merge/retire/reopen rows from evidence. |
@@ -864,7 +864,7 @@ Verification evidence:
   updates. Final clean autoreview rerun is quarantined because the Codex review
   engine hit a hard usage limit after three same-command retries until
   `1:27 AM`.
-- Setup evidence: `slate-north-star`, `docs/slate-v2/agent-start.md`,
+- Setup evidence: `vision`, `docs/slate-v2/agent-start.md`,
   `docs/slate-v2/master-roadmap.md`, `.agents/rules/slate-automation.mdc`,
   and active autogoal created.
 - Status evidence: `.tmp/slate-v2` clean at `a278e2bd`; scoreboard open rows

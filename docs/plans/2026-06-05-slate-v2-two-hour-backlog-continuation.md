@@ -98,7 +98,7 @@ Boundaries:
 Blocked condition:
 - Hard stop only for missing raw device authority/artifacts, inaccessible source
   needed for the selected owner, unsafe architecture fork without enough proof
-  to keep/revert/quarantine, or a taste gap not covered by `slate-north-star`.
+  to keep/revert/quarantine, or a taste gap not covered by `vision`.
 - Do not block while a safe alternate checkpoint remains runnable. In timed or
   batch mode, queue soft questions for final handoff.
 
@@ -137,7 +137,7 @@ Completion rule:
 Checkpoint supervisor:
 | Checkpoint | Owner | Status | Priority | Why it exists | Evidence / exit rule | Mutation decision |
 |------------|-------|--------|----------|---------------|----------------------|-------------------|
-| checkpoint-zero | slate-automation | complete | P0 | Prompt only says `2h loops`; copied timing, boundary, stop, proof, and handoff contract before implementation; `slate-north-star` read. | Requirement rows complete. | update |
+| checkpoint-zero | slate-automation | complete | P0 | Prompt only says `2h loops`; copied timing, boundary, stop, proof, and handoff contract before implementation; `vision` read. | Requirement rows complete. | update |
 | status | slate-automation | complete | P0 | Read active backlog plans and current evidence without proactive git state checks. | Current state recorded. | update |
 | gap-scan | slate-automation | complete | P0 | Identified cross-browser fake-green rows, staged content-visibility diagnostic debt, and cross-editor ShiftDown metric ambiguity. | Gaps routed to packet owners. | update |
 | behavior-proof | slate-ar-stabilize | complete | P0 | Prove stable editor behavior before perf. | Focused cross-browser selection and staged huge-doc command proof passed. | update |
@@ -175,7 +175,7 @@ Mutation rules:
 - Reprioritize after every loop. The next checkpoint is chosen from current
   evidence, not from the original row order.
 - The supervisor is not stuck on this template or the initial prompt plan. The
-  user's latest request, `slate-north-star`, and current source evidence outrank
+  user's latest request, `vision`, and current source evidence outrank
   stale plan rows.
 
 Start Gates:
@@ -183,7 +183,7 @@ Start Gates:
 |------|---------|----------|
 | Prompt requirements captured before work | yes | Prompt copied: `slate-automation`, `2h loops`, no explicit route, timed batch continuation. |
 | `slate-automation` source rule read | yes | Skill contract followed from provided/loaded instructions: autogoal, checkpoint-zero, dynamic checkpoints, final handoff. |
-| `slate-north-star` read as checkpoint zero | yes | Read `/Users/zbeyens/git/plate-2/.agents/skills/slate-north-star/SKILL.md`. |
+| `vision` read as checkpoint zero | yes | Read `/Users/zbeyens/git/plate-2/.agents/skills/vision/SKILL.md`. |
 | Active goal checked or created | yes | Created active autogoal for this run before implementation. |
 | Invocation mode and timebox recorded | yes | Timed batch loops, 2h loop-start budget, finish active packet cleanly. |
 | Dynamic checkpoint policy accepted | yes | Checkpoint supervisor may add/update/remove/reprioritize after each loop. |
@@ -408,7 +408,7 @@ Error attempts:
 
 Verification evidence:
 - Active autogoal created.
-- Read `autogoal` and `slate-north-star` before implementation.
+- Read `autogoal` and `vision` before implementation.
 - Read prior full-confidence and staged selection/delete plans.
 - `.tmp/slate-v2`: current tests as-is skipped plaintext Shift+Arrow in
   Firefox/WebKit, proving claim-width debt.

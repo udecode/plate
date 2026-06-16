@@ -85,7 +85,7 @@ Constraints:
 
 Boundaries:
 - Source of truth: live `.tmp/slate-v2` source/tests/benchmarks and this active
-  plan; `slate-north-star` for reusable taste.
+  plan; `vision` for reusable taste.
 - Allowed edit scope: `.tmp/slate-v2` runtime/tests/benchmarks/helpers needed
   for staged huge-doc closure, plus this plan. Parent docs only for this plan.
 - Browser surfaces: staged huge-document route only unless a focused comparison
@@ -158,7 +158,7 @@ Start Gates:
 |------|---------|----------|
 | Prompt requirements captured before work | yes | Objective, constraints, route, stop rules, final handoff, comparison allowance recorded. |
 | `slate-automation` source rule read | yes | Skill workflow used through autogoal-backed plan. |
-| `slate-north-star` read as checkpoint zero | yes | Behavior before perf, native proof before model-only, no hidden debounce. |
+| `vision` read as checkpoint zero | yes | Behavior before perf, native proof before model-only, no hidden debounce. |
 | Active goal checked or created | yes | Active goal created for the timed staged-route run. |
 | Invocation mode and timebox recorded | yes | Timed 2h loop-start budget with active-packet finish rule. |
 | Dynamic checkpoint policy accepted | yes | Checkpoints mutated from evidence during the run. |

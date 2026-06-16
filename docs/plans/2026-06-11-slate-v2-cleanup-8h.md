@@ -140,7 +140,7 @@ Mutation rules:
 - Reprioritize after every loop. The next checkpoint is chosen from current
   evidence, not from the original row order.
 - The supervisor is not stuck on this template or the initial prompt plan. The
-  user's latest request, `slate-north-star`, and current source evidence outrank
+  user's latest request, `vision`, and current source evidence outrank
   stale plan rows.
 
 Start Gates:
@@ -148,7 +148,7 @@ Start Gates:
 |------|---------|----------|
 | Prompt requirements captured before work | pending | pending |
 | `slate-automation` source rule read | pending | pending |
-| `slate-north-star` read as checkpoint zero | pending | pending |
+| `vision` read as checkpoint zero | pending | pending |
 | Active goal checked or created | pending | pending |
 | Invocation mode and timebox recorded | pending | pending |
 | Dynamic checkpoint policy accepted | pending | pending |

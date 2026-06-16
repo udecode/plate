@@ -112,7 +112,7 @@ Completion rule:
 Checkpoint supervisor:
 | Checkpoint | Owner | Status | Priority | Why it exists | Evidence / exit rule | Mutation decision |
 |------------|-------|--------|----------|---------------|----------------------|-------------------|
-| checkpoint-zero | slate-automation | complete | P0 | Copy prompt requirements and read north-star before implementation. | User prompt, autogoal, `slate-north-star`, `docs/slate-v2/agent-start.md`, current package file list, and no `.env` files found under sibling checkout. | update: completed and made scope concrete |
+| checkpoint-zero | slate-automation | complete | P0 | Copy prompt requirements and read north-star before implementation. | User prompt, autogoal, `vision`, `docs/slate-v2/agent-start.md`, current package file list, and no `.env` files found under sibling checkout. | update: completed and made scope concrete |
 | status | slate-automation | in_progress | P0 | Read active plan, latest prompt, source status, and current evidence without proactive git checks. | Baseline Yjs tests and source audit recorded. | update: next owner |
 | gap-scan | slate-automation | pending | P0 | Identify cleanup targets by current source complexity, duplication, dead code, naming, tests, and API shape. | Gaps routed to packet owners. | update: narrowed to `packages/slate-yjs` cleanup |
 | behavior-proof | slate-ar-stabilize | pending | P0 | Keep all Yjs tests passing before and after cleanup. | `bun test ./packages/slate-yjs/test` baseline and final pass. | update: package tests are the hard guardrail |
@@ -129,7 +129,7 @@ Checkpoint mutation ledger:
 | Loop | Mutation | Checkpoint(s) | Evidence | Reason | Result |
 |------|----------|---------------|----------|--------|--------|
 | 0 | seed | initial template rows | plan creation | starter topology only | superseded by concrete requirement extraction |
-| 0 | update | checkpoint-zero, status, behavior-proof, visual-proof, mobile-claim-width, huge-document-smoke, perf-packet | user prompt, `slate-north-star`, `docs/slate-v2/agent-start.md`, live package file list | Current task is package cleanup with Yjs tests as guardrail, not broad release/mobile/perf work. | status packet next |
+| 0 | update | checkpoint-zero, status, behavior-proof, visual-proof, mobile-claim-width, huge-document-smoke, perf-packet | user prompt, `vision`, `docs/slate-v2/agent-start.md`, live package file list | Current task is package cleanup with Yjs tests as guardrail, not broad release/mobile/perf work. | status packet next |
 
 Mutation rules:
 - Add a checkpoint when a new failure, missing oracle, missing metric, API smell,
@@ -147,7 +147,7 @@ Mutation rules:
 - Reprioritize after every loop. The next checkpoint is chosen from current
   evidence, not from the original row order.
 - The supervisor is not stuck on this template or the initial prompt plan. The
-  user's latest request, `slate-north-star`, and current source evidence outrank
+  user's latest request, `vision`, and current source evidence outrank
   stale plan rows.
 
 Start Gates:
@@ -155,7 +155,7 @@ Start Gates:
 |------|---------|----------|
 | Prompt requirements captured before work | yes | Scope `../slate-v2`; surface Yjs code; keep all Yjs tests passing; cleanup as much as safely possible; no technical debt; 8h timed loop; no PR/commit/publish requested. |
 | `slate-automation` source rule read | yes | User supplied full skill body for this run. |
-| `slate-north-star` read as checkpoint zero | yes | `.agents/skills/slate-north-star/SKILL.md` read 2026-06-11T10:29+0800. |
+| `vision` read as checkpoint zero | yes | `.agents/skills/vision/SKILL.md` read 2026-06-11T10:29+0800. |
 | Active goal checked or created | yes | `create_goal` active for this exact 8h cleanup objective. |
 | Invocation mode and timebox recorded | yes | timed mode, 8h loop-start budget, deadline 2026-06-11T18:29:33+0800. |
 | Dynamic checkpoint policy accepted | yes | Checkpoint table updated from current evidence before baseline. |
@@ -384,7 +384,7 @@ Reboot status:
 
 Timeline:
 - 2026-06-11T02:29:12.794Z Goal plan created.
-- 2026-06-11T02:29:33Z Checkpoint zero read `slate-north-star`, `docs/slate-v2/agent-start.md`, current package file list, and recorded timed-mode scope.
+- 2026-06-11T02:29:33Z Checkpoint zero read `vision`, `docs/slate-v2/agent-start.md`, current package file list, and recorded timed-mode scope.
 - 2026-06-11T02:31Z Baseline `bun test ./packages/slate-yjs/test` passed: 173 pass, 0 fail, 22 files, 563ms.
 - 2026-06-11T02:35Z P1 extracted private Yjs attribute helpers; package tests and typecheck passed after one rename fix.
 - 2026-06-11T02:39Z P2 moved generic path/node lookup helpers out of split-history/local operations; package tests and typecheck passed.

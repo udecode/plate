@@ -112,13 +112,13 @@ Boundaries:
 Blocked condition:
 - Hard block only if the next move requires release/publish/commit/PR authority,
   raw mobile device access, external credentials, an unsafe public API decision
-  not covered by `slate-north-star`, or a repeated same-signal failure after the
+  not covered by `vision`, or a repeated same-signal failure after the
   correct owner and no safe alternate checkpoint remains.
 - Do not block while a safe alternate checkpoint remains runnable. In timed or
   batch mode, queue soft questions for final handoff.
 - Do not hand off before a timed minimum runtime has elapsed because the obvious
   backlog looks empty. Enter supervision mode and infer the next checkpoint from
-  `slate-north-star`, current evidence, weak proofs, benchmark gaps, API/docs
+  `vision`, current evidence, weak proofs, benchmark gaps, API/docs
   mismatch, issue/test harvest gaps, and workflow slowdowns.
 
 Automation state:
@@ -217,7 +217,7 @@ Checkpoint supervisor:
 Checkpoint mutation ledger:
 | Loop | Mutation | Checkpoint(s) | Evidence | Reason | Result |
 |------|----------|---------------|----------|--------|--------|
-| 0 | seed/update | checkpoint-zero, public-api-taste-audit, editing-runtime-risk-audit, transform-clipboard-contract-audit, slate-browser-api-quality-audit, example-dx-audit, docs-claim-width-audit, proof-system-honesty-audit, beta-readiness-scorecard | user prompt, `slate-auto`, `autogoal`, `slate-north-star`, `agent-start`, release-readiness, API hard-cuts docs | Initial template was too generic for public beta readiness; split the review into highest-risk dirty surfaces. | active |
+| 0 | seed/update | checkpoint-zero, public-api-taste-audit, editing-runtime-risk-audit, transform-clipboard-contract-audit, slate-browser-api-quality-audit, example-dx-audit, docs-claim-width-audit, proof-system-honesty-audit, beta-readiness-scorecard | user prompt, `slate-auto`, `autogoal`, `vision`, `agent-start`, release-readiness, API hard-cuts docs | Initial template was too generic for public beta readiness; split the review into highest-risk dirty surfaces. | active |
 | 1 | update | status, gap-scan | source status inventory | Runtime `.tmp/slate-v2` has no current git diff/untracked files; parent has docs/skills/research plan changes only. The beta review must audit current source and docs claim width rather than only reviewing dirty runtime diff. | public API audit first |
 | 2 | update | checkpoint-zero, public-api-taste-audit | source/API inventory | Full `slate-auto` skill was reread after compaction; `runtime-editor-api.ts` import smell is covered by `slate-react` surface contracts and not exported through `package.json`; public docs/examples risk list is small and mostly intentional `decorate`/proof-harness API. | continue proof-honesty audit after public API packet closure |
 | 3 | update | proof-system-honesty-audit | skip/fake-green scan, focused tests | Non-pagination example specs had three project-gated `return` branches after alternate actions, not pre-proof fake greens. Added audit classification so future branches cannot silently appear. | keep packet and run package/type proof later |
@@ -292,7 +292,7 @@ Mutation rules:
 - Reprioritize after every loop. The next checkpoint is chosen from current
   evidence, not from the original row order.
 - The supervisor is not stuck on this template or the initial prompt plan. The
-  user's latest request, `slate-north-star`, and current source evidence outrank
+  user's latest request, `vision`, and current source evidence outrank
   stale plan rows.
 
 Start Gates:
@@ -300,7 +300,7 @@ Start Gates:
 |------|---------|----------|
 | Prompt requirements captured before work | yes | Explicit rows record: loop on priority dirty surfaces, add more on evidence, reach >95% beta-public-release satisfaction, run at least 8h, and keep final review-attention/stopping checkpoints. |
 | `slate-auto` source rule read | yes | `.agents/skills/slate-auto/SKILL.md` read before mutable work; timed mode and public beta review duties applied. |
-| `slate-north-star` read as checkpoint zero | yes | `.agents/skills/slate-north-star/SKILL.md` read; public API, proof width, visual behavior, and no fake release claim rules applied. |
+| `vision` read as checkpoint zero | yes | `.agents/skills/vision/SKILL.md` read; public API, proof width, visual behavior, and no fake release claim rules applied. |
 | Active goal checked or created | yes | `get_goal` returned none; `create_goal` created this 8h beta-readiness goal. |
 | Invocation mode and timebox recorded | yes | Timed mode, start 2026-06-14 14:10 CEST, minimum floor 2026-06-14 22:10 CEST. |
 | Dynamic checkpoint policy accepted | yes | Checkpoint table was split from generic seed into beta-readiness review owners before implementation. |

@@ -121,7 +121,7 @@ Completion rule:
 Start Gates:
 | Gate | Applies | Evidence |
 |------|---------|----------|
-| Skill analysis before edits | yes | Used `slate-automation`; read/used `editor-test-harvester`, `clawsweeper`, and `slate-north-star` policy from current context and generated skills. |
+| Skill analysis before edits | yes | Used `slate-automation`; read/used `editor-test-harvester`, `clawsweeper`, and `vision` policy from current context and generated skills. |
 | Active goal checked or created | yes | Created active goal for full Lexical all-issues robustness harvest. |
 | Source of truth read before edits | yes | Used `../lexical`, MIT license evidence, previous issue artifacts, existing `docs/editor-test-harvester/lexical/*`, and current `.tmp/slate-v2` proof owners. |
 

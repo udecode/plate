@@ -117,12 +117,12 @@ Blocked condition:
 - Hard block only if all safe owners are exhausted and the remaining move needs
   commit/PR/destructive authority, unavailable raw-device hardware, missing
   credentials/tooling, explicit pagination work, or a user-only product/API
-  decision not covered by `slate-north-star`.
+  decision not covered by `vision`.
 - Do not block while a safe alternate checkpoint remains runnable. In timed or
   batch mode, queue soft questions for final handoff.
 - Do not hand off before a timed minimum runtime has elapsed because the obvious
   backlog looks empty. Enter supervision mode and infer the next checkpoint from
-  `slate-north-star`, current evidence, weak proofs, benchmark gaps, API/docs
+  `vision`, current evidence, weak proofs, benchmark gaps, API/docs
   mismatch, issue/test harvest gaps, and workflow slowdowns.
 
 Automation state:
@@ -159,7 +159,7 @@ Completion rule:
 Checkpoint supervisor:
 | Checkpoint | Owner | Status | Priority | Why it exists | Evidence / exit rule | Mutation decision |
 |------------|-------|--------|----------|---------------|----------------------|-------------------|
-| checkpoint-zero | slate-auto | complete | P0 | Copy prompt requirements and read north-star before implementation. | `slate-auto`, `autogoal`, `slate-north-star`, `agent-start`, roadmap, previous plan, and prompt requirements read/recorded. | update |
+| checkpoint-zero | slate-auto | complete | P0 | Copy prompt requirements and read north-star before implementation. | `slate-auto`, `autogoal`, `vision`, `agent-start`, roadmap, previous plan, and prompt requirements read/recorded. | update |
 | status | slate-auto | complete | P0 | Read active plan, latest prompt, source status, and current evidence. | Previous P96 closure, roadmap, owner files, clickTextOffset implementation, and target rows read. | update |
 | gap-scan | slate-auto | complete | P0 | Identify behavior, visual, API, test, metric, docs, skill, and workflow gaps. | Gaps routed to click-offset transport, selection oracle, stable examples, huge-doc non-pagination, research, and workflow owners. | update |
 | pagination-default-deferral | slate-auto / slate-plan | complete | P0 | Latest user made pagination opt-in only. | Plan marks pagination out of scope unless explicitly requested. | add |
@@ -681,7 +681,7 @@ Mutation rules:
 - Reprioritize after every loop. The next checkpoint is chosen from current
   evidence, not from the original row order.
 - The supervisor is not stuck on this template or the initial prompt plan. The
-  user's latest request, `slate-north-star`, and current source evidence outrank
+  user's latest request, `vision`, and current source evidence outrank
   stale plan rows.
 
 Start Gates:
@@ -689,7 +689,7 @@ Start Gates:
 |------|---------|----------|
 | Prompt requirements captured before work | yes | User invoked `slate-auto 10h`; plan records timed minimum, final handoff needs, pagination opt-in boundary, raw-mobile deferral, proof-first policy, and stop rules. |
 | `slate-auto` source rule read | yes | `.agents/skills/slate-auto/SKILL.md` read completely; pagination opt-in rule confirmed. |
-| `slate-north-star` read as checkpoint zero | yes | `.agents/skills/slate-north-star/SKILL.md` read; behavior/visual proof and no fake mobile/debounce rules applied. |
+| `vision` read as checkpoint zero | yes | `.agents/skills/vision/SKILL.md` read; behavior/visual proof and no fake mobile/debounce rules applied. |
 | Active goal checked or created | yes | `get_goal` returned none; `create_goal` created active goal for this plan. |
 | Invocation mode and timebox recorded | yes | Timed mode, 10h minimum, target floor 2026-06-14 10:31 CEST. |
 | Dynamic checkpoint policy accepted | yes | Checkpoint supervisor table includes add/update rows and mutation ledger loop 0. |
@@ -925,7 +925,7 @@ Packet ledger:
 | P125 | 125 | slate-auto | Supervision should catch proof-transport follow-ups after a new desktop stress lane. | Inspected fresh desktop stress artifacts and stress utility code after P124. | Found Firefox/WebKit artifacts still serialized `bun test:stress:replay`, which is Chromium-only. | keep | `stress-replay-command-project-proof` |
 | P126 | 126 | slate-auto / slate-browser | Desktop stress artifacts should replay on the originating project. | Added `test:stress:replay:firefox`, `test:stress:replay:webkit`, and `test:stress:replay:desktop`; updated `playwright/stress/stress-utils.ts`, `generated-editing.test.ts`, `docs/general/docs-proof-map.md`, and script contracts. Regenerated desktop stress artifacts and audited replay commands. | `bun --filter slate-browser test:core -- scenario.test.ts` passed 66 / 0; `bun test:stress:desktop` passed 72 / 0; replayCommand audit found 24 fresh project-matching artifacts per browser; Firefox replay passed 1 / 0, WebKit replay passed 1 / 0, desktop replay passed 3 / 0. | keep | `post-stress-replay-fast-tree-gate` |
 | P127 | 127 | slate-auto | Stress replay script patches should not leave fast-tree fallout. | Ran formatter after the first `bun check` caught one scenario contract formatting issue; reran `.tmp/slate-v2` `bun check`. | Final `bun check` passed lint, package/site/root typecheck, Bun package tests 1212 / skipped 91, slate-layout 47, and slate-react Vitest 801. | keep | `supervision-gap-scan-after-stress-replay` |
-| P128 | 128 | slate-auto | Timed supervision should not stop after replay transport closure while the 10h floor remains open. | Read current plan, `slate-north-star`, existing fuzzing research, and current stress replay state. | Selected a non-duplicate research owner: generated stress replay reduction/minimization, excluding pagination and prior DOM-mutation import stress. | keep | `generated-stress-replay-reduction-research` |
+| P128 | 128 | slate-auto | Timed supervision should not stop after replay transport closure while the 10h floor remains open. | Read current plan, `vision`, existing fuzzing research, and current stress replay state. | Selected a non-duplicate research owner: generated stress replay reduction/minimization, excluding pagination and prior DOM-mutation import stress. | keep | `generated-stress-replay-reduction-research` |
 | P129 | 129 | slate-research / slate-browser | Failed generated stress artifacts were less useful than passed artifacts because reduction candidates were only copied from a successful scenario result. | Created `docs/slate-v2/research/2026-06-14-generated-stress-replay-reduction/`; sampled Slate/Lexical/CodeMirror/WPT source; patched `.tmp/slate-v2/playwright/stress/stress-utils.ts` to default reduction candidates from scenario steps; added a `scenario.test.ts` contract. | `bun --filter slate-browser build && bun --filter slate-browser test:core -- scenario.test.ts` passed 67 / 0; direct failed-artifact assertion returned 4 candidates and Firefox replay command; focused Firefox generated stress row passed and artifact had 37 candidates. | keep | `post-reduction-artifact-fast-tree-gate` |
 | P130 | 130 | slate-auto | Stress artifact reduction changes should not leave lint/type/unit fallout. | Ran `.tmp/slate-v2` `bun check` after P129. | Passed lint, package/site/root typecheck, Bun package tests 1213 / skipped 91, slate-layout 47, and slate-react Vitest 801. | keep | `supervision-gap-scan-after-reduction-artifact` |
 | P131 | 131 | slate-auto | Timed supervision should keep improving proof breadth after reducible stress artifacts. | Reconciled current stress state and selected an alternate-seed desktop stress gate. | Default-seed stress had already passed; non-default seed was the next honest generated-proof pressure without broadening into pagination or release work. | keep | `generated-stress-alternate-seed-desktop-gate` |

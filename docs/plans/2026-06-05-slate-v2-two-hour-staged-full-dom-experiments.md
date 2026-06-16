@@ -112,7 +112,7 @@ Constraints:
 
 Boundaries:
 - Source of truth: live `.tmp/slate-v2` source/tests/benchmarks for behavior;
-  `slate-north-star`, `docs/slate-v2/agent-start.md`, and recent completed
+  `vision`, `docs/slate-v2/agent-start.md`, and recent completed
   plans for backlog context.
 - Allowed edit scope: `.tmp/slate-v2` runtime/tests/benchmarks/examples/docs
   when a proof names an owner; parent `docs/plans/**` for this active ledger;
@@ -131,7 +131,7 @@ Boundaries:
 Blocked condition:
 - Stop only when the 2h loop-start budget has expired and the active packet is
   verified, reverted, quarantined, or explicitly deferred with owner; when the
-  next safe move needs missing user taste not covered by `slate-north-star` and
+  next safe move needs missing user taste not covered by `vision` and
   no safe alternate packet remains; when raw-device hardware is required for a
   claim; when an unsafe runtime fork cannot be isolated reversibly; or when the
   same real blocker repeats after the right owner is tried.
@@ -224,7 +224,7 @@ Mutation rules:
 - Reprioritize after every loop. The next checkpoint is chosen from current
   evidence, not from the original row order.
 - The supervisor is not stuck on this template or the initial prompt plan. The
-  user's latest request, `slate-north-star`, and current source evidence outrank
+  user's latest request, `vision`, and current source evidence outrank
   stale plan rows.
 
 Start Gates:
@@ -232,7 +232,7 @@ Start Gates:
 |------|---------|----------|
 | Prompt requirements captured before work | yes | Latest request and immediately preceding timing correction are copied into objective, completion threshold, verification surface, boundaries, stop rules, packet rows, and final handoff requirements. |
 | `slate-automation` source rule read | yes | Read generated skill; timed-mode and reversible experiment rules applied. |
-| `slate-north-star` read as checkpoint zero | yes | Read `/Users/zbeyens/git/plate-2/.agents/skills/slate-north-star/SKILL.md`; no missing taste blocker for this lane. |
+| `vision` read as checkpoint zero | yes | Read `/Users/zbeyens/git/plate-2/.agents/skills/vision/SKILL.md`; no missing taste blocker for this lane. |
 | Active goal checked or created | yes | `get_goal` returned no active goal; `create_goal` created this timed 2h automation goal. |
 | Invocation mode and timebox recorded | yes | Timed 2h, loop-start budget from 2026-06-05T11:33:50Z. |
 | Dynamic checkpoint policy accepted | yes | Seed rows were split into staged-source-audit, baseline metric proof, and experiment packets. |
@@ -449,7 +449,7 @@ Error attempts:
 
 Verification evidence:
 - Read `/Users/zbeyens/git/plate-2/.agents/skills/slate-automation/SKILL.md`.
-- Read `/Users/zbeyens/git/plate-2/.agents/skills/slate-north-star/SKILL.md`.
+- Read `/Users/zbeyens/git/plate-2/.agents/skills/vision/SKILL.md`.
 - Read `/Users/zbeyens/git/plate-2/docs/slate-v2/agent-start.md`.
 - Created active goal for this plan.
 - `.tmp/slate-v2`: fresh baseline

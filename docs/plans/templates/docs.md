@@ -30,6 +30,13 @@ First checkpoint:
 - Do not continue into implementation until this extraction is complete or
   explicitly marked N/A with reason.
 
+Timed checkpoint:
+- requested duration: pending
+- semantics: pending
+- initial confidence score: pending
+- improvement loop: pending
+- final score / loop closure: pending
+
 Completion threshold:
 - TODO: Define the exact docs done state.
 - Docs closure is legal only when the page teaches the fastest correct path,
@@ -88,6 +95,7 @@ Start Gates:
 | Gate | Applies | Evidence |
 |------|---------|----------|
 | Prompt requirements captured before work | pending | pending |
+| Timed checkpoint parsed | pending | pending |
 | `docs-creator` loaded | pending | pending |
 | Active goal checked or created | pending | pending |
 | Docs lane selected | pending | pending |
@@ -101,6 +109,9 @@ Start Gates:
 | PR/tracker expectation decision | pending | pending |
 
 Work Checklist:
+- [ ] If a duration was requested, it is recorded as minimum active work unless
+      explicitly marked hard stop; when no better metric exists, initial and
+      final confidence scores are recorded.
 - [ ] First checkpoint complete: every explicit prompt requirement, scope
       boundary, timing constraint, stop condition, deliverable, final handoff
       section, verification surface, and success criterion is copied into this
@@ -150,6 +161,7 @@ Completion Gates:
 | Agent rules or skills changed | pending | Run `pnpm install` and verify generated skill sync | pending |
 | Autoreview for non-trivial docs changes | pending | Load `.agents/skills/autoreview/SKILL.md` and run the right target, or record N/A for tiny/no-local-patch work | pending |
 | Final lint | pending | Run `pnpm lint:fix` or scoped equivalent | pending |
+| Timed checkpoint | pending | If duration was requested, keep improving until elapsed, then finish the current loop cleanly; otherwise N/A | pending |
 | Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` | pending |
 
 Phase / pass table:

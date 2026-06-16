@@ -83,7 +83,7 @@ Constraints:
 
 Boundaries:
 - Source of truth: video, live `.tmp/slate-v2` route/source/tests/benchmarks,
-  current plan, and `slate-north-star`
+  current plan, and `vision`
 - Allowed edit scope: `.tmp/slate-v2` runtime/tests/benchmarks/examples/helpers;
   parent `docs/plans/**` for this goal; `.agents/rules/**` only for a proven
   reusable workflow miss
@@ -174,7 +174,7 @@ Mutation rules:
 - Reprioritize after every loop. The next checkpoint is chosen from current
   evidence, not from the original row order.
 - The supervisor is not stuck on this template or the initial prompt plan. The
-  user's latest request, `slate-north-star`, and current source evidence outrank
+  user's latest request, `vision`, and current source evidence outrank
   stale plan rows.
 
 Start Gates:
@@ -182,7 +182,7 @@ Start Gates:
 |------|---------|----------|
 | Prompt requirements captured before work | yes | User requires slate-automation loop until visible lag fixed; rearchitecture allowed. |
 | `slate-automation` source rule read | yes | Read `/Users/zbeyens/git/plate-2/.agents/skills/slate-automation/SKILL.md`; user also pasted skill body. |
-| `slate-north-star` read as checkpoint zero | yes | Read `/Users/zbeyens/git/plate-2/.agents/skills/slate-north-star/SKILL.md`; taste says visible proof beats model-only/nearby metrics. |
+| `vision` read as checkpoint zero | yes | Read `/Users/zbeyens/git/plate-2/.agents/skills/vision/SKILL.md`; taste says visible proof beats model-only/nearby metrics. |
 | Active goal checked or created | yes | Created active autogoal for visible huge-doc Shift-selection latency. |
 | Invocation mode and timebox recorded | yes | Full-loop, no hard timebox, continue until fixed/blocker/plateau. |
 | Dynamic checkpoint policy accepted | yes | Plan may add/update/split checkpoints from evidence. |

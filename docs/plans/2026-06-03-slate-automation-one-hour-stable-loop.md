@@ -66,7 +66,7 @@ Constraints:
 - Do not add broad ceremony when the task is trivial or docs-only.
 
 Boundaries:
-- Source of truth: `.tmp/slate-v2` source/tests/examples for Slate runtime; `docs/slate-v2/agent-start.md` and `slate-north-star` for current claim/taste; `.agents/rules/**` for skills if workflow repair is needed; this plan for run state.
+- Source of truth: `.tmp/slate-v2` source/tests/examples for Slate runtime; `docs/slate-v2/agent-start.md` and `vision` for current claim/taste; `.agents/rules/**` for skills if workflow repair is needed; this plan for run state.
 - Allowed edit scope: safe runtime/test/oracle fixes in `.tmp/slate-v2`; safe `slate-browser` helper/API improvements; safe workflow rule fixes in `.agents/rules/**`; this plan.
 - Browser surface: stable examples under `http://localhost:3100/examples/*`.
 - Tracker sync: N/A; no issue/PR/tracker requested in this prompt.
@@ -105,9 +105,9 @@ Start Gates:
 | Gate | Applies | Evidence |
 |------|---------|----------|
 | Prompt requirements captured before work | yes | First checkpoint captured skill, timed 1h mode, default stable surface, non-goals, stop policy, verification surfaces, and final handoff sections. |
-| Skill analysis before edits | yes | Used user-provided `slate-automation`; read `slate-north-star`; read `docs/slate-v2/agent-start.md`; compared prior stable automation plan. |
+| Skill analysis before edits | yes | Used user-provided `slate-automation`; read `vision`; read `docs/slate-v2/agent-start.md`; compared prior stable automation plan. |
 | Active goal checked or created | yes | `get_goal` returned null; `create_goal` started this timed loop objective. |
-| Source of truth read before edits | yes | `slate-north-star`, `docs/slate-v2/agent-start.md`, and prior loop plan read; target source/tests will be read before any patch. |
+| Source of truth read before edits | yes | `vision`, `docs/slate-v2/agent-start.md`, and prior loop plan read; target source/tests will be read before any patch. |
 | Tracker comments and attachments read | N/A: no tracker | Prompt is `slate-automation 1h`. |
 | Video transcript evidence required | yes | 2026-06-03 selection follow-up videos transcribed: v2 restores text but loses native selected text after undo; upstream Slate restores the selected word after undo. |
 | `docs/solutions` checked for non-trivial existing-code work | deferred | Use live proof first; search solutions only when a concrete failure/root cause appears. |
@@ -230,7 +230,7 @@ Completion Gates:
 Phase / pass table:
 | Phase | Status | Evidence | Next |
 |-------|--------|----------|------|
-| Intake and source read | done | created plan; read `slate-automation`, `slate-north-star`, video evidence, and selection-runtime owner | implementation |
+| Intake and source read | done | created plan; read `slate-automation`, `vision`, video evidence, and selection-runtime owner | implementation |
 | Implementation | done | issue #12 undo fix, multi-leaf history fix, selection export fix, generated stress budget, and skill repairs kept | verification complete |
 | Verification | done | focused package/browser gates, stable prior-failure rows, generated stress, browser smoke, and `bun check` passed | closeout |
 | PR / tracker sync | N/A | no PR/tracker authority in prompt | final response |

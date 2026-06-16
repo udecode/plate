@@ -90,12 +90,12 @@ Blocked condition:
 - Hard block only if all safe owners are exhausted and the remaining move needs
   commit/PR/destructive authority, unavailable raw-device hardware, missing
   credentials/tooling, or a user-only product/API decision not covered by
-  `slate-north-star`.
+  `vision`.
 - Do not block while a safe alternate checkpoint remains runnable. In timed or
   batch mode, queue soft questions for final handoff.
 - Do not hand off before a timed minimum runtime has elapsed because the obvious
   backlog looks empty. Enter supervision mode and infer the next checkpoint from
-  `slate-north-star`, current evidence, weak proofs, benchmark gaps, API/docs
+  `vision`, current evidence, weak proofs, benchmark gaps, API/docs
   mismatch, issue/test harvest gaps, and workflow slowdowns.
 
 Automation state:
@@ -339,7 +339,7 @@ Mutation rules:
 - Reprioritize after every loop. The next checkpoint is chosen from current
   evidence, not from the original row order.
 - The supervisor is not stuck on this template or the initial prompt plan. The
-  user's latest request, `slate-north-star`, and current source evidence outrank
+  user's latest request, `vision`, and current source evidence outrank
   stale plan rows.
 
 Start Gates:
@@ -347,7 +347,7 @@ Start Gates:
 |------|---------|----------|
 | Prompt requirements captured before work | yes | Top sections copy timed 8h, stop policy, final handoff rows, proof surfaces, private-alpha boundary, and immediate P0s before runtime edits. |
 | `slate-auto` source rule read | yes | Read `.agents/skills/slate-auto/SKILL.md` and source `.agents/rules/slate-auto.mdc` on 2026-06-13. |
-| `slate-north-star` read as checkpoint zero | yes | Read `.agents/skills/slate-north-star/SKILL.md`; it routes timed runs to supervision mode and current proof. |
+| `vision` read as checkpoint zero | yes | Read `.agents/skills/vision/SKILL.md`; it routes timed runs to supervision mode and current proof. |
 | Active goal checked or created | yes | `get_goal` returned `goal:null`; plan shell created. Goal tool creation follows this filled checkpoint. |
 | Invocation mode and timebox recorded | yes | Timed mode, 8h minimum, floor 2026-06-13 23:47 CEST. |
 | Dynamic checkpoint policy accepted | yes | Plan mutation ledger active; supervisor may add/update/split/merge/retire/reopen checkpoints after each loop. |
@@ -364,7 +364,7 @@ Work Checklist:
       boundary, timing constraint, stop condition, deliverable, final handoff
       section, verification surface, and success criterion is copied into this
       plan as checkable checkpoints before implementation. Evidence: latest
-      prompt, `slate-auto` skill, `slate-north-star`, `agent-start`, and
+      prompt, `slate-auto` skill, `vision`, `agent-start`, and
       current proof debt copied into plan before runtime edits.
 - [x] Short objective, completion threshold, verification surface, constraints,
       boundaries, and blocked condition are concrete.

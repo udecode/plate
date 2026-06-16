@@ -58,7 +58,7 @@ Boundaries:
 
 Blocked condition:
 Stop only if the next safe move requires a product taste decision not covered
-by `slate-north-star`, a staged architecture decision owned by `slate-plan`, or
+by `vision`, a staged architecture decision owned by `slate-plan`, or
 a missing browser/device/tool blocks every remaining proof path. None of those
 blocked this run.
 
@@ -152,7 +152,7 @@ Start Gates:
 |------|---------|----------|
 | Prompt requirements captured before work | yes | Exact route, `Shift+Down`, `Shift+Up`, `Cmd+A+Delete`, multi-loop stability, all editor behavior families, stop rules, and final handoff sections were copied into the plan. |
 | `slate-automation` source rule read | yes | The run used autogoal, dynamic checkpoints, packet ledger, stop checkpoint, changed-list, and final-handoff contract. |
-| `slate-north-star` read | yes | Taste boundary checked before implementation; no uncovered taste gap blocked runtime work. |
+| `vision` read | yes | Taste boundary checked before implementation; no uncovered taste gap blocked runtime work. |
 | Active goal checked or created | yes | Active autogoal thread `019e6aa0-8ace-7e73-b0e9-166d6fbc4a30` owns this plan. |
 | Invocation mode recorded | yes | Batch/full-loop, no timebox, continue while safe owners remain. |
 | Source of truth recorded | yes | Runtime/tests in `.tmp/slate-v2`; parent repo owns this plan only. |

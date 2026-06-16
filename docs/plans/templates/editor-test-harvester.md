@@ -1,7 +1,7 @@
 # {{TITLE}}
 
 Objective:
-TODO: Write the short create_goal objective, under 240 characters. Put the full editor-test-harvester contract in the sections below.
+TODO: Write the short create_goal objective, under 240 characters. Put the full editor-test-harvester or lane-plan contract in the sections below.
 
 Goal plan:
 {{PLAN_PATH}}
@@ -10,12 +10,20 @@ Template:
 {{TEMPLATE_PATH}}
 
 Completion threshold:
-- TODO: Define the exact harvest done state.
+- TODO: Define the exact harvest or lane-plan done state.
 - Comprehensive harvest closure is legal only when score >= 0.92, no dimension
   is below 0.85, inventory count equals classified count, no `uncertain` test
   files remain, every portable or portable-mixed runnable file is indexed/read
   or explicitly skipped with reason, every actionable row has owner/target/proof
   evidence, the harvest report links or contains a full inventory appendix, and
+  `node .agents/skills/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` passes.
+- Lane-plan closure is legal only when score >= 0.92, no dimension is below
+  0.85, harvest report path and license mode are recorded, inventory/test-index
+  status is recorded, every harvest row is accounted for, no unresolved in-lane
+  row remains, every in-lane row has owner coverage/action/target/proof or defer
+  evidence, downstream lane gates are applied, accepted-plan handoff is present,
+  behavior-only rows use fresh invariant wording only, the final handoff says to
+  pause for user review, and
   `node .agents/skills/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` passes.
 
 Verification surface:
@@ -33,6 +41,9 @@ Constraints:
   `..`.
 - Do not edit `.tmp/slate-v2`, Plate packages, docs, examples, or build config
   unless the user explicitly requested an apply run.
+- In lane-plan mode, do not patch implementation code, tests, examples, package
+  files, or build config. Write the plan, write the accepted-plan handoff, and
+  pause for user review before downstream execution.
 
 Boundaries:
 - Target repo: TODO.
@@ -45,6 +56,7 @@ Blocked condition:
   proof, Slate v2 checkout, or user decision that stops autonomous work.
 
 Harvest state:
+- mode: harvest|issue-harvest|lane-plan
 - target_repo: pending
 - repo_key: pending
 - license_mode: pending
@@ -55,6 +67,8 @@ Harvest state:
 - current_pass: intake-and-boundary
 - current_pass_status: in_progress
 - next_pass: inventory
+- lane: N/A
+- downstream_skill: N/A
 
 Current verdict:
 - verdict: pending
@@ -106,6 +120,23 @@ Work Checklist:
       marked N/A with reason.
 - [ ] Browser proof captured for browser-surface apply changes, or marked N/A
       with reason.
+- [ ] Lane-plan mode only: lane aliases normalized and lane registry row
+      selected, or marked N/A with reason.
+- [ ] Lane-plan mode only: every harvest row counted as in-lane, out-of-lane,
+      split, duplicate, skip, or unresolved, or marked N/A with reason.
+- [ ] Lane-plan mode only: every split row has lane-owned and out-of-lane
+      portions separated, or marked N/A with reason.
+- [ ] Lane-plan mode only: current owner coverage searched in the target
+      workspace before claiming covered or missing, or marked N/A with reason.
+- [ ] Lane-plan mode only: every in-lane row has lane reason, current coverage,
+      action, target, proof route, and verification command or defer reason, or
+      marked N/A with reason.
+- [ ] Lane-plan mode only: downstream lane gates applied and recorded, or
+      marked N/A with reason.
+- [ ] Lane-plan mode only: accepted-plan execution handoff complete, or marked
+      N/A with reason.
+- [ ] Lane-plan mode only: final handoff pauses for user review before
+      implementation, or marked N/A with reason.
 
 Completion Gates:
 | Gate | Applies | Required action | Evidence |
@@ -113,6 +144,8 @@ Completion Gates:
 | Named verification threshold | pending | Run the command, proof, source audit, or artifact check named in this plan | pending |
 | Harvest artifacts current | pending | Verify report, inventory, test-index, matrix accounting, and skip evidence are current | pending |
 | Behavior-only hygiene | pending | Verify versioned output uses fresh invariant wording and no copied source material | pending |
+| Lane-plan review pause | pending | If lane-plan mode applies, write the accepted-plan handoff and stop for user review before downstream execution | pending |
+| Downstream lane gates | pending | If lane-plan mode applies, record `slate-plan` or `plate-plan` gate application | pending |
 | Final harvest handoff | pending | Emit harvest report handoff or keep the plan pending with the next pass | pending |
 | Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` | pending |
 
@@ -127,6 +160,9 @@ Phase / pass table:
 | Slate/Plate coverage mapping | pending | | action planning |
 | Action planning | pending | | ecosystem synthesis |
 | Ecosystem synthesis | pending | | closure review |
+| Lane-plan row accounting | N/A | | owner coverage |
+| Lane-plan owner coverage mapping | N/A | | execution queue |
+| Lane-plan accepted-plan handoff | N/A | | closure review |
 | Closure review | pending | | final handoff |
 
 Confidence score:
@@ -138,6 +174,15 @@ Confidence score:
 | Slate/Plate coverage mapping accuracy | 0.20 | pending | | |
 | Actionability of copy/refactor/create plan | 0.15 | pending | | |
 | Provenance and reproducibility | 0.10 | pending | | |
+
+Lane-plan confidence score:
+| Dimension | Weight | Score | Evidence | Cap hit |
+|-----------|-------:|------:|----------|---------|
+| Harvest source readiness | 0.15 | N/A | | |
+| Lane-filter completeness | 0.25 | N/A | | |
+| Current owner coverage mapping | 0.25 | N/A | | |
+| Actionability of execution queue | 0.20 | N/A | | |
+| License/provenance discipline | 0.15 | N/A | | |
 
 License gate:
 | Field | Value |
@@ -174,6 +219,69 @@ Next slice:
 | Row | Owner | Action | Target | Verification / defer reason |
 |-----|-------|--------|--------|-----------------------------|
 | pending | pending | pending | pending | pending |
+
+Lane contract:
+| Field | Value |
+|-------|-------|
+| Lane | N/A |
+| Aliases | N/A |
+| Downstream skill | N/A |
+| Owner boundary | N/A |
+| Exclusions / split rules | N/A |
+
+Full harvest row accounting:
+| Row | Source ref | Classification | Lane accounting | Reason |
+|-----|------------|----------------|-----------------|--------|
+| N/A | N/A | N/A | N/A | N/A |
+
+In-lane candidate matrix:
+| Row | Source ref | Tag | Behavior invariant | Lane reason | Current coverage | Action | Target | Proof |
+|-----|------------|-----|--------------------|-------------|------------------|--------|--------|-------|
+| N/A | N/A | N/A | N/A | N/A | N/A | N/A | N/A | N/A |
+
+Split rows:
+| Row | Source ref | Lane-owned part | Out-of-lane part | Owner / handoff |
+|-----|------------|-----------------|------------------|-----------------|
+| N/A | N/A | N/A | N/A | N/A |
+
+Excluded or out-of-lane rows:
+| Row | Source ref | Reason | Owner |
+|-----|------------|--------|-------|
+| N/A | N/A | N/A | N/A |
+
+Coverage dedupe:
+| Candidate | Existing coverage | Decision | Evidence |
+|-----------|-------------------|----------|----------|
+| N/A | N/A | N/A | N/A |
+
+Execution queue:
+| ID | Action | Target | Proof kind | Focused verification | Notes |
+|----|--------|--------|------------|----------------------|-------|
+| N/A | N/A | N/A | N/A | N/A | N/A |
+
+Issue and claim accounting:
+- Fixed issues: N/A.
+- Improved issues: N/A.
+- Related issues: N/A.
+- PR reference: N/A.
+
+Downstream lane application:
+| Gate | Status | Evidence |
+|------|--------|----------|
+| downstream skill read | N/A | |
+| lane-specific completion gates applied | N/A | |
+| implementation boundaries recorded | N/A | |
+| verification commands recorded | N/A | |
+
+Accepted-plan execution handoff:
+- read-first plan path: N/A
+- requested lane: N/A
+- exact execution queue IDs: N/A
+- implementation boundaries: N/A
+- focused verification commands: N/A
+- broad final gate: N/A
+- issue/claim sync rule: N/A
+- stop rule: N/A; lane-plan mode must pause for user review before implementation.
 
 Report artifacts:
 | Artifact | Path | Status |

@@ -105,7 +105,7 @@ Constraints:
 - Do not patch Plate when the run is scoped to Slate v2.
 
 Boundaries:
-- Source of truth: latest user prompt, this plan, `slate-north-star`,
+- Source of truth: latest user prompt, this plan, `vision`,
   `docs/slate-v2/agent-start.md`, live `.tmp/slate-v2` source/tests/benchmarks,
   and current benchmark/route evidence.
 - Allowed edit scope: `.tmp/slate-v2` runtime/tests/examples/benchmarks/docs;
@@ -130,7 +130,7 @@ Blocked condition:
 - Hard-stop only for commit/PR/destructive authority, unavailable external
   credential/source needed for all meaningful progress, raw-device proof claim
   that requires hardware, unsafe API/runtime fork not covered by
-  `slate-north-star`, or the same real blocker repeated with no safe alternate
+  `vision`, or the same real blocker repeated with no safe alternate
   packet.
 - Do not block while a safe alternate checkpoint remains runnable. In timed or
   batch mode, queue soft questions for final handoff.
@@ -279,7 +279,7 @@ Checkpoint mutation ledger:
 | Loop | Mutation | Checkpoint(s) | Evidence | Reason | Result |
 |------|----------|---------------|----------|--------|--------|
 | 0 | seed | initial template rows | plan creation | starter topology only | updated |
-| 0 | add/update | huge correctness, perf hygiene, external comparison, issue-ledger, API/DX, benchmark hygiene, skill repair checkpoints | latest user prompt and `slate-north-star` | User gave an ordered 7h loop and explicitly forbade perf-before-correctness and shallow issue-ledger work. | keep |
+| 0 | add/update | huge correctness, perf hygiene, external comparison, issue-ledger, API/DX, benchmark hygiene, skill repair checkpoints | latest user prompt and `vision` | User gave an ordered 7h loop and explicitly forbade perf-before-correctness and shallow issue-ledger work. | keep |
 | 1 | update/complete | huge-correctness-matrix, missing-oracle-repair, visual-native-proof, slate-browser-promotion | focused package tests, package builds, and huge-document Playwright runs | Partial-DOM proof needed model block oracle and semantic paste path before perf. | keep |
 | 1 | reprioritize | perf-target-hygiene | huge-document correctness gate is green for applicable desktop engines | Move to benchmark hygiene before optimization. | next |
 | 2 | add/reprioritize | virtualized-benchmark-selection-drift | `bench:react:huge-document:browser-trace:local` failed on `virtualized/middleBlock`: target block 2500 updated, native selection drifted to path 2494, and benchmark helpers used `textElements[index]` fallback. | Benchmark hygiene must precede any perf target claim; exact path materialization is required for virtualized editor benchmarks. | next |
@@ -340,7 +340,7 @@ Mutation rules:
 - Reprioritize after every loop. The next checkpoint is chosen from current
   evidence, not from the original row order.
 - The supervisor is not stuck on this template or the initial prompt plan. The
-  user's latest request, `slate-north-star`, and current source evidence outrank
+  user's latest request, `vision`, and current source evidence outrank
   stale plan rows.
 
 Start Gates:
@@ -348,7 +348,7 @@ Start Gates:
 |------|---------|----------|
 | Prompt requirements captured before work | yes | Copied ordered requirements: huge-doc correctness first; perf after correctness; external issue ledger after infra; API/DX hard cuts; benchmark hygiene; skill/workflow repair; then deeper huge-doc perf/comparison/rearchitecture if all earlier gates close. |
 | `slate-automation` source rule read | yes | Read generated skill content from user prompt and `.agents/rules/slate-automation.mdc`. |
-| `slate-north-star` read as checkpoint zero | yes | Read `.agents/skills/slate-north-star/SKILL.md`; key rule: correctness before perf, no debounce theater, behavior proof before green claims. |
+| `vision` read as checkpoint zero | yes | Read `.agents/skills/vision/SKILL.md`; key rule: correctness before perf, no debounce theater, behavior proof before green claims. |
 | Active goal checked or created | yes | Created active goal for this 7h timed loop. |
 | Invocation mode and timebox recorded | yes | Timed 7h loop-start budget; finish/quarantine active packet after expiry. |
 | Dynamic checkpoint policy accepted | yes | Plan may add/update/split/merge/retire/reopen checkpoints after each packet. |
@@ -455,7 +455,7 @@ Scenario matrix:
 Packet ledger:
 | Packet | Loop | Owner | Hypothesis / failure signature | Files / commands | Behavior / visual proof | Decision | Next |
 |--------|------|-------|--------------------------------|------------------|-------------------------|----------|------|
-| P0 | 0 | slate-automation | Correctness must gate perf and issue ledgers or the 7h run will optimize lies and make shallow checkmarks. | This plan, `slate-north-star`, `agent-start`, `slate-automation` rule | No runtime claim yet. | keep | status + huge-doc source/test/benchmark scan |
+| P0 | 0 | slate-automation | Correctness must gate perf and issue ledgers or the 7h run will optimize lies and make shallow checkmarks. | This plan, `vision`, `agent-start`, `slate-automation` rule | No runtime claim yet. | keep | status + huge-doc source/test/benchmark scan |
 | P1 | 1 | slate-patch / tdd | Staged and auto huge-doc modes lacked route-level generic editing proof before perf. | `.tmp/slate-v2/playwright/integration/examples/huge-document.test.ts`; focused + full Playwright commands below. | Staged middle-block typing, keyboard undo, Enter split, caret visibility; auto partial-DOM select-all paste/undo bounded DOM. | keep | perf baseline |
 | P2 | 1 | slate-browser | Partial-DOM route proof needed a full-model block-text oracle and partial-DOM-aware selection/paste helper behavior. | `.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts`, `.tmp/slate-v2/packages/slate-react/src/editable/browser-handle.ts`, focused Vitest/build/typecheck. | `editor.get.modelBlockTexts()` avoids rendered-DOM false proof; partial-DOM-backed select-all/paste route proof passed. | keep | benchmark hygiene |
 | P3 | 1 | slate-automation | Desktop engine breadth should be checked before perf. | Firefox/WebKit huge-doc Playwright command below. | 20 passed, 10 explicit skips across Firefox/WebKit. | keep | perf target hygiene |

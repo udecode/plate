@@ -100,7 +100,7 @@ Constraints:
 
 Boundaries:
 - Source of truth: live `.tmp/slate-v2` source/tests/benchmarks for behavior;
-  `docs/slate-v2/agent-start.md`, `slate-north-star`, and completed active
+  `docs/slate-v2/agent-start.md`, `vision`, and completed active
   plans for current backlog routing.
 - Allowed edit scope: `.tmp/slate-v2` runtime/tests/benchmarks/docs/examples
   when a proof names an owner; parent `docs/plans/**` for this active ledger;
@@ -122,7 +122,7 @@ Blocked condition:
   verified, reverted, quarantined, or deferred; when the next safe move is an
   unsafe staged/full-DOM architecture choice requiring `slate-plan`; when a
   raw-device claim requires missing Appium/device artifacts; when a user taste
-  decision is missing from `slate-north-star` and no safe alternate owner
+  decision is missing from `vision` and no safe alternate owner
   remains; or when the same real blocker repeats after the right owner is tried.
 - Do not block while a safe alternate checkpoint remains runnable. In timed or
   batch mode, queue soft questions for final handoff.
@@ -164,7 +164,7 @@ Completion rule:
 Checkpoint supervisor:
 | Checkpoint | Owner | Status | Priority | Why it exists | Evidence / exit rule | Mutation decision |
 |------------|-------|--------|----------|---------------|----------------------|-------------------|
-| checkpoint-zero | slate-automation | complete | P0 | Copy prompt requirements and read north-star before implementation. | Requirement rows complete; `slate-north-star`, `agent-start`, and completed backlog plans read. | updated |
+| checkpoint-zero | slate-automation | complete | P0 | Copy prompt requirements and read north-star before implementation. | Requirement rows complete; `vision`, `agent-start`, and completed backlog plans read. | updated |
 | current-tree-drift-proof | slate-ar-stabilize / slate-patch | complete | P0 | Verify recent staged huge-doc runtime changes are still true in the current tree before new work. | `slate-react` focused Vitest passed 119 tests; managed Playwright current build passed 4 huge-doc rows. | keep |
 | status | slate-automation | complete | P0 | Read active plan, latest prompt, source status, and current evidence. | Completed broad backlog and staged huge-doc plans read; optional owners identified. | updated |
 | gap-scan | slate-automation | complete | P0 | Identify the next safe owner after current-tree drift proof. | Gaps routed to staged/full-DOM diagnostic and cross-browser selection breadth. | updated |
@@ -207,7 +207,7 @@ Mutation rules:
 - Reprioritize after every loop. The next checkpoint is chosen from current
   evidence, not from the original row order.
 - The supervisor is not stuck on this template or the initial prompt plan. The
-  user's latest request, `slate-north-star`, and current source evidence outrank
+  user's latest request, `vision`, and current source evidence outrank
   stale plan rows.
 
 Start Gates:
@@ -215,7 +215,7 @@ Start Gates:
 |------|---------|----------|
 | Prompt requirements captured before work | yes | User gave `slate-automation 1 hour`; this plan records duration, timed-mode stop rules, no new surface, and final handoff sections. |
 | `slate-automation` source rule read | yes | User supplied the current skill body in the prompt; timed-mode and checkpoint rules applied. |
-| `slate-north-star` read as checkpoint zero | yes | Read `/Users/zbeyens/git/plate-2/.agents/skills/slate-north-star/SKILL.md`. |
+| `vision` read as checkpoint zero | yes | Read `/Users/zbeyens/git/plate-2/.agents/skills/vision/SKILL.md`. |
 | Active goal checked or created | yes | `get_goal` returned no active goal; `create_goal` created this timed continuation goal. |
 | Invocation mode and timebox recorded | yes | Timed 1h, loop-start budget from 2026-06-05T11:11:31Z. |
 | Dynamic checkpoint policy accepted | yes | Initial seed was split into current-tree drift proof and optional next owners from evidence. |
@@ -433,7 +433,7 @@ Error attempts:
 | None yet | 0 | | |
 
 Verification evidence:
-- Read `/Users/zbeyens/git/plate-2/.agents/skills/slate-north-star/SKILL.md`.
+- Read `/Users/zbeyens/git/plate-2/.agents/skills/vision/SKILL.md`.
 - Read `/Users/zbeyens/git/plate-2/docs/slate-v2/agent-start.md`.
 - Read `/Users/zbeyens/git/plate-2/docs/plans/2026-06-05-slate-v2-full-confidence-automation-backlog.md`.
 - Read `/Users/zbeyens/git/plate-2/docs/plans/2026-06-05-staged-huge-document-selection-delete-stability.md`.

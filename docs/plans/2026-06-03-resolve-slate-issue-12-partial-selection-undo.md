@@ -90,7 +90,7 @@ Start Gates:
 | Gate | Applies | Evidence |
 |------|---------|----------|
 | Prompt requirements captured before work | yes | Explicit scope, non-goals, proof surface, issue-comment/close rules, and final handoff constraints are copied into this plan before implementation. |
-| Skill analysis before edits | yes | Read `slate-automation`, `resolve-slate-issue`, `autogoal`, and `slate-north-star`. |
+| Skill analysis before edits | yes | Read `slate-automation`, `resolve-slate-issue`, `autogoal`, and `vision`. |
 | Active goal checked or created | yes | `create_goal` started objective for issue #12 with this plan path. |
 | Source of truth read before edits | yes | `gh issue view https://github.com/udecode/slate/issues/12 -R udecode/slate --comments --json number,title,body,comments,labels,state,url`. |
 | Tracker comments and attachments read | yes | Issue body/comments read; screenshots downloaded to `/tmp/slate-issue-12` and inspected. |

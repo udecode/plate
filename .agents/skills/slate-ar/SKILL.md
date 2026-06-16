@@ -1,6 +1,6 @@
 ---
-description: Wrap Codex Autoresearch for Slate v2 measured loops. Delegates generic packet/dashboard/finalization mechanics to codex-autoresearch while enforcing `.tmp/slate-v2`, Slate correctness routing, target registry context, and short operator modes.
-argument-hint: '[continue | status | finalize preview | research <topic> | quality gap | measured Slate v2 target]'
+description: Slate v2 Codex Autoresearch wrapper. Owns Slate-specific AR defaults, status, gate, quality, recipe, stabilize, perf, perfect, finalize, and ship modes, including target-backed performance policy.
+argument-hint: '[status | continue | next | gate <cmd/surface> | stabilize <surface> | quality <slug> | recipe <id> | perf <target/surface> | finalize preview | ship | perfect <surface>]'
 disable-model-invocation: true
 name: slate-ar
 metadata:
@@ -12,133 +12,120 @@ metadata:
 
 Handle $ARGUMENTS.
 
-Use this as the Slate v2 wrapper around `codex-autoresearch:codex-autoresearch`.
-It is not the perf lane. `slate-ar` owns Slate-specific defaults for any measured
-Autoresearch loop: target cwd, session files, dashboard/status/finalization
-entrypoints, correctness routing, and handoff boundaries.
+Use this as the single Slate v2 wrapper around
+`codex-autoresearch:codex-autoresearch`.
 
-Performance optimization lives in `slate-ar-perf`.
+`slate-ar` owns:
+
+- Slate v2 cwd and session defaults;
+- read-only status/dashboard/finalization preview;
+- existing gate repetition;
+- accepted quality-gap execution;
+- recipe/setup-plan selection;
+- behavior stabilization routing;
+- target-backed performance optimization policy;
+- broad surface improvement routing;
+- current-tree readiness handoff.
 
 ## Use When
 
 - The user invokes `slate-ar`.
-- The user invokes a mini-skill shortcut: `slate-ar-next`,
-  `slate-ar-perfect`, `slate-ar-fast`, `slate-ar-stabilize`, or
-  `slate-ar-ship`.
-- The user invokes an expert wrapper shortcut: `slate-ar-status` or
-  `slate-ar-finalize`.
-- The user invokes a focused wrapper: `slate-ar-quality`, `slate-ar-gate`, or
-  `slate-ar-recipe`.
+- The user asks for Slate v2 Autoresearch status, continuation, dashboard,
+  finalization preview, quality-gap execution, gate repetition, recipe
+  selection, behavior stabilization, performance optimization, broad
+  improvement, or readiness.
 - A Slate v2 task needs durable Autoresearch loop state, ASI logging,
-  keep/discard decisions, dashboard visibility, quality-gap research, or
+  keep/discard decisions, dashboard visibility, quality-gap execution, or
   packet/resume discipline.
 - A correctness repair or architecture plan is looping and needs measured
   hypothesis tracking after the direct owner has provided proof surfaces.
-- The user asks for Slate v2 Autoresearch status, continuation, dashboard,
-  finalization preview, or execution of an accepted quality-gap checklist.
 
 ## Do Not Use When
 
 - The bug is a direct correctness failure with no oracle. Use `slate-patch`.
 - The output is an architecture/API proposal for user review. Use `slate-plan`.
-- The request is specifically performance/max-speed/pagination/virtualization
-  optimization. Use `slate-ar-perf`.
+- The request is broad external discovery, web/GitHub, OSS research, or source
+  synthesis. Use `slate-research` first.
 - The target is Plate product code instead of raw Slate v2.
 
-## Relationship To Other Lanes
+## Boundary
 
-- `codex-autoresearch:codex-autoresearch`: owns generic setup, packets, logging,
-  dashboard, deep research, quality-gap, drift, finalization, and CLI mechanics.
-- `slate-ar`: wraps that engine for Slate v2 cwd, state, correctness routing,
-  and operator modes.
-- `slate-ar-next`: daily driver that reads status, picks one next owner, and
-  runs one safe step.
-- `slate-ar-perfect`: primary broad surface-improvement loop backed by
-  `autogoal`; it owns architecture/API/DX gaps, behavior stability, perf, and
-  final no-regression proof for a named surface.
-- `slate-ar-fast`: expert fastest-safe perf loop backed by `slate-ar-perf` and
-  no-regression checks; normal users should reach it through
-  `slate-ar-perfect` unless they already know the perf target.
-- `slate-ar-stabilize`: expert behavior-stability loop backed by
-  `slate-ar-gate`, `slate-patch`, and `tdd` when needed; normal users should
-  reach it through `slate-ar-perfect` unless they already know the failing
-  behavior surface.
-- `slate-ar-ship`: finalization, review, and commit/PR readiness path backed by
-  `slate-ar-finalize` and `autoreview`.
-- `slate-research`: discovers and synthesizes external prior art, OSS/GitHub
-  evidence, and source-backed leads under `docs/slate-v2/research/**`.
-- `slate-ar-quality`: executes accepted quality-gap checklists for Slate v2
-  API/DX/architecture/test coverage gaps through Codex Autoresearch.
-- `slate-ar-gate`: repeats and logs existing test/typecheck/browser/editor
-  behavior gates.
-- `slate-ar-recipe`: chooses or previews Codex Autoresearch recipes.
-- `slate-ar-perf`: adds Slate v2 performance target policy, benchmark registry,
-  exactness gates, and fastest-safe stop rules.
-- `slate-patch`: fixes correctness bugs and creates missing oracles.
-- `slate-plan`: decides public architecture/API shape.
+- `codex-autoresearch:codex-autoresearch`: generic setup, packets, logging,
+  dashboard, quality-gap, drift, finalization, and CLI mechanics.
+- `slate-ar`: Slate v2 cwd, state, correctness routing, natural modes,
+  benchmark-backed performance policy, and operator handoff.
+- `slate-research`: external discovery and source synthesis.
+- `slate-patch`: concrete bugs, missing oracles, and direct correctness fixes.
+- `slate-plan`: public API/runtime architecture decisions.
 
-Do not duplicate Codex Autoresearch mechanics here. Load
-`codex-autoresearch:codex-autoresearch` for command details, packet lifecycle,
-dashboard operation, ASI syntax, quality-gap internals, stale-packet recovery,
-or finalization rules.
-
-The installed TheGreenCedar plugin is the executable source of truth. Treat
-`../codex-autoresearch` as a legacy protocol/reference checkout only. Do not run
-commands from it, and do not copy its old Python artifact layout into Slate AR.
+Do not create more Slate AR shortcut skills. New recurring behavior belongs as
+a mode in this rule or a row in `docs/plans/templates/slate-ar.md`.
 
 ## Slate Defaults
 
 - Target cwd is `.tmp/slate-v2`.
-- `plate-2` is the control plane for package shortcuts and target registry
+- `plate-2` is the control plane for shortcuts, templates, and target registry
   commands. It does not prove Slate v2 runtime behavior.
 - Active loop truth lives in `.tmp/slate-v2/autoresearch.*` and
   `.tmp/slate-v2/autoresearch.research/**`.
 - `benchmarks/targets/slate-v2.json` is supporting context for target-backed
-  loops; perf-specific registry policy lives in `slate-ar-perf`.
+  loops; perf-specific registry policy lives in perf mode here.
 - Slate correctness beats local metric movement. A packet that breaks editor
   behavior is `checks_failed` or `discard`, not `keep`.
 - Do not run `slate-plan` pass schedules inside Autoresearch.
+
+## Goal And Template Contract
+
+Read-only modes do not create goals:
+
+- `status`
+- `dashboard`
+- `recipe list/show/recommend`
+- `finalize preview`
+- `finalize current-tree preview`
+
+Mutating or multi-step modes use `autogoal` with:
+
+```bash
+node .agents/skills/autogoal/scripts/create-goal-scratchpad.mjs \
+  --template slate-ar \
+  --title "<short slate ar title>"
+```
+
+Add packs only for touched surfaces:
+
+- `--with agent-native` when `.agents/**`, prompts, or skill rules change;
+- `--with docs` when durable docs are touched outside the plan itself;
+- `--with browser` when Browser proof is part of the claim;
+- `--with package-api` when package exports or public API are touched.
+
+The first checkpoint must copy every explicit prompt requirement. The generated
+plan is the runtime truth. Conditional rows for unused modes are marked
+`N/A: <reason>` rather than hidden in prose.
 
 ## Natural Modes
 
 Interpret short user text before picking commands:
 
-- `continue`, `resume`: continue the current Slate AR session only. Do not
-  initialize a new target unless the session is missing or stale and the target
-  is unambiguous.
-- `status`, `dashboard`, `where are we`: read-only status mode. Use
-  `slate-ar-status` behavior. Do not run packets or edit files.
-- `finalize`, `finalize preview`: finalization mode. Use `slate-ar-finalize`
-  preview behavior only.
-- `review branches`, `create review branches`, `run finalizer branches`: explicit
-  review-branch mode. Use `slate-ar-finalize` and require the user to clearly
-  approve branch creation in the same turn.
-- `research`, `web/GitHub`, `OSS`, `external prior art`, `scan repos`, `find
-  gaps`: route to `slate-research` first unless a concrete quality-gap
-  checklist already exists.
-- `quality gap`, `accepted checklist`, `gap-candidates`: use generic Codex
-  Autoresearch quality-gap flow through `slate-ar-quality`.
-- `gate`, `proof`, `repeat`, `full editor behavior`, `navigation`, `typing`:
-  route to `slate-ar-gate`.
-- `recipe`, `recipes`, `what loop`, `setup recipe`: route to
-  `slate-ar-recipe`.
-- `fast`, `fastest`, `max perf`, `pagination`, `virtualization`, `benchmark`:
-  route to `slate-ar-perf`.
-- `next`, `do next`, `pick best`: route to `slate-ar-next`.
-- `perfect <surface>`: route to `slate-ar-perfect`.
-- `absolute best`, `best architecture`, `best DX`, `no regressions`, or mixed
-  API/testing/perf quality requests: route to `slate-ar-perfect`.
-- `ship`, `reviewable`, `ready to commit`: route to `slate-ar-ship`.
-- `stabilize`, `regressions`, `native behavior`: route to
-  `slate-ar-stabilize`.
+| Input | Mode | Owner |
+|-------|------|-------|
+| `status`, `dashboard`, `where are we` | read-only status | `slate-ar` |
+| `continue`, `resume` | resume current session | `slate-ar` |
+| `next`, `do next`, `pick best` | one safe next step | `slate-ar` |
+| `gate`, `proof`, `repeat`, existing command | repeat existing gate | `slate-ar` |
+| `stabilize`, `regressions`, `native behavior` | behavior stabilization | `slate-ar` plus `slate-patch` when needed |
+| `quality gap`, `accepted checklist` | accepted quality-gap execution | `slate-ar` |
+| `recipe`, `recipes`, `what loop`, `setup recipe` | recipe/setup-plan | `slate-ar` |
+| `perfect <surface>`, `absolute best`, mixed API/testing/perf quality | broad surface loop | `slate-ar` |
+| `finalize`, `finalize preview`, `current-tree preview` | preview-only finalization | `slate-ar` |
+| `ship`, `reviewable`, `ready to commit` | readiness flow | `slate-ar` |
+| `fast`, `fastest`, `max perf`, `pagination`, `virtualization`, `benchmark` | perf lane | `slate-ar perf` |
+| `research`, `web/GitHub`, `OSS`, `scan repos`, `find gaps` | discovery | `slate-research` |
 
 If a mutating Slate AR loop is already running in another thread, default to
 read-only status unless the user explicitly says this thread owns writes.
 
 ## Command Surface
-
-Use the `slate-ar*` skills as the operator entrypoints. Do not invent package
-scripts for Slate AR; Plate only exposes benchmark target scripts.
 
 For exact shell execution, load `codex-autoresearch:codex-autoresearch` and use
 the installed TheGreenCedar CLI with `--cwd .tmp/slate-v2`:
@@ -149,11 +136,11 @@ test -n "$AR_CLI"
 node "$AR_CLI" --help --all
 ```
 
-If that path is missing, refresh the marketplace/plugin before touching Slate
-AR wrappers. If `../codex-autoresearch` differs, compare it for protocol ideas,
-not command paths.
+The installed plugin is executable truth. Treat `../codex-autoresearch` as a
+legacy protocol/reference checkout only. Do not run commands from it, and do
+not copy its old Python artifact layout into Slate AR.
 
-Current high-value CLI capabilities the wrappers should know about:
+High-value CLI capabilities:
 
 - read-only resume: `onboarding-packet`, `state --compact`, `state --report`,
   `recommend-next --compact --operator-checklist`, `doctor --explain`;
@@ -167,19 +154,9 @@ Current high-value CLI capabilities the wrappers should know about:
 - finalization/readout: `finalize-preview`, `finalize-current-tree`, `serve`,
   `export`.
 
-Before spending a heavy packet, prefer the cheapest current-state command that
-can answer the question. If the operator checklist blocks `next`, clear that
+Before spending a heavy packet, run the cheapest current-state command that can
+answer the question. If the operator checklist blocks `next`, clear that
 blocker first instead of brute-forcing another packet.
-
-Legacy `../codex-autoresearch` protocol lessons still apply as guardrails:
-
-- log every completed experiment before the next one starts;
-- after compaction or long gaps, re-read the active run state and operator
-  checklist before continuing;
-- after repeated discards or plateau, refine, pivot, start a new segment, or
-  fan out lanes instead of near-neighbor tweaking;
-- do not ask the user mid-run after they approved an autonomous run unless a
-  real blocker or explicit stop condition is hit.
 
 For target-backed setup from the Plate control repo, use:
 
@@ -188,74 +165,393 @@ pnpm bench:targets:dry-run -- <target-id>
 node tooling/scripts/bench-targets.mjs autoresearch-init <target-id>
 ```
 
-## Start Or Resume
+## Status Mode
 
-1. Identify the exact Slate v2 surface and whether this is generic AR,
-   performance, correctness, or architecture work.
-2. Route before editing:
-   - correctness failure or missing oracle: `slate-patch`;
-   - existing proof/gate repeatability: `slate-ar-gate`;
-   - broad external discovery or source synthesis: `slate-research`;
-   - accepted quality-gap checklist execution: `slate-ar-quality`;
-   - recipe selection/setup-plan: `slate-ar-recipe`;
-   - performance optimization: `slate-ar-perf`;
-   - public API/runtime redesign: `slate-plan`;
-   - measured loop, quality gap, status, or finalization: continue here.
-3. Read existing `.tmp/slate-v2/autoresearch.*` session files when present.
-4. Use generic Codex Autoresearch for onboarding, recommendation, doctor,
-   dashboard, packet, log, stale-packet, segment, fanout, diagnostics, and
-   finalization mechanics.
-5. Keep Slate-specific routing in force after every packet:
-   - `keep` only when the measured target improves and Slate correctness checks
-     pass;
-   - `checks_failed` or `discard` when native selection, input ordering, IME,
-     copy, paste, undo, follow-up typing, focus, or browser behavior regresses;
-   - `slate-patch` when correctness fails without an existing oracle;
-   - `slate-plan` when the remaining win needs API/runtime redesign.
+Read `.tmp/slate-v2/autoresearch.*` state when present.
 
-## Quality-Gap Execution
+Run read-only commands:
 
-Use generic Codex Autoresearch quality-gap workflow for accepted checklists.
-Slate additions:
+```bash
+node "$AR_CLI" onboarding-packet --cwd .tmp/slate-v2 --compact
+node "$AR_CLI" state --cwd .tmp/slate-v2 --compact
+node "$AR_CLI" state --cwd .tmp/slate-v2 --report
+node "$AR_CLI" recommend-next --cwd .tmp/slate-v2 --compact --operator-checklist
+node "$AR_CLI" doctor --cwd .tmp/slate-v2 --explain
+```
 
-- keep AR session scratch under `.tmp/slate-v2/autoresearch.research/**`;
-- keep durable external research, ledgers, and source synthesis under
-  `docs/slate-v2/research/**` via `slate-research`;
-- turn accepted implementation gaps into Slate proof rows or target rows;
-- route test/behavior suite gaps with an existing oracle to `slate-ar-gate`;
-- route perf-specific gaps to `slate-ar-perf`;
-- route correctness gaps without an oracle to `slate-patch`;
-- route public API/DX architecture gaps to `slate-plan`.
+Start or restart `serve` only to provide a live dashboard URL. Use `export` only
+for a static snapshot. Do not treat an old exported HTML file as live truth.
 
-`quality_gap=0` closes the current accepted checklist only. It does not prove
-that no more Slate gaps exist.
+Do not run `next`, `log`, setup, benchmark packets, finalization, branch,
+commit, push, or cleanup in status mode.
 
-## Finalization Mode
+## Next Mode
 
-Use generic Codex Autoresearch finalization flow. Slate defaults:
+Default behavior:
 
-- run Codex Autoresearch `finalize-preview --cwd .tmp/slate-v2` first;
-- default finalization is preview-only. It may generate/read finalization plan
-  JSON, but must not execute `finalize-autoresearch.mjs <plan>` or create
-  `autoresearch-review/*` branches unless the user explicitly asks to create
-  review branches;
-- exclude `autoresearch.*`, `autoresearch.research/**`, dashboard exports, and
-  finalization scratch files unless the user asks to review session artifacts;
-- use Codex Autoresearch `finalize-current-tree --cwd .tmp/slate-v2` only as a
-  readiness preview when the current tree is the review unit because kept
-  commits were later corrected, bundled, or reverted;
-- branch creation, cleanup, commit, push, and PR work require explicit user
-  approval. Short confirmations like `go`, `next`, `ok`, or `continue` after a
-  normal ship/perfect flow do not approve review-branch creation.
+1. run status mode;
+2. identify the strongest current blocker or opportunity;
+3. if the operator checklist blocks packets, clear or report that blocker;
+4. choose exactly one owner;
+5. run one safe step only;
+6. report metric/check result and the next owner.
+
+Routing:
+
+- safety blocker or finalization friction: report it unless the local safe fix
+  is obvious;
+- known correctness failure: `slate-patch`;
+- existing behavior proof needs repeatability: `slate-ar gate`;
+- missing behavior oracle: `slate-patch` or `tdd`;
+- clear perf target: `slate-ar perf <target>`;
+- broad API/DX/architecture/test gap with unknown owner: `slate-research`;
+- accepted quality-gap checklist: `slate-ar quality`;
+- broad surface improvement: `slate-ar perfect <surface>`;
+- ambiguous loop shape: `slate-ar recipe`;
+- review/readiness path: `slate-ar ship`.
+
+If the chosen path becomes multi-step, stop after the first meaningful packet
+unless the user asked for a durable loop.
+
+## Gate Mode
+
+Use gate mode when the question is: "Can this existing proof surface pass
+repeatably, and what does the failure evidence say?"
+
+It is valid for navigation, typing, selection, clipboard, IME, focus,
+undo/redo, browser routes, package tests, `bun check`, and focused Playwright
+suites. The command must already exist or be obvious.
+
+Boundary:
+
+- gate mode owns repeated execution, duration metrics, pass/fail logging,
+  crashes, flakes, dashboard state, and ASI;
+- `testing`, `tdd`, `editor-test-harvester`, and `slate-patch` own missing
+  oracle design;
+- `slate-patch` owns real correctness failures;
+- `slate-plan` owns API/runtime redesign;
+- perf mode owns speed optimization after correctness is stable.
+
+Do not spin a failing gate forever. If a valid gate fails twice with the same
+behavioral signal, route to `slate-patch`.
+
+For an explicit gate command:
+
+```bash
+node "$AR_CLI" setup-plan --cwd .tmp/slate-v2 --name "<gate-name>" --metric-name "seconds" --benchmark-command "<gate command>" --benchmark-prints-metric false --checks-command "<gate command>"
+node "$AR_CLI" checks-inspect --cwd .tmp/slate-v2 --command "<gate command>"
+node "$AR_CLI" doctor --cwd .tmp/slate-v2 --explain
+node "$AR_CLI" serve --cwd .tmp/slate-v2
+node "$AR_CLI" next --cwd .tmp/slate-v2
+node "$AR_CLI" log --cwd .tmp/slate-v2 --from-last --status measure --description "<gate result>"
+```
+
+For full editor behavior proof, prefer one focused command first, then broaden:
+
+```bash
+cd .tmp/slate-v2
+bun check
+bun check:full
+PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun run playwright playwright/integration/examples/<suite>.test.ts --project=chromium
+```
+
+## Stabilize Mode
+
+Use this when the user wants editor behavior regressions gone: selection,
+typing, copy/paste, IME, focus, undo/redo, navigation, browser route behavior,
+or native interaction parity.
+
+For one exact bug, route directly to `slate-patch`.
+
+If no behavior surface is named, infer the riskiest current surface from status,
+recent failing gates, and current changed code. If that cannot be inferred,
+recommend one concrete gate command.
+
+Flow:
+
+1. run status mode;
+2. run the narrowest existing behavior gate through gate mode;
+3. if the same valid gate fails twice, stop gating and fix with `slate-patch`;
+4. if no oracle exists, create it with `slate-patch` or `tdd`;
+5. rerun the focused gate after each fix;
+6. broaden only after focused proof is green.
+
+Do not route to perf until stabilization is green.
+
+## Quality Mode
+
+Use this when Slate already has an accepted quality-gap checklist, slug, or
+concrete gap set to execute through Codex Autoresearch.
+
+For broad discovery, web/GitHub/OSS scans, external prior art, source synthesis,
+and durable research ledgers, use `slate-research` first.
+
+Commands:
+
+```bash
+node "$AR_CLI" research-setup --cwd .tmp/slate-v2 --slug "<slug>" --goal "<goal>"
+node "$AR_CLI" quality-gap --cwd .tmp/slate-v2 --research-slug "<slug>" --list
+node "$AR_CLI" gap-candidates --cwd .tmp/slate-v2 --research-slug "<slug>"
+```
+
+Use `gap-candidates --apply` only after inspecting candidates and deciding the
+write scope is safe.
+
+If the accepted checklist is too broad for one serial path, use generic fanout
+before patching:
+
+```bash
+node "$AR_CLI" research-fanout --cwd .tmp/slate-v2 --dry-run
+node "$AR_CLI" lane-runner --cwd .tmp/slate-v2 --lane-id "<lane>" --mode read_only_scout --summary "<evidence>" --recommendation "<next measured packet>" --yes
+```
+
+Routing:
+
+- correctness gap with missing oracle: `slate-patch`;
+- existing test/behavior suite gap: `slate-ar gate`;
+- performance gap: `slate-ar perf`;
+- public API/runtime architecture gap: `slate-plan`;
+- generic measured loop gap: `slate-ar`.
+
+`quality_gap=0` closes the accepted checklist only. It does not mean discovery
+is permanently complete.
+
+## Recipe Mode
+
+Use this when the user asks what Autoresearch loop to run, or when a task is
+measured but not obviously performance-specific.
+
+Default to read-only `recipes recommend`, `recipes list`, `recipes show`, and
+`setup-plan`. Do not start packets unless the user explicitly asks to run the
+loop.
+
+Commands:
+
+```bash
+node "$AR_CLI" recipes list --cwd .tmp/slate-v2
+node "$AR_CLI" recipes recommend --cwd .tmp/slate-v2
+node "$AR_CLI" recipes show <recipe-id> --cwd .tmp/slate-v2
+node "$AR_CLI" setup-plan --cwd .tmp/slate-v2 --recipe <recipe-id>
+node "$AR_CLI" doctor --cwd .tmp/slate-v2 --check-benchmark --explain
+```
+
+Built-in recipe routing:
+
+- `node-test-runtime` / `vitest-runtime`: often gate mode;
+- `typescript-compile-time`: typecheck/runtime graph pressure;
+- `bundle-size`: package or site bundle footprint;
+- `memory-usage`: workload memory smoke after replacing placeholders;
+- `command-latency`: custom command duration after replacing placeholders;
+- `quality-gap`: quality mode;
+- `custom`: last resort.
+
+If recipe output is customized, run `benchmark-lint` before any packet.
+
+## Perf Mode
+
+Use perf mode for Slate v2 performance work where "try another optimization"
+needs a measured loop, not another plan essay.
+
+Use when the user says `fast`, `fastest`, `max perf`, `pagination`,
+`virtualization`, `benchmark`, or asks to make a Slate v2 surface faster.
+Pagination remains explicit opt-in in `slate-auto`; inside `slate-ar`, it is a
+valid perf signal only when the user named it.
+
+Do not run perf mode while correctness is unknown. If selection, input ordering,
+IME, copy, paste, undo, focus, cursor placement, follow-up typing, or browser
+behavior is failing, route to `slate-patch`, `tdd`, or gate mode first.
+
+Natural modes:
+
+- `fast`, `fastest`, `max perf`, `make it fastest`: fastest-safe mode. Pick or
+  resume the matching target and keep running packets until target parity,
+  plateau, correctness blocker, architecture blocker, unsafe finalization
+  boundary, or user interruption.
+- `pagination`, `virtualization`: use the pagination default contract unless
+  the user gives a sharper target.
+- `continue`, `resume`, `status`, `dashboard`, `finalize`: run the matching
+  operator mode first, then apply perf policy to any next packet.
+
+Plateau means three consecutive valid correctness-green packets improve the
+primary metric by less than 5% and no safe P0/P1 profiler hypothesis remains.
+Do not stop at the first win.
+
+Use `benchmarks/targets/slate-v2.json` as the migration spine when it exists.
+The clean split is: target registry owns the decision contract, benchmark
+scripts own runtime workload, Autoresearch owns active optimization state, and
+target reports/history own historical status.
+
+Default path:
+
+1. list targets with `pnpm bench:targets:list`;
+2. check registry health with `pnpm bench:targets:check`;
+3. generate or check target reports with `pnpm bench:targets:report`;
+4. dry-run the target with `pnpm bench:targets:dry-run -- <target-id>`;
+5. initialize `.tmp/slate-v2/autoresearch.*` only when needed:
+   `node tooling/scripts/bench-targets.mjs autoresearch-init <target-id>`;
+6. use Slate AR / Codex Autoresearch for setup inspection, benchmark lint,
+   checks inspection, packets, stale-run detection, ASI, dashboard,
+   keep/discard decisions, and final evidence.
+
+Before a heavy perf packet, run the cheapest diagnostic that can falsify it:
+`benchmark-inspect`, `benchmark-lint`, `checks-inspect`,
+`partial-results --from-last`, or
+`recommend-next --compact --operator-checklist`.
+
+A specific target id is enough instruction. If `<target-id>` is missing from
+`benchmarks/targets/slate-v2.json` and the name is specific enough to infer the
+surface, create the first-class target contract in the same pass. Reuse or
+extend the nearest benchmark script, print `METRIC` lines from the start, add a
+correctness command, compare against `../slate` when legacy parity is the
+claim, then run `pnpm bench:targets:check` and dry-run the target before AR
+init.
+
+If the target name is ambiguous, stop and recommend one or two concrete target
+ids. Do not create another wrapper skill for a missing benchmark target.
+
+Performance wins do not count when the editor is less correct. Before
+pagination, virtualization, hidden DOM, model-backed selection, or staged
+render optimization:
+
+- identify the exact correctness oracle or browser proof command;
+- if no oracle exists, add it first with `slate-patch` or `tdd`;
+- classify each native behavior as preserved, intentionally degraded, or out
+  of scope before using it as a benchmark cohort;
+- keep cold-path estimates as scaffold hints only, not authoritative layout or
+  selection truth;
+- if a packet improves speed but breaks editor behavior, log `checks_failed` or
+  `discard`, never `keep`.
+
+Pagination or page-level virtualization default route:
+
+```txt
+http://localhost:3100/examples/pagination?page_layout=single&strategy=virtualized&rows=800
+```
+
+Required cohorts: `rows=8` staged/virtualized, table-large `rows=500`
+staged/virtualized, stress `rows=800` or `rows=1000` virtualized, and a table
+spanning at least 10 pages.
+
+Primary metrics: fast typing burst p95 or total interaction latency, initial
+interactive time, strategy switch latency, and fast scroll recovery time.
+Secondary metrics: dropped/reordered characters, DOM nodes, mounted pages,
+overscan, React commits/render count, and cheap heap estimate.
+
+Correctness checks: no skipped/reordered characters, insert break preserves
+following typing, margin clicks choose expected line endpoints, double click
+selects a word, drag autoscroll works near top/bottom, visible page selection
+works, and native copy/paste/select-all behavior is preserved or explicitly
+classified.
+
+For `react-huge-document-select-all`, require 5k blocks against legacy Slate,
+the main Slate v2 huge-document React surface, staged/DOM-present or
+virtualized product paths, and native keyboard `Mod+A`. Track select-all p95,
+worst p95 ratio versus legacy, failure count, DOM count after select-all,
+React commits when cheap, selection export/import time when visible, and copy
+latency when cheap.
+
+Report benchmark command, primary metric, baseline/latest/best values, kept,
+discarded, crashed, and checks-failed packets, correctness checks used, changed
+files, dashboard URL when served, and next recommended packet or blocker.
+
+## Perfect Mode
+
+Use this when the user wants a Slate v2 surface made genuinely good, not one
+isolated packet.
+
+Use `autogoal` with `docs/plans/templates/slate-ar.md`. The goal must name:
+
+- surface;
+- measurable or auditable completion threshold;
+- architecture/API/DX acceptance rows when relevant;
+- behavior and perf gates;
+- boundaries;
+- blocked stop condition.
+
+Start with status, then choose owners in this order:
+
+1. `slate-research` for unknown current-state gaps, external prior art, OSS
+   evidence, or source synthesis;
+2. quality mode for accepted quality-gap checklist execution;
+3. `slate-plan` only when the remaining issue needs public API/runtime design;
+4. `slate-patch` for known bugs or missing behavior oracles;
+5. gate mode for existing editor behavior proof;
+6. perf mode for benchmark-backed perf targets;
+7. gate mode again for final broad no-regression proof.
+
+Do not accept a perf win while native behavior regresses. Faster broken editor
+behavior is not progress.
+
+Completion requires:
+
+- accepted architecture/API/DX gaps implemented, routed, or deferred with
+  evidence;
+- no known P0/P1 behavior regressions in scope;
+- relevant behavior gates green or explicitly N/A;
+- relevant perf targets promoted or plateaued with correctness green;
+- final broad no-regression proof green when editor behavior is touched;
+- goal plan completion check green.
+
+## Finalize Mode
+
+Default finalization is preview-only.
+
+Run:
+
+```bash
+node "$AR_CLI" state --cwd .tmp/slate-v2 --report
+node "$AR_CLI" finalize-preview --cwd .tmp/slate-v2
+```
+
+Use `finalize-current-tree` as a read-only readiness preview when the current
+tree is the intended review unit.
+
+Do not execute `finalize-autoresearch.mjs <plan>` or create
+`autoresearch-review/*` branches unless the user explicitly asks for review
+branches in the current turn.
+
+Plain `go`, `ok`, `continue`, `next`, `ship`, `finalize`, or `current-tree`
+means keep working on the source branch and report readiness. It does not
+approve branch creation.
+
+## Ship Mode
+
+Use this when the user wants Slate v2 AR work made reviewable or shippable.
+This is not a synonym for "commit everything" unless the user explicitly asks
+for a commit.
+
+Default path:
+
+1. run finalization preview;
+2. decide whether kept AR evidence or current-tree review is the honest unit;
+3. if current-tree is the honest unit and dirty state blocks finalization, run
+   the pre-commit review path instead of stopping at "dirty";
+4. report the recommended review unit;
+5. run proof gates when the user asked to ship, review, commit, or when dirty
+   current-tree code needs pre-commit confidence;
+6. run `autoreview` on the uncommitted current tree before any commit/PR when
+   meaningful code changed;
+7. pause with `READY TO COMMIT` only when proof/review is clean enough or
+   explicitly blocked with accepted residual risk;
+8. ask for commit approval in plain language.
+
+Plain ship mode may run non-mutating readiness work: finalization preview,
+current-tree preview, focused gates, and `autoreview`. It must not commit,
+branch, clean, push, or open a PR unless the user explicitly asks.
+
+Record timing for expensive readiness steps and repair avoidable slow paths
+before calling the flow ready.
 
 ## Handoff
 
 Report:
 
 - active cwd and session;
+- mode and surface;
 - measured target or quality-gap slug;
 - baseline/latest/best when available;
 - kept/discarded/crashed/checks-failed packet counts;
 - correctness checks used;
 - dashboard URL, if served;
+- gates, fixes, or readiness review status;
 - next recommended packet, route, or blocker.

@@ -178,7 +178,7 @@ Mutation rules:
 - Reprioritize after every loop. The next checkpoint is chosen from current
   evidence, not from the original row order.
 - The supervisor is not stuck on this template or the initial prompt plan. The
-  user's latest request, `slate-north-star`, and current source evidence outrank
+  user's latest request, `vision`, and current source evidence outrank
   stale plan rows.
 
 Start Gates:
@@ -186,7 +186,7 @@ Start Gates:
 |------|---------|----------|
 | Prompt requirements captured before work | yes | `[$slate-automation] to yjs research mode 8h`; rows above record scope, timing, stop rules, deliverables, proof, and non-goals. |
 | `slate-automation` source rule read | yes | `.agents/skills/slate-automation/SKILL.md` lines 1-983 and `.agents/rules/slate-automation.mdc` initial source-rule read completed. |
-| `slate-north-star` read as checkpoint zero | yes | `.agents/skills/slate-north-star/SKILL.md` lines 1-565 read before runtime work. |
+| `vision` read as checkpoint zero | yes | `.agents/skills/vision/SKILL.md` lines 1-565 read before runtime work. |
 | Active goal checked or created | yes | `get_goal` returned none; `create_goal` created active goal for this plan. |
 | Invocation mode and timebox recorded | yes | timed 8h mode; 2026-06-13T17:55:23+0800 to 2026-06-14T01:55:23+0800. |
 | Dynamic checkpoint policy accepted | yes | checkpoint supervisor and mutation rules retained; Yjs rows narrowed from template seed. |
@@ -488,7 +488,7 @@ Error attempts:
 Verification evidence:
 - `/Users/felixfeng/Desktop/repos/plate-copy`: `get_goal` returned no active goal; `create_goal` created active goal for `docs/plans/2026-06-13-yjs-research-mode-8h.md`.
 - `/Users/felixfeng/Desktop/repos/plate-copy`: `node .agents/skills/autogoal/scripts/create-goal-scratchpad.mjs --template slate-automation --title "yjs research mode 8h"` created this plan.
-- `/Users/felixfeng/Desktop/repos/plate-copy`: read `slate-automation`, `autogoal`, `slate-north-star`, `docs/slate-v2/agent-start.md`, and relevant benchmark/package owner files before runtime work.
+- `/Users/felixfeng/Desktop/repos/plate-copy`: read `slate-automation`, `autogoal`, `vision`, `docs/slate-v2/agent-start.md`, and relevant benchmark/package owner files before runtime work.
 - `/Users/felixfeng/Desktop/repos/slate-v2`: `bun test ./packages/slate-yjs/test` passed: 213 pass, 0 fail, 26 files, 730ms.
 - `/Users/felixfeng/Desktop/repos/slate-v2`: `bun --filter ./packages/slate-yjs typecheck` passed: exit 0.
 - `/Users/felixfeng/Desktop/repos/slate-v2`: `bun run bench:core:yjs-collaboration:local` passed: correctness failures 0; worst p95 158.75 ms; worst work p95 145 ms.

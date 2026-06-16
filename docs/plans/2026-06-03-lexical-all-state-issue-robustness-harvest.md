@@ -124,7 +124,7 @@ Completion rule:
 Start Gates:
 | Gate | Applies | Evidence |
 |------|---------|----------|
-| Skill analysis before edits | yes | Read `slate-automation`, `editor-test-harvester`, `clawsweeper`, and `slate-north-star` generated skill instructions before artifact edits. |
+| Skill analysis before edits | yes | Read `slate-automation`, `editor-test-harvester`, `clawsweeper`, and `vision` generated skill instructions before artifact edits. |
 | Active goal checked or created | yes | Active goal: harvest Lexical all-state issues into `.tmp/editor-issue-harvester/lexical` with this plan. |
 | Source of truth read before edits | yes | Read `../lexical` license, existing `docs/editor-test-harvester/lexical/*`, and current `.tmp/slate-v2` coverage anchors before matrix rows. |
 

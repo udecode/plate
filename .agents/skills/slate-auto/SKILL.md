@@ -17,10 +17,9 @@ Slate v2 surface until it is actually good: correct, fast, visually stable,
 well-tested, architecturally clean, and ready for review.
 
 This is a supervisor skill. It does not replace `slate-patch`, `slate-plan`,
-`slate-ar-fast`, `slate-ar-stabilize`, `slate-ar-gate`, or `slate-ar-ship`
-unless evidence proves the skill topology itself is wrong. It routes them,
-repairs missing proof/metrics/skills, reshapes the Slate skill stack when
-needed, and keeps the loop honest.
+or `slate-ar` unless evidence proves the skill topology itself is wrong. It
+routes them, repairs missing proof/metrics/skills, reshapes the Slate skill
+stack when needed, and keeps the loop honest.
 
 ## Core Take
 
@@ -51,8 +50,8 @@ explicitly deferred, decisions are consolidated, and ship readiness is clean.
   missing tests, API cleanup, and workflow repair.
 - The user wants "absolute best" implementation quality without picking every
   sub-skill.
-- Repeated manual calls to `slate-ar-fast`, `slate-ar-stabilize`, or
-  `slate-patch` are producing reactive thrash.
+- Repeated manual calls to Slate AR modes or `slate-patch` are producing
+  reactive thrash.
 - The user wants external editor issue/test corpora, such as Lexical open and
   closed issues, mined for Slate v2 robustness gaps without hand-routing every
   cluster.
@@ -63,8 +62,12 @@ explicitly deferred, decisions are consolidated, and ship readiness is clean.
 
 - The user asks one narrow bug fix: use `slate-patch`.
 - The user asks one architecture/API plan for review: use `slate-plan`.
-- The user asks one benchmark target: use `slate-ar-perf` or `slate-ar-fast`.
-- The user asks whether existing gates pass: use `slate-ar-gate`.
+- The user asks one benchmark target: use `slate-ar perf <target>`.
+- The user asks whether existing gates pass: use `slate-ar gate`.
+- The user asks to maintain public GitHub issues/PRs/security queue, run a repo
+  heartbeat, classify agent-ready queue work, or route across Plate + Slate:
+  use `maintainer`. `slate-auto` is the internal Slate quality supervisor, not
+  the public maintainer control plane.
 - The target is not raw Slate v2 / `.tmp/slate-v2`, unless the prompt is an
   external editor issue/test harvest whose output is explicitly for improving
   Slate v2 behavior, tests, or API robustness.
@@ -125,17 +128,17 @@ For timed and batch-loop modes:
   needed to close or quarantine the current packet;
 - do not hand off before the minimum runtime has elapsed because the obvious
   backlog looks empty. Enter supervision mode and create the next checkpoint
-  from `slate-north-star`, the active plan, current repo evidence, Browser
+  from `vision`, the active plan, current repo evidence, Browser
   proof gaps, benchmark gaps, issue/test harvest gaps, docs/API mismatches, and
   workflow slowdowns;
 - do not hand off early just because the first packet closed;
 - do not turn `Needs your attention`, `deferred-with-owner`, or "route to
-  slate-plan/slate-ar-perf" into a pause while the timebox is still open and a
+  slate-plan/slate-ar perf" into a pause while the timebox is still open and a
   reversible experiment, research packet, benchmark packet, or architecture
   spike can be run safely;
 - if a lane is risky but important, use the supervisor's freedom: start a
-  controlled scratchpad experiment, preferably through `slate-ar`,
-  `slate-ar-perf`, `slate-ar-quality`, or `slate-plan` as the owner demands,
+  controlled scratchpad experiment, preferably through `slate-ar` perf mode or
+  `slate-plan` as the owner demands,
   record the hypothesis and proof gate before changing code, then keep, revert,
   or quarantine the packet from evidence;
 - risky architecture/perf packets must be reversible. If code changes are made,
@@ -176,7 +179,7 @@ The plan must record:
 - API/DX cleanup authority;
 - benchmark/test/skill repair authority;
 - docs consolidation target;
-- north-star profile read/update state;
+- root `VISION.md` read/update state;
 - taste coverage gaps and capture state;
 - packet ledger location;
 - changed-list location;
@@ -216,7 +219,7 @@ evidence. The supervisor has full authority to add, update, split, merge,
 retire, remove, reprioritize, or reopen checkpoints. Do not keep stale rows
 alive because they were in the initial prompt or template. Do not stay stuck on
 the original plan when a new higher-value owner is proven by code, tests,
-Browser proof, benchmark evidence, or `slate-north-star`.
+Browser proof, benchmark evidence, or `vision`.
 
 ## Autogoal Checkpoint Model
 
@@ -225,13 +228,13 @@ Do not run an overnight task as one huge assistant turn.
 Split long work into checkpoints that fit one high-quality prompt:
 
 - **Taste checkpoint:** read
-  the `slate-north-star` skill as checkpoint zero, then read the active goal
-  plan and latest user request. If the north-star profile is missing or stale
+  the `vision` skill as checkpoint zero, then read the active goal
+  plan and latest user request. If root `VISION.md` is missing or stale
   for a reusable decision, consolidate it before patching.
 - **Taste-capture checkpoint:** stop implementation when the next safe move
-  depends on user taste that `slate-north-star` does not cover. Record the
+  depends on user taste that `vision` does not cover. Record the
   taste gap in the plan, ask at most one terse checkpoint question only when
-  the answer is genuinely missing, then patch `slate-north-star` from the
+  the answer is genuinely missing, then patch root `VISION.md` from the
   answer before resuming. In timed or batch-loop mode, queue the question when
   safe alternate work remains.
 - **Status checkpoint:** read current goal, plan, AR status, dirty evidence, and
@@ -292,7 +295,7 @@ Split long work into checkpoints that fit one high-quality prompt:
 - **Stopping-checkpoint queue:** in timed or batch-loop mode, collect soft
   blockers and user-answer checkpoints for final handoff instead of stopping
   immediately when safe alternate work remains.
-- **Ship checkpoint:** run `slate-ar-ship` readiness and pause only for
+- **Ship checkpoint:** run `slate-ar ship` readiness and pause only for
   explicit commit/PR authority.
 
 Each checkpoint must end with:
@@ -351,7 +354,7 @@ next useful work from the user's taste profile and evidence already gathered.
 
 Supervision mode loop:
 
-1. reread `slate-north-star`, the active goal plan, and the latest handoff rows;
+1. reread `vision`, the active goal plan, and the latest handoff rows;
 2. scan for stale claims, weak proofs, missing browser/selection oracles,
    benchmark honesty gaps, API/docs mismatch, command pitfalls, skill drift,
    issue-harvest gaps, sibling-editor comparison opportunities,
@@ -396,7 +399,7 @@ For risky performance or architecture lanes inside a timed run:
    harness, or quality-gap research;
 3. use `slate-ar` for measured loop state when the work needs packet history,
    ASI logging, dashboard/status, or quality-gap research;
-4. use `slate-ar-perf` for target-backed performance experiments and
+4. use `slate-ar` perf mode for target-backed performance experiments and
    `slate-plan` only when an API/runtime decision must be made explicit before
    implementation;
 5. compare baseline/latest/best and record why the packet is `keep`, `revert`,
@@ -494,7 +497,7 @@ Log a workflow-slowdown row when:
 - a specialist skill spends time on avoidable setup, broad scans, repeated
   finalization, redundant gates, or noisy output;
 - a command has no narrow mode and blocks timed/batch progress;
-- `slate-ar-ship`, finalization, `autoreview`, browser proof, or benchmark
+- `slate-ar ship`, finalization, `autoreview`, browser proof, or benchmark
   setup dominates the loop without producing proportional evidence;
 - compaction/output budget pressure is caused by command shape rather than the
   real task.
@@ -513,9 +516,8 @@ Each row must include:
 Repair repeated or avoidable workflow slowdowns:
 
 - slow specialist routing -> patch the owning `.agents/rules/slate-*.mdc`;
-- slow finalization/readiness -> patch `slate-ar-ship` or
-  `slate-ar-finalize`;
-- slow proof gate -> add a focused gate or route through `slate-ar-gate`;
+- slow finalization/readiness -> patch `slate-ar`;
+- slow proof gate -> add a focused gate or route through `slate-ar gate`;
 - slow browser repetition -> promote reusable proof into `slate-browser`;
 - slow benchmark setup -> fix benchmark target/script ergonomics;
 - slow output -> narrow command output or write artifacts instead of streaming.
@@ -624,18 +626,32 @@ Rules:
   example `bun --filter ./packages/slate-react build`. The managed Playwright
   wrapper builds `slate-browser` and the Next site, but stale package `dist`
   can still make the browser prove old runtime behavior;
+- when running packed/external-consumer package smoke, start from the live
+  export/type contracts such as
+  `packages/slate/test/public-package-import-smoke.test.ts` and
+  `packages/slate/test/public-package-types-smoke.ts`. Do not invent public
+  function call examples from memory. Prefer type-importing exported names and
+  doing only tiny value references unless the package docs/source were just
+  inspected for that exact signature;
+- split external consumer type smoke by claim width. App-facing Slate packages
+  should compile with strict Slate declaration checking. `slate-browser`
+  Playwright subpaths may need a separate config with third-party lib checking
+  skipped so Playwright/Node ambient declarations do not hide the Slate package
+  result. Record the split as proof scope, not as a product exemption;
 - use `bun test ./path` only with repo-relative Bun test paths from
   `.tmp/slate-v2`, or with package-local paths after recording the package cwd;
 - if root `bun test ./packages/.../<file>.test.ts` says the path filter did not
-  match and suggests adding more `./` prefixes, do not chase prefixes. Switch to
-  the owning package cwd and run the local wrapper path, for example
+  match and suggests adding more `./` prefixes, do not chase prefixes. Either
+  add `--path-ignore-patterns ''` from `.tmp/slate-v2` or switch to the owning
+  package cwd and run the local wrapper path, for example
   `cd packages/slate-dom && bun test ./test/bridge.test.ts --test-name-pattern
   "<pattern>"`;
-- do not use package test directories as focused Bun filters in Slate v2. The
-  repo `bunfig.toml` ignores `*.test.*`, and several contract owners use plain
-  `.ts` file names. Prefer the package script or exact contract files, for
-  example `bun test ./packages/slate-dom/test/bridge.ts
-  ./packages/slate-dom/test/dom-coverage.ts`;
+- do not claim a root package test directory proved anything until its output
+  reports the expected file and pass counts. The repo `bunfig.toml` ignores
+  `*.test.*` by default, so root aggregate package tests must use
+  `--path-ignore-patterns ''` when they intentionally cover `.test.*` contracts.
+  Package-local scripts such as `bun --filter slate-browser test:core` are also
+  valid because they run under the package owner instead of the root ignore;
 - for package Vitest contracts, target the actual `*.test.*` entrypoint. Some
   contract bodies live in imported siblings such as `surface-contract.tsx`;
   running the sibling path directly fails the Vitest include filter and proves
@@ -657,9 +673,26 @@ Rules:
   backticks around command names, quote the pattern with single quotes or use
   `rg -F`. Do not put a backtick-containing `rg` pattern inside double quotes;
   the shell will execute it and create a fake command failure;
+- default to single-quoted `rg` patterns in Slate automation. Use double quotes
+  only when shell interpolation is intentionally required and the pattern has no
+  markdown/code/backtick/metacharacter content;
+- before executing any `rg` command whose pattern is inside double quotes, do a
+  literal shell-expansion check: if the pattern contains backticks, `$`, `()`,
+  `|`, `<`, `>`, or markdown inline-code text, stop and rewrite it to
+  single quotes, `rg -F`, or one literal per command. A failed command followed
+  by a broad noisy rerun is a supervisor bug, not harmless friction;
 - when searching docs for inline-code terms, search each literal with
   `rg -F 'literal' <paths>` or a single-quoted regex. Do not combine
   backtick-wrapped alternatives inside one double-quoted pattern;
+- do not write one-line `rg` regexes that mix shell quote types, such as a
+  single-quoted command containing embedded single-quoted alternatives or a
+  double-quoted command containing markdown/backtick terms. Split the scan into
+  separate `rg -F` literals or use a tiny Node script with an array of patterns;
+- for stale-doc wording scans copied from markdown, first inspect the pattern
+  for backticks, `$`, `()`, `|`, `<`, `>`, and command substitutions. If any
+  are present, use single quotes, `rg -F`, or split the scan into multiple
+  fixed-string commands. A double-quoted `rg` pattern containing markdown
+  backticks is always a workflow bug, even when the scan is "only quick";
 - for API/docs/current-state audits, do not stream broad `rg -n` matches across
   `docs site packages` into chat. First run `rg -l` or `rg --count-matches`
   with generated trees excluded, then inspect only the small suspect files with
@@ -753,7 +786,7 @@ Rules:
 
 ## Taste Coverage Stop
 
-`slate-north-star` is the supervisor's taste profile. If the loop reaches a
+`vision` is the supervisor's taste profile. If the loop reaches a
 stopping checkpoint, user-answer checkpoint, or architecture decision and the
 needed preference is not covered there, stop implementation before more product
 or runtime work.
@@ -764,13 +797,13 @@ Record a taste-gap row in the active plan:
 - missing preference or decision pressure;
 - exact user answer when available;
 - reusable rule candidate;
-- owner: `slate-north-star`, another `.agents/rules/**` file, or non-reusable
+- owner: `vision`, another `.agents/rules/**` file, or non-reusable
   run note;
 - capture decision: `recorded`, `not reusable`, or `needs one answer`.
 
 When the user answers a stopping checkpoint and the answer is reusable, first
-patch `.agents/rules/slate-north-star.mdc`, run `pnpm install`, verify the
-generated skill mirror with `rg`, and then resume the automation. If the answer
+patch root `VISION.md`, verify the `vision` skill still routes there, and then
+resume the automation. If the answer
 is run-specific, record it in the active plan and mark the taste gap
 `not reusable`.
 
@@ -818,7 +851,7 @@ Each queued stopping checkpoint needs:
 
 Final handoff must group queued questions so the user can answer them in one
 reply. After the user answers, update the plan, capture reusable taste in
-`slate-north-star`, and resume the highest-value queued owner first.
+`vision`, and resume the highest-value queued owner first.
 
 ## Changed List Checkpoint
 
@@ -958,7 +991,7 @@ Then repair the owning layer:
 - stale docs -> decision consolidation;
 - bad API -> `slate-plan` or accepted implementation;
 - missing taste coverage -> stop, capture the answer, and patch
-  `slate-north-star` before resuming when the answer is reusable;
+  `vision` before resuming when the answer is reusable;
 - wrong/missing/overlapping skill -> `.agents/rules/**` repair;
 - workflow slowdown -> log the slow owner, then patch the skill, script, gate,
   command shape, or checkpoint split when the slowdown is avoidable;
@@ -971,21 +1004,21 @@ test, metric, doc, or owner update is just archaeology.
 
 Each loop cycle has one primary owner and one packet-ledger decision.
 
-1. **Status:** run `slate-ar-status` or direct source/status reads.
+1. **Status:** run `slate-ar status` or direct source/status reads.
 2. **Research discovery:** run `slate-research` when API, DX, tests, docs,
    metric coverage, or owner choice is unclear.
-3. **Quality gap:** run `slate-ar-quality` when an accepted checklist needs
+3. **Quality gap:** run `slate-ar quality` when an accepted checklist needs
    Codex Autoresearch execution.
-4. **Behavior:** run `slate-ar-stabilize` / `slate-ar-gate` before perf.
+4. **Behavior:** run `slate-ar stabilize` / `slate-ar gate` before perf.
 5. **Oracle repair:** if proof is missing, use `slate-patch` or `tdd`.
 6. **Vision proof:** use Browser, screenshot, and/or Playwright geometry checks
    for visual/editor parity.
-7. **Perf:** run `slate-ar-fast` / `slate-ar-perf` only with correctness green.
+7. **Perf:** run `slate-ar perf` only with correctness green.
 8. **API cleanup:** use `slate-plan` when repeated bugs show bad public or
    internal API shape.
 9. **Skill repair:** patch source rules when the loop itself missed policy.
 10. **Decision consolidation:** update durable docs before ship readiness.
-11. **Ship readiness:** use `slate-ar-ship` when the current tree is reviewable.
+11. **Ship readiness:** use `slate-ar ship` when the current tree is reviewable.
 
 After each cycle:
 
@@ -1170,6 +1203,11 @@ The supervisor repairs whatever layer is missing:
 - **Bug:** reproduce and fix with `slate-patch`.
 - **Missing oracle:** add Playwright/unit/Browser proof with `slate-patch` or
   `tdd`.
+- **Runtime-boundary oracle gap:** when repeated proof needs a host, browser,
+  peer, transport, or editor-service boundary, build the smallest fake runtime
+  or contract helper that exercises both directions before optimizing or
+  claiming coverage. Do not keep stacking one-off smoke scripts when a
+  first-party contract helper would make the next loop stronger.
 - **Missing metric:** update `benchmarks/targets/slate-v2.json`, benchmark
   script, and `METRIC` output before optimizing.
 - **Lying metric:** fix summary/worst-lane math before using it as a gate.
@@ -1183,7 +1221,7 @@ The supervisor repairs whatever layer is missing:
 - **API smell:** use `slate-plan` or implement the accepted shape when the plan
   is already accepted.
 - **Missing taste coverage:** stop at the checkpoint, record the missing taste
-  in the plan, capture the user's answer, and patch `slate-north-star` when
+  in the plan, capture the user's answer, and patch root `VISION.md` when
   reusable.
 - **Repeated browser proof pattern:** promote it into the `slate-browser` API,
   helper commands, or proof contract so future agents can run it directly.
@@ -1209,21 +1247,21 @@ rediscover them.
 
 At the start of a long run, ingest decisions before acting:
 
-- read the `slate-north-star` skill first;
+- read the `vision` skill first;
 - search active/recent goal plans under `docs/plans/**`;
 - search accepted architecture/proof docs under `docs/slate-v2/**`;
 - search compiled evidence under `docs/slate-v2/research/**`;
 - read benchmark target context from `benchmarks/targets/slate-v2.json`;
 - read source rules for any specialist skill before blaming the specialist.
 
-At every stop or handoff, compare the reason against `slate-north-star`. If the
-user's preference is missing and reusable, update `slate-north-star` before
+At every stop or handoff, compare the reason against root `VISION.md`. If the
+user's preference is missing and reusable, update `VISION.md` before
 claiming the automation loop is ready to resume or ship.
 
 Use the smallest durable target:
 
 - active goal plan for run-specific findings;
-- `slate-north-star` for reusable user taste, correction patterns, and
+- `VISION.md` for reusable user taste, correction patterns, and
   supervisor routing decisions;
 - `docs/slate-v2/**` for accepted Slate v2 architecture, proof, issue, and
   reviewer-facing decisions;
@@ -1243,12 +1281,12 @@ owner.
 Do not write public changelog prose. Write latest-state decisions, proof
 commands, accepted tradeoffs, rejected alternatives, and next owner.
 
-For "think like me" work, create or update a compact north-star decision doc
-only after decisions are accepted and reusable. Do not dump raw chat history
-into the skill. The skill should know where to search and what to consolidate,
-not carry every decision in its own body.
+For "think like me" work, create or update compact `VISION.md` rules only after
+decisions are accepted and reusable. Do not dump raw chat history into the
+skill. The skill should route to `VISION.md`, not carry doctrine in its own
+body.
 
-When the task is to improve the north-star profile itself, use numbered
+When the task is to improve root `VISION.md` itself, use numbered
 source-read passes over the owner docs instead of a vague docs review. Record
 the pass count, source families, reusable gaps found, and resulting profile
 changes in the active goal plan.
@@ -1266,7 +1304,7 @@ Stop when:
 - completion threshold passes;
 - ship/readiness path says `READY TO COMMIT` or asks for explicit commit/PR
   approval;
-- `slate-north-star` does not cover a taste or risk-tolerance decision needed
+- `vision` does not cover a taste or risk-tolerance decision needed
   for the next safe move and no safe alternate owner remains, or the invocation
   mode is full-loop;
 - the next safe move is a `slate-plan` public API/runtime decision;
@@ -1288,7 +1326,7 @@ inside the same automation loop and keep the packet ledger honest.
 Do not stop a timed or batch run before its minimum runtime because no obvious
 owner remains; enter supervision mode and create the next checkpoint.
 When stopping for missing taste, record the gap and resume by updating
-`slate-north-star` from the user's answer before more implementation.
+`vision` from the user's answer before more implementation.
 In timed or batch-loop mode, prefer queuing soft stopping checkpoints over
 stopping early when safe, high-value work remains.
 
@@ -1316,5 +1354,5 @@ Report:
 - `Stopping checkpoints to unblock` section with queued questions, current
   recommendation, and exact anchors;
 - accepted deferrals and residual risks;
-- next owner: continue automation, `slate-plan`, `slate-ar-ship`, or blocked
+- next owner: continue automation, `slate-plan`, `slate-ar ship`, or blocked
   authority decision.

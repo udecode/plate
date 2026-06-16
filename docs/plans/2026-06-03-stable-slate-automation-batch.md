@@ -76,7 +76,7 @@ product decision is required before review.
 
 Work Checklist:
 
-- [x] Read `slate-automation`, `slate-north-star`, and Slate v2 agent start.
+- [x] Read `slate-automation`, `vision`, and Slate v2 agent start.
 - [x] Run stable behavior proof.
 - [x] Repair the generated paste-html image stress oracle.
 - [x] Repair thrown-transaction rollback correctness.
@@ -117,7 +117,7 @@ this one-hour validation batch; claim width is Chromium plus package gates.
 
 - [x] Read latest user request.
 - [x] Read `slate-automation` generated skill.
-- [x] Read `slate-north-star` generated skill.
+- [x] Read `vision` generated skill.
 - [x] Read `docs/slate-v2/agent-start.md`.
 - [x] Run stable behavior proof packet.
 - [x] Patch safe bugs/oracles/workflow misses.
@@ -129,7 +129,7 @@ this one-hour validation batch; claim width is Chromium plus package gates.
 
 | id | owner | hypothesis/failure | evidence | decision | reason | next |
 | --- | --- | --- | --- | --- | --- | --- |
-| P0 | taste | automation scope is stable-feature validation, not pagination optimization | user request, `slate-automation`, `slate-north-star`, `agent-start` | keep | scope and stop policy are clear | behavior proof |
+| P0 | taste | automation scope is stable-feature validation, not pagination optimization | user request, `slate-automation`, `vision`, `agent-start` | keep | scope and stop policy are clear | behavior proof |
 | P1 | behavior | stable Chromium editor behavior may have regressions | accidental broad run: 408 passed, 1 stress failure; final focused run: 140 passed, 3 skipped | keep | stable behavior is green on final tree; stress failure became oracle packet | API/DX |
 | P2 | oracle | `paste-html-image-void` stress expected one image after pasting two image tags | narrow repro failed; artifact expected two images/two void shells; patched stress counts and contract wording; rerun passed | keep | oracle contradicted pasted HTML and generated artifact | package proof |
 | P3 | runtime | failed `editor.update` left inserted nodes after rollback | API packet failed `state-tx-public-api-contract`; patched rollback-only inverse operation rewind before snapshot restore; focused contract passed | keep | fixes correctness without normal-path cloning | fast gate |

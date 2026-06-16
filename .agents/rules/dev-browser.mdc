@@ -31,6 +31,25 @@ Run `dev-browser --help` to learn more.
 - For Plate registry/browser proof, prefer `/blocks/[id]-demo` over docs wrappers when that standalone demo route exists.
 - If `dev-browser` gets blocked by a human prompt or loops on the same step, stop and ask the user to unblock.
 
+## Multi-Step Browser Loop
+
+For any flow beyond a one-page smoke:
+
+1. Reuse a stable page handle, usually `browser.getPage("persistent-main")` for the app or a task-specific label.
+2. Inspect current URL, DOM/snapshot, and screenshot before clicking or typing.
+3. Prefer direct navigation when link text is ambiguous.
+4. Act from the latest visible state only.
+5. After navigation, modal changes, form submit, or auth redirects, inspect again before the next action.
+6. If a selector/ref/action handle goes stale, refresh the same page state and retry once with a fresh ref.
+7. If it fails again, stop with the exact blocker instead of looping.
+
+Do not treat permission prompts, onboarding dialogs, account choosers, captcha,
+2FA, camera/mic prompts, or profile pickers as login failure until the visible
+UI proves that. Name the manual action needed.
+
+Prefer stable page names/labels over raw DevTools target ids except for
+diagnostics; browser targets can change during Chromium navigation.
+
 ## Fallback Setup
 
 Use this only after `dev-browser --connect http://127.0.0.1:9222` fails because no reusable debug Chrome is available or the CDP endpoint is broken.

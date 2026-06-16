@@ -89,7 +89,7 @@ Blocked condition:
   batch mode, queue soft questions for final handoff.
 - Do not hand off before a timed minimum runtime has elapsed because the obvious
   backlog looks empty. Enter supervision mode and infer the next checkpoint from
-  `slate-north-star`, current evidence, weak proofs, benchmark gaps, API/docs
+  `vision`, current evidence, weak proofs, benchmark gaps, API/docs
   mismatch, issue/test harvest gaps, and workflow slowdowns.
 
 Automation state:
@@ -126,7 +126,7 @@ Completion rule:
 Checkpoint supervisor:
 | Checkpoint | Owner | Status | Priority | Why it exists | Evidence / exit rule | Mutation decision |
 |------------|-------|--------|----------|---------------|----------------------|-------------------|
-| checkpoint-zero | slate-auto | complete | P0 | Copy prompt requirements and read north-star before implementation. | Requirement rows complete; `slate-auto`, `autogoal`, `slate-north-star`, `slate-research`, and `docs/slate-v2/agent-start.md` read. | update |
+| checkpoint-zero | slate-auto | complete | P0 | Copy prompt requirements and read north-star before implementation. | Requirement rows complete; `slate-auto`, `autogoal`, `vision`, `slate-research`, and `docs/slate-v2/agent-start.md` read. | update |
 | status | slate-auto | complete | P0 | Read active plan, latest prompt, source status, and current evidence. | Package tests, typecheck, benchmark, and resolved runtime cwd recorded. | update |
 | gap-scan | slate-auto | complete | P0 | Identify behavior, visual, API, test, metric, docs, skill, and workflow gaps. | Research artifact promoted benchmark phase split and deferred incremental remote import to architecture. | update |
 | behavior-proof | slate-ar-stabilize | complete | P0 | Prove stable editor behavior before perf. | Short collaboration soak and short Hocuspocus production soak passed with fail-on-issues enabled. | update |
@@ -273,7 +273,7 @@ Mutation rules:
 - Reprioritize after every loop. The next checkpoint is chosen from current
   evidence, not from the original row order.
 - The supervisor is not stuck on this template or the initial prompt plan. The
-  user's latest request, `slate-north-star`, and current source evidence outrank
+  user's latest request, `vision`, and current source evidence outrank
   stale plan rows.
 
 Start Gates:
@@ -281,7 +281,7 @@ Start Gates:
 |------|---------|----------|
 | Prompt requirements captured before work | yes | `[$slate-auto] yjs research mode 8h`; rows above record scope, timing, stop rules, deliverables, proof, and non-goals. |
 | `slate-auto` source rule read | yes | `.agents/skills/slate-auto/SKILL.md` read; user also pasted the invoked skill body. |
-| `slate-north-star` read as checkpoint zero | yes | `.agents/skills/slate-north-star/SKILL.md` read before runtime work. |
+| `vision` read as checkpoint zero | yes | `.agents/skills/vision/SKILL.md` read before runtime work. |
 | Active goal checked or created | yes | `get_goal` returned none; `create_goal` created active goal for this plan. |
 | Invocation mode and timebox recorded | yes | timed 8h mode; 2026-06-14T17:15:21+0800 to 2026-06-15T01:15:21+0800. |
 | Dynamic checkpoint policy accepted | yes | checkpoint supervisor and mutation rules retained; rows narrowed to `@slate/yjs` research mode. |

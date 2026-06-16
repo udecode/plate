@@ -63,7 +63,7 @@ Start Gates:
 | Gate | Applies | Evidence |
 |------|---------|----------|
 | Prompt requirements captured before work | yes | Skill, timing semantics, scope, non-goals, stop conditions, verification, and handoff fields were copied into this plan before implementation. |
-| Skill analysis before edits | yes | Read `slate-automation`, `slate-north-star`, `autogoal`, `docs/slate-v2/agent-start.md`, and the prior completed automation plan before edits. |
+| Skill analysis before edits | yes | Read `slate-automation`, `vision`, `autogoal`, `docs/slate-v2/agent-start.md`, and the prior completed automation plan before edits. |
 | Active goal checked or created | yes | `get_goal` returned null; `create_goal` started this objective. |
 | Release / PR authority | yes | N/A: continuous private alpha; no commit, PR, release, publish, or changeset authority in this prompt. |
 | Browser surface identified | yes | Stable examples at `http://localhost:3100/examples/*`; Playwright first, screenshot smoke for visible proof. |

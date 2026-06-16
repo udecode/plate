@@ -94,7 +94,7 @@ Start Gates:
 |------|---------|----------|
 | Skill analysis before edits | yes | Read `slate-plan` and used its planning-only/user-review boundary. |
 | Active goal checked or created | yes | Active parent `slate-auto` goal is controlling this run; no nested goal created. |
-| Source of truth read before edits | yes | Read `slate-plan`, `slate-auto`, `slate-research`, `slate-north-star`, `docs/slate-v2/agent-start.md`, and live table source/test slices. |
+| Source of truth read before edits | yes | Read `slate-plan`, `slate-auto`, `slate-research`, `vision`, `docs/slate-v2/agent-start.md`, and live table source/test slices. |
 | `docs/solutions` checked for non-trivial existing-code work | no | N/A: planning artifact only; no implementation patch. |
 | Live `.tmp/slate-v2` grounding needed for current-state claims | yes | `.tmp/slate-v2/packages/slate/test/transforms/insertFragment/of-tables/*.tsx`; `playwright/integration/examples/tables.test.ts`; `paste-html.test.ts`. |
 

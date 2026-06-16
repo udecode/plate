@@ -116,7 +116,7 @@ Boundaries:
 Blocked condition:
 - Block only if the exact failure cannot be reproduced after video-sized
   browser proof and source inspection, if the next fix requires a public
-  architecture decision not covered by `slate-north-star`, or if local browser
+  architecture decision not covered by `vision`, or if local browser
   infrastructure cannot run the route/benchmark after repair attempts.
 - Do not block while a safe alternate checkpoint remains runnable. In timed or
   batch mode, queue soft questions for final handoff.
@@ -194,7 +194,7 @@ Mutation rules:
 - Reprioritize after every loop. The next checkpoint is chosen from current
   evidence, not from the original row order.
 - The supervisor is not stuck on this template or the initial prompt plan. The
-  user's latest request, `slate-north-star`, and current source evidence outrank
+  user's latest request, `vision`, and current source evidence outrank
   stale plan rows.
 
 Start Gates:
@@ -202,7 +202,7 @@ Start Gates:
 |------|---------|----------|
 | Prompt requirements captured before work | yes | Rows above copy latest prompt, video proof, scope, non-goals, stop rules, success criteria, and final handoff sections. |
 | `slate-automation` source rule read | yes | `.agents/skills/slate-automation/SKILL.md` and `.agents/rules/slate-automation.mdc` read. |
-| `slate-north-star` read as checkpoint zero | yes | `.agents/skills/slate-north-star/SKILL.md` read; it rejects model-only proof and one-row greens. |
+| `vision` read as checkpoint zero | yes | `.agents/skills/vision/SKILL.md` read; it rejects model-only proof and one-row greens. |
 | Active goal checked or created | yes | Active goal created for this regression. |
 | Invocation mode and timebox recorded | yes | Full-loop mode; no duration. |
 | Dynamic checkpoint policy accepted | yes | Checkpoint table updated from new evidence before implementation. |

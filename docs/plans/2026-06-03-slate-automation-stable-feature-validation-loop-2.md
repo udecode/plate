@@ -158,7 +158,7 @@ Start Gates:
 | Gate | Applies | Evidence |
 |------|---------|----------|
 | Prompt requirements captured before work | yes | First checkpoint extracted scope, non-goals, timebox, stop policy, deliverables, verification, and final handoff rows before implementation. |
-| Skill analysis before edits | yes | Read `slate-automation` from user prompt, `slate-north-star`, and `autogoal`; first checkpoint follows their contracts. |
+| Skill analysis before edits | yes | Read `slate-automation` from user prompt, `vision`, and `autogoal`; first checkpoint follows their contracts. |
 | Active goal checked or created | yes | `get_goal` returned null before plan creation; goal created after first checkpoint. |
 | Source of truth read before edits | yes | Read north-star and generated plan; target source/tests will be read before any runtime/test patch. |
 | Tracker comments and attachments read | N/A: no tracker | User provided prompt only. |

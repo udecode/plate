@@ -1,0 +1,261 @@
+{
+  "schema": 1,
+  "updatedAt": "2026-06-16",
+  "decisions": {
+    "openclaw:agents-doc:AGENTS:AGENTS.md": {
+      "action": "accepted",
+      "owner": ".agents/AGENTS.md + docs/vision/common.md",
+      "reason": "Imported live-state-first maintainer proof and routing discipline; product-specific OpenClaw policy stays out."
+    },
+    "openclaw:vision-doc:VISION:VISION.md": {
+      "action": "accepted",
+      "owner": "docs/vision/common.md",
+      "reason": "Imported maintainer automation doctrine; root VISION remains the local doctrine source."
+    },
+    "openclaw:skill:gh-issues:skills/gh-issues/SKILL.md": {
+      "action": "accepted",
+      "owner": "/Users/zbeyens/.agents/skills/github-triage/SKILL.md",
+      "reason": "Merged issue-to-agent loop shape into existing GitHub triage owner instead of creating a wrapper."
+    },
+    "openclaw:skill:security-triage:.agents/skills/security-triage/SKILL.md": {
+      "action": "accepted",
+      "owner": "/Users/zbeyens/.agents/skills/security-triage/SKILL.md + .agents/AGENTS.md",
+      "reason": "Imported generic GHSA/advisory triage with repo-scoped advisory reads, shipped-state proof, trust-model review, fix-lane handoff, and public wording hygiene; OpenClaw-specific maintainer and clipboard flow stays out."
+    },
+    "openclaw:skill:gitcrawl:.agents/skills/gitcrawl/SKILL.md": {
+      "action": "accepted",
+      "owner": "/Users/zbeyens/.agents/skills/github-triage/SKILL.md",
+      "reason": "Merged archive-first discovery, freshness checks, duplicate clusters, cached PR scouting, and live-before-mutation discipline into the existing GitHub triage owner instead of creating a wrapper skill."
+    },
+    "openclaw:skill:browser-automation:extensions/browser/skills/browser-automation/SKILL.md": {
+      "action": "accepted",
+      "owner": ".agents/rules/dev-browser.mdc + /Users/zbeyens/.agents/skills/dev-browser/SKILL.md",
+      "reason": "Merged stable-page, read-before-action, stale-ref recovery, tab-handle, and blocker-reporting discipline into dev-browser owners; OpenClaw browser CLI syntax stays out."
+    },
+    "openclaw:skill:clawdtributor:.agents/skills/clawdtributor/SKILL.md": {
+      "action": "accepted",
+      "owner": "/Users/zbeyens/.agents/skills/github-triage/SKILL.md",
+      "reason": "Merged maintainer-quality candidate matrix and live recheck discipline into existing GitHub triage owner."
+    },
+    "openclaw:skill:clawsweeper:.agents/skills/clawsweeper/SKILL.md": {
+      "action": "covered",
+      "owner": ".agents/rules/clawsweeper.mdc",
+      "reason": "Local Slate issue owner already carries archive-first, duplicate-proof, small-fix, live-state, and external-editor harvest discipline."
+    },
+    "openclaw:skill:tag-duplicate-prs-issues:.agents/skills/tag-duplicate-prs-issues/SKILL.md": {
+      "action": "covered",
+      "owner": ".agents/rules/clawsweeper.mdc",
+      "reason": "Duplicate proof bar is already covered by the local ClawSweeper duplicate decision section."
+    },
+    "openclaw:skill:technical-documentation:.agents/skills/technical-documentation/SKILL.md": {
+      "action": "covered",
+      "owner": ".agents/rules/docs-creator.mdc + .agents/rules/sync-vision.mdc",
+      "reason": "Governance-doc audit idea is covered by local docs and vision owners; no standalone docs wrapper needed."
+    },
+    "openclaw:skill:control-ui-e2e:.agents/skills/control-ui-e2e/SKILL.md": {
+      "action": "reject",
+      "owner": "Browser/slate-browser local proof lanes",
+      "reason": "Control UI specifics are OpenClaw product plumbing; reusable visual-proof discipline already has local owners."
+    },
+    "openclaw:skill:agent-transcript:.agents/skills/agent-transcript/SKILL.md": {
+      "action": "quarantine",
+      "owner": "future PR/provenance lane",
+      "reason": "Useful for PR provenance later, but PR creation/update transcript insertion is outside this sync pass."
+    },
+    "acpx:skill:autoreview:.agents/skills/autoreview/SKILL.md": {
+      "action": "quarantine",
+      "owner": "autoreview source-owner decision needed",
+      "reason": "Scope-governor ideas look useful, but local autoreview lacks a source rule; do not hand-edit generated/local skill blindly."
+    },
+    "clawhub:skill:autoreview:.agents/skills/autoreview/SKILL.md": {
+      "action": "quarantine",
+      "owner": "autoreview source-owner decision needed",
+      "reason": "Scope-governor ideas look useful, but local autoreview lacks a source rule; do not hand-edit generated/local skill blindly."
+    },
+    "openclaw:skill:autoreview:.agents/skills/autoreview/SKILL.md": {
+      "action": "quarantine",
+      "owner": "autoreview source-owner decision needed",
+      "reason": "Scope-governor ideas look useful, but local autoreview lacks a source rule; do not hand-edit generated/local skill blindly."
+    },
+    "clawhub:agents-doc:AGENTS:AGENTS.md": {
+      "action": "accepted",
+      "owner": "VISION.md + docs/vision/common.md + .agents/AGENTS.md",
+      "reason": "Imported durable intent capture, real-proof discipline, multiline GitHub body safety, and generic-vs-repo-local skill ownership; ClawHub Convex/product specifics stay out."
+    },
+    "clawpatch:agents-doc:AGENTS:AGENTS.md": {
+      "action": "covered",
+      "owner": ".agents/AGENTS.md",
+      "reason": "Focused tests, generated-output avoidance, package-manager discipline, and source-first command ownership are already covered locally; Clawpatch CLI specifics are not imported."
+    },
+    "gogcli:agents-doc:AGENTS:AGENTS.md": {
+      "action": "accepted",
+      "owner": ".agents/AGENTS.md",
+      "reason": "Imported PR review-vs-land boundary; Go/Gog command, changelog, keyring, and contributor-specific release details stay out."
+    },
+    "lobster:agents-doc:AGENTS:AGENTS.md": {
+      "action": "accepted",
+      "owner": "VISION.md + docs/vision/common.md",
+      "reason": "Imported hard approval/resume boundaries and structured workflow-error handling as generic automation doctrine."
+    },
+    "mcporter:agents-doc:AGENTS:AGENTS.md": {
+      "action": "accepted",
+      "owner": "VISION.md + docs/vision/common.md",
+      "reason": "Imported no-unverifiable-autonomous-fixes doctrine and exact missing-access reporting; repo wrapper/tmux/tool-list specifics stay out."
+    },
+    "acpx:agents-doc:AGENTS:AGENTS.md": {
+      "action": "accepted",
+      "owner": ".agents/AGENTS.md + VISION.md + docs/vision/common.md",
+      "reason": "Imported PR title hygiene, bug-fix evidence gate, and convention/sync discipline; acpx harness ordering and release plumbing stay out."
+    },
+    "clawpatch:vision-doc:VISION:VISION.md": {
+      "action": "accepted",
+      "owner": "VISION.md + docs/vision/common.md",
+      "reason": "Imported harness-boundary doctrine: preserve harness auth/session/tool ownership and do not reimplement model transport."
+    },
+    "gogcli:vision-doc:VISION:VISION.md": {
+      "action": "accepted",
+      "owner": "VISION.md + docs/vision/common.md",
+      "reason": "Imported scriptable/no-hidden-prompt and live-proof-or-exact-blocker doctrine for external provider behavior."
+    },
+    "clawhub:doc:CLAUDE:CLAUDE.md": {
+      "action": "reject",
+      "owner": "N/A",
+      "reason": "ClawHub Convex performance/release rules are product-specific. Reusable real-proof and GitHub body safety were captured from ClawHub AGENTS/VISION rows instead."
+    },
+    "acpx:vision-doc:VISION:VISION.md": {
+      "action": "accepted",
+      "owner": "VISION.md + docs/vision/common.md",
+      "reason": "Imported conventions-as-API and keep-core-small doctrine; acpx-specific ACP product scope stays out."
+    },
+    "clawhub:vision-doc:VISION:VISION.md": {
+      "action": "accepted",
+      "owner": "docs/vision/common.md + .agents/AGENTS.md",
+      "reason": "Imported repo-local-vs-global skill ownership and security-explicit setup doctrine; ClawHub marketplace/product roadmap specifics stay out."
+    },
+    "lobster:vision-doc:VISION:VISION.md": {
+      "action": "accepted",
+      "owner": "VISION.md + docs/vision/common.md",
+      "reason": "Imported deterministic, resumable automation with approval checkpoints; Lobster product positioning stays out."
+    },
+    "mcporter:vision-doc:VISION:VISION.md": {
+      "action": "accepted",
+      "owner": "VISION.md + docs/vision/common.md",
+      "reason": "Imported autonomous-work-within-vision and end-to-end-verifiable triage rule."
+    },
+    "openclaw:skill:oracle:skills/oracle/SKILL.md": {
+      "action": "accepted",
+      "owner": "/Users/zbeyens/.agents/skills/oracle/SKILL.md + .agents/AGENTS.md",
+      "reason": "Installed Oracle globally as advisory second-model worker capacity; local AGENTS keeps it behind primary entrypoints and requires source/tests/Browser/review proof for claims."
+    },
+    "clawpatch:doc:docs/code-review:docs/code-review.md": {
+      "action": "accepted",
+      "owner": ".agents/AGENTS.md + .agents/rules/slate-patch.mdc",
+      "reason": "Imported evidence-validation discipline for AI review findings: current checkout scope, live line range, and quote-match checks before accepting/actioning a finding."
+    },
+    "acpx:doc:docs/2026-02-19-mock-agent-testing:docs/2026-02-19-mock-agent-testing.md": {
+      "action": "accepted",
+      "owner": ".agents/rules/testing.mdc + .agents/rules/editor-test-harvester.mdc + .agents/rules/slate-auto.mdc",
+      "reason": "Imported fake-runtime contract-testing invariant: runtime-boundary bugs and harvested invariants should prove both request/event emission and deterministic fake-peer response before coverage is claimed."
+    },
+    "openclaw:doc:CONTRIBUTING:CONTRIBUTING.md#public-intake": {
+      "action": "accepted",
+      "owner": "CONTRIBUTING.md + VISION.md + docs/vision/common.md + docs/vision/plate.md",
+      "reason": "Imported public issue/PR intake as durable maintainer-agent handoff, adapted to Plate/Slate local Codex runs instead of hosted/API OpenClaw automation."
+    },
+    "openclaw:doc:.github/pull_request_template:.github/pull_request_template.md": {
+      "action": "accepted",
+      "owner": ".github/PULL_REQUEST_TEMPLATE.md",
+      "reason": "Imported intent/context/real-behavior-proof/risk/current-review-state sections; OpenClaw product, beta, and bot names stay out."
+    },
+    "openclaw:doc:.github/ISSUE_TEMPLATE/bug_report:.github/ISSUE_TEMPLATE/bug_report.yml#one-issue-agent-intake": {
+      "action": "accepted",
+      "owner": ".github/ISSUE_TEMPLATE/bug.yml",
+      "reason": "Imported one-issue-per-submission and evidence-grounded intake wording, adapted to Plate/Slate surfaces."
+    },
+    "openclaw:doc:.github/ISSUE_TEMPLATE/feature_request:.github/ISSUE_TEMPLATE/feature_request.yml": {
+      "action": "accepted",
+      "owner": ".github/ISSUE_TEMPLATE/feature_request.yml",
+      "reason": "Imported summary/problem/solution/alternatives/impact/evidence shape, extended with Slate-vs-Plate ownership and API/DX impact."
+    },
+    "openclaw:doc:SECURITY:SECURITY.md#disclosure-and-trust-model": {
+      "action": "accepted",
+      "owner": "SECURITY.md + .github/ISSUE_TEMPLATE/config.yml",
+      "reason": "Imported private disclosure path, reproducible-impact gate, trust-boundary framing, and false-positive taxonomy; OpenClaw gateway/operator model and security email stay out."
+    },
+    "openclaw:doc:CODEOWNERS:.github/CODEOWNERS": {
+      "action": "reject",
+      "owner": "N/A",
+      "reason": "User explicitly excluded CODEOWNERS for this Plate/Slate setup."
+    },
+    "openclaw:runtime:hosted-api-crabbox-automation": {
+      "action": "reject",
+      "owner": ".agents/rules/maintainer.mdc + docs/plans/templates/maintainer.md",
+      "reason": "Plate/Slate maintainer automation runs through local Codex sessions in maintainer checkouts; no hosted/API/cloud-worker assumption."
+    },
+    "openclaw:doc:docs/automation/standing-orders:docs/automation/standing-orders.md": {
+      "action": "accepted",
+      "owner": ".agents/rules/maintainer.mdc + docs/maintainer/standing-orders.md + docs/vision/common.md",
+      "reason": "Imported standing-order mechanism as local Codex maintainer authority: scope, triggers, approval gates, escalation, execute-verify-report; OpenClaw cron/cloud/channel examples stay out."
+    },
+    "openclaw:doc:docs/automation/cron-vs-heartbeat:docs/automation/cron-vs-heartbeat.md": {
+      "action": "covered",
+      "owner": "docs/maintainer/heartbeat.md + .agents/rules/maintainer.mdc",
+      "reason": "Local heartbeat runbook captures the one-activation decision guide; OpenClaw file is only a redirect."
+    },
+    "openclaw:doc:docs/concepts/agent-loop:docs/concepts/agent-loop.md": {
+      "action": "covered",
+      "owner": "docs/maintainer/heartbeat.md + docs/vision/common.md",
+      "reason": "Imported only the reusable execute-verify-report and one activation lifecycle shape; OpenClaw Gateway/runtime/event-stream internals are product-specific."
+    },
+    "openclaw:public-intake-score-override": {
+      "action": "accepted",
+      "owner": "/Users/zbeyens/.agents/skills/openclaw-sync/SKILL.md",
+      "reason": "Patched openclaw-sync so public intake, maintainer, security, standing-order, heartbeat, AGENTS, and VISION files are source-inspected before low-score rejection."
+    },
+    "openclaw:doc:docs/automation/tasks:docs/automation/tasks.md": {
+      "action": "accepted",
+      "owner": "docs/maintainer/queue.md + docs/maintainer/runs/README.md + .agents/rules/maintainer/scripts/queue-snapshot.mjs",
+      "reason": "Imported task-ledger discipline as local maintainer queue/run artifacts; OpenClaw Gateway task runtime stays out."
+    },
+    "openclaw:doc:docs/automation/cron-jobs:docs/automation/cron-jobs.md#troubleshooting": {
+      "action": "accepted",
+      "owner": "docs/maintainer/heartbeat.md + .agents/rules/maintainer.mdc",
+      "reason": "Imported watchdog/blocked-run reporting invariant as local heartbeat freshness/blocker recording; OpenClaw scheduler/runtime stays out."
+    },
+    "openclaw:doc:docs/security/incident-response:docs/security/incident-response.md": {
+      "action": "accepted",
+      "owner": "SECURITY.md + docs/maintainer/security.md",
+      "reason": "Imported severity ladder, assessment, response, communication, and follow-up shape; OpenClaw product names and release process stay out."
+    },
+    "openclaw:doc:docs/gateway/security/exposure-runbook:docs/gateway/security/exposure-runbook.md": {
+      "action": "accepted",
+      "owner": "SECURITY.md + docs/maintainer/security.md + docs/vision/common.md",
+      "reason": "Imported explicit trust-boundary and rollback discipline for security triage; Gateway exposure controls stay product-specific and out."
+    },
+    "openclaw:doc:docs/help/testing-live:docs/help/testing-live.md": {
+      "action": "accepted",
+      "owner": "CONTRIBUTING.md + .github/PULL_REQUEST_TEMPLATE.md + docs/plans/templates/maintainer.md",
+      "reason": "Imported real/live proof separation as public intake and maintainer proof fields; OpenClaw provider/model matrix details stay out."
+    },
+    "openclaw:skill:session-logs:skills/session-logs/SKILL.md": {
+      "action": "accepted",
+      "owner": "docs/maintainer/runs/README.md + docs/maintainer/heartbeat.md",
+      "reason": "Imported durable run-history lookup idea as repo-local run notes; OpenClaw session JSONL implementation stays out."
+    },
+    "openclaw:openclaw-sync-owner-patch-queue": {
+      "action": "accepted",
+      "owner": "/Users/zbeyens/.agents/skills/openclaw-sync/SKILL.md",
+      "reason": "Patched OpenClaw sync to output owner-patch queues so future broad syncs can patch pure improvements instead of stopping at report rows."
+    },
+    "clawhub:doc:docs/security-audits:docs/security-audits.md": {
+      "action": "accepted",
+      "owner": "docs/maintainer/security.md + SECURITY.md",
+      "reason": "Imported authority-versus-purpose review for skills, prompts, scripts, and agent-facing artifacts; ClawHub marketplace audit UI, VirusTotal details, and product labels stay out."
+    },
+    "clawhub:doc:docs/security:docs/security.md": {
+      "action": "accepted",
+      "owner": "SECURITY.md + docs/maintainer/security.md",
+      "reason": "Imported platform-vs-third-party ownership distinction as Plate/Slate-owned boundary discipline; ClawHub cloud disclosure policy stays out."
+    }
+  }
+}

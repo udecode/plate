@@ -102,12 +102,12 @@ Blocked condition:
   or destructive cleanup; missing external device/credential required for all
   meaningful progress; unsafe API/runtime fork with no reversible packet left;
   same real blocker repeats with no autonomous move; or a needed taste rule is
-  missing from `slate-north-star` and no safe alternate owner remains.
+  missing from `vision` and no safe alternate owner remains.
 - Do not block while a safe alternate checkpoint remains runnable. In timed or
   batch mode, queue soft questions for final handoff.
 - Do not hand off before a timed minimum runtime has elapsed because the obvious
   backlog looks empty. Enter supervision mode and infer the next checkpoint from
-  `slate-north-star`, current evidence, weak proofs, benchmark gaps, API/docs
+  `vision`, current evidence, weak proofs, benchmark gaps, API/docs
   mismatch, issue/test harvest gaps, and workflow slowdowns.
 
 Automation state:
@@ -161,7 +161,7 @@ Completion rule:
 Checkpoint supervisor:
 | Checkpoint | Owner | Status | Priority | Why it exists | Evidence / exit rule | Mutation decision |
 |------------|-------|--------|----------|---------------|----------------------|-------------------|
-| checkpoint-zero | slate-automation | done | P0 | Copy prompt requirements and read north-star before implementation. | Prompt was `[$slate-automation] 8h`; requirements, mode, minimum runtime, boundaries, stop rules, and handoff contract recorded. `slate-north-star` read. | update |
+| checkpoint-zero | slate-automation | done | P0 | Copy prompt requirements and read north-star before implementation. | Prompt was `[$slate-automation] 8h`; requirements, mode, minimum runtime, boundaries, stop rules, and handoff contract recorded. `vision` read. | update |
 | status | slate-automation | done | P0 | Read active plan, latest prompt, source status, and current evidence. | Current state recorded and refreshed through final handoff. | retire seed |
 | gap-scan | slate-automation | done | P0 | Identify behavior, visual, API, test, metric, docs, skill, and workflow gaps. | Superseded by concrete packet rows through loop 34: browser full gate, huge-doc perf/visual, generated stress, mobile, API, skill, source/dist, promotion experiment, and review fallback. | retire seed |
 | private-alpha-full-browser-sweep-rerun | slate-ar-stabilize / Playwright | done | P0 | Previous 8h handoff queued `bun check:full` after loop-50 same-burst native text boundary repair. | `.tmp/slate-v2`: `bun check:full` passed after release inventory repair: 1740 passed, 572 expected skips. | update |
@@ -269,7 +269,7 @@ Checkpoint mutation ledger:
 | Loop | Mutation | Checkpoint(s) | Evidence | Reason | Result |
 |------|----------|---------------|----------|--------|--------|
 | 0 | seed | initial template rows | plan creation | starter topology only | completed |
-| 0 | update | checkpoint-zero, status | `[$slate-automation] 8h`; `slate-north-star`; `date -Iseconds` | Explicit prompt is only timed automation, so supervisor mode owns surface selection from current evidence. | checkpoint-zero done; status in progress |
+| 0 | update | checkpoint-zero, status | `[$slate-automation] 8h`; `vision`; `date -Iseconds` | Explicit prompt is only timed automation, so supervisor mode owns surface selection from current evidence. | checkpoint-zero done; status in progress |
 | 1 | add | private-alpha-full-browser-sweep-rerun | Previous plan `docs/plans/2026-06-07-slate-v2-eight-hour-automation.md` lines 757-762 and open risk: full private-alpha browser gate still needs rerun after loop-50 repair. Nested `.tmp/slate-v2` status is clean at commit `9b3ef78c`. | Highest-value current evidence gap is broad browser integration after focused huge-doc repairs. | first packet selected |
 | 1 | add | release-discipline-escape-hatch-inventory | `bun check:full` failed in `packages/slate/test/escape-hatch-inventory-contract.ts`: expected `react-runtime:bridge` 29 -> actual 30 and `slate-react-tests:bridge` 37 -> actual 45. Exact bridge-call diff shows one central runtime scheduled repair call and eight contract-test repair-policy calls from the kept native text repair packet. | Release-discipline inventory must classify current bridges; failure is stale audit budget, not a behavior red. | focused patch in progress |
 | 2 | update | private-alpha-full-browser-sweep-rerun, behavior-proof, visual-proof, mobile-claim-width, huge-document-smoke | `.tmp/slate-v2`: `bun check:full` after inventory repair. | Broad private-alpha gate now green after the previous loop-50 native text boundary repair. | full gate kept |
@@ -369,7 +369,7 @@ Mutation rules:
 - Reprioritize after every loop. The next checkpoint is chosen from current
   evidence, not from the original row order.
 - The supervisor is not stuck on this template or the initial prompt plan. The
-  user's latest request, `slate-north-star`, and current source evidence outrank
+  user's latest request, `vision`, and current source evidence outrank
   stale plan rows.
 
 Start Gates:
@@ -377,7 +377,7 @@ Start Gates:
 |------|---------|----------|
 | Prompt requirements captured before work | yes | Prompt is `[$slate-automation] 8h`; rows record timed mode, 8h minimum, stop rules, deliverables, and proof strategy. |
 | `slate-automation` source rule read | yes | User provided full skill body from generated mirror; governing rule contract followed. |
-| `slate-north-star` read as checkpoint zero | yes | `.agents/skills/slate-north-star/SKILL.md` read before runtime work. |
+| `vision` read as checkpoint zero | yes | `.agents/skills/vision/SKILL.md` read before runtime work. |
 | Active goal checked or created | yes | Goal created with 8h automation completion contract. |
 | Invocation mode and timebox recorded | yes | timed; start `2026-06-08T00:36:11+02:00`; deadline `2026-06-08T08:36:11+02:00`. |
 | Dynamic checkpoint policy accepted | yes | Plan records living supervisor ledger and checkpoint mutation rules. |

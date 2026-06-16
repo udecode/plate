@@ -71,7 +71,7 @@ Constraints:
 - Do not add broad ceremony when the task is trivial or docs-only.
 
 Boundaries:
-- Source of truth: `slate-automation`, `slate-north-star`, `editor-test-harvester`, `clawsweeper`, ProseMirror issue artifacts, current `.tmp/slate-v2` tests/source, and Plate coverage when exact coverage exists.
+- Source of truth: `slate-automation`, `vision`, `editor-test-harvester`, `clawsweeper`, ProseMirror issue artifacts, current `.tmp/slate-v2` tests/source, and Plate coverage when exact coverage exists.
 - Allowed edit scope: `.tmp/editor-issue-harvester/prosemirror/full/**`, this plan, and new/updated focused Slate v2 tests/oracles when a relevant issue lacks exact coverage. Plate rows may be searched for exact coverage; do not patch Plate unless the row truly belongs there and the test is the smallest correct owner.
 - Browser surface: focused Playwright routes in `.tmp/slate-v2` or exact Plate proof when used.
 - Tracker sync: N/A: no GitHub mutations requested.
@@ -112,7 +112,7 @@ Start Gates:
 | Gate | Applies | Evidence |
 |------|---------|----------|
 | Prompt requirements captured before work | yes | This plan captures ledger path, ascending order, per-issue 10-step loop, autogoal checkpoint cadence, no batch-summary stop, completion/blocked rules, and final handoff sections. |
-| Skill analysis before edits | yes | `slate-automation` provided by user; `autogoal`, `editor-test-harvester`, `clawsweeper`, and `slate-north-star` used from current session context. |
+| Skill analysis before edits | yes | `slate-automation` provided by user; `autogoal`, `editor-test-harvester`, `clawsweeper`, and `vision` used from current session context. |
 | Active goal checked or created | yes | Created active goal for ProseMirror issue-by-issue closure. |
 | Source of truth read before edits | yes | Existing ProseMirror issue ledger and issue body/classification artifacts exist under `.tmp/editor-issue-harvester/prosemirror/full`. |
 | Tracker comments and attachments read | N/A | GitHub issue bodies/comments already fetched to scratch artifact; no tracker mutation. |

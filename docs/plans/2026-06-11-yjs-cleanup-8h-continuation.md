@@ -146,7 +146,7 @@ Mutation rules:
 - Reprioritize after every loop. The next checkpoint is chosen from current
   evidence, not from the original row order.
 - The supervisor is not stuck on this template or the initial prompt plan. The
-  user's latest request, `slate-north-star`, and current source evidence outrank
+  user's latest request, `vision`, and current source evidence outrank
   stale plan rows.
 
 Start Gates:
@@ -154,7 +154,7 @@ Start Gates:
 |------|---------|----------|
 | Prompt requirements captured before work | yes | User explicitly corrected that the work must use 8h and repeatedly polish; scope remains Yjs cleanup in `../slate-v2`; keep Yjs tests passing. |
 | `slate-automation` source rule read | yes | User supplied full skill body earlier in this thread; this is a continuation of that invocation. |
-| `slate-north-star` read as checkpoint zero | yes | Previous run read `.agents/skills/slate-north-star/SKILL.md`; its strict timed/batch rule is applied here. |
+| `vision` read as checkpoint zero | yes | Previous run read `.agents/skills/vision/SKILL.md`; its strict timed/batch rule is applied here. |
 | Active goal checked or created | yes | New active goal created for strict 8h continuation. |
 | Invocation mode and timebox recorded | yes | timed mode, strict continuation, start 2026-06-11T10:54:43+0800, deadline 2026-06-11T18:54:43+0800. |
 | Dynamic checkpoint policy accepted | yes | Plan says keep adding/splitting packets until deadline or proven no-safe-work. |
