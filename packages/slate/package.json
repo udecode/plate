@@ -1,6 +1,6 @@
 {
   "name": "@platejs/slate",
-  "version": "53.0.7",
+  "version": "54.0.0-beta.0",
   "description": "Slate extension",
   "keywords": [
     "slate"
