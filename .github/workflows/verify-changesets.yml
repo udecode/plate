@@ -24,27 +24,98 @@ jobs:
         if: github.event_name == 'merge_group'
         run: echo "Skipping merge_group; this policy runs on the source PR."
 
-      - name: 📥 Checkout workflow helper
-        if: github.event_name != 'merge_group'
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.repository.default_branch }}
-          persist-credentials: false
-
       - name: 🛡️ Verify changeset policy
         if: github.event_name != 'merge_group'
         uses: actions/github-script@v7
         with:
           script: |
-            const { pathToFileURL } = await import('node:url');
-            const helperUrl = pathToFileURL(
-              `${process.env.GITHUB_WORKSPACE}/tooling/scripts/auto-release-pr.mjs`
-            ).href;
-            const {
-              getChangesetReleaseType,
-              getChangesetValidationErrors,
-              isChangesetFile,
-            } = await import(helperUrl);
+            const changesetFrontmatterPattern = /^---\r?\n([\s\S]*?)\r?\n---/;
+            const changesetReleaseTypePattern = /:\s*(major|minor|patch)\b/g;
+            const changesetFilenamePattern = /^[a-z][a-z0-9-]*\.md$/;
+
+            function isChangesetFile(file) {
+              return (
+                file.filename.startsWith('.changeset/') &&
+                file.filename.endsWith('.md') &&
+                file.filename !== '.changeset/README.md' &&
+                file.status !== 'removed'
+              );
+            }
+
+            function getAddedPatchContent(patch = '') {
+              return patch
+                .split('\n')
+                .filter((line) => line.startsWith('+') && !line.startsWith('+++'))
+                .map((line) => line.slice(1))
+                .join('\n');
+            }
+
+            function getChangesetContent(file) {
+              return getAddedPatchContent(file.patch);
+            }
+
+            function parseChangesetReleaseTypes(content) {
+              const frontmatter = content.match(changesetFrontmatterPattern)?.[1];
+
+              return [...(frontmatter ?? '').matchAll(changesetReleaseTypePattern)].map(
+                (match) => match[1]
+              );
+            }
+
+            function getChangesetReleaseTypes(files) {
+              return files
+                .filter(isChangesetFile)
+                .flatMap((file) => parseChangesetReleaseTypes(getChangesetContent(file)));
+            }
+
+            function getChangesetReleaseType(files) {
+              const releaseTypes = getChangesetReleaseTypes(files);
+              if (releaseTypes.includes('major')) return 'major';
+              if (releaseTypes.includes('minor')) return 'minor';
+              if (releaseTypes.includes('patch')) return 'patch';
+
+              return null;
+            }
+
+            function validateChangesetFile(file) {
+              const basename = file.filename.split('/').pop() ?? '';
+              const errors = [];
+
+              if (!changesetFilenamePattern.test(basename)) {
+                errors.push(
+                  `${file.filename} has an invalid filename. Use lowercase letters, digits, and hyphens.`
+                );
+              }
+
+              const content = getChangesetContent(file);
+              const frontmatter = content.match(changesetFrontmatterPattern)?.[1];
+
+              if (!frontmatter) {
+                errors.push(`${file.filename} is missing YAML frontmatter.`);
+                return errors;
+              }
+
+              const entries = frontmatter
+                .split(/\r?\n/)
+                .map((line) => line.trim())
+                .filter(Boolean);
+
+              if (entries.length !== 1) {
+                errors.push(`${file.filename} must declare exactly one package.`);
+              }
+
+              for (const entry of entries) {
+                if (!/^"[^"]+"\s*:\s*(major|minor|patch|none)$/.test(entry)) {
+                  errors.push(`${file.filename} has invalid changeset frontmatter: ${entry}`);
+                }
+              }
+
+              return errors;
+            }
+
+            function getChangesetValidationErrors(files) {
+              return files.filter(isChangesetFile).flatMap(validateChangesetFile);
+            }
 
             const pullRequest = context.payload.pull_request;
             const baseRef = pullRequest.base.ref;
@@ -86,7 +157,7 @@ jobs:
               }
 
               if ((headRef === 'main' || headRef === 'sync/main-to-next') && baseRef === 'next') {
-                core.info('Verification exempt: main -> next sync PR.');
+                core.info('Verification exempt: manual main -> next sync PR.');
                 return;
               }
             }
@@ -105,13 +176,24 @@ jobs:
               failures.push(...getChangesetValidationErrors(files));
             }
 
+            const releaseTypes = getChangesetReleaseTypes(files);
+            const hasMajorChangeset = releaseTypes.includes('major');
+            const hasMinorChangeset = releaseTypes.includes('minor');
             const releaseType = getChangesetReleaseType(files);
 
+            if (baseRef === 'main' && hasMajorChangeset) {
+              failures.push(`Changeset contains a major bump. Major bumps target next for beta before stable promotion.`);
+            }
+
+            if (baseRef === 'next' && hasMinorChangeset) {
+              failures.push(`Changeset contains a minor bump. Minor bumps target main; next is only for major beta work.`);
+            }
+
             if (
-              (baseRef === 'main' || baseRef.startsWith('release/')) &&
-              (releaseType === 'minor' || releaseType === 'major')
+              baseRef.startsWith('release/') &&
+              (hasMinorChangeset || hasMajorChangeset)
             ) {
-              failures.push(`Changeset contains a ${releaseType} bump. Only patch bumps are allowed on ${baseRef}; target next instead.`);
+              failures.push(`Changeset contains a ${releaseType} bump. Only patch bumps are allowed on ${baseRef}.`);
             }
 
             if (failures.length > 0) {
