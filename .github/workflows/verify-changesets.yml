@@ -153,8 +153,8 @@ jobs:
                 return;
               }
 
-              if ((headRef === 'main' || headRef === 'sync/main-to-next') && baseRef === 'next') {
-                core.info('Verification exempt: main -> next sync PR.');
+              if (headRef === 'main' && baseRef === 'next') {
+                core.info('Verification exempt: manual main -> next sync PR.');
                 return;
               }
             }

@@ -4,15 +4,20 @@ import test from 'node:test';
 
 import { validateBetaPreState } from './guard-beta-pre-release.mjs';
 import {
-  buildMainToNextSyncPullRequest,
   buildPromotePullRequest,
+  createMainToNextBetaPreState,
+  createMainToNextSyncChangesetContent,
+  getMainToNextSyncChangesetFiles,
   formatMainToNextSyncResolutionReport,
   getMainToNextChangelogResolution,
+  getMainToNextChangedPackages,
+  getMainToNextSyncCommitMessage,
   getMainToNextSyncMetadataFiles,
   getStableVersion,
-  mainToNextSyncBranch,
+  mainToNextSyncCommitMessage,
   mergeChangelogsForMainToNextSync,
   resolvePackageManifestForMainToNextSync,
+  validateMainToNextBetaPreState,
   verifyMainToNextResolvedFile,
 } from './release-branch-prs.mjs';
 import {
@@ -37,12 +42,12 @@ const verifyChangesetsWorkflowPath = new URL(
   '../../.github/workflows/verify-changesets.yml',
   import.meta.url
 );
-const verifyMainToNextSyncWorkflowPath = new URL(
-  '../../.github/workflows/verify-main-to-next-sync.yml',
-  import.meta.url
-);
 const packageJsonPath = new URL('../../package.json', import.meta.url);
 const releasePackagesPath = new URL('./release-packages.mjs', import.meta.url);
+const releaseBranchPrsPath = new URL(
+  './release-branch-prs.mjs',
+  import.meta.url
+);
 const nextConfigPath = new URL(
   '../../apps/www/next.config.ts',
   import.meta.url
@@ -120,25 +125,12 @@ test('release workflow uses the pruned GitHub Release path', async () => {
     workflow,
     /needs\.release\.outputs\.published == 'true' && github\.ref_name == 'main' && github\.repository == 'udecode\/plate'/
   );
-  assert.match(workflow, /sync-main-to-next:/);
-  assert.match(
-    workflow,
-    /needs:\s*\n\s*-\s*release\s*\n\s*-\s*sync-release-artifacts/
-  );
-  assert.match(
-    workflow,
-    /always\(\) && needs\.release\.result == 'success' && \(needs\.sync-release-artifacts\.result == 'success' \|\| needs\.sync-release-artifacts\.result == 'skipped'\) && github\.ref_name == 'main' && needs\.release\.outputs\.versionPullRequestNumber == ''/
-  );
+  assert.doesNotMatch(workflow, /sync-main-to-next:/);
   assert.doesNotMatch(
-    workflow,
-    /sync-main-to-next:[\s\S]*needs\.release\.outputs\.published == 'true'/
-  );
-  assert.match(
     workflow,
     /node tooling\/scripts\/release-branch-prs\.mjs sync-main-to-next/
   );
   assert.match(workflow, /contents:\s*write/);
-  assert.match(workflow, /persist-credentials:\s*true/);
   assert.doesNotMatch(workflow, /sync-release-docs/);
   assert.doesNotMatch(workflow, /global-release/);
   assert.doesNotMatch(workflow, /pr-analyzer/);
@@ -168,7 +160,7 @@ test('promote workflow exits beta mode and creates next to main PR', async () =>
   assert.match(workflow, /--dry-run/);
 });
 
-test('release branch PR helpers build promote and sync PRs', () => {
+test('release branch helpers build promote PR and direct sync metadata', () => {
   assert.equal(getStableVersion('54.0.0-beta.3'), '54.0.0');
   assert.equal(getStableVersion('54.1.2'), '54.1.2');
   assert.throws(() => getStableVersion('54.0'), /Invalid package version/);
@@ -186,31 +178,27 @@ test('release branch PR helpers build promote and sync PRs', () => {
   assert.match(promotePullRequest.body, /Wait for `release\.yml` on `main`/);
   assert.match(
     promotePullRequest.body,
-    /Merge the generated `main -> next` sync PR/
+    /Run the `release-lanes` autogoal workflow/
   );
-  assert.match(promotePullRequest.body, /empty file diff can be correct/);
-  assert.match(promotePullRequest.body, /pnpm changeset pre enter beta/);
-
-  const syncPullRequest = buildMainToNextSyncPullRequest();
-
-  assert.equal(syncPullRequest.base, 'next');
-  assert.equal(syncPullRequest.head, mainToNextSyncBranch);
-  assert.equal(
-    syncPullRequest.title,
-    'chore: sync main to next [skip release]'
-  );
-  assert.match(syncPullRequest.body, /stable fixes from `main`/);
-  assert.match(syncPullRequest.body, /sync\/main-to-next/);
-  assert.match(syncPullRequest.body, /Release metadata conflicts/);
-  assert.match(syncPullRequest.body, /not a style preference/);
-  assert.match(syncPullRequest.body, /empty file diff can still be correct/);
+  assert.match(promotePullRequest.body, /sync `main` directly into `next`/);
   assert.match(
-    syncPullRequest.body,
-    /carries the `main` merge commit back into `next`/
+    promotePullRequest.body,
+    /Do not wait for a generated `main -> next` sync PR/
+  );
+
+  assert.equal(mainToNextSyncCommitMessage, 'chore: sync main to next');
+  assert.doesNotMatch(mainToNextSyncCommitMessage, /\[skip release\]/);
+  assert.equal(
+    getMainToNextSyncCommitMessage({ changesets: ['.changeset/sync.md'] }),
+    'chore: sync main to next'
+  );
+  assert.equal(
+    getMainToNextSyncCommitMessage({ changesets: [] }),
+    'chore: sync main to next [skip release]'
   );
 });
 
-test('main to next sync PR reports automated release metadata resolution', () => {
+test('main to next sync reports automated release metadata resolution', () => {
   const report = {
     changelogs: [
       {
@@ -230,20 +218,79 @@ test('main to next sync PR reports automated release metadata resolution', () =>
     ],
     preJsonFiles: [{ file: '.changeset/pre.json' }],
   };
-  const body = buildMainToNextSyncPullRequest({
-    resolutionReport: report,
-  }).body;
   const formatted = formatMainToNextSyncResolutionReport(report);
 
-  assert.match(body, /Automated release metadata resolution/);
   assert.match(
-    body,
+    formatted,
     /kept next\/beta version `54\.0\.0-beta\.1` over main\/stable `53\.1\.8`/
   );
-  assert.match(body, /inserted stable sections `53\.1\.8`/);
-  assert.match(body, /refreshed stable sections `53\.1\.2` from main/);
-  assert.match(body, /kept next beta pre-release state/);
+  assert.match(formatted, /Automated release metadata resolution/);
+  assert.match(formatted, /inserted stable sections `53\.1\.8`/);
+  assert.match(formatted, /refreshed stable sections `53\.1\.2` from main/);
+  assert.match(formatted, /kept next beta pre-release state/);
   assert.match(formatted, /verified by test/);
+});
+
+test('main to next direct sync creates beta changesets for public package changes', () => {
+  assert.deepEqual(
+    getMainToNextChangedPackages([
+      'apps/www/src/app/layout.tsx',
+      'content/docs/installation.mdx',
+      'packages/core/src/lib/editor/SlateEditor.ts',
+      'packages/core/CHANGELOG.md',
+    ]),
+    ['@platejs/core']
+  );
+  assert.equal(
+    createMainToNextSyncChangesetContent('@platejs/core'),
+    '---\n"@platejs/core": patch\n---\n\nSynced latest changes from `main` into the beta lane.\n'
+  );
+  assert.deepEqual(getMainToNextSyncChangesetFiles(['@platejs/core']), [
+    '.changeset/auto-main-to-next-sync-platejs-core.md',
+  ]);
+});
+
+test('main to next direct sync versions generated beta changesets before committing', async () => {
+  const source = await readFile(releaseBranchPrsPath, 'utf8');
+  const versionIndex = source.indexOf("runPnpm(['ci:version']");
+  const commitIndex = source.indexOf("runGit(['commit'");
+
+  assert.ok(versionIndex > 0);
+  assert.ok(commitIndex > versionIndex);
+  assert.match(
+    source,
+    /if \(changesets\.length > 0\) \{\s*runPnpm\(\['ci:version'\]/
+  );
+});
+
+test('main to next direct sync guards real pushes from dirty worktrees', async () => {
+  const source = await readFile(releaseBranchPrsPath, 'utf8');
+  const guardIndex = source.indexOf('assertCleanWorktreeForDirectSync');
+  const checkoutIndex = source.indexOf("runGit(['checkout', '-B', 'next'");
+
+  assert.match(source, /status', '--porcelain', '--untracked-files=all'/);
+  assert.match(source, /Direct main -> next sync requires a clean worktree/);
+  assert.ok(guardIndex > 0);
+  assert.ok(checkoutIndex > guardIndex);
+});
+
+test('main to next direct sync can restore beta pre mode in the sync commit', () => {
+  const preState = createMainToNextBetaPreState();
+
+  assert.equal(preState.mode, 'pre');
+  assert.equal(preState.tag, 'beta');
+  assert.equal(typeof preState.initialVersions['@platejs/core'], 'string');
+  assert.equal(typeof preState.initialVersions.platejs, 'string');
+  assert.deepEqual(preState.changesets, []);
+  assert.doesNotThrow(() => validateMainToNextBetaPreState(preState));
+  assert.throws(
+    () => validateMainToNextBetaPreState({ mode: 'exit', tag: 'beta' }),
+    /active Changesets pre-release mode/
+  );
+  assert.throws(
+    () => validateMainToNextBetaPreState({ mode: 'pre', tag: 'next' }),
+    /beta pre-release tag/
+  );
 });
 
 test('main to next sync keeps beta package versions', () => {
@@ -300,6 +347,43 @@ test('main to next sync verifier checks package, pre-state, and changelog output
       message: 'kept package version 54.0.0-beta.1',
       type: 'package-manifest',
     }
+  );
+  assert.deepEqual(
+    verifyMainToNextResolvedFile({
+      file: 'packages/core/package.json',
+      ours: nextPackage,
+      resolved: JSON.stringify({
+        dependencies: {
+          '@platejs/slate': '54.0.1-beta.0',
+        },
+        description: 'test',
+        name: '@platejs/core',
+        version: '54.0.1-beta.0',
+      }),
+      theirs: mainPackage,
+    }),
+    {
+      file: 'packages/core/package.json',
+      message: 'advanced beta package version 54.0.0-beta.1 to 54.0.1-beta.0',
+      type: 'package-manifest',
+    }
+  );
+  assert.throws(
+    () =>
+      verifyMainToNextResolvedFile({
+        file: 'packages/core/package.json',
+        ours: nextPackage,
+        resolved: JSON.stringify({
+          description: 'test',
+          name: '@platejs/core',
+          scripts: {
+            prepack: 'echo unsafe',
+          },
+          version: '54.0.1-beta.0',
+        }),
+        theirs: mainPackage,
+      }),
+    /fields outside beta versioning/
   );
   assert.throws(
     () =>
@@ -401,6 +485,33 @@ test('main to next sync verifier checks package, pre-state, and changelog output
       type: 'changelog',
     }
   );
+  assert.deepEqual(
+    verifyMainToNextResolvedFile({
+      file: 'packages/core/CHANGELOG.md',
+      ours: oursChangelog,
+      resolved: [
+        '# @platejs/core',
+        '',
+        '## 54.0.1-beta.0',
+        '',
+        '### Patch Changes',
+        '',
+        '- Synced latest changes from `main` into the beta lane.',
+        '',
+        changelogResolution.content
+          .replace('# @platejs/core\n\n', '')
+          .trimEnd(),
+        '',
+      ].join('\n'),
+      theirs: theirsChangelog,
+    }),
+    {
+      file: 'packages/core/CHANGELOG.md',
+      insertedStableVersions: ['53.1.8'],
+      message: 'verified versioned changelog with stable sections 53.1.8',
+      type: 'changelog',
+    }
+  );
   assert.throws(
     () =>
       verifyMainToNextResolvedFile({
@@ -427,7 +538,7 @@ test('main to next sync verifier scopes metadata files to synced changes', () =>
   assert.deepEqual(
     getMainToNextSyncMetadataFiles({
       mainChangedFiles: [
-        '.github/workflows/verify-main-to-next-sync.yml',
+        '.github/workflows/release.yml',
         'tooling/scripts/release-branch-prs.mjs',
       ],
       resolvedChangedFiles: [],
@@ -711,10 +822,8 @@ test('verify changesets workflow blocks non-patch releases on main', async () =>
   assert.match(workflow, /-\s*'release\/\*\*'/);
   assert.match(workflow, /merge_group:/);
   assert.match(workflow, /headRef === 'next' && baseRef === 'main'/);
-  assert.match(
-    workflow,
-    /\(headRef === 'main' \|\| headRef === 'sync\/main-to-next'\) && baseRef === 'next'/
-  );
+  assert.match(workflow, /headRef === 'main' && baseRef === 'next'/);
+  assert.doesNotMatch(workflow, /sync\/main-to-next/);
   assert.match(
     workflow,
     /\.changeset\/pre\.json must not be committed to main/
@@ -734,27 +843,6 @@ test('verify changesets workflow blocks non-patch releases on main', async () =>
     /releaseType === 'minor' \|\| releaseType === 'major'/
   );
   assert.match(workflow, /Only patch bumps are allowed/);
-});
-
-test('verify main-to-next sync workflow checks only sync PR metadata', async () => {
-  const workflow = await readFile(verifyMainToNextSyncWorkflowPath, 'utf8');
-
-  assert.match(workflow, /name:\s*Verify main-to-next sync/);
-  assert.match(workflow, /pull_request:/);
-  assert.match(workflow, /branches:\s*\n\s*-\s*next/);
-  assert.match(
-    workflow,
-    /github\.event\.pull_request\.head\.ref == 'sync\/main-to-next'/
-  );
-  assert.match(
-    workflow,
-    /ref:\s*\$\{\{ github\.event\.pull_request\.head\.sha \}\}/
-  );
-  assert.match(workflow, /fetch-depth:\s*0/);
-  assert.match(
-    workflow,
-    /node tooling\/scripts\/release-branch-prs\.mjs verify-main-to-next-sync/
-  );
 });
 
 test('package scripts expose CI version and release commands only', async () => {

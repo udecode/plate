@@ -1,19 +1,40 @@
 #!/usr/bin/env node
 
 import { spawnSync } from 'node:child_process';
-import { writeFileSync } from 'node:fs';
+import {
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  readdirSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(scriptDir, '..', '..');
-export const mainToNextSyncBranch = 'sync/main-to-next';
+export const mainToNextSyncCommitMessage = 'chore: sync main to next';
+export const mainToNextSyncSkipReleaseCommitMessage =
+  'chore: sync main to next [skip release]';
 const newlinePattern = /\r?\n/;
 const shellSafeArgPattern = /^[A-Za-z0-9_./:=@-]+$/;
 const stableVersionPattern = /^\d+\.\d+\.\d+$/;
 const semverPattern = /^(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z.-]+))?$/;
 const conflictMarkerPattern = /^(?:<<<<<<<|=======|>>>>>>>)(?:\s|$)/m;
+const packageDirectoryPattern = /^(packages\/(?:udecode\/)?[^/]+)\//;
+const packageScopePattern = /^@/;
+const numericIdentifierPattern = /^\d+$/;
+const nonPackageFilenameCharacterPattern = /[^a-zA-Z0-9]+/g;
+const surroundingHyphenPattern = /^-+|-+$/g;
 const whitespacePattern = /\s+/;
+const mainToNextSyncChangesetPrefix = 'auto-main-to-next-sync-';
+const dependencyFieldNames = [
+  'dependencies',
+  'devDependencies',
+  'optionalDependencies',
+  'peerDependencies',
+];
 
 export function getStableVersion(version) {
   const stableVersion = String(version ?? '').split('-')[0];
@@ -40,36 +61,11 @@ export function buildPromotePullRequest({ version }) {
       'After this PR lands:',
       '',
       '1. Wait for `release.yml` on `main`.',
-      '2. Merge the generated `main -> next` sync PR before re-entering beta. Even an empty file diff can be correct when the PR carries the `main` merge commit back into `next`.',
-      '3. Re-enter beta on `next`: `pnpm changeset pre enter beta`.',
+      '2. Run the `release-lanes` autogoal workflow to sync `main` directly into `next`, re-enter beta when needed, and verify the beta lane.',
+      '3. Do not wait for a generated `main -> next` sync PR; release-lanes owns that deterministic metadata repair loop.',
     ].join('\n'),
     head: 'next',
     title: `chore: promote v${stableVersion} to stable`,
-  };
-}
-
-export function buildMainToNextSyncPullRequest({ resolutionReport } = {}) {
-  const body = [
-    'Brings stable fixes from `main` into the beta branch.',
-    '',
-    'This PR is prepared from `next` by merging `main` into `sync/main-to-next` first. Release metadata conflicts are resolved automatically before the PR opens.',
-    '',
-    '**Merge with `Create a merge commit`**. Do not squash or rebase; this is required for branch ancestry, not a style preference.',
-    '',
-    'An empty file diff can still be correct. After a promote PR, this PR may only exist because it carries the `main` merge commit back into `next` so future sync detection sees `main` as integrated.',
-    '',
-    'If this PR still has conflicts, they are real source conflicts. Package versions, beta pre-release state, and changelog section ordering are handled by automation.',
-  ];
-
-  if (resolutionReport) {
-    body.push('', formatMainToNextSyncResolutionReport(resolutionReport));
-  }
-
-  return {
-    base: 'next',
-    body: body.join('\n'),
-    head: mainToNextSyncBranch,
-    title: 'chore: sync main to next [skip release]',
   };
 }
 
@@ -192,6 +188,15 @@ function runGit(
   return run('git', args, { allowFailure, capture });
 }
 
+function runPnpm(args, { dryRun = false } = {}) {
+  if (dryRun) {
+    logDryRun('pnpm', args);
+    return;
+  }
+
+  run('pnpm', args);
+}
+
 function runGitProcess(args) {
   const result = spawnSync('git', args, {
     cwd: repoRoot,
@@ -227,6 +232,18 @@ function writeRepoFile(file, content) {
   );
 }
 
+function readRepoJson(file) {
+  return JSON.parse(readFileSync(path.join(repoRoot, file), 'utf8'));
+}
+
+function readRepoJsonIfExists(file) {
+  const absolutePath = path.join(repoRoot, file);
+
+  if (!existsSync(absolutePath)) return null;
+
+  return JSON.parse(readFileSync(absolutePath, 'utf8'));
+}
+
 function normalizeText(content) {
   return `${String(content).replace(/\r\n/g, '\n').trimEnd()}\n`;
 }
@@ -245,6 +262,24 @@ function getUnmergedFiles() {
   return output.split(newlinePattern).filter(Boolean);
 }
 
+function assertCleanWorktreeForDirectSync({ dryRun = false } = {}) {
+  if (dryRun) return;
+
+  const status = runGit(['status', '--porcelain', '--untracked-files=all'], {
+    capture: true,
+  });
+
+  if (!status) return;
+
+  throw new Error(
+    [
+      'Direct main -> next sync requires a clean worktree before mutating next.',
+      'Commit, stash, or move local changes first:',
+      status,
+    ].join('\n')
+  );
+}
+
 function isPackageManifest(file) {
   return file === 'package.json' || file.endsWith('/package.json');
 }
@@ -261,11 +296,237 @@ function isMainToNextMetadataFile(file) {
   );
 }
 
+function getWorkspacePackageDir(file) {
+  const match = file.match(packageDirectoryPattern);
+
+  return match?.[1] ?? null;
+}
+
+function getWorkspacePackageDirs() {
+  const rootPackageJson = readRepoJson('package.json');
+  const workspacePatterns = rootPackageJson.workspaces;
+  const packageDirs = [];
+
+  if (!Array.isArray(workspacePatterns)) {
+    throw new Error('Root package.json must define workspaces.');
+  }
+
+  for (const pattern of workspacePatterns) {
+    if (!pattern.endsWith('/*')) {
+      throw new Error(`Unsupported workspace pattern: ${pattern}`);
+    }
+
+    const baseDir = pattern.slice(0, -2);
+    const absoluteBaseDir = path.join(repoRoot, baseDir);
+
+    if (!existsSync(absoluteBaseDir)) continue;
+
+    for (const entry of readdirSync(absoluteBaseDir, { withFileTypes: true })) {
+      if (!entry.isDirectory()) continue;
+
+      const packageDir = `${baseDir}/${entry.name}`;
+
+      if (existsSync(path.join(repoRoot, packageDir, 'package.json'))) {
+        packageDirs.push(packageDir);
+      }
+    }
+  }
+
+  return packageDirs.sort();
+}
+
+export function getMainToNextChangedPackages(files) {
+  const packageNames = new Set();
+
+  for (const file of files) {
+    const packageDir = getWorkspacePackageDir(file);
+
+    if (!packageDir) continue;
+
+    const packageJsonPath = `${packageDir}/package.json`;
+    const absolutePackageJsonPath = path.join(repoRoot, packageJsonPath);
+
+    if (!existsSync(absolutePackageJsonPath)) continue;
+
+    const packageJson = readRepoJson(packageJsonPath);
+
+    if (packageJson.private) continue;
+    if (typeof packageJson.name !== 'string') continue;
+
+    packageNames.add(packageJson.name);
+  }
+
+  return [...packageNames].sort();
+}
+
+export function createMainToNextBetaPreState() {
+  const initialVersions = {};
+
+  for (const packageDir of getWorkspacePackageDirs()) {
+    const packageJson = readRepoJson(`${packageDir}/package.json`);
+
+    if (
+      typeof packageJson.name !== 'string' ||
+      typeof packageJson.version !== 'string'
+    ) {
+      continue;
+    }
+
+    initialVersions[packageJson.name] = packageJson.version;
+  }
+
+  return {
+    mode: 'pre',
+    tag: 'beta',
+    initialVersions,
+    changesets: [],
+  };
+}
+
+export function validateMainToNextBetaPreState(preState) {
+  if (preState?.mode !== 'pre') {
+    throw new Error(
+      `next must be in active Changesets pre-release mode before direct sync, found ${JSON.stringify(preState?.mode ?? null)}.`
+    );
+  }
+
+  if (preState?.tag !== 'beta') {
+    throw new Error(
+      `next must use the beta pre-release tag before direct sync, found ${JSON.stringify(preState?.tag ?? null)}.`
+    );
+  }
+}
+
+function ensureMainToNextBetaPreMode() {
+  const existingPreState = readRepoJsonIfExists('.changeset/pre.json');
+
+  if (existingPreState) {
+    validateMainToNextBetaPreState(existingPreState);
+    return { action: 'kept' };
+  }
+
+  writeRepoFile(
+    '.changeset/pre.json',
+    JSON.stringify(createMainToNextBetaPreState(), null, 2)
+  );
+
+  return { action: 'created' };
+}
+
+export function createMainToNextSyncChangesetContent(packageName) {
+  return `---\n"${packageName}": patch\n---\n\nSynced latest changes from \`main\` into the beta lane.\n`;
+}
+
+function getMainToNextSyncChangesetFilename(packageName) {
+  const safeName = packageName
+    .replace(packageScopePattern, '')
+    .replace(nonPackageFilenameCharacterPattern, '-')
+    .replace(surroundingHyphenPattern, '')
+    .toLowerCase();
+
+  return `${mainToNextSyncChangesetPrefix}${safeName}.md`;
+}
+
+export function getMainToNextSyncChangesetFiles(packageNames) {
+  return packageNames.map(
+    (packageName) =>
+      `.changeset/${getMainToNextSyncChangesetFilename(packageName)}`
+  );
+}
+
+function cleanupMainToNextSyncChangesets() {
+  const changesetDir = path.join(repoRoot, '.changeset');
+
+  if (!existsSync(changesetDir)) return;
+
+  for (const entry of readdirSync(changesetDir, { withFileTypes: true })) {
+    if (
+      entry.isFile() &&
+      entry.name.startsWith(mainToNextSyncChangesetPrefix) &&
+      entry.name.endsWith('.md')
+    ) {
+      rmSync(path.join(changesetDir, entry.name));
+    }
+  }
+}
+
+function writeMainToNextSyncChangesets(packageNames) {
+  cleanupMainToNextSyncChangesets();
+
+  if (packageNames.length === 0) return [];
+
+  const changesetDir = path.join(repoRoot, '.changeset');
+  const files = getMainToNextSyncChangesetFiles(packageNames);
+
+  mkdirSync(changesetDir, { recursive: true });
+
+  for (const [index, packageName] of packageNames.entries()) {
+    const file = files[index];
+    writeRepoFile(file, createMainToNextSyncChangesetContent(packageName));
+  }
+
+  return files;
+}
+
 function normalizePackageForVersionOnlyCompare(packageJson) {
   return JSON.stringify({
     ...packageJson,
     version: '__plate_sync_version__',
   });
+}
+
+function normalizePackageForVersionAndDependenciesCompare(packageJson) {
+  const normalized = {
+    ...packageJson,
+    version: '__plate_sync_version__',
+  };
+
+  for (const field of dependencyFieldNames) {
+    delete normalized[field];
+  }
+
+  return JSON.stringify(normalized);
+}
+
+function getWorkspacePackageNames() {
+  return new Set(
+    getWorkspacePackageDirs()
+      .map((packageDir) => readRepoJson(`${packageDir}/package.json`).name)
+      .filter((name) => typeof name === 'string')
+  );
+}
+
+function validateVersionedDependencyChanges({ oursJson, resolvedJson }) {
+  const workspacePackageNames = getWorkspacePackageNames();
+  const invalidChanges = [];
+
+  for (const field of dependencyFieldNames) {
+    const oursDependencies = oursJson[field] ?? {};
+    const resolvedDependencies = resolvedJson[field] ?? {};
+    const dependencyNames = new Set([
+      ...Object.keys(oursDependencies),
+      ...Object.keys(resolvedDependencies),
+    ]);
+
+    for (const dependencyName of dependencyNames) {
+      if (
+        oursDependencies[dependencyName] ===
+        resolvedDependencies[dependencyName]
+      ) {
+        continue;
+      }
+
+      if (!workspacePackageNames.has(dependencyName)) {
+        invalidChanges.push(`${field}.${dependencyName}`);
+      }
+    }
+  }
+
+  if (invalidChanges.length > 0) {
+    throw new Error(
+      `Package manifest beta versioning changed non-workspace dependencies: ${invalidChanges.join(', ')}.`
+    );
+  }
 }
 
 export function resolvePackageManifestForMainToNextSync({ ours, theirs }) {
@@ -314,6 +575,62 @@ function parseSemver(version) {
     patch: Number(match[3]),
     pre: match[4] ?? '',
   };
+}
+
+function comparePrerelease(left, right) {
+  const leftParts = left.split('.');
+  const rightParts = right.split('.');
+  const length = Math.max(leftParts.length, rightParts.length);
+
+  for (let index = 0; index < length; index++) {
+    const leftPart = leftParts[index];
+    const rightPart = rightParts[index];
+
+    if (leftPart === undefined) return -1;
+    if (rightPart === undefined) return 1;
+    if (leftPart === rightPart) continue;
+
+    const leftNumber = numericIdentifierPattern.test(leftPart)
+      ? Number(leftPart)
+      : null;
+    const rightNumber = numericIdentifierPattern.test(rightPart)
+      ? Number(rightPart)
+      : null;
+
+    if (leftNumber !== null && rightNumber !== null) {
+      return Math.sign(leftNumber - rightNumber);
+    }
+
+    if (leftNumber !== null) return -1;
+    if (rightNumber !== null) return 1;
+
+    return leftPart < rightPart ? -1 : 1;
+  }
+
+  return 0;
+}
+
+function compareSemver(left, right) {
+  const leftVersion = parseSemver(left);
+  const rightVersion = parseSemver(right);
+
+  if (!leftVersion || !rightVersion) {
+    throw new Error(
+      `Cannot compare invalid semver versions: ${left}, ${right}`
+    );
+  }
+
+  for (const key of ['major', 'minor', 'patch']) {
+    if (leftVersion[key] !== rightVersion[key]) {
+      return Math.sign(leftVersion[key] - rightVersion[key]);
+    }
+  }
+
+  if (leftVersion.pre === rightVersion.pre) return 0;
+  if (!leftVersion.pre) return 1;
+  if (!rightVersion.pre) return -1;
+
+  return comparePrerelease(leftVersion.pre, rightVersion.pre);
 }
 
 function parseChangelog(content) {
@@ -564,6 +881,12 @@ export function getMainToNextSyncMetadataFiles({
   ].sort();
 }
 
+export function getMainToNextSyncCommitMessage({ changesets = [] } = {}) {
+  return changesets.length > 0
+    ? mainToNextSyncCommitMessage
+    : mainToNextSyncSkipReleaseCommitMessage;
+}
+
 function tryReadGitCommitFile(commit, file) {
   const result = runGitProcess(['show', `${commit}:${file}`]);
 
@@ -585,10 +908,21 @@ export function verifyMainToNextResolvedFile({ file, ours, resolved, theirs }) {
     const oursJson = JSON.parse(ours);
     const resolvedJson = JSON.parse(resolved);
     const theirsJson = JSON.parse(theirs);
+    const resolvedAdvancedPrerelease =
+      resolvedJson.name === oursJson.name &&
+      resolvedJson.version !== oursJson.version &&
+      isPrereleaseVersion(resolvedJson.version) &&
+      compareSemver(resolvedJson.version, oursJson.version) > 0;
+
+    if (resolvedJson.name !== oursJson.name) {
+      throw new Error(
+        `${file} changed package name from ${oursJson.name} to ${resolvedJson.name}.`
+      );
+    }
 
     if (
-      isPrereleaseVersion(oursJson.version) &&
-      resolvedJson.version !== oursJson.version
+      resolvedJson.version !== oursJson.version &&
+      !resolvedAdvancedPrerelease
     ) {
       throw new Error(
         `${file} downgraded next/beta version ${oursJson.version} to ${resolvedJson.version}.`
@@ -604,14 +938,36 @@ export function verifyMainToNextResolvedFile({ file, ours, resolved, theirs }) {
       normalizedResolved !== normalizedOurs &&
       normalizedResolved !== normalizedTheirs
     ) {
-      throw new Error(
-        `${file} contains package manifest fields that match neither next nor main.`
-      );
+      if (!resolvedAdvancedPrerelease) {
+        throw new Error(
+          `${file} contains package manifest fields that match neither next nor main.`
+        );
+      }
+
+      const normalizedVersionedResolved =
+        normalizePackageForVersionAndDependenciesCompare(resolvedJson);
+      const normalizedVersionedOurs =
+        normalizePackageForVersionAndDependenciesCompare(oursJson);
+      const normalizedVersionedTheirs =
+        normalizePackageForVersionAndDependenciesCompare(theirsJson);
+
+      if (
+        normalizedVersionedResolved !== normalizedVersionedOurs &&
+        normalizedVersionedResolved !== normalizedVersionedTheirs
+      ) {
+        throw new Error(
+          `${file} contains package manifest fields outside beta versioning that match neither next nor main.`
+        );
+      }
+
+      validateVersionedDependencyChanges({ oursJson, resolvedJson });
     }
 
     return {
       file,
-      message: `kept package version ${resolvedJson.version}`,
+      message: resolvedAdvancedPrerelease
+        ? `advanced beta package version ${oursJson.version} to ${resolvedJson.version}`
+        : `kept package version ${resolvedJson.version}`,
       type: 'package-manifest',
     };
   }
@@ -632,9 +988,36 @@ export function verifyMainToNextResolvedFile({ file, ours, resolved, theirs }) {
     const expected = getMainToNextChangelogResolution({ ours, theirs });
 
     if (normalizeText(resolved) !== normalizeText(expected.content)) {
-      throw new Error(
-        `${file} does not match the deterministic main-to-next changelog merge.`
+      const expectedStableSections = parseChangelog(
+        expected.content
+      ).sections.filter(isStableChangelogSection);
+      const resolvedSectionsByVersion = new Map(
+        parseChangelog(resolved).sections.map((section) => [
+          section.version,
+          section,
+        ])
       );
+      const missingOrChangedSections = expectedStableSections.filter(
+        (section) =>
+          normalizeText(resolvedSectionsByVersion.get(section.version)?.raw) !==
+          normalizeText(section.raw)
+      );
+
+      if (missingOrChangedSections.length > 0) {
+        throw new Error(
+          `${file} does not match the deterministic main-to-next changelog merge.`
+        );
+      }
+
+      return {
+        file,
+        insertedStableVersions: expected.insertedStableVersions,
+        message:
+          expected.insertedStableVersions.length > 0
+            ? `verified versioned changelog with stable sections ${expected.insertedStableVersions.join(', ')}`
+            : 'verified versioned changelog stable history',
+        type: 'changelog',
+      };
     }
 
     return {
@@ -656,7 +1039,7 @@ export function verifyMainToNextSyncMergeCommit({ commit = 'HEAD' } = {}) {
 
   if (parents.length < 2) {
     throw new Error(
-      `${resolvedCommit} is not a merge commit; sync/main-to-next must preserve the main merge parent.`
+      `${resolvedCommit} is not a merge commit; main -> next sync must preserve the main merge parent.`
     );
   }
 
@@ -779,12 +1162,11 @@ export function createOrUpdatePromotePullRequest({
   return { action: 'created' };
 }
 
-export function createOrUpdateMainToNextSyncPullRequest({
+export function syncMainToNextDirect({
   dryRun = false,
   env = process.env,
+  push = false,
 } = {}) {
-  const repository = requireRepository(env);
-
   runGit(['fetch', 'origin', 'main', 'next'], { dryRun });
 
   const aheadText = dryRun
@@ -803,6 +1185,12 @@ export function createOrUpdateMainToNextSyncPullRequest({
     return { action: 'skipped', ahead };
   }
 
+  assertCleanWorktreeForDirectSync({ dryRun });
+
+  const mergeBase = getGitMergeBase('origin/next', 'origin/main');
+  const mainChangedFiles = listGitDiffFiles(mergeBase, 'origin/main');
+  const changedPackages = getMainToNextChangedPackages(mainChangedFiles);
+
   runGit(['config', 'user.name', 'github-actions[bot]'], { dryRun });
   runGit(
     [
@@ -814,7 +1202,7 @@ export function createOrUpdateMainToNextSyncPullRequest({
       dryRun,
     }
   );
-  runGit(['checkout', '-B', mainToNextSyncBranch, 'origin/next'], { dryRun });
+  runGit(['checkout', '-B', 'next', 'origin/next'], { dryRun });
   runGit(['merge', '--no-ff', '--no-commit', 'origin/main'], {
     allowFailure: true,
     dryRun,
@@ -823,84 +1211,67 @@ export function createOrUpdateMainToNextSyncPullRequest({
   const resolutionReport = dryRun
     ? createMainToNextResolutionReport()
     : resolveMainToNextMetadataConflicts();
-  const pullRequest = buildMainToNextSyncPullRequest({ resolutionReport });
+  const preMode = dryRun
+    ? { action: 'dry-run' }
+    : ensureMainToNextBetaPreMode();
+  const changesets = dryRun
+    ? getMainToNextSyncChangesetFiles(changedPackages)
+    : writeMainToNextSyncChangesets(changedPackages);
+
+  if (changesets.length > 0) {
+    runPnpm(['ci:version'], { dryRun });
+  }
+  const commitMessage = getMainToNextSyncCommitMessage({ changesets });
 
   runGit(
-    [
-      'commit',
-      '--allow-empty',
-      '-m',
-      'chore: sync main to next [skip release]',
-    ],
+    ['add', '.changeset', 'apps', 'packages', 'package.json', 'pnpm-lock.yaml'],
     {
       dryRun,
     }
   );
-  runGit(['push', 'origin', `HEAD:${mainToNextSyncBranch}`, '--force'], {
-    dryRun,
-  });
+  runGit(['commit', '--allow-empty', '-m', commitMessage], { dryRun });
 
-  const existing = runGh(
-    [
-      'pr',
-      'list',
-      '--base',
-      pullRequest.base,
-      '--head',
-      pullRequest.head,
-      '--state',
-      'open',
-      '--repo',
-      repository,
-      '--json',
-      'number',
-      '--jq',
-      '.[0].number // empty',
-    ],
-    { capture: true, dryRun }
-  );
-
-  if (existing) {
-    runGh(
-      [
-        'pr',
-        'edit',
-        existing,
-        '--repo',
-        repository,
-        '--title',
-        pullRequest.title,
-        '--body',
-        pullRequest.body,
-      ],
-      { dryRun }
-    );
-    console.log(
-      `Updated main -> next sync PR #${existing} (${ahead} commits pending).`
-    );
-    return { action: 'updated', ahead, number: existing };
+  if (!dryRun) {
+    verifyMainToNextSyncMergeCommit({ commit: 'HEAD' });
   }
 
-  runGh(
-    [
-      'pr',
-      'create',
-      '--base',
-      pullRequest.base,
-      '--head',
-      pullRequest.head,
-      '--repo',
-      repository,
-      '--title',
-      pullRequest.title,
-      '--body',
-      pullRequest.body,
-    ],
-    { dryRun }
-  );
-  console.log(`Created main -> next sync PR (${ahead} commits pending).`);
+  if (push) {
+    runGit(['push', 'origin', 'HEAD:next'], { dryRun });
+    console.log(
+      `Synced ${ahead} main commit(s) directly into next with ${changesets.length} beta changeset(s).`
+    );
 
-  return { action: 'created', ahead };
+    return {
+      action: dryRun ? 'dry-run' : 'pushed',
+      ahead,
+      changedPackages,
+      changesets,
+      preMode,
+      resolutionReport,
+    };
+  }
+
+  if (dryRun) {
+    console.log(
+      'Dry run: would ensure next is in beta pre-release mode in the sync commit.'
+    );
+    console.log(
+      `Dry run: would sync ${ahead} main commit(s) into next. Re-run with --push to update origin/next.`
+    );
+  } else {
+    console.log(
+      `Created local main -> next sync commit for ${ahead} commit(s) with ${changesets.length} beta changeset(s). Re-run with --push to update origin/next.`
+    );
+  }
+
+  return {
+    action: dryRun ? 'dry-run' : 'committed',
+    ahead,
+    changedPackages,
+    changesets,
+    preMode,
+    resolutionReport,
+  };
 }
 
 function readOption(args, name) {
@@ -934,14 +1305,14 @@ if (isMainModule()) {
         version: readOption(args, '--version'),
       });
     } else if (command === 'sync-main-to-next') {
-      createOrUpdateMainToNextSyncPullRequest({ dryRun });
+      syncMainToNextDirect({ dryRun, push: args.includes('--push') });
     } else if (command === 'verify-main-to-next-sync') {
       verifyMainToNextSyncMergeCommit({
         commit: readOption(args, '--commit') ?? 'HEAD',
       });
     } else {
       throw new Error(
-        'Usage: release-branch-prs.mjs <promote --version x.y.z | sync-main-to-next | verify-main-to-next-sync> [--dry-run]'
+        'Usage: release-branch-prs.mjs <promote --version x.y.z | sync-main-to-next [--push] | verify-main-to-next-sync> [--dry-run]'
       );
     }
   } catch (error) {
