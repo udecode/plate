@@ -129,7 +129,7 @@ Completion Gates:
 | Docs lane shape satisfied | pending | Check the lane-specific structure against `docs-creator` | pending |
 | Source-backed claim audit | pending | Verify every named API/option/transform/component/import/route against source | pending |
 | Ownership map verified | pending | Confirm package/layer/kit/app-local ownership claims against source | pending |
-| MDX/content parser | pending | Run `pnpm --filter www build:contentlayer` for MDX/content changes, or record N/A | pending |
+| MDX/content parser | pending | Run `pnpm --filter www build:source` for MDX/content changes, or record N/A | pending |
 | Links/routes/previews verified | pending | Check leaf links, routes, anchors, and `<ComponentPreview>` names or record N/A | pending |
 | Plugin page specifics | pending | If plugin page, apply `docs-creator` kit/manual/API rules or record N/A | pending |
 | Browser/render surface changed | pending | Capture Browser Use proof or record explicit waiver/blocker | pending |
