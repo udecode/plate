@@ -10,6 +10,9 @@ const repoRoot = path.resolve(scriptDir, '../../../..');
 const syncDir = path.join(repoRoot, 'docs/sync/vision');
 const statusPath = path.join(syncDir, 'status.json');
 const args = process.argv.slice(2);
+const DIFF_HUNK_RE = /^@@ -\d+(?:,\d+)? \+(\d+)(?:,\d+)? @@/;
+const LINE_SPLIT_RE = /\r?\n/;
+const TAB_RE = /\t/g;
 
 const sourcePathspecs = [
   'VISION.md',
@@ -36,10 +39,7 @@ const excludedPathPrefixes = [
   'docs/sync/shadcn/dashboard.json',
 ];
 
-const exactInputFiles = new Set([
-  'VISION.md',
-  '.agents/AGENTS.md',
-]);
+const exactInputFiles = new Set(['VISION.md', '.agents/AGENTS.md']);
 
 const inputPathPrefixes = [
   '.agents/rules/',
@@ -65,12 +65,18 @@ const trackedExts = new Set([
 
 const patterns = {
   vision: /\b(VISION\.md|vision|north[- ]star|taste|doctrine)\b/i,
-  supervisor: /\b(sync-vision|slate-auto|autogoal|checkpoint|stopping|handoff|batch|timed|supervisor|loop)\b/i,
-  editor_behavior: /\b(selection|caret|typing|paste|clipboard|undo|redo|IME|composition|beforeinput|native|browser|screenshot|geometry|huge[- ]doc|virtualized|staged)\b/i,
-  api_dx: /\b(API|DX|alias|compat|root|extension|plugin|transaction|tx|state|public|docs|migration)\b/i,
-  research: /\b(research|GitHub|OSS|external|Lexical|ProseMirror|CodeMirror|Monaco|Tiptap|issue harvest|source[- ]mining)\b/i,
-  maintainer: /\b(issue|PR|maintainer|OpenClaw|clawsweeper|ledger|checkmark|triage)\b/i,
-  proof: /\b(proof|oracle|benchmark|metric|p95|test|verify|verification|false positive|Browser)\b/i,
+  supervisor:
+    /\b(sync-vision|slate-auto|autogoal|checkpoint|stopping|handoff|batch|timed|supervisor|loop)\b/i,
+  editor_behavior:
+    /\b(selection|caret|typing|paste|clipboard|undo|redo|IME|composition|beforeinput|native|browser|screenshot|geometry|huge[- ]doc|virtualized|staged)\b/i,
+  api_dx:
+    /\b(API|DX|alias|compat|root|extension|plugin|transaction|tx|state|public|docs|migration)\b/i,
+  research:
+    /\b(research|GitHub|OSS|external|Lexical|ProseMirror|CodeMirror|Monaco|Tiptap|issue harvest|source[- ]mining)\b/i,
+  maintainer:
+    /\b(issue|PR|maintainer|OpenClaw|clawsweeper|ledger|checkmark|triage)\b/i,
+  proof:
+    /\b(proof|oracle|benchmark|metric|p95|test|verify|verification|false positive|Browser)\b/i,
 };
 
 function runGit(gitArgs, options = {}) {
@@ -101,7 +107,8 @@ function parseArgs() {
     plan: null,
   };
 
-  for (let i = 0; i < args.length; i += 1) {
+  let i = 0;
+  while (i < args.length) {
     const arg = args[i];
     if (arg === '--status' || arg === 'status') parsed.statusOnly = true;
     else if (arg === '--dry-run' || arg === 'preview') parsed.dryRun = true;
@@ -113,6 +120,7 @@ function parseArgs() {
     else {
       throw new Error(`Unknown argument: ${arg}`);
     }
+    i += 1;
   }
 
   return parsed;
@@ -196,7 +204,7 @@ function parseAddedLines(diffText, source) {
       file = '';
       continue;
     }
-    const hunk = /^@@ -\d+(?:,\d+)? \+(\d+)(?:,\d+)? @@/.exec(line);
+    const hunk = DIFF_HUNK_RE.exec(line);
     if (hunk) {
       newLine = Number(hunk[1]);
       continue;
@@ -231,7 +239,7 @@ function parseFileLines(files, source) {
 
     if (!fs.existsSync(absolutePath)) continue;
 
-    const lines = fs.readFileSync(absolutePath, 'utf8').split(/\r?\n/);
+    const lines = fs.readFileSync(absolutePath, 'utf8').split(LINE_SPLIT_RE);
 
     for (let index = 0; index < lines.length; index += 1) {
       const text = lines[index].trim();
@@ -258,14 +266,23 @@ function shortSha(sha) {
 
 function makeRunDir(base, target) {
   const date = new Date().toISOString().slice(0, 10);
-  return path.join(syncDir, 'runs', `${date}-${shortSha(base)}-to-${shortSha(target)}`);
+  return path.join(
+    syncDir,
+    'runs',
+    `${date}-${shortSha(base)}-to-${shortSha(target)}`
+  );
 }
 
 function writeTsv(filePath, header, rows) {
-  const escape = (value) => String(value ?? '').replace(/\t/g, ' ').replace(/\r?\n/g, ' ');
+  const escapeTsvCell = (value) =>
+    String(value ?? '')
+      .replace(TAB_RE, ' ')
+      .replace(LINE_SPLIT_RE, ' ');
   const text = [
     header.join('\t'),
-    ...rows.map((row) => header.map((key) => escape(row[key])).join('\t')),
+    ...rows.map((row) =>
+      header.map((key) => escapeTsvCell(row[key])).join('\t')
+    ),
   ].join('\n');
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
   fs.writeFileSync(filePath, `${text}\n`);
@@ -274,30 +291,63 @@ function writeTsv(filePath, header, rows) {
 function summarizeCounts(rows, key) {
   const counts = new Map();
   for (const row of rows) {
-    for (const value of String(row[key] ?? '').split(',').filter(Boolean)) {
+    for (const value of String(row[key] ?? '')
+      .split(',')
+      .filter(Boolean)) {
       counts.set(value, (counts.get(value) ?? 0) + 1);
     }
   }
-  return [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+  return [...counts.entries()].sort(
+    (a, b) => b[1] - a[1] || a[0].localeCompare(b[0])
+  );
 }
 
 function main() {
   const options = parseArgs();
   const status = readStatus();
   const target = options.target ?? runGit(['rev-parse', 'HEAD']);
-  const base = options.base ?? status.lastSyncedCommit ?? runGit(['rev-list', '--max-parents=0', 'HEAD']);
+  const base =
+    options.base ??
+    status.lastSyncedCommit ??
+    runGit(['rev-list', '--max-parents=0', 'HEAD']);
 
-  const committedNameStatus = runGit(['diff', '--name-status', '-M', base, target, ...pathspecArgs()]);
+  const committedNameStatus = runGit([
+    'diff',
+    '--name-status',
+    '-M',
+    base,
+    target,
+    ...pathspecArgs(),
+  ]);
   const committedFiles = parseNameStatus(committedNameStatus, 'committed');
-  const committedDiff = runGit(['diff', '--unified=0', '--no-ext-diff', base, target, ...pathspecArgs()]);
+  const committedDiff = runGit([
+    'diff',
+    '--unified=0',
+    '--no-ext-diff',
+    base,
+    target,
+    ...pathspecArgs(),
+  ]);
   const committedCandidates = parseAddedLines(committedDiff, 'committed');
 
   let workingFiles = [];
   let workingCandidates = [];
   if (options.includeWorkingTree && target === runGit(['rev-parse', 'HEAD'])) {
-    const workingNameStatus = runGit(['diff', '--name-status', '-M', target, ...pathspecArgs()]);
+    const workingNameStatus = runGit([
+      'diff',
+      '--name-status',
+      '-M',
+      target,
+      ...pathspecArgs(),
+    ]);
     workingFiles = parseNameStatus(workingNameStatus, 'working-tree');
-    const workingDiff = runGit(['diff', '--unified=0', '--no-ext-diff', target, ...pathspecArgs()]);
+    const workingDiff = runGit([
+      'diff',
+      '--unified=0',
+      '--no-ext-diff',
+      target,
+      ...pathspecArgs(),
+    ]);
     workingCandidates = parseAddedLines(workingDiff, 'working-tree');
     const untracked = parseUntrackedFiles(
       runGit(['ls-files', '--others', '--exclude-standard', ...pathspecArgs()]),
@@ -333,8 +383,16 @@ function main() {
   const runDir = makeRunDir(base, target);
   fs.mkdirSync(runDir, { recursive: true });
 
-  writeTsv(path.join(runDir, 'changed-files.tsv'), ['source', 'status', 'file'], changedFiles);
-  writeTsv(path.join(runDir, 'candidate-lines.tsv'), ['source', 'categories', 'file', 'line', 'text'], candidateLines);
+  writeTsv(
+    path.join(runDir, 'changed-files.tsv'),
+    ['source', 'status', 'file'],
+    changedFiles
+  );
+  writeTsv(
+    path.join(runDir, 'candidate-lines.tsv'),
+    ['source', 'categories', 'file', 'line', 'text'],
+    candidateLines
+  );
 
   const categoryCounts = summarizeCounts(candidateLines, 'categories');
   const summary = [
@@ -395,7 +453,9 @@ function main() {
     writeJson(statusPath, nextStatus);
   }
 
-  console.log(JSON.stringify({ ...runJson, advanced: options.advance }, null, 2));
+  console.log(
+    JSON.stringify({ ...runJson, advanced: options.advance }, null, 2)
+  );
 }
 
 try {

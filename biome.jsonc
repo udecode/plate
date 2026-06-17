@@ -42,6 +42,8 @@
       "!!**/dist",
       "!!**/public",
       "!!**/skills",
+      "!!docs/editor-issue-harvester/lexical/full",
+      "!!docs/editor-issue-harvester/prosemirror/full",
       "!!**/*otf.json",
       "!!**/*.html",
       "!!tooling/config/global.d.ts",
