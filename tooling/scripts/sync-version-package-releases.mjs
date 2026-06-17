@@ -11,6 +11,8 @@ const execFile = promisify(execFileCallback);
 const defaultOutputPath = 'apps/www/src/generated/release-index.json';
 const githubRepo = 'udecode/plate';
 const githubBaseUrl = `https://github.com/${githubRepo}`;
+const versionPackagesTitlePattern =
+  /^\[Release\] Version packages(?: \([^)]+\))?$/i;
 const packageReleaseHeadingPattern =
   /^##\s+(?<packageName>.+)@(?<version>\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?)[^\S\r\n]*$/gm;
 const releaseTypeHeadingPattern =
@@ -325,7 +327,7 @@ function getReleaseContentWithFooter({
 }
 
 function isVersionPackagesPullRequest(pullRequest) {
-  return pullRequest?.title === '[Release] Version packages';
+  return versionPackagesTitlePattern.test(pullRequest?.title ?? '');
 }
 
 function extractReleasesBody(body) {

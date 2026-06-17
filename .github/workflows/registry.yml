@@ -31,7 +31,13 @@ jobs:
   validate-registry:
     name: Validate Registry
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'pull_request' && github.repository == 'udecode/plate' && github.event.pull_request.title != '[Release] Version packages' }}
+    if: >-
+      github.event_name == 'pull_request' &&
+      github.repository == 'udecode/plate' &&
+      (
+        github.event.pull_request.head.repo.full_name != github.repository ||
+        !startsWith(github.event.pull_request.head.ref, 'changeset-release/')
+      )
 
     concurrency:
       group: ${{ github.workflow }}-validate-${{ github.event.pull_request.number || github.ref }}
