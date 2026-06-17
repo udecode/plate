@@ -42,6 +42,9 @@ Triggers:
 
 - explicit user invocation: `maintainer`, `maintainer heartbeat`, `maintainer
   issues`, `maintainer prs`, `maintainer security`, or a public issue/PR URL;
+- `auto` front-door handoff for public queue prompts, such as `auto PR #123`,
+  `auto issue #123`, `auto all PRs`, `auto all issues`, `auto queue`, or
+  `auto security`;
 - future local scheduler invocation that runs a single Codex heartbeat;
 - user asks for OpenClaw-like repo maintenance without choosing a narrower
   worker.
@@ -128,6 +131,8 @@ explicitly requested.
 ## Use When
 
 - The user invokes `maintainer`.
+- `auto` routes a public GitHub issue, PR, security, queue, or heartbeat
+  prompt here.
 - The user asks to maintain the repo, scan issues, scan PRs, find agent-ready
   work, run a heartbeat, process a queue, triage public GitHub work, or route a
   public issue/PR/security report.

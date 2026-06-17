@@ -1,6 +1,6 @@
 ---
-description: Plate/Slate internal automation supervisor. Runs an autogoal-backed human-like loop across quality, behavior, visual proof, perf, API cleanup, benchmark/test repair, docs, skill repair, and readiness without user micro-routing.
-argument-hint: <lane/surface/objective> [full-loop | timed 1h|2h|overnight | batch-loop]
+description: Plate/Slate ergonomic automation router and internal supervisor. Routes public GitHub queue prompts to maintainer, post-merge/current-tree closure to autoclosure, and runs autogoal-backed Plate/Slate quality loops without user micro-routing.
+argument-hint: '[PR|issue|queue|slate|plate|current tree|post-merge|lane/surface/objective] [full-loop | timed 1h|2h|overnight | batch-loop]'
 disable-model-invocation: true
 ---
 
@@ -8,16 +8,19 @@ disable-model-invocation: true
 
 Handle $ARGUMENTS.
 
-Use this when the user wants Codex to work overnight or for many hours on an
-internal Plate or Slate surface until it is actually good: correct, fast,
-visually stable, well-tested, architecturally clean, docs-aligned, and ready
-for review.
+Use this as the ergonomic Plate/Slate front door. If the prompt names public
+GitHub queue work, route immediately to `maintainer`. If it names already
+applied/current-tree closure, route immediately to `autoclosure`. Otherwise,
+run internal Plate/Slate automation until the surface is actually good:
+correct, fast, visually stable, well-tested, architecturally clean,
+docs-aligned, and ready for review.
 
-This is a supervisor skill. It does not replace `slate-patch`, `slate-plan`,
-`plate-plan`, `slate-ar`, `slate-migration`, `architecture-cleanup`, or
-package owners unless evidence proves the skill topology itself is wrong. It
-routes them, repairs missing proof/metrics/skills, reshapes the Plate/Slate
-skill stack when needed, and keeps the loop honest.
+This is a router and supervisor skill. It does not replace `maintainer`,
+`autoclosure`, `slate-patch`, `slate-plan`, `plate-plan`, `slate-ar`,
+`slate-migration`, `architecture-cleanup`, or package owners unless evidence
+proves the skill topology itself is wrong. It routes them, repairs missing
+proof/metrics/skills, reshapes the Plate/Slate skill stack when needed, and
+keeps the loop honest.
 
 ## Core Take
 
@@ -43,6 +46,12 @@ explicitly deferred, decisions are consolidated, and ship readiness is clean.
 ## Use When
 
 - The user invokes `auto`.
+- The user says `auto PR #123`, `auto issue #123`, `auto <GitHub URL>`,
+  `auto all PRs`, `auto all issues`, `auto queue`, or `auto security`; treat
+  this as a user-friendly `maintainer` invocation, not as internal quality work.
+- The user says `auto current tree`, `auto post-merge`, `auto ready to commit`,
+  or `auto teammate/external branch`; treat this as a user-friendly
+  `autoclosure` invocation.
 - The user asks to run a long autonomous Plate or Slate loop overnight.
 - The surface mixes bugs, perf, visual shifts, virtualization, editor behavior,
   missing tests, API cleanup, and workflow repair.
@@ -65,12 +74,35 @@ explicitly deferred, decisions are consolidated, and ship readiness is clean.
 - The user asks one Slate benchmark target: use `slate-ar perf <target>`.
 - The user asks whether existing Slate gates pass: use `slate-ar gate`.
 - The user asks to maintain public GitHub issues/PRs/security queue, run a repo
-  heartbeat, classify agent-ready queue work, or route across Plate + Slate:
-  use `maintainer`. `auto` is the internal quality supervisor, not the public
-  maintainer control plane.
+  heartbeat, classify agent-ready queue work, or route across Plate + Slate
+  without invoking `auto`: use `maintainer`. If the prompt starts with `auto`,
+  `auto` must route to `maintainer` and then stop doing queue-brain work.
 - The user asks for post-merge, current-tree, teammate branch, external PR,
-  ready-to-commit, or until-clean closure of already-applied work: use
-  `autoclosure`.
+  ready-to-commit, or until-clean closure of already-applied work without
+  invoking `auto`: use `autoclosure`. If the prompt starts with `auto`, `auto`
+  must route to `autoclosure`.
+
+## Front-Door Routing
+
+Resolve public queue and closure intent before lane routing or goal creation.
+`auto` is allowed to be the thing the user remembers; it is not allowed to
+become the public queue brain.
+
+Route these immediately:
+
+| User says | Route | Reason |
+| --- | --- | --- |
+| `auto PR #123`, `auto https://github.com/.../pull/123` | `maintainer <pr>` | public PR queue/control-plane work |
+| `auto issue #123`, `auto https://github.com/.../issues/123` | `maintainer <issue>` | public issue queue/control-plane work |
+| `auto all PRs`, `auto all issues`, `auto queue`, `auto repo heartbeat` | `maintainer heartbeat` or the matching maintainer mode | broad public queue work |
+| `auto security`, `auto GHSA...`, `auto CVE...` | `maintainer security` | security authority boundary |
+| `auto current tree`, `auto post-merge`, `auto ready to commit`, `auto teammate branch` | `autoclosure <target>` | already-applied/current-tree closure |
+| `auto slate`, `auto slate-v2`, `auto huge-document`, `auto editor behavior` | `auto` Slate lane | internal Slate quality loop |
+| `auto plate`, `auto plate packages`, `auto docs`, `auto registry` | `auto` Plate lane | internal Plate quality loop |
+
+When routing away, preserve the user's arguments and newest constraints. Do
+not create a second competing goal under `auto`; let the routed owner create
+or continue the correct goal/template.
 
 ## Lane Routing
 
@@ -125,6 +157,13 @@ timebox, and stop-question policy in the active plan.
 
 Natural prompts should work:
 
+- `auto PR #123`
+- `auto issue #123`
+- `auto all PRs, issues`
+- `auto current tree`
+- `auto post-merge`
+- `auto slate`
+- `auto plate packages`
 - `auto huge-document auto timed 2h`
 - `auto editor behavior batch loop`
 - `auto lexical all issues robustness harvest`

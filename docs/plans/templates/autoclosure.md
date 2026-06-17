@@ -16,6 +16,7 @@ Closure source:
 - target kind: pending
 - target ref / surface: pending
 - base / comparison: pending
+- PR/range diff artifacts: pending
 - current tree scope: pending
 - completion threshold summary: pending
 
@@ -46,6 +47,10 @@ Verification surface:
 Constraints:
 - Closure target is already-landed/current-tree/branch work; do not expand into
   broad quality/perf/research unless a row routes to `auto`.
+- Do not create or use git worktrees, detached sibling checkouts, throwaway
+  clones of this repo, or branch switching for autoclosure. If the target is a
+  PR/range not applied to this checkout, capture the full file list and patch
+  under `docs/plans/artifacts/<plan-slug>/` and audit from that artifact.
 - Patch safe findings; route public API/runtime/product forks to
   `slate-plan`, `plate-plan`, or `major-task`.
 - Do not commit, push, open PRs, merge, release, publish, or mutate public
@@ -57,6 +62,7 @@ Boundaries:
 - Source of truth: pending
 - Allowed edit scope: pending
 - Target diff/tree scope: pending
+- PR/range artifact scope: pending
 - Browser surfaces: pending
 - Package/API surfaces: pending
 - Agent/skill surfaces: pending
@@ -109,6 +115,7 @@ Start Gates:
 | Active goal checked or created | pending | pending |
 | Target kind resolved | pending | pending |
 | Base/comparison resolved or marked N/A | pending | pending |
+| PR/range diff captured when target is not current checkout | pending | pending |
 | Output budget strategy recorded | pending | pending |
 | Public authority boundary recorded | pending | pending |
 | Browser proof decision recorded | pending | pending |
@@ -124,6 +131,11 @@ Work Checklist:
 - [ ] Target map records changed files, untracked files, generated outputs,
       packages, docs, tests, examples, agent rules, and browser surfaces in
       scope, or N/A with reason.
+- [ ] PR/range targets not already applied to this checkout have complete diff
+      artifacts recorded: metadata JSON, name-only file list, and full patch.
+- [ ] No worktree/shadow-checkout proof is used. Every kept patch is applied
+      and verified in this checkout, or the target is handed off as a captured
+      diff review with next owner.
 - [ ] Coherence audit checks stale dirty fixes, fake aliases, docs/API mismatch,
       orphan tests, stale generated output, weak proof commands, and
       Slate-vs-Plate boundary drift.
@@ -164,6 +176,8 @@ Completion Gates:
 | Named verification threshold | pending | Run the proof commands/artifacts named in this plan | pending |
 | Workspace authority proof | pending | Record cwd/tool for every proof command | pending |
 | Target map closure | pending | Record target files/surfaces and comparison basis | pending |
+| PR/range diff artifact closure | pending | Record artifact paths for PR/range targets or N/A when target is current checkout | pending |
+| No worktree closure | pending | Confirm no `git worktree`, detached sibling checkout, throwaway same-repo clone, or branch switch was used for closure proof | pending |
 | Coherence audit closure | pending | Close stale fixes/docs/API/orphan/generated/boundary rows | pending |
 | Focused proof after last patch | pending | Run focused proof or record N/A with reason | pending |
 | Browser proof | pending | Capture Browser/route proof or record N/A/blocker | pending |
@@ -204,6 +218,11 @@ Findings ledger:
 Proof ledger:
 | Surface | Command / audit | Cwd | Result | Follow-up |
 |---------|-----------------|-----|--------|-----------|
+| pending | pending | pending | pending | pending |
+
+Diff artifact ledger:
+| Target | Metadata JSON | Name-only file list | Patch artifact | Current-checkout status |
+|--------|---------------|---------------------|----------------|-------------------------|
 | pending | pending | pending | pending | pending |
 
 Clean pass ledger:
@@ -248,6 +267,7 @@ Verification evidence:
 Final handoff contract:
 - Goal plan: pending
 - Closure target and comparison basis: pending
+- PR/range diff artifacts: pending
 - Loop count and clean pass count: pending
 - Accepted findings fixed: pending
 - Findings rejected/routed: pending

@@ -106,10 +106,49 @@ Resolve the review target before running proof:
   target and record that basis.
 - `branch`: review against the relevant base branch when the branch is named.
 - `commit`: review that commit when named.
-- `PR`: if the PR is public queue work, route to `maintainer`; if the PR is
-  already checked out or merged locally, use the current tree/branch proof.
+- `PR`: never create a sibling worktree or detached checkout for closure. If
+  the PR is public queue work, route to `maintainer`. If the user explicitly
+  wants autoclosure on a PR, capture the complete PR file list and patch in the
+  current checkout, store it beside the plan, and audit from that captured diff
+  plus current source. Patch code only when the PR is already applied to the
+  current checkout, or when the user explicitly asks to apply the PR diff here.
 
 Every proof command must name the cwd/package/app it proves.
+
+## No Worktree Rule
+
+Do not use `git worktree`, detached sibling checkouts, throwaway clones of the
+same repo, or branch switching to perform autoclosure. Closure means "make this
+checkout coherent." Creating a second checkout splits evidence from the files
+the user will commit and creates fake readiness.
+
+If the target is not present in the current checkout, do not patch a shadow
+copy. Capture evidence instead:
+
+```bash
+mkdir -p docs/plans/artifacts/<plan-slug>
+gh pr view <number-or-url> \
+  --json number,title,url,baseRefName,headRefName,author,commits,files \
+  > docs/plans/artifacts/<plan-slug>/pr-<number>.json
+gh pr diff <number-or-url> --patch \
+  > docs/plans/artifacts/<plan-slug>/pr-<number>.patch
+gh pr diff <number-or-url> --name-only \
+  > docs/plans/artifacts/<plan-slug>/pr-<number>.files
+```
+
+If the target is a local commit/range rather than a GitHub PR, capture:
+
+```bash
+git show --stat --name-only <ref>
+git diff --name-only <base>..<head>
+git diff --patch <base>..<head> \
+  > docs/plans/artifacts/<plan-slug>/<base>..<head>.patch
+```
+
+The plan's target map must cite these artifact paths. If the captured PR/range
+needs code changes, the next owner is `maintainer`, `task`, or user-directed
+apply-to-current-checkout work. Do not call the PR/range clean as current-tree
+closure until the changes are actually in this checkout and proof runs here.
 
 ## Closure Loop
 
@@ -119,8 +158,9 @@ Repeat until clean:
    `VISION.md`, `.agents/AGENTS.md`, and the relevant `docs/vision/*.md`.
 2. **Changed-surface map:** list changed files, untracked files, generated
    outputs, package exports, docs, tests, examples, agent rules, and browser
-   surfaces in scope. This is allowed because closure target is the current
-   tree/branch.
+   surfaces in scope. For PR/range targets not applied to this checkout, use
+   the captured diff artifacts as the surface map and stop before patching
+   current files.
 3. **Coherence audit:** look for stale dirty fixes, fake aliases, docs/API
    mismatch, orphan tests, obsolete generated output, weak commands, missing
    changesets when package policy requires one, and violated Slate-vs-Plate
@@ -155,6 +195,9 @@ Clean means:
 - docs/API/examples/tests are coherent with current source;
 - high-risk items are in `Needs your attention` with concrete anchors;
 - no dirty speculative half-patch remains;
+- the changed files being called clean are in the current checkout. Captured
+  PR/range diffs can be reviewed, but they are not "current-tree clean" until
+  applied and verified here;
 - final handoff has changed list, commands, review attention, residual risks,
   and next owner.
 
@@ -196,6 +239,8 @@ the answer gates the next safe closure move.
 Report:
 
 - goal plan path and closure target;
+- PR/range diff artifacts captured, when the target is not already applied to
+  the current checkout;
 - loop count and clean definition result;
 - changed list grouped by code, tests/proof, docs/examples, generated outputs,
   skills/workflow, and reverted/quarantined packets;

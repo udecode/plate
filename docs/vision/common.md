@@ -106,6 +106,11 @@ tests for package ownership, API intent, and public teaching surfaces.
 - `$auto` is internal Plate/Slate quality supervision: behavior, visual proof,
   perf, API cleanup, benchmark/test repair, docs consolidation, and skill
   repair. It must not become the public GitHub queue brain.
+- `$auto` may still be the ergonomic user-facing router. `auto PR #123`,
+  `auto issue #123`, `auto all PRs/issues`, and `auto security` route to
+  `$maintainer`; `auto current tree` and `auto post-merge` route to
+  `$autoclosure`; `auto slate` and `auto plate packages` stay in `$auto`.
+  Routing convenience is not ownership transfer.
 - `$autoclosure` is post-merge/current-tree until-clean closure for already
   applied work. It loops like `autoreview`, patches safe findings, reruns proof,
   and stops only when no accepted actionable findings remain or a real boundary

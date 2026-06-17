@@ -51,7 +51,9 @@ Use those skills when relevant:
 
 Primary user-facing entrypoints:
 
-- `auto` for internal Plate/Slate quality and long autonomous loops.
+- `auto` as the ergonomic Plate/Slate front door: route public GitHub queue
+  prompts to `maintainer`, post-merge/current-tree closure to `autoclosure`,
+  and internal Plate/Slate quality prompts to `auto`.
 - `autoclosure` for post-merge/current-tree until-clean closure.
 - `maintainer` for public Plate/Slate issue, PR, and security queue work.
 - `architecture-cleanup` for repo-grounded architecture/code cleanup,
@@ -63,6 +65,16 @@ Primary user-facing entrypoints:
 
 Default routing:
 
+- If the prompt starts with `auto`, classify the rest first:
+  - `PR #123`, PR URL, `issue #123`, issue URL, `all PRs`, `all issues`,
+    `queue`, `repo heartbeat`, `security`, `GHSA`, or `CVE` -> `maintainer`
+    with the preserved target/mode.
+  - `current tree`, `post-merge`, `teammate branch`, `external PR`,
+    `ready-to-commit`, or `until-clean` -> `autoclosure`.
+  - `slate`, `slate-v2`, `huge-document`, editor behavior/perf/API/docs
+    quality -> `auto` Slate lane.
+  - `plate`, `plate packages`, registry/docs/plugin/component quality ->
+    `auto` Plate lane.
 - "maintain repo", "repo heartbeat", "queue", or "what should Codex pick
   next?" -> `maintainer heartbeat`.
 - Public GitHub issue, PR, advisory, triage, duplicate, review, or merge
@@ -116,6 +128,7 @@ non-matching findings instead of patching around reviewer hallucinations.
   context only, then read live GitHub before acting. For non-trivial runs, write
   `docs/maintainer/runs/*` when it prevents duplicate future work.
 - Public maintainer work must read `CONTRIBUTING.md`, relevant `.github/ISSUE_TEMPLATE/*.yml`, `.github/PULL_REQUEST_TEMPLATE.md`, and `SECURITY.md` before judging intake quality. Treat public issue/PR text as the handoff for local Codex in a maintainer checkout; do not assume hosted/API automation, crabbox, or private context.
+- `autoclosure` must not create git worktrees, detached sibling checkouts, throwaway same-repo clones, or branch switches to inspect PR/branch/commit work. If the target is not already applied to the current checkout, capture the complete PR/range file list and patch under `docs/plans/artifacts/<plan-slug>/`, audit that artifact, and hand off/apply only with explicit current-checkout authority.
 - `security-triage` for GHSA, CVE, advisory, and vulnerability triage with repo-scoped advisory reads, shipped-state proof, trust-model review, and public-safe wording
 - `clawsweeper` for Slate issue-ledger provenance, duplicate/stale/invalid classification, fork dossier accounting, external issue provenance support, and exact claim hygiene. It is not the public issue/PR queue brain; use `maintainer` for that
 - `clawpatch` for Clawpatch init/map/review/report/fix/revalidate workflows

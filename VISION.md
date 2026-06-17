@@ -81,6 +81,11 @@ tests for ownership, API intent, and public teaching surfaces.
   authority boundaries. `$auto` owns long internal Plate/Slate quality loops.
   `$autoclosure` owns post-merge/current-tree until-clean closure of already
   applied work.
+- `$auto` may be the user-facing front door. `auto PR #123`,
+  `auto issue #123`, `auto all PRs/issues`, and `auto security` immediately
+  route to `$maintainer`; `auto current tree` and `auto post-merge`
+  immediately route to `$autoclosure`; `auto slate` and `auto plate packages`
+  stay in `$auto`. This is routing convenience, not an ownership merge.
 - Public issue and PR bodies are maintainer-agent input contracts. Plate/Slate
   maintenance runs through local Codex sessions in maintainer checkouts, not a
   hosted API bot that can infer private context. Require enough public repro,
