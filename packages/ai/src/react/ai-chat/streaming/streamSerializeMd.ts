@@ -15,6 +15,8 @@ import {
   isCompleteMath,
 } from './utils/utils';
 
+const STREAM_LINE_BREAK_PLACEHOLDER = '\uE000platejs-stream-line-break\uE000';
+
 // fixes test: should serialize heading with tailing line break
 // fixes test: incomplete line breaks
 const trimEndHeading = (
@@ -64,13 +66,55 @@ const trimEndHeading = (
   return { trimmedText: '', value };
 };
 
+const escapeEmbeddedTextLineBreaks = (
+  nodes: Descendant[]
+): { hasLineBreaks: boolean; value: Descendant[] } => {
+  let hasLineBreaks = false;
+
+  const value = nodes.map((node) => {
+    if (TextApi.isText(node)) {
+      if (node.text !== '\n' && node.text.includes('\n')) {
+        hasLineBreaks = true;
+
+        return {
+          ...node,
+          text: node.text.replaceAll('\n', STREAM_LINE_BREAK_PLACEHOLDER),
+        };
+      }
+
+      return node;
+    }
+
+    if (ElementApi.isElement(node)) {
+      const escapedChildren = escapeEmbeddedTextLineBreaks(node.children);
+
+      if (escapedChildren.hasLineBreaks) {
+        hasLineBreaks = true;
+
+        return {
+          ...node,
+          children: escapedChildren.value,
+        };
+      }
+    }
+
+    return node;
+  });
+
+  return { hasLineBreaks, value };
+};
+
 export const streamSerializeMd = (
   editor: PlateEditor,
   options: SerializeMdOptions,
   chunk: string
 ) => {
   const { value: optionsValue, ...restOptions } = options;
-  const { value } = trimEndHeading(editor, optionsValue ?? editor.children);
+  const { value: trimmedValue } = trimEndHeading(
+    editor,
+    optionsValue ?? editor.children
+  );
+  const { hasLineBreaks, value } = escapeEmbeddedTextLineBreaks(trimmedValue);
 
   let result = '';
 
@@ -93,6 +137,24 @@ export const streamSerializeMd = (
   result = result.replace(/&#x20;/g, ' ');
   result = result.replace(/&#x200B;/g, ' ');
   result = result.replace(/\u200B/g, '');
+
+  if (hasLineBreaks) {
+    result = result.replaceAll(STREAM_LINE_BREAK_PLACEHOLDER, '\n');
+  }
+
+  if (trimmedChunk.includes('\n') && trimmedChunk !== '\n\n') {
+    const trimmedResult = result.trimEnd();
+
+    if (trimmedResult.endsWith('\n<br />')) {
+      result = trimmedResult.slice(0, -'<br />'.length);
+    } else {
+      const trailingWhitespaceBreakSuffix = `${trimmedChunk}\n`;
+
+      if (result.endsWith(trailingWhitespaceBreakSuffix)) {
+        result = result.slice(0, -trailingWhitespaceBreakSuffix.length);
+      }
+    }
+  }
 
   // remove extra \n but not include \n itself
   // FIXME maybe failed when chunk is more than two'\n'
