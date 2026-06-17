@@ -531,7 +531,7 @@ noise, ecosystem work, already-covered duplicates, or anything paired with an
 open fix PR.
 
 For automatic-looking bug fixes, hand off to `resolve-slate-issue`,
-`slate-patch`, `slate-auto`, or `maintainer` instead of patching from
+`slate-patch`, `auto`, or `maintainer` instead of patching from
 ClawSweeper. Keep the bar stricter: exact current repro, high confidence, no new
 feature/config option, no product decision, narrow code owner, and focused
 regression proof.

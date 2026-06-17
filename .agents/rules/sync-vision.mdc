@@ -160,7 +160,7 @@ Do not promote:
 9. Route owner-specific misses to the owner:
    - skill/rule miss -> `.agents/rules/**`, then `pnpm install`;
    - editor behavior law -> `docs/editor-behavior/**` or `slate-plan`;
-   - Slate automation loop miss -> `slate-auto`;
+   - Slate automation loop miss -> `auto`;
    - research system miss -> `slate-research`;
    - migration miss -> `slate-migration`;
    - benchmark truth -> benchmark target/script owner.

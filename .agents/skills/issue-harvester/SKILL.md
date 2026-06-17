@@ -18,7 +18,7 @@ closed issues that predate AI-written tests. The prompt should be small:
 ```txt
 issue-harvester prosemirror
 issue-harvester facebook/lexical --state all
-slate-auto issue-harvester prosemirror
+auto issue-harvester prosemirror
 ```
 
 The skill expands that into the full issue-by-issue loop. Do not make the user
@@ -48,7 +48,7 @@ Clusters and matrices route work. They never close an issue row.
   issue corpus clustering, portable invariant matrix, and source test inventory.
 - `clawsweeper`: provenance discipline: exact thread, exact behavior, no claim
   without proof, no GitHub mutations unless explicitly asked.
-- `slate-auto`: timeboxed/batch supervisor; delegates `issue-harvester`
+- `auto`: timeboxed/batch supervisor; delegates `issue-harvester`
   to this skill, then continues safe checkpoints.
 - `slate-patch` or `tdd`: write local Slate v2 or Plate tests/fixes once an
   issue row names owner, proof kind, and verification command.
