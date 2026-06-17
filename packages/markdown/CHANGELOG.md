@@ -1,6 +1,18 @@
 # @platejs/markdown
 
+## 54.0.0-beta.1
+
+### Patch Changes
+
+- Synced latest changes from `main` into the beta lane.
+
 ## 54.0.0-beta.0
+
+## 53.2.2
+
+### Patch Changes
+
+- [#5026](https://github.com/udecode/plate/pull/5026) by [@zbeyens](https://github.com/zbeyens) – Serialize hard line breaks inside paragraph text nodes.
 
 ## 53.1.5
 

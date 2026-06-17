@@ -1,6 +1,18 @@
 # @platejs/utils
 
+## 54.0.0-beta.1
+
+### Patch Changes
+
+- Synced latest changes from `main` into the beta lane.
+
 ## 54.0.0-beta.0
+
+## 53.2.1
+
+### Patch Changes
+
+- [#5029](https://github.com/udecode/plate/pull/5029) by [@zbeyens](https://github.com/zbeyens) – Fix block placeholders on single empty list items.
 
 ## 53.1.2
 

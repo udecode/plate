@@ -353,6 +353,18 @@ export type BasePluginNode<C extends AnyPluginConfig = PluginConfig> = {
    */
   isMarkableVoid?: boolean;
   /**
+   * Returns whether an element prop is inert metadata for empty-state checks.
+   *
+   * Props not claimed by a plugin are treated as meaningful state.
+   */
+  isMetadataProp?: (
+    options: BasePluginContext<C> & {
+      key: string;
+      node: TElement;
+      value: unknown;
+    }
+  ) => boolean;
+  /**
    * Whether the node is selectable.
    *
    * @default true

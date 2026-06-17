@@ -1418,6 +1418,9 @@ importers:
       '@platejs/footnote':
         specifier: workspace:*
         version: link:../footnote
+      '@platejs/table':
+        specifier: workspace:*
+        version: link:../table
       '@types/mdast':
         specifier: ^4.0.4
         version: 4.0.4

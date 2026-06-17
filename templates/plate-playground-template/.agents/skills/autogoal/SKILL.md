@@ -295,6 +295,11 @@ A strong goal defines eight things:
 8. Blocked stop condition: when to stop and report the blocker, evidence, and
    next input needed.
 
+If the user requested a timed checkpoint, the plan must also define the
+duration, whether it is minimum active work or an explicit hard stop, the
+initial confidence scorecard when no better metric exists, and how the current
+loop will finish cleanly after the checkpoint is reached.
+
 The `create_goal.objective` field is only a short handle for the active goal.
 Keep it under 240 characters. Put the full contract in the goal plan, not in
 the tool objective.
@@ -347,6 +352,52 @@ Reject or rewrite:
 - "finish"
 - "absolute best" without score rows, pass gates, or evidence
 - "review and decide" without an artifact and acceptance criteria
+
+## Timed Checkpoints
+
+When the user gives a duration such as `30m`, `1h`, `2 hours`, or `10h`,
+treat it as a minimum active-work checkpoint unless they explicitly say
+`max`, `stop at`, `budget cap`, or `timebox hard stop`.
+
+Timed checkpoints are not permission to stop early because the first obvious
+gates passed. They mean: keep increasing confidence until the duration is
+reached, then finish the current loop cleanly.
+
+If the goal already has concrete metrics, use those metrics during the timed
+loop and keep looking for the next highest-value confidence gap until the
+duration elapses.
+
+If there is no concrete metric, create an initial scorecard in the plan before
+substantive work. Use a simple 0-100 confidence score with dimensions that fit
+the task, for example correctness, proof strength, simplicity,
+maintainability, docs/source alignment, risk, and slop removal. Record:
+
+- initial score and dimension scores;
+- what would raise the score;
+- what would lower or cap confidence;
+- next improvement packet;
+- final score at handoff.
+
+After the main implementation gates close, continue with confidence-building
+work until the timed checkpoint is reached:
+
+- review the diff/output against the newest prompt;
+- remove slop, dead code, fake aliases, stale docs, and weak abstractions;
+- refactor toward the durable owner when it reduces real complexity;
+- add or repair missing tests, proof, diagnostics, and source audits;
+- run focused verification again after meaningful changes;
+- repair the owning skill/template when the workflow itself missed the user's
+  expectation.
+
+Do not start a large risky packet near the end unless there is enough time to
+finish, verify, and keep/revert/quarantine it. When the requested duration is
+reached, finish the active loop to a clean boundary: complete the current
+packet, verify it, revert or quarantine unsafe partial work, update the plan,
+and hand off. Never leave dirty half-work merely because the clock expired.
+
+Stop before the timed checkpoint only for a real blocker, an explicit user
+interruption, or an unsafe ambiguity that would make further autonomous work
+harmful. Passing the first checks is not a stop condition.
 
 ## Completion Gate Policy
 
@@ -578,9 +629,12 @@ Gate closure rules:
     searches or reads are allowed, which high-volume paths are excluded, and
     how large results will be capped, counted, or saved as artifacts instead of
     streamed into the goal context.
-12. Use that exact path for
+12. Record timed-checkpoint semantics when the prompt includes a duration. If
+    the duration is not explicitly a hard stop, treat it as minimum active work
+    and add the initial scorecard when no concrete metric exists.
+13. Use that exact path for
    `check-complete.mjs`.
-13. Do not start durable work until the goal is set, verified as already matching,
+14. Do not start durable work until the goal is set, verified as already matching,
    or the user explicitly resolves the missing-goal path.
 
 Set or verify the goal before mutable lane state when the workflow depends on a

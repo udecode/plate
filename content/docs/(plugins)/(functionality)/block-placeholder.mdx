@@ -125,11 +125,11 @@ The plugin shows a placeholder only when every gate passes.
 | Focus | Editor is focused and has a selection. |
 | Selection | Selection is collapsed. |
 | Active block | `editor.api.block()` returns an empty block. |
-| Whole editor | `editor.api.isEmpty()` is false. |
+| Whole editor | The editor is not in its pristine single-empty-block state. Empty blocks with visible structural state, such as list metadata, still qualify. |
 | Placeholder map | The block type matches one entry in `placeholders`. |
 | Query | `query({ editor, node, path, ...ctx })` returns `true`. |
 
-The default `query` returns `true` for root blocks only.
+The default `query` returns `true` for root blocks only. The whole-editor guard uses `editor.api.isElementStateEmpty`, so only `type` and props claimed by plugins through `node.isMetadataProp` are treated as pristine metadata.
 
 ```tsx
 query: ({ path }) => path.length === 1

@@ -59,5 +59,13 @@
     "@platejs/utils": "53.1.2",
     "@platejs/yjs": "53.2.0"
   },
-  "changesets": ["prepare-v54-beta-core", "prepare-v54-beta-slate"]
+  "changesets": [
+    "auto-main-to-next-sync-platejs-ai",
+    "auto-main-to-next-sync-platejs-core",
+    "auto-main-to-next-sync-platejs-markdown",
+    "auto-main-to-next-sync-platejs-utils",
+    "auto-main-to-next-sync-platejs",
+    "prepare-v54-beta-core",
+    "prepare-v54-beta-slate"
+  ]
 }

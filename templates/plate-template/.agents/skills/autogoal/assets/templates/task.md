@@ -23,6 +23,13 @@ First checkpoint:
 - Do not continue into implementation until this extraction is complete or
   explicitly marked N/A with reason.
 
+Timed checkpoint:
+- requested duration: pending
+- semantics: pending
+- initial confidence score: pending
+- improvement loop: pending
+- final score / loop closure: pending
+
 Completion threshold:
 - TODO: Define the exact task done state.
 
@@ -72,6 +79,7 @@ Start Gates:
 | Gate | Applies | Evidence |
 |------|---------|----------|
 | Prompt requirements captured before work | pending | pending |
+| Timed checkpoint parsed | pending | pending |
 | Active goal checked or created | pending | pending |
 | Source of truth read before edits | pending | pending |
 | Acceptance criteria captured | pending | pending |
@@ -88,6 +96,9 @@ Work Checklist:
       section, verification surface, and success criterion is copied into this
       plan as checkable checkpoints before implementation.
 - [ ] Short objective plus threshold, verification surface, constraints, boundaries, and blocked condition are concrete.
+- [ ] If a duration was requested, it is recorded as minimum active work unless
+      explicitly marked hard stop; when no better metric exists, initial and
+      final confidence scores are recorded.
 - [ ] Task source and acceptance criteria are captured.
 - [ ] For public tracker bug reports, behavior claims, technical diagnoses, or
       suggested fixes, reporter claims are challenged before implementation
@@ -126,6 +137,7 @@ Completion Gates:
 | Browser surface changed | pending | Capture browser proof | pending |
 | Final lint/format | pending | Run relevant lint/format command or record N/A | pending |
 | Autoreview | pending | Review final diff/output against objective, acceptance criteria, constraints, and newest user request | pending |
+| Timed checkpoint | pending | If duration was requested, keep improving until elapsed, then finish the current loop cleanly; otherwise N/A | pending |
 | Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` | pending |
 
 Phase / pass table:

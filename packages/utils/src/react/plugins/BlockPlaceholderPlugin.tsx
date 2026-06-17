@@ -34,6 +34,7 @@ export const BlockPlaceholderPlugin =
     editOnly: true,
     options: {
       _target: null,
+      className: undefined,
       placeholders: {
         [KEYS.p]: 'Type something...',
       },
@@ -67,27 +68,11 @@ export const BlockPlaceholderPlugin =
         const { placeholders, query } = getOptions();
 
         const [element, path] = entry;
-
-        // const getPlaceholder = (node: TElement) => {
-        //   if (node?.listStyleType) {
-        //     switch (node.listStyleType) {
-        //       case 'disc':
-        //         return 'List';
-        //         break;
-        //       case 'decimal':
-        //         return 'List';
-        //         break;
-        //       case 'todo':
-        //         return 'To-do';
-        //         break;
-        //     }
-        //   }
-
-        //   const key = getPluginKey(editor, node.type);
-        //   if (!key) return;
-
-        //   return placeholders?.[key];
-        // }
+        const firstNode = editor.children[0] as TElement;
+        const isPristineEmptyEditor =
+          editor.children.length === 1 &&
+          editor.api.isEmpty(firstNode) &&
+          editor.api.isElementStateEmpty(firstNode);
 
         const placeholder = Object.keys(placeholders).find(
           (key) => editor.getType(key) === element.type
@@ -97,7 +82,7 @@ export const BlockPlaceholderPlugin =
           query({ ...ctx, node: element, path }) &&
           placeholder &&
           editor.api.isEmpty(element) &&
-          !editor.api.isEmpty()
+          !isPristineEmptyEditor
         ) {
           setOption('_target', {
             node: element,

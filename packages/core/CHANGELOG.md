@@ -1,10 +1,22 @@
 # @platejs/core
 
+## 54.0.0-beta.1
+
+### Patch Changes
+
+- Synced latest changes from `main` into the beta lane.
+
 ## 54.0.0-beta.0
 
 ### Major Changes
 
 - [#5031](https://github.com/udecode/plate/pull/5031) by [@felixfeng33](https://github.com/felixfeng33) – Prepare v54 beta prerelease versioning.
+
+## 53.2.1
+
+### Patch Changes
+
+- [#5029](https://github.com/udecode/plate/pull/5029) by [@zbeyens](https://github.com/zbeyens) – Add `node.isMetadataProp` and `editor.api.isElementStateEmpty` for element state checks.
 
 ## 53.1.2
 

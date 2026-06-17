@@ -4,12 +4,12 @@
     "autogoal": {
       "source": "udecode/dotai",
       "sourceType": "github",
-      "computedHash": "ac02e9faac0896e2b7922ab3c5536b55baff07b9a69faa06367fca70e1dbc7c4"
+      "computedHash": "b39af211b4e83be092b60f376eac2b58aad58089d904a73058d33f36610ad93a"
     },
     "autoreview": {
       "source": "openclaw/agent-skills",
       "sourceType": "github",
-      "computedHash": "d34696a18be364213ecac92cb09c6242b48252b8f822ffa9b1a23a8beafe8e60"
+      "computedHash": "d4504560d06faeb839c45dce60958d61fff9f18a7530e5e4b343775457799345"
     },
     "debug": {
       "source": "udecode/dotai",

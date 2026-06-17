@@ -57,6 +57,7 @@ export const resolvePlugins = (
     node: {
       isContainer: [],
       isLeaf: [],
+      isMetadataProp: [],
       isText: [],
       leafProps: [],
       textProps: [],
@@ -103,6 +104,10 @@ export const resolvePlugins = (
 
     if (plugin.node?.isContainer) {
       editor.meta.pluginCache.node.isContainer.push(plugin.key);
+    }
+
+    if (plugin.node?.isMetadataProp) {
+      editor.meta.pluginCache.node.isMetadataProp.push(plugin.key);
     }
 
     editor.meta.pluginCache.node.types[plugin.node.type] = plugin.key;

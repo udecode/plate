@@ -1,5 +1,5 @@
 ---
-description: Promote Plate beta from next to stable by triggering promote.yml, reviewing the generated next -> main PR, and guiding post-merge beta re-entry.
+description: Compatibility entrypoint for beta promotion. Prefer release-lanes for end-to-end latest/beta lane maintenance.
 argument-hint: '[repo, dry-run, real promote, PR URL, or release version]'
 name: promote-beta
 metadata:
@@ -9,138 +9,40 @@ metadata:
 
 # Promote Beta
 
-Use this when the user asks to promote beta to stable, run `promote.yml`, open a
-`next -> main` promote PR, review a promote PR, or explain the post-promotion
-steps for Plate release branches.
+Compatibility shim. Use `release-lanes` for end-to-end beta/latest maintenance.
+This file exists so older prompts that say `promote-beta` still route correctly.
 
-## Core Take
+## Route
 
-Promotion is manual-trigger, automated-execution:
+If the request is anything beyond read-only explanation, load
+`.agents/rules/release-lanes.mdc` and follow that skill instead.
 
-1. Maintainer triggers `.github/workflows/promote.yml` on `next`.
-2. Workflow exits Changesets pre mode with `pnpm changeset pre exit`.
-3. Workflow runs `pnpm ci:version`.
-4. Workflow commits/pushes stable versions to `next`.
-5. Workflow opens `next -> main`.
-6. Human reviews and merges with **Create a merge commit**.
-7. `main` release publishes `latest`.
-8. `main -> next` sync lands.
-9. Maintainer manually re-enters beta on `next`.
+The old split was too manual: promote PR, generated sync PR, then beta re-entry.
+The current owner is `release-lanes`, which treats promotion, direct
+`main -> next` sync, beta re-entry, release watching, npm readback, and stale PR
+cleanup as one autogoal-backed lane.
 
-Do not auto-merge. Do not manually run npm publish.
+Do not run the old post-promotion checklist from this file.
 
-## Inputs
+## Quick Commands
 
-- Default repo: current `gh` repo.
-- Default branch for workflow: `next`.
-- Default first action: `dry_run=true`. The GitHub workflow UI default should
-  remain `true`; `false` immediately pushes a promote commit to `next`.
-- Real PR creation requires an explicit user request such as "open the real PR",
-  "run false", "create promote PR", or "真的开".
-
-If the user names a fork, pass it to `--repo`. If not, infer with
-`gh repo view --json nameWithOwner --jq .nameWithOwner`.
-
-## Dry Run
-
-Run dry run first unless the user explicitly says to skip it:
+Create the lane plan:
 
 ```bash
-gh workflow run promote.yml --repo <owner/repo> --ref next -f dry_run=true
+node .agents/skills/autogoal/scripts/create-goal-scratchpad.mjs \
+  --template release-lanes \
+  --title "release lane maintenance"
 ```
 
-Then identify and watch the run:
+Run a promote dry run:
 
 ```bash
-gh run list --workflow promote.yml --repo <owner/repo> --branch next --limit 5 \
-  --json databaseId,status,conclusion,createdAt,url
-gh run watch <run-id> --repo <owner/repo> --exit-status
+gh workflow run promote.yml --ref next -f dry_run=true
 ```
 
-Confirm from logs:
+Run direct `main -> next` sync through the release-lanes script:
 
 ```bash
-gh run view <run-id> --repo <owner/repo> --log | rg -n \
-  "Promoting to|Dry run|skipping commit and push|gh pr create|Created promote PR|Updated promote PR"
+node tooling/scripts/release-branch-prs.mjs sync-main-to-next --dry-run
+node tooling/scripts/release-branch-prs.mjs sync-main-to-next --push
 ```
-
-Dry run success means the workflow can calculate the stable version and simulate
-the PR. It must not push, create a real PR, or publish.
-
-## Real Promote PR
-
-Only after explicit user intent:
-
-```bash
-gh workflow run promote.yml --repo <owner/repo> --ref next -f dry_run=false
-```
-
-Watch it the same way as dry run. Confirm from logs:
-
-- `Promoting to v<version>`
-- commit like `chore: exit beta pre-release mode for v<version> [skip release]`
-- push to `next`
-- created or updated PR URL
-
-Then inspect the PR:
-
-```bash
-gh pr view <number> --repo <owner/repo> \
-  --json number,title,url,headRefName,baseRefName,state,mergeable,isDraft,commits,files,body
-gh pr diff <number> --repo <owner/repo> --name-only
-```
-
-## PR Review Checklist
-
-Expected:
-
-- base is `main`
-- head is `next`
-- PR is not draft
-- PR is mergeable or only blocked by expected checks
-- final commit exits beta pre-release mode
-- `.changeset/pre.json` is absent from the PR head
-- package versions are stable, not `-beta.*`
-- diff is package `package.json` and `CHANGELOG.md` release metadata
-- PR body tells maintainers to use **Create a merge commit**
-- PR body includes the post-merge checklist: wait for `release.yml`, merge the
-  generated `main -> next` sync PR first, then run `pnpm changeset pre enter beta`
-
-Commit list may be long. That is normal: promotion brings the unreleased `next`
-history into `main`. Do not expect a one-commit PR.
-
-For fork tests, test changesets and test changelog text are acceptable when the
-fork state intentionally contains test releases. For real upstream promotion,
-call out any test-only changeset, fake changelog entry, or fork-only commit as a
-blocker.
-
-## Handoff
-
-Report:
-
-- workflow run URL
-- calculated version
-- push commit, if real run
-- PR URL
-- whether the PR content is acceptable for fork test or real upstream release
-- explicit merge instruction: **Create a merge commit**, not squash/rebase
-
-After the promote PR is merged:
-
-1. Wait for `release.yml` on `main`.
-2. Merge the generated `main -> next` sync PR first. Even an empty diff PR is
-   valid when it carries the `main` merge commit back into `next`; merge it
-   before re-entering beta.
-3. Re-enter beta on `next` manually:
-
-```bash
-git switch next
-git pull
-pnpm changeset pre enter beta
-git add .changeset/pre.json
-git commit -m "chore: enter beta prerelease mode"
-git push origin next
-```
-
-Do this only after the sync PR lands, not before. `.changeset/pre.json` belongs
-on `next` only and must not land on `main`.

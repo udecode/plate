@@ -121,11 +121,9 @@ jobs:
             echo "- Dry run: \`${DRY_RUN}\`"
             echo "- Next: review and merge the promote PR with **Create a merge commit**."
             echo ""
-            echo "After the promote PR lands on main, merge the generated main-to-next sync PR first. Even an empty diff PR can be a valid history sync. Then re-enter beta on next:"
+            echo "After the promote PR lands on main and release.yml publishes latest, run the release-lanes autogoal workflow. It syncs main directly into next, restores beta pre mode in the sync commit when needed, and verifies the beta lane:"
             echo '```bash'
-            echo "pnpm changeset pre enter beta"
-            echo "git add .changeset/pre.json"
-            echo "git commit -m 'chore: re-enter beta pre-release mode'"
-            echo "git push origin next"
+            echo "node .agents/skills/autogoal/scripts/create-goal-scratchpad.mjs --template release-lanes --title 'release lane maintenance'"
+            echo "# then follow the release-lanes skill"
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
