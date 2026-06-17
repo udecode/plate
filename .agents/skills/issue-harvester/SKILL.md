@@ -286,8 +286,8 @@ contract gap.
 Search for exact local coverage before writing a test:
 
 ```bash
-rg -n "<distinct behavior phrase>|<issue number>|<upstream test label>" .tmp/slate-v2 packages apps docs
-rg --files .tmp/slate-v2 | rg '(test|spec|playwright|integration|fixtures)'
+rg -n "<distinct behavior phrase>|<issue number>|<upstream test label>" packages apps docs content benchmarks
+rg --files packages apps docs content benchmarks | rg '(test|spec|playwright|integration|fixtures)'
 ```
 
 Coverage is exact only when it proves the same behavior class, not merely the
@@ -306,9 +306,9 @@ new row. Avoid duplicate tests.
 Prefer focused commands from the owner repo:
 
 ```bash
-cd .tmp/slate-v2
+pnpm --filter @platejs/<package> test -- <file-or-pattern>
 bun test ./packages/<package>/test/<file>.ts --test-name-pattern "<test>"
-PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun run playwright playwright/integration/examples/<suite>.test.ts --project=chromium --grep "<test>"
+PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 pnpm --filter www exec playwright test --config playwright.slate.config.ts --project=chromium tests/slate-browser/donor/examples/<suite>.test.ts --grep "<test>"
 ```
 
 For Plate-owned rows, use the relevant Plate package/example command. If the

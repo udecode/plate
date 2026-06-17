@@ -336,9 +336,9 @@ Split long work into checkpoints that fit one high-quality prompt:
   blockers and user-answer checkpoints for final handoff instead of stopping
   immediately when safe alternate work remains.
 - **Readiness checkpoint:** run the lane's readiness owner and pause only for
-  explicit commit/PR/release authority. For Slate private-alpha loops this can
-  be `slate-ar ship` only when ship/release was explicitly requested; otherwise
-  readiness means behavior, proof, docs, and plan ledger closure.
+  explicit commit/PR/release authority. For Slate loops, readiness means
+  behavior, proof, package/API, docs, and plan ledger closure unless
+  ship/release was explicitly requested.
 
 Each checkpoint must end with:
 
@@ -561,7 +561,7 @@ Repair repeated or avoidable workflow slowdowns:
 - slow specialist routing -> patch the owning `.agents/rules/*.mdc`;
 - slow Slate finalization/readiness -> patch `slate-ar`;
 - slow proof gate -> add a focused gate or route through the lane's proof owner;
-- slow browser repetition -> promote reusable proof into `slate-browser`;
+- slow browser repetition -> promote reusable proof into `@platejs/browser`;
 - slow benchmark setup -> fix benchmark target/script ergonomics;
 - slow output -> narrow command output or write artifacts instead of streaming.
 - slow or silent review -> bound the review packet, record the timeout, then
@@ -576,14 +576,17 @@ only honest evidence for the claim, but the handoff must say so.
 Automation should use the repo's known focused commands, not improvised command
 shapes.
 
-## Private-Alpha Posture
+## Release Boundary
 
-Slate v2 is continuous private alpha unless the user explicitly asks for
-ship/release/publish/PR. In ordinary automation loops:
+Slate packages are beta-release candidates in this repo, but ordinary
+automation loops still do not open PRs, publish, or run release packaging unless
+the prompt or active lane asks for it. In ordinary automation loops:
 
-- do not raise release, publish, changeset, or PR readiness as a next step;
-- do not treat published-package artifact work as a blocker;
-- record package/runtime deltas as private-alpha runtime state;
+- do not raise release, publish, changeset, or PR readiness as a next step
+  unless that surface is in scope;
+- do not treat published-package artifact work as a blocker for behavior or
+  package closure;
+- record package/runtime deltas as package state, not as release authority;
 - keep closure on behavior proof, Browser proof, package checks, workflow
   repairs, and the active plan ledger;
 - route release packaging only when the prompt names ship, release, publish,

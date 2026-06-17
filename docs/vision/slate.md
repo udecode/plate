@@ -13,13 +13,14 @@ Slate doctrine after the lane is selected.
 2. Root `VISION.md`, then this file.
 3. `docs/slate-v2/agent-start.md`.
 4. Relevant `slate-*` source rule under `.agents/rules`.
-5. Live `.tmp/slate-v2` source/tests/benchmarks for current Slate behavior.
+5. Transplanted Slate package source/tests/benchmarks in this Plate checkout:
+   `packages/slate*`, `packages/browser`, `packages/yjs`,
+   `apps/www/tests/slate-browser/**`, and `benchmarks/slate-v2/**`.
 6. `docs/slate-v2/**` for accepted claim width.
 7. `benchmarks/targets/slate-v2.json` for perf target authority.
 
-`plate-2` commands prove docs, skills, benchmark registry, and planning
-surfaces. They do not prove live Slate runtime behavior unless the relevant
-owner is in this checkout.
+Plate repo root commands are the current Slate runtime authority. Do not use a
+donor checkout as proof after the transplant.
 
 ## Slate Rules
 
@@ -69,11 +70,11 @@ owner is in this checkout.
 - Browser editing claims require model, DOM, selection/caret where observable,
   focus owner, commit metadata when mutating, legal trace, replayability, and
   follow-up typing.
-- Use `slate-browser` to the maximum reasonable extent for browser-facing
+- Use `@platejs/browser` to the maximum reasonable extent for browser-facing
   proof.
 - Route-local Playwright is acceptable for first reproduction only. If the same
-  action/assertion appears twice, move it into `slate-browser` or record why the
-  abstraction would be fake.
+  action/assertion appears twice, move it into `@platejs/browser` or record why
+  the abstraction would be fake.
 - Require screenshots/geometry checks for text movement, blank windows,
   overlap, wrong caret line, wrong margin click, or wrong scroll anchoring.
 - Do not claim full selection/navigation coverage from one route row.
@@ -118,7 +119,10 @@ status -> gap scan -> behavior proof -> missing oracle repair -> visual proof
 - `maintainer`: public GitHub issue/PR/security queue control plane for the
   merged Plate + Slate repo; routes work to narrower owners and stops at
   authority boundaries.
-- `slate-auto`: overnight supervisor and checkpoint cadence.
+- `auto`: internal Plate/Slate overnight supervisor and checkpoint cadence; use
+  the Slate lane for Slate v2 package/runtime/browser/proof work.
+- `autoclosure`: post-merge/current-tree until-clean closure after Slate work is
+  already applied.
 - `slate-research`: external discovery, OSS/GitHub source synthesis, durable
   research ledgers, and promotion into owners.
 - `slate-patch`: direct bug fix, reproduction, class-level behavior coverage,

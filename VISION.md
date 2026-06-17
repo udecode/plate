@@ -78,8 +78,9 @@ tests for ownership, API intent, and public teaching surfaces.
   works. A plan note without a future behavior change is archaeology.
 - Public repo maintenance is owned by `$maintainer`: issue/PR/security queue,
   heartbeat, VISION fit, duplicate/claim guard, owner routing, proof gates, and
-  authority boundaries. `$slate-auto` stays the internal Slate quality
-  supervisor.
+  authority boundaries. `$auto` owns long internal Plate/Slate quality loops.
+  `$autoclosure` owns post-merge/current-tree until-clean closure of already
+  applied work.
 - Public issue and PR bodies are maintainer-agent input contracts. Plate/Slate
   maintenance runs through local Codex sessions in maintainer checkouts, not a
   hosted API bot that can infer private context. Require enough public repro,

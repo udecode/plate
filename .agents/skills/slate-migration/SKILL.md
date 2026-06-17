@@ -118,8 +118,9 @@ For every migration run, read the smallest set that owns the current decision:
 
 - latest user request and active goal plan;
 - `vision`;
-- `.tmp/slate-v2/docs/migration/slate-v2.md`;
-- current Slate v2 public source under `.tmp/slate-v2/packages/**`;
+- `docs/migration/slate-v2.md`;
+- current Slate public source under `packages/slate*`, `packages/browser`, and
+  `packages/yjs`;
 - target Plate package/example/docs owners under `packages/**`, `apps/**`,
   `docs/**`, or the named surface;
 - `.agents/rules/changeset.mdc` before writing or repairing changesets;
@@ -173,7 +174,7 @@ browser-visible or user-facing.
 
 ## Migration Guide Repair
 
-Repair `.tmp/slate-v2/docs/migration/slate-v2.md` whenever a migration packet
+Repair `docs/migration/slate-v2.md` whenever a migration packet
 reveals:
 
 - a missing old-to-v2 API map;
@@ -211,7 +212,8 @@ changeset depends on a user-only release decision, queue a stopping checkpoint.
 For Plate migration runs:
 
 - treat Plate packages, examples, docs, and tests as the target surface;
-- treat `.tmp/slate-v2` as the current Slate v2 authority;
+- treat the transplanted Slate packages in this checkout as the current Slate
+  authority;
 - migrate package/runtime owners before app/example glue;
 - remove stale compat aliases instead of preserving bad API shape;
 - keep Plate docs latest-state except for explicit migration docs;
