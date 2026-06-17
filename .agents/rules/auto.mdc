@@ -1,21 +1,23 @@
 ---
-description: Slate v2 overnight supervisor. Runs an autogoal-backed human-like loop across quality, behavior, visual proof, perf, API cleanup, benchmark/test repair, external issue/test harvests, skill repair, docs consolidation, and ship readiness without user micro-routing.
-argument-hint: <surface/objective> [full-loop | timed 1h|2h|overnight | batch-loop]
+description: Plate/Slate internal automation supervisor. Runs an autogoal-backed human-like loop across quality, behavior, visual proof, perf, API cleanup, benchmark/test repair, docs, skill repair, and readiness without user micro-routing.
+argument-hint: <lane/surface/objective> [full-loop | timed 1h|2h|overnight | batch-loop]
 disable-model-invocation: true
 ---
 
-# Slate Auto
+# Auto
 
 Handle $ARGUMENTS.
 
-Use this when the user wants Codex to work overnight or for many hours on a
-Slate v2 surface until it is actually good: correct, fast, visually stable,
-well-tested, architecturally clean, and ready for review.
+Use this when the user wants Codex to work overnight or for many hours on an
+internal Plate or Slate surface until it is actually good: correct, fast,
+visually stable, well-tested, architecturally clean, docs-aligned, and ready
+for review.
 
 This is a supervisor skill. It does not replace `slate-patch`, `slate-plan`,
-or `slate-ar` unless evidence proves the skill topology itself is wrong. It
-routes them, repairs missing proof/metrics/skills, reshapes the Slate skill
-stack when needed, and keeps the loop honest.
+`plate-plan`, `slate-ar`, `slate-migration`, `architecture-cleanup`, or
+package owners unless evidence proves the skill topology itself is wrong. It
+routes them, repairs missing proof/metrics/skills, reshapes the Plate/Slate
+skill stack when needed, and keeps the loop honest.
 
 ## Core Take
 
@@ -40,8 +42,8 @@ explicitly deferred, decisions are consolidated, and ship readiness is clean.
 
 ## Use When
 
-- The user invokes `slate-auto`.
-- The user asks to run a long autonomous Slate v2 loop overnight.
+- The user invokes `auto`.
+- The user asks to run a long autonomous Plate or Slate loop overnight.
 - The surface mixes bugs, perf, visual shifts, virtualization, editor behavior,
   missing tests, API cleanup, and workflow repair.
 - The user wants "absolute best" implementation quality without picking every
@@ -56,17 +58,41 @@ explicitly deferred, decisions are consolidated, and ship readiness is clean.
 
 ## Do Not Use When
 
-- The user asks one narrow bug fix: use `slate-patch`.
-- The user asks one architecture/API plan for review: use `slate-plan`.
-- The user asks one benchmark target: use `slate-ar perf <target>`.
-- The user asks whether existing gates pass: use `slate-ar gate`.
+- The user asks one narrow Slate bug fix: use `slate-patch`.
+- The user asks one ordinary local patch outside Slate automation: use `task`.
+- The user asks one architecture/API plan for review: use `slate-plan` or
+  `plate-plan` according to lane.
+- The user asks one Slate benchmark target: use `slate-ar perf <target>`.
+- The user asks whether existing Slate gates pass: use `slate-ar gate`.
 - The user asks to maintain public GitHub issues/PRs/security queue, run a repo
   heartbeat, classify agent-ready queue work, or route across Plate + Slate:
-  use `maintainer`. `slate-auto` is the internal Slate quality supervisor, not
-  the public maintainer control plane.
-- The target is not raw Slate v2 / `Plate repo root`, unless the prompt is an
-  external editor issue/test harvest whose output is explicitly for improving
-  Slate v2 behavior, tests, or API robustness.
+  use `maintainer`. `auto` is the internal quality supervisor, not the public
+  maintainer control plane.
+- The user asks for post-merge, current-tree, teammate branch, external PR,
+  ready-to-commit, or until-clean closure of already-applied work: use
+  `autoclosure`.
+
+## Lane Routing
+
+Resolve the lane before checkpoint work:
+
+- **Slate lane:** raw Slate v2 package/runtime/browser/proof work, usually under
+  `packages/slate*`, `packages/browser`, `packages/yjs`, Slate docs/routes,
+  migration, external editor issue/test harvesting, and Slate public API/DX
+  cleanup. All old Slate automation laws in this file still apply here.
+- **Plate lane:** Plate packages, plugin/product docs, registry examples,
+  package exports, public component/plugin DX, and docs app behavior. Use Plate
+  commands, routes, and package owners; do not pretend Slate package proof
+  covers Plate product behavior.
+- **Shared editor lane:** editor behavior, selection, paste, history, IME,
+  voids, table fragments, docs/API vocabulary, and architecture boundaries that
+  cross Slate substrate and Plate product layers. Name the primary owner before
+  patching and keep the Slate-vs-Plate boundary explicit in the plan.
+
+If the prompt is ambiguous, infer from paths/URLs/packages first. If the lane is
+still ambiguous but safe proof remains, run a no-code status/gap checkpoint and
+queue the lane decision only when patching would cross public API or product
+taste.
 
 ## Invocation Modes
 
@@ -83,7 +109,7 @@ timebox, and stop-question policy in the active plan.
   elapsed, then finish, revert, or quarantine the active packet even if that
   exceeds the wall-clock time. Queue soft stopping checkpoints for final
   handoff instead of interrupting the run, then ask the batch of unblock
-  questions at the end. `8h` means at least eight hours of active Slate
+  questions at the end. `8h` means at least eight hours of active Plate/Slate
   automation unless the user interrupts or a hard external blocker makes
   autonomous work impossible.
 - **Batch-loop mode:** when the user says `batch`, `many loops`, `stack
@@ -94,27 +120,27 @@ timebox, and stop-question policy in the active plan.
   `all-issues closure ledger`, or asks to process every relevant issue for test
   coverage. Delegate the ledger autodiscovery, latest issue refresh,
   closed-issue PR/test provenance scan, and unchecked issue-by-issue loop to
-  `issue-harvester`. `slate-auto` owns the autogoal, timebox, packet
+  `issue-harvester`. `auto` owns the autogoal, timebox, packet
   ledger, workflow repairs, and final handoff.
 
 Natural prompts should work:
 
-- `slate-auto huge-document auto timed 2h`
-- `slate-auto editor behavior batch loop`
-- `slate-auto lexical all issues robustness harvest`
-- `slate-auto facebook/lexical --issues --state all batch-loop`
-- `slate-auto issue-harvester prosemirror`
-- `slate-auto issue-harvester facebook/lexical --state all`
+- `auto huge-document auto timed 2h`
+- `auto editor behavior batch loop`
+- `auto lexical all issues robustness harvest`
+- `auto facebook/lexical --issues --state all batch-loop`
+- `auto issue-harvester prosemirror`
+- `auto issue-harvester facebook/lexical --state all`
 
-Pagination is explicit opt-in only. `slate-auto` must not infer pagination work
+Pagination is explicit opt-in only. `auto` must not infer pagination work
 from `virtualized`, `huge-document`, performance debt, skip ledgers,
 supervision mode, or generic architecture backlog. It may enter pagination only
 when the user's prompt literally names pagination or a pagination route/plan.
 Valid explicit prompts include:
 
-- `slate-auto pagination rows800 virtualized`
-- `slate-auto pagination rows800 virtualized full loop`
-- `slate-auto pagination rows800 virtualized for 1 hour`
+- `auto pagination rows800 virtualized`
+- `auto pagination rows800 virtualized full loop`
+- `auto pagination rows800 virtualized for 1 hour`
 
 For timed and batch-loop modes:
 
@@ -133,8 +159,8 @@ For timed and batch-loop modes:
   reversible experiment, research packet, benchmark packet, or architecture
   spike can be run safely;
 - if a lane is risky but important, use the supervisor's freedom: start a
-  controlled scratchpad experiment, preferably through `slate-ar` perf mode or
-  `slate-plan` as the owner demands,
+  controlled scratchpad experiment, through `slate-ar`/`slate-plan` for Slate
+  lanes or `plate-plan`/the package owner for Plate lanes as the owner demands,
   record the hypothesis and proof gate before changing code, then keep, revert,
   or quarantine the packet from evidence;
 - risky architecture/perf packets must be reversible. If code changes are made,
@@ -166,6 +192,7 @@ Automate <surface>; done when behavior, visual, perf, repair, docs, and ship-rea
 The plan must record:
 
 - first checkpoint requirement extraction before implementation;
+- lane: Slate, Plate, or shared editor;
 - surface and target route/package;
 - invocation mode, timebox, and deadline when present;
 - completion threshold;
@@ -188,21 +215,21 @@ The plan must record:
   open/closed coverage when in issue-harvest mode;
 - stop rules and blockers.
 
-Use the dedicated Slate automation template:
+Use the dedicated Auto template:
 
 ```bash
 node .agents/skills/autogoal/scripts/create-goal-scratchpad.mjs \
-  --template slate-auto \
+  --template auto \
   --title "<surface>"
 ```
 
-Do not use `--template task` for ordinary Slate automation. `task` is for
+Do not use `--template task` for ordinary Auto. `task` is for
 normal one-shot work and drags in PR, tracker, release, and branch gates that
 make the supervisor noisy and weak. Add packs only for unusual extra surfaces
-that the `slate-auto` template does not already cover.
+that the `auto` template does not already cover.
 
 Do not invent a custom non-template plan shape for automation. Create the
-generated `slate-auto` autogoal plan with the helper, fill the generated
+generated `auto` autogoal plan with the helper, fill the generated
 gates, mark non-applicable rows `N/A: <reason>`, and keep that plan as the
 runtime truth. The first checkpoint must copy every explicit user requirement
 into checkable rows before implementation: scope, non-goals, timing, stop
@@ -245,18 +272,26 @@ Split long work into checkpoints that fit one high-quality prompt:
   record pass/fail signatures.
 - **Patch checkpoint:** fix one correctness class or one missing oracle.
 - **Perf checkpoint:** optimize one measured hot lane with correctness green.
-- **Architecture checkpoint:** run `slate-plan` only when the next safe win is a
-  public/internal API or runtime boundary.
-- **Architecture-cleanup checkpoint:** when repeated Slate bugs, weak tests,
+- **Architecture checkpoint:** run `slate-plan` for Slate API/runtime
+  boundaries, `plate-plan` for Plate behavior/product boundaries, and
+  `architecture-cleanup` for source shape/deslop/navigation friction before
+  choosing either when the issue is structural.
+- **Closure handoff checkpoint:** when the current work becomes already-landed,
+  teammate/external PR, ready-to-commit, or current-tree cleanup, invoke
+  `autoclosure`. Do not keep post-merge/current-tree closure as an `auto`
+  sub-mode unless the user explicitly asks `auto` to wrap it.
+- **Architecture-cleanup checkpoint:** when repeated Slate or Plate bugs, weak tests,
   copied helpers, hard-to-prove behavior, package-boundary confusion, deslop,
   over-splits, or perf work expose broader source-layout friction, invoke
-  `architecture-cleanup` before choosing `slate-plan`, `slate-patch`,
-  `slate-ar`, or a package owner.
+  `architecture-cleanup` before choosing `slate-plan`, `plate-plan`,
+  `slate-patch`, `slate-ar`, or a package owner.
 - **Skill-repair checkpoint:** patch the owning skill/rule when the workflow
   missed a recurring expectation.
 - **Research-discovery checkpoint:** when local evidence is thin, the problem
   smells under-researched, the next owner is unclear, or a timed run needs
-  discovery instead of blind local soak, invoke `slate-research`. The
+  discovery instead of blind local soak, invoke `slate-research` for Slate/editor
+  substrate problems and `best-practices-researcher` or
+  `repo-research-analyst` for Plate/framework/package problems. The
   checkpoint is done only after the research artifact records ledgers, dedupe,
   evidence grade, scored leads, rejected leads, promoted packets, and next
   owner. If a promoted research packet is executed later, close the loop in the
@@ -296,8 +331,10 @@ Split long work into checkpoints that fit one high-quality prompt:
 - **Stopping-checkpoint queue:** in timed or batch-loop mode, collect soft
   blockers and user-answer checkpoints for final handoff instead of stopping
   immediately when safe alternate work remains.
-- **Ship checkpoint:** run `slate-ar ship` readiness and pause only for
-  explicit commit/PR authority.
+- **Readiness checkpoint:** run the lane's readiness owner and pause only for
+  explicit commit/PR/release authority. For Slate private-alpha loops this can
+  be `slate-ar ship` only when ship/release was explicitly requested; otherwise
+  readiness means behavior, proof, docs, and plan ledger closure.
 
 Each checkpoint must end with:
 
@@ -359,8 +396,8 @@ Supervision mode loop:
 2. scan for stale claims, weak proofs, missing browser/selection oracles,
    benchmark honesty gaps, API/docs mismatch, command pitfalls, skill drift,
    issue-harvest gaps, sibling-editor comparison opportunities,
-   `slate-research` opportunities, and slow loop steps. Treat pagination as
-   out of scope unless the prompt explicitly names it;
+   research opportunities, and slow loop steps. Treat pagination as out of
+   scope unless the prompt explicitly names it;
 3. add, split, or reprioritize checkpoints from that scan;
 4. run the highest-value reversible checkpoint that does not require new user
    authority;
@@ -371,26 +408,27 @@ Supervision mode loop:
 
 If supervision mode truly finds no useful runtime patch, it must still spend
 the remaining time on proof hardening, oracle audits, benchmark hygiene,
-scratch experiments, `slate-research` packets, external issue/sample
-mining, docs/API consistency, and workflow repair. "No idea what to do next"
-is a skill bug; patch the owning rule instead of asking the user to route the
-next loop.
+scratch experiments, research packets, external issue/sample mining, docs/API
+consistency, and workflow repair. "No idea what to do next" is a skill bug;
+patch the owning rule instead of asking the user to route the next loop.
 
 ## Research / Discovery Delegation
 
-Use `slate-research` when automation needs external prior art, better
-testing strategy, OSS/GitHub discovery, scalable repo scans, or a research
-system before patching.
+Use research when automation needs external prior art, better testing strategy,
+OSS/GitHub discovery, scalable repo scans, or a research system before
+patching. Slate/editor substrate research goes through `slate-research`. Plate,
+framework, package, docs, and product-DX research goes through
+`best-practices-researcher`, `repo-research-analyst`, or the package owner.
 
-`slate-auto` owns the checkpoint decision, timebox, final handoff, and
-promotion back into patch/perf/plan/docs work. `slate-research` owns the
-research loop: artifact layout, repo/query/lead/read ledgers, dedupe keys,
-shards, evidence grades, scoring, context budget, raw-storage policy, and
-research closeout.
+`auto` owns the checkpoint decision, timebox, final handoff, and promotion back
+into patch/perf/plan/docs work. The delegated research owner owns the research
+loop: artifact layout, repo/query/lead/read ledgers, dedupe keys, shards,
+evidence grades, scoring, context budget, raw-storage policy, and research
+closeout.
 
 Do not keep long research governance inside this skill. If research gets slow,
-duplicate-heavy, or weak, repair `.agents/rules/slate-research.mdc` and sync
-the generated mirror.
+duplicate-heavy, or weak, repair the owning research rule and sync the
+generated mirror.
 
 For risky performance or architecture lanes inside a timed run:
 
@@ -398,11 +436,11 @@ For risky performance or architecture lanes inside a timed run:
 2. run a creative but bounded experiment packet: alternate strategy, owner
    split, benchmark-instrumentation repair, scratch runtime variant, proof
    harness, or quality-gap research;
-3. use `slate-ar` for measured loop state when the work needs packet history,
-   ASI logging, dashboard/status, or quality-gap research;
-4. use `slate-ar` perf mode for target-backed performance experiments and
-   `slate-plan` only when an API/runtime decision must be made explicit before
-   implementation;
+3. use `slate-ar` for Slate measured loop state when the work needs packet
+   history, ASI logging, dashboard/status, or quality-gap research;
+4. use `slate-ar` perf mode for Slate target-backed performance experiments,
+   and use `slate-plan`/`plate-plan` only when an API/runtime/product decision
+   must be made explicit before implementation;
 5. compare baseline/latest/best and record why the packet is `keep`, `revert`,
    or `quarantine`;
 6. if the timebox expires during the lane, fully close the active packet even
@@ -454,7 +492,7 @@ checklist:
     `.tmp/editor-issue-harvester/<repo>/raw/`.
 
 Do not broaden into experimental architecture when the user scoped it out.
-Pagination is scoped out by default for `slate-auto`; route it as a deferred
+Pagination is scoped out by default for `auto`; route it as a deferred
 stopping checkpoint only, not a next owner, unless the prompt explicitly names
 pagination.
 
@@ -498,8 +536,8 @@ Log a workflow-slowdown row when:
 - a specialist skill spends time on avoidable setup, broad scans, repeated
   finalization, redundant gates, or noisy output;
 - a command has no narrow mode and blocks timed/batch progress;
-- `slate-ar ship`, finalization, `autoreview`, browser proof, or benchmark
-  setup dominates the loop without producing proportional evidence;
+- `slate-ar ship`, finalization, `autoreview`, browser proof, docs proof, or
+  benchmark setup dominates the loop without producing proportional evidence;
 - compaction/output budget pressure is caused by command shape rather than the
   real task.
 
@@ -516,9 +554,9 @@ Each row must include:
 
 Repair repeated or avoidable workflow slowdowns:
 
-- slow specialist routing -> patch the owning `.agents/rules/slate-*.mdc`;
-- slow finalization/readiness -> patch `slate-ar`;
-- slow proof gate -> add a focused gate or route through `slate-ar gate`;
+- slow specialist routing -> patch the owning `.agents/rules/*.mdc`;
+- slow Slate finalization/readiness -> patch `slate-ar`;
+- slow proof gate -> add a focused gate or route through the lane's proof owner;
 - slow browser repetition -> promote reusable proof into `slate-browser`;
 - slow benchmark setup -> fix benchmark target/script ergonomics;
 - slow output -> narrow command output or write artifacts instead of streaming.
@@ -607,16 +645,16 @@ Rules:
   do not run the full managed browser-proof command as that child command. Run
   the required package build as a separate preflight, then run the repo-owned
   Playwright config with JSON stdout so `report.json` stays parseable;
-- after changing `packages/slate-browser/src/playwright/**` helpers or browser
-  handle APIs consumed through `slate-browser/playwright`, run
-  `bun --filter ./packages/slate-browser build` before browser proofs that import the
+- after changing `packages/browser/src/playwright/**` helpers or browser
+  handle APIs consumed through `@platejs/browser/playwright`, run
+  `pnpm --filter @platejs/browser build` before browser proofs that import the
   package. The specs can otherwise load stale generated package output and fail
   on missing helper methods instead of product behavior;
 - after changing `packages/slate-react/src/**`, `packages/slate-dom/src/**`, or
   any public package runtime consumed by the example app through package
   exports, run the touched package build before managed Playwright proof, for
-  example `bun --filter ./packages/slate-react build`. The managed Playwright
-  wrapper builds `slate-browser` and the Next site, but stale package `dist`
+  example `pnpm --filter @platejs/slate-react build`. The managed Playwright
+  wrapper builds `@platejs/browser` and the Next site, but stale package `dist`
   can still make the browser prove old runtime behavior;
 - when running packed/external-consumer package smoke, start from the live
   export/type contracts such as
@@ -665,7 +703,7 @@ Rules:
   backticks around command names, quote the pattern with single quotes or use
   `rg -F`. Do not put a backtick-containing `rg` pattern inside double quotes;
   the shell will execute it and create a fake command failure;
-- default to single-quoted `rg` patterns in Slate automation. Use double quotes
+- default to single-quoted `rg` patterns in Auto. Use double quotes
   only when shell interpolation is intentionally required and the pattern has no
   markdown/code/backtick/metacharacter content;
 - before executing any `rg` command whose pattern is inside double quotes, do a
@@ -742,15 +780,14 @@ Rules:
   `checked` when the ledger uses `check`, and do not guess benchmark summary
   keys before reading the artifact shape;
 - when durable Slate v2 docs contain absolute checkout paths, verify the path
-  exists before reusing the command. In this repo the live Slate v2 runtime cwd
-  is `/Users/zbeyens/git/plate-2/Plate repo root`; stale
-  `/Users/zbeyens/git/slate-v2` command snippets should be repaired unless the
-  doc explicitly names a historical draft/source checkout such as
-  `slate-v2-draft`;
+  exists before reusing the command. Current Slate v2 runtime/package commands
+  belong to the Plate repo root; stale donor-checkout command snippets should
+  be repaired unless the doc explicitly names a historical draft/source
+  checkout such as `slate-v2-draft`;
 - when Playwright imports a package through public exports such as
-  `slate-browser/playwright`, verify whether the export resolves built `dist`;
+  `@platejs/browser/playwright`, verify whether the export resolves built `dist`;
   after source changes to those packages, run the focused package build (for
-  example `bun --filter ./packages/slate-browser build`) before claiming the rerun tested
+  example `pnpm --filter @platejs/browser build`) before claiming the rerun tested
   the patch, and patch any wrapper script that bypasses that build path;
 - after package, runtime, example, or generated-site source edits, do not use an
   already-running `PLAYWRIGHT_BASE_URL` dev server for final proof until you
@@ -843,7 +880,7 @@ reply. After the user answers, update the plan, capture reusable taste in
 
 ## Changed List Checkpoint
 
-Autogoal-backed Slate automation must leave a readable list of what changed.
+Autogoal-backed Auto must leave a readable list of what changed.
 The active plan and final handoff must include a concise current-run list,
 derived from the packet ledger and current file/source evidence, not old branch
 history.
@@ -915,8 +952,8 @@ batch-loop mode, queue soft questions and keep working on safe alternate owners.
 ## Authority
 
 The supervisor may repair workflow sources when the loop proves they are wrong.
-It may also change the Slate skill topology when overlap, missing ownership, or
-stale routing is causing repeated misses.
+It may also change the Plate/Slate skill topology when overlap, missing
+ownership, or stale routing is causing repeated misses.
 
 Allowed skill repair:
 
@@ -928,15 +965,15 @@ Allowed skill repair:
 
 Use `slate-patch repair <expectation>` for patch-lane misses.
 Use `autogoal repair <expectation>` for universal goal lifecycle misses.
-Patch `slate-auto` itself when the supervisor cadence, proof, or routing
+Patch `auto` itself when the supervisor cadence, proof, or routing
 missed the expectation.
 
 Allowed topology changes:
 
-- update any `.agents/rules/slate-*.mdc` rule;
-- create a new `slate-*` skill when a repeated workflow has no clear owner;
+- update any `.agents/rules/*.mdc` rule owned by the missed workflow;
+- create a new repo-local skill when a repeated workflow has no clear owner;
 - merge skills when two wrappers overlap and confuse routing;
-- remove or deprecate a `slate-*` skill when it adds ceremony without distinct
+- remove or deprecate a repo-local skill when it adds ceremony without distinct
   ownership;
 - update `argument-hint`, description, routing, stop rules, and handoff shape;
 - update benchmark target policy and proof-gate ownership when needed.
@@ -992,24 +1029,29 @@ test, metric, doc, or owner update is just archaeology.
 
 Each loop cycle has one primary owner and one packet-ledger decision.
 
-1. **Status:** run `slate-ar status` or direct source/status reads.
-2. **Research discovery:** run `slate-research` when API, DX, tests, docs,
-   metric coverage, or owner choice is unclear.
-3. **Quality gap:** run `slate-ar quality` when an accepted checklist needs
-   Codex Autoresearch execution.
-4. **Behavior:** run `slate-ar stabilize` / `slate-ar gate` before perf.
-5. **Oracle repair:** if proof is missing, use `slate-patch` or `tdd`.
+1. **Status:** run `slate-ar status` for Slate packets or direct source/status
+   reads for Plate/shared packets.
+2. **Research discovery:** run the lane research owner when API, DX, tests,
+   docs, metric coverage, or owner choice is unclear.
+3. **Quality gap:** run `slate-ar quality` for Slate autoresearch execution, or
+   route Plate quality gaps to the package/docs/test owner.
+4. **Behavior:** run `slate-ar stabilize` / `slate-ar gate` before Slate perf;
+   run focused Plate behavior/browser/docs proof for Plate lanes.
+5. **Oracle repair:** if proof is missing, use `slate-patch`, `tdd`, or the
+   package test owner.
 6. **Vision proof:** use Browser, screenshot, and/or Playwright geometry checks
    for visual/editor parity.
-7. **Perf:** run `slate-ar perf` only with correctness green.
+7. **Perf:** run `slate-ar perf` for Slate only with correctness green; run
+   package/app benchmarks for Plate only after behavior proof is credible.
 8. **Architecture cleanup:** use `architecture-cleanup` when the evidence
    points to shallow modules, split ownership, copied proof helpers, over-splits,
    deslop, or poor test locality rather than one obvious API decision.
-9. **API cleanup:** use `slate-plan` when repeated bugs show bad public or
-   internal API shape.
+9. **API cleanup:** use `slate-plan` or `plate-plan` when repeated bugs show
+   bad public or internal API shape.
 10. **Skill repair:** patch source rules when the loop itself missed policy.
 11. **Decision consolidation:** update durable docs before ship readiness.
-12. **Ship readiness:** use `slate-ar ship` when the current tree is reviewable.
+12. **Readiness:** use the lane readiness owner when the current tree is
+   reviewable; do not turn readiness into release/publish unless requested.
 
 After each cycle:
 
@@ -1303,10 +1345,11 @@ Stop when:
 - `vision` does not cover a taste or risk-tolerance decision needed
   for the next safe move and no safe alternate owner remains, or the invocation
   mode is full-loop;
-- the next safe move is a `slate-plan` public API/runtime decision;
+- the next safe move is a `slate-plan` or `plate-plan` public API/runtime/product
+  decision;
 - the next safe move is pagination and the prompt did not explicitly request
   pagination. Queue it as deferred with owner `slate-plan` instead of entering
-  it from `slate-auto`;
+  it from `auto`;
 - a same-signal behavior failure has already been routed through the right
   specialist owner and still needs a user-only decision or unsafe architecture
   choice;
@@ -1350,5 +1393,5 @@ Report:
 - `Stopping checkpoints to unblock` section with queued questions, current
   recommendation, and exact anchors;
 - accepted deferrals and residual risks;
-- next owner: continue automation, `slate-plan`, `slate-ar ship`, or blocked
-  authority decision.
+- next owner: continue automation, `slate-plan`, `plate-plan`, `slate-ar`, a
+  package owner, or blocked authority decision.

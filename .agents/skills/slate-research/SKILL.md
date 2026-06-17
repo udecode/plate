@@ -42,7 +42,7 @@ answers if the search is managed like engineering work.
 
 ## Boundary
 
-- `slate-auto`: supervisor. Decides when a research checkpoint is needed
+- `auto`: supervisor. Decides when a research checkpoint is needed
   and which promoted owner runs next.
 - `slate-research`: discovery and synthesis. Owns web/GitHub/OSS search,
   ledgers, source reading, dedupe, evidence grades, scoring, and promotion.
@@ -59,7 +59,7 @@ answers if the search is managed like engineering work.
 Flow:
 
 ```txt
-slate-auto
+auto
   -> slate-research        # discover, dedupe, synthesize, promote
       -> slate-ar quality  # execute accepted quality_gap checklist
       -> slate-ar gate     # repeat existing proof

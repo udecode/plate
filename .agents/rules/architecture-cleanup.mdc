@@ -13,7 +13,7 @@ no separate candidate-only wrapper. The job is to find, rank, and, when safe,
 clean source-backed architecture sludge so the codebase is easier for humans
 and agents to understand.
 
-This is not `task`, not `maintainer`, not `slate-auto`, and not a generic
+This is not `task`, not `maintainer`, not `auto`, and not a generic
 refactor license. It owns architecture cleanliness: delete, merge, inline,
 simplify, hard-cut stale compatibility, or split only when the split earns its
 keep.
@@ -38,9 +38,11 @@ keep.
 - The task is an accepted public API/runtime/product architecture plan:
   use `major-task`, `slate-plan`, or `plate-plan`.
 - The task is measured Slate optimization state: use `slate-ar`.
-- The task is internal Slate v2 quality/perf/browser/API supervision:
-  use `slate-auto`, which may invoke this skill when architecture cleanup is
+- The task is internal Plate/Slate quality/perf/browser/API supervision:
+  use `auto`, which may invoke this skill when architecture cleanup is
   the right packet.
+- The task is post-merge/current-tree until-clean closure: use
+  `autoclosure`, which may invoke this skill for source-shape findings.
 - The task is public queue selection: use `maintainer`.
 - The task is broad OSS/source discovery: use `slate-research` first.
 
@@ -187,7 +189,7 @@ run the relevant broad gate. Never leave speculative cleanup dirty.
 
 For behavior, public API, runtime boundary, product UX, or large blast radius:
 stop at ranked recommendation and route to `major-task`, `slate-plan`,
-`plate-plan`, `slate-auto`, or the package owner.
+`plate-plan`, `auto`, or the package owner.
 
 ## Deslop Inventory
 
@@ -210,8 +212,10 @@ more files.
 
 - User explicitly asks architecture cleanup / deslop / simplify: use this
   skill first.
-- `slate-auto`: may invoke this when repeated Slate quality/perf/test work
+- `auto`: may invoke this when repeated Plate/Slate quality/perf/test/docs work
   proves architecture or cleanup friction.
+- `autoclosure`: may invoke this when already-applied work has source-shape,
+  over-split, fake-wrapper, or agent-navigation findings during closure.
 - `major-task`: owns broad decision, rollout, and implementation plan when the
   cleanup has meaningful blast radius.
 - `slate-plan` / `plate-plan`: own public API, behavior law, runtime boundary,

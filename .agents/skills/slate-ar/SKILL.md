@@ -363,7 +363,7 @@ needs a measured loop, not another plan essay.
 
 Use when the user says `fast`, `fastest`, `max perf`, `pagination`,
 `virtualization`, `benchmark`, or asks to make a Slate v2 surface faster.
-Pagination remains explicit opt-in in `slate-auto`; inside `slate-ar`, it is a
+Pagination remains explicit opt-in in `auto`; inside `slate-ar`, it is a
 valid perf signal only when the user named it.
 
 Do not run perf mode while correctness is unknown. If selection, input ordering,
@@ -514,6 +514,8 @@ node "$AR_CLI" finalize-preview --cwd .
 
 Use `finalize-current-tree` as a read-only readiness preview when the current
 tree is the intended review unit.
+If the current tree needs iterative until-clean closure after preview, route to
+`autoclosure`; do not rebuild that loop inside Slate AR.
 
 Do not execute `finalize-autoresearch.mjs <plan>` or create
 `autoresearch-review/*` branches unless the user explicitly asks for review
@@ -533,20 +535,21 @@ Default path:
 
 1. run finalization preview;
 2. decide whether kept AR evidence or current-tree review is the honest unit;
-3. if current-tree is the honest unit and dirty state blocks finalization, run
-   the pre-commit review path instead of stopping at "dirty";
+3. if current-tree is the honest unit and dirty state blocks finalization, route
+   to `autoclosure` for until-clean closure instead of stopping at "dirty";
 4. report the recommended review unit;
 5. run proof gates when the user asked to ship, review, commit, or when dirty
    current-tree code needs pre-commit confidence;
-6. run `autoreview` on the uncommitted current tree before any commit/PR when
-   meaningful code changed;
+6. run `autoreview` directly only for one review pass; use `autoclosure` when
+   safe fixes and reruns are expected before commit/PR;
 7. pause with `READY TO COMMIT` only when proof/review is clean enough or
    explicitly blocked with accepted residual risk;
 8. ask for commit approval in plain language.
 
 Plain ship mode may run non-mutating readiness work: finalization preview,
-current-tree preview, focused gates, and `autoreview`. It must not commit,
-branch, clean, push, or open a PR unless the user explicitly asks.
+current-tree preview, focused gates, `autoreview`, and `autoclosure` handoff. It
+must not commit, branch, clean, push, or open a PR unless the user explicitly
+asks.
 
 Record timing for expensive readiness steps and repair avoidable slow paths
 before calling the flow ready.

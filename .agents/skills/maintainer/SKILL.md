@@ -39,7 +39,7 @@ Scope:
 - route one safe item per activation to the right owner;
 - execute local docs/setup/proof repairs only when the owner is clear and the
   authority boundary allows it;
-- run at most one internal `slate-auto` fallback checkpoint only when no public
+- run at most one internal `auto` fallback checkpoint only when no public
   queue item is safe and the invocation allows fallback.
 
 Triggers:
@@ -111,7 +111,9 @@ Execution owners still do the work:
 - `issue-harvester`: exhaustive external issue-by-issue closure ledgers.
 - `security-triage`: GHSA/CVE/advisory/security reports.
 - `autoreview` / `resolve-pr-feedback`: PR review and review-comment closure.
-- `slate-auto`: internal Slate v2 quality, behavior, perf, API, proof, and
+- `autoclosure`: post-merge/current-tree until-clean closure for already
+  applied work.
+- `auto`: internal Plate/Slate quality, behavior, perf, API, proof, and
   workflow self-repair.
 - `slate-plan` / `plate-plan`: architecture, public API, behavior law, and
   maintainer-objection plans.
@@ -122,7 +124,7 @@ Execution owners still do the work:
 - `docs-creator`, `plate-plugin-creator`, `plate-ui`, and package owners:
   Plate docs/product/framework execution.
 
-Do not bloat `slate-auto` with public GitHub queue ownership. Do not use generic
+Do not bloat `auto` with public GitHub queue ownership. Do not use generic
 `github-triage` as the repo brain when Plate/Slate routing matters; use it only
 as a subordinate generic state-machine pattern when labels/comments are
 explicitly requested.
@@ -142,8 +144,10 @@ explicitly requested.
 ## Do Not Use When
 
 - The user explicitly invokes a narrower owner and the route is unambiguous.
-- The task is an internal Slate v2 quality/perf/browser/API loop with no public
-  queue item: use `slate-auto`.
+- The task is post-merge/current-tree until-clean closure of already-applied
+  work: use `autoclosure`.
+- The task is an internal Plate/Slate quality/perf/browser/API loop with no
+  public queue item: use `auto`.
 - The task is one known Slate issue and the user wants it fixed/commented now:
   use `resolve-slate-issue` directly.
 - The task is a local code patch with no maintainer queue decision: use `task`,
@@ -237,7 +241,8 @@ Read the exact item first. Then classify route:
 | --- | --- |
 | Slate substrate bug | `resolve-slate-issue` or `slate-patch` |
 | Slate architecture/API fork | `slate-plan` |
-| Slate internal quality/perf/browser gap | `slate-auto` |
+| Already-applied PR/branch/current-tree closure | `autoclosure` |
+| Plate/Slate internal quality/perf/browser gap | `auto` |
 | Cross-package architecture/testability/refactor/deslop candidate | `architecture-cleanup`, then `major-task`, `slate-plan`, or `plate-plan` |
 | Plate framework/plugin/component/docs | `plate-plan`, `plate-plugin-creator`, `plate-ui`, `docs-creator`, or `task` |
 | Security/advisory | `security-triage` |
@@ -367,9 +372,11 @@ When no public queue item is safe:
 4. docs/setup source-backed improvements;
 5. source-backed architecture/code cleanup through `architecture-cleanup` only
    when a public item or repeated queue friction proves the need;
-6. `slate-auto` one internal quality checkpoint;
-7. `sync-vision` if repeated user/agent corrections are uncaptured;
-8. `openclaw-sync` when the requested task is specifically to refresh upstream
+6. `autoclosure` one current-tree closure pass when already-applied work is the
+   best fallback;
+7. `auto` one internal quality checkpoint;
+8. `sync-vision` if repeated user/agent corrections are uncaptured;
+9. `openclaw-sync` when the requested task is specifically to refresh upstream
    agent setup.
 
 Do not run broad internal automation as a substitute for a public queue item

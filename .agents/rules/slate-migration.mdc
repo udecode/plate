@@ -12,7 +12,7 @@ Use this when the user wants a full autonomous migration loop for Slate v2,
 especially when migrating Plate code, examples, docs, tests, public APIs, or
 changesets to the current Slate v2 shape.
 
-This is the migration lane. `slate-auto` supervises broad quality/perf loops;
+This is the migration lane. `auto` supervises broad quality/perf loops;
 `slate-migration` owns migration closure: API mapping, stale symbol removal,
 guide updates, changeset truth, package proof, examples, docs, and missed
 migration workflow repair.
@@ -58,14 +58,14 @@ Every discovered migration gap updates the durable owner:
 - The user asks one architecture/API decision before migration: use
   `slate-plan`.
 - The user asks broad behavior/perf automation unrelated to migration closure:
-  use `slate-auto`.
+  use `auto`.
 - The task is only writing a package changeset for an already-understood diff:
   use `changeset`.
 - The work is only a docs page unrelated to migration: use `docs-creator`.
 
 ## Invocation Modes
 
-Use the same mode semantics as `slate-auto`.
+Use the same mode semantics as `auto`.
 
 - **Full-loop mode:** default when no duration is given. Run one complete
   migration loop until a real stopping checkpoint or completion threshold.
