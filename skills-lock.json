@@ -34,10 +34,20 @@
       "sourceType": "github",
       "computedHash": "20c90be5091df67d3f889a781473a6426d471405cead3dbe61d33d0c9a4ad0e9"
     },
+    "grill-with-docs": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "computedHash": "eb0e91e84277283dc2b23ed544399e53afd6b5287e5b6929f25fe8aa608e164b"
+    },
     "orchestrator": {
       "source": "udecode/dotai",
       "sourceType": "github",
       "computedHash": "02a6d9c3931f0af4b6d0a04344082c90dd7d9cb9dbe1e4962bd98471591f02d8"
+    },
+    "prototype": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "computedHash": "e4d0c8f8cb3fc096ee99405a15491da466545cf4a3694bee5a0c9db2fa621a43"
     },
     "react-useeffect": {
       "source": "softaworks/agent-toolkit",

@@ -74,6 +74,12 @@ tests for package ownership, API intent, and public teaching surfaces.
   issue/PR/security queue scans, heartbeat runs, VISION fit, duplicate/claim
   guards, owner routing, proof gates, authority boundaries, and decision-ready
   handoffs. Execution belongs to narrower owners.
+- Repo-wide architecture cleanup is a source-backed cleanup job before it is an
+  implementation job. `$architecture-cleanup` ranks delete, merge, inline,
+  simplify, split, keep, defer, and reject decisions for shallow modules, split
+  ownership, testability gaps, over-splits, and agent-navigation friction, then
+  either applies a safe behavior-neutral packet or routes broader decisions to
+  `major-task`, `slate-plan`, `plate-plan`, `slate-auto`, or a package owner.
 - Public issue and PR bodies are maintainer-agent input contracts. Plate/Slate
   maintenance runs through local Codex sessions in maintainer checkouts, not
   hosted API bots, crabbox, or background cloud workers. Require public repro,

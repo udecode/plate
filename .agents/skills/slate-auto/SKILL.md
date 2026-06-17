@@ -251,6 +251,11 @@ Split long work into checkpoints that fit one high-quality prompt:
 - **Perf checkpoint:** optimize one measured hot lane with correctness green.
 - **Architecture checkpoint:** run `slate-plan` only when the next safe win is a
   public/internal API or runtime boundary.
+- **Architecture-cleanup checkpoint:** when repeated Slate bugs, weak tests,
+  copied helpers, hard-to-prove behavior, package-boundary confusion, deslop,
+  over-splits, or perf work expose broader source-layout friction, invoke
+  `architecture-cleanup` before choosing `slate-plan`, `slate-patch`,
+  `slate-ar`, or a package owner.
 - **Skill-repair checkpoint:** patch the owning skill/rule when the workflow
   missed a recurring expectation.
 - **Research-discovery checkpoint:** when local evidence is thin, the problem
@@ -1001,11 +1006,14 @@ Each loop cycle has one primary owner and one packet-ledger decision.
 6. **Vision proof:** use Browser, screenshot, and/or Playwright geometry checks
    for visual/editor parity.
 7. **Perf:** run `slate-ar perf` only with correctness green.
-8. **API cleanup:** use `slate-plan` when repeated bugs show bad public or
+8. **Architecture cleanup:** use `architecture-cleanup` when the evidence
+   points to shallow modules, split ownership, copied proof helpers, over-splits,
+   deslop, or poor test locality rather than one obvious API decision.
+9. **API cleanup:** use `slate-plan` when repeated bugs show bad public or
    internal API shape.
-9. **Skill repair:** patch source rules when the loop itself missed policy.
-10. **Decision consolidation:** update durable docs before ship readiness.
-11. **Ship readiness:** use `slate-ar ship` when the current tree is reviewable.
+10. **Skill repair:** patch source rules when the loop itself missed policy.
+11. **Decision consolidation:** update durable docs before ship readiness.
+12. **Ship readiness:** use `slate-ar ship` when the current tree is reviewable.
 
 After each cycle:
 
@@ -1015,7 +1023,9 @@ After each cycle:
   behind debounce, breaks native editor expectations, or makes API shape
   dirtier;
 - switch bottleneck after two correctness-green no-gain packets;
-- route to `slate-plan` when the next win is architectural;
+- route to `architecture-cleanup` when the next win is broader architecture/code
+  cleanup, or to `slate-plan` when it is a concrete public API/runtime
+  decision;
 - log evidence, rejected attempts, and the next owner in the plan.
 
 ## Taste Profile
@@ -1205,6 +1215,9 @@ The supervisor repairs whatever layer is missing:
   before the supervisor picks a runtime owner or calls a regression closed.
 - **Weak example DX:** improve the example only when it is the API contract
   surface; otherwise fix package/runtime ownership.
+- **Architecture smell:** use `architecture-cleanup` when the smell is spread
+  across modules, package ownership, proof harnesses, over-splits, deslop, or
+  testability.
 - **API smell:** use `slate-plan` or implement the accepted shape when the plan
   is already accepted.
 - **Missing taste coverage:** stop at the checkpoint, record the missing taste
