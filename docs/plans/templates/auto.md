@@ -1,7 +1,7 @@
 # {{TITLE}}
 
 Objective:
-TODO: Write the short slate-auto objective, under 240 characters. Put the
+TODO: Write the short auto objective, under 240 characters. Put the
 full automation contract in the sections below.
 
 Goal plan:
@@ -13,6 +13,7 @@ Template:
 Automation source:
 - type: pending
 - prompt / link: pending
+- lane: pending
 - surface / route / package: pending
 - invocation mode: pending
 - minimum runtime / deadline: pending
@@ -30,7 +31,7 @@ First checkpoint:
   explicitly marked N/A with reason.
 
 Completion threshold:
-- TODO: Define the exact slate-auto done state.
+- TODO: Define the exact auto done state.
 - Closure is legal only when required behavior, visual/native selection,
   package/API, mobile/raw-device claim-width, huge-document, docs/skill repair,
   changed-list, review-attention, stopping-checkpoint, workflow-slowdown, and
@@ -44,15 +45,21 @@ Verification surface:
   checks, docs audit, skill sync, and final plan check that prove this run.
 
 Constraints:
+- Resolve lane first: Slate, Plate, or shared editor. Use `autoclosure` for
+  post-merge/current-tree until-clean closure.
 - Slate v2 private alpha by default: no release, publish, changeset, PR, or
   branch readiness unless the prompt explicitly asks.
 - Run Slate v2 behavior commands from `.tmp/slate-v2`; parent repo commands
-  prove plans, docs, skills, and templates only.
+  prove plans, docs, skills, templates, and Plate-owned surfaces only.
+- Plate-lane proof must run in the owning Plate package/app/docs route; Slate
+  runtime proof does not prove Plate docs, registry, plugin, or package DX.
 - Behavior proof beats perf. Native/visual proof beats model-only selection.
 - No hidden debounce or fake stress fixture wins.
 - No broad pagination/virtualization architecture unless the prompt or a
   stopping checkpoint routes to `slate-plan`.
-- Do not patch Plate when the run is scoped to Slate v2.
+- Do not patch Plate when the run is scoped to Slate v2. Do not patch Slate
+  runtime when the run is scoped to Plate docs/product unless a shared-editor
+  owner row names that boundary.
 
 Boundaries:
 - Source of truth: pending
@@ -74,6 +81,7 @@ Blocked condition:
   mismatch, issue/test harvest gaps, and workflow slowdowns.
 
 Automation state:
+- lane: pending
 - surface: pending
 - mode: pending
 - minimum_runtime: pending
@@ -89,7 +97,7 @@ Automation state:
 Current verdict:
 - verdict: pending
 - confidence: pending
-- next owner: slate-auto
+- next owner: auto
 - keep / revert / quarantine call: pending
 - reason: pending
 
@@ -107,19 +115,20 @@ Completion rule:
 Checkpoint supervisor:
 | Checkpoint | Owner | Status | Priority | Why it exists | Evidence / exit rule | Mutation decision |
 |------------|-------|--------|----------|---------------|----------------------|-------------------|
-| checkpoint-zero | slate-auto | in_progress | P0 | Copy prompt requirements and read vision before implementation. | Requirement rows complete. | seed |
-| status | slate-auto | pending | P0 | Read active plan, latest prompt, source status, and current evidence. | Current state recorded. | seed |
-| gap-scan | slate-auto | pending | P0 | Identify behavior, visual, API, test, metric, docs, skill, and workflow gaps. | Gaps routed to packet owners. | seed |
-| behavior-proof | slate-ar stabilize | pending | P0 | Prove stable editor behavior before perf. | Focused behavior commands pass or failures routed. | seed |
-| oracle-repair | slate-patch / tdd | pending | P0 | Add missing native/visual/model oracles for found gaps. | New proof fails before fix or coverage gap is explicit. | seed |
+| checkpoint-zero | auto | in_progress | P0 | Copy prompt requirements and read vision before implementation. | Requirement rows complete. | seed |
+| status | auto | pending | P0 | Read active plan, latest prompt, source status, and current evidence. | Current state recorded. | seed |
+| gap-scan | auto | pending | P0 | Identify behavior, visual, API, test, metric, docs, skill, and workflow gaps. | Gaps routed to packet owners. | seed |
+| closure-handoff | autoclosure | pending | P0 when merged/current-tree work is in scope | Run until-clean closure for already-applied work. | Closure delegated or N/A. | seed |
+| behavior-proof | lane proof owner | pending | P0 | Prove stable editor behavior before perf. Slate uses `slate-ar`; Plate uses package/app/browser proof. | Focused behavior commands pass or failures routed. | seed |
+| oracle-repair | lane test owner / tdd | pending | P0 | Add missing native/visual/model oracles for found gaps. | New proof fails before fix or coverage gap is explicit. | seed |
 | visual-proof | Browser / Playwright | pending | P0 | Prove visible editor behavior and native selection. | Browser/screenshot/geometry evidence recorded. | seed |
-| slate-browser-promotion | slate-browser | pending | P1 | Promote repeated browser proof into reusable API/helper. | Helper added, queued, or N/A with reason. | seed |
-| mobile-claim-width | slate-auto | pending | P1 | Separate raw-device proof from viewport proof. | Raw proof command passes or scoped blocker recorded. | seed |
-| huge-document-smoke | slate-ar stabilize | pending | P1 | Smoke huge-doc correctness without broad architecture work. | Typing/Enter/paste/select-all/undo/nav/scroll proof recorded. | seed |
-| perf-packet | slate-ar perf | pending | P2 | Optimize only after correctness is green. | Metric target or plateau recorded. | seed |
-| supervision-mode | slate-auto | pending | P0 when timed runtime remains | If backlog looks empty before minimum runtime, predict next useful checkpoint from vision and evidence. | New checkpoint added/run, or hard blocker recorded. | seed |
-| consolidation | slate-auto | pending | P1 | Move accepted reusable decisions to durable docs/rules. | Durable owner updated or N/A. | seed |
-| final-handoff | slate-auto | pending | P0 | Emit changed list, review attention, queued checkpoints, commands, residual risks. | Handoff rows complete. | seed |
+| browser-helper-promotion | lane proof harness | pending | P1 | Promote repeated browser proof into reusable API/helper. | Helper added, queued, or N/A with reason. | seed |
+| mobile-claim-width | auto | pending | P1 | Separate raw-device proof from viewport proof. | Raw proof command passes or scoped blocker recorded. | seed |
+| huge-document-smoke | lane proof owner | pending | P1 | Smoke huge-doc correctness without broad architecture work when in scope. | Typing/Enter/paste/select-all/undo/nav/scroll proof recorded or N/A. | seed |
+| perf-packet | lane perf owner | pending | P2 | Optimize only after correctness is green. | Metric target or plateau recorded. | seed |
+| supervision-mode | auto | pending | P0 when timed runtime remains | If backlog looks empty before minimum runtime, predict next useful checkpoint from vision and evidence. | New checkpoint added/run, or hard blocker recorded. | seed |
+| consolidation | auto | pending | P1 | Move accepted reusable decisions to durable docs/rules. | Durable owner updated or N/A. | seed |
+| final-handoff | auto | pending | P0 | Emit changed list, review attention, queued checkpoints, commands, residual risks. | Handoff rows complete. | seed |
 
 Checkpoint mutation ledger:
 | Loop | Mutation | Checkpoint(s) | Evidence | Reason | Result |
@@ -149,9 +158,10 @@ Start Gates:
 | Gate | Applies | Evidence |
 |------|---------|----------|
 | Prompt requirements captured before work | pending | pending |
-| `slate-auto` source rule read | pending | pending |
+| `auto` source rule read | pending | pending |
 | `vision` read as checkpoint zero | pending | pending |
 | Active goal checked or created | pending | pending |
+| Lane resolved | pending | pending |
 | Invocation mode and timebox recorded | pending | pending |
 | Dynamic checkpoint policy accepted | pending | pending |
 | Source of truth and allowed workspaces recorded | pending | pending |
@@ -171,8 +181,12 @@ Work Checklist:
       boundaries, and blocked condition are concrete.
 - [ ] Invocation mode, minimum runtime/deadline, stop-question policy, remaining
       backlog ladder, and supervision-mode fallback are recorded.
+- [ ] Lane is resolved as Slate, Plate, or shared editor, with owning
+      workspace/package/app proof named.
 - [ ] Checkpoint supervisor table has been reconciled at least once after the
       initial seed.
+- [ ] Post-merge/current-tree closure is routed to `autoclosure` when in scope,
+      or marked N/A with reason.
 - [ ] Each loop ends with a checkpoint mutation decision: add, update, split,
       merge, retire, remove, reopen, reprioritize, or no-change with reason.
 - [ ] Current-tree/status packet recorded before new runtime patches.
@@ -212,6 +226,7 @@ Completion Gates:
 |------|---------|-----------------|----------|
 | Named verification threshold | pending | Run the proof commands/artifacts named in this plan | pending |
 | Dynamic checkpoint reconciliation | pending | Prove the plan was updated from evidence and not frozen to the initial seed | pending |
+| Lane authority proof | pending | Prove each command ran in the owning Slate/Plate/shared workspace, or record N/A | pending |
 | Workspace authority proof | pending | Record cwd/tool for each Slate v2, parent-docs, skill, browser, package, or benchmark proof | pending |
 | Behavior gates | pending | Run focused stable behavior proof or record scoped defer rows | pending |
 | Visual/native selection proof | pending | Record Browser/Playwright/native-selection evidence or scoped blocker | pending |
@@ -220,6 +235,7 @@ Completion Gates:
 | Mobile/raw-device claim width | pending | Run raw-device proof or record that only scoped viewport/browser proof is available | pending |
 | Huge-document correctness smoke | pending | Run focused huge-document behavior smoke or record owner defer | pending |
 | Package/API proof | pending | Source-audit and run package/type/test proof when package/API changed, otherwise N/A | pending |
+| Autoclosure handoff | pending | Delegate post-merge/current-tree until-clean work to `autoclosure`, otherwise N/A | pending |
 | Skill/rule sync | pending | Run `pnpm install` and mirror audit when `.agents/rules/**` changed, otherwise N/A | pending |
 | Changed list / review attention / stopping checkpoints | pending | Fill final handoff ledgers from current packet evidence | pending |
 | Final lint/check | pending | Run scoped lint/check or record why no code changed | pending |
@@ -232,12 +248,12 @@ Phase / pass table:
 | Phase | Status | Evidence | Next |
 |-------|--------|----------|------|
 | Checkpoint zero and requirement extraction | in_progress | created plan | status |
-| Status and current-tree closure | pending | | gap scan |
+| Status and current-state read | pending | | gap scan |
 | Gap scan and scenario matrix | pending | | behavior proof |
 | Behavior proof | pending | | oracle repair |
 | Oracle repair | pending | | visual proof |
 | Visual/native proof | pending | | slate-browser promotion |
-| slate-browser promotion | pending | | mobile claim width |
+| Browser helper promotion | pending | | mobile claim width |
 | Mobile/raw-device claim width | pending | | huge-document smoke |
 | Huge-document correctness smoke | pending | | perf/API/docs as needed |
 | Perf/API/docs/skill packets as needed | pending | | consolidation |
@@ -264,7 +280,7 @@ Visual/native selection ledger:
 |----------|-----------------------|----------------------|-------------------------------|----------------------------|--------|
 | pending | pending | pending | pending | pending | pending |
 
-slate-browser promotion ledger:
+Browser helper promotion ledger:
 | Pattern | Repeated where | Proposed helper/API | Proof command | Decision |
 |---------|----------------|---------------------|---------------|----------|
 | pending | pending | pending | pending | pending |
@@ -320,6 +336,7 @@ Verification evidence:
 
 Final handoff contract:
 - Goal plan: pending
+- Lane: pending
 - Surface and route/package: pending
 - Invocation mode, elapsed/minimum runtime, loop/checkpoint count: pending
 - Behavior gates and visual proof: pending

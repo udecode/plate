@@ -79,7 +79,7 @@ tests for package ownership, API intent, and public teaching surfaces.
   simplify, split, keep, defer, and reject decisions for shallow modules, split
   ownership, testability gaps, over-splits, and agent-navigation friction, then
   either applies a safe behavior-neutral packet or routes broader decisions to
-  `major-task`, `slate-plan`, `plate-plan`, `slate-auto`, or a package owner.
+  `major-task`, `slate-plan`, `plate-plan`, `auto`, or a package owner.
 - Public issue and PR bodies are maintainer-agent input contracts. Plate/Slate
   maintenance runs through local Codex sessions in maintainer checkouts, not
   hosted API bots, crabbox, or background cloud workers. Require public repro,
@@ -103,9 +103,13 @@ tests for package ownership, API intent, and public teaching surfaces.
 - Standing orders should make Codex less prompt-dependent, not less
   accountable. Every autonomous maintainer action needs a scope, trigger,
   approval gate, escalation rule, verification surface, and short report.
-- `$slate-auto` is internal Slate quality supervision: behavior, visual proof,
+- `$auto` is internal Plate/Slate quality supervision: behavior, visual proof,
   perf, API cleanup, benchmark/test repair, docs consolidation, and skill
   repair. It must not become the public GitHub queue brain.
+- `$autoclosure` is post-merge/current-tree until-clean closure for already
+  applied work. It loops like `autoreview`, patches safe findings, reruns proof,
+  and stops only when no accepted actionable findings remain or a real boundary
+  appears.
 - Source-backed pure improvements may be applied autonomously when they stay
   inside root `VISION.md`. Ask only when the change alters taste, product/API
   direction, human authority, skill topology, security, release policy, or an

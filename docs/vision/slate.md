@@ -118,7 +118,10 @@ status -> gap scan -> behavior proof -> missing oracle repair -> visual proof
 - `maintainer`: public GitHub issue/PR/security queue control plane for the
   merged Plate + Slate repo; routes work to narrower owners and stops at
   authority boundaries.
-- `slate-auto`: overnight supervisor and checkpoint cadence.
+- `auto`: internal Plate/Slate overnight supervisor and checkpoint cadence; use
+  the Slate lane for Slate v2 package/runtime/browser/proof work.
+- `autoclosure`: post-merge/current-tree until-clean closure after Slate work is
+  already applied.
 - `slate-research`: external discovery, OSS/GitHub source synthesis, durable
   research ledgers, and promotion into owners.
 - `slate-patch`: direct bug fix, reproduction, class-level behavior coverage,

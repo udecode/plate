@@ -77,6 +77,8 @@ Owner map:
 | Concern | Owner |
 | --- | --- |
 | public GitHub issue/PR/security queue control plane | `maintainer` |
+| internal Plate/Slate long quality loops | `auto` |
+| post-merge/current-tree until-clean closure | `autoclosure` |
 | reusable architecture doctrine | root `VISION.md` and `docs/vision/*.md` |
 | public API shape decisions | root `VISION.md` and `docs/vision/*.md` |
 | runtime/service-boundary patterns | root `VISION.md` and `docs/vision/*.md` |

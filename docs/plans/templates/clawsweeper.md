@@ -45,7 +45,7 @@ Constraints:
   classification, exact claim hygiene, fork dossier accounting, gitcrawl
   archive refresh, and subordinate external issue provenance.
 - `maintainer` owns public issue/PR/security queue orchestration.
-- `resolve-slate-issue`, `slate-patch`, `slate-auto`, `issue-harvester`, or
+- `resolve-slate-issue`, `slate-patch`, `auto`, `issue-harvester`, or
   `security-triage` own execution when the decision leaves ledger hygiene.
 - No GitHub comments, labels, closes, reopens, reviews, commits, pushes, PRs,
   releases, or public mutations unless explicitly authorized.
