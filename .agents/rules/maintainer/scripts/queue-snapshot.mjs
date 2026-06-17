@@ -6,6 +6,7 @@ import { dirname } from 'node:path';
 const DEFAULT_REPO = 'udecode/plate';
 const DEFAULT_OUT = 'docs/maintainer/queue.md';
 const DEFAULT_JSON = '.tmp/maintainer/queue-snapshot.json';
+const HTTP_URL_RE = /^https?:\/\//;
 
 function parseArgs(argv) {
   const args = {
@@ -20,7 +21,8 @@ function parseArgs(argv) {
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
     if (arg === '--repo') args.repo = requireValue(argv, ++i, arg);
-    else if (arg === '--limit') args.limit = Number(requireValue(argv, ++i, arg));
+    else if (arg === '--limit')
+      args.limit = Number(requireValue(argv, ++i, arg));
     else if (arg === '--out') args.out = requireValue(argv, ++i, arg);
     else if (arg === '--json') args.json = requireValue(argv, ++i, arg);
     else if (arg === '--fixture') args.fixture = requireValue(argv, ++i, arg);
@@ -150,9 +152,9 @@ function safeRead(read, warnings, label) {
 }
 
 function labelsOf(item) {
-  return (item.labels ?? []).map((label) =>
-    typeof label === 'string' ? label : label.name
-  ).filter(Boolean);
+  return (item.labels ?? [])
+    .map((label) => (typeof label === 'string' ? label : label.name))
+    .filter(Boolean);
 }
 
 function scoreIssue(issue) {
@@ -261,7 +263,8 @@ function buildRows(snapshot) {
     rows.push({
       ...scored,
       item: advisory.html_url ?? advisory.url ?? advisory.ghsa_id ?? 'advisory',
-      title: advisory.summary ?? advisory.title ?? advisory.ghsa_id ?? 'Advisory',
+      title:
+        advisory.summary ?? advisory.title ?? advisory.ghsa_id ?? 'Advisory',
       updatedAt: advisory.updated_at ?? advisory.updatedAt ?? '',
       type: 'advisory',
     });
@@ -335,7 +338,7 @@ ${topRows.map((row, index) => `| ${index + 1} | ${row.score} | ${displayItem(row
 
 function linkOrText(value) {
   const text = escapeCell(value);
-  return /^https?:\/\//.test(value) ? `[link](${text})` : text;
+  return HTTP_URL_RE.test(value) ? `[link](${text})` : text;
 }
 
 function displayItem(row) {
