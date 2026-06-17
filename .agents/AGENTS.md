@@ -48,6 +48,8 @@ Primary user-facing entrypoints:
 
 - `slate-auto` for internal Slate v2 quality loops.
 - `maintainer` for public Plate/Slate issue, PR, and security queue work.
+- `architecture-cleanup` for repo-grounded architecture/code cleanup,
+  deslop, simplification, and agent-navigation friction.
 - `sync-vision` for updating reusable taste from changed inputs.
 - `openclaw-sync` for syncing agent setup from OpenClaw.
 - `autoreview` for review. Reviewer persona skills are lenses behind
@@ -61,6 +63,11 @@ Default routing:
   question -> `maintainer` unless the user explicitly names a narrower owner.
 - Internal Slate v2 quality, behavior, perf, browser proof, API cleanup,
   benchmark repair, or long autonomous Slate loop -> `slate-auto`.
+- Broad architecture cleanup, refactor opportunities, module consolidation,
+  deslop, simplicity, testability, or agent-navigation friction ->
+  `architecture-cleanup`, then route accepted candidates to `major-task`,
+  `slate-plan`, `plate-plan`, `slate-auto`, or a package owner when the cleanup
+  is too broad to execute inside one safe packet.
 - One ordinary local patch with no public queue decision -> `task`.
 - Public security/advisory language -> `maintainer security`, then
   `security-triage`.
@@ -89,6 +96,7 @@ non-matching findings instead of patching around reviewer hallucinations.
 - `orchestrator` when the current thread should route per-branch work to child threads instead of executing locally
 - `task` for normal repo task execution
 - `major-task` for heavyweight architecture, framework comparison, migration, benchmark, or proposal work
+- `architecture-cleanup` for source-backed architecture/code cleanup: shallow modules, split ownership, duplicate helpers, over-splits, stale oracles, testability gaps, and agent-navigation friction. It ranks delete/merge/inline/simplify/split/keep/defer decisions, implements only safe behavior-neutral cleanup packets, and routes broad decisions to the right owner
 - `vision` to route agents to root `VISION.md` for unified Plate/Slate taste, public API doctrine, Slate-vs-Plate boundaries, proof standards, checkpoint-zero routing, and autonomous maintainer-fit decisions
 - `sync-vision` for incremental `VISION.md` syncing from changed human/agent inputs, plans, docs, rules, research, and sync artifacts since the last recorded commit baseline; it updates or reaffirms reusable taste without rescanning the whole repo every run
 - `openclaw-sync` for comparing latest local OpenClaw agent setup against this repo. It may update existing skills/rules or create a new skill only after the source row is read, the reusable invariant is named, no current owner fits, and product-specific OpenClaw plumbing is rejected.

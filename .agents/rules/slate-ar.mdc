@@ -40,6 +40,9 @@ Use this as the single Slate v2 wrapper around
 
 - The bug is a direct correctness failure with no oracle. Use `slate-patch`.
 - The output is an architecture/API proposal for user review. Use `slate-plan`.
+- The output is proactive architecture cleanup, deslop, refactor discovery,
+  module consolidation, or testability/agent-navigation improvement. Use
+  `architecture-cleanup`, then route broad accepted decisions.
 - The request is broad external discovery, web/GitHub, OSS research, or source
   synthesis. Use `slate-research` first.
 - The target is Plate product code instead of raw Slate v2.
@@ -51,6 +54,8 @@ Use this as the single Slate v2 wrapper around
 - `slate-ar`: Slate v2 cwd, state, correctness routing, natural modes,
   benchmark-backed performance policy, and operator handoff.
 - `slate-research`: external discovery and source synthesis.
+- `architecture-cleanup`: source-backed architecture/code cleanup before
+  measured AR packets.
 - `slate-patch`: concrete bugs, missing oracles, and direct correctness fixes.
 - `slate-plan`: public API/runtime architecture decisions.
 
@@ -117,6 +122,7 @@ Interpret short user text before picking commands:
 | `ship`, `reviewable`, `ready to commit` | readiness flow | `slate-ar` |
 | `fast`, `fastest`, `max perf`, `pagination`, `virtualization`, `benchmark` | perf lane | `slate-ar perf` |
 | `research`, `web/GitHub`, `OSS`, `scan repos`, `find gaps` | discovery | `slate-research` |
+| `architecture improvement`, `cleanup`, `deslop`, `refactor opportunities`, `testability`, `agent-navigable` | cleanup candidate ranking | `architecture-cleanup` |
 
 If a mutating Slate AR loop is already running in another thread, default to
 read-only status unless the user explicitly says this thread owns writes.
@@ -200,6 +206,8 @@ Routing:
 - existing behavior proof needs repeatability: `slate-ar gate`;
 - missing behavior oracle: `slate-patch` or `tdd`;
 - clear perf target: `slate-ar perf <target>`;
+- architecture cleanup, deslop, or refactor discovery:
+  `architecture-cleanup`;
 - broad API/DX/architecture/test gap with unknown owner: `slate-research`;
 - accepted quality-gap checklist: `slate-ar quality`;
 - broad surface improvement: `slate-ar perfect <surface>`;
@@ -306,6 +314,8 @@ Routing:
 - correctness gap with missing oracle: `slate-patch`;
 - existing test/behavior suite gap: `slate-ar gate`;
 - performance gap: `slate-ar perf`;
+- architecture/refactor/testability cleanup gap:
+  `architecture-cleanup`;
 - public API/runtime architecture gap: `slate-plan`;
 - generic measured loop gap: `slate-ar`.
 

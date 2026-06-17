@@ -111,6 +111,9 @@ Execution owners still do the work:
   workflow self-repair.
 - `slate-plan` / `plate-plan`: architecture, public API, behavior law, and
   maintainer-objection plans.
+- `architecture-cleanup`: repo-grounded architecture/code cleanup for
+  cross-package refactors, testability gaps, shallow modules, over-splits,
+  deslop, and agent-navigation friction before a plan or patch owner is chosen.
 - `slate-research`: external OSS/GitHub discovery before local proof.
 - `docs-creator`, `plate-plugin-creator`, `plate-ui`, and package owners:
   Plate docs/product/framework execution.
@@ -231,6 +234,7 @@ Read the exact item first. Then classify route:
 | Slate substrate bug | `resolve-slate-issue` or `slate-patch` |
 | Slate architecture/API fork | `slate-plan` |
 | Slate internal quality/perf/browser gap | `slate-auto` |
+| Cross-package architecture/testability/refactor/deslop candidate | `architecture-cleanup`, then `major-task`, `slate-plan`, or `plate-plan` |
 | Plate framework/plugin/component/docs | `plate-plan`, `plate-plugin-creator`, `plate-ui`, `docs-creator`, or `task` |
 | Security/advisory | `security-triage` |
 | PR review | `autoreview` |
@@ -357,9 +361,11 @@ When no public queue item is safe:
 2. stale issue duplicate/claim guard repair;
 3. issue brief improvements;
 4. docs/setup source-backed improvements;
-5. `slate-auto` one internal quality checkpoint;
-6. `sync-vision` if repeated user/agent corrections are uncaptured;
-7. `openclaw-sync` when the requested task is specifically to refresh upstream
+5. source-backed architecture/code cleanup through `architecture-cleanup` only
+   when a public item or repeated queue friction proves the need;
+6. `slate-auto` one internal quality checkpoint;
+7. `sync-vision` if repeated user/agent corrections are uncaptured;
+8. `openclaw-sync` when the requested task is specifically to refresh upstream
    agent setup.
 
 Do not run broad internal automation as a substitute for a public queue item
