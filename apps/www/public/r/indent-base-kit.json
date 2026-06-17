@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "indent-base-kit",
-  "type": "registry:component",
   "dependencies": [
     "@platejs/indent"
   ],
@@ -10,7 +9,9 @@
     {
       "path": "src/registry/components/editor/plugins/indent-base-kit.tsx",
       "content": "import { BaseIndentPlugin } from '@platejs/indent';\nimport { KEYS } from 'platejs';\n\nexport const BaseIndentKit = [\n  BaseIndentPlugin.configure({\n    inject: {\n      targetPlugins: [\n        ...KEYS.heading,\n        KEYS.p,\n        KEYS.blockquote,\n        KEYS.codeBlock,\n        KEYS.toggle,\n      ],\n    },\n    options: {\n      offset: 24,\n    },\n  }),\n];\n",
-      "type": "registry:component"
+      "type": "registry:component",
+      "target": "@components/editor/plugins/indent-base-kit.tsx"
     }
-  ]
+  ],
+  "type": "registry:component"
 }

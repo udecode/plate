@@ -1,15 +1,14 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "select-editor-demo",
-  "type": "registry:example",
   "title": "Select Editor Form",
   "description": "A form with a select editor component for managing labels.",
   "dependencies": [
     "@platejs/tag"
   ],
   "registryDependencies": [
-    "@shadcn/form",
-    "@shadcn/button",
+    "form",
+    "button",
     "https://platejs.org/r/select-editor.json"
   ],
   "files": [
@@ -25,5 +24,6 @@
         "route": "/docs/multi-select"
       }
     ]
-  }
+  },
+  "type": "registry:example"
 }

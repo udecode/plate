@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "callout-node",
-  "type": "registry:ui",
   "description": "A callout component for highlighting important information with customizable icons and styles.",
   "dependencies": [
     "@platejs/callout"
@@ -33,5 +32,6 @@
     "examples": [
       "callout-demo"
     ]
-  }
+  },
+  "type": "registry:ui"
 }

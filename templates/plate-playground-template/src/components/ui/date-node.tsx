@@ -55,7 +55,7 @@ export function DateElement(props: PlateElementProps<TDateElement>) {
           <PopoverTrigger asChild>{trigger}</PopoverTrigger>
           <PopoverContent className="w-auto p-0">
             <Calendar
-              initialFocus
+              autoFocus
               mode="single"
               onSelect={(date) => {
                 if (!date) return;

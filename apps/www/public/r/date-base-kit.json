@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "date-base-kit",
-  "type": "registry:component",
   "dependencies": [
     "@platejs/date"
   ],
@@ -12,7 +11,9 @@
     {
       "path": "src/registry/components/editor/plugins/date-base-kit.tsx",
       "content": "import { BaseDatePlugin } from '@platejs/date';\n\nimport { DateElementStatic } from '@/registry/ui/date-node-static';\n\nexport const BaseDateKit = [BaseDatePlugin.withComponent(DateElementStatic)];\n",
-      "type": "registry:component"
+      "type": "registry:component",
+      "target": "@components/editor/plugins/date-base-kit.tsx"
     }
-  ]
+  ],
+  "type": "registry:component"
 }

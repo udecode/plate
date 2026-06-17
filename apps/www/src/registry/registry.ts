@@ -13,6 +13,37 @@ const url =
     ? 'http://localhost:3000'
     : 'https://platejs.org';
 
+const EDITOR_COMPONENT_PATH_SEGMENT = 'components/editor/';
+const EDITOR_COMPONENT_TARGET_PREFIX = '@components/editor/';
+
+function getEditorComponentTarget(filePath: string) {
+  const segmentIndex = filePath.indexOf(EDITOR_COMPONENT_PATH_SEGMENT);
+
+  if (segmentIndex === -1) return null;
+
+  return `${EDITOR_COMPONENT_TARGET_PREFIX}${filePath.slice(segmentIndex + EDITOR_COMPONENT_PATH_SEGMENT.length)}`;
+}
+
+function withEditorComponentTargets(
+  items: Registry['items']
+): Registry['items'] {
+  return items.map((item) => ({
+    ...item,
+    files: item.files?.map((file) => {
+      const target = getEditorComponentTarget(file.path);
+
+      if (file.target || !target) {
+        return file;
+      }
+
+      return {
+        ...file,
+        target,
+      };
+    }),
+  }));
+}
+
 export const registryInit: RegistryItem[] = [
   {
     dependencies: ['platejs'],
@@ -36,19 +67,21 @@ export const registryInit: RegistryItem[] = [
     devDependencies: [],
     files: [],
     name: 'plate-ui',
-    registryDependencies: ['plate'],
+    registryDependencies: ['@plate/plate'],
     type: 'registry:style',
   },
 ];
 
-const registryBlockItems = registryBlocks.map((block) => ({
-  ...block,
-  registryDependencies: ['plate-ui', ...(block.registryDependencies ?? [])],
-}));
+export function createPlateRegistryItems(): Registry['items'] {
+  const registryBlockItems = registryBlocks.map((block) => ({
+    ...block,
+    registryDependencies: [
+      '@plate/plate-ui',
+      ...(block.registryDependencies ?? []),
+    ],
+  }));
 
-export const registry = {
-  homepage: url,
-  items: [
+  return withEditorComponentTargets([
     ...registryInit,
     ...registryUI,
     ...registryComponents,
@@ -57,6 +90,15 @@ export const registry = {
     ...registryStyles,
     ...registryHooks,
     ...registryExamples,
-  ],
-  name: 'plate',
-} satisfies Registry;
+  ]);
+}
+
+export function createPlateRegistry(homepage = url): Registry {
+  return {
+    homepage,
+    items: createPlateRegistryItems(),
+    name: 'plate',
+  };
+}
+
+export const registry = createPlateRegistry();

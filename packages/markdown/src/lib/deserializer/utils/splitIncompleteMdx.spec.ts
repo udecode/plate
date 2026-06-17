@@ -47,6 +47,13 @@ describe('splitIncomplete', () => {
     expect(splitIncompleteMdx(data)).toEqual(['test ', '<mdx>mdx</m']);
   });
 
+  it('splits malformed tag names at the tag start', () => {
+    expect(splitIncompleteMdx(String.raw`</ph\><`)).toEqual([
+      '',
+      String.raw`</ph\><`,
+    ]);
+  });
+
   it('ignores self‑closing tags when checking balance', () => {
     const data = '<section><img src="x.jpg"/><p>hi</p></section><sec';
     expect(splitIncompleteMdx(data)).toEqual([
@@ -67,5 +74,10 @@ describe('splitIncomplete', () => {
   it('keeps nested balanced tags intact', () => {
     const data = '<a><b></b></a>';
     expect(splitIncompleteMdx(data)).toBe(data);
+  });
+
+  it('keeps complete member-expression tags before an incomplete tail', () => {
+    const data = '<Foo.Bar>ok</Foo.Bar><u>';
+    expect(splitIncompleteMdx(data)).toEqual(['<Foo.Bar>ok</Foo.Bar>', '<u>']);
   });
 });

@@ -1,12 +1,9 @@
 ---
-title: Plate UI 安装
-description: 如何在您的项目中设置 Plate UI。
+title: Plate UI
+description: 安装、自定义并同步复制到项目中的 Plate UI 组件。
 ---
 
-本指南详细介绍如何安装 Plate UI，即 Plate 的组件层。请选择适合您项目的方法：
-
-*   **CLI 安装（推荐）：** 使用 shadcn CLI 快速设置。
-*   **手动安装：** 对设置过程有更多控制。
+Plate UI 是 Plate 的复制式组件层。使用 shadcn CLI 可以最快完成设置；需要更多控制时，也可以手动安装组件。
 
 ## CLI 安装（推荐）
 
@@ -105,6 +102,43 @@ export function MyEditor() {
 
 </Steps>
 
+## 同步复制的文件
+
+Plate UI 组件安装后会成为项目里的本地代码。当 agent 需要把上游 registry 文件变更合并到本地副本，同时保留项目自己的改动时，使用这个流程。
+
+发布内容审核请看 [Releases](/cn/docs/releases)。精确同步数据使用原始 registry JSON。
+
+<Steps>
+
+### 安装 skill
+
+```bash
+npx skills add sync-plate-ui
+```
+
+### 选择 JSON 来源
+
+需要按时间顺序读取更新事件时使用 index。需要查找某个已复制 registry item 的事件时使用 component map。
+
+- [Index JSON](/registry/changelog/index.json)
+- [Components JSON](/registry/changelog/components.json)
+
+### 提示 agent
+
+```text
+Use sync-plate-ui to sync code-block-node from:
+https://platejs.org/registry/changelog/index.json
+```
+
+</Steps>
+
+### Agent contract
+
+- 使用 `/registry/changelog/index.json` 读取按顺序排列的 Plate UI 更新事件。
+- 使用 `/registry/changelog/components.json` 按 registry item 查找事件。
+- 打开 event JSON，读取 PR、release dependency、target files 和 migration notes。
+- 将上游文件变更合并进 app 副本，并保留项目自己的改动。
+
 ## 组件类型
 
 安装 Plate UI 组件时，您会遇到具有一致命名模式的不同类型组件。以下是它们的含义：
@@ -194,7 +228,7 @@ npx shadcn@latest add @plate/media-uploadthing-api
 
 ### 文档
 
-各种 Plate 功能、指南和 API 参考的文档文件也可以添加到您的本地项目中。这对于将特定版本的文档与代码一起保存以及通过 MCP 为 AI 工具提供上下文特别有用。了解更多关于 [设置本地文档](/installation/docs) 的信息。
+各种 Plate 功能、指南和 API 参考的文档文件也可以添加到您的本地项目中。这对于将特定版本的文档与代码一起保存以及通过 MCP 为 AI 工具提供上下文特别有用。了解更多关于 [设置本地文档](/docs/installation/docs) 的信息。
 
 ```bash
 # Add AI documentation

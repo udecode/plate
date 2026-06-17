@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "list-kit",
-  "type": "registry:component",
   "dependencies": [
     "@platejs/list"
   ],
@@ -14,8 +13,10 @@
   "files": [
     {
       "path": "src/registry/components/editor/plugins/list-kit.tsx",
-      "content": "'use client';\n\nimport {\n  BulletedListRules,\n  OrderedListRules,\n  TaskListRules,\n} from '@platejs/list';\nimport { ListPlugin } from '@platejs/list/react';\nimport { KEYS } from 'platejs';\n\nimport { IndentKit } from '@/registry/components/editor/plugins/indent-kit';\nimport { BlockList } from '@/registry/ui/block-list';\n\nexport const ListKit = [\n  ...IndentKit,\n  ListPlugin.configure({\n    inputRules: [\n      BulletedListRules.markdown({ variant: '-' }),\n      BulletedListRules.markdown({ variant: '*' }),\n      OrderedListRules.markdown({ variant: '.' }),\n      OrderedListRules.markdown({ variant: ')' }),\n      TaskListRules.markdown({ checked: false }),\n      TaskListRules.markdown({ checked: true }),\n    ],\n    inject: {\n      targetPlugins: [\n        ...KEYS.heading,\n        KEYS.p,\n        KEYS.blockquote,\n        KEYS.codeBlock,\n        KEYS.toggle,\n        KEYS.img,\n      ],\n    },\n    render: {\n      belowNodes: BlockList,\n    },\n  }),\n];\n",
-      "type": "registry:component"
+      "content": "'use client';\n\nimport {\n  BulletedListRules,\n  isOrderedList,\n  OrderedListRules,\n  TaskListRules,\n} from '@platejs/list';\nimport { ListPlugin } from '@platejs/list/react';\nimport { KEYS } from 'platejs';\n\nimport { IndentKit } from '@/registry/components/editor/plugins/indent-kit';\nimport { BlockList } from '@/registry/ui/block-list';\n\nexport const ListKit = [\n  ...IndentKit,\n  ListPlugin.configure({\n    inputRules: [\n      BulletedListRules.markdown({ variant: '-' }),\n      BulletedListRules.markdown({ variant: '*' }),\n      OrderedListRules.markdown({ variant: '.' }),\n      OrderedListRules.markdown({ variant: ')' }),\n      TaskListRules.markdown({ checked: false }),\n      TaskListRules.markdown({ checked: true }),\n    ],\n    inject: {\n      nodeProps: {\n        nodeKey: KEYS.listType,\n        query: ({ nodeProps }) => {\n          const element = nodeProps.element;\n\n          return !!element?.listStyleType && !isOrderedList(element);\n        },\n        transformProps: ({ props }) => ({\n          ...props,\n          role: 'listitem',\n          style: {\n            ...props.style,\n            display: 'list-item',\n          },\n        }),\n      },\n      targetPlugins: [\n        ...KEYS.heading,\n        KEYS.p,\n        KEYS.blockquote,\n        KEYS.codeBlock,\n        KEYS.toggle,\n        KEYS.img,\n      ],\n    },\n    render: {\n      belowNodes: BlockList,\n    },\n  }),\n];\n",
+      "type": "registry:component",
+      "target": "@components/editor/plugins/list-kit.tsx"
     }
-  ]
+  ],
+  "type": "registry:component"
 }

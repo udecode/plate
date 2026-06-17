@@ -38,7 +38,7 @@
     "build:watch": "ROARR_LOG=true turbowatch ./tooling/config/turbowatch.config.ts | roarr",
     "check": "pnpm lint && pnpm typecheck && pnpm test:all && pnpm test:slowest",
     "check:push": "pnpm lint && pnpm typecheck && pnpm test:all",
-    "ci:release": "pnpm release",
+    "ci:release": "node tooling/scripts/release-packages.mjs",
     "ci:version": "pnpm changeset version && pnpm install --no-frozen-lockfile",
     "deps:check": "npx npm-check-updates@latest --configFileName config/ncurc.yml --workspaces --root --mergeConfig",
     "deps:update": "npx npm-check-updates@latest --configFileName config/ncurc.yml -u --workspaces --root --mergeConfig",
@@ -60,7 +60,8 @@
     "g:plate-ui": "cd ${INIT_CWD:-.} && COMPONENTS_REGISTRY_URL=http://localhost:3000 pnpm exec plate-ui",
     "g:r": "pnpm --filter www r",
     "g:rd": "pnpm --filter www rd",
-    "g:release:next": "pnpm build && pnpm changeset publish --tag next",
+    "g:release:beta": "node tooling/scripts/release-packages.mjs --channel beta",
+    "g:release:next": "pnpm g:release:beta",
     "g:typecheck": "pnpm g:build && turbo --filter \"./packages/**\" typecheck --only",
     "g:typecheck:all": "(pnpm build || pnpm build) && turbo typecheck --only",
     "gen:package": "pnpm exec plop --plopfile tooling/scripts/plop/plopfile.cjs package",
@@ -105,7 +106,7 @@
     "typecheck:all": "pnpm g:typecheck:all"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.4.16",
+    "@biomejs/biome": "2.5.0",
     "@changesets/cli": "2.30.0",
     "@changesets/get-github-info": "0.8.0",
     "@happy-dom/global-registrator": "20.0.10",
@@ -181,7 +182,7 @@
     "turbowatch": "2.29.4",
     "typescript": "6.0.2",
     "typescript-eslint": "^8.47.0",
-    "ultracite": "7.8.1",
+    "ultracite": "7.8.3",
     "y-webrtc": "10.3.0",
     "zod": "4.1.12"
   },

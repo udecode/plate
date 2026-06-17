@@ -1,7 +1,27 @@
+import { renderHook } from '@testing-library/react';
+import * as actualPlatejs from 'platejs';
+import * as actualPlatejsReact from 'platejs/react';
+
+import { parseVideoUrl } from '../../lib/media-embed/parseVideoUrl';
 import {
   type EmbedUrlParser,
   parseMediaUrl,
 } from '../../lib/media/parseMediaUrl';
+
+const useEditorRefMock = mock();
+const useElementMock = mock();
+const useFocusedMock = mock();
+const useReadOnlyMock = mock();
+const useSelectedMock = mock();
+
+mock.module('platejs/react', () => ({
+  ...actualPlatejsReact,
+  useEditorRef: useEditorRefMock,
+  useElement: useElementMock,
+  useFocused: useFocusedMock,
+  useReadOnly: useReadOnlyMock,
+  useSelected: useSelectedMock,
+}));
 
 describe('parseMediaUrl', () => {
   const parsersWithoutFallback: EmbedUrlParser[] = [
@@ -65,5 +85,73 @@ describe('parseMediaUrl', () => {
       sourceUrl: 'https://example.com/watch',
       url: 'https://example.com/embed/1',
     });
+  });
+});
+
+describe('useMediaState', () => {
+  const renderMediaState = async (
+    element: Record<string, unknown>,
+    urlParsers: EmbedUrlParser[] = [parseVideoUrl]
+  ) => {
+    const { useMediaState } = await import(
+      `./useMediaState?test=${Math.random().toString(36).slice(2)}`
+    );
+
+    useEditorRefMock.mockReturnValue({
+      getType: (key: string) => key,
+    });
+    useElementMock.mockReturnValue(element);
+    useFocusedMock.mockReturnValue(false);
+    useReadOnlyMock.mockReturnValue(false);
+    useSelectedMock.mockReturnValue(false);
+
+    const { result } = renderHook(() => useMediaState({ urlParsers }));
+
+    return result.current;
+  };
+
+  beforeEach(() => {
+    useEditorRefMock.mockReset();
+    useElementMock.mockReset();
+    useFocusedMock.mockReset();
+    useReadOnlyMock.mockReset();
+    useSelectedMock.mockReset();
+  });
+
+  afterAll(() => {
+    mock.restore();
+  });
+
+  it('does not trust serialized provider metadata when the render URL is unsafe', async () => {
+    const state = await renderMediaState({
+      children: [{ text: '' }],
+      provider: 'vimeo',
+      sourceUrl: 'https://vimeo.com/1',
+      type: actualPlatejs.KEYS.mediaEmbed,
+      url: "javascript:parent.postMessage('plate-media-xss','*')",
+    });
+
+    expect(state.embed).toBeUndefined();
+    expect(state.isVideo).toBe(false);
+  });
+
+  it('recomputes provider metadata from the render URL', async () => {
+    const state = await renderMediaState({
+      children: [{ text: '' }],
+      id: 'attacker-controlled',
+      provider: 'youtube',
+      sourceUrl: 'https://vimeo.com/1',
+      type: actualPlatejs.KEYS.mediaEmbed,
+      url: 'https://player.vimeo.com/video/76979871',
+    });
+
+    expect(state.embed).toEqual({
+      id: '76979871',
+      provider: 'vimeo',
+      sourceKind: 'url',
+      sourceUrl: undefined,
+      url: 'https://player.vimeo.com/video/76979871',
+    });
+    expect(state.isVideo).toBe(true);
   });
 });

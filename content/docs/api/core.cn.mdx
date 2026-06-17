@@ -651,6 +651,28 @@ const state = useEditorPluginOption(editor, plugin, 'state');
 ### `SlateExtensionPlugin & SlateReactExtensionPlugin`
 扩展核心 API 并改进默认功能。
 
+`SlateExtensionPlugin` 提供 `editor.api.isElementStateEmpty(element)`。它检查元素自身的属性状态，而不是文本内容。默认只忽略 `type` 和插件通过 `node.isMetadataProp` 声明为空的属性；任何其他属性都表示该元素带有状态。`NodeIdPlugin` 使用 `node.isMetadataProp` 处理配置的 NodeId 键。
+
+```tsx
+editor.api.isElementStateEmpty({
+  children: [{ text: '' }],
+  type: 'p',
+}); // true
+
+editor.api.isElementStateEmpty({
+  children: [{ text: '' }],
+  listStyleType: 'disc',
+  type: 'p',
+}); // false
+
+const CustomMetadataPlugin = createSlatePlugin({
+  key: 'customMetadata',
+  node: {
+    isMetadataProp: ({ key }) => key === 'customId',
+  },
+});
+```
+
 ### `DOMPlugin & ReactPlugin`
 将 React 特定功能集成到编辑器中。
 

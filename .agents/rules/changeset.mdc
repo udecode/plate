@@ -14,7 +14,7 @@ Use when:
 
 - Creating `.changeset/*.md` files
 - Documenting package changes: feat, fix, breaking
-- Updating `docs/components/changelog.mdx` for registry work
+- Updating Plate UI registry changelog source for copied registry components
 
 Do not use for:
 
@@ -64,7 +64,21 @@ Never combine packages in one changeset.
 .changeset/utils-add-helper.md
 ```
 
-### 3. Relative to `main`, not to your thought process
+### 3. Always relative to `main`, never last commit
+
+NEVER write a changeset relative to the last commit, staged diff, current
+working tree, branch-local plan, or the change you just made. Those are agent
+breadcrumbs, not release truth.
+
+Before creating or editing a changeset, answer one question:
+
+> What will a user upgrading from current `main` observe?
+
+Use `main` / `origin/main` as the release baseline. If a symbol, option,
+behavior, file, or bug only existed inside the current branch and never existed
+on `main`, do **not** write a removal, migration, or breaking changeset for it.
+Instead, describe only the final user-visible delta from `main`, or write no
+changeset if there is no published package delta.
 
 Write changesets for the user-visible delta from the current `main` branch.
 
@@ -73,9 +87,13 @@ That means:
 - describe what users upgrading from `main` need to know
 - describe migration steps only when the user actually has to do something
 - prefer API shape, runtime behavior, serialized data shape, or config changes
+- check whether any named removed/renamed API actually exists on `main` before
+  writing removal or migration prose
 
 Do not write:
 
+- last-commit-relative removals for APIs introduced and deleted on the same
+  branch
 - implementation diary
 - architecture rationale
 - internal ownership or seam language
@@ -85,11 +103,20 @@ Do not write:
 If a package changed internally on this branch but has no user-visible delta from
 `main`, do not write a changeset for that package.
 
-### 4. Registry work is changelog work
+### 4. Registry work is registry-changelog work
 
 If changes are only under `apps/www/src/registry/`, do **not** write a package changeset.
 
-Update `docs/components/changelog.mdx` instead.
+Use the `registry-changelog` skill instead. It owns the source entry schema,
+scaffold command, generator command, and verification check:
+
+```bash
+node tooling/scripts/generate-ui-changelog-entries.mjs --new <id> --summary "<summary>" --items <item-a,item-b> --kind <kind>
+node tooling/scripts/generate-ui-changelog-entries.mjs --write
+node tooling/scripts/generate-ui-changelog-entries.mjs --check
+```
+
+`sync-plate-ui` is for downstream user apps consuming the generated JSON. Do not use it to produce upstream Plate changelog entries.
 
 ### 5. Style
 
@@ -185,20 +212,16 @@ Before shipping:
 
 - [ ] Used `minor` for `@platejs/slate`, `@platejs/core`, or `platejs`? Change to `patch`
 - [ ] Multiple packages in frontmatter? Split files
-- [ ] Describes internals instead of the user-visible delta from `main`? Rewrite it
+- [ ] Describes the last commit, working tree, or branch-only API instead of the
+      user-visible delta from `main`? Rewrite it
+- [ ] Claims an API was removed or needs migration without proving that API
+      exists on `main`? Delete that claim
 - [ ] Past tense verbs? Fix them
 - [ ] Multiple paragraphs? Condense
 - [ ] Too much explanation? Cut it
 - [ ] API change without before/after? Add one
 
-## Registry Changelog Format
+## Registry Changelog
 
-For `apps/www/src/registry` changes:
-
-```md
-### [Month Day] #[Version]
-- **`component-name`**: Brief description
-  - Migration note if actually needed
-```
-
-Same style rules: concise, imperative, user impact only.
+For `apps/www/src/registry` changes, use the `registry-changelog` skill. Do not
+duplicate its schema here.

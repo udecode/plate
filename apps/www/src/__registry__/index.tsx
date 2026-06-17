@@ -26,7 +26,7 @@ export const Index: Record<string, any> = {
     name: "ai-menu",
     description: "A menu for AI-powered content generation and insertion.",
     type: "registry:ui",
-    registryDependencies: ["@shadcn/command","@shadcn/popover","https://platejs.org/r/use-chat.json","https://platejs.org/r/editor-base-kit.json","https://platejs.org/r/ai-node.json"],
+    registryDependencies: ["command","popover","https://platejs.org/r/use-chat.json","https://platejs.org/r/editor-base-kit.json","https://platejs.org/r/ai-node.json"],
     files: [{
       path: "src/registry/ui/ai-menu.tsx",
       type: "registry:ui",
@@ -64,7 +64,7 @@ export const Index: Record<string, any> = {
     name: "align-toolbar-button",
     description: "A dropdown menu for text alignment controls.",
     type: "registry:ui",
-    registryDependencies: ["@shadcn/dropdown-menu","https://platejs.org/r/toolbar.json"],
+    registryDependencies: ["dropdown-menu","https://platejs.org/r/toolbar.json"],
     files: [{
       path: "src/registry/ui/align-toolbar-button.tsx",
       type: "registry:ui",
@@ -81,7 +81,7 @@ export const Index: Record<string, any> = {
     name: "block-context-menu",
     description: "A context menu for block-level operations.",
     type: "registry:ui",
-    registryDependencies: ["@shadcn/calendar","@shadcn/context-menu","https://platejs.org/r/use-is-touch-device.json"],
+    registryDependencies: ["calendar","context-menu","https://platejs.org/r/use-is-touch-device.json"],
     files: [{
       path: "src/registry/ui/block-context-menu.tsx",
       type: "registry:ui",
@@ -115,7 +115,7 @@ export const Index: Record<string, any> = {
     name: "import-toolbar-button",
     description: "A toolbar button to import editor content from a file.",
     type: "registry:ui",
-    registryDependencies: ["@shadcn/dropdown-menu","https://platejs.org/r/toolbar.json"],
+    registryDependencies: ["dropdown-menu","https://platejs.org/r/toolbar.json"],
     files: [{
       path: "src/registry/ui/import-toolbar-button.tsx",
       type: "registry:ui",
@@ -132,7 +132,7 @@ export const Index: Record<string, any> = {
     name: "export-toolbar-button",
     description: "A toolbar button for exporting editor content in various formats (HTML, PDF, Image, Markdown).",
     type: "registry:ui",
-    registryDependencies: ["https://platejs.org/r/docx-export-kit.json","@shadcn/dropdown-menu","https://platejs.org/r/toolbar.json","https://platejs.org/r/editor-base-kit.json"],
+    registryDependencies: ["https://platejs.org/r/docx-export-kit.json","dropdown-menu","https://platejs.org/r/toolbar.json","https://platejs.org/r/editor-base-kit.json"],
     files: [{
       path: "src/registry/ui/export-toolbar-button.tsx",
       type: "registry:ui",
@@ -149,7 +149,7 @@ export const Index: Record<string, any> = {
     name: "caption",
     description: "A text field for adding captions to media elements.",
     type: "registry:ui",
-    registryDependencies: ["@shadcn/button"],
+    registryDependencies: ["button"],
     files: [{
       path: "src/registry/ui/caption.tsx",
       type: "registry:ui",
@@ -166,7 +166,7 @@ export const Index: Record<string, any> = {
     name: "font-color-toolbar-button",
     description: "A color picker toolbar button with text and background color controls.",
     type: "registry:ui",
-    registryDependencies: ["@shadcn/dropdown-menu","@shadcn/separator","@shadcn/button","@shadcn/tooltip","https://platejs.org/r/toolbar.json"],
+    registryDependencies: ["dropdown-menu","separator","button","tooltip","https://platejs.org/r/toolbar.json"],
     files: [{
       path: "src/registry/ui/font-color-toolbar-button.tsx",
       type: "registry:ui",
@@ -200,7 +200,7 @@ export const Index: Record<string, any> = {
     name: "block-discussion",
     description: "A popover interface for managing discussions: comments, replies, suggestions.",
     type: "registry:ui",
-    registryDependencies: ["@shadcn/button","@shadcn/popover","@shadcn/avatar","@shadcn/dropdown-menu","https://platejs.org/r/editor.json","https://platejs.org/r/ai-node.json","https://platejs.org/r/date-node.json","https://platejs.org/r/emoji-node.json","https://platejs.org/r/link-node.json","https://platejs.org/r/mention-node.json","https://platejs.org/r/highlight-style.json","https://platejs.org/r/suggestion-kit.json","https://platejs.org/r/discussion-kit.json","https://platejs.org/r/basic-marks-kit.json"],
+    registryDependencies: ["button","popover","avatar","dropdown-menu","https://platejs.org/r/editor.json","https://platejs.org/r/ai-node.json","https://platejs.org/r/date-node.json","https://platejs.org/r/emoji-node.json","https://platejs.org/r/link-node.json","https://platejs.org/r/mention-node.json","https://platejs.org/r/highlight-style.json","https://platejs.org/r/suggestion-kit.json","https://platejs.org/r/discussion-kit.json","https://platejs.org/r/basic-marks-kit.json"],
     files: [{
       path: "src/registry/ui/block-discussion.tsx",
       type: "registry:ui",
@@ -246,7 +246,7 @@ export const Index: Record<string, any> = {
     name: "block-draggable",
     description: "A block wrapper with a drag handle for moving editor blocks.",
     type: "registry:ui",
-    registryDependencies: ["@shadcn/tooltip","https://platejs.org/r/use-mounted.json"],
+    registryDependencies: ["tooltip","https://platejs.org/r/use-mounted.json"],
     files: [{
       path: "src/registry/ui/block-draggable.tsx",
       type: "registry:ui",
@@ -284,7 +284,7 @@ export const Index: Record<string, any> = {
     name: "select-editor",
     description: "An editor to select tags.",
     type: "registry:ui",
-    registryDependencies: ["https://platejs.org/r/editor.json","@shadcn/command","@shadcn/popover","https://platejs.org/r/tag-node.json"],
+    registryDependencies: ["https://platejs.org/r/editor.json","command","popover","https://platejs.org/r/tag-node.json"],
     files: [{
       path: "src/registry/ui/select-editor.tsx",
       type: "registry:ui",
@@ -505,7 +505,7 @@ export const Index: Record<string, any> = {
     name: "insert-toolbar-button",
     description: "A menu for inserting different types of blocks.",
     type: "registry:ui",
-    registryDependencies: ["@shadcn/dropdown-menu","https://platejs.org/r/toolbar.json","https://platejs.org/r/transforms.json"],
+    registryDependencies: ["dropdown-menu","https://platejs.org/r/toolbar.json","https://platejs.org/r/transforms.json"],
     files: [{
       path: "src/registry/ui/insert-toolbar-button.tsx",
       type: "registry:ui",
@@ -522,7 +522,7 @@ export const Index: Record<string, any> = {
     name: "insert-toolbar-classic-button",
     description: "A menu for inserting different types of blocks with classic list support.",
     type: "registry:ui",
-    registryDependencies: ["@shadcn/dropdown-menu","https://platejs.org/r/toolbar.json","https://platejs.org/r/transforms-classic.json"],
+    registryDependencies: ["dropdown-menu","https://platejs.org/r/toolbar.json","https://platejs.org/r/transforms-classic.json"],
     files: [{
       path: "src/registry/ui/insert-toolbar-classic-button.tsx",
       type: "registry:ui",
@@ -539,7 +539,7 @@ export const Index: Record<string, any> = {
     name: "line-height-toolbar-button",
     description: "A menu for controlling text line spacing.",
     type: "registry:ui",
-    registryDependencies: ["https://platejs.org/r/toolbar.json","@shadcn/dropdown-menu"],
+    registryDependencies: ["https://platejs.org/r/toolbar.json","dropdown-menu"],
     files: [{
       path: "src/registry/ui/line-height-toolbar-button.tsx",
       type: "registry:ui",
@@ -556,7 +556,7 @@ export const Index: Record<string, any> = {
     name: "link-toolbar",
     description: "A floating interface for link editing.",
     type: "registry:ui",
-    registryDependencies: ["@shadcn/button","@shadcn/input","@shadcn/popover","@shadcn/separator"],
+    registryDependencies: ["button","input","popover","separator"],
     files: [{
       path: "src/registry/ui/link-toolbar.tsx",
       type: "registry:ui",
@@ -624,7 +624,7 @@ export const Index: Record<string, any> = {
     name: "media-toolbar",
     description: "A toolbar interface for media settings.",
     type: "registry:ui",
-    registryDependencies: ["@shadcn/button","@shadcn/input","@shadcn/popover","@shadcn/separator"],
+    registryDependencies: ["button","input","popover","separator"],
     files: [{
       path: "src/registry/ui/media-toolbar.tsx",
       type: "registry:ui",
@@ -641,7 +641,7 @@ export const Index: Record<string, any> = {
     name: "media-toolbar-button",
     description: "Toolbar button for inserting and managing media.",
     type: "registry:ui",
-    registryDependencies: ["https://platejs.org/r/toolbar.json","@shadcn/input","@shadcn/dropdown-menu","@shadcn/alert-dialog"],
+    registryDependencies: ["https://platejs.org/r/toolbar.json","input","dropdown-menu","alert-dialog"],
     files: [{
       path: "src/registry/ui/media-toolbar-button.tsx",
       type: "registry:ui",
@@ -675,7 +675,7 @@ export const Index: Record<string, any> = {
     name: "mode-toolbar-button",
     description: "A menu for switching between editor modes.",
     type: "registry:ui",
-    registryDependencies: ["@shadcn/dropdown-menu","https://platejs.org/r/toolbar.json"],
+    registryDependencies: ["dropdown-menu","https://platejs.org/r/toolbar.json"],
     files: [{
       path: "src/registry/ui/mode-toolbar-button.tsx",
       type: "registry:ui",
@@ -692,7 +692,7 @@ export const Index: Record<string, any> = {
     name: "more-toolbar-button",
     description: "A menu for additional text formatting options.",
     type: "registry:ui",
-    registryDependencies: ["@shadcn/dropdown-menu","https://platejs.org/r/toolbar.json"],
+    registryDependencies: ["dropdown-menu","https://platejs.org/r/toolbar.json"],
     files: [{
       path: "src/registry/ui/more-toolbar-button.tsx",
       type: "registry:ui",
@@ -726,7 +726,7 @@ export const Index: Record<string, any> = {
     name: "table-toolbar-button",
     description: "A menu for table manipulation and formatting.",
     type: "registry:ui",
-    registryDependencies: ["@shadcn/dropdown-menu","https://platejs.org/r/toolbar.json"],
+    registryDependencies: ["dropdown-menu","https://platejs.org/r/toolbar.json"],
     files: [{
       path: "src/registry/ui/table-toolbar-button.tsx",
       type: "registry:ui",
@@ -764,7 +764,7 @@ export const Index: Record<string, any> = {
     name: "turn-into-toolbar-button",
     description: "A menu for converting between different block types.",
     type: "registry:ui",
-    registryDependencies: ["@shadcn/dropdown-menu","https://platejs.org/r/toolbar.json","https://platejs.org/r/transforms.json"],
+    registryDependencies: ["dropdown-menu","https://platejs.org/r/toolbar.json","https://platejs.org/r/transforms.json"],
     files: [{
       path: "src/registry/ui/turn-into-toolbar-button.tsx",
       type: "registry:ui",
@@ -781,7 +781,7 @@ export const Index: Record<string, any> = {
     name: "turn-into-toolbar-classic-button",
     description: "A dropdown to convert block types with classic list support.",
     type: "registry:ui",
-    registryDependencies: ["@shadcn/dropdown-menu","https://platejs.org/r/toolbar.json","https://platejs.org/r/transforms-classic.json"],
+    registryDependencies: ["dropdown-menu","https://platejs.org/r/toolbar.json","https://platejs.org/r/transforms-classic.json"],
     files: [{
       path: "src/registry/ui/turn-into-toolbar-classic-button.tsx",
       type: "registry:ui",
@@ -815,7 +815,7 @@ export const Index: Record<string, any> = {
     name: "toolbar",
     description: "A customizable toolbar component with various button styles and group",
     type: "registry:ui",
-    registryDependencies: ["@shadcn/tooltip","@shadcn/separator","@shadcn/dropdown-menu"],
+    registryDependencies: ["tooltip","separator","dropdown-menu"],
     files: [{
       path: "src/registry/ui/toolbar.tsx",
       type: "registry:ui",
@@ -866,7 +866,7 @@ export const Index: Record<string, any> = {
     name: "block-list",
     description: "List components.",
     type: "registry:ui",
-    registryDependencies: ["@shadcn/checkbox"],
+    registryDependencies: ["checkbox"],
     files: [{
       path: "src/registry/ui/block-list.tsx",
       type: "registry:ui",
@@ -929,7 +929,7 @@ export const Index: Record<string, any> = {
     name: "code-block-node",
     description: "A code block with syntax highlighting and language selection.",
     type: "registry:ui",
-    registryDependencies: ["@shadcn/command","@shadcn/popover","@shadcn/button"],
+    registryDependencies: ["command","popover","button"],
     files: [{
       path: "src/registry/ui/code-block-node.tsx",
       type: "registry:ui",
@@ -950,7 +950,7 @@ export const Index: Record<string, any> = {
     name: "code-drawing-node",
     description: "Create diagrams from code using PlantUML, Graphviz, Flowchart, or Mermaid.",
     type: "registry:ui",
-    registryDependencies: ["@shadcn/popover","@shadcn/button","@shadcn/select","https://platejs.org/r/use-mobile.json"],
+    registryDependencies: ["popover","button","select","https://platejs.org/r/use-mobile.json"],
     files: [{
       path: "src/registry/ui/code-drawing-node.tsx",
       type: "registry:ui",
@@ -1055,7 +1055,7 @@ export const Index: Record<string, any> = {
     name: "date-node",
     description: "A date field component with calendar picker.",
     type: "registry:ui",
-    registryDependencies: ["@shadcn/calendar","https://platejs.org/r/suggestion.json"],
+    registryDependencies: ["calendar","https://platejs.org/r/suggestion.json"],
     files: [{
       path: "src/registry/ui/date-node.tsx",
       type: "registry:ui",
@@ -1076,7 +1076,7 @@ export const Index: Record<string, any> = {
     name: "equation-node",
     description: "Displays a LaTeX equation element with an editable popover for inputting and rendering mathematical expressions.",
     type: "registry:ui",
-    registryDependencies: ["@shadcn/popover","https://platejs.org/r/suggestion.json"],
+    registryDependencies: ["popover","https://platejs.org/r/suggestion.json"],
     files: [{
       path: "src/registry/ui/equation-node.tsx",
       type: "registry:ui",
@@ -1142,13 +1142,13 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    meta: {"docs":[{"route":"/docs/excalidraw"}]},
+    meta: {"docs":[{"route":"/docs/excalidraw"}],"examples":["excalidraw-demo"]},
   },
   "font-size-toolbar-button": {
     name: "font-size-toolbar-button",
     description: "A toolbar control for adjusting font size.",
     type: "registry:ui",
-    registryDependencies: ["@shadcn/popover","https://platejs.org/r/toolbar.json"],
+    registryDependencies: ["popover","https://platejs.org/r/toolbar.json"],
     files: [{
       path: "src/registry/ui/font-size-toolbar-button.tsx",
       type: "registry:ui",
@@ -1165,7 +1165,7 @@ export const Index: Record<string, any> = {
     name: "footnote-node",
     description: "Inline footnote references, definitions, and input UI.",
     type: "registry:ui",
-    registryDependencies: ["@shadcn/button","@shadcn/command","@shadcn/hover-card","@shadcn/popover","https://platejs.org/r/inline-combobox.json"],
+    registryDependencies: ["button","command","hover-card","popover","https://platejs.org/r/inline-combobox.json"],
     files: [{
       path: "src/registry/ui/footnote-node.tsx",
       type: "registry:ui",
@@ -1329,7 +1329,7 @@ export const Index: Record<string, any> = {
     name: "list-classic-node",
     description: "List (classic) nodes for ordered and unordered items.",
     type: "registry:ui",
-    registryDependencies: ["@shadcn/checkbox"],
+    registryDependencies: ["checkbox"],
     files: [{
       path: "src/registry/ui/list-classic-node.tsx",
       type: "registry:ui",
@@ -1519,7 +1519,7 @@ export const Index: Record<string, any> = {
     name: "table-node",
     description: "A table component with floating toolbar and border customization.",
     type: "registry:ui",
-    registryDependencies: ["@shadcn/dropdown-menu","@shadcn/popover","https://platejs.org/r/resize-handle.json","https://platejs.org/r/block-selection.json","https://platejs.org/r/toolbar.json","https://platejs.org/r/tailwind-scrollbar-hide.json","https://platejs.org/r/font-color-toolbar-button.json"],
+    registryDependencies: ["dropdown-menu","popover","https://platejs.org/r/resize-handle.json","https://platejs.org/r/block-selection.json","https://platejs.org/r/toolbar.json","https://platejs.org/r/tailwind-scrollbar-hide.json","https://platejs.org/r/font-color-toolbar-button.json"],
     files: [{
       path: "src/registry/ui/table-node.tsx",
       type: "registry:ui",
@@ -1582,7 +1582,7 @@ export const Index: Record<string, any> = {
     name: "toggle-node",
     description: "A collapsible component for toggling content visibility.",
     type: "registry:ui",
-    registryDependencies: ["@shadcn/button"],
+    registryDependencies: ["button"],
     files: [{
       path: "src/registry/ui/toggle-node.tsx",
       type: "registry:ui",
@@ -1607,7 +1607,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/align-base-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/align-base-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/align-base-kit.tsx")
@@ -1624,7 +1624,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/basic-blocks-base-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/basic-blocks-base-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/basic-blocks-base-kit.tsx")
@@ -1641,7 +1641,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/basic-marks-base-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/basic-marks-base-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/basic-marks-base-kit.tsx")
@@ -1658,7 +1658,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/callout-base-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/callout-base-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/callout-base-kit.tsx")
@@ -1675,7 +1675,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/code-block-base-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/code-block-base-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/code-block-base-kit.tsx")
@@ -1692,7 +1692,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/code-drawing-base-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/code-drawing-base-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/code-drawing-base-kit.tsx")
@@ -1709,7 +1709,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/column-base-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/column-base-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/column-base-kit.tsx")
@@ -1726,7 +1726,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/comment-base-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/comment-base-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/comment-base-kit.tsx")
@@ -1743,7 +1743,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/date-base-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/date-base-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/date-base-kit.tsx")
@@ -1760,7 +1760,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/footnote-base-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/footnote-base-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/footnote-base-kit.tsx")
@@ -1777,7 +1777,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/excalidraw-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/excalidraw-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/excalidraw-kit.tsx")
@@ -1794,7 +1794,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/font-base-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/font-base-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/font-base-kit.tsx")
@@ -1811,7 +1811,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/indent-base-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/indent-base-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/indent-base-kit.tsx")
@@ -1828,7 +1828,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/line-height-base-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/line-height-base-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/line-height-base-kit.tsx")
@@ -1845,7 +1845,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/link-base-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/link-base-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/link-base-kit.tsx")
@@ -1862,7 +1862,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/list-base-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/list-base-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/list-base-kit.tsx")
@@ -1879,7 +1879,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/math-base-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/math-base-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/math-base-kit.tsx")
@@ -1896,7 +1896,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/media-base-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/media-base-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/media-base-kit.tsx")
@@ -1913,7 +1913,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/mention-base-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/mention-base-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/mention-base-kit.tsx")
@@ -1930,7 +1930,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/suggestion-base-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/suggestion-base-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/suggestion-base-kit.tsx")
@@ -1947,7 +1947,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/table-base-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/table-base-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/table-base-kit.tsx")
@@ -1964,7 +1964,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/toc-base-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/toc-base-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/toc-base-kit.tsx")
@@ -1981,7 +1981,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/toggle-base-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/toggle-base-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/toggle-base-kit.tsx")
@@ -1998,7 +1998,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/editor-base-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/editor-base-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/editor-base-kit.tsx")
@@ -2015,7 +2015,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/ai-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/ai-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/ai-kit.tsx")
@@ -2032,7 +2032,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/align-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/align-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/align-kit.tsx")
@@ -2049,7 +2049,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/autoformat-classic-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/autoformat-classic-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/autoformat-classic-kit.tsx")
@@ -2066,7 +2066,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/autoformat-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/autoformat-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/autoformat-kit.tsx")
@@ -2083,7 +2083,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/basic-blocks-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/basic-blocks-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/basic-blocks-kit.tsx")
@@ -2100,7 +2100,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/basic-marks-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/basic-marks-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/basic-marks-kit.tsx")
@@ -2117,7 +2117,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/basic-nodes-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/basic-nodes-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/basic-nodes-kit.tsx")
@@ -2134,7 +2134,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/block-menu-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/block-menu-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/block-menu-kit.tsx")
@@ -2151,7 +2151,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/block-placeholder-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/block-placeholder-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/block-placeholder-kit.tsx")
@@ -2168,7 +2168,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/block-selection-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/block-selection-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/block-selection-kit.tsx")
@@ -2185,7 +2185,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/callout-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/callout-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/callout-kit.tsx")
@@ -2202,7 +2202,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/code-block-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/code-block-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/code-block-kit.tsx")
@@ -2219,7 +2219,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/code-drawing-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/code-drawing-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/code-drawing-kit.tsx")
@@ -2236,7 +2236,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/column-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/column-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/column-kit.tsx")
@@ -2253,7 +2253,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/comment-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/comment-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/comment-kit.tsx")
@@ -2270,7 +2270,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/copilot-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/copilot-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/copilot-kit.tsx")
@@ -2287,7 +2287,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/cursor-overlay-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/cursor-overlay-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/cursor-overlay-kit.tsx")
@@ -2304,7 +2304,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/date-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/date-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/date-kit.tsx")
@@ -2321,7 +2321,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/discussion-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/discussion-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/discussion-kit.tsx")
@@ -2338,7 +2338,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/dnd-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/dnd-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/dnd-kit.tsx")
@@ -2355,7 +2355,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/docx-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/docx-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/docx-kit.tsx")
@@ -2372,7 +2372,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/docx-export-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/docx-export-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/docx-export-kit.tsx")
@@ -2389,7 +2389,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/editor-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/editor-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/editor-kit.tsx")
@@ -2406,7 +2406,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/emoji-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/emoji-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/emoji-kit.tsx")
@@ -2423,7 +2423,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/exit-break-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/exit-break-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/exit-break-kit.tsx")
@@ -2440,7 +2440,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/fixed-toolbar-classic-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/fixed-toolbar-classic-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/fixed-toolbar-classic-kit.tsx")
@@ -2457,7 +2457,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/fixed-toolbar-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/fixed-toolbar-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/fixed-toolbar-kit.tsx")
@@ -2474,7 +2474,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/floating-toolbar-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/floating-toolbar-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/floating-toolbar-kit.tsx")
@@ -2491,7 +2491,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/floating-toolbar-classic-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/floating-toolbar-classic-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/floating-toolbar-classic-kit.tsx")
@@ -2508,7 +2508,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/footnote-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/footnote-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/footnote-kit.tsx")
@@ -2525,7 +2525,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/font-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/font-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/font-kit.tsx")
@@ -2542,7 +2542,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/indent-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/indent-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/indent-kit.tsx")
@@ -2559,7 +2559,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/line-height-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/line-height-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/line-height-kit.tsx")
@@ -2576,7 +2576,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/link-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/link-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/link-kit.tsx")
@@ -2593,7 +2593,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/list-classic-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/list-classic-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/list-classic-kit.tsx")
@@ -2610,7 +2610,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/list-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/list-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/list-kit.tsx")
@@ -2627,7 +2627,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/markdown-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/markdown-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/markdown-kit.tsx")
@@ -2644,7 +2644,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/math-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/math-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/math-kit.tsx")
@@ -2661,7 +2661,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/media-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/media-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/media-kit.tsx")
@@ -2687,7 +2687,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/mention-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/mention-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/mention-kit.tsx")
@@ -2704,7 +2704,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/slash-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/slash-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/slash-kit.tsx")
@@ -2721,7 +2721,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/suggestion-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/suggestion-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/suggestion-kit.tsx")
@@ -2738,7 +2738,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/tabbable-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/tabbable-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/tabbable-kit.tsx")
@@ -2755,7 +2755,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/table-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/table-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/table-kit.tsx")
@@ -2772,7 +2772,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/toc-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/toc-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/toc-kit.tsx")
@@ -2789,7 +2789,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plugins/toggle-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plugins/toggle-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/toggle-kit.tsx")
@@ -2885,11 +2885,11 @@ export const Index: Record<string, any> = {
     name: "settings-dialog",
     description: "",
     type: "registry:component",
-    registryDependencies: ["https://platejs.org/r/ai-kit.json","@shadcn/button","@shadcn/command","@shadcn/dialog","@shadcn/input","@shadcn/popover"],
+    registryDependencies: ["https://platejs.org/r/ai-kit.json","button","command","dialog","input","popover"],
     files: [{
       path: "src/registry/components/editor/settings-dialog.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/settings-dialog.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/settings-dialog.tsx")
@@ -2906,7 +2906,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/use-chat.ts",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/use-chat.ts"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/use-chat.ts")
@@ -2923,7 +2923,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/transforms.ts",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/transforms.ts"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/transforms.ts")
@@ -2940,7 +2940,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/transforms-classic.ts",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/transforms-classic.ts"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/transforms-classic.ts")
@@ -2957,7 +2957,7 @@ export const Index: Record<string, any> = {
     files: [{
       path: "src/registry/components/editor/plate-types.ts",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plate-types.ts"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plate-types.ts")
@@ -2978,11 +2978,11 @@ export const Index: Record<string, any> = {
     },{
       path: "src/registry/blocks/editor-ai/components/editor/plate-editor.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plate-editor.tsx"
     },{
       path: "src/registry/blocks/editor-ai/components/editor/editor-kit.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/editor-kit.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/blocks/editor-ai/page.tsx")
@@ -3020,7 +3020,7 @@ export const Index: Record<string, any> = {
     },{
       path: "src/registry/blocks/editor-basic/components/editor/plate-editor.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/plate-editor.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/blocks/editor-basic/page.tsx")
@@ -3033,7 +3033,7 @@ export const Index: Record<string, any> = {
     name: "slate-to-html",
     description: "",
     type: "registry:block",
-    registryDependencies: ["https://platejs.org/r/plate-ui.json","https://platejs.org/r/editor-base-kit.json","@shadcn/button"],
+    registryDependencies: ["https://platejs.org/r/plate-ui.json","https://platejs.org/r/editor-base-kit.json","button"],
     files: [{
       path: "src/registry/blocks/slate-to-html/page.tsx",
       type: "registry:page",
@@ -3041,7 +3041,7 @@ export const Index: Record<string, any> = {
     },{
       path: "src/registry/components/editor/slate-to-html.tsx",
       type: "registry:component",
-      target: ""
+      target: "@components/editor/slate-to-html.tsx"
     },{
       path: "src/registry/lib/create-html-document.ts",
       type: "registry:lib",
@@ -3280,7 +3280,7 @@ export const Index: Record<string, any> = {
     name: "select-editor-demo",
     description: "A form with a select editor component for managing labels.",
     type: "registry:example",
-    registryDependencies: ["@shadcn/form","@shadcn/button","https://platejs.org/r/select-editor.json"],
+    registryDependencies: ["form","button","https://platejs.org/r/select-editor.json"],
     files: [{
       path: "src/registry/examples/select-editor-demo.tsx",
       type: "registry:example",
@@ -3297,7 +3297,7 @@ export const Index: Record<string, any> = {
     name: "controlled-demo",
     description: "",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/editor.json","@shadcn/button"],
+    registryDependencies: ["https://platejs.org/r/editor.json","button"],
     files: [{
       path: "src/registry/examples/controlled-demo.tsx",
       type: "registry:example",
@@ -3314,7 +3314,7 @@ export const Index: Record<string, any> = {
     name: "huge-document-demo",
     description: "",
     type: "registry:example",
-    registryDependencies: ["@shadcn/button"],
+    registryDependencies: ["button"],
     files: [{
       path: "src/registry/examples/huge-document-demo.tsx",
       type: "registry:example",
@@ -3356,7 +3356,7 @@ export const Index: Record<string, any> = {
     name: "multiple-editors-demo",
     description: "",
     type: "registry:example",
-    registryDependencies: ["@shadcn/separator","https://platejs.org/r/basic-nodes-kit.json","https://platejs.org/r/media-kit.json","https://platejs.org/r/editor.json","https://platejs.org/r/fixed-toolbar.json","https://platejs.org/r/turn-into-toolbar-button.json"],
+    registryDependencies: ["separator","https://platejs.org/r/basic-nodes-kit.json","https://platejs.org/r/media-kit.json","https://platejs.org/r/editor.json","https://platejs.org/r/fixed-toolbar.json","https://platejs.org/r/turn-into-toolbar-button.json"],
     files: [{
       path: "src/registry/examples/multiple-editors-demo.tsx",
       type: "registry:example",
@@ -3385,7 +3385,7 @@ export const Index: Record<string, any> = {
     name: "version-history-demo",
     description: "",
     type: "registry:example",
-    registryDependencies: ["@shadcn/button"],
+    registryDependencies: ["button"],
     files: [{
       path: "src/registry/examples/version-history-demo.tsx",
       type: "registry:example",
@@ -3457,7 +3457,7 @@ export const Index: Record<string, any> = {
     name: "collaboration-demo",
     description: "Real-time collaboration with cursors and selections.",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/use-mounted.json","https://platejs.org/r/remote-cursor-overlay.json","@shadcn/button","@shadcn/input"],
+    registryDependencies: ["https://platejs.org/r/use-mounted.json","https://platejs.org/r/remote-cursor-overlay.json","button","input"],
     files: [{
       path: "src/registry/examples/collaboration-demo.tsx",
       type: "registry:example",
@@ -3592,7 +3592,7 @@ export const Index: Record<string, any> = {
     name: "editable-voids-demo",
     description: "",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/editor-kit.json","@shadcn/input","@shadcn/label","@shadcn/radio-group"],
+    registryDependencies: ["https://platejs.org/r/editor-kit.json","input","label","radio-group"],
     files: [{
       path: "src/registry/examples/editable-voids-demo.tsx",
       type: "registry:example",
@@ -3634,7 +3634,7 @@ export const Index: Record<string, any> = {
     name: "find-replace-demo",
     description: "Find and replace functionality in text.",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/fixed-toolbar.json","@shadcn/input","https://platejs.org/r/search-highlight-node.json","https://platejs.org/r/editor-kit.json"],
+    registryDependencies: ["https://platejs.org/r/fixed-toolbar.json","input","https://platejs.org/r/search-highlight-node.json","https://platejs.org/r/editor-kit.json"],
     files: [{
       path: "src/registry/examples/find-replace-demo.tsx",
       type: "registry:example",
@@ -3663,7 +3663,7 @@ export const Index: Record<string, any> = {
     },{
       path: "src/registry/components/editor/plugins/ai-kit.tsx",
       type: "registry:example",
-      target: ""
+      target: "@components/editor/plugins/ai-kit.tsx"
     },{
       path: "src/registry/examples/values/ai-value.tsx",
       type: "registry:example",

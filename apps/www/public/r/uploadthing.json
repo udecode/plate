@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "uploadthing",
-  "type": "registry:hook",
   "dependencies": [
     "uploadthing@7.7.4",
     "@uploadthing/react@7.3.3",
@@ -19,5 +18,6 @@
       "content": "import type { FileRouter } from 'uploadthing/next';\n\nimport { createUploadthing } from 'uploadthing/next';\n\nconst f = createUploadthing();\n\nexport const ourFileRouter = {\n  editorUploader: f(['image', 'text', 'blob', 'pdf', 'video', 'audio'])\n    .middleware(() => ({}))\n    .onUploadComplete(({ file }) => ({\n      key: file.key,\n      name: file.name,\n      size: file.size,\n      type: file.type,\n      url: file.ufsUrl,\n    })),\n} satisfies FileRouter;\n\nexport type OurFileRouter = typeof ourFileRouter;\n",
       "type": "registry:lib"
     }
-  ]
+  ],
+  "type": "registry:hook"
 }

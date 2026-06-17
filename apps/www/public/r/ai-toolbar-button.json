@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "ai-toolbar-button",
-  "type": "registry:ui",
   "title": "AI Toolbar Button",
   "description": "A toolbar button for accessing AI features.",
   "dependencies": [
@@ -33,5 +32,6 @@
       "ai-pro"
     ],
     "label": "New"
-  }
+  },
+  "type": "registry:ui"
 }

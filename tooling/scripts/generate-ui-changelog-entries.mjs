@@ -1,0 +1,1930 @@
+import fs from 'node:fs';
+import { createHash } from 'node:crypto';
+import os from 'node:os';
+import path from 'node:path';
+import process from 'node:process';
+import { execFileSync } from 'node:child_process';
+
+const DEFAULT_SOURCE = 'apps/www/src/registry/changelog/entries';
+const LEGACY_SOURCE = 'tooling/data/plate-ui-changelog.mdx';
+const DEFAULT_OUT_DIR = 'apps/www/src/registry/changelog';
+const DEFAULT_REGISTRY_ROOT = 'apps/www/src/registry';
+const DEFAULT_RELEASE_INDEX = 'apps/www/src/generated/release-index.json';
+const DEFAULT_CHANGESET_DIR = '.changeset';
+const GITHUB_REPO_URL = 'https://github.com/udecode/plate';
+const REGISTRY_CHANGELOG_PUBLIC_PATH = '/registry/changelog';
+
+const MONTHS = new Map([
+  ['January', '01'],
+  ['February', '02'],
+  ['March', '03'],
+  ['April', '04'],
+  ['May', '05'],
+  ['June', '06'],
+  ['July', '07'],
+  ['August', '08'],
+  ['September', '09'],
+  ['October', '10'],
+  ['November', '11'],
+  ['December', '12'],
+]);
+
+const SOURCE_EXTENSIONS = new Set(['.ts', '.tsx', '.mts']);
+const BACKTICK_ID_PATTERN = /`([^`]+)`/g;
+const BOLD_MARKER_PATTERN = /\*\*/g;
+const COMPONENT_PATH_PATTERN = /[^a-z0-9-]/g;
+const CODE_IDENTIFIER_PATTERN = /^[a-z0-9_-]+$/i;
+const DATE_HEADING_PATTERN = /^([A-Za-z]+)\s+(\d{1,2})$/;
+const DATE_ONLY_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
+const DETAIL_MARKER_PATTERN = /^-\s+/;
+const EMPTY_GIT_COMMIT_PATTERN = /^0+$/;
+const ENTRY_HEADING_PATTERN = /^###\s+(.+?)\s+#([\d.]+)\s*$/;
+const ENTRY_METADATA_PATTERN = /^<!--\s*entry:\s*(\{.*\})\s*-->\s*$/;
+const FRONTMATTER_PATTERN = /^---\n([\s\S]*?)\n---\n?([\s\S]*)$/;
+const FRONTMATTER_NUMBER_PATTERN = /^-?\d+(?:\.\d+)?$/;
+const HEADING_PATTERN = /^#{2,3}\s/;
+const KIND_FIX_PATTERN = /\bfix(?:ed|es)?\b/;
+const KIND_NEW_PATTERN = /\(new\)|\bnew\b|^add(?:ed)?\b/;
+const KIND_REMOVE_PATTERN = /\b(drop|remove|removed)\b/;
+const KIND_RENAME_PATTERN = /\brename(?:d)?\b/;
+const KIND_WIRING_PATTERN = /\b(register|map|wire|re-export|export)\b/;
+const INLINE_CODE_PATTERN = /`[^`]+`/g;
+const MIGRATION_NOTE_PATTERN =
+  /^(set|use|register|map|rename|drop|remove|replace|move|export|import)\b/i;
+const MULTIPLE_DASHES_PATTERN = /-+/g;
+const PROVENANCE_COMMIT_PATTERN =
+  /^<!--\s*changelog:\s*commit=([a-f0-9]{40})\s*-->\s*$/i;
+const PR_URL_PATTERN = /\/pull\/(\d+)(?:\D|$)/;
+const REGEXP_SPECIAL_PATTERN = /[.*+?^${}()|[\]\\]/g;
+const REGISTRY_ID_PATTERN = /^[a-z0-9][a-z0-9-]*[a-z0-9]$/;
+const REGISTRY_CHANGELOG_ENTRY_ID_PATTERN = /^\d{4}-\d{2}-\d{2}-[a-z0-9-]+$/;
+const REGISTRY_CHANGELOG_KIND_VALUES = new Set([
+  'behavior',
+  'fix',
+  'new',
+  'remove',
+  'rename',
+  'wiring',
+]);
+const SECTION_HEADING_PATTERN = /^##\s+(.+?)\s+#(\d+)\s*$/;
+const SENTENCE_PATTERN = /[^.!?]+[.!?]?/g;
+const SPEC_OR_TEST_FILE_PATTERN = /[./](?:spec|test)\.[cm]?[tj]sx?$/;
+const STOP_WORDS = new Set([
+  'a',
+  'add',
+  'and',
+  'as',
+  'component',
+  'for',
+  'hide',
+  'in',
+  'it',
+  'new',
+  'of',
+  'on',
+  'only',
+  'or',
+  'read',
+  'rendering',
+  'selected',
+  'set',
+  'show',
+  'static',
+  'the',
+  'to',
+  'use',
+  'with',
+]);
+const TITLE_PREFIX_PATTERN =
+  /^(?:build|chore|docs|feat|fix|perf|refactor|test)(?:\([^)]+\))?:\s*/i;
+const TITLE_STOP_WORDS = new Set([
+  'a',
+  'an',
+  'and',
+  'as',
+  'for',
+  'in',
+  'of',
+  'or',
+  'the',
+  'to',
+  'with',
+]);
+const TOP_LEVEL_ITEM_MARKER_PATTERN = /^- /;
+const VERSION_PREFIX_PATTERN = /^v/;
+const WHITESPACE_PATTERN = /\s+/g;
+const YEAR_PATTERN = /\b(\d{4})\b/;
+const ITEM_SLUG_SUFFIX_WORDS = new Set([
+  'base',
+  'button',
+  'classic',
+  'demo',
+  'kit',
+  'node',
+  'static',
+]);
+
+function assertPositiveInteger(value, label) {
+  const parsed = Number.parseInt(value, 10);
+
+  if (!Number.isInteger(parsed) || parsed <= 0 || String(parsed) !== value) {
+    throw new Error(`${label} must be a positive integer`);
+  }
+
+  return parsed;
+}
+
+function assertStringValue(value, label) {
+  if (typeof value !== 'string' || value.trim() === '') {
+    throw new Error(`${label} must be a non-empty string`);
+  }
+
+  return value.trim();
+}
+
+function escapeRegExp(value) {
+  return value.replace(REGEXP_SPECIAL_PATTERN, '\\$&');
+}
+
+function formatSourceId(row) {
+  const release = row.release.entry.replaceAll('.', '-');
+  const hash = createHash('sha1')
+    .update(
+      JSON.stringify({
+        date: row.date,
+        details: row.details,
+        items: row.items,
+        prefix: row.prefix,
+        release: row.release.entry,
+        summary: row.summary,
+      })
+    )
+    .digest('hex')
+    .slice(0, 8);
+
+  return `${row.date}-${release}-${formatEventSlug(row)}-${hash}`;
+}
+
+function formatChangeUnitId(changeUnit) {
+  return `${changeUnit.date}-${formatChangeUnitSlug(changeUnit)}`;
+}
+
+function formatEventSlug(row) {
+  const itemTokens = getItemSlugTokens(row.items);
+  const itemTokenSet = new Set(itemTokens);
+  const summaryTokens = tokenizeSlug(row.summary)
+    .filter((token) => !STOP_WORDS.has(token))
+    .filter((token) => !itemTokenSet.has(token))
+    .slice(0, 4);
+  const codeTokens = getInlineCodeSlugTokens(row.summary)
+    .filter((token) => !STOP_WORDS.has(token))
+    .filter((token) => !itemTokenSet.has(token))
+    .slice(0, 2);
+  const tokens = [...itemTokens, ...summaryTokens, ...codeTokens].slice(0, 8);
+
+  return tokens.length > 0 ? tokens.join('-') : 'entry';
+}
+
+function formatChangeUnitSlug(changeUnit) {
+  if (changeUnit.title) {
+    const title = changeUnit.title.replace(TITLE_PREFIX_PATTERN, '');
+    const titleTokens = tokenizeSlug(title)
+      .filter((token) => !TITLE_STOP_WORDS.has(token))
+      .slice(0, 8);
+
+    if (titleTokens.length > 0) return titleTokens.join('-');
+  }
+
+  return formatEventSlug(changeUnit.rows[0]);
+}
+
+function formatEntryFileRowId({ date, items, summary }) {
+  const row = {
+    items,
+    prefix: items.map((item) => `\`${item}\``).join(', '),
+    summary,
+  };
+  const hash = createHash('sha1')
+    .update(JSON.stringify({ date, items, summary }))
+    .digest('hex')
+    .slice(0, 8);
+
+  return `${date}-${formatEventSlug(row)}-${hash}`;
+}
+
+function formatDateOnly(value) {
+  return value?.slice(0, 10) ?? null;
+}
+
+function getPrNumberFromRelease(release) {
+  const url = release?.versionPackagePrUrl ?? release?.url;
+  const match = url?.match(PR_URL_PATTERN);
+
+  return match ? Number.parseInt(match[1], 10) : null;
+}
+
+function getProvenanceWarning(provenance) {
+  if (!provenance) return ['No git provenance found for source row.'];
+
+  return provenance.warnings ?? [];
+}
+
+function getDiagnosticCode(message) {
+  if (message.startsWith('No generated release-index entry')) {
+    return 'release-missing';
+  }
+  if (message.startsWith('Multiple generated release-index entries')) {
+    return 'release-ambiguous';
+  }
+  if (message.startsWith('Matched PR')) return 'pull-request-not-merged';
+  if (message.startsWith('No exact registry source file')) {
+    return 'registry-file-missing';
+  }
+  if (message.startsWith('No git provenance')) return 'provenance-missing';
+  if (message.startsWith('No GitHub pull request found')) {
+    return 'pull-request-missing';
+  }
+  if (message.startsWith('GitHub PR lookup failed')) {
+    return 'pull-request-lookup-failed';
+  }
+
+  return 'warning';
+}
+
+function getChangeUnitForRows(rows, provenanceBySourceId) {
+  const provenance = getPrimaryProvenance(rows, provenanceBySourceId);
+  const pr = provenance?.pr ?? null;
+  const commit = provenance?.commit ?? null;
+  const date = formatDateOnly(pr?.mergedAt) ?? commit?.date ?? rows[0].date;
+
+  return {
+    key: pr?.number
+      ? `pr:${pr.number}`
+      : commit?.oid
+        ? `commit:${commit.oid}`
+        : `source:${rows[0].sourceId}`,
+    commit,
+    date,
+    pr,
+    provenance,
+    rows,
+    title: pr?.title ?? commit?.subject ?? null,
+  };
+}
+
+function getChangeUnitKey(row, provenance) {
+  if (provenance?.pr?.number) return `pr:${provenance.pr.number}`;
+  if (provenance?.commit?.oid) return `commit:${provenance.commit.oid}`;
+
+  return `source:${row.sourceId}`;
+}
+
+function getPrimaryProvenance(rows, provenanceBySourceId) {
+  for (const row of rows) {
+    const provenance = provenanceBySourceId.get(row.sourceId);
+
+    if (provenance?.pr || provenance?.commit) return provenance;
+  }
+
+  return provenanceBySourceId.get(rows[0].sourceId) ?? null;
+}
+
+function getItemSlugTokens(items) {
+  const firstItemTokens = tokenizeSlug(items[0] ?? '').filter(
+    (token) => !ITEM_SLUG_SUFFIX_WORDS.has(token)
+  );
+
+  return firstItemTokens.length > 0
+    ? firstItemTokens
+    : tokenizeSlug(items[0] ?? '');
+}
+
+function getInlineCodeSlugTokens(value) {
+  return unique(
+    [...value.matchAll(BACKTICK_ID_PATTERN)]
+      .map((match) => match[1].trim())
+      .filter((token) => CODE_IDENTIFIER_PATTERN.test(token))
+      .filter((token) => token.includes('-') || token.includes('_'))
+      .flatMap(tokenizeSlug)
+  );
+}
+
+function inferKind(row) {
+  const text = `${row.prefix} ${row.summary}`.toLowerCase();
+
+  if (KIND_NEW_PATTERN.test(text)) return 'new';
+  if (KIND_RENAME_PATTERN.test(text)) return 'rename';
+  if (KIND_FIX_PATTERN.test(text)) return 'fix';
+  if (KIND_REMOVE_PATTERN.test(text)) return 'remove';
+  if (KIND_WIRING_PATTERN.test(text)) return 'wiring';
+
+  return 'behavior';
+}
+
+function inferMigrationNotes(row) {
+  const sentences = [row.summary, ...row.details]
+    .flatMap((line) => line.match(SENTENCE_PATTERN) ?? [])
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  return unique(
+    sentences.filter((sentence) =>
+      MIGRATION_NOTE_PATTERN.test(stripMarkdown(sentence))
+    )
+  );
+}
+
+function isLikelyRegistryId(value) {
+  return REGISTRY_ID_PATTERN.test(value);
+}
+
+function parseArgs(argv) {
+  const args = {
+    check: false,
+    date: null,
+    inferProvenance: true,
+    items: null,
+    kind: 'behavior',
+    limit: null,
+    newEntryId: null,
+    outDir: DEFAULT_OUT_DIR,
+    registryRoot: DEFAULT_REGISTRY_ROOT,
+    releaseIndex: DEFAULT_RELEASE_INDEX,
+    source: DEFAULT_SOURCE,
+    summary: null,
+    write: false,
+  };
+
+  const iterator = argv[Symbol.iterator]();
+
+  for (const arg of iterator) {
+    const nextValue = () => {
+      const next = iterator.next();
+
+      if (next.done) {
+        throw new Error(`${arg} requires a value`);
+      }
+
+      return next.value;
+    };
+
+    if (arg === '--write') {
+      args.write = true;
+      continue;
+    }
+
+    if (arg === '--check') {
+      args.check = true;
+      continue;
+    }
+
+    if (arg === '--new') {
+      args.newEntryId = nextValue();
+      continue;
+    }
+
+    if (arg === '--date') {
+      args.date = nextValue();
+      continue;
+    }
+
+    if (arg === '--summary') {
+      args.summary = nextValue();
+      continue;
+    }
+
+    if (arg === '--items') {
+      args.items = nextValue();
+      continue;
+    }
+
+    if (arg === '--kind') {
+      args.kind = nextValue();
+      continue;
+    }
+
+    if (arg === '--no-provenance') {
+      args.inferProvenance = false;
+      continue;
+    }
+
+    if (arg === '--limit') {
+      args.limit = assertPositiveInteger(nextValue(), '--limit');
+      continue;
+    }
+
+    if (arg === '--source') {
+      args.source = nextValue();
+      continue;
+    }
+
+    if (arg === '--out-dir') {
+      args.outDir = nextValue();
+      continue;
+    }
+
+    if (arg === '--registry-root') {
+      args.registryRoot = nextValue();
+      continue;
+    }
+
+    if (arg === '--release-index') {
+      args.releaseIndex = nextValue();
+      continue;
+    }
+
+    throw new Error(`Unknown argument: ${arg}`);
+  }
+
+  return args;
+}
+
+export function validateArgs(args) {
+  if (args.write && args.limit) {
+    throw new Error(
+      '--write cannot be combined with --limit because partial writes would produce incomplete changelog artifacts.'
+    );
+  }
+
+  if (args.check && args.write) {
+    throw new Error('--check cannot be combined with --write.');
+  }
+
+  if (args.check && args.limit) {
+    throw new Error(
+      '--check cannot be combined with --limit because partial checks would report valid generated changelog artifacts as stale.'
+    );
+  }
+
+  if (args.newEntryId) {
+    if (args.check || args.write || args.limit) {
+      throw new Error(
+        '--new cannot be combined with --check, --write, or --limit.'
+      );
+    }
+
+    if (!REGISTRY_CHANGELOG_ENTRY_ID_PATTERN.test(args.newEntryId)) {
+      throw new Error('--new id must use YYYY-MM-DD-short-slug format.');
+    }
+
+    if (args.date && !DATE_ONLY_PATTERN.test(args.date)) {
+      throw new Error('--date must use YYYY-MM-DD format.');
+    }
+
+    if (!REGISTRY_CHANGELOG_KIND_VALUES.has(args.kind)) {
+      throw new Error(
+        `--kind must be one of ${[...REGISTRY_CHANGELOG_KIND_VALUES].join(', ')}.`
+      );
+    }
+
+    if (path.extname(args.source)) {
+      throw new Error('--source must be a directory when used with --new.');
+    }
+
+    assertStringValue(args.summary, '--summary');
+    assertStringValue(args.items, '--items');
+  }
+}
+
+function parseDate(label, section) {
+  const match = label.match(DATE_HEADING_PATTERN);
+
+  if (!match) return null;
+
+  const month = MONTHS.get(match[1]);
+
+  if (!month || !section?.year) return null;
+
+  return `${section.year}-${month}-${match[2].padStart(2, '0')}`;
+}
+
+function parseEntryHeading(line, section) {
+  const match = line.match(ENTRY_HEADING_PATTERN);
+
+  if (!match) return null;
+
+  return {
+    date: parseDate(match[1], section),
+    entry: match[2],
+    label: `${match[1]} #${match[2]}`,
+    major: section?.major ?? null,
+    section: section?.label ?? null,
+  };
+}
+
+function parseSectionHeading(line) {
+  const match = line.match(SECTION_HEADING_PATTERN);
+
+  if (!match) return null;
+
+  const year = match[1].match(YEAR_PATTERN)?.[1] ?? null;
+
+  return {
+    label: `${match[1]} #${match[2]}`,
+    major: match[2],
+    year,
+  };
+}
+
+function parseItemLines(lines, release, row, line, provenanceCommit = null) {
+  const firstLine = lines[0].replace(TOP_LEVEL_ITEM_MARKER_PATTERN, '').trim();
+  const colonIndex = firstLine.indexOf(':');
+  const prefix = colonIndex === -1 ? firstLine : firstLine.slice(0, colonIndex);
+  const summary =
+    colonIndex === -1 ? '' : firstLine.slice(colonIndex + 1).trim();
+  const details = lines
+    .slice(1)
+    .map((detail) => detail.trim())
+    .filter(Boolean)
+    .map((detail) => detail.replace(DETAIL_MARKER_PATTERN, '').trim());
+  const prefixItems = extractRegistryItemNames(prefix);
+  const detailItems = details.flatMap((detail) => {
+    const detailPrefix = detail.split(':', 1)[0];
+
+    return extractRegistryItemNames(detailPrefix);
+  });
+  const items = unique([...prefixItems, ...detailItems]);
+
+  return {
+    date: release?.date,
+    details,
+    items,
+    line,
+    prefix,
+    provenanceCommit,
+    release,
+    row,
+    sourceId: null,
+    summary: stripMarkdown(summary),
+  };
+}
+
+function parseFrontmatterValue(value, filePath, key) {
+  const trimmed = value.trim();
+
+  if (trimmed === '') return '';
+  if (
+    trimmed === 'true' ||
+    trimmed === 'false' ||
+    trimmed === 'null' ||
+    trimmed.startsWith('"') ||
+    trimmed.startsWith('{') ||
+    trimmed.startsWith('[') ||
+    FRONTMATTER_NUMBER_PATTERN.test(trimmed)
+  ) {
+    try {
+      return JSON.parse(trimmed);
+    } catch (error) {
+      throw new Error(
+        `Invalid frontmatter JSON value for ${key} in ${filePath}: ${error.message}`
+      );
+    }
+  }
+
+  return trimmed;
+}
+
+function parseFrontmatter(content, filePath) {
+  const normalizedContent = content.replaceAll('\r\n', '\n');
+  const match = normalizedContent.match(FRONTMATTER_PATTERN);
+
+  if (!match) {
+    throw new Error(`${filePath} must start with frontmatter`);
+  }
+
+  const bodyStartIndex = normalizedContent.length - match[2].length;
+  const bodyLineOffset =
+    normalizedContent.slice(0, bodyStartIndex).split('\n').length - 1;
+  const data = {};
+
+  for (const line of match[1].split('\n')) {
+    if (!line.trim()) continue;
+
+    const colonIndex = line.indexOf(':');
+
+    if (colonIndex === -1) {
+      throw new Error(`Invalid frontmatter line in ${filePath}: ${line}`);
+    }
+
+    const key = line.slice(0, colonIndex).trim();
+    const value = line.slice(colonIndex + 1);
+
+    data[key] = parseFrontmatterValue(value, filePath, key);
+  }
+
+  return { body: match[2], bodyLineOffset, data };
+}
+
+function parseEntryMetadata(line, filePath) {
+  const raw = line.match(ENTRY_METADATA_PATTERN)?.[1];
+
+  if (!raw) return null;
+
+  try {
+    return JSON.parse(raw);
+  } catch (error) {
+    throw new Error(
+      `Invalid entry metadata JSON in ${filePath}: ${error.message}`
+    );
+  }
+}
+
+function parseEntryBodyRows(body, source) {
+  const lines = body.replaceAll('\r\n', '\n').split('\n');
+  const rows = [];
+  let nextEntryMetadata = null;
+  let row = 0;
+
+  for (let index = 0; index < lines.length; index += 1) {
+    const line = lines[index];
+    const metadata = parseEntryMetadata(line, source.path);
+
+    if (metadata) {
+      nextEntryMetadata = metadata;
+      continue;
+    }
+
+    if (!line.startsWith('- ')) continue;
+
+    const itemLines = [line];
+    const startLine = source.bodyLineOffset + index + 1;
+    let nextIndex = index + 1;
+
+    while (
+      nextIndex < lines.length &&
+      !HEADING_PATTERN.test(lines[nextIndex]) &&
+      !ENTRY_METADATA_PATTERN.test(lines[nextIndex]) &&
+      !lines[nextIndex].startsWith('- ')
+    ) {
+      itemLines.push(lines[nextIndex]);
+      nextIndex += 1;
+    }
+
+    row += 1;
+    rows.push({
+      ...parseItemLines(itemLines, source.legacyRelease, row, startLine, null),
+      kind: nextEntryMetadata?.kind ?? null,
+      migrationNotes: nextEntryMetadata?.migrationNotes ?? null,
+      sourceId: nextEntryMetadata?.id ?? `${source.id}-${row}`,
+      sourcePath: source.path,
+    });
+    nextEntryMetadata = null;
+    index = nextIndex - 1;
+  }
+
+  return rows;
+}
+
+function assertEntrySource(value, filePath, key) {
+  if (value === undefined || value === null || value === '') {
+    throw new Error(`${filePath} frontmatter is missing ${key}`);
+  }
+
+  return value;
+}
+
+function parseRegistryChangelogEntryFile(filePath) {
+  const content = fs.readFileSync(filePath, 'utf8');
+  const { body, bodyLineOffset, data } = parseFrontmatter(content, filePath);
+  const id = assertEntrySource(data.id, filePath, 'id');
+  const date = assertEntrySource(data.date, filePath, 'date');
+  const relativeSourcePath = relativePath(filePath);
+  const legacyRelease = data.legacyRelease ?? {
+    date,
+    entry: data.legacyEntry ?? id,
+    section: data.legacySection ?? null,
+  };
+  const rows = parseEntryBodyRows(body, {
+    id,
+    bodyLineOffset,
+    legacyRelease,
+    path: relativeSourcePath,
+  });
+
+  if (rows.length === 0) {
+    throw new Error(`${filePath} must contain at least one changelog row`);
+  }
+
+  return {
+    change: data.change ?? { type: 'source', date, commits: [] },
+    date,
+    diagnostics: data.diagnostics ?? [],
+    id,
+    kind: data.kind ?? null,
+    legacyRelease,
+    release: data.release ?? { status: 'unresolved' },
+    rows,
+    sourcePath: relativeSourcePath,
+    status: data.status ?? 'draft',
+    summary: data.summary ?? null,
+  };
+}
+
+export function parseRegistryChangelogEntryFiles(sourceDir) {
+  if (!fs.existsSync(sourceDir)) return [];
+
+  return listFiles(sourceDir)
+    .filter((filePath) => filePath.endsWith('.mdx'))
+    .sort()
+    .map((filePath) => parseRegistryChangelogEntryFile(filePath));
+}
+
+function printUsage() {
+  console.log(`Usage:
+  node tooling/scripts/generate-ui-changelog-entries.mjs [--limit 10] [--write]
+  node tooling/scripts/generate-ui-changelog-entries.mjs --check
+  node tooling/scripts/generate-ui-changelog-entries.mjs --new <id> --summary "<summary>" --items <item-a,item-b> [--kind fix]
+
+Options:
+  --source <path>         MDX changelog entry directory, or legacy MDX changelog file. Defaults to ${DEFAULT_SOURCE}
+  --out-dir <path>        JSON output directory. Defaults to ${DEFAULT_OUT_DIR}
+  --registry-root <path>  Registry source root. Defaults to ${DEFAULT_REGISTRY_ROOT}
+  --release-index <path>  Release index JSON. Defaults to ${DEFAULT_RELEASE_INDEX}
+  --limit <n>             Limit source changelog rows.
+  --no-provenance         Skip git blame and GitHub PR lookup.
+  --new <id>              Create a new registry changelog entry source file.
+  --summary <text>        Summary for --new.
+  --items <ids>           Comma-separated registry item ids for --new.
+  --kind <kind>           Entry kind for --new. Defaults to behavior.
+  --date <YYYY-MM-DD>     Entry date for --new. Defaults to the date prefix in --new id.
+  --check                 Verify generated JSON is current without writing.
+  --write                 Write files. Omit for a dry run.`);
+}
+
+function readJsonArray(filePath) {
+  if (!fs.existsSync(filePath)) return [];
+
+  const parsed = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+
+  if (!Array.isArray(parsed)) {
+    throw new Error(`${filePath} must contain a JSON array`);
+  }
+
+  return parsed;
+}
+
+function hasPendingChangeset(changesetDir = DEFAULT_CHANGESET_DIR) {
+  if (!fs.existsSync(changesetDir)) return false;
+
+  return fs
+    .readdirSync(changesetDir, { withFileTypes: true })
+    .some(
+      (entry) =>
+        entry.isFile() &&
+        entry.name.endsWith('.md') &&
+        entry.name !== 'README.md'
+    );
+}
+
+function readRegistryDefinitions(registryFiles) {
+  return registryFiles
+    .filter((filePath) => path.basename(filePath).startsWith('registry-'))
+    .filter((filePath) => filePath.endsWith('.ts'))
+    .map((filePath) => ({
+      content: fs.readFileSync(filePath, 'utf8'),
+      path: filePath,
+    }));
+}
+
+function isDirectory(filePath) {
+  try {
+    return fs.statSync(filePath).isDirectory();
+  } catch {
+    return false;
+  }
+}
+
+function getDateFromEntryId(id) {
+  return id.slice(0, 10);
+}
+
+function parseItemList(value) {
+  return unique(
+    value
+      .split(',')
+      .map((item) => item.trim())
+      .filter(Boolean)
+  );
+}
+
+function stringifyFrontmatterValue(value) {
+  return JSON.stringify(value);
+}
+
+function formatRegistryChangelogEntrySource({
+  date,
+  id,
+  items,
+  kind,
+  summary,
+}) {
+  const rowId = formatEntryFileRowId({ date, items, summary });
+  const itemLabel = items.map((item) => `**\`${item}\`**`).join(', ');
+
+  return `---
+id: ${id}
+date: ${date}
+status: draft
+kind: ${kind}
+summary: ${stringifyFrontmatterValue(summary)}
+change: ${stringifyFrontmatterValue({ type: 'source', date, commits: [] })}
+release: ${stringifyFrontmatterValue({ status: 'unresolved' })}
+diagnostics: []
+---
+<!-- entry: ${stringifyFrontmatterValue({ id: rowId, kind, migrationNotes: [] })} -->
+- ${itemLabel}: ${summary}
+`;
+}
+
+export function createRegistryChangelogEntrySource({
+  date,
+  id,
+  items,
+  kind = 'behavior',
+  sourceDir = DEFAULT_SOURCE,
+  summary,
+}) {
+  const entryDate = date ?? getDateFromEntryId(id);
+  const itemList = Array.isArray(items) ? items : parseItemList(items);
+
+  if (itemList.length === 0) {
+    throw new Error('--items must include at least one registry item id');
+  }
+
+  for (const item of itemList) {
+    if (!isLikelyRegistryId(item)) {
+      throw new Error(`Invalid registry item id: ${item}`);
+    }
+  }
+
+  const targetPath = path.join(sourceDir, `${id}.mdx`);
+
+  if (fs.existsSync(targetPath)) {
+    throw new Error(`Registry changelog entry already exists: ${targetPath}`);
+  }
+
+  fs.mkdirSync(sourceDir, { recursive: true });
+  fs.writeFileSync(
+    targetPath,
+    formatRegistryChangelogEntrySource({
+      date: entryDate,
+      id,
+      items: itemList,
+      kind,
+      summary,
+    })
+  );
+
+  return targetPath;
+}
+
+function relativePath(filePath, cwd = process.cwd()) {
+  return path.relative(cwd, filePath).replaceAll(path.sep, '/');
+}
+
+function sanitizeFileSegment(value) {
+  return value
+    .replace(COMPONENT_PATH_PATTERN, '-')
+    .replace(MULTIPLE_DASHES_PATTERN, '-');
+}
+
+function stripMarkdown(value) {
+  return value
+    .replace(BOLD_MARKER_PATTERN, '')
+    .replace(WHITESPACE_PATTERN, ' ')
+    .trim();
+}
+
+function tokenizeSlug(value) {
+  const normalized = stripMarkdown(value)
+    .replace(INLINE_CODE_PATTERN, ' ')
+    .toLowerCase();
+
+  return unique(sanitizeFileSegment(normalized).split('-')).filter(Boolean);
+}
+
+function unique(values) {
+  return [...new Set(values.filter(Boolean))];
+}
+
+function uniqueCommits(commits) {
+  const commitsByOid = new Map();
+
+  for (const commit of commits) {
+    commitsByOid.set(commit.oid, commit);
+  }
+
+  return [...commitsByOid.values()];
+}
+
+function toChangeMetadata(changeUnit, commits) {
+  const change = {
+    type: changeUnit.pr
+      ? 'pull_request'
+      : commits.length > 0
+        ? 'commit'
+        : 'source',
+    date: changeUnit.date,
+    commits: commits.map(toCommitMetadata),
+  };
+
+  if (changeUnit.pr) {
+    change.pullRequest = {
+      number: changeUnit.pr.number,
+      url: changeUnit.pr.url,
+      state: changeUnit.pr.state,
+      title: changeUnit.pr.title,
+    };
+
+    if (changeUnit.pr.mergedAt) {
+      change.pullRequest.mergedAt = changeUnit.pr.mergedAt;
+    }
+  }
+
+  return change;
+}
+
+function toCommitMetadata(commit) {
+  return {
+    sha: commit.oid,
+    shortSha: commit.shortOid,
+    url: `${GITHUB_REPO_URL}/commit/${commit.oid}`,
+    date: commit.date,
+    committedAt: commit.committedAt,
+    subject: commit.subject,
+  };
+}
+
+function toDiagnostics(messages) {
+  return unique(messages).map((message) => ({
+    severity: 'warning',
+    code: getDiagnosticCode(message),
+    message,
+  }));
+}
+
+function buildRegistryChangelogTargets(
+  rows,
+  { registryDefinitions = [], registryFiles = [] } = {}
+) {
+  return unique(rows.flatMap((row) => row.items)).map((name) => {
+    const registryHints = inferRegistryHints(name, {
+      registryDefinitions,
+      registryFiles,
+    });
+    const diagnostics =
+      registryHints.files.length === 0
+        ? toDiagnostics([`No exact registry source file found for ${name}.`])
+        : [];
+
+    return {
+      name,
+      files: registryHints.files,
+      definitionFiles: registryHints.definitionFiles,
+      diagnostics,
+    };
+  });
+}
+
+function toLegacyReleaseMetadata(release) {
+  return {
+    date: release.date,
+    entry: release.entry,
+    section: release.section,
+  };
+}
+
+function toReleaseState(
+  release,
+  changeUnit,
+  {
+    hasPendingChangeset,
+    isChangeAfterRelease,
+    isReleaseAncestor,
+    latestRelease,
+    previousRelease,
+  }
+) {
+  if (release) return release;
+
+  if (!hasReleaseProvenance(changeUnit)) {
+    return { status: 'unresolved' };
+  }
+
+  if (
+    latestRelease &&
+    isReleaseAncestor(changeUnit, latestRelease) &&
+    !(previousRelease && isReleaseAncestor(changeUnit, previousRelease))
+  ) {
+    return toReleaseMetadata(latestRelease, 'latest-release-no-changeset');
+  }
+
+  if (changeUnit.pr?.state && changeUnit.pr.state !== 'MERGED') {
+    return {
+      status: 'latest',
+      source: 'open-pull-request',
+    };
+  }
+
+  if (hasPendingChangeset) {
+    return {
+      status: 'latest',
+      source: 'pending-changeset',
+    };
+  }
+
+  if (latestRelease && isChangeAfterRelease(changeUnit, latestRelease)) {
+    return {
+      status: 'latest',
+      source: 'post-release-no-changeset',
+    };
+  }
+
+  return { status: 'unresolved' };
+}
+
+function hasReleaseProvenance(changeUnit) {
+  return Boolean(changeUnit.pr || changeUnit.commit?.oid);
+}
+
+export function buildRegistryChangelogIndexes(outputs) {
+  const sortedOutputs = [...outputs].sort((a, b) =>
+    b.entry.change.date.localeCompare(a.entry.change.date)
+  );
+  const index = {
+    schemaVersion: 1,
+    events: sortedOutputs.map(({ entry }) => ({
+      id: entry.id,
+      href: `${REGISTRY_CHANGELOG_PUBLIC_PATH}/${entry.id}.json`,
+      status: entry.status,
+      kind: entry.kind,
+      summary: entry.summary,
+      change: entry.change,
+      release: entry.release,
+      targets: entry.targets.map((target) => target.name),
+      entries: entry.entries.length,
+      diagnostics: entry.diagnostics.map(({ code, severity }) => ({
+        code,
+        severity,
+      })),
+    })),
+  };
+  const components = {
+    schemaVersion: 1,
+    components: {},
+  };
+
+  for (const { entry } of sortedOutputs) {
+    for (const target of entry.targets) {
+      components.components[target.name] ??= [];
+      components.components[target.name].push(entry.id);
+    }
+  }
+
+  return { components, index };
+}
+
+function getRegistryChangelogArtifactOutputs(outputs, outDir) {
+  const { components, index } = buildRegistryChangelogIndexes(outputs);
+
+  return [
+    ...outputs,
+    {
+      entry: index,
+      targetPath: path.join(outDir, 'index.json'),
+    },
+    {
+      entry: components,
+      targetPath: path.join(outDir, 'components.json'),
+    },
+  ];
+}
+
+export function buildRegistryChangelogEvents(
+  rows,
+  {
+    hasPendingChangeset = false,
+    isChangeAfterRelease = isChangeUnitAfterRelease,
+    isReleaseAncestor = isChangeUnitInRelease,
+    outDir = DEFAULT_OUT_DIR,
+    provenanceBySourceId = new Map(),
+    registryDefinitions = [],
+    registryFiles = [],
+    releases = [],
+    latestRelease = releases[0] ?? null,
+    previousRelease = releases[1] ?? null,
+    sourcePath = LEGACY_SOURCE,
+  } = {}
+) {
+  const groups = new Map();
+
+  for (const row of rows) {
+    if (!row.date || !row.release || row.items.length === 0) continue;
+
+    const sourceId = row.sourceId ?? formatSourceId(row);
+    const provenance = provenanceBySourceId.get(sourceId);
+    const key = getChangeUnitKey(row, provenance);
+    const groupRows = groups.get(key) ?? [];
+
+    groups.set(key, [...groupRows, row]);
+  }
+
+  return [...groups.values()].map((groupRows) => {
+    const changeUnit = getChangeUnitForRows(groupRows, provenanceBySourceId);
+    const eventId = formatChangeUnitId(changeUnit);
+    const { release, warnings: releaseWarnings } = resolveReleaseForChangeUnit(
+      changeUnit,
+      releases
+    );
+    const entries = groupRows.map((row) => buildRegistryChangelogEntry(row));
+    const commits = uniqueCommits(
+      groupRows
+        .map((row) => provenanceBySourceId.get(row.sourceId)?.commit)
+        .filter(Boolean)
+    );
+    const diagnostics = toDiagnostics([
+      ...releaseWarnings,
+      ...unique(
+        groupRows.flatMap((row) =>
+          getProvenanceWarning(provenanceBySourceId.get(row.sourceId))
+        )
+      ),
+    ]);
+    const event = {
+      schemaVersion: 1,
+      id: eventId,
+      status: 'draft',
+      source: {
+        kind: 'legacy-mdx',
+        path: sourcePath.replaceAll(path.sep, '/'),
+      },
+      change: toChangeMetadata(changeUnit, commits),
+      release: toReleaseState(release, changeUnit, {
+        hasPendingChangeset,
+        isChangeAfterRelease,
+        isReleaseAncestor,
+        latestRelease,
+        previousRelease,
+      }),
+      kind: getChangeUnitKind(entries),
+      summary: changeUnit.title ?? entries[0].summary,
+      targets: buildRegistryChangelogTargets(groupRows, {
+        registryDefinitions,
+        registryFiles,
+      }),
+      entries,
+      diagnostics,
+    };
+    const targetPath = path.join(
+      outDir,
+      `${sanitizeFileSegment(eventId)}.json`
+    );
+
+    return { entry: event, targetPath };
+  });
+}
+
+export function buildRegistryChangelogEntryFileEvents(
+  sources,
+  {
+    outDir = DEFAULT_OUT_DIR,
+    registryDefinitions = [],
+    registryFiles = [],
+  } = {}
+) {
+  return sources.map((source) => {
+    const entries = source.rows.map((row) => buildRegistryChangelogEntry(row));
+    const event = {
+      schemaVersion: 1,
+      id: source.id,
+      status: source.status,
+      source: {
+        kind: 'entry-mdx',
+        path: source.sourcePath,
+      },
+      change: source.change,
+      release: source.release,
+      kind: source.kind ?? getChangeUnitKind(entries),
+      summary:
+        source.summary ??
+        source.change.pullRequest?.title ??
+        entries[0]?.summary ??
+        source.id,
+      targets: buildRegistryChangelogTargets(source.rows, {
+        registryDefinitions,
+        registryFiles,
+      }),
+      entries,
+      diagnostics: source.diagnostics,
+    };
+    const targetPath = path.join(
+      outDir,
+      `${sanitizeFileSegment(event.id)}.json`
+    );
+
+    return { entry: event, targetPath };
+  });
+}
+
+function buildRegistryChangelogEntry(row) {
+  return {
+    id: row.sourceId ?? formatSourceId(row),
+    kind: row.kind ?? inferKind(row),
+    summary: row.summary,
+    details: row.details,
+    migrationNotes: row.migrationNotes ?? inferMigrationNotes(row),
+    targets: row.items,
+    source: {
+      line: row.line,
+      row: row.row,
+      legacyRelease: toLegacyReleaseMetadata(row.release),
+    },
+  };
+}
+
+function getChangeUnitKind(entries) {
+  const kinds = unique(entries.map((entry) => entry.kind));
+
+  return kinds.length === 1 ? kinds[0] : 'mixed';
+}
+
+export function extractRegistryItemNames(value) {
+  const backtickIds = [...value.matchAll(BACKTICK_ID_PATTERN)]
+    .map((match) => match[1].trim())
+    .filter(isLikelyRegistryId);
+
+  if (backtickIds.length > 0) return unique(backtickIds);
+
+  const plain = stripMarkdown(value);
+
+  if (isLikelyRegistryId(plain) && plain.includes('-')) return [plain];
+
+  return [];
+}
+
+export function inferRegistryHints(
+  itemName,
+  { registryDefinitions = [], registryFiles = [] } = {}
+) {
+  const exactFilePattern = new RegExp(
+    `(?:^|/)${escapeRegExp(itemName)}\\.(?:ts|tsx|mts)$`
+  );
+  const namePattern = new RegExp(`name:\\s*['"]${escapeRegExp(itemName)}['"]`);
+  const files = registryFiles
+    .filter((filePath) => SOURCE_EXTENSIONS.has(path.extname(filePath)))
+    .filter((filePath) => !SPEC_OR_TEST_FILE_PATTERN.test(filePath))
+    .filter((filePath) => exactFilePattern.test(filePath))
+    .map((filePath) => relativePath(filePath))
+    .sort();
+  const definitionFiles = registryDefinitions
+    .filter(({ content }) => namePattern.test(content))
+    .map(({ path: filePath }) => relativePath(filePath))
+    .sort();
+
+  return { definitionFiles, files };
+}
+
+export function listFiles(root) {
+  if (!fs.existsSync(root)) return [];
+
+  return fs.readdirSync(root, { withFileTypes: true }).flatMap((entry) => {
+    const filePath = path.join(root, entry.name);
+
+    if (entry.isDirectory()) return listFiles(filePath);
+    if (entry.isFile()) return [filePath];
+
+    return [];
+  });
+}
+
+export function parseComponentChangelog(content) {
+  const lines = content.replaceAll('\r\n', '\n').split('\n');
+  const rows = [];
+  let section = null;
+  let release = null;
+  let provenanceCommit = null;
+  let row = 0;
+
+  for (let index = 0; index < lines.length; index += 1) {
+    const line = lines[index];
+    const nextSection = parseSectionHeading(line);
+
+    if (nextSection) {
+      section = nextSection;
+      release = null;
+      provenanceCommit = null;
+      continue;
+    }
+
+    const nextRelease = parseEntryHeading(line, section);
+
+    if (nextRelease) {
+      release = nextRelease;
+      provenanceCommit = null;
+      continue;
+    }
+
+    const nextProvenanceCommit = line.match(PROVENANCE_COMMIT_PATTERN)?.[1];
+
+    if (nextProvenanceCommit) {
+      provenanceCommit = nextProvenanceCommit.toLowerCase();
+      continue;
+    }
+
+    if (!line.startsWith('- ')) continue;
+
+    const itemLines = [line];
+    const startLine = index + 1;
+    let nextIndex = index + 1;
+
+    while (
+      nextIndex < lines.length &&
+      !HEADING_PATTERN.test(lines[nextIndex]) &&
+      !lines[nextIndex].startsWith('- ')
+    ) {
+      itemLines.push(lines[nextIndex]);
+      nextIndex += 1;
+    }
+
+    row += 1;
+    rows.push(
+      parseItemLines(itemLines, release, row, startLine, provenanceCommit)
+    );
+    index = nextIndex - 1;
+  }
+
+  return rows.map((item) => ({
+    ...item,
+    sourceId: item.date && item.release ? formatSourceId(item) : null,
+  }));
+}
+
+export function getGitProvenanceBySourceId(
+  rows,
+  { sourcePath = DEFAULT_SOURCE, lookupPullRequests = true } = {}
+) {
+  const provenanceBySourceId = new Map();
+  const commitCache = new Map();
+  const prCache = new Map();
+
+  for (const row of rows) {
+    if (!row.sourceId) continue;
+
+    const warnings = [];
+    const blameCommitOid = getBlameCommitForLine(sourcePath, row.line);
+    const sourceHintCommitOid = row.provenanceCommit ?? null;
+    const commitOid = sourceHintCommitOid ?? blameCommitOid;
+
+    if (!commitOid) {
+      provenanceBySourceId.set(row.sourceId, {
+        commit: null,
+        pr: null,
+        source: 'git-blame',
+        warnings: [`No blame commit found for ${sourcePath}:${row.line}.`],
+      });
+      continue;
+    }
+
+    const commit =
+      commitCache.get(commitOid) ?? getCommitMetadata(commitOid, warnings);
+
+    commitCache.set(commitOid, commit);
+
+    const pr =
+      lookupPullRequests && commit
+        ? (prCache.get(commit.oid) ??
+          getPullRequestForCommit(commit.oid, warnings))
+        : null;
+
+    if (commit && lookupPullRequests) {
+      prCache.set(commit.oid, pr);
+    }
+
+    if (lookupPullRequests && commit && !pr) {
+      warnings.push(
+        `No GitHub pull request found for commit ${commit.shortOid}.`
+      );
+    }
+
+    if (pr?.state && pr.state !== 'MERGED') {
+      warnings.push(`Matched PR ${pr.number}, but it is ${pr.state}.`);
+    }
+
+    provenanceBySourceId.set(row.sourceId, {
+      commit,
+      pr,
+      source: sourceHintCommitOid
+        ? pr
+          ? 'source-hint+github-pr-search'
+          : 'source-hint'
+        : pr
+          ? 'git-blame+github-pr-search'
+          : 'git-blame',
+      warnings,
+    });
+  }
+
+  return provenanceBySourceId;
+}
+
+function getBlameCommitForLine(sourcePath, line) {
+  try {
+    const output = execFileSync(
+      'git',
+      ['blame', '--porcelain', '-M', '-L', `${line},${line}`, '--', sourcePath],
+      { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }
+    );
+    const commitOid = output.split('\n')[0]?.split(' ')[0];
+
+    if (!commitOid || EMPTY_GIT_COMMIT_PATTERN.test(commitOid)) return null;
+
+    return commitOid;
+  } catch {
+    return null;
+  }
+}
+
+function getCommitMetadata(commitOid, warnings) {
+  try {
+    const output = execFileSync(
+      'git',
+      ['show', '-s', '--format=%H%n%h%n%cs%n%cI%n%s%n%an%n%ae', commitOid],
+      { encoding: 'utf8' }
+    );
+    const [oid, shortOid, date, committedAt, subject, authorName, authorEmail] =
+      output.trimEnd().split('\n');
+
+    return {
+      oid,
+      shortOid,
+      date,
+      committedAt,
+      subject,
+      author: {
+        name: authorName,
+        email: authorEmail,
+      },
+    };
+  } catch {
+    warnings.push(`Could not read git commit metadata for ${commitOid}.`);
+
+    return null;
+  }
+}
+
+function getPullRequestForCommit(commitOid, warnings) {
+  try {
+    const output = execFileSync(
+      'gh',
+      [
+        'pr',
+        'list',
+        '--state',
+        'all',
+        '--search',
+        commitOid,
+        '--json',
+        'number,title,state,mergedAt,mergeCommit,url',
+        '--limit',
+        '10',
+      ],
+      { encoding: 'utf8' }
+    );
+    const pullRequests = JSON.parse(output);
+
+    if (!Array.isArray(pullRequests) || pullRequests.length === 0) return null;
+
+    if (pullRequests.length > 1) {
+      warnings.push(
+        `Multiple GitHub pull requests matched commit ${commitOid}; using ${pullRequests[0].number}.`
+      );
+    }
+
+    const pullRequest = pullRequests[0];
+
+    return {
+      number: pullRequest.number,
+      title: pullRequest.title,
+      state: pullRequest.state,
+      mergedAt: pullRequest.mergedAt,
+      mergeCommit: pullRequest.mergeCommit?.oid ?? null,
+      url: pullRequest.url,
+    };
+  } catch {
+    warnings.push(
+      'GitHub PR lookup failed; install/authenticate `gh` or run without PR inference.'
+    );
+
+    return null;
+  }
+}
+
+export function resolveReleaseForChangeUnit(changeUnit, releases) {
+  const prNumber = changeUnit.pr?.number;
+
+  if (prNumber) {
+    const prReleases = releases.filter((release) =>
+      releaseMentionsPullRequest(release, prNumber)
+    );
+
+    if (prReleases.length === 0) {
+      return {
+        release: null,
+        warnings: [
+          `No generated release-index entry found for PR ${prNumber}.`,
+        ],
+      };
+    }
+
+    if (prReleases.length > 1) {
+      return {
+        release: null,
+        warnings: [
+          `Multiple generated release-index entries found for PR ${prNumber}; refusing to guess release dependency.`,
+        ],
+      };
+    }
+
+    return {
+      release: toReleaseMetadata(prReleases[0], 'release-index-pr-match'),
+      warnings: [],
+    };
+  }
+
+  if (!changeUnit.commit?.oid) {
+    return {
+      release: null,
+      warnings: [
+        `No generated release-index entry found for source-only change on ${changeUnit.date}.`,
+      ],
+    };
+  }
+
+  return resolveReleaseForDate(changeUnit.date, releases);
+}
+
+function isChangeUnitInRelease(changeUnit, release) {
+  if (!release?.tag) return false;
+
+  const candidateCommits = getChangeUnitCommitCandidates(changeUnit);
+
+  for (const commit of candidateCommits) {
+    try {
+      execFileSync(
+        'git',
+        ['merge-base', '--is-ancestor', commit, release.tag],
+        {
+          stdio: 'ignore',
+        }
+      );
+
+      return true;
+    } catch {
+      // Keep looking. Missing local tags or non-ancestor commits are not proof.
+    }
+  }
+
+  return false;
+}
+
+function isChangeUnitAfterRelease(changeUnit, release) {
+  if (!release?.tag) return false;
+
+  const releaseDate = readGitCommitDate(release.tag);
+  if (!releaseDate) return false;
+
+  if (
+    changeUnit.pr?.mergedAt &&
+    Date.parse(changeUnit.pr.mergedAt) > Date.parse(releaseDate)
+  ) {
+    return true;
+  }
+
+  return getChangeUnitCommitCandidates(changeUnit).some((commit) => {
+    const commitDate = readGitCommitDate(commit);
+
+    return Boolean(
+      commitDate && Date.parse(commitDate) > Date.parse(releaseDate)
+    );
+  });
+}
+
+function getChangeUnitCommitCandidates(changeUnit) {
+  return unique([changeUnit.pr?.mergeCommit, changeUnit.commit?.oid]);
+}
+
+function readGitCommitDate(ref) {
+  try {
+    return execFileSync('git', ['log', '-1', '--format=%cI', ref], {
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+    }).trim();
+  } catch {
+    return null;
+  }
+}
+
+export function resolveReleaseForRow(row, releases) {
+  return resolveReleaseForDate(row.date, releases);
+}
+
+function releaseMentionsPullRequest(release, prNumber) {
+  const content = release.content ?? '';
+
+  return (
+    content.includes(`[#${prNumber}]`) ||
+    content.includes(`/pull/${prNumber}`) ||
+    content.includes(`pull/${prNumber}`)
+  );
+}
+
+function resolveReleaseForDate(date, releases) {
+  const sameDayReleases = releases.filter((release) => release.date === date);
+
+  if (sameDayReleases.length === 0) {
+    return {
+      release: null,
+      warnings: [`No generated release-index entry found for ${date}.`],
+    };
+  }
+
+  if (sameDayReleases.length > 1) {
+    return {
+      release: null,
+      warnings: [
+        `Multiple generated release-index entries found for ${date}; refusing to guess release dependency.`,
+      ],
+    };
+  }
+
+  return {
+    release: toReleaseMetadata(sameDayReleases[0], 'same-day-release-index'),
+    warnings: [],
+  };
+}
+
+function toReleaseMetadata(release, source) {
+  const versionPackagePr = getPrNumberFromRelease(release);
+  const metadata = {
+    status: 'released',
+    tag: release.tag,
+    source,
+    packageTag: release.packageTag ?? null,
+    requiresPlate: release.tag
+      ? `>=${release.tag.replace(VERSION_PREFIX_PATTERN, '')}`
+      : null,
+    changelogUrl: release.changelogUrl ?? null,
+    url: release.url ?? null,
+  };
+
+  if (versionPackagePr) {
+    metadata.versionPackagePullRequest = {
+      number: versionPackagePr,
+      url: release.versionPackagePrUrl ?? release.url ?? null,
+    };
+  }
+
+  return metadata;
+}
+
+export function pruneStaleRegistryChangelogEvents(outputs, outDir) {
+  if (!outDir || !fs.existsSync(outDir)) return [];
+
+  const expectedPaths = new Set(
+    outputs.map((output) => path.resolve(output.targetPath))
+  );
+  const removedPaths = [];
+
+  for (const entry of fs.readdirSync(outDir, { withFileTypes: true })) {
+    if (!entry.isFile() || !entry.name.endsWith('.json')) continue;
+
+    const filePath = path.resolve(outDir, entry.name);
+
+    if (expectedPaths.has(filePath)) continue;
+
+    fs.unlinkSync(filePath);
+    removedPaths.push(filePath);
+  }
+
+  return removedPaths;
+}
+
+export function writeRegistryChangelogEvents(
+  outputs,
+  { format = false, pruneOutDir = null } = {}
+) {
+  const removedPaths = pruneStaleRegistryChangelogEvents(outputs, pruneOutDir);
+
+  for (const output of outputs) {
+    fs.mkdirSync(path.dirname(output.targetPath), { recursive: true });
+    fs.writeFileSync(
+      output.targetPath,
+      `${JSON.stringify(output.entry, null, 2)}\n`
+    );
+  }
+
+  if (format && outputs.length > 0) {
+    execFileSync(
+      'pnpm',
+      [
+        'exec',
+        'biome',
+        'format',
+        '--write',
+        ...outputs.map((output) => output.targetPath),
+      ],
+      { stdio: 'ignore' }
+    );
+  }
+
+  return { removedPaths };
+}
+
+function getJsonFileNames(outDir) {
+  if (!fs.existsSync(outDir)) return [];
+
+  return fs
+    .readdirSync(outDir, { withFileTypes: true })
+    .filter((entry) => entry.isFile() && entry.name.endsWith('.json'))
+    .map((entry) => entry.name)
+    .sort();
+}
+
+function createTempArtifactOutputs(outputs, tempOutDir) {
+  return outputs.map((output) => ({
+    ...output,
+    targetPath: path.join(tempOutDir, path.basename(output.targetPath)),
+  }));
+}
+
+export function checkRegistryChangelogArtifacts(
+  outputs,
+  outDir,
+  { format = true } = {}
+) {
+  const tempOutDir = fs.mkdtempSync(
+    path.join(os.tmpdir(), 'registry-changelog-check-')
+  );
+  const expectedOutputs = createTempArtifactOutputs(outputs, tempOutDir);
+  const failures = [];
+
+  writeRegistryChangelogEvents(expectedOutputs, {
+    format,
+    pruneOutDir: tempOutDir,
+  });
+
+  const expectedNames = getJsonFileNames(tempOutDir);
+  const actualNames = getJsonFileNames(outDir);
+
+  for (const name of expectedNames) {
+    const actualPath = path.join(outDir, name);
+    const expectedPath = path.join(tempOutDir, name);
+
+    if (!fs.existsSync(actualPath)) {
+      failures.push(`Missing ${relativePath(actualPath)}`);
+      continue;
+    }
+
+    const actual = fs.readFileSync(actualPath, 'utf8');
+    const expected = fs.readFileSync(expectedPath, 'utf8');
+
+    if (actual !== expected) {
+      failures.push(`Out of date ${relativePath(actualPath)}`);
+    }
+  }
+
+  for (const name of actualNames) {
+    if (!expectedNames.includes(name)) {
+      failures.push(`Stale ${relativePath(path.join(outDir, name))}`);
+    }
+  }
+
+  fs.rmSync(tempOutDir, { force: true, recursive: true });
+
+  return failures;
+}
+
+function main() {
+  const args = parseArgs(process.argv.slice(2));
+
+  validateArgs(args);
+
+  if (args.newEntryId) {
+    const targetPath = createRegistryChangelogEntrySource({
+      date: args.date,
+      id: args.newEntryId,
+      items: args.items,
+      kind: args.kind,
+      sourceDir: args.source,
+      summary: args.summary,
+    });
+
+    console.log(`Created ${relativePath(targetPath)}`);
+    return;
+  }
+
+  const registryFiles = listFiles(args.registryRoot);
+  const registryDefinitions = readRegistryDefinitions(registryFiles);
+  const releases = readJsonArray(args.releaseIndex);
+  const pendingChangeset = hasPendingChangeset();
+  const sourceIsDirectory = isDirectory(args.source);
+  const sourceEntries = sourceIsDirectory
+    ? parseRegistryChangelogEntryFiles(args.source)
+    : null;
+  const source = sourceIsDirectory
+    ? null
+    : fs.readFileSync(args.source, 'utf8');
+  const rows = source ? parseComponentChangelog(source) : [];
+  const selectedRows = args.limit ? rows.slice(0, args.limit) : rows;
+  const selectedEntries =
+    args.limit && sourceEntries
+      ? sourceEntries.slice(0, args.limit)
+      : sourceEntries;
+  const provenanceBySourceId =
+    args.inferProvenance && !sourceIsDirectory
+      ? getGitProvenanceBySourceId(selectedRows, {
+          sourcePath: args.source,
+          lookupPullRequests: true,
+        })
+      : new Map();
+  const outputs = sourceEntries
+    ? buildRegistryChangelogEntryFileEvents(selectedEntries, {
+        outDir: args.outDir,
+        registryDefinitions,
+        registryFiles,
+      })
+    : buildRegistryChangelogEvents(selectedRows, {
+        hasPendingChangeset: pendingChangeset,
+        outDir: args.outDir,
+        provenanceBySourceId,
+        registryDefinitions,
+        registryFiles,
+        releases,
+        sourcePath: args.source,
+      });
+  const skippedRows = selectedRows.filter((row) => row.items.length === 0);
+  const artifactOutputs = getRegistryChangelogArtifactOutputs(
+    outputs,
+    args.outDir
+  );
+
+  if (args.write) {
+    const { removedPaths } = writeRegistryChangelogEvents(artifactOutputs, {
+      format: true,
+      pruneOutDir: args.outDir,
+    });
+
+    for (const removedPath of removedPaths) {
+      console.log(`Removed stale ${relativePath(removedPath)}`);
+    }
+  }
+
+  if (args.check) {
+    const failures = checkRegistryChangelogArtifacts(
+      artifactOutputs,
+      args.outDir
+    );
+
+    if (failures.length > 0) {
+      console.error('Registry changelog artifacts are out of date:');
+
+      for (const failure of failures) {
+        console.error(`- ${failure}`);
+      }
+
+      process.exitCode = 1;
+      return;
+    }
+  }
+
+  console.log(
+    `${args.write ? 'Wrote' : args.check ? 'Checked' : 'Would write'} ${
+      outputs.length
+    } registry changelog events from ${
+      sourceEntries ? selectedEntries.length : selectedRows.length
+    } ${sourceEntries ? 'source entries' : 'source rows'}.`
+  );
+
+  if (skippedRows.length > 0) {
+    console.log(
+      `Skipped ${skippedRows.length} source rows without registry item names.`
+    );
+  }
+
+  for (const output of outputs) {
+    console.log(relativePath(output.targetPath));
+  }
+
+  console.log(relativePath(path.join(args.outDir, 'index.json')));
+  console.log(relativePath(path.join(args.outDir, 'components.json')));
+}
+
+if (import.meta.url === `file://${process.argv[1]}`) {
+  try {
+    main();
+  } catch (error) {
+    console.error(error.message);
+    printUsage();
+    process.exitCode = 1;
+  }
+}

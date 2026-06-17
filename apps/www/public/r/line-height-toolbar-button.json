@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "line-height-toolbar-button",
-  "type": "registry:ui",
   "title": "Line Height Toolbar Button",
   "description": "A menu for controlling text line spacing.",
   "dependencies": [
@@ -9,7 +8,7 @@
   ],
   "registryDependencies": [
     "https://platejs.org/r/toolbar.json",
-    "@shadcn/dropdown-menu"
+    "dropdown-menu"
   ],
   "files": [
     {
@@ -27,5 +26,6 @@
     "examples": [
       "line-height-demo"
     ]
-  }
+  },
+  "type": "registry:ui"
 }

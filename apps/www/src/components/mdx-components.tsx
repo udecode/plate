@@ -44,6 +44,7 @@ import { ComponentSource } from './component-source';
 import { FrameworkDocs } from './framework-docs';
 import { Link } from './link';
 import { PackageInfo } from './package-info';
+import { PlateUiChangelog } from './plate-ui-changelog';
 import * as Typography from './typography';
 import {
   AccordionContent,
@@ -124,6 +125,7 @@ export const mdxComponents = {
   ol: Typography.OL,
   p: Typography.P,
   PackageInfo,
+  PlateUiChangelog,
   pre: Typography.Pre,
   ReleaseIndex,
   Step: Typography.Step,

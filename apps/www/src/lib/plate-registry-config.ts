@@ -1,8 +1,20 @@
 export const PLATE_REGISTRY_NAMESPACE = '@plate';
+export const PLATE_REGISTRY_HOMEPAGE = 'https://platejs.org';
 export const PLATE_REGISTRY_URL = 'https://platejs.org/r/{name}.json';
+export const PLATE_REGISTRY_DESCRIPTION =
+  'AI-powered rich text editor for React.';
 export const PLATE_INIT_URL = 'https://platejs.org/init';
 export const PLATE_INIT_ITEM = 'editor-basic';
 export const PLATE_INIT_DEPENDENCY = `${PLATE_REGISTRY_NAMESPACE}/${PLATE_INIT_ITEM}`;
+
+export const plateRegistryDirectory = [
+  {
+    name: PLATE_REGISTRY_NAMESPACE,
+    homepage: PLATE_REGISTRY_HOMEPAGE,
+    url: PLATE_REGISTRY_URL,
+    description: PLATE_REGISTRY_DESCRIPTION,
+  },
+] as const;
 
 export const plateComponentsJsonConfig = {
   $schema: 'https://ui.shadcn.com/schema.json',

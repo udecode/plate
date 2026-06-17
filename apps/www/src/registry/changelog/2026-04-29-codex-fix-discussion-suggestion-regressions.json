@@ -1,0 +1,241 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-04-29-codex-fix-discussion-suggestion-regressions",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-04-29-codex-fix-discussion-suggestion-regressions.mdx"
+  },
+  "change": {
+    "type": "pull_request",
+    "date": "2026-04-29",
+    "commits": [
+      {
+        "sha": "59e088318686e94c74f89390d9ab307b469767af",
+        "shortSha": "59e0883186",
+        "url": "https://github.com/udecode/plate/commit/59e088318686e94c74f89390d9ab307b469767af",
+        "date": "2026-04-29",
+        "committedAt": "2026-04-29T10:09:15+08:00",
+        "subject": "Merge remote-tracking branch 'origin/main' into codex/simplify-discussion-ui"
+      }
+    ],
+    "pullRequest": {
+      "number": 4945,
+      "url": "https://github.com/udecode/plate/pull/4945",
+      "state": "MERGED",
+      "title": "[codex] Fix discussion and suggestion regressions",
+      "mergedAt": "2026-04-29T07:10:22Z"
+    }
+  },
+  "release": {
+    "status": "released",
+    "tag": "v53.0.3",
+    "source": "release-index-pr-match",
+    "packageTag": "platejs@53.0.3",
+    "requiresPlate": ">=53.0.3",
+    "changelogUrl": "https://github.com/udecode/plate/blob/71456d1340589906751355e6afdbe639cbc1a1cd/packages/plate/CHANGELOG.md",
+    "url": "https://github.com/udecode/plate/pull/4969",
+    "versionPackagePullRequest": {
+      "number": 4969,
+      "url": "https://github.com/udecode/plate/pull/4969"
+    }
+  },
+  "kind": "mixed",
+  "summary": "[codex] Fix discussion and suggestion regressions",
+  "targets": [
+    {
+      "name": "block-discussion",
+      "files": ["apps/www/src/registry/ui/block-discussion.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "discussion-kit",
+      "files": [
+        "apps/www/src/registry/components/editor/plugins/discussion-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "comment-kit",
+      "files": [
+        "apps/www/src/registry/components/editor/plugins/comment-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "suggestion",
+      "files": ["apps/www/src/registry/lib/suggestion.ts"],
+      "definitionFiles": ["apps/www/src/registry/registry-lib.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "suggestion-base-kit",
+      "files": [
+        "apps/www/src/registry/components/editor/plugins/suggestion-base-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "suggestion-kit",
+      "files": [
+        "apps/www/src/registry/components/editor/plugins/suggestion-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "suggestion-node",
+      "files": ["apps/www/src/registry/ui/suggestion-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "block-list",
+      "files": ["apps/www/src/registry/ui/block-list.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "code-drawing-node",
+      "files": ["apps/www/src/registry/ui/code-drawing-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "date-node",
+      "files": ["apps/www/src/registry/ui/date-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "equation-node",
+      "files": ["apps/www/src/registry/ui/equation-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "excalidraw-node",
+      "files": ["apps/www/src/registry/ui/excalidraw-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "media-audio-node",
+      "files": ["apps/www/src/registry/ui/media-audio-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "media-embed-node",
+      "files": ["apps/www/src/registry/ui/media-embed-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "media-file-node",
+      "files": ["apps/www/src/registry/ui/media-file-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "media-image-node",
+      "files": ["apps/www/src/registry/ui/media-image-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "media-video-node",
+      "files": ["apps/www/src/registry/ui/media-video-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "mention-node",
+      "files": ["apps/www/src/registry/ui/mention-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "link-node",
+      "files": ["apps/www/src/registry/ui/link-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-04-29-30-3-block-discussion-rebuild-indexes-from-editor-1f58b253",
+      "kind": "behavior",
+      "summary": "Rebuild discussion indexes from editor state so accept and reject updates, inline text summaries, and deleted comments stay current.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["block-discussion", "discussion-kit", "comment-kit"],
+      "source": {
+        "line": 13,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-04-29",
+          "entry": "30.3",
+          "section": "April 2026 #30"
+        }
+      }
+    },
+    {
+      "id": "2026-04-29-30-3-suggestion-fix-block-inline-regressions-53f39ba6",
+      "kind": "fix",
+      "summary": "Fix block and inline suggestion regressions around inline voids, links, line breaks, block voids, and trailing-block normalization.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": [
+        "suggestion",
+        "suggestion-base-kit",
+        "suggestion-kit",
+        "suggestion-node"
+      ],
+      "source": {
+        "line": 15,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-04-29",
+          "entry": "30.3",
+          "section": "April 2026 #30"
+        }
+      }
+    },
+    {
+      "id": "2026-04-29-30-3-block-list-keep-slate-children-mount-75c8351f",
+      "kind": "behavior",
+      "summary": "Keep Slate children mount points and suggestion wrappers stable for static and media-style nodes.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": [
+        "block-list",
+        "code-drawing-node",
+        "date-node",
+        "equation-node",
+        "excalidraw-node",
+        "media-audio-node",
+        "media-embed-node",
+        "media-file-node",
+        "media-image-node",
+        "media-video-node",
+        "mention-node",
+        "link-node"
+      ],
+      "source": {
+        "line": 17,
+        "row": 3,
+        "legacyRelease": {
+          "date": "2026-04-29",
+          "entry": "30.3",
+          "section": "April 2026 #30"
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

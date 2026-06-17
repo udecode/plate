@@ -136,6 +136,35 @@ const groupInlineChildrenIntoParagraphs = (
   ];
 };
 
+const normalizeParagraphLineBreaks = (
+  children: Descendant[],
+  options: { preserveEmptyParagraphs?: boolean }
+) =>
+  children.flatMap((child): Descendant[] => {
+    const text = (child as { text?: unknown }).text;
+
+    if (text === '' && options.preserveEmptyParagraphs !== false) {
+      return [{ ...child, text: '\u200B' }];
+    }
+
+    if (typeof text !== 'string' || !text.includes('\n')) {
+      return [child];
+    }
+
+    return text.split('\n').flatMap((part, index, parts): Descendant[] => {
+      const nodes: Descendant[] = [];
+
+      if (part) {
+        nodes.push({ ...child, text: part });
+      }
+      if (index < parts.length - 1) {
+        nodes.push({ type: 'break' } as Descendant);
+      }
+
+      return nodes;
+    });
+  });
+
 export const defaultRules: MdRules = {
   a: {
     deserialize: (mdastNode, deco, options) => ({
@@ -824,21 +853,10 @@ export const defaultRules: MdRules = {
       return elements.length === 1 ? elements[0] : elements;
     },
     serialize: (node, options) => {
-      let enrichedChildren = node.children;
-
-      enrichedChildren = enrichedChildren.map((child) => {
-        if (child.text === '\n') {
-          return {
-            type: 'break',
-          } as any;
-        }
-
-        if (child.text === '' && options.preserveEmptyParagraphs !== false) {
-          return { ...child, text: '\u200B' };
-        }
-
-        return child;
-      });
+      const enrichedChildren = normalizeParagraphLineBreaks(
+        node.children,
+        options
+      );
 
       const convertedNodes = convertNodesSerialize(
         enrichedChildren,

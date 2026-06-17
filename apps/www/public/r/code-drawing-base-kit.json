@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "code-drawing-base-kit",
-  "type": "registry:component",
   "dependencies": [
     "@platejs/code-drawing"
   ],
@@ -12,7 +11,9 @@
     {
       "path": "src/registry/components/editor/plugins/code-drawing-base-kit.tsx",
       "content": "import { BaseCodeDrawingPlugin } from '@platejs/code-drawing';\n\nimport { CodeDrawingElement } from '@/registry/ui/code-drawing-node';\n\nexport const BaseCodeDrawingKit = [\n  BaseCodeDrawingPlugin.configure({\n    node: { component: CodeDrawingElement },\n  }),\n];\n",
-      "type": "registry:component"
+      "type": "registry:component",
+      "target": "@components/editor/plugins/code-drawing-base-kit.tsx"
     }
-  ]
+  ],
+  "type": "registry:component"
 }

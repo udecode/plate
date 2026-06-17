@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "media-uploadthing-api",
-  "type": "registry:file",
   "dependencies": [
     "uploadthing@7.7.4"
   ],
@@ -15,5 +14,6 @@
       "type": "registry:file",
       "target": "app/api/uploadthing/route.ts"
     }
-  ]
+  ],
+  "type": "registry:file"
 }

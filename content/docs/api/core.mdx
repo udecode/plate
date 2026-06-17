@@ -714,6 +714,32 @@ See [Debugging](/docs/debugging) for more details.
 ### `SlateExtensionPlugin & SlateReactExtensionPlugin`
 Extend core apis and improve default functionality.
 
+`SlateExtensionPlugin` exposes `editor.api.isElementStateEmpty(element)`. It
+checks the element's own props, not its text content. By default, only `type`
+and props claimed by plugins through `node.isMetadataProp` are ignored; any other
+prop means the element carries state. `NodeIdPlugin` uses `node.isMetadataProp` for
+the configured NodeId key.
+
+```tsx
+editor.api.isElementStateEmpty({
+  children: [{ text: '' }],
+  type: 'p',
+}); // true
+
+editor.api.isElementStateEmpty({
+  children: [{ text: '' }],
+  listStyleType: 'disc',
+  type: 'p',
+}); // false
+
+const CustomMetadataPlugin = createSlatePlugin({
+  key: 'customMetadata',
+  node: {
+    isMetadataProp: ({ key }) => key === 'customId',
+  },
+});
+```
+
 ### `DOMPlugin & ReactPlugin`
 Integrates React-specific functionality into the editor.
 

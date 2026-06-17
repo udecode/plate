@@ -1,0 +1,1065 @@
+{
+  "schemaVersion": 1,
+  "events": [
+    {
+      "id": "2026-06-15-editor-fix-preserved-space-wrapping",
+      "href": "/registry/changelog/2026-06-15-editor-fix-preserved-space-wrapping.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Fix editor preserved-space wrapping",
+      "change": {
+        "type": "pull_request",
+        "date": "2026-06-15",
+        "commits": [],
+        "pullRequest": {
+          "number": 5022,
+          "url": "https://github.com/udecode/plate/pull/5022",
+          "state": "OPEN",
+          "title": "Fix editor preserved-space wrapping"
+        }
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["editor", "editor-static"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-06-14-fix-shadcn-editor-kit-install-paths",
+      "href": "/registry/changelog/2026-06-14-fix-shadcn-editor-kit-install-paths.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Fix shadcn editor kit install paths",
+      "change": {
+        "type": "pull_request",
+        "date": "2026-06-14",
+        "commits": [
+          {
+            "sha": "129a4b4644b17db4ba5adef56a43233dc24e5be6",
+            "shortSha": "129a4b4644",
+            "url": "https://github.com/udecode/plate/commit/129a4b4644b17db4ba5adef56a43233dc24e5be6",
+            "date": "2026-06-14",
+            "committedAt": "2026-06-14T14:08:43+02:00",
+            "subject": "Fix shadcn editor kit install paths"
+          }
+        ],
+        "pullRequest": {
+          "number": 5013,
+          "url": "https://github.com/udecode/plate/pull/5013",
+          "state": "OPEN",
+          "title": "Fix shadcn editor kit install paths"
+        }
+      },
+      "release": {
+        "status": "latest",
+        "source": "open-pull-request"
+      },
+      "targets": ["editor-base-kit", "editor-kit"],
+      "entries": 1,
+      "diagnostics": [
+        {
+          "code": "release-missing",
+          "severity": "warning"
+        },
+        {
+          "code": "pull-request-not-merged",
+          "severity": "warning"
+        }
+      ]
+    },
+    {
+      "id": "2026-06-13-show-code-block-language-labels-read-only-mode",
+      "href": "/registry/changelog/2026-06-13-show-code-block-language-labels-read-only-mode.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Show code block language labels in read-only mode",
+      "change": {
+        "type": "pull_request",
+        "date": "2026-06-13",
+        "commits": [
+          {
+            "sha": "a471d051d2b32c494a94e8218ce1a8462aa26463",
+            "shortSha": "a471d051d2",
+            "url": "https://github.com/udecode/plate/commit/a471d051d2b32c494a94e8218ce1a8462aa26463",
+            "date": "2026-06-03",
+            "committedAt": "2026-06-03T13:20:44+02:00",
+            "subject": "fix code block language labels"
+          }
+        ],
+        "pullRequest": {
+          "number": 4989,
+          "url": "https://github.com/udecode/plate/pull/4989",
+          "state": "MERGED",
+          "title": "Show code block language labels in read-only mode",
+          "mergedAt": "2026-06-13T21:22:24Z"
+        }
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["code-block-node", "code-block-node-static"],
+      "entries": 1,
+      "diagnostics": [
+        {
+          "code": "release-missing",
+          "severity": "warning"
+        }
+      ]
+    },
+    {
+      "id": "2026-06-10-attach-column-drop-target-ref",
+      "href": "/registry/changelog/2026-06-10-attach-column-drop-target-ref.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "fix(dnd): attach column drop target ref",
+      "change": {
+        "type": "pull_request",
+        "date": "2026-06-10",
+        "commits": [
+          {
+            "sha": "224b0d13083c199a8f4525b063ad04de2dcf2dbb",
+            "shortSha": "224b0d1308",
+            "url": "https://github.com/udecode/plate/commit/224b0d13083c199a8f4525b063ad04de2dcf2dbb",
+            "date": "2026-06-10",
+            "committedAt": "2026-06-10T06:08:23+05:30",
+            "subject": "fix(dnd): attach column drop target ref"
+          }
+        ],
+        "pullRequest": {
+          "number": 5003,
+          "url": "https://github.com/udecode/plate/pull/5003",
+          "state": "MERGED",
+          "title": "fix(dnd): attach column drop target ref",
+          "mergedAt": "2026-06-10T10:46:04Z"
+        }
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["column-node"],
+      "entries": 1,
+      "diagnostics": [
+        {
+          "code": "release-missing",
+          "severity": "warning"
+        }
+      ]
+    },
+    {
+      "id": "2026-06-02-improve-large-document-editing",
+      "href": "/registry/changelog/2026-06-02-improve-large-document-editing.json",
+      "status": "draft",
+      "kind": "mixed",
+      "summary": "perf: improve large document editing",
+      "change": {
+        "type": "pull_request",
+        "date": "2026-06-02",
+        "commits": [
+          {
+            "sha": "68560ccc9e1d525f29e8a49b0c673723837639d8",
+            "shortSha": "68560ccc9e",
+            "url": "https://github.com/udecode/plate/commit/68560ccc9e1d525f29e8a49b0c673723837639d8",
+            "date": "2026-06-02",
+            "committedAt": "2026-06-02T21:26:43+02:00",
+            "subject": "perf: improve large document editing"
+          }
+        ],
+        "pullRequest": {
+          "number": 4987,
+          "url": "https://github.com/udecode/plate/pull/4987",
+          "state": "MERGED",
+          "title": "perf: improve large document editing",
+          "mergedAt": "2026-06-02T19:26:44Z"
+        }
+      },
+      "release": {
+        "status": "released",
+        "tag": "v53.0.7",
+        "source": "release-index-pr-match",
+        "packageTag": "platejs@53.0.7",
+        "requiresPlate": ">=53.0.7",
+        "changelogUrl": "https://github.com/udecode/plate/blob/c081a4fbc6d16e1907160d02aca70bed886de9b1/packages/plate/CHANGELOG.md",
+        "url": "https://github.com/udecode/plate/releases/tag/v53.0.7",
+        "versionPackagePullRequest": {
+          "number": 4986,
+          "url": "https://github.com/udecode/plate/pull/4986"
+        }
+      },
+      "targets": ["huge-document-demo", "hundreds-blocks-demo"],
+      "entries": 2,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-04-29-codex-fix-discussion-suggestion-regressions",
+      "href": "/registry/changelog/2026-04-29-codex-fix-discussion-suggestion-regressions.json",
+      "status": "draft",
+      "kind": "mixed",
+      "summary": "[codex] Fix discussion and suggestion regressions",
+      "change": {
+        "type": "pull_request",
+        "date": "2026-04-29",
+        "commits": [
+          {
+            "sha": "59e088318686e94c74f89390d9ab307b469767af",
+            "shortSha": "59e0883186",
+            "url": "https://github.com/udecode/plate/commit/59e088318686e94c74f89390d9ab307b469767af",
+            "date": "2026-04-29",
+            "committedAt": "2026-04-29T10:09:15+08:00",
+            "subject": "Merge remote-tracking branch 'origin/main' into codex/simplify-discussion-ui"
+          }
+        ],
+        "pullRequest": {
+          "number": 4945,
+          "url": "https://github.com/udecode/plate/pull/4945",
+          "state": "MERGED",
+          "title": "[codex] Fix discussion and suggestion regressions",
+          "mergedAt": "2026-04-29T07:10:22Z"
+        }
+      },
+      "release": {
+        "status": "released",
+        "tag": "v53.0.3",
+        "source": "release-index-pr-match",
+        "packageTag": "platejs@53.0.3",
+        "requiresPlate": ">=53.0.3",
+        "changelogUrl": "https://github.com/udecode/plate/blob/71456d1340589906751355e6afdbe639cbc1a1cd/packages/plate/CHANGELOG.md",
+        "url": "https://github.com/udecode/plate/pull/4969",
+        "versionPackagePullRequest": {
+          "number": 4969,
+          "url": "https://github.com/udecode/plate/pull/4969"
+        }
+      },
+      "targets": [
+        "block-discussion",
+        "discussion-kit",
+        "comment-kit",
+        "suggestion",
+        "suggestion-base-kit",
+        "suggestion-kit",
+        "suggestion-node",
+        "block-list",
+        "code-drawing-node",
+        "date-node",
+        "equation-node",
+        "excalidraw-node",
+        "media-audio-node",
+        "media-embed-node",
+        "media-file-node",
+        "media-image-node",
+        "media-video-node",
+        "mention-node",
+        "link-node"
+      ],
+      "entries": 3,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-04-23-redesign-blockquotes-container-blocks",
+      "href": "/registry/changelog/2026-04-23-redesign-blockquotes-container-blocks.json",
+      "status": "draft",
+      "kind": "mixed",
+      "summary": "fix: redesign blockquotes as container blocks",
+      "change": {
+        "type": "pull_request",
+        "date": "2026-04-23",
+        "commits": [
+          {
+            "sha": "700286bf84ac987b9cc2296f9f69746f0f095936",
+            "shortSha": "700286bf84",
+            "url": "https://github.com/udecode/plate/commit/700286bf84ac987b9cc2296f9f69746f0f095936",
+            "date": "2026-04-23",
+            "committedAt": "2026-04-23T10:06:04+02:00",
+            "subject": "docs"
+          }
+        ],
+        "pullRequest": {
+          "number": 4941,
+          "url": "https://github.com/udecode/plate/pull/4941",
+          "state": "MERGED",
+          "title": "fix: redesign blockquotes as container blocks",
+          "mergedAt": "2026-04-23T11:41:41Z"
+        }
+      },
+      "release": {
+        "status": "released",
+        "tag": "v53.0.0",
+        "source": "release-index-pr-match",
+        "packageTag": "platejs@53.0.0",
+        "requiresPlate": ">=53.0.0",
+        "changelogUrl": "https://github.com/udecode/plate/blob/7b9b204e1e38a20b1f8bec5a900d67c64afbc525/packages/plate/CHANGELOG.md",
+        "url": "https://github.com/udecode/plate/pull/4948",
+        "versionPackagePullRequest": {
+          "number": 4948,
+          "url": "https://github.com/udecode/plate/pull/4948"
+        }
+      },
+      "targets": [
+        "footnote-kit",
+        "footnote-base-kit",
+        "editor-kit",
+        "editor-base-kit",
+        "markdown-kit",
+        "insert-toolbar-button",
+        "insert-toolbar-classic-button",
+        "slash-node",
+        "transforms",
+        "transforms-classic",
+        "autoformat-kit"
+      ],
+      "entries": 7,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-03-31-resolve-merged-border-neighbors",
+      "href": "/registry/changelog/2026-03-31-resolve-merged-border-neighbors.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "fix(table): resolve merged border neighbors",
+      "change": {
+        "type": "pull_request",
+        "date": "2026-03-31",
+        "commits": [
+          {
+            "sha": "a5f456143bb3fa6b7d5d32b19e55df4daeb14d2b",
+            "shortSha": "a5f456143b",
+            "url": "https://github.com/udecode/plate/commit/a5f456143bb3fa6b7d5d32b19e55df4daeb14d2b",
+            "date": "2026-03-31",
+            "committedAt": "2026-03-31T12:29:30+02:00",
+            "subject": "ci"
+          }
+        ],
+        "pullRequest": {
+          "number": 4930,
+          "url": "https://github.com/udecode/plate/pull/4930",
+          "state": "MERGED",
+          "title": "fix(table): resolve merged border neighbors",
+          "mergedAt": "2026-03-31T10:38:33Z"
+        }
+      },
+      "release": {
+        "status": "released",
+        "tag": "v52.3.20",
+        "source": "release-index-pr-match",
+        "packageTag": "@platejs/ai@52.3.20",
+        "requiresPlate": ">=52.3.20",
+        "changelogUrl": "https://github.com/udecode/plate/blob/2e2dfd71f6dfe425aa7c609d772a362f7124d0b0/packages/ai/CHANGELOG.md",
+        "url": "https://github.com/udecode/plate/pull/4932",
+        "versionPackagePullRequest": {
+          "number": 4932,
+          "url": "https://github.com/udecode/plate/pull/4932"
+        }
+      },
+      "targets": ["table-demo", "table-nomerge-demo"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-03-28-render-url-videos-media-node",
+      "href": "/registry/changelog/2026-03-28-render-url-videos-media-node.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "fix(www): render url videos in media node",
+      "change": {
+        "type": "pull_request",
+        "date": "2026-03-28",
+        "commits": [
+          {
+            "sha": "9c7eda7bc74a136eb3a75846aadf696b911475b6",
+            "shortSha": "9c7eda7bc7",
+            "url": "https://github.com/udecode/plate/commit/9c7eda7bc74a136eb3a75846aadf696b911475b6",
+            "date": "2026-03-28",
+            "committedAt": "2026-03-28T13:10:17+01:00",
+            "subject": "fix"
+          }
+        ],
+        "pullRequest": {
+          "number": 4912,
+          "url": "https://github.com/udecode/plate/pull/4912",
+          "state": "MERGED",
+          "title": "fix(www): render url videos in media node",
+          "mergedAt": "2026-03-28T12:26:00Z"
+        }
+      },
+      "release": {
+        "status": "released",
+        "tag": "v52.3.15",
+        "source": "release-index-pr-match",
+        "packageTag": "@platejs/core@52.3.15",
+        "requiresPlate": ">=52.3.15",
+        "changelogUrl": "https://github.com/udecode/plate/blob/73092e7b5770bb2fc3d60106d5c81fd93c349ed6/packages/core/CHANGELOG.md",
+        "url": "https://github.com/udecode/plate/pull/4913",
+        "versionPackagePullRequest": {
+          "number": 4913,
+          "url": "https://github.com/udecode/plate/pull/4913"
+        }
+      },
+      "targets": [
+        "media-video-node",
+        "editor-ai",
+        "editor-basic",
+        "slate-to-html"
+      ],
+      "entries": 2,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-03-27-snapshot-ai-streaming-preview-task-pr-flow",
+      "href": "/registry/changelog/2026-03-27-snapshot-ai-streaming-preview-task-pr-flow.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "fix: snapshot AI streaming preview and task PR flow",
+      "change": {
+        "type": "pull_request",
+        "date": "2026-03-27",
+        "commits": [
+          {
+            "sha": "eaaf96752d295dd62ce5386f7784cfe376b9a0b3",
+            "shortSha": "eaaf96752d",
+            "url": "https://github.com/udecode/plate/commit/eaaf96752d295dd62ce5386f7784cfe376b9a0b3",
+            "date": "2026-03-27",
+            "committedAt": "2026-03-27T11:19:17+01:00",
+            "subject": "docs: capture fast-suite ci fix"
+          }
+        ],
+        "pullRequest": {
+          "number": 4902,
+          "url": "https://github.com/udecode/plate/pull/4902",
+          "state": "MERGED",
+          "title": "fix: snapshot AI streaming preview and task PR flow",
+          "mergedAt": "2026-03-27T10:27:50Z"
+        }
+      },
+      "release": {
+        "status": "released",
+        "tag": "v52.3.12",
+        "source": "release-index-pr-match",
+        "packageTag": "@platejs/ai@52.3.12",
+        "requiresPlate": ">=52.3.12",
+        "changelogUrl": "https://github.com/udecode/plate/blob/6e137200c68723a0271c0e32f560eb48587ec33e/packages/ai/CHANGELOG.md",
+        "url": "https://github.com/udecode/plate/pull/4904",
+        "versionPackagePullRequest": {
+          "number": 4904,
+          "url": "https://github.com/udecode/plate/pull/4904"
+        }
+      },
+      "targets": ["ai-kit", "ai-demo"],
+      "entries": 2,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-03-25-upgrade-typescript-6",
+      "href": "/registry/changelog/2026-03-25-upgrade-typescript-6.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Upgrade to TypeScript 6",
+      "change": {
+        "type": "pull_request",
+        "date": "2026-03-25",
+        "commits": [
+          {
+            "sha": "37e35afff5d95dbe159f2e3e1ca60455f666e26b",
+            "shortSha": "37e35afff5",
+            "url": "https://github.com/udecode/plate/commit/37e35afff5d95dbe159f2e3e1ca60455f666e26b",
+            "date": "2026-03-25",
+            "committedAt": "2026-03-25T22:18:00+01:00",
+            "subject": "fix template registry checks"
+          }
+        ],
+        "pullRequest": {
+          "number": 4891,
+          "url": "https://github.com/udecode/plate/pull/4891",
+          "state": "MERGED",
+          "title": "Upgrade to TypeScript 6",
+          "mergedAt": "2026-03-25T21:31:57Z"
+        }
+      },
+      "release": {
+        "status": "released",
+        "tag": "v52.3.8",
+        "source": "release-index-pr-match",
+        "packageTag": "@platejs/ai@52.3.8",
+        "requiresPlate": ">=52.3.8",
+        "changelogUrl": "https://github.com/udecode/plate/blob/aaafb10687517df99a8e5b4fe2b10e47cefd526a/packages/ai/CHANGELOG.md",
+        "url": "https://github.com/udecode/plate/pull/4888",
+        "versionPackagePullRequest": {
+          "number": 4888,
+          "url": "https://github.com/udecode/plate/pull/4888"
+        }
+      },
+      "targets": ["code-drawing-node"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-03-22-table-improve-selection-bug-fixed-insert-issue",
+      "href": "/registry/changelog/2026-03-22-table-improve-selection-bug-fixed-insert-issue.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "table: improve selection bug and fixed insert issue",
+      "change": {
+        "type": "pull_request",
+        "date": "2026-03-22",
+        "commits": [
+          {
+            "sha": "37da9804440c6a9546210f76a4f03e6117e06da8",
+            "shortSha": "37da980444",
+            "url": "https://github.com/udecode/plate/commit/37da9804440c6a9546210f76a4f03e6117e06da8",
+            "date": "2026-03-21",
+            "committedAt": "2026-03-21T11:40:14+08:00",
+            "subject": "remove debug table button"
+          }
+        ],
+        "pullRequest": {
+          "number": 4872,
+          "url": "https://github.com/udecode/plate/pull/4872",
+          "state": "MERGED",
+          "title": "table: improve selection bug and fixed insert issue",
+          "mergedAt": "2026-03-22T06:56:34Z"
+        }
+      },
+      "release": {
+        "status": "released",
+        "tag": "v52.3.6",
+        "source": "release-index-pr-match",
+        "packageTag": "@platejs/docx-io@52.3.6",
+        "requiresPlate": ">=52.3.6",
+        "changelogUrl": "https://github.com/udecode/plate/blob/fad953d8ee230a3b6e9342cd470482bc7f28310f/packages/docx-io/CHANGELOG.md",
+        "url": "https://github.com/udecode/plate/pull/4879",
+        "versionPackagePullRequest": {
+          "number": 4879,
+          "url": "https://github.com/udecode/plate/pull/4879"
+        }
+      },
+      "targets": ["table-node", "font-color-toolbar-button"],
+      "entries": 2,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-03-19-improve-non-react-test-coverage-ci-workflow-hygiene",
+      "href": "/registry/changelog/2026-03-19-improve-non-react-test-coverage-ci-workflow-hygiene.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Improve non-React test coverage and CI workflow hygiene",
+      "change": {
+        "type": "pull_request",
+        "date": "2026-03-19",
+        "commits": [
+          {
+            "sha": "1481062bd60e0e87dea23b58951243bdbd739997",
+            "shortSha": "1481062bd6",
+            "url": "https://github.com/udecode/plate/commit/1481062bd60e0e87dea23b58951243bdbd739997",
+            "date": "2026-03-19",
+            "committedAt": "2026-03-19T22:26:48+01:00",
+            "subject": "doc"
+          }
+        ],
+        "pullRequest": {
+          "number": 4876,
+          "url": "https://github.com/udecode/plate/pull/4876",
+          "state": "MERGED",
+          "title": "Improve non-React test coverage and CI workflow hygiene",
+          "mergedAt": "2026-03-19T21:27:01Z"
+        }
+      },
+      "release": {
+        "status": "released",
+        "tag": "v52.3.6",
+        "source": "release-index-pr-match",
+        "packageTag": "@platejs/docx-io@52.3.6",
+        "requiresPlate": ">=52.3.6",
+        "changelogUrl": "https://github.com/udecode/plate/blob/fad953d8ee230a3b6e9342cd470482bc7f28310f/packages/docx-io/CHANGELOG.md",
+        "url": "https://github.com/udecode/plate/pull/4879",
+        "versionPackagePullRequest": {
+          "number": 4879,
+          "url": "https://github.com/udecode/plate/pull/4879"
+        }
+      },
+      "targets": ["font-color-toolbar-button"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-01-28-add-code-drawing-node",
+      "href": "/registry/changelog/2026-01-28-add-code-drawing-node.json",
+      "status": "draft",
+      "kind": "mixed",
+      "summary": "feat: add code-drawing node",
+      "change": {
+        "type": "pull_request",
+        "date": "2026-01-28",
+        "commits": [
+          {
+            "sha": "7dca8db36b855deec5d4f0986421da012f33c93e",
+            "shortSha": "7dca8db36b",
+            "url": "https://github.com/udecode/plate/commit/7dca8db36b855deec5d4f0986421da012f33c93e",
+            "date": "2026-01-28",
+            "committedAt": "2026-01-28T20:15:53+08:00",
+            "subject": "update shadcn"
+          }
+        ],
+        "pullRequest": {
+          "number": 4811,
+          "url": "https://github.com/udecode/plate/pull/4811",
+          "state": "MERGED",
+          "title": "feat: add code-drawing node",
+          "mergedAt": "2026-01-28T13:00:20Z"
+        }
+      },
+      "release": {
+        "status": "released",
+        "tag": "v52.3.0",
+        "source": "release-index-pr-match",
+        "packageTag": "@platejs/code-drawing@52.3.0",
+        "requiresPlate": ">=52.3.0",
+        "changelogUrl": "https://github.com/udecode/plate/blob/d99adbfb4514b8aee45b6378caf48ed3a7e7d053/packages/code-drawing/CHANGELOG.md",
+        "url": "https://github.com/udecode/plate/pull/4829",
+        "versionPackagePullRequest": {
+          "number": 4829,
+          "url": "https://github.com/udecode/plate/pull/4829"
+        }
+      },
+      "targets": [
+        "code-drawing-kit",
+        "code-drawing-base-kit",
+        "code-drawing-node",
+        "code-drawing-demo",
+        "editor-kit",
+        "block-context-menu",
+        "insert-toolbar-button",
+        "slash-node",
+        "turn-into-toolbar-button",
+        "transforms"
+      ],
+      "entries": 2,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-01-20-add-docx-file-import-word-export-support",
+      "href": "/registry/changelog/2026-01-20-add-docx-file-import-word-export-support.json",
+      "status": "draft",
+      "kind": "mixed",
+      "summary": "Add DOCX file import and Word export support",
+      "change": {
+        "type": "pull_request",
+        "date": "2026-01-20",
+        "commits": [
+          {
+            "sha": "295317cf60318a48a859dfbf16220320605415c2",
+            "shortSha": "295317cf60",
+            "url": "https://github.com/udecode/plate/commit/295317cf60318a48a859dfbf16220320605415c2",
+            "date": "2026-01-20",
+            "committedAt": "2026-01-20T15:54:19+08:00",
+            "subject": "fix"
+          }
+        ],
+        "pullRequest": {
+          "number": 4814,
+          "url": "https://github.com/udecode/plate/pull/4814",
+          "state": "MERGED",
+          "title": "Add DOCX file import and Word export support",
+          "mergedAt": "2026-01-20T08:05:56Z"
+        }
+      },
+      "release": {
+        "status": "released",
+        "tag": "v52.2.0",
+        "source": "release-index-pr-match",
+        "packageTag": "@platejs/docx-io@52.2.0",
+        "requiresPlate": ">=52.2.0",
+        "changelogUrl": "https://github.com/udecode/plate/blob/e23cf0bdaecc7b606e2be7fc5c60ef33649943c7/packages/docx-io/CHANGELOG.md",
+        "url": "https://github.com/udecode/plate/pull/4820",
+        "versionPackagePullRequest": {
+          "number": 4820,
+          "url": "https://github.com/udecode/plate/pull/4820"
+        }
+      },
+      "targets": [
+        "docx-export-kit",
+        "import-toolbar-button",
+        "export-toolbar-button",
+        "block-list",
+        "callout-node",
+        "code-block-node",
+        "column-node",
+        "date-node",
+        "equation-node",
+        "heading-node",
+        "media-image-node",
+        "mention-node",
+        "table-node",
+        "toc-node"
+      ],
+      "entries": 2,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-01-09-support-using-ai-features-tables-improve-prompts",
+      "href": "/registry/changelog/2026-01-09-support-using-ai-features-tables-improve-prompts.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Support using AI features in tables & improve ai prompts.",
+      "change": {
+        "type": "pull_request",
+        "date": "2026-01-09",
+        "commits": [
+          {
+            "sha": "89cb295eb4a95fb3a59acf81c3fbc1f1ca96ce96",
+            "shortSha": "89cb295eb4",
+            "url": "https://github.com/udecode/plate/commit/89cb295eb4a95fb3a59acf81c3fbc1f1ca96ce96",
+            "date": "2026-01-09",
+            "committedAt": "2026-01-09T21:59:32+08:00",
+            "subject": "fix"
+          }
+        ],
+        "pullRequest": {
+          "number": 4800,
+          "url": "https://github.com/udecode/plate/pull/4800",
+          "state": "MERGED",
+          "title": "Support using AI features in tables & improve ai prompts.",
+          "mergedAt": "2026-01-09T15:29:27Z"
+        }
+      },
+      "release": {
+        "status": "released",
+        "tag": "v52.1.0",
+        "source": "release-index-pr-match",
+        "packageTag": "@platejs/ai@52.1.0",
+        "requiresPlate": ">=52.1.0",
+        "changelogUrl": "https://github.com/udecode/plate/blob/aa343ed824ada19ce64f1d6c5a530826c20d4de4/packages/ai/CHANGELOG.md",
+        "url": "https://github.com/udecode/plate/pull/4809",
+        "versionPackagePullRequest": {
+          "number": 4809,
+          "url": "https://github.com/udecode/plate/pull/4809"
+        }
+      },
+      "targets": ["ai-api", "ai-menu", "use-chat", "cursor-overlay"],
+      "entries": 2,
+      "diagnostics": []
+    },
+    {
+      "id": "2025-12-15-add-option-editor-collaborative-features",
+      "href": "/registry/changelog/2025-12-15-add-option-editor-collaborative-features.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Add `userId` option to editor for collaborative features",
+      "change": {
+        "type": "pull_request",
+        "date": "2025-12-15",
+        "commits": [
+          {
+            "sha": "b134c77ca749ad0cb6204af43841a952ba9307ce",
+            "shortSha": "b134c77ca7",
+            "url": "https://github.com/udecode/plate/commit/b134c77ca749ad0cb6204af43841a952ba9307ce",
+            "date": "2025-12-15",
+            "committedAt": "2025-12-15T15:06:35+08:00",
+            "subject": "fix"
+          }
+        ],
+        "pullRequest": {
+          "number": 4792,
+          "url": "https://github.com/udecode/plate/pull/4792",
+          "state": "MERGED",
+          "title": "Add `userId` option to editor for collaborative features",
+          "mergedAt": "2025-12-15T07:07:01Z"
+        }
+      },
+      "release": {
+        "status": "released",
+        "tag": "v52.0.15",
+        "source": "release-index-pr-match",
+        "packageTag": "platejs@52.0.15",
+        "requiresPlate": ">=52.0.15",
+        "changelogUrl": "https://github.com/udecode/plate/blob/31603b0b934fe23a16876c6082c29a192ad6db70/packages/plate/CHANGELOG.md",
+        "url": "https://github.com/udecode/plate/pull/4794",
+        "versionPackagePullRequest": {
+          "number": 4794,
+          "url": "https://github.com/udecode/plate/pull/4794"
+        }
+      },
+      "targets": ["inline-combobox", "mention-kit"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2025-12-14-fix-combobox-opening-popover-all-users-collaboration",
+      "href": "/registry/changelog/2025-12-14-fix-combobox-opening-popover-all-users-collaboration.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Fix combobox opening popover for all users in collaboration",
+      "change": {
+        "type": "pull_request",
+        "date": "2025-12-14",
+        "commits": [
+          {
+            "sha": "413fa9d49e55d59a8acb40c275aaa7a06896cf08",
+            "shortSha": "413fa9d49e",
+            "url": "https://github.com/udecode/plate/commit/413fa9d49e55d59a8acb40c275aaa7a06896cf08",
+            "date": "2025-11-30",
+            "committedAt": "2025-11-30T09:54:27Z",
+            "subject": "docs: update changelog for inline-combobox Yjs collaboration support"
+          }
+        ],
+        "pullRequest": {
+          "number": 4762,
+          "url": "https://github.com/udecode/plate/pull/4762",
+          "state": "MERGED",
+          "title": "Fix combobox opening popover for all users in collaboration",
+          "mergedAt": "2025-12-14T02:46:31Z"
+        }
+      },
+      "release": {
+        "status": "released",
+        "tag": "v52.0.13",
+        "source": "release-index-pr-match",
+        "packageTag": "@platejs/combobox@52.0.13",
+        "requiresPlate": ">=52.0.13",
+        "changelogUrl": "https://github.com/udecode/plate/blob/5b222c183b57b63a1df9fab4b88b96581379ba5a/packages/combobox/CHANGELOG.md",
+        "url": "https://github.com/udecode/plate/pull/4789",
+        "versionPackagePullRequest": {
+          "number": 4789,
+          "url": "https://github.com/udecode/plate/pull/4789"
+        }
+      },
+      "targets": ["inline-combobox"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2025-11-20-biome-ultracite",
+      "href": "/registry/changelog/2025-11-20-biome-ultracite.json",
+      "status": "draft",
+      "kind": "mixed",
+      "summary": "Biome ultracite",
+      "change": {
+        "type": "pull_request",
+        "date": "2025-11-20",
+        "commits": [
+          {
+            "sha": "20bcd2509f68494022a97ec18e04f823ebe3439b",
+            "shortSha": "20bcd2509f",
+            "url": "https://github.com/udecode/plate/commit/20bcd2509f68494022a97ec18e04f823ebe3439b",
+            "date": "2025-11-19",
+            "committedAt": "2025-11-19T10:42:29+01:00",
+            "subject": "lint"
+          }
+        ],
+        "pullRequest": {
+          "number": 4732,
+          "url": "https://github.com/udecode/plate/pull/4732",
+          "state": "MERGED",
+          "title": "Biome ultracite",
+          "mergedAt": "2025-11-20T16:12:06Z"
+        }
+      },
+      "release": {
+        "status": "released",
+        "tag": "v51.1.2",
+        "source": "release-index-pr-match",
+        "packageTag": "platejs@51.1.2",
+        "requiresPlate": ">=51.1.2",
+        "changelogUrl": "https://github.com/udecode/plate/blob/9884869c2507c0e44cdda8ea595adf0ada5fd798/packages/plate/CHANGELOG.md",
+        "url": "https://github.com/udecode/plate/pull/4734",
+        "versionPackagePullRequest": {
+          "number": 4734,
+          "url": "https://github.com/udecode/plate/pull/4734"
+        }
+      },
+      "targets": [
+        "ai-api",
+        "copilot-api",
+        "ai-menu",
+        "ai-kit",
+        "use-chat",
+        "cursor-overlay",
+        "block-placeholder-kit",
+        "block-selection-kit",
+        "discussion-kit",
+        "tabbable-kit",
+        "transforms",
+        "transforms-classic",
+        "markdown-joiner-transform",
+        "block-discussion",
+        "block-draggable",
+        "block-list",
+        "callout-node",
+        "code-block-node",
+        "code-node",
+        "column-node",
+        "editor",
+        "emoji-node",
+        "emoji-toolbar-button",
+        "equation-node",
+        "fixed-toolbar",
+        "floating-toolbar",
+        "font-color-toolbar-button",
+        "font-size-toolbar-button",
+        "heading-node",
+        "inline-combobox",
+        "insert-toolbar-button",
+        "insert-toolbar-classic-button",
+        "link-toolbar",
+        "list-classic-node",
+        "list-classic-toolbar-button",
+        "media-embed-node",
+        "media-image-node",
+        "media-placeholder-node",
+        "media-preview-dialog",
+        "media-toolbar",
+        "media-toolbar-button",
+        "media-video-node",
+        "mention-node",
+        "mode-toolbar-button",
+        "remote-cursor-overlay",
+        "resize-handle",
+        "select-editor",
+        "suggestion-node",
+        "table-node",
+        "table-toolbar-button",
+        "tag-node",
+        "toc-node",
+        "toc-node-static",
+        "toggle-node",
+        "toggle-node-static",
+        "toolbar",
+        "ai-demo",
+        "collaboration-demo",
+        "controlled-demo",
+        "hundreds-blocks-demo",
+        "image-pro-demo",
+        "markdown-streaming-demo",
+        "preview-markdown-demo",
+        "pro-iframe-demo",
+        "slate-to-html",
+        "version-history-demo",
+        "fumadocs-mdx-components",
+        "mdx-plate-components"
+      ],
+      "entries": 4,
+      "diagnostics": []
+    },
+    {
+      "id": "2025-10-21-add-rejectaisuggestions",
+      "href": "/registry/changelog/2025-10-21-add-rejectaisuggestions.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Add rejectAISuggestions",
+      "change": {
+        "type": "pull_request",
+        "date": "2025-10-21",
+        "commits": [
+          {
+            "sha": "6cba6670cfee1a5dfd23b9b0a9225d769802d95e",
+            "shortSha": "6cba6670cf",
+            "url": "https://github.com/udecode/plate/commit/6cba6670cfee1a5dfd23b9b0a9225d769802d95e",
+            "date": "2025-10-21",
+            "committedAt": "2025-10-21T15:05:10+08:00",
+            "subject": "suggestion"
+          }
+        ],
+        "pullRequest": {
+          "number": 4697,
+          "url": "https://github.com/udecode/plate/pull/4697",
+          "state": "MERGED",
+          "title": "Add rejectAISuggestions",
+          "mergedAt": "2025-10-21T08:06:37Z"
+        }
+      },
+      "release": {
+        "status": "released",
+        "tag": "v51.0.1",
+        "source": "release-index-pr-match",
+        "packageTag": "@platejs/ai@51.0.1",
+        "requiresPlate": ">=51.0.1",
+        "changelogUrl": "https://github.com/udecode/plate/blob/aae0067a8c97fb96041b447ba8fcd353b983e8de/packages/ai/CHANGELOG.md",
+        "url": "https://github.com/udecode/plate/pull/4699",
+        "versionPackagePullRequest": {
+          "number": 4699,
+          "url": "https://github.com/udecode/plate/pull/4699"
+        }
+      },
+      "targets": [
+        "suggestion-kit",
+        "suggestion-node",
+        "block-discussion",
+        "ai-api"
+      ],
+      "entries": 2,
+      "diagnostics": []
+    },
+    {
+      "id": "2025-10-17-fix-react-decouple",
+      "href": "/registry/changelog/2025-10-17-fix-react-decouple.json",
+      "status": "draft",
+      "kind": "wiring",
+      "summary": "Fix react decouple",
+      "change": {
+        "type": "pull_request",
+        "date": "2025-10-17",
+        "commits": [
+          {
+            "sha": "466cf8a4f6cecadbea4b5a6a2c2af5adc5ee65d6",
+            "shortSha": "466cf8a4f6",
+            "url": "https://github.com/udecode/plate/commit/466cf8a4f6cecadbea4b5a6a2c2af5adc5ee65d6",
+            "date": "2025-10-17",
+            "committedAt": "2025-10-17T17:20:02+08:00",
+            "subject": "fix"
+          }
+        ],
+        "pullRequest": {
+          "number": 4695,
+          "url": "https://github.com/udecode/plate/pull/4695",
+          "state": "MERGED",
+          "title": "Fix react decouple",
+          "mergedAt": "2025-10-17T14:17:29Z"
+        }
+      },
+      "release": {
+        "status": "released",
+        "tag": "v51.0.0",
+        "source": "release-index-pr-match",
+        "packageTag": "platejs@51.0.0",
+        "requiresPlate": ">=51.0.0",
+        "changelogUrl": "https://github.com/udecode/plate/blob/9f29fb77587a0d250749e9bc2d4e3f25b6c7cb6d/packages/plate/CHANGELOG.md",
+        "url": "https://github.com/udecode/plate/pull/4696",
+        "versionPackagePullRequest": {
+          "number": 4696,
+          "url": "https://github.com/udecode/plate/pull/4696"
+        }
+      },
+      "targets": [
+        "block-list",
+        "blockquote-node",
+        "callout-node",
+        "code-block-node",
+        "code-node",
+        "column-node",
+        "comment-node",
+        "date-node",
+        "editor",
+        "equation-node",
+        "export-toolbar-button",
+        "heading-node",
+        "highlight-node",
+        "hr-node",
+        "import-toolbar-button",
+        "kbd-node",
+        "link-node",
+        "media-audio-node",
+        "media-file-node",
+        "media-image-node",
+        "media-video-node",
+        "mention-node",
+        "paragraph-node",
+        "slate-to-html",
+        "suggestion-kit",
+        "suggestion-node",
+        "table-node",
+        "toc-node-static",
+        "toggle-node-static"
+      ],
+      "entries": 1,
+      "diagnostics": []
+    }
+  ]
+}

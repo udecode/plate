@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "mention-base-kit",
-  "type": "registry:component",
   "dependencies": [
     "@platejs/mention"
   ],
@@ -12,7 +11,9 @@
     {
       "path": "src/registry/components/editor/plugins/mention-base-kit.tsx",
       "content": "import { BaseMentionPlugin } from '@platejs/mention';\n\nimport { MentionElementStatic } from '@/registry/ui/mention-node-static';\n\nexport const BaseMentionKit = [\n  BaseMentionPlugin.withComponent(MentionElementStatic),\n];\n",
-      "type": "registry:component"
+      "type": "registry:component",
+      "target": "@components/editor/plugins/mention-base-kit.tsx"
     }
-  ]
+  ],
+  "type": "registry:component"
 }

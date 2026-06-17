@@ -1,0 +1,106 @@
+{
+  "changesets": [
+    {
+      "releases": [
+        {
+          "name": "@platejs/slate",
+          "type": "patch"
+        }
+      ],
+      "summary": "Add experimental `editor.tf.setNodesBatch` for exact-path node prop updates on large documents\n\n- Cut the large-document `set_node` hot path from `18.56 ms` to `2.63 ms` at `1k` blocks (`7.05x` faster)\n- Cut the same path from `118.54 ms` to `4.92 ms` at `5k` blocks (`24.10x` faster)\n- Let `@platejs/core` batch live `nodeId` normalization instead of paying one `setNodes` call per missing id\n- Keep `editor.tf.setNodesBatch` explicitly temporary. It is experimental and will be removed in a future release",
+      "id": "cyan-rivers-fly"
+    },
+    {
+      "releases": [
+        {
+          "name": "@platejs/core",
+          "type": "patch"
+        }
+      ],
+      "summary": "Add `transformInitialValue` and `nodeId.initialValueIds` while keeping `normalizeInitialValue` as a deprecated alias",
+      "id": "metal-pumas-wave"
+    },
+    {
+      "releases": [
+        {
+          "name": "@platejs/core",
+          "type": "patch"
+        }
+      ],
+      "summary": "Improve large-document mount and render performance across core element, mark, and `nodeId` paths\n\n- Cut `10k` mixed-document core mount time from `1240.60 ms` to `468.26 ms` without `nodeId` (`62.3%`, `2.65x` faster)\n- Cut `10k` mixed-document core mount time from `1290.66 ms` to `477.73 ms` with `nodeId` (`63.0%`, `2.70x` faster)\n- Cut mixed-document `nodeId` overhead over core from `+50.06 ms` to `+9.46 ms` (`81.1%` smaller)\n- Cut duplicate-id paste cost from `20.06 ms` to `13.79 ms` (`31.2%`, `1.45x` faster)\n- Cut `10k` code-only mount time from `1500.30 ms` to `496.47 ms` (`66.9%`, `3.02x` faster) and shrink the code-only tax over core from `+280.75 ms` to `+27.89 ms` (`90.1%` smaller)\n- Bring the current `10k` core and basic large-document mount lanes to Slate parity or better (`core -3.5%`, `core + nodeId -1.6%`, `basic -1.2%`)\n- Preserve Slate children for void `render.as` tags and Slate attributes on simple leaf/text render paths",
+      "id": "shaggy-cobras-cheer"
+    },
+    {
+      "releases": [
+        {
+          "name": "@platejs/slate",
+          "type": "patch"
+        }
+      ],
+      "summary": "Updated `slate-hyperscript`.",
+      "id": "slate"
+    },
+    {
+      "releases": [
+        {
+          "name": "@platejs/table",
+          "type": "patch"
+        }
+      ],
+      "summary": "Speed up unmerged table range selection while preserving merged-cell handling",
+      "id": "twelve-turkeys-kneel"
+    }
+  ],
+  "releases": [
+    {
+      "name": "@platejs/slate",
+      "type": "patch",
+      "oldVersion": "53.0.6",
+      "changesets": [
+        "cyan-rivers-fly",
+        "slate"
+      ],
+      "newVersion": "53.0.7"
+    },
+    {
+      "name": "@platejs/core",
+      "type": "patch",
+      "oldVersion": "53.0.6",
+      "changesets": [
+        "metal-pumas-wave",
+        "shaggy-cobras-cheer"
+      ],
+      "newVersion": "53.0.7"
+    },
+    {
+      "name": "@platejs/table",
+      "type": "patch",
+      "oldVersion": "53.0.6",
+      "changesets": [
+        "twelve-turkeys-kneel"
+      ],
+      "newVersion": "53.0.7"
+    },
+    {
+      "name": "www",
+      "type": "none",
+      "oldVersion": "0.0.1",
+      "changesets": [],
+      "newVersion": "0.0.1"
+    },
+    {
+      "name": "@platejs/test-utils",
+      "type": "patch",
+      "oldVersion": "53.0.6",
+      "changesets": [],
+      "newVersion": "53.0.7"
+    },
+    {
+      "name": "@platejs/csv",
+      "type": "patch",
+      "oldVersion": "53.0.6",
+      "changesets": [],
+      "newVersion": "53.0.7"
+    }
+  ]
+}

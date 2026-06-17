@@ -4,8 +4,10 @@ import test from 'node:test';
 import {
   AUTO_RELEASE_END,
   AUTO_RELEASE_START,
+  getChangesetValidationErrors,
   getChangesetReleaseType,
   hasChangesetFile,
+  isChangesetFile,
   isAutoReleaseChecked,
   isVersionPackagesTitle,
   shouldManageAutoReleaseBlock,
@@ -21,6 +23,13 @@ test('detects real changeset files', () => {
   assert.equal(hasChangesetFile(['.changeset/media-redos.md']), true);
   assert.equal(
     hasChangesetFile(['.changeset/README.md', 'packages/media/src/index.ts']),
+    false
+  );
+  assert.equal(
+    isChangesetFile({
+      filename: '.changeset/media-redos.md',
+      status: 'removed',
+    }),
     false
   );
 });
@@ -124,6 +133,53 @@ ${AUTO_RELEASE_END}
 ## Summary
 Fix media parser.
 `
+  );
+});
+
+test('validates changeset filenames and frontmatter entries', () => {
+  assert.deepEqual(
+    getChangesetValidationErrors([
+      {
+        filename: '.changeset/media-redos.md',
+        patch: `@@ -0,0 +1,5 @@
++---
++"@platejs/media": patch
++"@platejs/core": none
++---
++
++Fix parser`,
+      },
+    ]),
+    []
+  );
+
+  assert.deepEqual(
+    getChangesetValidationErrors([
+      {
+        filename: '.changeset/Media_Redos.md',
+        patch: `@@ -0,0 +1,5 @@
++---
++"@platejs/media": feature
++---
++
++Fix parser`,
+      },
+    ]),
+    [
+      '.changeset/Media_Redos.md has an invalid filename. Use lowercase letters, digits, and hyphens.',
+      '.changeset/Media_Redos.md has invalid entry "\\"@platejs/media\\": feature". Expected \'"package-name": patch|minor|major|none\'.',
+    ]
+  );
+
+  assert.deepEqual(
+    getChangesetValidationErrors([
+      {
+        filename: '.changeset/media-redos.md',
+        patch: `@@ -0,0 +1,2 @@
++Fix parser`,
+      },
+    ]),
+    ['.changeset/media-redos.md is missing YAML frontmatter.']
   );
 });
 

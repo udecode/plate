@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "media-toolbar-button",
-  "type": "registry:ui",
   "title": "Media Toolbar Button",
   "description": "Toolbar button for inserting and managing media.",
   "dependencies": [
@@ -11,9 +10,9 @@
   ],
   "registryDependencies": [
     "https://platejs.org/r/toolbar.json",
-    "@shadcn/input",
-    "@shadcn/dropdown-menu",
-    "@shadcn/alert-dialog"
+    "input",
+    "dropdown-menu",
+    "alert-dialog"
   ],
   "files": [
     {
@@ -32,5 +31,6 @@
       "media-demo",
       "media-pro"
     ]
-  }
+  },
+  "type": "registry:ui"
 }

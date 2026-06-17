@@ -1,0 +1,82 @@
+---
+description: One-command shortcut for syncing origin/main directly into origin/next through release-lanes. Use when the user says sync-main-to-next, asks to sync main into next, asks after a stable release what sync is needed, or wants the fastest safe beta lane catch-up without promotion or broad release-lane ceremony.
+argument-hint: '[dry-run | push | verify | status]'
+disable-model-invocation: true
+name: sync-main-to-next
+metadata:
+  skiller:
+    source: .agents/rules/sync-main-to-next.mdc
+---
+
+# Sync Main To Next
+
+Handle $ARGUMENTS by loading `.agents/rules/release-lanes.mdc` and running only
+its `Sync Main To Next` lane.
+
+This is a convenience wrapper, not a second release system. `release-lanes`
+owns the release architecture, script contract, hard stops, and handoff shape.
+
+## Default Mode
+
+Default to the real sync when the user says `sync-main-to-next` without
+arguments.
+
+Use this sequence:
+
+```bash
+node tooling/scripts/release-branch-prs.mjs sync-main-to-next --dry-run
+node tooling/scripts/release-branch-prs.mjs sync-main-to-next --push
+node tooling/scripts/release-branch-prs.mjs verify-main-to-next-sync
+```
+
+Then watch only the workflows created by the pushed sync commit:
+
+```bash
+gh run list --branch next --limit 10 \
+  --json databaseId,name,workflowName,headSha,status,conclusion,displayTitle,url
+gh run watch <release-run-id> --exit-status
+gh run watch <ci-run-id> --exit-status
+```
+
+Read back:
+
+```bash
+npm view platejs dist-tags --json
+npm view platejs@latest version
+npm view platejs@beta version
+gh release list --limit 5
+gh pr list --base next --head sync/main-to-next --state open --json number,url
+```
+
+Close stale `sync/main-to-next` PRs only after the direct sync and release
+verification pass.
+
+## Keep It Fast
+
+- Do not create or update a plan unless the user explicitly asks for an
+  autogoal artifact.
+- Do not run autoreview.
+- Do not create a `main -> next` PR.
+- Do not touch promotion; this shortcut is not `next -> main`.
+- Do not re-run broad release status commands once the pushed SHA is known.
+- Do not wait on unrelated old workflow runs.
+
+## Hard Stops
+
+Use the `release-lanes` hard stops. In practice, stop only for:
+
+- dirty checkout rejected by the direct sync script
+- real source conflicts outside known release metadata
+- branch protection rejecting the required push
+- release or CI failure after one clear repair attempt
+- npm/GitHub readback mismatch for the expected `latest` or `beta`
+
+## Handoff
+
+Report in five lines or fewer:
+
+- pushed sync commit
+- release and CI run URLs
+- npm `latest` and `beta`
+- stale PR cleanup result
+- residual risk

@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "list-toolbar-button",
-  "type": "registry:ui",
   "title": "List Toolbar Button",
   "description": "A toolbar control for adjusting list indentation.",
   "dependencies": [
@@ -26,5 +25,6 @@
     "examples": [
       "list-demo"
     ]
-  }
+  },
+  "type": "registry:ui"
 }

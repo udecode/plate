@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "equation-node",
-  "type": "registry:ui",
   "title": "Equation Element",
   "description": "Displays a LaTeX equation element with an editable popover for inputting and rendering mathematical expressions.",
   "dependencies": [
@@ -9,7 +8,7 @@
     "react-textarea-autosize"
   ],
   "registryDependencies": [
-    "@shadcn/popover",
+    "popover",
     "https://platejs.org/r/suggestion.json"
   ],
   "files": [
@@ -34,5 +33,6 @@
     "examples": [
       "equation-demo"
     ]
-  }
+  },
+  "type": "registry:ui"
 }

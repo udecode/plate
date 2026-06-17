@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-03-25-upgrade-typescript-6",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-03-25-upgrade-typescript-6.mdx"
+  },
+  "change": {
+    "type": "pull_request",
+    "date": "2026-03-25",
+    "commits": [
+      {
+        "sha": "37e35afff5d95dbe159f2e3e1ca60455f666e26b",
+        "shortSha": "37e35afff5",
+        "url": "https://github.com/udecode/plate/commit/37e35afff5d95dbe159f2e3e1ca60455f666e26b",
+        "date": "2026-03-25",
+        "committedAt": "2026-03-25T22:18:00+01:00",
+        "subject": "fix template registry checks"
+      }
+    ],
+    "pullRequest": {
+      "number": 4891,
+      "url": "https://github.com/udecode/plate/pull/4891",
+      "state": "MERGED",
+      "title": "Upgrade to TypeScript 6",
+      "mergedAt": "2026-03-25T21:31:57Z"
+    }
+  },
+  "release": {
+    "status": "released",
+    "tag": "v52.3.8",
+    "source": "release-index-pr-match",
+    "packageTag": "@platejs/ai@52.3.8",
+    "requiresPlate": ">=52.3.8",
+    "changelogUrl": "https://github.com/udecode/plate/blob/aaafb10687517df99a8e5b4fe2b10e47cefd526a/packages/ai/CHANGELOG.md",
+    "url": "https://github.com/udecode/plate/pull/4888",
+    "versionPackagePullRequest": {
+      "number": 4888,
+      "url": "https://github.com/udecode/plate/pull/4888"
+    }
+  },
+  "kind": "behavior",
+  "summary": "Upgrade to TypeScript 6",
+  "targets": [
+    {
+      "name": "code-drawing-node",
+      "files": ["apps/www/src/registry/ui/code-drawing-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-03-25-29-3-code-drawing-keep-registry-template-compatible-dac6991c",
+      "kind": "behavior",
+      "summary": "Keep the code drawing registry template compatible with the TypeScript 6 check path.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["code-drawing-node"],
+      "source": {
+        "line": 13,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-03-25",
+          "entry": "29.3",
+          "section": "March 2026 #29"
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

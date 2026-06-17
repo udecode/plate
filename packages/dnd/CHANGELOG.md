@@ -1,5 +1,13 @@
 # @platejs/dnd
 
+## 54.0.0-beta.0
+
+## 53.1.0
+
+### Patch Changes
+
+- [#5002](https://github.com/udecode/plate/pull/5002) by [@kiranmagic7](https://github.com/kiranmagic7) – Clear stale DnD drop indicators when dragging from a block into editor whitespace.
+
 ## 53.0.0
 
 ## 52.3.16

@@ -10,9 +10,9 @@ toc: true
 
 ## Features
 
-- **Multi-Provider Support:** Enables real-time collaboration using [Yjs](https://github.com/yjs/yjs) and [slate-yjs](https://docs.slate-yjs.dev/). Supports multiple synchronization providers simultaneously (e.g., Hocuspocus + WebRTC) working on a shared `Y.Doc`.
-- **Built-in Providers:** Includes support for [Hocuspocus](https://tiptap.dev/hocuspocus) (server-based) and [WebRTC](https://github.com/yjs/y-webrtc) (peer-to-peer) providers out-of-the-box.
-- **Custom Providers:** Extensible architecture allows adding custom providers (e.g., for offline storage like IndexedDB) by implementing the `UnifiedProvider` interface.
+- **Multi-Provider Support:** Enables real-time collaboration using [Yjs](https://github.com/yjs/yjs) and [slate-yjs](https://docs.slate-yjs.dev/). Supports multiple synchronization providers simultaneously (e.g., IndexedDB + Hocuspocus + WebRTC) working on a shared `Y.Doc`.
+- **Built-in Providers:** Includes support for [IndexedDB](https://github.com/yjs/y-indexeddb) local persistence, [Hocuspocus](https://tiptap.dev/hocuspocus) server-based collaboration, and [WebRTC](https://github.com/yjs/y-webrtc) peer-to-peer collaboration.
+- **Custom Providers:** Extensible architecture allows adding custom providers by implementing the `UnifiedProvider` interface.
 - **Awareness & Cursors:** Integrates Yjs Awareness protocol for sharing cursor locations and other ephemeral state between users. Includes [`RemoteCursorOverlay`](/docs/components/remote-cursor-overlay) for rendering remote cursors.
 - **Customizable Cursors:** Cursor appearance (name, color) can be customized via `cursors`.
 - **Manual Lifecycle:** Provides explicit `init` and `destroy` methods for managing the Yjs connection lifecycle.
@@ -25,7 +25,7 @@ toc: true
 
 ### Installation
 
-Install the core Yjs plugin and the specific provider packages you intend to use:
+Install the core Yjs plugin.
 
 ```bash
 npm install @platejs/yjs
@@ -89,6 +89,13 @@ const editor = createPlateEditor({
         },
         // Configure providers. All providers share the same Y.Doc and Awareness instance.
         providers: [
+          // Example: IndexedDB provider for local persistence
+          {
+            type: 'indexeddb',
+            options: {
+              docName: 'my-document-id', // Unique IndexedDB database name
+            },
+          },
           // Example: Hocuspocus provider
           {
             type: 'hocuspocus',
@@ -275,6 +282,19 @@ type WebRTCProviderConfig = {
 }
 ```
 
+### IndexedDB Provider
+
+Local browser persistence using [y-indexeddb](https://github.com/yjs/y-indexeddb). Use it alongside a network provider when the editor should restore local state before remote sync finishes.
+
+```tsx
+type IndexeddbProviderConfig = {
+  type: 'indexeddb',
+  options: {
+    docName: string; // Stable IndexedDB database name for this document
+  }
+}
+```
+
 ### Custom Provider
 
 Create custom providers by implementing the `UnifiedProvider` interface:
@@ -305,6 +325,21 @@ YjsPlugin.configure({
 ```
 
 ## Backend Setup
+
+### IndexedDB Local Persistence
+
+IndexedDB runs in the browser and uses the shared `Y.Doc` created by `YjsPlugin`. Use the same document identifier for `docName` and your network provider room/name when you combine providers:
+
+```tsx
+{
+  type: 'indexeddb',
+  options: {
+    docName: 'document-1',
+  },
+}
+```
+
+IndexedDB does not transport remote awareness or cursors. It persists document updates locally; Hocuspocus or WebRTC still own multi-user transport.
 
 ### Hocuspocus Server
 
@@ -422,7 +457,7 @@ YjsPlugin.configure({
 
 **Check URLs and Names:**
 - Verify `url` (Hocuspocus) and `signaling` URLs (WebRTC) are correct
-- Ensure `name` or `roomName` matches exactly across all collaborators
+- Ensure `docName`, `name`, or `roomName` matches exactly across providers that share one document
 - Use `ws://` for local development, `wss://` for production
 
 **Server Status:**
@@ -464,6 +499,7 @@ YjsPlugin.configure({
 
 - [Yjs](https://github.com/yjs/yjs) - CRDT framework for collaboration
 - [slate-yjs](https://docs.slate-yjs.dev/) - Yjs bindings for Slate
+- [y-indexeddb](https://github.com/yjs/y-indexeddb) - IndexedDB persistence provider
 - [Hocuspocus](https://tiptap.dev/hocuspocus) - Backend server for Yjs
 - [y-webrtc](https://github.com/yjs/y-webrtc) - WebRTC provider
 - [RemoteCursorOverlay](/docs/components/remote-cursor-overlay) - Remote cursor component
@@ -478,8 +514,8 @@ Enables real-time collaboration using Yjs with support for multiple providers an
 <API name="YjsPlugin">
 <APIOptions>
   <APIItem name="providers" type="(UnifiedProvider | YjsProviderConfig)[]">
-    Array of provider configurations or pre-instantiated provider instances. The plugin will create instances from configurations and use existing instances directly. All providers will share the same Y.Doc and Awareness. Each configuration object specifies a provider `type` (e.g., `'hocuspocus'`,
-    `'webrtc'`) and its specific `options`. Custom provider instances must conform to the
+    Array of provider configurations or pre-instantiated provider instances. The plugin will create instances from configurations and use existing instances directly. All providers will share the same Y.Doc and Awareness. Each configuration object specifies a provider `type` (for example `'indexeddb'`, `'hocuspocus'`,
+    or `'webrtc'`) and its specific `options`. Custom provider instances must conform to the
     `UnifiedProvider` interface.
   </APIItem>
   <APIItem name="cursors" type="WithCursorsOptions | null" optional>

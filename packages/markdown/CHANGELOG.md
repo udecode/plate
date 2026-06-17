@@ -1,5 +1,31 @@
 # @platejs/markdown
 
+## 54.0.0-beta.1
+
+### Patch Changes
+
+- Synced latest changes from `main` into the beta lane.
+
+## 54.0.0-beta.0
+
+## 53.2.2
+
+### Patch Changes
+
+- [#5026](https://github.com/udecode/plate/pull/5026) by [@zbeyens](https://github.com/zbeyens) – Serialize hard line breaks inside paragraph text nodes.
+
+## 53.1.5
+
+### Patch Changes
+
+- [#5016](https://github.com/udecode/plate/pull/5016) by [@zbeyens](https://github.com/zbeyens) – Fix markdown deserialization from crashing on malformed HTML-like MDX input.
+
+## 53.1.1
+
+### Patch Changes
+
+- [#5007](https://github.com/udecode/plate/pull/5007) by [@kiranmagic7](https://github.com/kiranmagic7) – Fix MDX fallback deserialization for GFM tables containing plain less-than text.
+
 ## 53.0.4
 
 ### Patch Changes

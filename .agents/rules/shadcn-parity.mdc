@@ -31,7 +31,7 @@ If you diverge, say exactly why.
 Shadcn owns the contract:
 
 - registry item schema
-- namespace semantics like `@shadcn/button` and other registry prefixes
+- namespace semantics for third-party registries like `@acme/button`
 - resolver behavior for plain items, namespaced items, URLs, and local files
 - local-file add behavior
 - `components.json` registry semantics
@@ -69,9 +69,18 @@ When building or changing Plate registry items:
 
 Registry dependency rules:
 
-- prefer `@shadcn/*` when an upstream shadcn item exists
-- prefer upstream namespace syntax over raw URLs when the namespace already
-  covers the case
+- prefer bare names like `button`, `command`, and `popover` when an upstream
+  shadcn registry item exists
+- prefer upstream namespace syntax over raw URLs for non-default registries when
+  the namespace already covers the case
+- prefer explicit `@plate/*` for Plate self-dependencies in registry source
+- public generated registry item JSON must rewrite Plate self-dependencies to
+  same-base item URLs such as `https://platejs.org/r/*.json`, so direct URL
+  installs resolve transitive Plate items from the same registry base
+- keep legacy localhost and absolute Plate item URLs as accepted input
+  compatibility for local-file sync adapters
+- treat `@shadcn/*` as compatibility input only; do not write it in Plate
+  registry source or generated output
 - if upstream does not expose a small standalone item, use a small Plate
   registry item instead of dragging in a huge upstream dependency just to steal
   one internal file
@@ -113,8 +122,8 @@ pattern to spread.
   infrastructure
 - local template sync uses prepared JSON mirrors and local-file mode
 - template install entrypoints use the `@plate` registry in `components.json`
-- some built registry output may still emit absolute Plate self-URLs for
-  compatibility; treat that as behavior to minimize, not a new model to copy
+- old generated registry output may still contain absolute Plate self-URLs;
+  treat that as compatibility input only, not the source contract
 
 ## Red Flags
 

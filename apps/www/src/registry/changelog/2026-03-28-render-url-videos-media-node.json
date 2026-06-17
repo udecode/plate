@@ -1,0 +1,120 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-03-28-render-url-videos-media-node",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-03-28-render-url-videos-media-node.mdx"
+  },
+  "change": {
+    "type": "pull_request",
+    "date": "2026-03-28",
+    "commits": [
+      {
+        "sha": "9c7eda7bc74a136eb3a75846aadf696b911475b6",
+        "shortSha": "9c7eda7bc7",
+        "url": "https://github.com/udecode/plate/commit/9c7eda7bc74a136eb3a75846aadf696b911475b6",
+        "date": "2026-03-28",
+        "committedAt": "2026-03-28T13:10:17+01:00",
+        "subject": "fix"
+      }
+    ],
+    "pullRequest": {
+      "number": 4912,
+      "url": "https://github.com/udecode/plate/pull/4912",
+      "state": "MERGED",
+      "title": "fix(www): render url videos in media node",
+      "mergedAt": "2026-03-28T12:26:00Z"
+    }
+  },
+  "release": {
+    "status": "released",
+    "tag": "v52.3.15",
+    "source": "release-index-pr-match",
+    "packageTag": "@platejs/core@52.3.15",
+    "requiresPlate": ">=52.3.15",
+    "changelogUrl": "https://github.com/udecode/plate/blob/73092e7b5770bb2fc3d60106d5c81fd93c349ed6/packages/core/CHANGELOG.md",
+    "url": "https://github.com/udecode/plate/pull/4913",
+    "versionPackagePullRequest": {
+      "number": 4913,
+      "url": "https://github.com/udecode/plate/pull/4913"
+    }
+  },
+  "kind": "behavior",
+  "summary": "fix(www): render url videos in media node",
+  "targets": [
+    {
+      "name": "media-video-node",
+      "files": ["apps/www/src/registry/ui/media-video-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "editor-ai",
+      "files": [],
+      "definitionFiles": ["apps/www/src/registry/registry-blocks.ts"],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for editor-ai."
+        }
+      ]
+    },
+    {
+      "name": "editor-basic",
+      "files": [],
+      "definitionFiles": ["apps/www/src/registry/registry-blocks.ts"],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for editor-basic."
+        }
+      ]
+    },
+    {
+      "name": "slate-to-html",
+      "files": ["apps/www/src/registry/components/editor/slate-to-html.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-blocks.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-03-28-29-5-media-video-render-plain-urls-when-bf870e04",
+      "kind": "behavior",
+      "summary": "Render plain video URLs with `ReactPlayer` when the node has a `url` and no upload flag.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["media-video-node"],
+      "source": {
+        "line": 13,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-03-28",
+          "entry": "29.5",
+          "section": "March 2026 #29"
+        }
+      }
+    },
+    {
+      "id": "2026-03-28-29-5-editor-ai-sync-registry-blocks-url-9e2b12ab",
+      "kind": "behavior",
+      "summary": "Sync registry blocks with the URL video rendering path.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["editor-ai", "editor-basic", "slate-to-html"],
+      "source": {
+        "line": 15,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-03-28",
+          "entry": "29.5",
+          "section": "March 2026 #29"
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

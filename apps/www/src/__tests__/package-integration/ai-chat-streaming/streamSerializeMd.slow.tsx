@@ -14,6 +14,42 @@ describe('streamSerializeMd', () => {
     expect(output).toBe('chunk1');
   });
 
+  it('preserves internal text line breaks', () => {
+    const chunk = 'chunk1\nchunk2';
+    const input = streamDeserializeMd(editor, chunk);
+
+    const output = streamSerializeMd(editor, { value: input }, chunk);
+
+    expect(output).toBe(chunk);
+  });
+
+  it('preserves markdown hard break syntax', () => {
+    const chunk = 'chunk1\\\nchunk2';
+    const input = streamDeserializeMd(editor, chunk);
+
+    const output = streamSerializeMd(editor, { value: input }, chunk);
+
+    expect(output).toBe(chunk);
+  });
+
+  it('preserves mixed text line breaks and markdown hard breaks', () => {
+    const chunk = 'chunk1\nchunk2\\\nchunk3';
+    const input = [
+      {
+        children: [
+          { text: 'chunk1\nchunk2' },
+          { text: '\n' },
+          { text: 'chunk3' },
+        ],
+        type: 'p',
+      },
+    ];
+
+    const output = streamSerializeMd(editor, { value: input }, chunk);
+
+    expect(output).toBe(chunk);
+  });
+
   it('preserves trailing spaces', () => {
     const chunk = 'chunk1\n ';
     const input = streamDeserializeMd(editor, chunk);
@@ -21,6 +57,29 @@ describe('streamSerializeMd', () => {
     const output = streamSerializeMd(editor, { value: input }, chunk);
 
     expect(output).toBe('chunk1\n ');
+  });
+
+  it('preserves spaces before trailing line breaks', () => {
+    const chunk = 'chunk1 \n ';
+    const input = streamDeserializeMd(editor, chunk);
+
+    const output = streamSerializeMd(editor, { value: input }, chunk);
+
+    expect(output).toBe(chunk);
+  });
+
+  it('preserves literal trailing backslashes before newline whitespace', () => {
+    const chunk = 'chunk1\\\\\n ';
+    const input = [
+      {
+        children: [{ text: chunk }],
+        type: 'p',
+      },
+    ];
+
+    const output = streamSerializeMd(editor, { value: input }, chunk);
+
+    expect(output).toBe(chunk);
   });
 
   it('preserves a trailing line break', () => {

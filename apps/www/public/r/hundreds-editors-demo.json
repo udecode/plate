@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "hundreds-editors-demo",
-  "type": "registry:example",
   "registryDependencies": [
     "https://platejs.org/r/editor.json"
   ],
@@ -16,5 +15,6 @@
       "content": "/** @jsxRuntime classic */\n/** @jsx jsx */\nimport type { Descendant } from 'platejs';\n\nimport { jsx } from '@platejs/test-utils';\n\njsx;\n\nexport const createMultiEditorsValue = () => {\n  const multiEditors: Descendant[][] = [];\n\n  for (let h = 0; h < 300; h++) {\n    const multiEditor: Descendant[] = [];\n    multiEditor.push(\n      (<hh1>Amet duis nisi ea enim laborum laboris.</hh1>) as any\n    );\n\n    for (let p = 0; p < 2; p++) {\n      multiEditor.push(\n        (\n          <hp>\n            Laborum dolor et tempor consectetur amet ullamco consectetur ullamco\n            irure incididunt reprehenderit ullamco nulla tempor. Laboris veniam\n            commodo id in ex ullamco incididunt nulla eu Lorem adipisicing\n            deserunt duis ad. Mollit magna enim exercitation amet proident\n            reprehenderit magna nulla officia ad in non. Magna magna adipisicing\n            fugiat cillum do esse eu adipisicing. Culpa dolor non Lorem. Dolore\n            non voluptate velit in eu culpa velit. Exercitation fugiat cupidatat\n            adipisicing duis veniam proident irure ea excepteur aliqua esse ad\n            cupidatat adipisicing id. Ut exercitation proident ea eiusmod enim\n            non minim proident Lorem aliqua officia voluptate ullamco culpa\n            Lorem. Exercitation eiusmod dolor nostrud qui excepteur. Dolor\n            commodo duis reprehenderit excepteur laboris do minim qui.\n          </hp>\n        ) as any\n      );\n    }\n\n    multiEditors.push(multiEditor);\n  }\n\n  return multiEditors;\n};\n",
       "type": "registry:example"
     }
-  ]
+  ],
+  "type": "registry:example"
 }

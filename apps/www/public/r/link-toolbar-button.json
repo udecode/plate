@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "link-toolbar-button",
-  "type": "registry:ui",
   "title": "Link Toolbar Button",
   "description": "A toolbar control for link management.",
   "dependencies": [
@@ -30,5 +29,6 @@
       "link-demo",
       "link-pro"
     ]
-  }
+  },
+  "type": "registry:ui"
 }

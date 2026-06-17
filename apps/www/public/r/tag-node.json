@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "tag-node",
-  "type": "registry:ui",
   "title": "Tag Element",
   "description": "A tag element component with selection states and styling.",
   "dependencies": [],
@@ -22,5 +21,6 @@
     "examples": [
       "select-editor-demo"
     ]
-  }
+  },
+  "type": "registry:ui"
 }

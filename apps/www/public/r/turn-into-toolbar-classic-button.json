@@ -1,12 +1,11 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "turn-into-toolbar-classic-button",
-  "type": "registry:ui",
   "title": "Turn Into Toolbar Classic Button",
   "description": "A dropdown to convert block types with classic list support.",
   "dependencies": [],
   "registryDependencies": [
-    "@shadcn/dropdown-menu",
+    "dropdown-menu",
     "https://platejs.org/r/toolbar.json",
     "https://platejs.org/r/transforms-classic.json"
   ],
@@ -21,5 +20,6 @@
     "examples": [
       "list-classic-demo"
     ]
-  }
+  },
+  "type": "registry:ui"
 }

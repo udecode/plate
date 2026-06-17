@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-06-14-fix-shadcn-editor-kit-install-paths",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-06-14-fix-shadcn-editor-kit-install-paths.mdx"
+  },
+  "change": {
+    "type": "pull_request",
+    "date": "2026-06-14",
+    "commits": [
+      {
+        "sha": "129a4b4644b17db4ba5adef56a43233dc24e5be6",
+        "shortSha": "129a4b4644",
+        "url": "https://github.com/udecode/plate/commit/129a4b4644b17db4ba5adef56a43233dc24e5be6",
+        "date": "2026-06-14",
+        "committedAt": "2026-06-14T14:08:43+02:00",
+        "subject": "Fix shadcn editor kit install paths"
+      }
+    ],
+    "pullRequest": {
+      "number": 5013,
+      "url": "https://github.com/udecode/plate/pull/5013",
+      "state": "OPEN",
+      "title": "Fix shadcn editor kit install paths"
+    }
+  },
+  "release": {
+    "status": "latest",
+    "source": "open-pull-request"
+  },
+  "kind": "behavior",
+  "summary": "Fix shadcn editor kit install paths",
+  "targets": [
+    {
+      "name": "editor-base-kit",
+      "files": ["apps/www/src/registry/components/editor/editor-base-kit.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "editor-kit",
+      "files": [
+        "apps/www/src/registry/blocks/editor-ai/components/editor/editor-kit.tsx",
+        "apps/www/src/registry/components/editor/editor-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-06-14-32-3-editor-install-kit-files-through-fbf1a92f",
+      "kind": "behavior",
+      "summary": "Install editor kit files through the configured components alias so relative `./plugins/*` imports resolve after shadcn CLI adds.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["editor-base-kit", "editor-kit"],
+      "source": {
+        "line": 13,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-06-14",
+          "entry": "32.3",
+          "section": "June 2026 #32"
+        }
+      }
+    }
+  ],
+  "diagnostics": [
+    {
+      "severity": "warning",
+      "code": "release-missing",
+      "message": "No generated release-index entry found for PR 5013."
+    },
+    {
+      "severity": "warning",
+      "code": "pull-request-not-merged",
+      "message": "Matched PR 5013, but it is OPEN."
+    }
+  ]
+}

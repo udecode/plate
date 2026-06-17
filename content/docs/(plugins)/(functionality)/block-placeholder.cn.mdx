@@ -124,10 +124,12 @@ BlockPlaceholderPlugin.configure({
 当满足以下所有条件时，插件会显示占位符：
 
 1. 块为空（不含内容）
-2. 编辑器不为空（有其他内容）
+2. 编辑器不是初始单空块状态；带可见结构状态的空列表项也符合条件
 3. 编辑器处于聚焦状态
 4. 块符合查询函数条件
 5. 块类型匹配 placeholders 映射中的键
+
+初始空状态检查使用 `editor.api.isElementStateEmpty`，因此只把 `type` 和插件通过 `node.isMetadataProp` 声明为空的属性视为空状态元数据。
 
 <API name="BlockPlaceholderPlugin">
 <APIOptions>

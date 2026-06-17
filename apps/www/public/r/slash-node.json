@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "slash-node",
-  "type": "registry:ui",
   "title": "Slash Input Element",
   "description": "A command input component for inserting various elements.",
   "dependencies": [
@@ -32,5 +31,6 @@
       "slash-command-demo",
       "slash-command-pro"
     ]
-  }
+  },
+  "type": "registry:ui"
 }

@@ -483,11 +483,13 @@ function CommandMenuKbd({ className, ...props }: React.ComponentProps<'kbd'>) {
 export function CommandMenuDialog({
   navItems,
   onOpenChange,
+  onReady,
   open,
   sidebarNav,
 }: {
   navItems: MainNavItem[];
   onOpenChange: NonNullable<DialogProps['onOpenChange']>;
+  onReady?: () => void;
   open: boolean;
   sidebarNav: SidebarNavItem[];
 }) {
@@ -498,7 +500,9 @@ export function CommandMenuDialog({
   const [copyLabel, setCopyLabel] = React.useState('');
   const [copyPayload, setCopyPayload] = React.useState('');
   const [commandSearch, setCommandSearch] = React.useState('');
+  const [selectedCommandValue, setSelectedCommandValue] = React.useState('');
   const [selectedAction, setSelectedAction] = React.useState(content.goToPage);
+  const commandListRef = React.useRef<HTMLDivElement>(null);
   const docsSearchTimeoutRef = React.useRef<NodeJS.Timeout | undefined>(
     undefined
   );
@@ -519,17 +523,23 @@ export function CommandMenuDialog({
     minSearchLength: MIN_DOC_SEARCH_LENGTH,
   });
 
+  React.useEffect(() => {
+    onReady?.();
+  }, [onReady]);
+
   const updateOpen = React.useCallback(
     (nextOpen: boolean) => {
       onOpenChange(nextOpen);
 
       if (nextOpen) {
+        setSelectedCommandValue('');
         setSelectedAction(content.goToPage);
         setCopyLabel('');
         setCopyPayload('');
       } else {
         setRenderDelayedGroups(false);
         setCommandSearch('');
+        setSelectedCommandValue('');
         setDocsSearch('');
         setCopyLabel('');
         setCopyPayload('');
@@ -542,6 +552,35 @@ export function CommandMenuDialog({
     },
     [content.goToPage, onOpenChange, setDocsSearch]
   );
+
+  React.useLayoutEffect(() => {
+    if (!open) {
+      return;
+    }
+
+    const frame = requestAnimationFrame(() => {
+      const list = commandListRef.current;
+      const firstValue = list
+        ?.querySelector<HTMLElement>('[cmdk-item]:not([aria-disabled="true"])')
+        ?.getAttribute('data-value');
+
+      if (firstValue) {
+        setSelectedCommandValue(firstValue);
+      }
+
+      if (list) {
+        list.scrollTop = 0;
+      }
+    });
+
+    return () => cancelAnimationFrame(frame);
+  }, [
+    commandSearch,
+    docsSearchState.shouldShowSearchResults,
+    open,
+    query.data,
+    renderDelayedGroups,
+  ]);
 
   const setHighlightedCommand = React.useCallback<HighlightCommand>(
     (label, payload = '', display = payload) => {
@@ -618,6 +657,10 @@ export function CommandMenuDialog({
         value.trim().length >= MIN_DOC_SEARCH_LENGTH ? value : '';
 
       setCommandSearch(value);
+      setSelectedCommandValue('');
+      setSelectedAction(content.goToPage);
+      setCopyLabel('');
+      setCopyPayload('');
 
       if (docsSearchTimeoutRef.current) {
         clearTimeout(docsSearchTimeoutRef.current);
@@ -638,12 +681,15 @@ export function CommandMenuDialog({
         });
       }, DOC_SEARCH_DEBOUNCE_MS);
     },
-    [setDocsSearch]
+    [content.goToPage, setDocsSearch]
   );
 
   return (
     <Dialog open={open} onOpenChange={updateOpen}>
-      <DialogContent className="top-[15%]! max-w-[calc(100%-2rem)] translate-y-0! overflow-hidden rounded-xl border-none bg-clip-padding p-2 pb-11 shadow-2xl ring-4 ring-neutral-200/80 sm:max-w-lg dark:bg-neutral-900 dark:ring-neutral-800 [&>button]:hidden">
+      <DialogContent
+        className="top-[15%]! max-w-[calc(100%-2rem)] !duration-0 translate-y-0! overflow-hidden rounded-xl border-none bg-clip-padding p-2 pb-11 shadow-2xl ring-4 ring-neutral-200/80 data-[state=closed]:!animate-none data-[state=open]:!animate-none sm:max-w-lg dark:bg-neutral-900 dark:ring-neutral-800 [&>button]:hidden"
+        overlayClassName="data-[state=closed]:!animate-none data-[state=open]:!animate-none"
+      >
         <DialogHeader className="sr-only">
           <DialogTitle>{content.search}</DialogTitle>
           <DialogDescription>{content.searchDescription}</DialogDescription>
@@ -651,6 +697,8 @@ export function CommandMenuDialog({
         <Command
           className="rounded-none bg-transparent **:data-[slot=command-input-wrapper]:mb-0 **:data-[slot=command-input-wrapper]:h-9! **:data-[slot=command-input]:h-9! **:data-[slot=command-input-wrapper]:rounded-md **:data-[slot=command-input-wrapper]:border **:data-[slot=command-input-wrapper]:border-input **:data-[slot=command-input-wrapper]:bg-input/50 **:data-[slot=command-input]:py-0 [&_[cmdk-item]_svg]:size-5"
           filter={commandFilter}
+          value={selectedCommandValue}
+          onValueChange={setSelectedCommandValue}
         >
           <div className="relative">
             <CommandInput
@@ -666,17 +714,10 @@ export function CommandMenuDialog({
           <CommandEmpty className="py-12 text-center text-muted-foreground text-sm">
             {docsSearchState.isPending ? content.searching : content.noResults}
           </CommandEmpty>
-          <CommandList className="no-scrollbar min-h-80 scroll-pt-2 scroll-pb-1.5">
-            <SearchResults
-              content={content}
-              locale={locale}
-              query={query}
-              search={docsSearch}
-              showResults={docsSearchState.shouldShowSearchResults}
-              onHighlight={setHighlightedCommand}
-              setOpen={updateOpen}
-            />
-
+          <CommandList
+            ref={commandListRef}
+            className="no-scrollbar min-h-80 scroll-pt-2 scroll-pb-1.5"
+          >
             <CommandGroup
               heading={content.pages}
               className={commandMenuGroupClassName}
@@ -779,6 +820,16 @@ export function CommandMenuDialog({
                 )}
               </>
             ) : null}
+
+            <SearchResults
+              content={content}
+              locale={locale}
+              query={query}
+              search={docsSearch}
+              showResults={docsSearchState.shouldShowSearchResults}
+              onHighlight={setHighlightedCommand}
+              setOpen={updateOpen}
+            />
           </CommandList>
         </Command>
         <div className="absolute inset-x-0 bottom-0 z-20 flex h-10 items-center gap-2 rounded-b-xl border-t border-t-neutral-100 bg-neutral-50 px-4 font-medium text-muted-foreground text-xs dark:border-t-neutral-700 dark:bg-neutral-800">

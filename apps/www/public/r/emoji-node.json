@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "emoji-node",
-  "type": "registry:ui",
   "title": "Emoji Input Element",
   "description": "An input component for emoji search and insertion.",
   "dependencies": [
@@ -31,5 +30,6 @@
     "examples": [
       "emoji-demo"
     ]
-  }
+  },
+  "type": "registry:ui"
 }

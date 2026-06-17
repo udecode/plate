@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "hr-node",
-  "type": "registry:ui",
   "title": "Horizontal Rule Element",
   "description": "A horizontal rule component with focus states.",
   "dependencies": [],
@@ -30,5 +29,6 @@
     "examples": [
       "basic-blocks-demo"
     ]
-  }
+  },
+  "type": "registry:ui"
 }

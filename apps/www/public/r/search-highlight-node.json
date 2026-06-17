@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "search-highlight-node",
-  "type": "registry:ui",
   "title": "Search Highlight Leaf",
   "description": "A component that highlights search results in text.",
   "dependencies": [],
@@ -19,5 +18,6 @@
         "route": "/docs/highlight"
       }
     ]
-  }
+  },
+  "type": "registry:ui"
 }

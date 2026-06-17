@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "media-file-node",
-  "type": "registry:ui",
   "title": "Media File Element",
   "description": "A file attachment component with download capability and caption.",
   "dependencies": [
@@ -36,5 +35,6 @@
       "media-demo",
       "media-pro"
     ]
-  }
+  },
+  "type": "registry:ui"
 }

@@ -1,14 +1,13 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "toggle-node",
-  "type": "registry:ui",
   "title": "Toggle Element",
   "description": "A collapsible component for toggling content visibility.",
   "dependencies": [
     "@platejs/toggle"
   ],
   "registryDependencies": [
-    "@shadcn/button"
+    "button"
   ],
   "files": [
     {
@@ -31,5 +30,6 @@
     "examples": [
       "toggle-demo"
     ]
-  }
+  },
+  "type": "registry:ui"
 }

@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "callout-base-kit",
-  "type": "registry:component",
   "dependencies": [
     "@platejs/callout"
   ],
@@ -12,7 +11,9 @@
     {
       "path": "src/registry/components/editor/plugins/callout-base-kit.tsx",
       "content": "import { BaseCalloutPlugin } from '@platejs/callout';\n\nimport { CalloutElementStatic } from '@/registry/ui/callout-node-static';\n\nexport const BaseCalloutKit = [\n  BaseCalloutPlugin.withComponent(CalloutElementStatic),\n];\n",
-      "type": "registry:component"
+      "type": "registry:component",
+      "target": "@components/editor/plugins/callout-base-kit.tsx"
     }
-  ]
+  ],
+  "type": "registry:component"
 }

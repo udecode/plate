@@ -32,12 +32,83 @@ describe('markdownToSlateNodesSafely', () => {
     ]);
   });
 
+  it('keeps incomplete inline MDX text out of the previous marked text leaf', () => {
+    const editor = createTestEditor();
+
+    expect(markdownToSlateNodesSafely(editor, '**bold**<u>')).toEqual([
+      {
+        children: [
+          { bold: true, text: 'bold' },
+          {
+            text: '<u>',
+          },
+        ],
+        type: 'p',
+      },
+    ]);
+  });
+
+  it('preserves marked leaves in the incomplete inline MDX fallback tail', () => {
+    const editor = createTestEditor();
+
+    expect(markdownToSlateNodesSafely(editor, 'plain <u> **bold**')).toEqual([
+      {
+        children: [
+          { text: 'plain' },
+          { text: '<u>' },
+          { text: ' ' },
+          { bold: true, text: 'bold' },
+        ],
+        type: 'p',
+      },
+    ]);
+  });
+
   it('wraps incomplete inline MDX in a new paragraph when there are no complete blocks', () => {
     const editor = createTestEditor();
 
     expect(markdownToSlateNodesSafely(editor, '<u>')).toEqual([
       {
         children: [{ text: '<u>' }],
+        type: 'p',
+      },
+    ]);
+  });
+
+  it('falls back to editable text for malformed html-like mdx', () => {
+    const editor = createTestEditor();
+
+    expect(markdownToSlateNodesSafely(editor, String.raw`</ph\><`)).toEqual([
+      {
+        children: [{ text: '</ph><' }],
+        type: 'p',
+      },
+    ]);
+  });
+
+  it('preserves completed MDX member tags before an incomplete tail', () => {
+    const editor = createTestEditor();
+
+    expect(
+      markdownToSlateNodesSafely(editor, '<Foo.Bar>ok</Foo.Bar><u>', {
+        rules: {
+          'Foo.Bar': {
+            deserialize: () => ({
+              children: [{ text: 'member' }],
+              type: 'member',
+            }),
+          },
+        },
+      })
+    ).toEqual([
+      {
+        children: [
+          {
+            children: [{ text: 'member' }],
+            type: 'member',
+          },
+          { text: '<u>' },
+        ],
         type: 'p',
       },
     ]);

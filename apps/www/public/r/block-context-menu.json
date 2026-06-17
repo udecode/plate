@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "block-context-menu",
-  "type": "registry:ui",
   "title": "Block Context Menu",
   "description": "A context menu for block-level operations.",
   "dependencies": [
@@ -9,8 +8,8 @@
     "@platejs/selection"
   ],
   "registryDependencies": [
-    "@shadcn/calendar",
-    "@shadcn/context-menu",
+    "calendar",
+    "context-menu",
     "https://platejs.org/r/use-is-touch-device.json"
   ],
   "files": [
@@ -33,5 +32,6 @@
       "block-menu-demo",
       "block-menu-pro"
     ]
-  }
+  },
+  "type": "registry:ui"
 }

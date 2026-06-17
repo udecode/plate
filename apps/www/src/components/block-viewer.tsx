@@ -2,56 +2,30 @@
 
 import * as React from 'react';
 
-import type {
-  createFileTreeForRegistryItemFiles,
-  FileTree,
-} from '@/lib/rehype-utils';
+import type { createFileTreeForRegistryItemFiles } from '@/lib/rehype-utils';
 import type { ImperativePanelHandle } from 'react-resizable-panels';
 import type { registryItemFileSchema, registryItemSchema } from 'shadcn/schema';
 import type { z } from 'zod';
 
 import {
   Check,
-  ChevronRight,
-  Clipboard,
-  File,
-  Folder,
   Fullscreen,
   Monitor,
-  Package,
   RotateCw,
   Smartphone,
   Tablet,
   Terminal,
 } from 'lucide-react';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 
-import { CopyNpmCommandButton } from '@/components/copy-button';
-import { getIconForLanguageExtension } from '@/components/icons';
 import { Button, buttonVariants } from '@/components/ui/button';
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@/components/ui/collapsible';
 import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
 } from '@/components/ui/resizable';
 import { Separator } from '@/components/ui/separator';
-import {
-  Sidebar,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarMenuSub,
-  SidebarProvider,
-} from '@/components/ui/sidebar';
-import { Spinner } from '@/components/ui/spinner';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { siteConfig } from '@/config/site';
@@ -62,7 +36,7 @@ import {
 } from '@/lib/registry-install';
 import { cn } from '@/lib/utils';
 
-type BlockViewerContext = {
+export type BlockViewerContext = {
   activeFile: string | null;
   dependencies: string[];
   highlightedFiles:
@@ -74,6 +48,7 @@ type BlockViewerContext = {
   item: z.infer<typeof registryItemSchema> & {
     meta?: {
       descriptionSrc?: string;
+      iframeMinWidth?: number;
       isPro?: boolean;
       src?: string;
     };
@@ -86,6 +61,10 @@ type BlockViewerContext = {
   setIframeKey: React.Dispatch<React.SetStateAction<number>>;
   setView: (view: 'code' | 'preview') => void;
 };
+
+const LazyBlockViewerCode = dynamic(() =>
+  import('./block-viewer-code').then((module) => module.BlockViewerCode)
+);
 
 const BlockViewerContext = React.createContext<BlockViewerContext | null>(null);
 
@@ -102,7 +81,7 @@ async function fetchRegistryFiles(itemName: string) {
   return data.files as BlockViewerContext['highlightedFiles'];
 }
 
-function useBlockViewer() {
+export function useBlockViewer() {
   const context = React.useContext(BlockViewerContext);
 
   if (!context) {
@@ -114,7 +93,17 @@ function useBlockViewer() {
   return context;
 }
 
-function BlockViewerProvider({
+export function BlockViewerCodeSlot({ size }: { size?: 'default' | 'sm' }) {
+  const { view } = useBlockViewer();
+
+  if (view !== 'code') {
+    return null;
+  }
+
+  return <LazyBlockViewerCode size={size} />;
+}
+
+export function BlockViewerProvider({
   children,
   defaultView = 'preview',
   dependencies,
@@ -400,6 +389,7 @@ function BlockViewerView({
   const { iframeKey, item, resizablePanelRef } = useBlockViewer();
   const previewNode =
     typeof preview === 'function' ? preview({ iframeKey, item }) : preview;
+  const iframeMinWidth = item.meta?.iframeMinWidth;
 
   return (
     <div
@@ -436,15 +426,27 @@ function BlockViewerView({
             /> */}
 
             {previewNode ?? (
-              <iframe
-                key={iframeKey}
-                // className="chunk-mode relative z-20 hidden w-full bg-background md:block"
-                className="chunk-mode relative z-20 size-full bg-background"
-                title={item.name}
-                height={item.meta?.iframeHeight ?? '100%'}
-                sandbox="allow-scripts allow-same-origin allow-top-navigation allow-forms"
-                src={item.meta?.src ?? `/view/${item.name}`}
-              />
+              <div
+                className={cn(
+                  'size-full',
+                  iframeMinWidth && 'overflow-x-auto overflow-y-hidden'
+                )}
+              >
+                <iframe
+                  key={iframeKey}
+                  // className="chunk-mode relative z-20 hidden w-full bg-background md:block"
+                  className="chunk-mode relative z-20 size-full bg-background"
+                  title={item.name}
+                  height={item.meta?.iframeHeight ?? '100%'}
+                  sandbox="allow-scripts allow-same-origin allow-top-navigation allow-forms"
+                  src={item.meta?.src ?? `/view/${item.name}`}
+                  style={
+                    iframeMinWidth
+                      ? { minWidth: `${iframeMinWidth}px` }
+                      : undefined
+                  }
+                />
+              </div>
             )}
           </ResizablePanel>
           <ResizableHandle className="after:-translate-x-px after:-translate-y-1/2 relative hidden w-3 bg-transparent p-0 after:absolute after:top-1/2 after:right-0 after:h-8 after:w-[6px] after:rounded-full after:bg-border after:transition-all hover:after:h-10 md:block" />
@@ -452,192 +454,6 @@ function BlockViewerView({
         </ResizablePanelGroup>
       </div>
     </div>
-  );
-}
-
-function BlockViewerCode({ size }: { size?: 'default' | 'sm' }) {
-  const { activeFile, dependencies, highlightedFiles, isLoading, view } =
-    useBlockViewer();
-  const deps = dependencies.join(' ');
-
-  const file = highlightedFiles?.find((file) => file.target === activeFile);
-
-  if (view !== 'code') {
-    return null;
-  }
-
-  if (!file?.content && isLoading) {
-    return (
-      <div className="mr-[14px] flex overflow-hidden rounded-xl border bg-code text-code-foreground group-data-[view=preview]/block-view-wrapper:hidden md:h-(--height)">
-        <BlockViewerFileTree size={size} />
-        <div className="flex min-w-0 flex-1 flex-col items-center justify-center">
-          <Spinner />
-        </div>
-      </div>
-    );
-  }
-  if (!file) {
-    return null;
-  }
-
-  const language = file.path.split('.').pop() ?? 'tsx';
-
-  return (
-    <div className="mr-[14px] flex overflow-hidden rounded-xl border bg-code text-code-foreground group-data-[view=preview]/block-view-wrapper:hidden md:h-(--height)">
-      <BlockViewerFileTree size={size} />
-      <figure
-        className="mx-0! mt-0 flex min-w-0 flex-1 flex-col rounded-xl border-none"
-        data-rehype-pretty-code-figure=""
-      >
-        <figcaption
-          className="flex h-12 shrink-0 items-center gap-2 border-b px-4 py-2 text-code-foreground [&_svg]:size-4 [&_svg]:text-code-foreground [&_svg]:opacity-70"
-          data-language={language}
-        >
-          {getIconForLanguageExtension(language)}
-          {file.target}
-          <div className="ml-auto flex items-center gap-2">
-            {dependencies.length > 0 && (
-              <CopyNpmCommandButton
-                className="size-7 rounded-lg bg-transparent p-0 text-code-foreground shadow-none hover:bg-muted-foreground/15 hover:text-code-foreground focus:bg-muted-foreground/15 focus:text-code-foreground focus-visible:bg-muted-foreground/15 focus-visible:text-code-foreground active:bg-muted-foreground/15 active:text-code-foreground [&>svg]:size-3"
-                commands={{
-                  __bunCommand__: `bun add ${deps}`,
-                  __npmCommand__: `npm install ${deps}`,
-                  __pnpmCommand__: `pnpm add ${deps}`,
-                  __yarnCommand__: `yarn add ${deps}`,
-                }}
-                icon={<Package />}
-              />
-            )}
-
-            <BlockCopyCodeButton />
-          </div>
-        </figcaption>
-        <div
-          key={file?.path}
-          className="no-scrollbar overflow-y-auto"
-          dangerouslySetInnerHTML={{ __html: file?.highlightedContent ?? '' }}
-        />
-      </figure>
-    </div>
-  );
-}
-
-export function BlockViewerFileTree({ size }: { size?: 'default' | 'sm' }) {
-  const { highlightedFiles, tree } = useBlockViewer();
-
-  if (!tree || highlightedFiles?.length === 1) {
-    return null;
-  }
-
-  return (
-    <div className={cn('w-72 shrink-0', size === 'sm' && 'w-60')}>
-      <SidebarProvider className="flex min-h-full! flex-col border-r">
-        <Sidebar
-          className="min-h-0 w-full flex-1 overflow-y-auto overflow-x-hidden"
-          collapsible="none"
-        >
-          <SidebarGroupLabel className="h-12 rounded-none border-b px-4 text-sm">
-            Files
-          </SidebarGroupLabel>
-          <SidebarGroup className="p-0">
-            <SidebarGroupContent>
-              <SidebarMenu className="translate-x-0 gap-1.5">
-                {tree.map((file, index) => (
-                  <Tree key={index} index={1} item={file} />
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        </Sidebar>
-      </SidebarProvider>
-    </div>
-  );
-}
-
-function Tree({ index, item }: { index: number; item: FileTree }) {
-  const { activeFile, setActiveFile } = useBlockViewer();
-
-  if (!item.children) {
-    return (
-      <SidebarMenuItem>
-        <SidebarMenuButton
-          className={cn(
-            'whitespace-nowrap rounded-none pl-(--index) hover:bg-muted-foreground/15 focus:bg-muted-foreground/15 focus-visible:bg-muted-foreground/15 active:bg-muted-foreground/15 data-[active=true]:bg-muted-foreground/15'
-          )}
-          style={
-            {
-              '--index': `${index * (index === 2 ? 1.2 : 1.3)}rem`,
-            } as React.CSSProperties
-          }
-          onClick={() => item.path && setActiveFile(item.path)}
-          data-index={index}
-          isActive={item.path === activeFile}
-        >
-          <ChevronRight className="invisible shrink-0" />
-          <File className="size-4 shrink-0" />
-          <span className="truncate">{item.name}</span>
-        </SidebarMenuButton>
-      </SidebarMenuItem>
-    );
-  }
-
-  return (
-    <SidebarMenuItem>
-      <Collapsible
-        className="group/collapsible [&[data-state=open]>button>svg:first-child]:rotate-90"
-        defaultOpen
-      >
-        <CollapsibleTrigger asChild>
-          <SidebarMenuButton
-            className={cn(
-              'whitespace-nowrap rounded-none pl-(--index) hover:bg-muted-foreground/15 focus:bg-muted-foreground/15 focus-visible:bg-muted-foreground/15 active:bg-muted-foreground/15 data-[active=true]:bg-muted-foreground/15 data-[state=open]:hover:bg-muted-foreground/15'
-            )}
-            style={
-              {
-                '--index': `${index * (index === 1 ? 1 : 1.2)}rem`,
-              } as React.CSSProperties
-            }
-          >
-            <ChevronRight className="size-4 shrink-0 transition-transform" />
-            <Folder className="size-4 shrink-0" />
-            <span className="truncate">{item.name}</span>
-          </SidebarMenuButton>
-        </CollapsibleTrigger>
-        <CollapsibleContent>
-          <SidebarMenuSub className="m-0 w-full translate-x-0 border-none p-0">
-            {item.children.map((subItem, key) => (
-              <Tree key={key} index={index + 1} item={subItem} />
-            ))}
-          </SidebarMenuSub>
-        </CollapsibleContent>
-      </Collapsible>
-    </SidebarMenuItem>
-  );
-}
-
-function BlockCopyCodeButton() {
-  const { activeFile, highlightedFiles } = useBlockViewer();
-  const { copyToClipboard, isCopied } = useCopyToClipboard();
-
-  const file = highlightedFiles?.find((file) => file.target === activeFile);
-
-  const content = file?.content;
-
-  if (!content) {
-    return null;
-  }
-
-  return (
-    <Button
-      size="icon"
-      variant="ghost"
-      className="size-7 shrink-0 rounded-lg p-0 hover:bg-muted-foreground/15 focus:bg-muted-foreground/15 focus-visible:bg-muted-foreground/15 active:bg-muted-foreground/15 data-[active=true]:bg-muted-foreground/15 [&>svg]:size-3"
-      onClick={() => {
-        copyToClipboard(content);
-      }}
-    >
-      {isCopied ? <Check /> : <Clipboard />}
-    </Button>
   );
 }
 
@@ -663,7 +479,7 @@ export function BlockViewer({
     <BlockViewerProvider {...props}>
       <BlockViewerToolbar block={block} />
       <BlockViewerView height={height} preview={preview} />
-      <BlockViewerCode size={block ? 'default' : 'sm'} />
+      <BlockViewerCodeSlot size={block ? 'default' : 'sm'} />
     </BlockViewerProvider>
   );
 }
@@ -676,7 +492,7 @@ export function BlockCode({
 >) {
   return (
     <BlockViewerProvider defaultView="code" {...props}>
-      <BlockViewerCode size="sm" />
+      <BlockViewerCodeSlot size="sm" />
     </BlockViewerProvider>
   );
 }

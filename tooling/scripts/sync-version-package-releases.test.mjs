@@ -100,13 +100,35 @@ test('filters unmerged Version Packages PRs from release history', () => {
         title: '[Release] Version packages',
       },
       {
-        mergedAt: '2026-04-29T07:11:20Z',
+        mergedAt: '2026-05-01T07:11:20Z',
         number: 3,
+        title: '[Release] Version packages (beta)',
+      },
+      {
+        mergedAt: '2026-04-29T07:11:20Z',
+        number: 4,
         title: 'docs: update releases',
       },
     ]).map((pullRequest) => pullRequest.number),
-    [2]
+    [2, 3]
   );
+});
+
+test('parses beta Version Packages PR titles', () => {
+  const [release] = parseVersionPackagesPullRequest({
+    body: `# Releases
+## @platejs/core@54.0.0-beta.1
+
+### Patch Changes
+
+-   [#5030](https://github.com/udecode/plate/pull/5030) by [@zbeyens](https://github.com/zbeyens) – Prepare beta release.
+`,
+    mergedAt: '2026-06-16T00:00:00Z',
+    title: '[Release] Version packages (beta)',
+    url: 'https://github.com/udecode/plate/pull/5033',
+  });
+
+  assert.equal(release.tag, 'v54.0.0-beta.1');
 });
 
 test('falls back to first package tag and builds compare URLs', () => {

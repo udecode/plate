@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "editor-select",
-  "type": "registry:block",
   "description": "A multi-select editor",
   "dependencies": [],
   "registryDependencies": [
@@ -21,5 +20,6 @@
   },
   "categories": [
     "Editors"
-  ]
+  ],
+  "type": "registry:block"
 }

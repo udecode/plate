@@ -3,6 +3,7 @@
  */
 
 export * from './hocuspocus-provider';
+export * from './indexeddb-provider';
 export * from './registry';
 export * from './types';
 export * from './webrtc-provider';

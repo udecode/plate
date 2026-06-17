@@ -1,0 +1,204 @@
+name: Verify Changesets
+
+on:
+  pull_request:
+    types: [opened, synchronize, labeled, unlabeled, edited]
+    branches:
+      - main
+      - next
+      - 'release/**'
+  merge_group:
+
+permissions: {}
+
+jobs:
+  verify:
+    name: Verify changeset policy
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+
+    steps:
+      - name: Skip merge queue
+        if: github.event_name == 'merge_group'
+        run: echo "Skipping merge_group; this policy runs on the source PR."
+
+      - name: 🛡️ Verify changeset policy
+        if: github.event_name != 'merge_group'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const changesetFrontmatterPattern = /^---\r?\n([\s\S]*?)\r?\n---/;
+            const changesetReleaseTypePattern = /:\s*(major|minor|patch)\b/g;
+            const changesetFilenamePattern = /^[a-z][a-z0-9-]*\.md$/;
+
+            function isChangesetFile(file) {
+              return (
+                file.filename.startsWith('.changeset/') &&
+                file.filename.endsWith('.md') &&
+                file.filename !== '.changeset/README.md' &&
+                file.status !== 'removed'
+              );
+            }
+
+            function getAddedPatchContent(patch = '') {
+              return patch
+                .split('\n')
+                .filter((line) => line.startsWith('+') && !line.startsWith('+++'))
+                .map((line) => line.slice(1))
+                .join('\n');
+            }
+
+            function getChangesetContent(file) {
+              return getAddedPatchContent(file.patch);
+            }
+
+            function parseChangesetReleaseTypes(content) {
+              const frontmatter = content.match(changesetFrontmatterPattern)?.[1];
+
+              return [...(frontmatter ?? '').matchAll(changesetReleaseTypePattern)].map(
+                (match) => match[1]
+              );
+            }
+
+            function getChangesetReleaseTypes(files) {
+              return files
+                .filter(isChangesetFile)
+                .flatMap((file) => parseChangesetReleaseTypes(getChangesetContent(file)));
+            }
+
+            function getChangesetReleaseType(files) {
+              const releaseTypes = getChangesetReleaseTypes(files);
+              if (releaseTypes.includes('major')) return 'major';
+              if (releaseTypes.includes('minor')) return 'minor';
+              if (releaseTypes.includes('patch')) return 'patch';
+
+              return null;
+            }
+
+            function validateChangesetFile(file) {
+              const basename = file.filename.split('/').pop() ?? '';
+              const errors = [];
+
+              if (!changesetFilenamePattern.test(basename)) {
+                errors.push(
+                  `${file.filename} has an invalid filename. Use lowercase letters, digits, and hyphens.`
+                );
+              }
+
+              const content = getChangesetContent(file);
+              const frontmatter = content.match(changesetFrontmatterPattern)?.[1];
+
+              if (!frontmatter) {
+                errors.push(`${file.filename} is missing YAML frontmatter.`);
+                return errors;
+              }
+
+              const entries = frontmatter
+                .split(/\r?\n/)
+                .map((line) => line.trim())
+                .filter(Boolean);
+
+              if (entries.length !== 1) {
+                errors.push(`${file.filename} must declare exactly one package.`);
+              }
+
+              for (const entry of entries) {
+                if (!/^"[^"]+"\s*:\s*(major|minor|patch|none)$/.test(entry)) {
+                  errors.push(`${file.filename} has invalid changeset frontmatter: ${entry}`);
+                }
+              }
+
+              return errors;
+            }
+
+            function getChangesetValidationErrors(files) {
+              return files.filter(isChangesetFile).flatMap(validateChangesetFile);
+            }
+
+            const pullRequest = context.payload.pull_request;
+            const baseRef = pullRequest.base.ref;
+            const headRef = pullRequest.head.ref;
+            const headRepo = pullRequest.head.repo.full_name;
+            const upstreamRepo = `${context.repo.owner}/${context.repo.repo}`;
+            const files = await github.paginate(github.rest.pulls.listFiles, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: pullRequest.number,
+              per_page: 100,
+            });
+            const failures = [];
+
+            if (
+              baseRef === 'main' &&
+              files.some((file) => file.filename === '.changeset/pre.json' && file.status !== 'removed')
+            ) {
+              failures.push('.changeset/pre.json must not be committed to main. Pre-release mode belongs on next.');
+            }
+
+            if (headRepo === upstreamRepo) {
+              if (headRef.startsWith('changeset-release/')) {
+                if (failures.length > 0) {
+                  core.setFailed(failures.map((failure) => `- ${failure}`).join('\n'));
+                  return;
+                }
+                core.info('Verification exempt: release PR from changeset-release/* branch.');
+                return;
+              }
+
+              if (headRef === 'next' && baseRef === 'main') {
+                if (failures.length > 0) {
+                  core.setFailed(failures.map((failure) => `- ${failure}`).join('\n'));
+                  return;
+                }
+                core.info('Verification exempt: next -> main promotion PR.');
+                return;
+              }
+
+              if (headRef === 'main' && baseRef === 'next') {
+                core.info('Verification exempt: manual main -> next sync PR.');
+                return;
+              }
+            }
+
+            const labels = new Set((pullRequest.labels ?? []).map((label) => label.name));
+
+            const changesetFiles = files.filter(isChangesetFile);
+
+            if (changesetFiles.length === 0) {
+              const hasPackageChanges = files.some((file) => file.filename.startsWith('packages/'));
+
+              if (hasPackageChanges && !labels.has('skip-changeset')) {
+                failures.push("Missing changeset. Add one with 'pnpm changeset' or add the skip-changeset label.");
+              }
+            } else {
+              failures.push(...getChangesetValidationErrors(files));
+            }
+
+            const releaseTypes = getChangesetReleaseTypes(files);
+            const hasMajorChangeset = releaseTypes.includes('major');
+            const hasMinorChangeset = releaseTypes.includes('minor');
+            const releaseType = getChangesetReleaseType(files);
+
+            if (baseRef === 'main' && hasMajorChangeset) {
+              failures.push(`Changeset contains a major bump. Major bumps target next for beta before stable promotion.`);
+            }
+
+            if (baseRef === 'next' && hasMinorChangeset) {
+              failures.push(`Changeset contains a minor bump. Minor bumps target main; next is only for major beta work.`);
+            }
+
+            if (
+              baseRef.startsWith('release/') &&
+              (hasMinorChangeset || hasMajorChangeset)
+            ) {
+              failures.push(`Changeset contains a ${releaseType} bump. Only patch bumps are allowed on ${baseRef}.`);
+            }
+
+            if (failures.length > 0) {
+              core.setFailed(failures.map((failure) => `- ${failure}`).join('\n'));
+              return;
+            }
+
+            core.info(`Changeset policy passed for ${headRef} -> ${baseRef}. Release type: ${releaseType ?? 'none'}.`);

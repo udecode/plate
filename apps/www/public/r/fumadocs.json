@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "fumadocs",
-  "type": "registry:file",
   "title": "Fumadocs app",
   "description": "Fumadocs app for plate",
   "dependencies": [
@@ -13,7 +12,7 @@
     "clsx"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/docs"
+    "https://platejs.org/r/docs.json"
   ],
   "files": [
     {
@@ -34,5 +33,6 @@
       "type": "registry:file",
       "target": "mdx-plate-components.tsx"
     }
-  ]
+  ],
+  "type": "registry:file"
 }

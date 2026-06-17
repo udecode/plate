@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "ai-node",
-  "type": "registry:ui",
   "title": "AI Leaf",
   "description": "A text highlighter for AI-generated content.",
   "dependencies": [],
@@ -29,5 +28,6 @@
       "ai-pro"
     ],
     "label": "New"
-  }
+  },
+  "type": "registry:ui"
 }

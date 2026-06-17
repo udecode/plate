@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "toggle-toolbar-button",
-  "type": "registry:ui",
   "title": "Toggle Toolbar Button",
   "description": "A toolbar button for expanding and collapsing blocks.",
   "dependencies": [
@@ -26,5 +25,6 @@
     "examples": [
       "toggle-demo"
     ]
-  }
+  },
+  "type": "registry:ui"
 }

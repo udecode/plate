@@ -9,7 +9,10 @@ import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import { rimraf } from 'rimraf';
 
-import { toRegistryDependencySpecifier } from './registry-dependencies.mts';
+import {
+  toPlateRegistryDependencySpecifier,
+  toPublicRegistryDependencySpecifier,
+} from './registry-dependencies.mts';
 
 const HOMEPAGE = 'https://platejs.org';
 const NAME = 'plate';
@@ -21,6 +24,7 @@ const META_FILE = 'meta.json';
 const TARGET_FILE = 'registry-docs.json';
 const TARGET_DIR = isDev ? 'public/rd' : 'public/r';
 const TARGET = `${TARGET_DIR}/${TARGET_FILE}`;
+const REGISTRY_BASE_URL = isDev ? 'http://localhost:3000/rd' : `${HOMEPAGE}/r`;
 
 const DIRECTORY_PATTERN_REGEX = /\(([^)]*)\)\//g;
 const DOCS_ROUTE_PREFIX = '/docs';
@@ -189,7 +193,7 @@ export async function createDocsRegistry(): Promise<Registry> {
         files: [],
         name: 'docs',
         registryDependencies: [docsMetaItem, ...items].map((item) =>
-          toRegistryDependencySpecifier(item.name)
+          toPlateRegistryDependencySpecifier(item.name)
         ),
         title: 'Documentation',
         type: 'registry:file',
@@ -222,7 +226,7 @@ export async function createDocsRegistry(): Promise<Registry> {
           },
         ],
         name: 'fumadocs',
-        registryDependencies: [toRegistryDependencySpecifier('docs')],
+        registryDependencies: [toPlateRegistryDependencySpecifier('docs')],
         title: 'Fumadocs app',
         type: 'registry:file',
       },
@@ -232,11 +236,27 @@ export async function createDocsRegistry(): Promise<Registry> {
   });
 }
 
+export function createPublicDocsRegistry(
+  registry: Registry,
+  registryBaseUrl = REGISTRY_BASE_URL
+): Registry {
+  return registrySchema.parse({
+    ...registry,
+    items: registry.items.map((item) => ({
+      ...item,
+      registryDependencies: item.registryDependencies?.map((dependency) =>
+        toPublicRegistryDependencySpecifier(dependency, registryBaseUrl)
+      ),
+    })),
+  });
+}
+
 export async function buildDocsRegistry() {
   rimraf.sync(path.join(process.cwd(), TARGET));
 
   const registry = await createDocsRegistry();
-  const docsJson = JSON.stringify(registry, null, 2);
+  const publicRegistry = createPublicDocsRegistry(registry);
+  const docsJson = JSON.stringify(publicRegistry, null, 2);
 
   const docsTargetDir = path.dirname(path.join(process.cwd(), TARGET));
   await fs.mkdir(docsTargetDir, { recursive: true });

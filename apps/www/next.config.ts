@@ -187,6 +187,16 @@ const nextConfig = async (_phase: string) => {
           source: '/cn/docs/migration',
         },
         {
+          destination: '/docs/installation/plate-ui#sync-copied-files',
+          permanent: true,
+          source: '/docs/components/changelog',
+        },
+        {
+          destination: '/cn/docs/installation/plate-ui',
+          permanent: true,
+          source: '/cn/docs/components/changelog',
+        },
+        {
           destination: '/docs',
           permanent: true,
           source: '/docs.mdx',

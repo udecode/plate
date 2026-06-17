@@ -1,12 +1,11 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "insert-toolbar-classic-button",
-  "type": "registry:ui",
   "title": "Insert Toolbar Classic Button",
   "description": "A menu for inserting different types of blocks with classic list support.",
   "dependencies": [],
   "registryDependencies": [
-    "@shadcn/dropdown-menu",
+    "dropdown-menu",
     "https://platejs.org/r/toolbar.json",
     "https://platejs.org/r/transforms-classic.json"
   ],
@@ -21,5 +20,6 @@
     "examples": [
       "list-classic-demo"
     ]
-  }
+  },
+  "type": "registry:ui"
 }

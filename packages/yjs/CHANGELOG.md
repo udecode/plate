@@ -1,5 +1,13 @@
 # @platejs/yjs
 
+## 54.0.0-beta.0
+
+## 53.2.0
+
+### Minor Changes
+
+- [#5027](https://github.com/udecode/plate/pull/5027) by [@zbeyens](https://github.com/zbeyens) – Add built-in IndexedDB provider support.
+
 ## 53.0.0
 
 ## 52.3.10

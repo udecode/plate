@@ -1,5 +1,7 @@
 # @platejs/suggestion
 
+## 54.0.0-beta.0
+
 ## 53.0.3
 
 ### Patch Changes

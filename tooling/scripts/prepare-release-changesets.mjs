@@ -186,18 +186,14 @@ async function getManualChangesetPaths() {
 }
 
 function getChangesetStatus() {
-  const result = spawnSync(
-    'pnpm',
-    ['exec', 'changeset', 'status', `--output=${statusOutputPath}`],
-    {
-      cwd: repoRoot,
-      encoding: 'utf8',
-      env: {
-        ...process.env,
-        CI: process.env.CI || '1',
-      },
-    }
-  );
+  const result = spawnSync('pnpm', getChangesetStatusArgs(), {
+    cwd: repoRoot,
+    encoding: 'utf8',
+    env: {
+      ...process.env,
+      CI: process.env.CI || '1',
+    },
+  });
 
   if (result.status !== 0) {
     process.stderr.write(result.stderr);
@@ -205,6 +201,20 @@ function getChangesetStatus() {
   }
 
   return JSON.parse(result.stdout || readFileSyncUtf8(statusOutputPath));
+}
+
+export function getChangesetStatusArgs({
+  env = process.env,
+  outputPath = statusOutputPath,
+} = {}) {
+  const args = ['exec', 'changeset', 'status', `--output=${outputPath}`];
+  const since = env.PLATE_CHANGESET_STATUS_BASE ?? env.GITHUB_REF_NAME;
+
+  if (since) {
+    args.push(`--since=${since}`);
+  }
+
+  return args;
 }
 
 async function listDirectories(parentDirectory) {

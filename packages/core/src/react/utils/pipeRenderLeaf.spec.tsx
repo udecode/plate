@@ -13,6 +13,16 @@ const attributes = { 'data-slate-leaf': true, 'data-testid': 'Leaf' } as any;
 
 const text = { test: true, text: 'test' };
 
+const getHookOrderErrors = (errorSpy: any) =>
+  errorSpy.mock.calls.filter(([message]: [unknown]) => {
+    if (typeof message !== 'string') return false;
+
+    return (
+      message.includes('change in the order of Hooks') ||
+      message.includes('Rendered more hooks')
+    );
+  });
+
 it('render the default leaf', () => {
   const Leaf = pipeRenderLeaf(createPlateEditor({ plugins: [] }))!;
 
@@ -253,6 +263,62 @@ it('skips inactive leaf renderers', () => {
   expect(queryByTestId('inactive-leaf')).toBeNull();
 });
 
+it('keeps complex leaf renderer hooks stable when a mark activates', () => {
+  const errorSpy = spyOn(console, 'error').mockImplementation(() => {});
+
+  try {
+    const testPlugin = createTSlatePlugin({
+      key: 'test',
+      node: {
+        isLeaf: true,
+        type: 'test',
+      },
+      render: {
+        leaf: ({ children }) => (
+          <span data-testid="complex-leaf">{children}</span>
+        ),
+      },
+    });
+
+    const editor = createPlateEditor({
+      plugins: [testPlugin],
+    });
+
+    const Leaf = pipeRenderLeaf(editor)!;
+    const inactiveText = { text: 'test' } as any;
+    const activeText = { test: true, text: 'test' } as any;
+
+    const { getByTestId, queryByTestId, rerender } = render(
+      <Leaf
+        attributes={attributes}
+        leaf={inactiveText}
+        leafPosition={{ end: 0, start: 4 }}
+        text={inactiveText}
+      >
+        test content
+      </Leaf>
+    );
+
+    expect(queryByTestId('complex-leaf')).toBeNull();
+
+    rerender(
+      <Leaf
+        attributes={attributes}
+        leaf={activeText}
+        leafPosition={{ end: 0, start: 4 }}
+        text={activeText}
+      >
+        test content
+      </Leaf>
+    );
+
+    expect(getByTestId('complex-leaf')).toBeInTheDocument();
+    expect(getHookOrderErrors(errorSpy)).toEqual([]);
+  } finally {
+    errorSpy.mockRestore();
+  }
+});
+
 it('uses node.type to activate leaf renderers when key differs', () => {
   const simplePlugin = createTSlatePlugin({
     key: 'simple',
@@ -461,6 +527,53 @@ it('skips inactive text renderers', () => {
   expect(inactiveCalls).toBe(0);
   expect(getByTestId('active-text')).toBeInTheDocument();
   expect(queryByTestId('inactive-text')).toBeNull();
+});
+
+it('keeps complex text renderer hooks stable when a mark activates', () => {
+  const errorSpy = spyOn(console, 'error').mockImplementation(() => {});
+
+  try {
+    const testPlugin = createTSlatePlugin({
+      key: 'test',
+      node: {
+        isDecoration: false,
+        isLeaf: true,
+        type: 'test',
+      },
+      render: {
+        node: ({ children }) => (
+          <span data-testid="complex-text">{children}</span>
+        ),
+      },
+    });
+
+    const editor = createPlateEditor({
+      plugins: [testPlugin],
+    });
+
+    const Text = pipeRenderText(editor)!;
+    const inactiveText = { text: 'test' } as any;
+    const activeText = { test: true, text: 'test' } as any;
+
+    const { getByTestId, queryByTestId, rerender } = render(
+      <Text attributes={attributes} text={inactiveText}>
+        test content
+      </Text>
+    );
+
+    expect(queryByTestId('complex-text')).toBeNull();
+
+    rerender(
+      <Text attributes={attributes} text={activeText}>
+        test content
+      </Text>
+    );
+
+    expect(getByTestId('complex-text')).toBeInTheDocument();
+    expect(getHookOrderErrors(errorSpy)).toEqual([]);
+  } finally {
+    errorSpy.mockRestore();
+  }
 });
 
 it('keeps plugin textProps behavior', () => {

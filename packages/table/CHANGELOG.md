@@ -1,5 +1,19 @@
 # @platejs/table
 
+## 54.0.0-beta.0
+
+## 53.0.9
+
+### Patch Changes
+
+- [#4994](https://github.com/udecode/plate/pull/4994) by [@puneetdixit200](https://github.com/puneetdixit200) – Remove the table when deleting its final column.
+
+## 53.0.7
+
+### Patch Changes
+
+- [#4987](https://github.com/udecode/plate/pull/4987) by [@zbeyens](https://github.com/zbeyens) – Speed up unmerged table range selection while preserving merged-cell handling
+
 ## 53.0.0
 
 ### Major Changes

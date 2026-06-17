@@ -10,6 +10,7 @@ Template:
 {{TEMPLATE_PATH}}
 
 Major source:
+
 - type: pending
 - id / link: pending
 - title: pending
@@ -17,6 +18,7 @@ Major source:
 - decision criteria: pending
 
 Major lane:
+
 - lane: pending
 - output type: pending
 - implementation expected: pending
@@ -24,6 +26,7 @@ Major lane:
 - dominant risk: pending
 
 First checkpoint:
+
 - Before implementation or broad exploration, copy every explicit prompt
   requirement into this plan as checkable checkpoints: scope, non-goals,
   timing/duration, stop conditions, deliverables, final handoff sections,
@@ -32,6 +35,7 @@ First checkpoint:
   explicitly marked N/A with reason.
 
 Timed checkpoint:
+
 - requested duration: pending
 - semantics: pending
 - initial confidence score: pending
@@ -39,6 +43,7 @@ Timed checkpoint:
 - final score / loop closure: pending
 
 Completion threshold:
+
 - TODO: Define the exact decision, proposal, benchmark, architecture, or
   migration done state.
 - Major-task closure is legal only when the decision criteria are satisfied or
@@ -49,16 +54,19 @@ Completion threshold:
   passes.
 
 Verification surface:
+
 - TODO: Name the repo audit, benchmark, external-source audit, review pass,
   prototype, command, or plan artifact proving the threshold.
 
 Constraints:
+
 - Start from repo evidence before external claims.
 - Keep helper stack proportional.
 - Separate measured evidence, source evidence, inference, and recommendation.
 - Do not execute implementation unless this major goal explicitly includes it.
 
 Boundaries:
+
 - Source of truth: TODO.
 - Allowed edit scope: TODO.
 - External sources: TODO.
@@ -67,14 +75,17 @@ Boundaries:
 - Non-goals: TODO.
 
 Output budget strategy:
+
 - TODO: Record how command/search output will be scoped, capped, counted, or
   saved as artifacts before broad exploration.
 
 Blocked condition:
+
 - TODO: Name the missing source, benchmark, access, design decision, external
   evidence, or user judgment that stops autonomous major-task work.
 
 Major state:
+
 - task_type: major
 - task_complexity: major
 - current_phase: intake
@@ -83,12 +94,14 @@ Major state:
 - goal_status: active
 
 Current verdict:
+
 - verdict: pending
 - confidence: pending
 - next owner: major-task
 - reason: pending
 
 Completion rule:
+
 - Do not call `update_goal(status: complete)` while any required checklist item
   remains unchecked. If an item does not apply, check it and add `N/A: <reason>`.
 - Do not call `update_goal(status: complete)` until every completion threshold
@@ -117,6 +130,7 @@ Start Gates:
 | Output budget strategy recorded | pending | pending |
 
 Work Checklist:
+
 - [ ] If a duration was requested, it is recorded as minimum active work unless
       explicitly marked hard stop; when no better metric exists, initial and
       final confidence scores are recorded.
@@ -179,15 +193,19 @@ Phase / pass table:
 | Closeout | pending | | final response |
 
 Findings:
+
 - None yet.
 
 Decisions and tradeoffs:
+
 - None yet.
 
 Implementation notes:
+
 - None yet.
 
 Review fixes:
+
 - None yet.
 
 Error attempts:
@@ -196,9 +214,11 @@ Error attempts:
 | None yet | 0 | | |
 
 Verification evidence:
+
 - Pending.
 
 Final handoff contract:
+
 - Recommendation: pending
 - Confidence: pending
 - Evidence: pending
@@ -209,6 +229,7 @@ Final handoff contract:
 - Next owner: pending
 
 Timeline:
+
 - {{CREATED_AT}} Major-task goal plan created.
 
 Reboot status:
@@ -221,4 +242,5 @@ Reboot status:
 | What have I done? | See Timeline |
 
 Open risks:
+
 - Pending.

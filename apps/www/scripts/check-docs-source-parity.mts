@@ -8,12 +8,15 @@ import { hrefWithLocale } from '@/lib/withLocale';
 import { registryExamples } from '@/registry/registry-examples';
 import { registryUI } from '@/registry/registry-ui';
 
-import { createDocsRegistry } from './build-docs-registry.mts';
+import {
+  createDocsRegistry,
+  createPublicDocsRegistry,
+} from './build-docs-registry.mts';
 
 const DOCS_HREF_REGEX = /^\/docs(?:\/|$)/;
 const INSTALLED_DOCS_HREF_REGEX = /^\/docs\/plate(?:\/|$)/;
 const CN_DOCS_PREFIX_REGEX = /^\/cn(?=\/docs)/;
-const PLATE_REGISTRY_URL_PREFIX = 'https://platejs.org/r/';
+const PLATE_REGISTRY_NAMESPACE_PREFIX = '@plate/';
 const HASH_OR_QUERY_REGEX = /[#?].*$/;
 const META_PAGE_HREF_REGEX = /\]\(([^)]+)\)$/;
 const UNSCOPED_DOCS_MARKDOWN_LINK_REGEX =
@@ -26,6 +29,7 @@ const MDX_EXTENSION_REGEX = /\.mdx$/;
 const CN_EXTENSION_REGEX = /\.cn$/;
 const CONTENT_DIR = path.join(process.cwd(), '../../content/docs');
 const META_FILE = path.join(CONTENT_DIR, 'meta.json');
+const PLATE_PUBLIC_REGISTRY_BASE_URL = 'https://platejs.org/r';
 const SOURCE_FILES = [
   path.join(process.cwd(), '.source/index.ts'),
   path.join(process.cwd(), '.source/server.ts'),
@@ -329,8 +333,15 @@ function checkChinesePagerHrefLookup() {
 
 async function checkDocsRegistry() {
   const docsRegistry = await createDocsRegistry();
+  const publicDocsRegistry = createPublicDocsRegistry(
+    docsRegistry,
+    PLATE_PUBLIC_REGISTRY_BASE_URL
+  );
   const itemsByName = new Map(
     docsRegistry.items.map((item) => [item.name, item])
+  );
+  const publicItemsByName = new Map(
+    publicDocsRegistry.items.map((item) => [item.name, item])
   );
 
   assert(itemsByName.has('docs'), 'Expected registry docs aggregate item');
@@ -340,30 +351,43 @@ async function checkDocsRegistry() {
 
   const docsItem = itemsByName.get('docs');
   assert(
-    docsItem?.registryDependencies?.includes(
-      `${PLATE_REGISTRY_URL_PREFIX}docs-meta.json`
-    ),
-    'Expected docs aggregate item to depend on standalone docs-meta registry URL'
+    docsItem?.registryDependencies?.includes('@plate/docs-meta'),
+    'Expected docs aggregate item to depend on namespaced docs-meta registry item'
   );
   assert(
-    docsItem?.registryDependencies?.includes(
-      `${PLATE_REGISTRY_URL_PREFIX}table-docs.json`
-    ),
-    'Expected docs aggregate item to depend on standalone table-docs registry URL'
+    docsItem?.registryDependencies?.includes('@plate/table-docs'),
+    'Expected docs aggregate item to depend on namespaced table-docs registry item'
   );
   assert(
     docsItem?.registryDependencies?.every((dependency) =>
-      dependency.startsWith(PLATE_REGISTRY_URL_PREFIX)
+      dependency.startsWith(PLATE_REGISTRY_NAMESPACE_PREFIX)
     ),
-    'Expected docs aggregate dependencies to use standalone registry URLs'
+    'Expected docs aggregate dependencies to use Plate namespace specifiers'
   );
 
   const fumadocsItem = itemsByName.get('fumadocs');
   assert(
-    fumadocsItem?.registryDependencies?.includes(
-      `${PLATE_REGISTRY_URL_PREFIX}docs.json`
+    fumadocsItem?.registryDependencies?.includes('@plate/docs'),
+    'Expected fumadocs item to depend on namespaced docs registry item'
+  );
+
+  const publicFumadocsItem = publicItemsByName.get('fumadocs');
+  assert(
+    publicFumadocsItem?.registryDependencies?.includes(
+      `${PLATE_PUBLIC_REGISTRY_BASE_URL}/docs.json`
     ),
-    'Expected fumadocs item to depend on standalone docs registry URL'
+    'Expected public fumadocs item to use same-base docs URL dependency'
+  );
+
+  const publicDocsItem = publicItemsByName.get('docs');
+  assert(
+    publicDocsItem?.registryDependencies?.every(
+      (dependency) =>
+        typeof dependency === 'string' &&
+        dependency.startsWith(`${PLATE_PUBLIC_REGISTRY_BASE_URL}/`) &&
+        dependency.endsWith('.json')
+    ),
+    'Expected public docs aggregate dependencies to use same-base URL specifiers'
   );
 
   const docsMeta = itemsByName.get('docs-meta');

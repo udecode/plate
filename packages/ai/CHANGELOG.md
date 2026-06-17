@@ -1,5 +1,49 @@
 # @platejs/ai
 
+## 54.0.0-beta.1
+
+### Patch Changes
+
+- Synced latest changes from `main` into the beta lane.
+
+## 54.0.0-beta.0
+
+## 53.2.2
+
+### Patch Changes
+
+- [#5026](https://github.com/udecode/plate/pull/5026) by [@zbeyens](https://github.com/zbeyens) – Preserve streaming trailing whitespace with markdown hard breaks.
+
+## 53.1.6
+
+### Patch Changes
+
+- Updated `@platejs/selection`.
+
+## 53.1.5
+
+### Patch Changes
+
+- Updated `@platejs/markdown`.
+
+## 53.1.1
+
+### Patch Changes
+
+- Updated `@platejs/markdown`.
+
+## 53.0.9
+
+### Patch Changes
+
+- Updated `@platejs/table`.
+
+## 53.0.7
+
+### Patch Changes
+
+- Updated `@platejs/table`.
+
 ## 53.0.4
 
 ### Patch Changes

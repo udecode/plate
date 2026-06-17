@@ -11,6 +11,8 @@ import { BlockViewer } from '@/components/block-viewer';
 import { Button } from '@/components/ui/button';
 import { siteConfig } from '@/config/site';
 
+const POTION_LOAD_ROOT_MARGIN = '0px';
+
 const i18n = {
   cn: {
     browseMoreEditors: 'Browse more editors',
@@ -32,7 +34,6 @@ const i18n = {
 
 function PotionLazyBlockContent() {
   const searchParams = useSearchParams();
-
   const ref = useRef<HTMLDivElement>(null);
   const [shouldRender, setShouldRender] = useState(false);
   const localeParam = searchParams?.get('locale');
@@ -42,20 +43,42 @@ function PotionLazyBlockContent() {
       : 'en';
 
   useEffect(() => {
-    const handleScroll = () => {
-      // scroll home page down over 100px and render the block
-      if (window.scrollY > 100 && !shouldRender) {
+    if (shouldRender) {
+      return;
+    }
+
+    const element = ref.current;
+
+    if (!element) {
+      return;
+    }
+
+    if (typeof IntersectionObserver === 'undefined') {
+      const frame = window.requestAnimationFrame(() => {
         setShouldRender(true);
-      }
-    };
+      });
 
-    window.addEventListener('scroll', handleScroll, { passive: true });
+      return () => {
+        window.cancelAnimationFrame(frame);
+      };
+    }
 
-    // Check initial scroll position
-    handleScroll();
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry?.isIntersecting) {
+          return;
+        }
+
+        setShouldRender(true);
+        observer.disconnect();
+      },
+      { rootMargin: POTION_LOAD_ROOT_MARGIN }
+    );
+
+    observer.observe(element);
 
     return () => {
-      window.removeEventListener('scroll', handleScroll);
+      observer.disconnect();
     };
   }, [shouldRender]);
 

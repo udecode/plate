@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "remote-cursor-overlay",
-  "type": "registry:ui",
   "title": "Remote Cursor Overlay",
   "description": "A cursor overlay to display multiplayer cursors in the yjs plugin.",
   "dependencies": [
@@ -22,5 +21,6 @@
       }
     ],
     "examples": []
-  }
+  },
+  "type": "registry:ui"
 }

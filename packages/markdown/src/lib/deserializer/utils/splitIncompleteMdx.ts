@@ -1,11 +1,22 @@
-/** Check if character is valid for tag name: A-Z / a-z / 0-9 / - _ : */
+/** Check if character is valid for tag name: A-Z / a-z / 0-9 / $ - . _ : */
 const isNameChar = (c: number) =>
   (c >= 48 && c <= 57) || // 0-9
   (c >= 65 && c <= 90) || // A-Z
   (c >= 97 && c <= 122) || // a-z
+  c === 36 || // $
   c === 45 || // -
+  c === 46 || // .
   c === 95 || // _
   c === 58; // :
+
+const isNameBoundary = (c: number) =>
+  c === 47 || // /
+  c === 62 || // >
+  c === 9 || // tab
+  c === 10 || // newline
+  c === 12 || // form feed
+  c === 13 || // carriage return
+  c === 32; // space
 
 export const splitIncompleteMdx = (data: string): string[] | string => {
   type Frame = {
@@ -46,6 +57,12 @@ export const splitIncompleteMdx = (data: string): string[] | string => {
     } // No name after '<'
 
     const tagName = data.slice(nameStart, i).toLowerCase();
+    const next = data.codePointAt(i);
+
+    if (next !== undefined && !isNameBoundary(next)) {
+      cutPos = tagStart;
+      break;
+    }
 
     /* Skip to matching '>' (considering quotes) ------------------------------------ */
     let inQuote: "'" | '"' | null = null;

@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "fixed-toolbar-buttons",
-  "type": "registry:ui",
   "title": "Fixed Toolbar Buttons",
   "description": "A set of commonly used formatting buttons.",
   "dependencies": [],
@@ -40,5 +39,6 @@
     "examples": [
       "basic-nodes-demo"
     ]
-  }
+  },
+  "type": "registry:ui"
 }

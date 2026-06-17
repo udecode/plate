@@ -1,0 +1,129 @@
+name: Promote Beta to Stable
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Test promotion without committing, pushing, or creating a PR. Set false only when ready to push next and create the promote PR.'
+        required: false
+        default: true
+        type: boolean
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  promote:
+    name: Promote next to main
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/next'
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Generate App Token
+        id: app-token
+        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
+        if: vars.RELEASE_APP_ID != ''
+        with:
+          app-id: ${{ vars.RELEASE_APP_ID }}
+          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+
+      - name: 📥 Checkout next
+        uses: actions/checkout@v4
+        with:
+          ref: next
+          fetch-depth: 0
+          persist-credentials: false
+          token: ${{ steps.app-token.outputs.token || secrets.API_TOKEN_GITHUB || secrets.GITHUB_TOKEN }}
+
+      - name: 📦 Monorepo install
+        uses: ./.github/actions/pnpm-install
+        with:
+          link-workspace-packages: 'true'
+
+      - name: 🦋 Exit beta pre-release and version
+        env:
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token || secrets.API_TOKEN_GITHUB || secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          if [[ -f .changeset/pre.json ]]; then
+            pnpm changeset pre exit
+          else
+            echo "Already out of pre-release mode."
+          fi
+
+          pnpm ci:version
+
+      - name: 🔎 Read stable version
+        id: version
+        run: |
+          VERSION=$(node -e "const { version } = require('./packages/plate/package.json'); console.log(version.split('-')[0]);")
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "Promoting to v${VERSION}."
+
+      - name: ⬆️ Commit and push next
+        env:
+          DRY_RUN: ${{ inputs.dry_run }}
+          GH_TOKEN: ${{ steps.app-token.outputs.token || secrets.API_TOKEN_GITHUB || secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+
+          if [[ "$DRY_RUN" == "true" ]]; then
+            git status --short
+            echo "Dry run: skipping commit and push."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git add -A
+
+          if git diff --cached --quiet; then
+            echo "No version changes to commit."
+          else
+            git commit -m "chore: exit beta pre-release mode for v${VERSION} [skip release]"
+            git push origin next
+          fi
+
+      - name: 🔀 Create promote PR
+        env:
+          DRY_RUN: ${{ inputs.dry_run }}
+          GH_TOKEN: ${{ steps.app-token.outputs.token || secrets.API_TOKEN_GITHUB || secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+
+          args=(promote --version "$VERSION")
+
+          if [[ "$DRY_RUN" == "true" ]]; then
+            args+=(--dry-run)
+          fi
+
+          node tooling/scripts/release-branch-prs.mjs "${args[@]}"
+
+      - name: 🧾 Summary
+        env:
+          DRY_RUN: ${{ inputs.dry_run }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          {
+            echo "### Beta promotion"
+            echo ""
+            echo "- Version: \`v${VERSION}\`"
+            echo "- Dry run: \`${DRY_RUN}\`"
+            echo "- Next: review and merge the promote PR with **Create a merge commit**."
+            echo ""
+            echo "After the promote PR lands on main and release.yml publishes latest, run the release-lanes autogoal workflow. It syncs main directly into next, restores beta pre mode in the sync commit when needed, and verifies the beta lane:"
+            echo '```bash'
+            echo "node .agents/skills/autogoal/scripts/create-goal-scratchpad.mjs --template release-lanes --title 'release lane maintenance'"
+            echo "# then follow the release-lanes skill"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"

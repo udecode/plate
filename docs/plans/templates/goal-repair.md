@@ -11,12 +11,14 @@ Template:
 docs/plans/templates/goal-repair.md
 
 Expectation:
+
 - user expectation: TODO
 - observed miss: TODO
 - owning skill/template/helper: TODO
 - repair classification: pending
 
 First checkpoint:
+
 - Before implementation or broad exploration, copy every explicit prompt
   requirement into this plan as checkable checkpoints: scope, non-goals,
   timing/duration, stop conditions, deliverables, final handoff sections,
@@ -25,6 +27,7 @@ First checkpoint:
   explicitly marked N/A with reason.
 
 Timed checkpoint:
+
 - requested duration: pending
 - semantics: pending
 - initial confidence score: pending
@@ -32,6 +35,7 @@ Timed checkpoint:
 - final score / loop closure: pending
 
 Completion threshold:
+
 - TODO: Name the exact repaired behavior.
 - Repair closure is legal only when the source owner is patched, generated
   skills are synced when `.agents/rules/**` changed, a source audit proves the
@@ -40,30 +44,36 @@ Completion threshold:
   `node .agents/skills/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` passes.
 
 Verification surface:
+
 - TODO: Name the source audit, generated skill sync, smoke plan/checker proof,
   helper test, or other evidence that proves the repair.
 
 Constraints:
+
 - Repair one expectation narrowly.
 - Patch source-of-truth files, not generated skill mirrors.
 - Do not weaken evidence safety or completion gates just to reduce annoyance.
 - Do not broaden the repair to unrelated skills/templates.
 
 Boundaries:
+
 - Source of truth: latest `autogoal repair <expectation>` request.
 - Allowed edit scope: TODO.
 - Derived skill scope: TODO.
 - Non-goals: TODO.
 
 Output budget strategy:
+
 - TODO: Record how command/search output will be scoped, capped, counted, or
   saved as artifacts before broad exploration.
 
 Blocked condition:
+
 - TODO: Name the missing plan path, skill owner, expected behavior, or user
   decision that stops autonomous repair.
 
 Repair state:
+
 - repair_type: pending
 - current_phase: intake
 - current_phase_status: in_progress
@@ -71,12 +81,14 @@ Repair state:
 - goal_status: active
 
 Current verdict:
+
 - verdict: pending
 - confidence: pending
 - next owner: autogoal repair
 - reason: pending
 
 Completion rule:
+
 - Do not call `update_goal(status: complete)` while any required checklist item
   remains unchecked. If an item does not apply, check it and add `N/A: <reason>`.
 - Do not call `update_goal(status: complete)` until every completion threshold
@@ -99,6 +111,7 @@ Start Gates:
 | Output budget strategy recorded | pending | pending |
 
 Work Checklist:
+
 - [ ] If a duration was requested, it is recorded as minimum active work unless
       explicitly marked hard stop; when no better metric exists, initial and
       final confidence scores are recorded.
@@ -143,15 +156,19 @@ Phase / pass table:
 | Closeout | pending | | final response |
 
 Findings:
+
 - None yet.
 
 Decisions and tradeoffs:
+
 - None yet.
 
 Repair patch notes:
+
 - None yet.
 
 Deliberate non-repairs:
+
 - None yet.
 
 Error attempts:
@@ -160,9 +177,11 @@ Error attempts:
 | None yet | 0 | | |
 
 Verification evidence:
+
 - Pending.
 
 Final repair handoff:
+
 - Expectation: pending
 - Repaired owner: pending
 - Files changed: pending
@@ -170,6 +189,7 @@ Final repair handoff:
 - Caveat: pending
 
 Timeline:
+
 - {{CREATED_AT}} Goal repair plan created.
 
 Reboot status:
@@ -182,4 +202,5 @@ Reboot status:
 | What have I done? | See Timeline |
 
 Open risks:
+
 - Pending.

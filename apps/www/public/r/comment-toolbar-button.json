@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "comment-toolbar-button",
-  "type": "registry:ui",
   "title": "Comment Toolbar Button",
   "description": "A toolbar button for adding inline comments.",
   "dependencies": [
@@ -31,5 +30,6 @@
       "floating-toolbar-demo",
       "discussion-pro"
     ]
-  }
+  },
+  "type": "registry:ui"
 }

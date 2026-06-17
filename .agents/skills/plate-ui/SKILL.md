@@ -25,7 +25,7 @@ and registry wiring.
 ## Principles
 
 1. **Preserve open code.** A shadcn-derived component should still look like source code a user can own, read, diff, and tweak.
-2. **Extract only durable seams.** Package code should own semantics, not JSX avoidance.
+2. **Extract only durable boundaries.** Package code should own semantics, not JSX avoidance.
 3. **Design below JSX.** Cross-platform reuse belongs in command/state contracts, controllers, queries, and transforms — not in package-owned shadcn composition.
 4. **Keep UI composition local until proven otherwise.** Popovers, labels, and layout belong in the component unless multiple surfaces need the same contract.
 5. **Registry wiring is part of authorship.** A component is not done until kits, examples, and style deps are coherent.
@@ -46,6 +46,10 @@ and registry wiring.
 - Keep one-off shadcn composition, labels, popover state, and local visual treatment in the app component.
 - Never create a package hook just to hide JSX, avoid typing work, or move logic used by one component only.
 - If extraction makes the component harder to compare with upstream shadcn/open code, keep it local.
+- For sibling live/static registry renderers, duplicate presentation lookup data
+  and tiny label helpers in each renderer instead of creating a third shared
+  registry file. Extract only when the shared code owns real behavior beyond
+  labels, menu data, or copy.
 
 ### Component Shape & Editor Access → [component-shape.md](./rules/component-shape.md)
 
@@ -70,6 +74,14 @@ and registry wiring.
 - Add explicit `registryDependencies` for every shared UI/style dependency.
 - If a component depends on shared CSS vars like highlight tokens, add the style registry dep.
 - Examples should depend on kits plus any extra styles/components they introduce.
+
+### Registry Changelog
+
+- User-visible registry UI, kit, example, metadata, style dependency, copied-code
+  install shape, or generated registry changelog changes need a registry
+  changelog entry or a concrete N/A reason.
+- Use the `registry-changelog` skill for schema, scaffold, generation, and
+  verification. Do not duplicate the entry contract here.
 
 ### Shadcn Proofing → [shadcn-proofing.md](./rules/shadcn-proofing.md)
 
@@ -165,10 +177,14 @@ const {
    - should this stay in an event handler?
    - am I subscribing to more editor state than the UI actually renders?
 6. Build the component as open code first.
-7. Extract only the seams that survive the test.
+7. Extract only the boundaries that survive the test.
 8. Wire base/live kits and registry deps.
-9. If package exports changed, run `pnpm brl`.
-10. Verify the smallest honest surface:
+9. Apply the registry changelog decision:
+   - user-visible registry change: add or update a registry changelog entry,
+     run the generator, and run the registry changelog check
+   - not user-visible: record `N/A: <reason>`
+10. If package exports changed, run `pnpm brl`.
+11. Verify the smallest honest surface:
    - component spec for UI-only changes
    - package build/typecheck when package code changed
    - browser verification when the surface is interactive

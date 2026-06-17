@@ -1,0 +1,636 @@
+{
+  "schemaVersion": 1,
+  "id": "2025-11-20-biome-ultracite",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2025-11-20-biome-ultracite.mdx"
+  },
+  "change": {
+    "type": "pull_request",
+    "date": "2025-11-20",
+    "commits": [
+      {
+        "sha": "20bcd2509f68494022a97ec18e04f823ebe3439b",
+        "shortSha": "20bcd2509f",
+        "url": "https://github.com/udecode/plate/commit/20bcd2509f68494022a97ec18e04f823ebe3439b",
+        "date": "2025-11-19",
+        "committedAt": "2025-11-19T10:42:29+01:00",
+        "subject": "lint"
+      }
+    ],
+    "pullRequest": {
+      "number": 4732,
+      "url": "https://github.com/udecode/plate/pull/4732",
+      "state": "MERGED",
+      "title": "Biome ultracite",
+      "mergedAt": "2025-11-20T16:12:06Z"
+    }
+  },
+  "release": {
+    "status": "released",
+    "tag": "v51.1.2",
+    "source": "release-index-pr-match",
+    "packageTag": "platejs@51.1.2",
+    "requiresPlate": ">=51.1.2",
+    "changelogUrl": "https://github.com/udecode/plate/blob/9884869c2507c0e44cdda8ea595adf0ada5fd798/packages/plate/CHANGELOG.md",
+    "url": "https://github.com/udecode/plate/pull/4734",
+    "versionPackagePullRequest": {
+      "number": 4734,
+      "url": "https://github.com/udecode/plate/pull/4734"
+    }
+  },
+  "kind": "mixed",
+  "summary": "Biome ultracite",
+  "targets": [
+    {
+      "name": "ai-api",
+      "files": [],
+      "definitionFiles": ["apps/www/src/registry/registry-components.ts"],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for ai-api."
+        }
+      ]
+    },
+    {
+      "name": "copilot-api",
+      "files": [],
+      "definitionFiles": ["apps/www/src/registry/registry-components.ts"],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for copilot-api."
+        }
+      ]
+    },
+    {
+      "name": "ai-menu",
+      "files": ["apps/www/src/registry/ui/ai-menu.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "ai-kit",
+      "files": ["apps/www/src/registry/components/editor/plugins/ai-kit.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "use-chat",
+      "files": ["apps/www/src/registry/components/editor/use-chat.ts"],
+      "definitionFiles": ["apps/www/src/registry/registry-components.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "cursor-overlay",
+      "files": ["apps/www/src/registry/ui/cursor-overlay.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "block-placeholder-kit",
+      "files": [
+        "apps/www/src/registry/components/editor/plugins/block-placeholder-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "block-selection-kit",
+      "files": [
+        "apps/www/src/registry/components/editor/plugins/block-selection-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "discussion-kit",
+      "files": [
+        "apps/www/src/registry/components/editor/plugins/discussion-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "tabbable-kit",
+      "files": [
+        "apps/www/src/registry/components/editor/plugins/tabbable-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "transforms",
+      "files": ["apps/www/src/registry/components/editor/transforms.ts"],
+      "definitionFiles": ["apps/www/src/registry/registry-components.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "transforms-classic",
+      "files": [
+        "apps/www/src/registry/components/editor/transforms-classic.ts"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-components.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "markdown-joiner-transform",
+      "files": ["apps/www/src/registry/lib/markdown-joiner-transform.ts"],
+      "definitionFiles": ["apps/www/src/registry/registry-lib.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "block-discussion",
+      "files": ["apps/www/src/registry/ui/block-discussion.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "block-draggable",
+      "files": ["apps/www/src/registry/ui/block-draggable.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "block-list",
+      "files": ["apps/www/src/registry/ui/block-list.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "callout-node",
+      "files": ["apps/www/src/registry/ui/callout-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "code-block-node",
+      "files": ["apps/www/src/registry/ui/code-block-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "code-node",
+      "files": ["apps/www/src/registry/ui/code-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "column-node",
+      "files": ["apps/www/src/registry/ui/column-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "editor",
+      "files": ["apps/www/src/registry/ui/editor.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "emoji-node",
+      "files": ["apps/www/src/registry/ui/emoji-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "emoji-toolbar-button",
+      "files": ["apps/www/src/registry/ui/emoji-toolbar-button.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "equation-node",
+      "files": ["apps/www/src/registry/ui/equation-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "fixed-toolbar",
+      "files": ["apps/www/src/registry/ui/fixed-toolbar.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "floating-toolbar",
+      "files": ["apps/www/src/registry/ui/floating-toolbar.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "font-color-toolbar-button",
+      "files": ["apps/www/src/registry/ui/font-color-toolbar-button.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "font-size-toolbar-button",
+      "files": ["apps/www/src/registry/ui/font-size-toolbar-button.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "heading-node",
+      "files": ["apps/www/src/registry/ui/heading-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "inline-combobox",
+      "files": ["apps/www/src/registry/ui/inline-combobox.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "insert-toolbar-button",
+      "files": ["apps/www/src/registry/ui/insert-toolbar-button.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "insert-toolbar-classic-button",
+      "files": ["apps/www/src/registry/ui/insert-toolbar-classic-button.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "link-toolbar",
+      "files": ["apps/www/src/registry/ui/link-toolbar.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "list-classic-node",
+      "files": ["apps/www/src/registry/ui/list-classic-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "list-classic-toolbar-button",
+      "files": ["apps/www/src/registry/ui/list-classic-toolbar-button.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "media-embed-node",
+      "files": ["apps/www/src/registry/ui/media-embed-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "media-image-node",
+      "files": ["apps/www/src/registry/ui/media-image-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "media-placeholder-node",
+      "files": ["apps/www/src/registry/ui/media-placeholder-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "media-preview-dialog",
+      "files": ["apps/www/src/registry/ui/media-preview-dialog.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "media-toolbar",
+      "files": ["apps/www/src/registry/ui/media-toolbar.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "media-toolbar-button",
+      "files": ["apps/www/src/registry/ui/media-toolbar-button.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "media-video-node",
+      "files": ["apps/www/src/registry/ui/media-video-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "mention-node",
+      "files": ["apps/www/src/registry/ui/mention-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "mode-toolbar-button",
+      "files": ["apps/www/src/registry/ui/mode-toolbar-button.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "remote-cursor-overlay",
+      "files": ["apps/www/src/registry/ui/remote-cursor-overlay.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "resize-handle",
+      "files": ["apps/www/src/registry/ui/resize-handle.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "select-editor",
+      "files": ["apps/www/src/registry/ui/select-editor.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "suggestion-node",
+      "files": ["apps/www/src/registry/ui/suggestion-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "table-node",
+      "files": ["apps/www/src/registry/ui/table-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "table-toolbar-button",
+      "files": ["apps/www/src/registry/ui/table-toolbar-button.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "tag-node",
+      "files": ["apps/www/src/registry/ui/tag-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "toc-node",
+      "files": ["apps/www/src/registry/ui/toc-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "toc-node-static",
+      "files": ["apps/www/src/registry/ui/toc-node-static.tsx"],
+      "definitionFiles": [],
+      "diagnostics": []
+    },
+    {
+      "name": "toggle-node",
+      "files": ["apps/www/src/registry/ui/toggle-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "toggle-node-static",
+      "files": ["apps/www/src/registry/ui/toggle-node-static.tsx"],
+      "definitionFiles": [],
+      "diagnostics": []
+    },
+    {
+      "name": "toolbar",
+      "files": ["apps/www/src/registry/ui/toolbar.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "ai-demo",
+      "files": [],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for ai-demo."
+        }
+      ]
+    },
+    {
+      "name": "collaboration-demo",
+      "files": ["apps/www/src/registry/examples/collaboration-demo.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "controlled-demo",
+      "files": ["apps/www/src/registry/examples/controlled-demo.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "hundreds-blocks-demo",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for hundreds-blocks-demo."
+        }
+      ]
+    },
+    {
+      "name": "image-pro-demo",
+      "files": ["apps/www/src/registry/examples/image-pro-demo.tsx"],
+      "definitionFiles": [],
+      "diagnostics": []
+    },
+    {
+      "name": "markdown-streaming-demo",
+      "files": ["apps/www/src/registry/examples/markdown-streaming-demo.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "preview-markdown-demo",
+      "files": ["apps/www/src/registry/examples/preview-markdown-demo.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "pro-iframe-demo",
+      "files": ["apps/www/src/registry/examples/pro-iframe-demo.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "slate-to-html",
+      "files": ["apps/www/src/registry/components/editor/slate-to-html.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-blocks.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "version-history-demo",
+      "files": ["apps/www/src/registry/examples/version-history-demo.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "fumadocs-mdx-components",
+      "files": [
+        "apps/www/src/registry/blocks/fumadocs/fumadocs-mdx-components.tsx"
+      ],
+      "definitionFiles": [],
+      "diagnostics": []
+    },
+    {
+      "name": "mdx-plate-components",
+      "files": [
+        "apps/www/src/registry/blocks/fumadocs/mdx-plate-components.tsx"
+      ],
+      "definitionFiles": [],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2025-11-20-26-11-ai-api-format-copied-registry-files-dad0c3be",
+      "kind": "behavior",
+      "summary": "Format copied AI registry files for Biome and Ultracite compatibility.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": [
+        "ai-api",
+        "copilot-api",
+        "ai-menu",
+        "ai-kit",
+        "use-chat",
+        "cursor-overlay"
+      ],
+      "source": {
+        "line": 13,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2025-11-20",
+          "entry": "26.11",
+          "section": "November 2025 #26"
+        }
+      }
+    },
+    {
+      "id": "2025-11-20-26-11-block-placeholder-format-copied-editor-kits-8cfd039a",
+      "kind": "behavior",
+      "summary": "Format copied editor kits and transforms for Biome and Ultracite compatibility.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": [
+        "block-placeholder-kit",
+        "block-selection-kit",
+        "discussion-kit",
+        "tabbable-kit",
+        "transforms",
+        "transforms-classic",
+        "markdown-joiner-transform"
+      ],
+      "source": {
+        "line": 15,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2025-11-20",
+          "entry": "26.11",
+          "section": "November 2025 #26"
+        }
+      }
+    },
+    {
+      "id": "2025-11-20-26-11-block-discussion-format-copied-ui-components-07b227ef",
+      "kind": "fix",
+      "summary": "Format copied UI components for Biome and Ultracite compatibility.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": [
+        "block-discussion",
+        "block-draggable",
+        "block-list",
+        "callout-node",
+        "code-block-node",
+        "code-node",
+        "column-node",
+        "editor",
+        "emoji-node",
+        "emoji-toolbar-button",
+        "equation-node",
+        "fixed-toolbar",
+        "floating-toolbar",
+        "font-color-toolbar-button",
+        "font-size-toolbar-button",
+        "heading-node",
+        "inline-combobox",
+        "insert-toolbar-button",
+        "insert-toolbar-classic-button",
+        "link-toolbar",
+        "list-classic-node",
+        "list-classic-toolbar-button",
+        "media-embed-node",
+        "media-image-node",
+        "media-placeholder-node",
+        "media-preview-dialog",
+        "media-toolbar",
+        "media-toolbar-button",
+        "media-video-node",
+        "mention-node",
+        "mode-toolbar-button",
+        "remote-cursor-overlay",
+        "resize-handle",
+        "select-editor",
+        "suggestion-node",
+        "table-node",
+        "table-toolbar-button",
+        "tag-node",
+        "toc-node",
+        "toc-node-static",
+        "toggle-node",
+        "toggle-node-static",
+        "toolbar"
+      ],
+      "source": {
+        "line": 17,
+        "row": 3,
+        "legacyRelease": {
+          "date": "2025-11-20",
+          "entry": "26.11",
+          "section": "November 2025 #26"
+        }
+      }
+    },
+    {
+      "id": "2025-11-20-26-11-ai-format-copied-registry-demos-697d1f15",
+      "kind": "behavior",
+      "summary": "Format copied registry demos and block examples for Biome and Ultracite compatibility.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": [
+        "ai-demo",
+        "collaboration-demo",
+        "controlled-demo",
+        "hundreds-blocks-demo",
+        "image-pro-demo",
+        "markdown-streaming-demo",
+        "preview-markdown-demo",
+        "pro-iframe-demo",
+        "slate-to-html",
+        "version-history-demo",
+        "fumadocs-mdx-components",
+        "mdx-plate-components"
+      ],
+      "source": {
+        "line": 19,
+        "row": 4,
+        "legacyRelease": {
+          "date": "2025-11-20",
+          "entry": "26.11",
+          "section": "November 2025 #26"
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

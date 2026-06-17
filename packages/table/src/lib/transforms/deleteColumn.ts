@@ -6,6 +6,7 @@ import type { TableConfig } from '../BaseTablePlugin';
 
 import { deleteTableMergeColumn } from '../merge/deleteColumn';
 import { deleteColumnWhenExpanded } from '../merge/deleteColumnWhenExpanded';
+import { getTableColumnCount } from '../queries';
 import { getCellTypes } from '../utils';
 
 export const deleteColumn = (editor: SlateEditor) => {
@@ -35,6 +36,12 @@ export const deleteColumn = (editor: SlateEditor) => {
     const trEntry = editor.api.above({
       match: { type: editor.getType(KEYS.tr) },
     });
+
+    if (tdEntry && trEntry && getTableColumnCount(tableEntry[0]) <= 1) {
+      editor.tf.removeNodes({ at: tableEntry[1] });
+
+      return;
+    }
 
     if (
       tdEntry &&
