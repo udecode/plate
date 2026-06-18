@@ -16,8 +16,8 @@ Primary template:
 Slate AR source:
 - requested mode: pending
 - surface / target / slug: pending
-- target cwd: `.tmp/slate-v2`
-- control cwd: `plate-2`
+- target cwd: Plate repo root
+- control cwd: Plate repo root
 - minimum runtime / hard stop: pending
 - completion threshold summary: pending
 
@@ -50,8 +50,9 @@ Verification surface:
   prove the threshold.
 
 Constraints:
-- Target Slate v2 work runs from `.tmp/slate-v2`; parent `plate-2` commands only
-  prove templates, skills, target registry, and control-plane docs.
+- Target Slate work runs from the Plate repo root against transplanted packages,
+  docs, examples, browser specs, and benchmarks. Do not use a donor checkout as
+  proof.
 - Behavior correctness beats metric movement.
 - A packet that breaks selection, input ordering, IME, copy, paste, undo,
   focus, cursor placement, or follow-up typing is `checks_failed` or `discard`,

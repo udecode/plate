@@ -41,7 +41,8 @@ Verification surface:
   proofs, docs link checks, changeset audits, skill syncs, and final plan check.
 
 Constraints:
-- Current Slate v2 source under `.tmp/slate-v2` beats memory and old plans.
+- Current transplanted Slate source in this Plate checkout beats memory and old
+  plans.
 - Patch source owners, not generated mirrors or caller glue, unless the caller
   is the owner.
 - Remove stale aliases and fake compat paths instead of preserving bad API
